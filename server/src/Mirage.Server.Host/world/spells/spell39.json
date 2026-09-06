@@ -1,0 +1,10 @@
+{
+  "name": "Journeyman Exsanguination",
+  "allowedClasses": [
+    4,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 24,
+  "levelReq": 10
+}

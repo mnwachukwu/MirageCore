@@ -1,0 +1,10 @@
+{
+  "name": "Sovereign Mana Siphon",
+  "allowedClasses": [
+    6,
+    10
+  ],
+  "type": "SubMp",
+  "vitalAmount": 151,
+  "levelReq": 120
+}

@@ -1,0 +1,14 @@
+{
+  "name": "Supreme Healing Elixir",
+  "pic": 25,
+  "itemSheet": 0,
+  "type": "PotionAddHp",
+  "vitalAmount": 2713,
+  "levelReq": 235,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 17607
+}

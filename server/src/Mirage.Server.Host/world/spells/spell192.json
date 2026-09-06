@@ -1,0 +1,10 @@
+{
+  "name": "Empyrean Restoration",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 361,
+  "levelReq": 235
+}

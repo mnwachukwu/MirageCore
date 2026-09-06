@@ -1,0 +1,11 @@
+{
+  "name": "Novice Meditation",
+  "allowedClasses": [
+    6,
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 8,
+  "levelReq": 1
+}

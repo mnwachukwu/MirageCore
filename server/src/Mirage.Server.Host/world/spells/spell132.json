@@ -1,0 +1,9 @@
+{
+  "name": "Arch Mana Rupture",
+  "allowedClasses": [
+    10
+  ],
+  "type": "SubMp",
+  "vitalAmount": 174,
+  "levelReq": 110
+}

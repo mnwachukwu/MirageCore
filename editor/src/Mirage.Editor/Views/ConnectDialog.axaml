@@ -1,0 +1,111 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mui="using:Mirage.Ui.Controls"
+        xmlns:vm="using:Mirage.Editor.ViewModels"
+        Grid.IsSharedSizeScope="True"
+        x:Class="Mirage.Editor.Views.ConnectDialog"
+        x:DataType="vm:ConnectDialogViewModel"
+        MinWidth="440"
+        SizeToContent="WidthAndHeight"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+  <StackPanel Margin="20" Spacing="10">
+    <TextBlock Text="{Binding ConnectTitle}" FontSize="15" FontWeight="Bold" Margin="0,0,0,4"/>
+
+    <!-- Three groups, because the six fields answer three different questions: who you are, where the
+         server is, and which saved entry you are working with. Add and Forget act on the SAVED entry
+         alone, so they live inside that box instead of floating above Cancel/Connect. -->
+    <StackPanel Spacing="4">
+      <HeaderedContentControl x:Name="_signInGroup" Classes="propGroup">
+        <StackPanel Spacing="8">
+          <mui:FormRow LabelWidth="100">
+            <TextBlock x:Name="_usernameLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <TextBox   Grid.Column="1" Name="UsernameBox" Text="{Binding Username}" />
+          </mui:FormRow>
+          <mui:FormRow LabelWidth="100">
+            <TextBlock x:Name="_passwordLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <TextBox   Grid.Column="1" Text="{Binding Password}" PasswordChar="*"/>
+          </mui:FormRow>
+        </StackPanel>
+      </HeaderedContentControl>
+
+      <HeaderedContentControl x:Name="_serverGroup" Classes="propGroup">
+        <StackPanel Spacing="8">
+          <mui:FormRow LabelWidth="100">
+            <TextBlock x:Name="_hostLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <TextBox   Grid.Column="1" Text="{Binding Host}" />
+          </mui:FormRow>
+          <mui:FormRow LabelWidth="100">
+            <TextBlock x:Name="_portLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding Port}"
+                           Minimum="1" Maximum="65535"
+                           FormatString="0" />
+          </mui:FormRow>
+        </StackPanel>
+      </HeaderedContentControl>
+
+      <HeaderedContentControl x:Name="_savedServersGroup" Classes="propGroup">
+        <StackPanel Spacing="8">
+          <mui:FormRow LabelWidth="100">
+            <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"
+                       Text="{Binding KnownServersLabel}"/>
+            <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding KnownServers}"
+                      SelectedItem="{Binding SelectedServer}">
+              <ComboBox.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Text="{Binding Label}"/>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+          </mui:FormRow>
+          <mui:FormRow LabelWidth="100">
+            <TextBlock Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"
+                       Text="{Binding ServerNameLabel}"/>
+            <TextBox   Grid.Column="1" Text="{Binding ServerName}" />
+          </mui:FormRow>
+          <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+            <Button Content="{Binding AddLabel}" Command="{Binding AddServerCommand}" MinWidth="88"/>
+            <Button Content="{Binding ForgetLabel}" Command="{Binding ForgetServerCommand}" MinWidth="88"/>
+            <!-- Separate from Forget on purpose: the address book and the certificate pins are two
+                 stores, and dropping the entry leaves the pin behind. Disabled when nothing is pinned,
+                 which is also how the dialog says whether this address has a certificate on record. -->
+            <Button Content="{Binding ClearPinLabel}" Command="{Binding ClearPinCommand}" MinWidth="88"/>
+          </StackPanel>
+        </StackPanel>
+      </HeaderedContentControl>
+    </StackPanel>
+
+    <!-- The refusal, with the decision attached. Both fingerprints are selectable so the operator can
+         paste one into whatever the server publishes; MaxWidth is the wrap width the block needs under
+         SizeToContent, not a cap - the text grows downward. -->
+    <Border IsVisible="{Binding IdentityMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+            BorderBrush="{DynamicResource MirageWarnBrush}" BorderThickness="1" CornerRadius="3"
+            Padding="10">
+      <StackPanel Spacing="10">
+        <SelectableTextBlock Text="{Binding IdentityMessage}" TextWrapping="Wrap" MaxWidth="460"/>
+        <Button Content="{Binding TrustNewCertificateLabel}"
+                Command="{Binding TrustNewCertificateCommand}"
+                HorizontalAlignment="Right"/>
+      </StackPanel>
+    </Border>
+
+    <TextBlock Text="{Binding StatusMessage}"
+               Foreground="{DynamicResource MirageOkBrush}"
+               TextWrapping="Wrap"
+               IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+    <TextBlock Text="{Binding ErrorMessage}"
+               Foreground="{DynamicResource MirageBadBrush}"
+               TextWrapping="Wrap"
+               IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
+      <Button x:Name="_cancelBtn"  Command="{Binding CancelCommand}" IsCancel="True" />
+      <Button x:Name="_connectBtn" Command="{Binding ConnectCommand}"
+              IsDefault="True" IsEnabled="{Binding !IsBusy}" />
+    </StackPanel>
+  </StackPanel>
+</Window>

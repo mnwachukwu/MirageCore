@@ -1,0 +1,126 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Mirage.Editor.ViewModels"
+             xmlns:views="using:Mirage.Editor.Views"
+             xmlns:loc="using:Mirage.Editor.Localization"
+             xmlns:sty="using:FluentAvalonia.Styling"
+             x:Class="Mirage.Editor.App"
+             RequestedThemeVariant="Dark">
+
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Mirage.Ui/Theme/Colors.axaml"/>
+        <ResourceInclude Source="avares://Mirage.Ui/Theme/Controls.axaml"/>
+      </ResourceDictionary.MergedDictionaries>
+
+      <!-- Layer/attribute/tool pickers display their member through EditorVocabulary rather than
+           ToString(). Applied as a ComboBox's ItemTemplate, which covers both the open list and the
+           closed selection box. -->
+      <loc:VocabularyConverter x:Key="Vocabulary"/>
+      <DataTemplate x:Key="VocabularyItem">
+        <TextBlock Text="{Binding Converter={StaticResource Vocabulary}}"/>
+      </DataTemplate>
+      <loc:SectionIconConverter x:Key="SectionIcon"/>
+    </ResourceDictionary>
+  </Application.Resources>
+
+  <Application.Styles>
+    <!-- Same theme and the same accent as the server shell: the two are siblings, told apart by their
+         shape rather than by their color, exactly as their icons are. -->
+    <sty:FluentAvaloniaTheme PreferSystemTheme="False"
+                             PreferUserAccentColor="False"
+                             CustomAccentColor="#9AA8F5"/>
+    <StyleInclude Source="avares://Mirage.Ui/Theme/Styles.axaml"/>
+    <!-- ColorPicker control themes (used by the map-editor light dialog + NPC light block). -->
+    <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml"/>
+    <Style Selector="NumericUpDown">
+      <Setter Property="FormatString" Value="0"/>
+    </Style>
+    <!-- Inline "clear" (×) button hosted in the list-filter text boxes (all entity editors).
+         Chrome-less so it reads as a glyph inside the box; brightens on hover. -->
+    <Style Selector="Button.clearFilter">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="6,0"/>
+      <Setter Property="MinWidth" Value="0"/>
+      <Setter Property="MinHeight" Value="0"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Foreground" Value="#8B84AE"/>
+      <Setter Property="VerticalAlignment" Value="Stretch"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+    <Style Selector="Button.clearFilter:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="#EDEAF8"/>
+    </Style>
+    <Style Selector="Button.clearFilter:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="#A9A2C9"/>
+    </Style>
+    <!-- Small single-glyph row buttons shared by every entity editor's list UIs: add (+), remove (-), and the
+         map editor's NPC place (@). Symmetric padding + centered content so the glyph sits dead-center with room
+         on all sides, a square-ish min size, and it stretches to the row height (VerticalContentAlignment keeps
+         the glyph centered) so it lines up with the inputs beside it. -->
+    <Style Selector="Button.glyph">
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="Padding" Value="6,2"/>
+      <Setter Property="MinWidth" Value="28"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <!-- A titled box around a run of related properties, so a long panel reads as a few groups rather
+         than one list. The header sits on the border's top edge in the panel's own accent. -->
+    <Style Selector="HeaderedContentControl.propGroup">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border BorderBrush="{DynamicResource MirageLineBrush}" BorderThickness="1" CornerRadius="4"
+                  Padding="10,8,10,10" Margin="0,4">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Top" Text="{TemplateBinding Header}"
+                         FontSize="11" FontWeight="SemiBold" Foreground="#99BBDD"
+                         Margin="0,0,0,8"/>
+              <ContentPresenter Content="{TemplateBinding Content}"/>
+            </DockPanel>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+  </Application.Styles>
+
+  <!-- Automatic view selection: ContentControl.Content = ViewModel → selects the right View -->
+  <Application.DataTemplates>
+    <DataTemplate DataType="{x:Type vm:ItemEditorViewModel}">
+      <views:ItemEditorView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:NpcEditorViewModel}">
+      <views:NpcEditorView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:ShopEditorViewModel}">
+      <views:ShopEditorView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:SpellEditorViewModel}">
+      <views:SpellEditorView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:MapEditorViewModel}">
+      <views:MapEditorView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:MapGroupEditorViewModel}">
+      <views:MapGroupEditorView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:ClassEditorViewModel}">
+      <views:ClassEditorView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:QuestEditorViewModel}">
+      <views:QuestEditorView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:ConversationEditorViewModel}">
+      <views:ConversationEditorView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:AccountEditorViewModel}">
+      <views:AccountEditorView />
+    </DataTemplate>
+  </Application.DataTemplates>
+
+</Application>

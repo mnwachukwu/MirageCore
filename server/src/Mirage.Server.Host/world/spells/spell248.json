@@ -1,0 +1,11 @@
+{
+  "name": "Celestial Meditation",
+  "allowedClasses": [
+    6,
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 307,
+  "levelReq": 250
+}

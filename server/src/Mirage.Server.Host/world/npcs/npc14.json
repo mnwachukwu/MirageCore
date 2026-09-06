@@ -1,0 +1,110 @@
+{
+  "name": "Sister Ivane",
+  "attackSay": "You will drown with the rest!",
+  "sprite": 2,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 240,
+  "behavior": "AttackWhenAttacked",
+  "group": 2,
+  "range": 4,
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 263,
+      "chance": 90
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 12,
+      "chance": 45
+    },
+    {
+      "itemNum": 30,
+      "quantity": 0,
+      "chance": 16
+    },
+    {
+      "itemNum": 29,
+      "quantity": 0,
+      "chance": 12
+    },
+    {
+      "itemNum": 197,
+      "quantity": 0,
+      "chance": 30
+    },
+    {
+      "itemNum": 333,
+      "quantity": 0,
+      "chance": 20
+    },
+    {
+      "itemNum": 338,
+      "quantity": 0,
+      "chance": 15
+    }
+  ],
+  "str": 12,
+  "def": 16,
+  "spd": 4,
+  "int": 26,
+  "extraHp": 133,
+  "isBoss": true,
+  "emitsLight": true
+}

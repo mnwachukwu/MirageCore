@@ -1,0 +1,13 @@
+{
+  "name": "The Sunken Court",
+  "displayName": "The Sunken Court",
+  "music": 14,
+  "moral": "None",
+  "bootMap": 0,
+  "bootX": 0,
+  "bootY": 0,
+  "greetingSpeaker": "",
+  "joinSay": "",
+  "leaveSay": "",
+  "territory": false
+}

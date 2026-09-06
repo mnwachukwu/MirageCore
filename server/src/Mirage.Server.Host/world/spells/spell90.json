@@ -1,0 +1,10 @@
+{
+  "name": "Expert Endurance",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddSp",
+  "vitalAmount": 38,
+  "levelReq": 20
+}

@@ -1,0 +1,25 @@
+{
+  "name": "Reed Runner",
+  "attackSay": "",
+  "sprite": 20,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 20,
+  "behavior": "AttackWhenAttacked",
+  "group": 0,
+  "range": 2,
+  "drops": [
+    {
+      "itemNum": 186,
+      "quantity": 0,
+      "chance": 10
+    }
+  ],
+  "str": 4,
+  "def": 3,
+  "spd": 1,
+  "int": 0,
+  "extraHp": 0,
+  "isBoss": false,
+  "emitsLight": false
+}

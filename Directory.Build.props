@@ -1,0 +1,103 @@
+<Project>
+
+  <!--
+    Single source of truth for the game version.
+    Applies to all projects in the repo (MSBuild picks this up automatically).
+    Bump these three values when cutting a release; the exe file metadata,
+    assembly version, and the in-game welcome message all update together.
+  -->
+  <PropertyGroup>
+    <GameName>Mirage Source Remastered Core</GameName>
+    <GameNameSlug>$(GameName.Replace(' ', '-'))</GameNameSlug>
+    <GameAuthor>Matt Nwachukwu</GameAuthor>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <MajorVersion>1</MajorVersion>
+    <MinorVersion>0</MinorVersion>
+    <PatchVersion>0</PatchVersion>
+
+    <Version>$(MajorVersion).$(MinorVersion).$(PatchVersion)</Version>
+    <AssemblyVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion).0</AssemblyVersion>
+    <FileVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion).0</FileVersion>
+    <InformationalVersion>$(Version)</InformationalVersion>
+  </PropertyGroup>
+
+  <!-- Repo root — resolved by walking up from this file to Mirage.slnx.
+       Available in all .csproj and .pubxml files across the repo. -->
+  <PropertyGroup>
+    <_SlnxFile>$([MSBuild]::GetPathOfFileAbove('Mirage.slnx', '$(MSBuildThisFileDirectory)'))</_SlnxFile>
+    <RepoRoot>$([MSBuild]::EnsureTrailingSlash($([System.IO.Path]::GetDirectoryName('$(_SlnxFile)'))))</RepoRoot>
+  </PropertyGroup>
+
+  <!--
+    Icons, in one place with the game's name, because they are the same job: branding a fork.
+
+    Two different things per application, and they are reached differently:
+
+      *Icon      the .ico compiled into the executable. What Explorer, the taskbar and the
+                 installer show. Windows only; macOS reads the .icns beside it, named by
+                 convention rather than by a property.
+      *WindowIcon  a BMP embedded in the client, which MonoGame reads at startup to set the
+                 icon on the game's own window. Ship nothing here and every window carries
+                 MonoGame's logo — the framework embeds its own and falls back to it.
+
+    Simplest fork: leave these alone and replace the files they point at, which is what
+    tools/generate_app_icons.py writes. Point them somewhere else if you would rather keep your
+    art outside the tree — nothing but these five lines needs to know.
+
+    Overridable from the command line too, for a one-off build:
+        dotnet build Mirage.slnx -p:ClientIcon=C:\art\mygame.ico
+  -->
+  <PropertyGroup>
+    <ClientIcon Condition="'$(ClientIcon)' == ''">$(RepoRoot)assets\icons\client.ico</ClientIcon>
+    <EditorIcon Condition="'$(EditorIcon)' == ''">$(RepoRoot)assets\icons\editor.ico</EditorIcon>
+    <ServerIcon Condition="'$(ServerIcon)' == ''">$(RepoRoot)assets\icons\server.ico</ServerIcon>
+    <ClientWindowIcon Condition="'$(ClientWindowIcon)' == ''">$(RepoRoot)client\src\Mirage.Client.Shell\Icon.bmp</ClientWindowIcon>
+  </PropertyGroup>
+
+  <!--
+    Warnings are errors, everywhere.
+
+    Not a style preference: the two warnings this repo was carrying were both real. Three Avalonia
+    views bound to AutoCompleteBox.Watermark, which is obsolete and would simply stop existing on a
+    future Avalonia — a silent UI regression, since a dropped binding renders as an empty box rather
+    than a build failure. The other two were CS8602 dereferences in tests, which is the compiler
+    pointing at an assertion that could NullReferenceException instead of failing with a useful
+    message.
+
+    The real argument is that a warning nobody must act on is a warning everybody scrolls past, and
+    then a warning that mattered arrives and lands in the same blind spot. Zero is the only count
+    that stays legible.
+
+    If a warning ever needs to be allowed, suppress THAT diagnostic with a comment saying why —
+    do not turn this off.
+  -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- Strip .pdb files from publish output.
+
+       DebugType covers the project BEING published and nothing else: PublishDir is set only for that
+       project, so a referenced one (Mirage.Shared, Mirage.Ui, Mirage.Updates, Mirage.Client.Core)
+       builds as an ordinary reference with the SDK's default portable symbols. Its .pdb then rides
+       into the output alongside it. The NATIVE ones are worse still: libSkiaSharp.pdb is 82 MB and
+       libHarfBuzzSharp.pdb another 20, and they arrive as native assets that no DebugType or
+       AllowedReferenceRelatedFileExtensions setting governs.
+
+       So the sweep below is what actually holds the line — it drops every .pdb from the publish list
+       whatever produced it. DebugType stays because suppressing a symbol file beats copying and then
+       removing one. The single-file server never showed any of this: bundling excludes them anyway. -->
+  <PropertyGroup Condition="'$(PublishDir)' != ''">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <Target Name="_StripPdbsFromPublish" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.pdb'" />
+    </ItemGroup>
+  </Target>
+
+</Project>

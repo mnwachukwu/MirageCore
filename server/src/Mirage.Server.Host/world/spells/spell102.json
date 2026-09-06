@@ -1,0 +1,10 @@
+{
+  "name": "Master Restoration",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 158,
+  "levelReq": 100
+}

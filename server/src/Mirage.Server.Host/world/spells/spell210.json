@@ -1,0 +1,10 @@
+{
+  "name": "Void Restoration",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 368,
+  "levelReq": 240
+}

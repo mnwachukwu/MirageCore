@@ -1,0 +1,14 @@
+{
+  "name": "Minor Siphon Vial",
+  "pic": 22,
+  "itemSheet": 0,
+  "type": "PotionSubMp",
+  "vitalAmount": 8,
+  "levelReq": 1,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1
+}

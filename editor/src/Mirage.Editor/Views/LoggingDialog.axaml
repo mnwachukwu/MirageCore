@@ -1,0 +1,63 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Mirage.Editor.ViewModels"
+        x:Class="Mirage.Editor.Views.LoggingDialog"
+        x:DataType="vm:LoggingDialogViewModel"
+        Width="560"
+        SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+  <DockPanel Margin="20">
+
+    <TextBlock x:Name="_intro" DockPanel.Dock="Top"
+               TextWrapping="Wrap" Margin="0,0,0,16"/>
+
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                HorizontalAlignment="Right" Spacing="8" Margin="0,14,0,0">
+      <Button x:Name="_cancelBtn" Command="{Binding CancelCommand}" IsCancel="True"/>
+      <Button x:Name="_confirmBtn" Command="{Binding ConfirmCommand}" IsDefault="True" Classes="primary"/>
+    </StackPanel>
+
+    <StackPanel DockPanel.Dock="Top" Spacing="14">
+
+      <Grid ColumnDefinitions="Auto,*">
+        <TextBlock x:Name="_levelLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0"/>
+        <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding Levels}"
+                  SelectedItem="{Binding Level, Mode=TwoWay}">
+          <ComboBox.ItemTemplate>
+            <DataTemplate><TextBlock Text="{Binding Label}"/></DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </Grid>
+
+      <!-- Restated under the combo because the cost of a level is the part worth knowing before picking it. -->
+      <Border Padding="10,8" CornerRadius="4" Background="{DynamicResource MirageBgAltBrush}">
+        <TextBlock Text="{Binding LevelDetail}" TextWrapping="Wrap" FontSize="12"
+                   Foreground="{DynamicResource MirageMutedBrush}"/>
+      </Border>
+
+      <Grid ColumnDefinitions="Auto,*">
+        <TextBlock x:Name="_retentionLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,12,0"/>
+        <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding Retentions}"
+                  SelectedItem="{Binding Retention, Mode=TwoWay}">
+          <ComboBox.ItemTemplate>
+            <DataTemplate><TextBlock Text="{Binding Label}"/></DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </Grid>
+
+      <StackPanel Spacing="6">
+        <TextBlock x:Name="_folderLabel" FontSize="11" FontWeight="SemiBold"
+                   Foreground="{DynamicResource MirageMutedBrush}"/>
+        <SelectableTextBlock Text="{Binding LogDirectory}" TextWrapping="Wrap" FontSize="11"
+                             Foreground="{DynamicResource MirageMutedBrush}"/>
+        <Button x:Name="_openFolderBtn" Command="{Binding OpenFolderCommand}"
+                HorizontalAlignment="Left" FontSize="11"/>
+      </StackPanel>
+
+    </StackPanel>
+  </DockPanel>
+</Window>

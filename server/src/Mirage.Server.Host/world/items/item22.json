@@ -1,0 +1,15 @@
+{
+  "name": "Iron Cap",
+  "pic": 34,
+  "itemSheet": 0,
+  "type": "Helmet",
+  "durability": 170,
+  "power": 10,
+  "levelReq": 5,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 77
+}

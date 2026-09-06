@@ -1,0 +1,10 @@
+{
+  "name": "Void Exsanguination",
+  "allowedClasses": [
+    4,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 368,
+  "levelReq": 240
+}

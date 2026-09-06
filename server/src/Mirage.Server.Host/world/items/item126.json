@@ -1,0 +1,19 @@
+{
+  "name": "Astral Greataxe",
+  "pic": 11,
+  "itemSheet": 0,
+  "type": "Weapon",
+  "durability": 1920,
+  "power": 361,
+  "levelReq": 235,
+  "allowedClasses": [
+    1,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1406261
+}

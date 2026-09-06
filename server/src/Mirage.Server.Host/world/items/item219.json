@@ -1,0 +1,14 @@
+{
+  "name": "Greater Enervating Vial",
+  "pic": 26,
+  "itemSheet": 0,
+  "type": "PotionSubSp",
+  "vitalAmount": 90,
+  "levelReq": 100,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1791
+}

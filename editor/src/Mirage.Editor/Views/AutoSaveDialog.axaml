@@ -1,0 +1,89 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Mirage.Editor.ViewModels"
+        x:Class="Mirage.Editor.Views.AutoSaveDialog"
+        x:DataType="vm:AutoSaveDialogViewModel"
+        Width="620" Height="580"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+  <!-- Shared column sizing across the header row and every editor row: they are separate Grids, so
+       Auto columns would otherwise measure their own content and the captions would sit off their
+       controls. Sized to the widest of both, which is what keeps them aligned as the language changes. -->
+  <DockPanel Margin="20" Grid.IsSharedSizeScope="True">
+
+    <TextBlock x:Name="_intro" DockPanel.Dock="Top"
+               TextWrapping="Wrap" Margin="0,0,0,10"/>
+
+    <!-- Stated whenever the grid below is disabled, so a setting that would not run is never offered. -->
+    <Border DockPanel.Dock="Top" Margin="0,0,0,12" Padding="10,8" CornerRadius="4"
+            IsVisible="{Binding !IsConfigurable}"
+            Background="{DynamicResource MirageBgAltBrush}"
+            BorderBrush="{DynamicResource MirageBadBrush}" BorderThickness="1,0,0,0">
+      <TextBlock Text="{Binding OfflineOnlyNotice}" TextWrapping="Wrap"
+                 Foreground="{DynamicResource MirageBadBrush}" FontSize="12"/>
+    </Border>
+
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                HorizontalAlignment="Right" Spacing="8" Margin="0,14,0,0">
+      <Button x:Name="_cancelBtn" Command="{Binding CancelCommand}" IsCancel="True"/>
+      <Button x:Name="_confirmBtn" Command="{Binding ConfirmCommand}"
+              IsEnabled="{Binding IsConfigurable}"
+              IsDefault="True" Classes="primary"/>
+    </StackPanel>
+
+    <Grid DockPanel.Dock="Top" Margin="0,0,0,4">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto" SharedSizeGroup="AutoSaveOn"/>
+        <ColumnDefinition Width="Auto" SharedSizeGroup="AutoSaveEvery"/>
+        <ColumnDefinition Width="Auto" SharedSizeGroup="AutoSaveReach"/>
+      </Grid.ColumnDefinitions>
+      <TextBlock x:Name="_colEditor"   Grid.Column="0" FontSize="11" FontWeight="SemiBold"
+                 Foreground="{DynamicResource MirageMutedBrush}"/>
+      <TextBlock x:Name="_colEnabled"  Grid.Column="1" FontSize="11" FontWeight="SemiBold" Margin="8,0"
+                 Foreground="{DynamicResource MirageMutedBrush}"/>
+      <TextBlock x:Name="_colInterval" Grid.Column="2" FontSize="11" FontWeight="SemiBold" Margin="8,0"
+                 Foreground="{DynamicResource MirageMutedBrush}"/>
+      <TextBlock x:Name="_colReach"    Grid.Column="3" FontSize="11" FontWeight="SemiBold" Margin="8,0"
+                 Foreground="{DynamicResource MirageMutedBrush}"/>
+    </Grid>
+
+    <ScrollViewer IsEnabled="{Binding IsConfigurable}">
+      <ItemsControl ItemsSource="{Binding Rows}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid Margin="0,3">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="AutoSaveOn"/>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="AutoSaveEvery"/>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="AutoSaveReach"/>
+              </Grid.ColumnDefinitions>
+              <TextBlock Grid.Column="0" Text="{Binding DisplayName}" VerticalAlignment="Center"/>
+              <CheckBox  Grid.Column="1" IsChecked="{Binding Enabled}" Margin="8,0"
+                         VerticalAlignment="Center" MinWidth="0"/>
+              <ComboBox  Grid.Column="2" Width="96" Margin="8,0"
+                         ItemsSource="{Binding Intervals}"
+                         SelectedItem="{Binding Interval}"
+                         IsEnabled="{Binding Enabled}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate><TextBlock Text="{Binding Label}"/></DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <ComboBox  Grid.Column="3" Width="210" Margin="8,0"
+                         ItemsSource="{Binding Reaches}"
+                         SelectedItem="{Binding Reach}"
+                         IsEnabled="{Binding Enabled}">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate><TextBlock Text="{Binding Label}"/></DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+  </DockPanel>
+</Window>

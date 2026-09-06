@@ -1,0 +1,15 @@
+{
+  "name": "Steel Cap",
+  "pic": 34,
+  "itemSheet": 0,
+  "type": "Helmet",
+  "durability": 240,
+  "power": 14,
+  "levelReq": 10,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 293
+}

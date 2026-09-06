@@ -1,0 +1,102 @@
+# ── Build outputs ────────────────────────────────────────────────────────────
+[Bb]in/
+[Bb]inVerify*/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+out/
+publish/
+# …except the top-level publish/, which holds the packaging orchestrators. It is source, and
+# it collides exactly with the name `dotnet publish` gives its output folder.
+!/publish/
+dist/
+
+# ── Visual Studio ─────────────────────────────────────────────────────────────
+.vs/
+*.user
+# …except the solution launch profiles. Six multi-project debug configurations
+# (Client + Server, Editor + Server, Trifecta, …) written purely as repo-relative
+# paths — repo state wearing a .user extension, not machine state.
+!/Mirage.slnLaunch.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.VC.VC.opendb
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Rider / ReSharper
+.idea/
+_ReSharper*/
+*.ReSharper
+*.DotSettings.user
+*.resharper
+
+# Test results
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+
+# ── .NET general ─────────────────────────────────────────────────────────────
+*.dll
+*.exe
+coverage.xml
+coverage.opencover.xml
+*.coveragexml
+BenchmarkDotNet.Artifacts/
+
+# ── MonoGame ──────────────────────────────────────────────────────────────────
+# Content pipeline output (generated at build time)
+**/Content/bin/
+**/Content/obj/
+# MonoGame build stats
+*.mgstats
+# Generated content descriptor (checked in by some workflows; exclude here)
+# *.mgcb — leave this commented so .mgcb project files ARE tracked
+
+# ── Avalonia ─────────────────────────────────────────────────────────────────
+# Nothing extra beyond standard .NET; compiled AXAML ends up in bin/ above.
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+
+# ── Editor junk ──────────────────────────────────────────────────────────────
+*.orig
+*.bak
+*.tmp
+*.swp
+*#
+
+# ── Local machine state ──────────────────────────────────────────────────────
+# Nothing Claude-related is tracked — settings, skills, notes, any of it.
+.claude/
+CLAUDE.md
+appsettings.Local.json

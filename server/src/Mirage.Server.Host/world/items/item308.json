@@ -1,0 +1,13 @@
+{
+  "name": "Scroll of Apprentice Life Siphon",
+  "pic": 30,
+  "itemSheet": 0,
+  "type": "Spell",
+  "spellNum": 20,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 199
+}

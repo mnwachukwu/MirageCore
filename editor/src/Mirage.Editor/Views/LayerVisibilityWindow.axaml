@@ -1,0 +1,52 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Mirage.Editor.ViewModels"
+        x:Class="Mirage.Editor.Views.LayerVisibilityWindow"
+        x:DataType="vm:LayerVisibilityViewModel"
+        Width="480" Height="440"
+        CanResize="True"
+        MinWidth="440" MinHeight="260"
+        SizeToContent="Manual"
+        ShowInTaskbar="False"
+        Topmost="True">
+
+  <DockPanel Margin="14">
+
+    <TextBlock x:Name="_intro" DockPanel.Dock="Top" TextWrapping="Wrap"
+               Opacity="0.8" Margin="0,0,0,10"/>
+
+    <Border DockPanel.Dock="Bottom" Margin="0,10,0,0">
+      <DockPanel>
+        <Button DockPanel.Dock="Right" Content="{Binding ToggleAllLabel}"
+                Command="{Binding ToggleAllCommand}" MinWidth="96"/>
+        <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Opacity="0.75"
+                   TextTrimming="CharacterEllipsis"/>
+      </DockPanel>
+    </Border>
+
+    <ScrollViewer>
+      <ItemsControl ItemsSource="{Binding Stacks}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:LayerVisibilityStackViewModel">
+            <StackPanel Margin="0,0,0,12">
+              <!-- The parent is three-state: a stack with some of its layers put away must not read as
+                   either fully shown or fully hidden. -->
+              <CheckBox Content="{Binding Label}" FontWeight="SemiBold"
+                        IsThreeState="True"
+                        IsChecked="{Binding IsVisible, Mode=TwoWay}"/>
+              <ItemsControl ItemsSource="{Binding Children}" Margin="22,2,0,0">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:LayerVisibilityRowViewModel">
+                    <CheckBox Content="{Binding Label}"
+                              IsChecked="{Binding IsVisible, Mode=TwoWay}"
+                              Margin="0,0,0,1"/>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </DockPanel>
+</Window>

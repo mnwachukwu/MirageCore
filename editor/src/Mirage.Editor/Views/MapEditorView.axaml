@@ -1,0 +1,1142 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:Mirage.Editor.Controls"
+             xmlns:models="using:Mirage.Editor.Models"
+             xmlns:mui="using:Mirage.Ui.Controls"
+             xmlns:vm="using:Mirage.Editor.ViewModels"
+             Grid.IsSharedSizeScope="True"
+             x:DataType="vm:MapEditorViewModel"
+             x:Class="Mirage.Editor.Views.MapEditorView">
+
+  <Grid RowDefinitions="*,Auto,Auto">
+
+    <!-- ── Main editor area ── -->
+    <Grid Grid.Row="0" x:Name="PanelGrid">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="256" MinWidth="160"/>
+        <ColumnDefinition Width="5"/>
+        <ColumnDefinition Width="*"   MinWidth="200"/>
+        <ColumnDefinition Width="5"/>
+        <ColumnDefinition Width="300" MinWidth="240"/>
+      </Grid.ColumnDefinitions>
+
+      <!-- ── Splitter: left / center ── -->
+      <GridSplitter Grid.Column="1" Width="5" Background="{DynamicResource MirageLineSoftBrush}"
+                    ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"/>
+
+      <!-- ── Splitter: center / right ── -->
+      <GridSplitter Grid.Column="3" Width="5" Background="{DynamicResource MirageLineSoftBrush}"
+                    ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"/>
+
+      <!-- ── Left: maps list ── -->
+      <DockPanel x:Name="LeftPanel" Grid.Column="0" Background="{DynamicResource MirageBgAltBrush}">
+        <TextBox x:Name="_mapsFilterBox" DockPanel.Dock="Top"
+                 Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 Margin="4,4,4,2"
+                 FontSize="11">
+          <TextBox.InnerRightContent>
+            <Button Classes="clearFilter" Content="×" Focusable="False"
+                    Command="{Binding ClearFilterCommand}"
+                    IsVisible="{Binding FilterText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+          </TextBox.InnerRightContent>
+        </TextBox>
+        <TextBlock DockPanel.Dock="Bottom"
+                   Text="{Binding FilterStatus}"
+                   IsVisible="{Binding IsFilterActive}"
+                   FontSize="11" Foreground="#8B84AE"
+                   Margin="4,2" HorizontalAlignment="Right"/>
+        <ListBox ItemsSource="{Binding FilteredMaps}"
+                 SelectedItem="{Binding SelectedMap}"
+                 Background="Transparent">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="&#x1F512;" FontSize="10" VerticalAlignment="Center"
+                           Foreground="{DynamicResource MirageFaintBrush}"
+                           IsVisible="{Binding LockedByOther}"
+                           ToolTip.Tip="{Binding LockHolder}"/>
+                <Ellipse Width="7" Height="7" Fill="{DynamicResource MirageWarnBrush}"
+                         VerticalAlignment="Center"
+                         IsVisible="{Binding IsDirty}"/>
+                <TextBlock Text="{Binding DisplayName}" Padding="4,2"/>
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+
+      <!-- ── Center: Tile Grid + toolbar ── -->
+      <Grid Grid.Column="2" RowDefinitions="Auto,*">
+        <Border Grid.Row="0" Background="{DynamicResource MirageSurfaceBrush}" Padding="6,3"
+                BorderBrush="{DynamicResource MirageLineSoftBrush}" BorderThickness="0,0,0,1">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <ToggleButton x:Name="_animPreviewToggle"
+                          Content="{Binding AnimPreviewLabel}"
+                          IsChecked="{Binding IsAnimPreview}"
+                          Padding="6,2" FontSize="11"/>
+            <ToggleButton x:Name="_doorPreviewToggle"
+                          Content="{Binding DoorPreviewLabel}"
+                          IsChecked="{Binding IsDoorPreview}"
+                          Padding="6,2" FontSize="11"/>
+            <ToggleButton x:Name="_nightPreviewToggle"
+                          Content="{Binding NightPreviewLabel}"
+                          IsChecked="{Binding IsNightPreview}"
+                          Padding="6,2" FontSize="11"/>
+            <Separator Width="1" Background="{DynamicResource MirageLineBrush}"/>
+            <Button x:Name="_btnZoomOut" Command="{Binding ZoomOutCommand}"
+                    Width="26" Padding="0" FontSize="13"
+                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+            <TextBlock Text="{Binding MapZoom, StringFormat={}{0:P0}}"
+                       VerticalAlignment="Center" MinWidth="42" TextAlignment="Center"
+                       FontSize="11" Foreground="{DynamicResource MirageMutedBrush}"/>
+            <Button x:Name="_btnZoomIn" Command="{Binding ZoomInCommand}"
+                    Width="26" Padding="0" FontSize="13"
+                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+            <Button x:Name="_btnZoomReset" Command="{Binding ZoomResetCommand}"
+                    Padding="6,2" FontSize="11"/>
+          </StackPanel>
+        </Border>
+        <ScrollViewer x:Name="MapScrollViewer" Grid.Row="1"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto">
+          <!-- Held by another session: the canvas takes no input. Zoom and the preview toggles above stay
+               live, so a locked map can still be read. -->
+          <controls:TileGridControl x:Name="TileGrid"
+                                    IsEnabled="{Binding !IsSelectedLocked}"
+                                    Map="{Binding SelectedMap.Record}"
+                                    TileBitmap="{Binding TileBitmap}"
+                                    EditorMode="{Binding SelectedMode}"
+                                    SelectedStamp="{Binding SelectedStamp}"
+                                    AttributeBrushSizeX="{Binding AttributeBrushSizeX}"
+                                    AttributeBrushSizeY="{Binding AttributeBrushSizeY}"
+                                    SelectedAttribute="{Binding SelectedAttribute}"
+                                    AttributeLayer="{Binding SelectedAttributeLayer, Mode=TwoWay}"
+                                    LayerVisibility="{Binding LayerVisibility}"
+                                    NpcPlacementActive="{Binding IsPlacingNpc}"
+                                    NpcPlacementSize="{Binding PlacingNpcSize}"
+                                    SelectedLayerType="{Binding SelectedLayerType, Mode=TwoWay}"
+                                    SelectedLayerIndex="{Binding SelectedLayerIndex, Mode=TwoWay}"
+                                    Tilesets="{Binding Tilesets}"
+                                    InboundWarps="{Binding InboundWarpsOnActiveLayer}"
+                                    Action="{Binding SelectedAction}"
+                                    ClipboardKind="{Binding ClipboardKind}"
+                                    ClipboardTiles="{Binding ClipboardTiles}"
+                                    ClipboardAttrs="{Binding ClipboardAttrs}"
+                                    ClipboardLights="{Binding ClipboardLights}"
+                                    SelectionRect="{Binding SelectionRect}"
+                                    NeighborUp="{Binding NeighborMapUp}"
+                                    NeighborDown="{Binding NeighborMapDown}"
+                                    NeighborLeft="{Binding NeighborMapLeft}"
+                                    NeighborRight="{Binding NeighborMapRight}"
+                                    NeighborUpLeft="{Binding NeighborMapUpLeft}"
+                                    NeighborUpRight="{Binding NeighborMapUpRight}"
+                                    NeighborDownLeft="{Binding NeighborMapDownLeft}"
+                                    NeighborDownRight="{Binding NeighborMapDownRight}"
+                                    Zoom="{Binding MapZoom}"/>
+        </ScrollViewer>
+      </Grid>
+
+      <!-- ── Right: Tools (top) + Properties (bottom), split vertically ── -->
+      <Grid x:Name="RightPanel" Grid.Column="4" Background="{DynamicResource MirageBgAltBrush}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*"   MinHeight="100"/>
+          <RowDefinition Height="5"/>
+          <RowDefinition Height="220" MinHeight="100"/>
+        </Grid.RowDefinitions>
+
+        <!-- ── Tools sub-panel (no label) ── -->
+        <!-- Disabled on a locked map: Fill, Clear Layer, Clear Attributes and Clear Lights all write. -->
+        <DockPanel Grid.Row="0" Background="{DynamicResource MirageBgAltBrush}" LastChildFill="True"
+                   IsEnabled="{Binding !IsSelectedLocked}">
+          <StackPanel DockPanel.Dock="Top" Margin="6,6" Spacing="6">
+
+            <!-- Mode toggle -->
+            <TextBlock x:Name="_modeHeader" FontWeight="SemiBold"/>
+            <Border BorderBrush="{DynamicResource MirageLineBrush}" BorderThickness="1" CornerRadius="4" Padding="4">
+              <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
+                <RadioButton x:Name="_modeTile"
+                             GroupName="MapEditorMode"
+                             IsChecked="{Binding IsTileMode}"/>
+                <RadioButton x:Name="_modeAttribute"
+                             GroupName="MapEditorMode"
+                             IsChecked="{Binding IsAttributeMode}"/>
+                <RadioButton x:Name="_modeLight"
+                             GroupName="MapEditorMode"
+                             IsChecked="{Binding IsLightMode}"/>
+              </StackPanel>
+            </Border>
+
+            <!-- Action toggle -->
+            <TextBlock x:Name="_actionHeader" FontWeight="SemiBold" Margin="0,4,0,0"/>
+            <Border BorderBrush="{DynamicResource MirageLineBrush}" BorderThickness="1" CornerRadius="4" Padding="4">
+              <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
+                <RadioButton x:Name="_actionPlace"
+                             GroupName="MapEditorAction"
+                             IsChecked="{Binding IsPlaceAction}"/>
+                <RadioButton x:Name="_actionSelect"
+                             GroupName="MapEditorAction"
+                             IsChecked="{Binding IsSelectAction}"/>
+                <RadioButton x:Name="_actionDelete"
+                             GroupName="MapEditorAction"
+                             IsChecked="{Binding IsDeleteAction}"/>
+              </StackPanel>
+            </Border>
+
+            <!-- Layer selector — Tile mode only -->
+            <TextBlock x:Name="_layerHeader" FontWeight="SemiBold" Margin="0,4,0,0"
+                       IsVisible="{Binding IsTileMode}"/>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6" IsVisible="{Binding IsTileMode}">
+              <ComboBox Grid.Column="0" ItemsSource="{Binding LayerTypes}" ItemTemplate="{StaticResource VocabularyItem}"
+                        SelectedItem="{Binding SelectedLayerType}"
+                        HorizontalAlignment="Stretch"/>
+              <ComboBox Grid.Column="1" ItemsSource="{Binding LayerIndices}"
+                        SelectedItem="{Binding SelectedLayerIndex}"
+                        MinWidth="56"/>
+            </Grid>
+            <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding IsTileMode}">
+              <CheckBox x:Name="_animLayerCheck" IsChecked="{Binding SelectedAnim}"
+                        FontSize="11" VerticalAlignment="Center"/>
+              <ComboBox ItemsSource="{Binding AnimStyles}" ItemTemplate="{StaticResource VocabularyItem}" SelectedItem="{Binding SelectedAnimStyle}"
+                        IsEnabled="{Binding SelectedAnim}" FontSize="11" MinWidth="96"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="6"
+                        IsVisible="{Binding IsTileMode}">
+              <Button x:Name="_btnFill" Command="{Binding FillLayerCommand}"
+                      Padding="10,2" FontSize="11"/>
+              <Button x:Name="_btnClearLayer" Command="{Binding ClearLayerCommand}"
+                      Padding="10,2" FontSize="11"/>
+            </StackPanel>
+
+            <!-- Layer selector — Attribute AND Light modes: which logical plane (Ground / Fringe) attributes /
+                 lights are authored on (shared SelectedAttributeLayer). Mirrors the Tile-mode layer selector's
+                 style + position: a bold "Layer" header over a full-width combo, so the "which plane" control
+                 reads the same way across modes. -->
+            <TextBlock x:Name="_attrLayerHeader" FontWeight="SemiBold" Margin="0,4,0,0"
+                       IsVisible="{Binding IsLayerAuthoringMode}"/>
+            <ComboBox ItemsSource="{Binding AttributeLayers}" ItemTemplate="{StaticResource VocabularyItem}"
+                      SelectedItem="{Binding SelectedAttributeLayer, Mode=TwoWay}"
+                      HorizontalAlignment="Stretch"
+                      IsVisible="{Binding IsLayerAuthoringMode}"/>
+            <!-- Attribute selector — Attribute mode only -->
+            <TextBlock x:Name="_attributeHeader" FontWeight="SemiBold" Margin="0,4,0,0"
+                       IsVisible="{Binding IsAttributeMode}"/>
+            <ComboBox ItemsSource="{Binding Attributes}" ItemTemplate="{StaticResource VocabularyItem}"
+                      SelectedItem="{Binding SelectedAttributeTool}"
+                      HorizontalAlignment="Stretch"
+                      IsVisible="{Binding IsAttributeMode}"/>
+            <StackPanel Orientation="Horizontal" Spacing="6"
+                        IsVisible="{Binding IsAttributeMode}">
+              <Button x:Name="_btnClearAttr" Command="{Binding ClearAttributesCommand}"
+                      Padding="10,2" FontSize="11"/>
+            </StackPanel>
+            <!-- Bridge Ramp ground-side direction — LayerRamp tool only (two-layer world) -->
+            <StackPanel Orientation="Vertical" Spacing="2" Margin="0,4,0,0"
+                        IsVisible="{Binding IsLayerRampTool}">
+              <TextBlock Text="{Binding LayerRampDirLabel}" FontSize="11" Foreground="#8B84AE"/>
+              <ComboBox ItemsSource="{Binding Directions}" ItemTemplate="{StaticResource VocabularyItem}"
+                        SelectedItem="{Binding LayerRampDirection, Mode=TwoWay}"
+                        HorizontalAlignment="Stretch"/>
+            </StackPanel>
+            <TextBlock x:Name="_altClickHint"
+                       FontSize="10" Foreground="#6B6491" TextWrapping="Wrap" Margin="0,2,0,0"
+                       IsVisible="{Binding IsAttributeMode}"/>
+            <!-- Brush size — Attribute mode, and the Delete action in any mode (its erase brush) -->
+            <TextBlock x:Name="_brushSizeHeader" FontWeight="SemiBold" FontSize="11" Margin="0,4,0,0"
+                       IsVisible="{Binding BrushSizeVisible}"/>
+            <Grid ColumnDefinitions="Auto,*,Auto,*" Margin="0,2,0,0"
+                  IsVisible="{Binding BrushSizeVisible}">
+              <TextBlock x:Name="_brushWLabel" Grid.Column="0" VerticalAlignment="Center"
+                         Foreground="#8B84AE" Margin="0,0,4,0"/>
+              <NumericUpDown Grid.Column="1" Value="{Binding AttributeBrushSizeX, Mode=TwoWay}"
+                             Minimum="1" Maximum="9"/>
+              <TextBlock x:Name="_brushHLabel" Grid.Column="2" VerticalAlignment="Center"
+                         Foreground="#8B84AE" Margin="8,0,4,0"/>
+              <NumericUpDown Grid.Column="3" Value="{Binding AttributeBrushSizeY, Mode=TwoWay}"
+                             Minimum="1" Maximum="9"/>
+            </Grid>
+
+            <!-- Light Sources mode: actions only (each light is configured via its click dialog) -->
+            <TextBlock x:Name="_lightHeader" FontWeight="SemiBold" Margin="0,4,0,0"
+                       IsVisible="{Binding IsLightMode}"/>
+            <TextBlock x:Name="_lightModeHint"
+                       FontSize="10" Foreground="#8B84AE" TextWrapping="Wrap" Margin="0,2,0,0"
+                       IsVisible="{Binding IsLightMode}"/>
+            <StackPanel Orientation="Horizontal" Spacing="6"
+                        IsVisible="{Binding IsLightMode}">
+              <Button x:Name="_btnClearLights" Command="{Binding ClearLightsCommand}"
+                      Padding="10,2" FontSize="11"/>
+            </StackPanel>
+
+            <!-- Tileset selector (typeahead by name or index) — Tile mode only -->
+            <TextBlock x:Name="_tilesetHeader" FontWeight="SemiBold" Margin="0,4,0,0"
+                       IsVisible="{Binding IsTileMode}"/>
+            <controls:DropdownAutoCompleteBox x:Name="_searchTileset"
+                                 IsVisible="{Binding IsTileMode}"
+                                 ItemsSource="{Binding TilesetEntries}"
+                                 SelectedItem="{Binding SelectedTilesetEntry, Mode=TwoWay}"
+                                 ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrIndex}"
+                                 FilterMode="Custom"
+                                 MinimumPrefixLength="0"/>
+
+            <!-- Tile palette header — Tile mode only -->
+            <TextBlock x:Name="_paletteHeader" FontWeight="SemiBold" Margin="0,4,0,0"
+                       IsVisible="{Binding IsTileMode}"/>
+          </StackPanel>
+
+          <!-- Fill area: tile palette in Tile mode, attribute description in Attribute mode -->
+          <Grid>
+            <ScrollViewer IsVisible="{Binding IsTileMode}"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto">
+              <controls:TilePaletteControl x:Name="Palette"
+                                           TileBitmap="{Binding TileBitmap}"
+                                           SelectedStamp="{Binding SelectedStamp, Mode=TwoWay}" />
+            </ScrollViewer>
+            <ScrollViewer IsVisible="{Binding IsAttributeMode}"
+                          VerticalScrollBarVisibility="Auto"
+                          Padding="6,4,6,0">
+              <TextBlock Text="{Binding SelectedAttributeDescription}"
+                         TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource MirageMutedBrush}"
+                         LineHeight="18"/>
+            </ScrollViewer>
+          </Grid>
+        </DockPanel>
+
+        <!-- ── Horizontal splitter ── -->
+        <GridSplitter Grid.Row="1" Height="5" Background="{DynamicResource MirageLineSoftBrush}"
+                      ResizeDirection="Rows" ResizeBehavior="PreviousAndNext"
+                      HorizontalAlignment="Stretch"/>
+
+        <!-- ── Properties sub-panel ── -->
+        <DockPanel Grid.Row="2" Background="{DynamicResource MirageBgAltBrush}"
+                   IsEnabled="{Binding !IsSelectedLocked}">
+          <Border DockPanel.Dock="Top" Background="#241E42" BorderBrush="{DynamicResource MirageLineSoftBrush}" BorderThickness="0,0,0,1" Padding="6,4">
+            <TextBlock x:Name="_propertiesHeader" FontWeight="SemiBold" FontSize="11"/>
+          </Border>
+          <Grid>
+            <TextBlock x:Name="_selectMapPrompt"
+                       IsVisible="{Binding SelectedMap, Converter={x:Static ObjectConverters.IsNull}}"
+                       Foreground="#6B6491" HorizontalAlignment="Center" VerticalAlignment="Center"
+                       FontStyle="Italic"/>
+            <ScrollViewer x:Name="PropertiesScrollViewer" Grid.IsSharedSizeScope="True"
+                          IsVisible="{Binding SelectedMap, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <StackPanel Margin="12" Spacing="8">
+
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock x:Name="_nameLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                  <TextBox   Grid.Column="1" Text="{Binding MapName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                </Grid>
+
+                <!-- Directly under Name: the group decides what every blank field below inherits, including
+                     the Display Name placeholder on the next row, so it is chosen first. -->
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock x:Name="_mapGroupLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                  <controls:DropdownAutoCompleteBox x:Name="_searchMapGroup" Grid.Column="1"
+                                   ItemsSource="{Binding MapGroupEntries}"
+                                   SelectedItem="{Binding SelectedMapGroup, Mode=TwoWay}"
+                                   ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                                   FilterMode="Custom"
+                                   MinimumPrefixLength="0"/>
+                  <Button x:Name="_clearMapGroup" Grid.Column="2" Classes="glyph" Content="×"
+                          Command="{Binding ClearMapEntityCommand}" CommandParameter="MapGroup"/>
+                </Grid>
+
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock x:Name="_displayNameLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                  <TextBox   Grid.Column="1" Text="{Binding MapDisplayName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             PlaceholderText="{Binding MapDisplayNamePlaceholder}" />
+                </Grid>
+
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock x:Name="_moralLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                  <ComboBox  Grid.Column="1"
+                             ItemsSource="{Binding MoralOptions}"
+                             SelectedItem="{Binding SelectedMapMoral, Mode=TwoWay}"
+                             HorizontalAlignment="Stretch"/>
+                </Grid>
+
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock x:Name="_musicLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                  <NumericUpDown Grid.Column="1"
+                                 Value="{Binding MapMusic, Mode=TwoWay}"
+                                 Minimum="0" Maximum="255" FormatString="0"/>
+                </Grid>
+
+                <!-- Indoors / AlwaysLit / AlwaysDark are tri-state: checked = on, unchecked = off, dash = inherit
+                     the group. Lit and Dark are mutually exclusive: ticking one clears the other back to inherit. -->
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock x:Name="_indoorsLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                  <CheckBox  Grid.Column="1" IsThreeState="True" IsChecked="{Binding MapIndoors}"/>
+                </Grid>
+
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock x:Name="_alwaysLitLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                  <CheckBox  Grid.Column="1" IsThreeState="True" IsChecked="{Binding MapAlwaysLit}"/>
+                </Grid>
+
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock x:Name="_alwaysDarkLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                  <CheckBox  Grid.Column="1" IsThreeState="True" IsChecked="{Binding MapAlwaysDark}"/>
+                </Grid>
+
+                <TextBlock x:Name="_inheritHint" FontSize="11" Foreground="#8B84AE" FontStyle="Italic"
+                           TextWrapping="Wrap"/>
+
+                <!-- Read-only here: changing a map's size discards tiles, so it goes through a dialog
+                     that says exactly what would go. -->
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <TextBlock x:Name="_sizeLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                  <TextBlock Grid.Column="1" Text="{Binding MapSizeText}" VerticalAlignment="Center"/>
+                  <Button x:Name="_resizeBtn" Grid.Column="2" Command="{Binding ResizeMapCommand}"/>
+                </Grid>
+
+                <HeaderedContentControl x:Name="_mapLinksGroup" Classes="propGroup">
+                  <StackPanel Spacing="8">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                      </Grid.ColumnDefinitions>
+                      <TextBlock x:Name="_upLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                      <controls:DropdownAutoCompleteBox x:Name="_searchUpMap" Grid.Column="1"
+                                       ItemsSource="{Binding MapEntries}"
+                                       SelectedItem="{Binding SelectedMapUp, Mode=TwoWay}"
+                                       ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                                       FilterMode="Custom"
+                                       MinimumPrefixLength="0"/>
+                      <Button x:Name="_clearUp" Grid.Column="2" Classes="glyph" Content="×"
+                              Command="{Binding ClearMapEntityCommand}" CommandParameter="Up"/>
+                    </Grid>
+
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                      </Grid.ColumnDefinitions>
+                      <TextBlock x:Name="_downLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                      <controls:DropdownAutoCompleteBox x:Name="_searchDown" Grid.Column="1"
+                                       ItemsSource="{Binding MapEntries}"
+                                       SelectedItem="{Binding SelectedMapDown, Mode=TwoWay}"
+                                       ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                                       FilterMode="Custom"
+                                       MinimumPrefixLength="0"/>
+                      <Button x:Name="_clearDown" Grid.Column="2" Classes="glyph" Content="×"
+                              Command="{Binding ClearMapEntityCommand}" CommandParameter="Down"/>
+                    </Grid>
+
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                      </Grid.ColumnDefinitions>
+                      <TextBlock x:Name="_leftLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                      <controls:DropdownAutoCompleteBox x:Name="_searchLeft" Grid.Column="1"
+                                       ItemsSource="{Binding MapEntries}"
+                                       SelectedItem="{Binding SelectedMapLeft, Mode=TwoWay}"
+                                       ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                                       FilterMode="Custom"
+                                       MinimumPrefixLength="0"/>
+                      <Button x:Name="_clearLeft" Grid.Column="2" Classes="glyph" Content="×"
+                              Command="{Binding ClearMapEntityCommand}" CommandParameter="Left"/>
+                    </Grid>
+
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                      </Grid.ColumnDefinitions>
+                      <TextBlock x:Name="_rightLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                      <controls:DropdownAutoCompleteBox x:Name="_searchRight" Grid.Column="1"
+                                       ItemsSource="{Binding MapEntries}"
+                                       SelectedItem="{Binding SelectedMapRight, Mode=TwoWay}"
+                                       ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                                       FilterMode="Custom"
+                                       MinimumPrefixLength="0"/>
+                      <Button x:Name="_clearRight" Grid.Column="2" Classes="glyph" Content="×"
+                              Command="{Binding ClearMapEntityCommand}" CommandParameter="Right"/>
+                    </Grid>
+                  </StackPanel>
+                </HeaderedContentControl>
+
+                <HeaderedContentControl x:Name="_respawnGroup" Classes="propGroup">
+                  <StackPanel Spacing="8">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                      </Grid.ColumnDefinitions>
+                      <TextBlock x:Name="_bootMapLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                      <controls:DropdownAutoCompleteBox x:Name="_searchBootMap" Grid.Column="1"
+                                       ItemsSource="{Binding MapEntries}"
+                                       SelectedItem="{Binding SelectedMapBootMap, Mode=TwoWay}"
+                                       ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                                       FilterMode="Custom"
+                                       MinimumPrefixLength="0"/>
+                      <Button x:Name="_clearBootMap" Grid.Column="2" Classes="glyph" Content="×"
+                              Command="{Binding ClearMapEntityCommand}" CommandParameter="BootMap"/>
+                    </Grid>
+
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                      </Grid.ColumnDefinitions>
+                      <TextBlock x:Name="_bootXLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                      <NumericUpDown Grid.Column="1" Value="{Binding MapBootX, Mode=TwoWay}"
+                                     Minimum="0" Maximum="15" FormatString="0"/>
+                    </Grid>
+
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                      </Grid.ColumnDefinitions>
+                      <TextBlock x:Name="_bootYLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                      <NumericUpDown Grid.Column="1" Value="{Binding MapBootY, Mode=TwoWay}"
+                                     Minimum="0" Maximum="11" FormatString="0"/>
+                    </Grid>
+                  </StackPanel>
+                </HeaderedContentControl>
+
+                <!-- Blank fields inherit from the MapGroup, and the placeholder shows what would be inherited. -->
+                <HeaderedContentControl x:Name="_greetingGroup" Classes="propGroup">
+                  <StackPanel Spacing="8">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                      </Grid.ColumnDefinitions>
+                      <TextBlock x:Name="_greetingSpeakerLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                      <TextBox Grid.Column="1" Text="{Binding MapGreetingSpeaker, Mode=TwoWay}"
+                               PlaceholderText="{Binding MapGreetingSpeakerPlaceholder}"/>
+                    </Grid>
+
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                      </Grid.ColumnDefinitions>
+                      <TextBlock x:Name="_joinSayLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                      <TextBox Grid.Column="1" Text="{Binding MapJoinSay, Mode=TwoWay}"
+                               PlaceholderText="{Binding MapJoinSayPlaceholder}"/>
+                    </Grid>
+
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                      </Grid.ColumnDefinitions>
+                      <TextBlock x:Name="_leaveSayLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                      <TextBox Grid.Column="1" Text="{Binding MapLeaveSay, Mode=TwoWay}"
+                               PlaceholderText="{Binding MapLeaveSayPlaceholder}"/>
+                    </Grid>
+                  </StackPanel>
+                </HeaderedContentControl>
+
+                <TextBlock x:Name="_npcSlotsLabel" Margin="0,8,0,2"/>
+                <Border BorderBrush="{DynamicResource MirageLineBrush}" BorderThickness="1" CornerRadius="4">
+                  <StackPanel>
+                    <!-- Empty-state hint when the map has no NPC rows yet -->
+                    <TextBlock x:Name="_noNpcsHint" Margin="8,6" Foreground="#8B84AE" FontStyle="Italic"
+                               IsVisible="{Binding HasNoNpcRows}"/>
+                    <!-- Dynamic NPC rows: post #, NPC-type picker, "@ x,y" pin read-out, per-row remove button -->
+                    <ScrollViewer MaxHeight="260" VerticalScrollBarVisibility="Auto">
+                      <ItemsControl ItemsSource="{Binding MapNpcRows}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate>
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto,34" Margin="0,2">
+                              <TextBlock Grid.Column="0" Text="{Binding SlotLabel}" MinWidth="22"
+                                         TextAlignment="Right" VerticalAlignment="Center"
+                                         Margin="0,0,6,0" Foreground="#8B84AE"/>
+                              <controls:DropdownAutoCompleteBox Grid.Column="1"
+                                         ItemsSource="{Binding NpcEntries}"
+                                         SelectedItem="{Binding SelectedNpc, Mode=TwoWay}"
+                                         PlaceholderText="{Binding Placeholder}"
+                                         ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                                         FilterMode="Custom" MinimumPrefixLength="0"/>
+                              <TextBlock Grid.Column="2" Text="{Binding PlacementLabel}"
+                                         VerticalAlignment="Center" Margin="6,0,0,0"
+                                         Foreground="#6a9" FontSize="11"/>
+                              <!-- Place-on-map (MODE 2): "@" echoes the "@ x,y" pin read-out; hidden until an NPC is chosen -->
+                              <Button Grid.Column="3" Content="@" Classes="glyph"
+                                      Command="{Binding PlaceCommand}"
+                                      IsVisible="{Binding CanPlace}"
+                                      ToolTip.Tip="{Binding PlaceTooltip}"
+                                      Margin="2,0,0,0"
+                                      HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+                              <Button Grid.Column="4" Content="-" Classes="glyph"
+                                      Command="{Binding $parent[ItemsControl].DataContext.RemoveNpcRowCommand}"
+                                      CommandParameter="{Binding}"
+                                      Margin="2,0,0,0"
+                                      HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+                            </Grid>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </ScrollViewer>
+                    <!-- Add-row button -->
+                    <Button x:Name="_addNpcRowBtn" Command="{Binding AddNpcRowCommand}"
+                            HorizontalAlignment="Left" Margin="8,6" Padding="10,3"/>
+                  </StackPanel>
+                </Border>
+
+                <TextBlock x:Name="_usedTilesheetsLabel" Margin="0,8,0,2"/>
+                <TextBox Text="{Binding UsedTilesheets, Mode=OneWay}"
+                         IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap"
+                         IsTabStop="False" MinHeight="60" MaxHeight="140" Margin="0,0,0,4"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+
+              </StackPanel>
+            </ScrollViewer>
+          </Grid>
+        </DockPanel>
+
+      </Grid>
+
+    </Grid>
+
+    <!-- ── Action footer (Undo / Redo / Save / Discard — always visible) ── -->
+    <!-- Chrome, so it wears the toolbar's own surface rather than a neutral gray: this strip and the
+         toolbar at the top of the window are the two frames around the canvas and should read as a pair. -->
+    <Border Classes="actionBar" Grid.Row="1" Background="{DynamicResource MirageSurfaceBrush}" Padding="6,4"
+            BorderBrush="{DynamicResource MirageLineSoftBrush}" BorderThickness="0,1,0,0">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Spacing="4">
+          <Button x:Name="_btnUndo" Command="{Binding UndoCommand}"
+                  Padding="8,3" FontSize="11"/>
+          <Button x:Name="_btnRedo" Command="{Binding RedoCommand}"
+                  Padding="8,3" FontSize="11"/>
+          <Button x:Name="_btnBack" Command="{Binding NavigateBackCommand}"
+                  Padding="8,3" FontSize="11"/>
+          <Button x:Name="_btnForward" Command="{Binding NavigateForwardCommand}"
+                  Padding="8,3" FontSize="11"/>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6">
+          <Button x:Name="_copyBtn"
+                  ToolTip.Tip="{Binding CopyMapTooltip}"
+                  ToolTip.ShowOnDisabled="True"
+                  Command="{Binding CopyMapCommand}"
+                  IsEnabled="{Binding CanCopyMap}"/>
+          <Button x:Name="_btnDiscardMap" Classes="danger"
+                  Command="{Binding DiscardMapCommand}"
+                  IsEnabled="{Binding IsSelectedMapDirty}"/>
+          <Button x:Name="_btnDiscardAll" Classes="danger"
+                  Command="{Binding DiscardAllMapsCommand}"
+                  IsEnabled="{Binding HasAnyDirtyMap}"/>
+          <Button x:Name="_btnSaveMap" Classes="primary"
+                  Command="{Binding SaveMapCommand}"
+                  IsEnabled="{Binding IsSelectedMapDirty}"
+                  HotKey="Ctrl+S" ToolTip.Tip="Ctrl+S"/>
+          <Button x:Name="_btnSaveAll" Classes="primary"
+                  Command="{Binding SaveAllCommand}"
+                  IsEnabled="{Binding HasAnyDirtyMap}"
+                  HotKey="Ctrl+Shift+S" ToolTip.Tip="Ctrl+Shift+S"/>
+        </StackPanel>
+        <Border/>
+      </DockPanel>
+    </Border>
+
+    <!-- ── Status bar ── -->
+    <Border Grid.Row="2" Background="{DynamicResource MirageBgBrush}" Padding="8,3"
+            BorderBrush="{DynamicResource MirageLineSoftBrush}" BorderThickness="0,1,0,0">
+      <DockPanel>
+        <TextBlock DockPanel.Dock="Right" Text="{Binding MapRevisionText}"
+                   Foreground="#8B84AE" VerticalAlignment="Center"/>
+        <StackPanel Orientation="Horizontal" Spacing="16">
+          <TextBlock Text="{Binding StatusMessage}" Foreground="{DynamicResource MirageOkBrush}"/>
+          <TextBlock Text="{Binding HoveredText}" Foreground="#8B84AE" MinWidth="80"/>
+          <TextBlock Text="{Binding StatusModeText}" Foreground="#8B84AE"/>
+          <TextBlock Text="{Binding StatusLayerText}" Foreground="#8B84AE" IsVisible="{Binding IsTileMode}"/>
+          <TextBlock Text="{Binding StatusActionText}" Foreground="#8B84AE"/>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <!-- ── Hover preview — floating tooltip that follows the cursor ── -->
+    <Canvas x:Name="HoverCanvas" Grid.Row="0" IsHitTestVisible="False">
+      <Border x:Name="HoverPanel"
+              IsVisible="False"
+              Background="#E4111111"
+              BorderBrush="#5A5480"
+              BorderThickness="1"
+              CornerRadius="4"
+              Padding="8">
+        <StackPanel Spacing="3" MinWidth="150">
+          <TextBlock x:Name="_tilePreviewHeader" FontSize="10" FontWeight="SemiBold" Foreground="#8B84AE"/>
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <StackPanel Spacing="2">
+              <TextBlock x:Name="_groundColumnHeader" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource MirageFaintBrush}"/>
+              <ItemsControl ItemsSource="{Binding HoveredGroundLayers}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,0,1"
+                                Opacity="{Binding CellOpacity}">
+                      <TextBlock Text="{Binding Label}" Width="16" FontSize="10" Foreground="{DynamicResource MirageFaintBrush}" VerticalAlignment="Center"/>
+                      <controls:SingleTileControl TileBitmap="{Binding Bitmap}" TileIndex="{Binding TileIndex}"/>
+                      <TextBlock Text="{Binding SheetText}" Width="14" FontSize="9" Foreground="#6B6491" VerticalAlignment="Center" TextAlignment="Center"
+                                 ToolTip.Tip="{Binding SheetText}"/>
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+            <StackPanel Spacing="2">
+              <TextBlock x:Name="_fringeColumnHeader" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource MirageFaintBrush}"/>
+              <ItemsControl ItemsSource="{Binding HoveredFringeLayers}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,0,1"
+                                Opacity="{Binding CellOpacity}">
+                      <TextBlock Text="{Binding Label}" Width="16" FontSize="10" Foreground="{DynamicResource MirageFaintBrush}" VerticalAlignment="Center"/>
+                      <controls:SingleTileControl TileBitmap="{Binding Bitmap}" TileIndex="{Binding TileIndex}"/>
+                      <TextBlock Text="{Binding SheetText}" Width="14" FontSize="9" Foreground="#6B6491" VerticalAlignment="Center" TextAlignment="Center"
+                                 ToolTip.Tip="{Binding SheetText}"/>
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+            <StackPanel Spacing="2">
+              <TextBlock x:Name="_canopyColumnHeader" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource MirageFaintBrush}"/>
+              <ItemsControl ItemsSource="{Binding HoveredCanopyLayers}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="4" Margin="0,0,0,1"
+                                Opacity="{Binding CellOpacity}">
+                      <TextBlock Text="{Binding Label}" Width="16" FontSize="10" Foreground="{DynamicResource MirageFaintBrush}" VerticalAlignment="Center"/>
+                      <controls:SingleTileControl TileBitmap="{Binding Bitmap}" TileIndex="{Binding TileIndex}"/>
+                      <TextBlock Text="{Binding SheetText}" Width="14" FontSize="9" Foreground="#6B6491" VerticalAlignment="Center" TextAlignment="Center"
+                                 ToolTip.Tip="{Binding SheetText}"/>
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </StackPanel>
+          <Rectangle Height="1" Fill="{DynamicResource MirageLineBrush}" Margin="0,2"/>
+          <TextBlock Text="{Binding HoveredGroundAttributeText}"
+                     FontSize="10" TextWrapping="Wrap" MaxWidth="220" Foreground="#CFC9E4"/>
+          <TextBlock Text="{Binding HoveredFringeAttributeText}"
+                     FontSize="10" TextWrapping="Wrap" MaxWidth="220" Foreground="#CFC9E4"/>
+          <TextBlock Text="{Binding HoveredNpcSpawnText}" IsVisible="{Binding HoveredHasNpcSpawn}"
+                     FontSize="10" TextWrapping="Wrap" MaxWidth="220" Foreground="#CFC9E4"/>
+          <!-- Every map arriving on this tile, named. The marker can only carry one number and a count. -->
+          <TextBlock Text="{Binding HoveredInboundWarpText}" IsVisible="{Binding HoveredHasInboundWarps}"
+                     FontSize="10" TextWrapping="Wrap" MaxWidth="220" Foreground="#D9C2F0"/>
+          <StackPanel Orientation="Horizontal" Spacing="4">
+            <Border Width="12" Height="12" CornerRadius="2" BorderBrush="#8B84AE" BorderThickness="1"
+                    Background="{Binding HoveredLightBrush}" IsVisible="{Binding HoveredHasLight}"
+                    VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding HoveredLightText}"
+                       FontSize="10" TextWrapping="Wrap" MaxWidth="204" Foreground="#CFC9E4" VerticalAlignment="Center"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Canvas>
+
+    <!-- ── Attribute dialogs (overlay panels) ── -->
+
+    <Border Grid.Row="0"
+            IsVisible="{Binding ShowWarpDialog}"
+            Background="#CC000000"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Padding="20" CornerRadius="8">
+      <StackPanel Spacing="10" Width="260">
+        <TextBlock x:Name="_warpTitle" FontSize="14" FontWeight="Bold"/>
+        <StackPanel Spacing="8">
+          <mui:FormRow LabelWidth="95">
+            <TextBlock x:Name="_warpMapLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <controls:DropdownAutoCompleteBox x:Name="_searchWarpMap" Grid.Column="1"
+                             ItemsSource="{Binding MapEntries}"
+                             SelectedItem="{Binding SelectedWarpMapEntry, Mode=TwoWay}"
+                             ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                             FilterMode="Custom" MinimumPrefixLength="0"/>
+          </mui:FormRow>
+          <mui:FormRow LabelWidth="95">
+            <TextBlock x:Name="_warpXLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding WarpX}"
+                           Minimum="1" Maximum="15" FormatString="0"/>
+          </mui:FormRow>
+          <mui:FormRow LabelWidth="95">
+            <TextBlock x:Name="_warpYLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding WarpY}"
+                           Minimum="1" Maximum="11" FormatString="0"/>
+          </mui:FormRow>
+          <!-- Two-plane world: which logical layer the warp delivers onto (Ground / the Fringe deck). -->
+          <mui:FormRow LabelWidth="95">
+            <TextBlock x:Name="_warpLayerLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding AttributeLayers}" ItemTemplate="{StaticResource VocabularyItem}"
+                      SelectedItem="{Binding WarpDestLayer, Mode=TwoWay}"/>
+          </mui:FormRow>
+        </StackPanel>
+        <CheckBox x:Name="_warpFillRunCheck" IsChecked="{Binding FillRun}"
+                  IsEnabled="{Binding CanFillRun}" Margin="0,4,0,0"/>
+        <CheckBox x:Name="_warpRetainCheck" IsChecked="{Binding WarpRetain}" Margin="0,4,0,0"/>
+        <TextBlock Text="{Binding DialogError}"
+                   Foreground="#FF6666" FontSize="11" TextWrapping="Wrap"
+                   IsVisible="{Binding DialogError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <Button x:Name="_warpCancel"  Command="{Binding CancelWarpCommand}"/>
+          <Button x:Name="_warpConfirm" Command="{Binding ConfirmWarpCommand}" IsDefault="True"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <!-- NPC-spawn pin picker (Attribute mode, NpcSpawn tool) -->
+    <Border Grid.Row="0"
+            IsVisible="{Binding ShowNpcSpawnDialog}"
+            Background="#CC000000"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Padding="20" CornerRadius="8">
+      <StackPanel Spacing="10" Width="280">
+        <TextBlock x:Name="_npcSpawnTitle" FontSize="14" FontWeight="Bold"/>
+        <mui:FormRow LabelWidth="60">
+          <TextBlock x:Name="_npcSpawnSlotLabel" Grid.Column="0" VerticalAlignment="Center"/>
+          <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
+                    ItemsSource="{Binding NpcSpawnChoices}"
+                    SelectedItem="{Binding NpcSpawnChoice, Mode=TwoWay}">
+            <ComboBox.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding Display}"/>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+        </mui:FormRow>
+        <TextBlock Text="{Binding DialogError}"
+                   Foreground="#FF6666" FontSize="11" TextWrapping="Wrap"
+                   IsVisible="{Binding DialogError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <Button x:Name="_npcSpawnCancel"  Command="{Binding CancelNpcSpawnCommand}"/>
+          <Button x:Name="_npcSpawnConfirm" Command="{Binding ConfirmNpcSpawnCommand}" IsDefault="True"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <Border Grid.Row="0"
+            IsVisible="{Binding ShowItemDialog}"
+            Background="#CC000000"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Padding="20" CornerRadius="8">
+      <StackPanel Spacing="10" Width="260">
+        <TextBlock x:Name="_itemTitle" FontSize="14" FontWeight="Bold"/>
+        <StackPanel Spacing="8">
+          <mui:FormRow LabelWidth="95">
+            <TextBlock x:Name="_itemItemLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <controls:DropdownAutoCompleteBox x:Name="_searchItemSpawn" Grid.Column="1"
+                             ItemsSource="{Binding ItemEntries}"
+                             SelectedItem="{Binding SelectedItemTileEntry, Mode=TwoWay}"
+                             ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                             FilterMode="Custom" MinimumPrefixLength="0"/>
+          </mui:FormRow>
+          <mui:FormRow LabelWidth="95">
+            <TextBlock x:Name="_itemQuantityLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding ItemTileQuantity}"
+                           Minimum="1" Maximum="{Binding ItemTileQuantityMax}" FormatString="0"/>
+          </mui:FormRow>
+          <mui:FormRow LabelWidth="95">
+            <TextBlock x:Name="_itemRespawnLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown x:Name="_itemRespawnInput" Grid.Column="1"
+                           Value="{Binding ItemTileRespawnSeconds}"
+                           Minimum="0" Maximum="32767" FormatString="0"/>
+          </mui:FormRow>
+        </StackPanel>
+        <CheckBox x:Name="_itemFillRunCheck" IsChecked="{Binding FillRun}"
+                  IsEnabled="{Binding CanFillRun}" Margin="0,4,0,0"/>
+        <CheckBox x:Name="_itemRetainCheck" IsChecked="{Binding ItemRetain}" Margin="0,4,0,0"/>
+        <TextBlock Text="{Binding DialogError}"
+                   Foreground="#FF6666" FontSize="11" TextWrapping="Wrap"
+                   IsVisible="{Binding DialogError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <Button x:Name="_itemCancel"  Command="{Binding CancelItemCommand}"/>
+          <Button x:Name="_itemConfirm" Command="{Binding ConfirmItemCommand}" IsDefault="True"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <!-- ── Light source dialog (Light Sources mode) ── -->
+    <Border Grid.Row="0"
+            IsVisible="{Binding ShowLightDialog}"
+            Background="#CC000000"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Padding="20" CornerRadius="8">
+      <StackPanel Spacing="10" Width="300">
+        <TextBlock x:Name="_lightTitle" FontSize="14" FontWeight="Bold"/>
+        <StackPanel Spacing="8">
+          <mui:FormRow LabelWidth="95">
+            <TextBlock x:Name="_lightColorLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <Grid Grid.Column="1" ColumnDefinitions="Auto,*" ColumnSpacing="6">
+              <ColorPicker Grid.Column="0" Color="{Binding LightColor, Mode=TwoWay}"/>
+              <TextBox Grid.Column="1" Text="{Binding LightColorHex, Mode=TwoWay}" VerticalAlignment="Center"/>
+            </Grid>
+          </mui:FormRow>
+          <mui:FormRow LabelWidth="95">
+            <TextBlock x:Name="_lightRadiusLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1" Value="{Binding LightRadius}"
+                           Minimum="0.5" Maximum="15" Increment="0.5" FormatString="0.0"/>
+          </mui:FormRow>
+          <mui:FormRow LabelWidth="95">
+            <TextBlock x:Name="_lightIntensityLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1" Value="{Binding LightIntensity}"
+                           Minimum="0" Maximum="100" Increment="5" FormatString="0"/>
+          </mui:FormRow>
+          <mui:FormRow LabelWidth="95">
+            <TextBlock x:Name="_lightFlickerLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox Grid.Column="1" ItemsSource="{Binding FlickerStyles}" ItemTemplate="{StaticResource VocabularyItem}"
+                      SelectedItem="{Binding LightFlicker}" HorizontalAlignment="Stretch"/>
+          </mui:FormRow>
+        </StackPanel>
+        <CheckBox x:Name="_lightRetainCheck" IsChecked="{Binding LightRetain}" Margin="0,4,0,0"/>
+        <TextBlock Text="{Binding DialogError}"
+                   Foreground="#FF6666" FontSize="11" TextWrapping="Wrap"
+                   IsVisible="{Binding DialogError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <Button x:Name="_lightCancel"  Command="{Binding CancelLightCommand}"/>
+          <Button x:Name="_lightConfirm" Command="{Binding ConfirmLightCommand}" IsDefault="True"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <!-- Painting onto a layer that is put away. There is no third button that places the tile and leaves
+         the layer hidden: a tile you cannot see is not a tile you can judge. -->
+    <Border Grid.Row="0"
+            IsVisible="{Binding ShowHiddenLayerDialog}"
+            Background="#CC000000"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Padding="20" CornerRadius="8">
+      <StackPanel Spacing="10" Width="320">
+        <TextBlock x:Name="_hiddenLayerTitle" FontSize="14" FontWeight="Bold"/>
+        <TextBlock Text="{Binding HiddenLayerPrompt}" FontSize="11" Foreground="#8B84AE" TextWrapping="Wrap"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <Button x:Name="_hiddenLayerCancel"  Command="{Binding CancelHiddenLayerCommand}" IsCancel="True"/>
+          <Button x:Name="_hiddenLayerConfirm" Command="{Binding ConfirmHiddenLayerCommand}" IsDefault="True"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <!-- A wall carries what it stops. Both boxes start checked, which is what a plain wall is. -->
+    <Border Grid.Row="0"
+            IsVisible="{Binding ShowBlockedDialog}"
+            Background="#CC000000"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Padding="20" CornerRadius="8">
+      <StackPanel Spacing="10" Width="300">
+        <TextBlock x:Name="_blockedTitle" FontSize="14" FontWeight="Bold"/>
+        <TextBlock x:Name="_blockedDesc" FontSize="11" Foreground="#8B84AE" TextWrapping="Wrap"/>
+        <StackPanel Spacing="8">
+          <CheckBox x:Name="_blockedLightCheck" IsChecked="{Binding BlockedBlocksLight}"/>
+          <CheckBox x:Name="_blockedSightCheck" IsChecked="{Binding BlockedBlocksSight}"/>
+        </StackPanel>
+        <CheckBox x:Name="_blockedFillRunCheck" IsChecked="{Binding FillRun}"
+                  IsEnabled="{Binding CanFillRun}" Margin="0,4,0,0"/>
+        <CheckBox x:Name="_blockedRetainCheck" IsChecked="{Binding BlockedRetain}" Margin="0,4,0,0"/>
+        <TextBlock Text="{Binding DialogError}"
+                   Foreground="#FF6666" FontSize="11" TextWrapping="Wrap"
+                   IsVisible="{Binding DialogError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <Button x:Name="_blockedCancel"  Command="{Binding CancelBlockedCommand}"/>
+          <Button x:Name="_blockedConfirm" Command="{Binding ConfirmBlockedCommand}" IsDefault="True"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <Border Grid.Row="0"
+            IsVisible="{Binding ShowKeyDialog}"
+            Background="#CC000000"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Padding="20" CornerRadius="8">
+      <StackPanel Spacing="10" Width="260">
+        <TextBlock x:Name="_keyTitle" FontSize="14" FontWeight="Bold"/>
+        <TextBlock x:Name="_keyDesc" FontSize="11" Foreground="#8B84AE" TextWrapping="Wrap"/>
+        <StackPanel Spacing="8">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="_keyItemLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <controls:DropdownAutoCompleteBox x:Name="_searchKeyItem" Grid.Column="1"
+                             ItemsSource="{Binding ItemEntries}"
+                             SelectedItem="{Binding SelectedKeyItemEntry, Mode=TwoWay}"
+                             ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                             FilterMode="Custom" MinimumPrefixLength="0"/>
+          </Grid>
+          <CheckBox x:Name="_keyTakeCheck"
+                    IsChecked="{Binding KeyTake}"/>
+        </StackPanel>
+        <CheckBox x:Name="_keyFillRunCheck" IsChecked="{Binding FillRun}"
+                  IsEnabled="{Binding CanFillRun}" Margin="0,4,0,0"/>
+        <CheckBox x:Name="_keyRetainCheck" IsChecked="{Binding KeyRetain}" Margin="0,4,0,0"/>
+        <TextBlock Text="{Binding DialogError}"
+                   Foreground="#FF6666" FontSize="11" TextWrapping="Wrap"
+                   IsVisible="{Binding DialogError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <Button x:Name="_keyCancel"  Command="{Binding CancelKeyCommand}"/>
+          <Button x:Name="_keyConfirm" Command="{Binding ConfirmKeyCommand}" IsDefault="True"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <Border Grid.Row="0"
+            IsVisible="{Binding ShowKeyOpenDialog}"
+            Background="#CC000000"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Padding="20" CornerRadius="8">
+      <StackPanel Spacing="10" Width="280">
+        <TextBlock x:Name="_keyOpenTitle" FontSize="14" FontWeight="Bold"/>
+        <TextBlock x:Name="_keyOpenDesc" FontSize="11" Foreground="#8B84AE" TextWrapping="Wrap"/>
+        <StackPanel Spacing="8">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="_keyOpenXLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown x:Name="_keyOpenXInput" Grid.Column="1"
+                           Value="{Binding KeyOpenDoorX}"
+                           Minimum="0" Maximum="15" FormatString="0"/>
+          </Grid>
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="_keyOpenYLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown x:Name="_keyOpenYInput" Grid.Column="1"
+                           Value="{Binding KeyOpenDoorY}"
+                           Minimum="0" Maximum="11" FormatString="0"/>
+          </Grid>
+          <!-- Two-plane world: which layer's Key door this plate opens (independent of the plate's own plane). -->
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="_keyOpenLayerLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding AttributeLayers}" ItemTemplate="{StaticResource VocabularyItem}"
+                      SelectedItem="{Binding KeyOpenDoorLayer, Mode=TwoWay}"/>
+          </Grid>
+        </StackPanel>
+        <CheckBox x:Name="_keyOpenFillRunCheck" IsChecked="{Binding FillRun}"
+                  IsEnabled="{Binding CanFillRun}" Margin="0,4,0,0"/>
+        <CheckBox x:Name="_keyOpenRetainCheck" IsChecked="{Binding KeyOpenRetain}" Margin="0,4,0,0"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <Button x:Name="_keyOpenCancel"  Command="{Binding CancelKeyOpenCommand}"/>
+          <Button x:Name="_keyOpenConfirm" Command="{Binding ConfirmKeyOpenCommand}" IsDefault="True"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <!-- ── Tile animation dialog (Tile mode: click a placed tile whose selected layer is filled) ── -->
+    <Border Grid.Row="0"
+            IsVisible="{Binding ShowAnimDialog}"
+            Background="#CC000000"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Padding="20" CornerRadius="8">
+      <StackPanel Spacing="10" Width="300">
+        <TextBlock x:Name="_animTitle" FontSize="14" FontWeight="Bold"/>
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <TextBlock x:Name="_animLayerColHeader" Grid.Column="1" Margin="8,0,0,0"
+                     FontWeight="SemiBold" FontSize="11" Foreground="{DynamicResource MirageMutedBrush}"/>
+          <TextBlock x:Name="_animAnimColHeader" Grid.Column="2"
+                     FontWeight="SemiBold" FontSize="11" Foreground="{DynamicResource MirageMutedBrush}"/>
+        </Grid>
+        <ItemsControl ItemsSource="{Binding AnimLayers}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,3">
+                <controls:SingleTileControl Grid.Column="0" TileBitmap="{Binding Bitmap}" TileIndex="{Binding TileIndex}"/>
+                <TextBlock Grid.Column="1" Text="{Binding Label}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                <CheckBox Grid.Column="2" IsChecked="{Binding IsAnim, Mode=TwoWay}" VerticalAlignment="Center"/>
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <mui:FormRow LabelWidth="70" ColumnSpacing="8" IsVisible="{Binding GroundStyleEnabled}">
+          <TextBlock x:Name="_animGroundStyleLabel" Grid.Column="0" VerticalAlignment="Center"/>
+          <ComboBox Grid.Column="1" ItemsSource="{Binding AnimStyles}" ItemTemplate="{StaticResource VocabularyItem}" SelectedItem="{Binding GroundAnimStyle}"
+                    HorizontalAlignment="Stretch"/>
+        </mui:FormRow>
+        <mui:FormRow LabelWidth="70" ColumnSpacing="8" IsVisible="{Binding FringeStyleEnabled}">
+          <TextBlock x:Name="_animFringeStyleLabel" Grid.Column="0" VerticalAlignment="Center"/>
+          <ComboBox Grid.Column="1" ItemsSource="{Binding AnimStyles}" ItemTemplate="{StaticResource VocabularyItem}" SelectedItem="{Binding FringeAnimStyle}"
+                    HorizontalAlignment="Stretch"/>
+        </mui:FormRow>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <Button x:Name="_animCancel"  Command="{Binding CancelAnimCommand}"/>
+          <Button x:Name="_animConfirm" Command="{Binding ConfirmAnimCommand}" IsDefault="True"/>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+  </Grid>
+</UserControl>

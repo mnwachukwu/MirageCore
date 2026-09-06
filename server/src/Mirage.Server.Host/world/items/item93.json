@@ -1,0 +1,19 @@
+{
+  "name": "Warded Plate",
+  "pic": 3,
+  "itemSheet": 0,
+  "type": "Armor",
+  "durability": 1310,
+  "power": 174,
+  "levelReq": 110,
+  "allowedClasses": [
+    3,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 189809
+}

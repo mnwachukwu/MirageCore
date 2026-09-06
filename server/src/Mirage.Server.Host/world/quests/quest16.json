@@ -1,0 +1,31 @@
+{
+  "name": "Runners on the Ridge",
+  "description": "Above the cut the sparkrunners come over the ridge in a line, which they have started doing and did not used to.\n\n24. I have written down the date they changed their habit. I do not know what it means yet and I would like to be alive when I find out.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 91,
+      "count": 24,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 240,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereqQuest": 15,
+  "rewardExp": 4608000,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 1490202
+    }
+  ],
+  "repeatRewardExp": 0,
+  "repeatRewardItems": [],
+  "giverNpc": 142,
+  "turnInNpc": 0,
+  "repeatable": false,
+  "cadence": "None"
+}

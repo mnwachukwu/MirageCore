@@ -1,0 +1,74 @@
+<!-- DefaultTargets is Build (gated, see the note above that target), NOT PublishAll: a solution build
+     invokes each project's DEFAULT targets, so defaulting to PublishAll bypassed the gate entirely and
+     packaged everything on an ordinary `dotnet build Mirage.slnx`. -->
+<Project Sdk="Microsoft.Build.NoTargets/3.7.0" DefaultTargets="Build">
+
+  <!-- Thin delegator — invokes each per-project orchestrator.
+
+       🔴 THERE IS NO BUTTON FOR THIS. Build, Rebuild and Publish in the IDE all do NOTHING here on
+       purpose (see the note on _PublishHint at the bottom), and Publish additionally needs a profile a
+       NoTargets project does not have. Packaging is reached only by naming the target:
+
+           dotnet msbuild publish/Mirage.Publish.csproj -t:PublishAll
+
+       PublishAll_Win / _Linux / _Osx do one platform. From inside Visual Studio, View -> Terminal.
+
+       Clear dist/installers/ first when republishing the same version: Velopack refuses to overwrite an
+       existing release in a channel, which is the guard working rather than a fault. -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <_ServerProj>$(MSBuildThisFileDirectory)Mirage.Server.Publish.csproj</_ServerProj>
+    <_ClientProj>$(MSBuildThisFileDirectory)Mirage.Client.Publish.csproj</_ClientProj>
+    <_EditorProj>$(MSBuildThisFileDirectory)Mirage.Editor.Publish.csproj</_EditorProj>
+  </PropertyGroup>
+
+  <Target Name="PublishAll">
+    <MSBuild Projects="$(_ServerProj)" Targets="PublishAll" />
+    <MSBuild Projects="$(_ClientProj)" Targets="PublishAll" />
+    <MSBuild Projects="$(_EditorProj)" Targets="PublishAll" />
+  </Target>
+
+  <Target Name="PublishAll_Win">
+    <MSBuild Projects="$(_ServerProj)" Targets="PublishAll_Win" />
+    <MSBuild Projects="$(_ClientProj)" Targets="PublishAll_Win" />
+    <MSBuild Projects="$(_EditorProj)" Targets="PublishAll_Win" />
+  </Target>
+
+  <Target Name="PublishAll_Linux">
+    <MSBuild Projects="$(_ServerProj)" Targets="PublishAll_Linux" />
+    <MSBuild Projects="$(_ClientProj)" Targets="PublishAll_Linux" />
+    <MSBuild Projects="$(_EditorProj)" Targets="PublishAll_Linux" />
+  </Target>
+
+  <Target Name="PublishAll_Osx">
+    <MSBuild Projects="$(_ServerProj)" Targets="PublishAll_Osx" />
+    <MSBuild Projects="$(_ClientProj)" Targets="PublishAll_Osx" />
+    <MSBuild Projects="$(_EditorProj)" Targets="PublishAll_Osx" />
+  </Target>
+
+  <!-- Publishing is a release action, not part of an ordinary build.  All four publish projects are
+       solution members, so a plain `dotnet build Mirage.slnx` used to run every one of them: nine
+       `dotnet publish` passes plus vpk/mgcb/tar packaging for a routine build, with this aggregator
+       driving the same three per-app projects a SECOND time, concurrently, into the same dist/ paths.
+       Measured: that took a bare solution build from ~9s of actual work to 127s.  It also wrote the same
+       dist/ paths from two directions at once, which is a genuine same-path-two-writers hazard even
+       though the copy failures originally blamed on it turned out to be a second agent building the
+       tree concurrently.
+       Packaging is now reached ONLY through an explicit target: /t:PublishAll, or PublishAll_Win /
+       PublishAll_Linux / PublishAll_Osx for a single platform.
+       Auto-detecting "am I inside a solution build?" was tried first and rejected: `dotnet build` on a
+       .slnx forwards the requested target to every project individually and does not set the classic
+       Solution* properties, so there is nothing dependable to test against.
+       The hint below uses AfterTargets instead of redefining Build: the NoTargets SDK imports its own
+       Build target AFTER this file, so a <Target Name="Build"> declared here is silently overridden and
+       never runs.  That is also why the old Build/PublishAll alias did nothing — packaging reached the
+       solution build purely through DefaultTargets, which is now Build.  Without this hint a plain
+       `dotnet build` of a publish project would succeed while silently doing nothing, which is exactly
+       how the dead alias hid for so long. -->
+  <Target Name="_PublishHint" AfterTargets="Build">
+    <Message Importance="High"
+             Text="$(MSBuildProjectName): packaging skipped. Run `dotnet msbuild &quot;$(MSBuildProjectFullPath)&quot; /t:PublishAll` to publish." />
+  </Target>
+
+</Project>

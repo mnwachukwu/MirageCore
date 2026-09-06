@@ -1,0 +1,304 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Mirage.Editor.Views.HelpDialog"
+        Width="580" Height="660"
+        CanResize="True"
+        MinWidth="480" MinHeight="440"
+        WindowStartupLocation="CenterOwner">
+
+  <ScrollViewer Margin="20">
+    <StackPanel Spacing="16">
+
+      <TextBlock x:Name="_header" FontSize="17" FontWeight="Bold"/>
+
+      <!-- ══ Controls ══════════════════════════════════════════════════════════ -->
+      <StackPanel Spacing="6">
+        <TextBlock x:Name="_controlsHeader" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource MirageMutedBrush}"/>
+        <Separator Background="{DynamicResource MirageLineSoftBrush}"/>
+
+        <Border Background="{DynamicResource MirageConsoleBrush}" CornerRadius="4" Padding="10,8">
+          <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" Margin="0">
+            <TextBlock x:Name="_ctrlLeftClick"            Grid.Row="0"  Grid.Column="0" Foreground="#8B84AE" FontSize="11" MinWidth="160" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlLeftClickDesc"        Grid.Row="0"  Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlAltClick"             Grid.Row="1"  Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlAltClickDesc"         Grid.Row="1"  Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlCtrlDrag"             Grid.Row="2"  Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlCtrlDragDesc"         Grid.Row="2"  Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlCtrlAltShiftClick"    Grid.Row="3"  Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlCtrlAltShiftClickDesc" Grid.Row="3" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlRightClick"           Grid.Row="4"  Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlRightClickDesc"       Grid.Row="4"  Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlUndoRedo"             Grid.Row="5"  Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlUndoRedoDesc"         Grid.Row="5"  Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlBackForward"          Grid.Row="6"  Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlBackForwardDesc"      Grid.Row="6"  Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlMouseBackForward"     Grid.Row="7"  Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlMouseBackForwardDesc" Grid.Row="7"  Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlShiftHold"            Grid.Row="8"  Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlShiftHoldDesc"        Grid.Row="8"  Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlScrollWheel"          Grid.Row="9"  Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlScrollWheelDesc"      Grid.Row="9"  Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlCtrlScrollWheel"      Grid.Row="10" Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlCtrlScrollWheelDesc"  Grid.Row="10" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlAltScrollWheel"       Grid.Row="11" Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlAltScrollWheelDesc"   Grid.Row="11" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlCtrlAltScrollWheel"     Grid.Row="12" Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlCtrlAltScrollWheelDesc" Grid.Row="12" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlZoomButtons"          Grid.Row="13" Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlZoomButtonsDesc"      Grid.Row="13" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlAnimPreview"          Grid.Row="14" Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlAnimPreviewDesc"      Grid.Row="14" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlSaveMap"              Grid.Row="15" Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlSaveMapDesc"          Grid.Row="15" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlDiscardMap"           Grid.Row="16" Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlDiscardMapDesc"       Grid.Row="16" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+            <TextBlock x:Name="_ctrlPaletteClick"         Grid.Row="17" Grid.Column="0" Foreground="#8B84AE" FontSize="11"/>
+            <TextBlock x:Name="_ctrlPaletteClickDesc"     Grid.Row="17" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap"/>
+          </Grid>
+        </Border>
+      </StackPanel>
+
+      <!-- ══ Selection & Clipboard ════════════════════════════════════════════ -->
+      <StackPanel Spacing="6">
+        <TextBlock x:Name="_selectionHeader" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource MirageMutedBrush}"/>
+        <Separator Background="{DynamicResource MirageLineSoftBrush}"/>
+
+        <Border Background="{DynamicResource MirageConsoleBrush}" CornerRadius="4" Padding="10,8">
+          <StackPanel Spacing="6">
+            <TextBlock x:Name="_selectionIntro" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
+            <Grid ColumnDefinitions="Auto,*"
+                  RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                  Margin="0,4,0,0">
+              <TextBlock x:Name="_selActionPlace"          Grid.Row="1" Grid.Column="0" Foreground="#8B84AE" FontSize="11" MinWidth="180" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_selActionPlaceDesc"      Grid.Row="1" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_selActionSelection"      Grid.Row="2" Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_selActionSelectionDesc"  Grid.Row="2" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_selCtrlCSelection"       Grid.Row="4" Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_selCtrlCSelectionDesc"   Grid.Row="4" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_selActionDelete"           Grid.Row="3" Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_selActionDeleteDesc"       Grid.Row="3" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_selCtrlXSelection"       Grid.Row="5" Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_selCtrlXSelectionDesc"   Grid.Row="5" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_selModeKeys"       Grid.Row="0" Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_selModeKeysDesc"   Grid.Row="0" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_selClickPlace"           Grid.Row="6" Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_selClickPlaceDesc"       Grid.Row="6" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_selCtrlShiftClick"       Grid.Row="7" Grid.Column="0" Foreground="#8B84AE" FontSize="11" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_selCtrlShiftClickDesc"   Grid.Row="7" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_selEsc"                  Grid.Row="8" Grid.Column="0" Foreground="#8B84AE" FontSize="11"/>
+              <TextBlock x:Name="_selEscDesc"              Grid.Row="8" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap"/>
+            </Grid>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+
+      <!-- ══ Tile Layers ═══════════════════════════════════════════════════════ -->
+      <StackPanel Spacing="6">
+        <TextBlock x:Name="_layersHeader" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource MirageMutedBrush}"/>
+        <Separator Background="{DynamicResource MirageLineSoftBrush}"/>
+
+        <Border Background="{DynamicResource MirageConsoleBrush}" CornerRadius="4" Padding="10,8">
+          <StackPanel Spacing="6">
+            <TextBlock x:Name="_layersIntro" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="0,4,0,0">
+              <TextBlock x:Name="_layerGround"       Grid.Row="0" Grid.Column="0" Foreground="#AAFFAA" FontWeight="SemiBold" FontSize="11" MinWidth="72" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_layerGroundDesc"   Grid.Row="0" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_layerFringe"       Grid.Row="1" Grid.Column="0" Foreground="#AAFFAA" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_layerFringeDesc"   Grid.Row="1" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_layerCanopy"       Grid.Row="2" Grid.Column="0" Foreground="#AAFFAA" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_layerCanopyDesc"   Grid.Row="2" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_layerAnimFlag"     Grid.Row="3" Grid.Column="0" Foreground="#AAFFAA" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_layerAnimFlagDesc" Grid.Row="3" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,5"/>
+              <TextBlock x:Name="_layerTileset"      Grid.Row="4" Grid.Column="0" Foreground="#AAFFAA" FontWeight="SemiBold" FontSize="11"/>
+              <TextBlock x:Name="_layerTilesetDesc"  Grid.Row="4" Grid.Column="1" Foreground="#CFC9E4" FontSize="11" TextWrapping="Wrap"/>
+            </Grid>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+
+      <!-- ══ Attribute Reference ═══════════════════════════════════════════════ -->
+      <StackPanel Spacing="6">
+        <TextBlock x:Name="_attributeHeader" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource MirageMutedBrush}"/>
+        <Separator Background="{DynamicResource MirageLineSoftBrush}"/>
+        <TextBlock x:Name="_attributesIntro" TextWrapping="Wrap" Foreground="#6B6491" FontSize="11"/>
+
+        <!-- Blocked -->
+        <Border BorderThickness="4,0,0,0" BorderBrush="#FF4444"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_attrBlocked" FontWeight="SemiBold" Foreground="#FF8888"/>
+            <TextBlock x:Name="_attrBlockedDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+          </StackPanel>
+        </Border>
+
+        <!-- Warp -->
+        <Border BorderThickness="4,0,0,0" BorderBrush="#4466FF"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_attrWarp" FontWeight="SemiBold" Foreground="#8899FF"/>
+            <TextBlock x:Name="_attrWarpDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+            <TextBlock x:Name="_attrWarpData" Foreground="#5A5480" FontSize="10"/>
+          </StackPanel>
+        </Border>
+
+        <!-- Item -->
+        <Border BorderThickness="4,0,0,0" BorderBrush="#BBBB00"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_attrItem" FontWeight="SemiBold" Foreground="#DDDD44"/>
+            <TextBlock x:Name="_attrItemDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+            <TextBlock x:Name="_attrItemData" Foreground="#5A5480" FontSize="10"/>
+          </StackPanel>
+        </Border>
+
+        <!-- NPC Avoid -->
+        <Border BorderThickness="4,0,0,0" BorderBrush="#888888"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_attrNpcAvoid" FontWeight="SemiBold" Foreground="#AAAAAA"/>
+            <TextBlock x:Name="_attrNpcAvoidDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+          </StackPanel>
+        </Border>
+
+        <!-- Key -->
+        <Border BorderThickness="4,0,0,0" BorderBrush="{DynamicResource MirageWarnBrush}"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_attrKey" FontWeight="SemiBold" Foreground="#FFBB44"/>
+            <TextBlock x:Name="_attrKeyDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+            <TextBlock x:Name="_attrKeyDoorDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+            <TextBlock x:Name="_attrKeyData" Foreground="#5A5480" FontSize="10"/>
+          </StackPanel>
+        </Border>
+
+        <!-- KeyOpen -->
+        <Border BorderThickness="4,0,0,0" BorderBrush="#A020F0"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_attrKeyOpen" FontWeight="SemiBold" Foreground="#CC66FF"/>
+            <TextBlock x:Name="_attrKeyOpenDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+            <TextBlock x:Name="_attrKeyOpenData" Foreground="#5A5480" FontSize="10"/>
+          </StackPanel>
+        </Border>
+
+        <!-- NpcSpawn (fixed spawn pin) -->
+        <Border BorderThickness="4,0,0,0" BorderBrush="#00B8D4"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_attrNpcSpawn" FontWeight="SemiBold" Foreground="#66E0F5"/>
+            <TextBlock x:Name="_attrNpcSpawnDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+          </StackPanel>
+        </Border>
+
+        <!-- Layer Ramp (two-plane world connector) -->
+        <Border BorderThickness="4,0,0,0" BorderBrush="#33CC55"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_attrLayerRamp" FontWeight="SemiBold" Foreground="#88FF99"/>
+            <TextBlock x:Name="_attrLayerRampDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+            <TextBlock x:Name="_attrLayerRampData" Foreground="#5A5480" FontSize="10"/>
+          </StackPanel>
+        </Border>
+
+      </StackPanel>
+
+      <!-- == The World ========================================================= -->
+      <StackPanel Spacing="6">
+        <TextBlock x:Name="_worldHeader" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource MirageMutedBrush}"/>
+        <Separator Background="{DynamicResource MirageLineSoftBrush}"/>
+        <TextBlock x:Name="_worldIntro" TextWrapping="Wrap" Foreground="#6B6491" FontSize="11"/>
+
+        <Border BorderThickness="4,0,0,0" BorderBrush="{DynamicResource MirageAccentDimBrush}"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_worldWorldFolder" FontWeight="SemiBold" Foreground="{DynamicResource MirageAccentBrush}"/>
+            <TextBlock x:Name="_worldWorldFolderDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+          </StackPanel>
+        </Border>
+
+        <Border BorderThickness="4,0,0,0" BorderBrush="{DynamicResource MirageAccentDimBrush}"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_worldMapSlots" FontWeight="SemiBold" Foreground="{DynamicResource MirageAccentBrush}"/>
+            <TextBlock x:Name="_worldMapSlotsDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+          </StackPanel>
+        </Border>
+
+        <Border BorderThickness="4,0,0,0" BorderBrush="{DynamicResource MirageAccentDimBrush}"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_worldMapSize" FontWeight="SemiBold" Foreground="{DynamicResource MirageAccentBrush}"/>
+            <TextBlock x:Name="_worldMapSizeDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+          </StackPanel>
+        </Border>
+
+        <Border BorderThickness="4,0,0,0" BorderBrush="{DynamicResource MirageAccentDimBrush}"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_worldLinks" FontWeight="SemiBold" Foreground="{DynamicResource MirageAccentBrush}"/>
+            <TextBlock x:Name="_worldLinksDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+          </StackPanel>
+        </Border>
+
+        <Border BorderThickness="4,0,0,0" BorderBrush="{DynamicResource MirageAccentDimBrush}"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_worldGroups" FontWeight="SemiBold" Foreground="{DynamicResource MirageAccentBrush}"/>
+            <TextBlock x:Name="_worldGroupsDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+          </StackPanel>
+        </Border>
+
+        <Border BorderThickness="4,0,0,0" BorderBrush="{DynamicResource MirageAccentDimBrush}"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_worldProperties" FontWeight="SemiBold" Foreground="{DynamicResource MirageAccentBrush}"/>
+            <TextBlock x:Name="_worldPropertiesDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+          </StackPanel>
+        </Border>
+
+        <Border BorderThickness="4,0,0,0" BorderBrush="{DynamicResource MirageAccentDimBrush}"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_worldPlanes" FontWeight="SemiBold" Foreground="{DynamicResource MirageAccentBrush}"/>
+            <TextBlock x:Name="_worldPlanesDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+          </StackPanel>
+        </Border>
+
+      </StackPanel>
+
+      <!-- == Views ============================================================= -->
+      <StackPanel Spacing="6">
+        <TextBlock x:Name="_viewsHeader" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource MirageMutedBrush}"/>
+        <Separator Background="{DynamicResource MirageLineSoftBrush}"/>
+        <TextBlock x:Name="_viewsIntro" TextWrapping="Wrap" Foreground="#6B6491" FontSize="11"/>
+
+        <Border BorderThickness="4,0,0,0" BorderBrush="{DynamicResource MirageAccentDimBrush}"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_viewsWorldPreview" FontWeight="SemiBold" Foreground="{DynamicResource MirageAccentBrush}"/>
+            <TextBlock x:Name="_viewsWorldPreviewDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+          </StackPanel>
+        </Border>
+
+        <Border BorderThickness="4,0,0,0" BorderBrush="{DynamicResource MirageAccentDimBrush}"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_viewsLayerVisibility" FontWeight="SemiBold" Foreground="{DynamicResource MirageAccentBrush}"/>
+            <TextBlock x:Name="_viewsLayerVisibilityDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+          </StackPanel>
+        </Border>
+
+        <Border BorderThickness="4,0,0,0" BorderBrush="{DynamicResource MirageAccentDimBrush}"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_viewsConsole" FontWeight="SemiBold" Foreground="{DynamicResource MirageAccentBrush}"/>
+            <TextBlock x:Name="_viewsConsoleDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+          </StackPanel>
+        </Border>
+
+      </StackPanel>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</Window>

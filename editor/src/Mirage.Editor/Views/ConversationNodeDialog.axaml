@@ -1,0 +1,62 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="using:Mirage.Editor.Models"
+        xmlns:controls="using:Mirage.Editor.Controls"
+        xmlns:vm="using:Mirage.Editor.ViewModels"
+        x:DataType="vm:ConversationNodeRowViewModel"
+        x:Class="Mirage.Editor.Views.ConversationNodeDialog"
+        Width="620" Height="540" MinWidth="460" MinHeight="360"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+
+  <!-- One dialogue node, opened by clicking its box on the graph. Every branch out of the node is set
+       here, on the choice rows: the canvas draws connections, it never makes them. -->
+  <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="16">
+
+    <TextBox Grid.Row="0" Text="{Binding Speaker}" PlaceholderText="{Binding SpeakerPlaceholder}"/>
+
+    <TextBox Grid.Row="1" Margin="0,8,0,0" Text="{Binding Text}" PlaceholderText="{Binding TextPlaceholder}"
+             AcceptsReturn="True" TextWrapping="Wrap" Height="120" VerticalContentAlignment="Top"/>
+
+    <DockPanel Grid.Row="2" Margin="0,12,0,0">
+      <TextBlock DockPanel.Dock="Top" Text="{Binding ChoicesLabel}" FontWeight="SemiBold"
+                 Foreground="{DynamicResource MirageMutedBrush}" FontSize="11" Margin="0,0,0,4"/>
+      <TextBlock DockPanel.Dock="Top" Text="{Binding NoChoicesHint}" FontStyle="Italic" FontSize="11"
+                 Foreground="{DynamicResource MirageFaintBrush}" Margin="0,0,0,4"
+                 IsVisible="{Binding HasNoChoices}"/>
+      <Button DockPanel.Dock="Bottom" Content="{Binding AddChoiceLabel}" Command="{Binding AddChoiceCommand}"
+              HorizontalAlignment="Left" Padding="10,3" Margin="0,6,0,0"/>
+      <ScrollViewer>
+        <ItemsControl ItemsSource="{Binding Choices}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:ConversationChoiceRowViewModel">
+              <Grid ColumnDefinitions="2*,2*,*,34" HorizontalAlignment="Stretch" Margin="0,0,0,4">
+                <TextBox Grid.Column="0" Text="{Binding Label}" PlaceholderText="{Binding LabelPlaceholder}"/>
+                <controls:DropdownAutoCompleteBox Grid.Column="1" Margin="4,0,0,0"
+                                 ItemsSource="{Binding NextNodeEntries}"
+                                 SelectedItem="{Binding SelectedNextNode, Mode=TwoWay}"
+                                 ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                                 FilterMode="Custom" MinimumPrefixLength="0"
+                                 PlaceholderText="{Binding NextPlaceholder}"/>
+                <ComboBox Grid.Column="2" Margin="4,0,0,0" ItemsSource="{Binding Actions}"
+                          SelectedItem="{Binding Action}" HorizontalAlignment="Stretch"/>
+                <Button Grid.Column="3" Content="-" FontWeight="Bold"
+                        Command="{Binding $parent[ItemsControl].((vm:ConversationNodeRowViewModel)DataContext).RemoveChoiceCommand}"
+                        CommandParameter="{Binding}"
+                        Classes="glyph" Margin="4,0,0,0"
+                        HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </DockPanel>
+
+    <!-- Deleting is here because the canvas has no per-node controls of its own. There is no Cancel: the
+         form edits the conversation live, exactly as the text view does, and Discard is what undoes it. -->
+    <DockPanel Grid.Row="3" Margin="0,12,0,0">
+      <Button Name="DeleteButton" DockPanel.Dock="Left" Classes="danger" HorizontalAlignment="Left"/>
+      <Button Name="CloseButton" Classes="primary" HorizontalAlignment="Right" IsDefault="True" IsCancel="True"/>
+    </DockPanel>
+  </Grid>
+</Window>

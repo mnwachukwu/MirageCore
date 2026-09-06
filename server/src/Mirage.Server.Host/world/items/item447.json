@@ -1,0 +1,13 @@
+{
+  "name": "Scroll of Elder Attunement",
+  "pic": 29,
+  "itemSheet": 0,
+  "type": "Spell",
+  "spellNum": 159,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 340831
+}

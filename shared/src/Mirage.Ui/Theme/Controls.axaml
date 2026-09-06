@@ -1,0 +1,59 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    A tab that is a SHAPE, joined to the pane below it.
+
+    Written as a whole ControlTheme rather than as setters over the stock one. The default draws an
+    underline that slides between headers, and its parts are named differently from Avalonia's own
+    FluentTheme, so overriding it piecemeal means guessing at element names that fail silently when
+    wrong. Owning the template is shorter than discovering it.
+  -->
+  <ControlTheme x:Key="{x:Type TabItem}" TargetType="TabItem">
+    <Setter Property="FontSize" Value="13.5"/>
+    <Setter Property="Padding" Value="17,8"/>
+    <Setter Property="Margin" Value="0,0,2,0"/>
+    <Setter Property="MinHeight" Value="34"/>
+    <Setter Property="Foreground" Value="{DynamicResource MirageMutedBrush}"/>
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="VerticalContentAlignment" Value="Center"/>
+    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="Root"
+                Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}"
+                BorderThickness="{TemplateBinding BorderThickness}"
+                CornerRadius="7,7,0,0">
+          <ContentPresenter Name="PART_ContentPresenter"
+                            Content="{TemplateBinding Header}"
+                            ContentTemplate="{TemplateBinding HeaderTemplate}"
+                            Padding="{TemplateBinding Padding}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+
+    <Style Selector="^:pointerover">
+      <Setter Property="Background" Value="{DynamicResource MirageBgAltBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource MirageTextBrush}"/>
+    </Style>
+
+    <!-- Selected shares the pane's fill and squares nothing off, so tab and pane read as one surface.
+         The accent rides the TOP edge: along the bottom it would sit in the join and undo it. -->
+    <Style Selector="^:selected">
+      <Setter Property="Background" Value="{DynamicResource MirageSurfaceBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource MirageTextBrush}"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource MirageAccentBrush}"/>
+      <Setter Property="BorderThickness" Value="0,2,0,0"/>
+    </Style>
+
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource MirageFaintBrush}"/>
+    </Style>
+  </ControlTheme>
+
+</ResourceDictionary>

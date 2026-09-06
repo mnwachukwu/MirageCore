@@ -1,0 +1,10 @@
+{
+  "name": "Void Endurance",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddSp",
+  "vitalAmount": 368,
+  "levelReq": 240
+}

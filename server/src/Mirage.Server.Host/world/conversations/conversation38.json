@@ -1,0 +1,58 @@
+{
+  "name": "Emberwright Osk (Local)",
+  "speakerNpc": 177,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "The Cinderwaste. Two thirty-five at the gate, two fifty-five at the throne, and nothing in there is having a good day.\n\nThis is the last road. There isn't another one after it.",
+      "choices": [
+        {
+          "label": "What's at the end?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "Two thirty-five? From where?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "Not today.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "The Ashen Throne, and the First Flame beside it. They are the top of the world and they are not subtle about it.\n\nBring three friends. I will not soften that.",
+      "choices": [
+        {
+          "label": "Where does the road start?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "Understood.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "speaker": "",
+      "text": "From the Reach, when it stops paying - same as the marsh stopped paying before it.\n\nThe gap is bigger this time. A hundred and twenty to two thirty-five, and nothing between. Everyone crossing it does so on the last road's wages.",
+      "choices": [
+        {
+          "label": "I'll be back.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

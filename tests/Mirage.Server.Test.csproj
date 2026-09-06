@@ -1,0 +1,67 @@
+<Project Sdk="Microsoft.Build.NoTargets/3.7.0">
+
+  <!-- Runs both server suites — the test-side mirror of Mirage.Server.Publish.csproj, and one of four
+       such drivers (client, server, editor, plus the aggregate Mirage.Test.csproj at the repository
+       root).
+
+       Why an area driver exists at all when `dotnet test <project>` is one line: this is the name a
+       reader already knows. Publishing the server is Mirage.Server.Publish.csproj, so testing it is
+       Mirage.Server.Test.csproj, and neither requires remembering where the suite happens to live.
+       These four drivers are the only files that name where a suite lives, so relocating one edits
+       them and nothing that calls them.
+
+         dotnet msbuild tests/Mirage.Server.Test.csproj /t:TestAll
+
+       Two suites. Mirage.Server.Tests covers Mirage.Shared as well as the server itself — the shared
+       protocol types, records and formulas have no suite of their own and are exercised from here.
+       Mirage.Server.Shell.Tests covers the Avalonia management window that ships beside the console
+       server. Neither takes a MonoGame dependency, so both run on all three platforms. -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <_ServerTests>$(MSBuildThisFileDirectory)src/Mirage.Server.Tests/Mirage.Server.Tests.csproj</_ServerTests>
+    <_ServerShellTests>$(MSBuildThisFileDirectory)src/Mirage.Server.Shell.Tests/Mirage.Server.Shell.Tests.csproj</_ServerShellTests>
+    <_AllTests>$(_ServerTests);$(_ServerShellTests)</_AllTests>
+  </PropertyGroup>
+
+  <!-- Built through the MSBuild task rather than left to `dotnet test`, for the reason spelled out at
+       length in Mirage.Test.csproj: a nested `dotnet test` is a separate MSBuild PROCESS writing the
+       same bin/obj as an outer solution build, and cross-process builds share no result cache.
+       Routing the build through the task puts it in this build's own scheduler instead. -->
+  <Target Name="BuildSuites">
+    <MSBuild Projects="$(_AllTests)" Targets="Restore" BuildInParallel="true" Properties="_RestorePass=true" />
+    <!-- The distinguishing property goes on RESTORE, not Build. Both calls need their own evaluation -
+         sharing one leaves a never-restored suite compiling with no package assets - but a global property
+         forks the build configuration and flows down every ProjectReference, so on Build it starts a second
+         compile of the whole dependency graph into the same obj/. See Mirage.Test.csproj for the full note. -->
+    <MSBuild Projects="$(_AllTests)" Targets="Build" BuildInParallel="true" />
+  </Target>
+
+  <Target Name="TestAll" DependsOnTargets="BuildSuites">
+    <!-- ContinueOnError, as in the aggregate: a red Server suite should not hide the Shell result. -->
+    <Message Text="── Server ──" Importance="High" />
+    <Exec Command="dotnet test &quot;$(_ServerTests)&quot; --no-build --configuration $(Configuration) --nologo --filter &quot;TestCategory!=Content&quot;" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="_ServerExit" />
+    </Exec>
+    <Message Text="── Server.Shell ──" Importance="High" />
+    <Exec Command="dotnet test &quot;$(_ServerShellTests)&quot; --no-build --configuration $(Configuration) --nologo" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="_ServerShellExit" />
+    </Exec>
+
+    <Error Condition="'$(_ServerExit)$(_ServerShellExit)' != '00'"
+           Text="Server test suites failed — Server=$(_ServerExit) Server.Shell=$(_ServerShellExit)." />
+    <Message Text="═══ Server test suites passed ═══" Importance="High" />
+  </Target>
+
+  <!-- Build does NOT chain to TestAll, and that is the whole point of this target existing.
+       This project is a member of Mirage.slnx, where Mirage.Test.csproj already runs every suite on
+       a solution build. If this one ran its suite too, `dotnet build Mirage.slnx` would test the
+       server twice — the same double-work that once turned a 9-second solution build into a
+       127-second one when the Publish projects defaulted to publishing. Requesting TestAll
+       explicitly is what makes an area driver free to sit in the solution. -->
+  <Target Name="Build">
+    <Message Importance="High"
+             Text="Mirage.Server.Test: nothing run. Use /t:TestAll to test both server suites on their own; a solution build already tests everything via Mirage.Test.csproj." />
+  </Target>
+
+</Project>

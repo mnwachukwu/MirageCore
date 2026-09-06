@@ -1,0 +1,24 @@
+{
+  "name": "Ash-Sweep Tam",
+  "attackSay": "Sweep it or it climbs the walls. I've seen it climb the walls.",
+  "sprite": 27,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 60,
+  "behavior": "Friendly",
+  "group": 0,
+  "range": 4,
+  "str": 18,
+  "def": 143,
+  "spd": 18,
+  "int": 18,
+  "extraHp": 0,
+  "isBoss": false,
+  "emitsLight": true,
+  "light": {
+    "rgb": 11834985,
+    "radius": 3,
+    "flicker": "Flame",
+    "intensity": 1
+  }
+}

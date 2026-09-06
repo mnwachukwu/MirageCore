@@ -1,0 +1,19 @@
+{
+  "name": "Sundered Plate",
+  "pic": 5,
+  "itemSheet": 0,
+  "type": "Armor",
+  "durability": 1940,
+  "power": 368,
+  "levelReq": 240,
+  "allowedClasses": [
+    3,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1485030
+}

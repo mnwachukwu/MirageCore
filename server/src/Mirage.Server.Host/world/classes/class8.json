@@ -1,0 +1,51 @@
+{
+  "name": "Slinger",
+  "description": "Nimble caster. High power range with speed.",
+  "spriteMale": 25,
+  "spriteFemale": 26,
+  "spriteSheetMale": 0,
+  "spriteSheetFemale": 0,
+  "str": 0,
+  "def": 0,
+  "spd": 5,
+  "int": 15,
+  "startingItems": [
+    {
+      "itemNum": 1,
+      "quantity": 105
+    },
+    {
+      "itemNum": 2,
+      "quantity": 10
+    },
+    {
+      "itemNum": 184,
+      "quantity": 0
+    },
+    {
+      "itemNum": 185,
+      "quantity": 0
+    },
+    {
+      "itemNum": 185,
+      "quantity": 0
+    },
+    {
+      "itemNum": 185,
+      "quantity": 0
+    },
+    {
+      "itemNum": 186,
+      "quantity": 0
+    },
+    {
+      "itemNum": 186,
+      "quantity": 0
+    }
+  ],
+  "startingSpells": [
+    2,
+    17,
+    4
+  ]
+}

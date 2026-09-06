@@ -1,0 +1,12 @@
+{
+  "name": "Apprentice Vigor",
+  "allowedClasses": [
+    7,
+    8,
+    9,
+    10
+  ],
+  "type": "AddSp",
+  "vitalAmount": 13,
+  "levelReq": 5
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Master Mend",
+  "allowedClasses": [
+    6,
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 95,
+  "levelReq": 100
+}

@@ -1,0 +1,84 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Mirage.Editor.ViewModels"
+        x:Class="Mirage.Editor.Views.WorldTransferDialog"
+        x:DataType="vm:WorldTransferDialogViewModel"
+        Width="720" Height="620"
+        WindowStartupLocation="CenterOwner">
+
+  <Window.Resources>
+    <DataTemplate x:Key="ChangeRow" x:DataType="vm:WorldChangeRowViewModel">
+      <Grid Margin="0,2">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="130"/>
+          <ColumnDefinition Width="60"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Column="0" Text="{Binding Section}" FontSize="12"
+                   Foreground="{DynamicResource MirageMutedBrush}"/>
+        <TextBlock Grid.Column="1" Text="{Binding Num}" FontSize="12"
+                   HorizontalAlignment="Right" Margin="0,0,10,0"/>
+        <TextBlock Grid.Column="2" Text="{Binding Name}" FontSize="12" TextTrimming="CharacterEllipsis"/>
+      </Grid>
+    </DataTemplate>
+  </Window.Resources>
+
+  <DockPanel Margin="20">
+
+    <StackPanel DockPanel.Dock="Top" Spacing="4">
+      <TextBlock x:Name="_route" FontSize="12" TextWrapping="Wrap"
+                 Foreground="{DynamicResource MirageMutedBrush}"/>
+      <TextBlock Text="{Binding Summary}" FontSize="14" FontWeight="SemiBold"/>
+    </StackPanel>
+
+    <Border DockPanel.Dock="Top" Margin="0,12,0,0" Padding="10,8" CornerRadius="4"
+            Background="{DynamicResource MirageBgAltBrush}"
+            BorderBrush="{DynamicResource MirageWarnBrush}" BorderThickness="3,0,0,0">
+      <TextBlock Text="{Binding BackupAdvice}" TextWrapping="Wrap" FontSize="12"/>
+    </Border>
+
+    <Border DockPanel.Dock="Top" Margin="0,8,0,0" Padding="10,8" CornerRadius="4"
+            IsVisible="{Binding HasOverCeiling}"
+            Background="{DynamicResource MirageBgAltBrush}"
+            BorderBrush="{DynamicResource MirageBadBrush}" BorderThickness="3,0,0,0">
+      <TextBlock Text="{Binding OverCeilingNotice}" TextWrapping="Wrap" FontSize="12"
+                 Foreground="{DynamicResource MirageBadBrush}"/>
+    </Border>
+
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                HorizontalAlignment="Right" Spacing="8" Margin="0,14,0,0">
+      <Button x:Name="_cancelBtn" Command="{Binding CancelCommand}" IsCancel="True"/>
+      <Button x:Name="_applyBtn" Command="{Binding ConfirmCommand}" IsDefault="True" Classes="primary"/>
+    </StackPanel>
+
+    <ScrollViewer Margin="0,12,0,0">
+      <StackPanel Spacing="8">
+
+        <Expander Header="{Binding AddedHeader}" IsExpanded="True" IsVisible="{Binding HasAdded}">
+          <ItemsControl ItemsSource="{Binding Added}" ItemTemplate="{StaticResource ChangeRow}"/>
+        </Expander>
+
+        <Expander Header="{Binding ChangedHeader}" IsExpanded="True" IsVisible="{Binding HasChanged}">
+          <ItemsControl ItemsSource="{Binding Changed}" ItemTemplate="{StaticResource ChangeRow}"/>
+        </Expander>
+
+        <!-- Removals carry their own warning and their own switch: they are the one bucket that destroys
+             something, and the one whose cause the two folders cannot tell apart. -->
+        <Expander Header="{Binding RemovedHeader}" IsExpanded="True" IsVisible="{Binding HasRemovals}">
+          <StackPanel Spacing="8">
+            <Border Padding="10,8" CornerRadius="4"
+                    Background="{DynamicResource MirageBgAltBrush}"
+                    BorderBrush="{DynamicResource MirageBadBrush}" BorderThickness="3,0,0,0">
+              <TextBlock Text="{Binding RemovalsWarning}" TextWrapping="Wrap" FontSize="12"
+                         Foreground="{DynamicResource MirageBadBrush}"/>
+            </Border>
+            <CheckBox Content="{Binding IncludeRemovalsLabel}" IsChecked="{Binding IncludeRemovals}"/>
+            <ItemsControl ItemsSource="{Binding Removed}" ItemTemplate="{StaticResource ChangeRow}"/>
+          </StackPanel>
+        </Expander>
+
+      </StackPanel>
+    </ScrollViewer>
+
+  </DockPanel>
+</Window>

@@ -1,0 +1,13 @@
+{
+  "name": "Scroll of Expert Focus",
+  "pic": 29,
+  "itemSheet": 0,
+  "type": "Spell",
+  "spellNum": 85,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 3935
+}

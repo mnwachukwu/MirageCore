@@ -1,0 +1,9 @@
+{
+  "name": "Apprentice Mana Rupture",
+  "allowedClasses": [
+    10
+  ],
+  "type": "SubMp",
+  "vitalAmount": 16,
+  "levelReq": 5
+}

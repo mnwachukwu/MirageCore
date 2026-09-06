@@ -1,0 +1,12 @@
+{
+  "name": "Empyrean Vigor",
+  "allowedClasses": [
+    7,
+    8,
+    9,
+    10
+  ],
+  "type": "AddSp",
+  "vitalAmount": 289,
+  "levelReq": 235
+}

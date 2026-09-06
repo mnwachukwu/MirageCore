@@ -1,0 +1,15 @@
+{
+  "name": "Sundered Tunic",
+  "pic": 5,
+  "itemSheet": 0,
+  "type": "Armor",
+  "durability": 1160,
+  "power": 221,
+  "levelReq": 240,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 891825
+}

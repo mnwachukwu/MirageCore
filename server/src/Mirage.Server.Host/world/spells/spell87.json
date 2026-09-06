@@ -1,0 +1,10 @@
+{
+  "name": "Expert Attunement",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 38,
+  "levelReq": 20
+}

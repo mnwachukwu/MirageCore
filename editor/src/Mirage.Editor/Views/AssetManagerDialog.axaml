@@ -1,0 +1,141 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Mirage.Editor.ViewModels"
+        xmlns:services="using:Mirage.Editor.Services"
+        x:Class="Mirage.Editor.Views.AssetManagerDialog"
+        x:DataType="vm:AssetManagerDialogViewModel"
+        Width="820" Height="620"
+        CanResize="True"
+        MinWidth="560" MinHeight="360"
+        WindowStartupLocation="CenterOwner">
+
+  <DockPanel Margin="20">
+
+    <!-- Which class of art, then which footprint size. The size selector only appears for sprites,
+         which are the one class split across more than one folder. -->
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,10">
+      <TextBlock x:Name="_categoryLabel" VerticalAlignment="Center"/>
+      <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding Category, Mode=TwoWay}"
+                MinWidth="160"/>
+      <TextBlock x:Name="_sizeLabel" VerticalAlignment="Center" Margin="8,0,0,0"
+                 IsVisible="{Binding HasSizes}"/>
+      <ComboBox ItemsSource="{Binding SpriteSizes}" SelectedItem="{Binding SpriteSize, Mode=TwoWay}"
+                IsVisible="{Binding HasSizes}" MinWidth="110">
+        <ComboBox.ItemTemplate>
+          <DataTemplate x:DataType="services:AssetFolder">
+            <TextBlock Text="{Binding SizeLabel}"/>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+    </StackPanel>
+
+    <!-- The folder is stated in full: the AssetsDir setting means this is not necessarily the folder the
+         game reads, and a manager that hid which one it was editing would be a trap. -->
+    <TextBlock DockPanel.Dock="Top" Text="{Binding Intro}"
+               TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
+    <TextBlock DockPanel.Dock="Top" Text="{Binding Summary}" FontWeight="SemiBold"
+               Margin="0,4,0,12"/>
+
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                HorizontalAlignment="Right" Spacing="8" Margin="0,14,0,0">
+      <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Opacity="0.8"
+                 TextTrimming="CharacterEllipsis" MaxWidth="420"/>
+      <Button x:Name="_importBtn" Command="{Binding ImportCommand}"/>
+      <Button x:Name="_openFolderBtn" Command="{Binding OpenFolderCommand}"/>
+      <Button x:Name="_closeBtn" Command="{Binding CloseCommand}" IsCancel="True" IsDefault="True"/>
+    </StackPanel>
+
+    <TextBlock x:Name="_emptyNote" DockPanel.Dock="Top" IsVisible="{Binding !HasSheets}"
+               TextWrapping="Wrap" Opacity="0.75" Margin="0,0,0,12"/>
+
+    <ScrollViewer>
+      <StackPanel Spacing="12">
+
+        <!-- Problems first: these are files the loaders skip in silence, so they are the reason somebody
+             opened this window in the first place. -->
+        <StackPanel Spacing="6" IsVisible="{Binding HasProblems}">
+          <TextBlock x:Name="_problemsHeader" FontWeight="SemiBold"/>
+          <ItemsControl ItemsSource="{Binding Problems}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:AssetProblemRowViewModel">
+                <Border Background="{DynamicResource MirageBgAltBrush}"
+                        BorderBrush="{DynamicResource MirageWarnBrush}"
+                        BorderThickness="4,0,0,0" Padding="10,8" Margin="0,0,0,6" CornerRadius="2">
+                  <DockPanel>
+                    <Button DockPanel.Dock="Right" VerticalAlignment="Center" Margin="10,0,0,0"
+                            Content="{Binding FixLabel}" Command="{Binding FixCommand}"
+                            IsVisible="{Binding CanFix}"/>
+                    <TextBlock Text="{Binding Text}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                  </DockPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+
+        <ItemsControl ItemsSource="{Binding Sheets}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:AssetSheetRowViewModel">
+              <Border Background="{DynamicResource MirageBgAltBrush}" Padding="10,8"
+                      Margin="0,0,0,6" CornerRadius="2">
+                <DockPanel>
+                  <!-- A sheet is unreadable at row height, so hovering shows it at a size you can
+                       actually judge. Black behind both: the art is color-keyed or alpha, and either
+                       way it is drawn against black in the game. -->
+                  <Border DockPanel.Dock="Left" Width="64" Height="48" Margin="0,0,12,0"
+                          Background="Black" ClipToBounds="True"
+                          ToolTip.ShowDelay="250" ToolTip.Placement="Right">
+                    <ToolTip.Tip>
+                      <Border Background="Black" Padding="4" CornerRadius="2">
+                        <Image Source="{Binding Preview}" Stretch="Uniform"
+                               MaxWidth="720" MaxHeight="720"/>
+                      </Border>
+                    </ToolTip.Tip>
+                    <Image Source="{Binding Preview}" Stretch="Uniform"/>
+                  </Border>
+
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6"
+                              VerticalAlignment="Center" Margin="12,0,0,0">
+                    <Button Content="{Binding RenameLabel}" Command="{Binding RenameCommand}"/>
+                    <Button Content="{Binding ReplaceLabel}" Command="{Binding ReplaceCommand}"/>
+                    <Button Content="{Binding DeleteLabel}" Command="{Binding DeleteCommand}"/>
+                  </StackPanel>
+
+                  <StackPanel Spacing="2" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Text="{Binding Title}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                      <TextBox Text="{Binding Name, Mode=TwoWay}" MinWidth="160" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding Detail}" FontSize="11" Opacity="0.75"/>
+                    <TextBlock Text="{Binding TransparencyText}" FontSize="11" Opacity="0.75"/>
+                    <TextBlock Text="{Binding UsageText}" FontSize="11" Opacity="0.75"/>
+                  </StackPanel>
+                </DockPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <StackPanel Spacing="6" IsVisible="{Binding HasRecycled}">
+          <TextBlock x:Name="_recycleHeader" FontWeight="SemiBold"/>
+          <ItemsControl ItemsSource="{Binding Recycled}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:RecycledSheetRowViewModel">
+                <Border Background="{DynamicResource MirageBgAltBrush}" Padding="10,6"
+                        Margin="0,0,0,4" CornerRadius="2">
+                  <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="{Binding RestoreLabel}"
+                            Command="{Binding RestoreCommand}" Margin="10,0,0,0"/>
+                    <TextBlock Text="{Binding FileName}" VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"/>
+                  </DockPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</Window>

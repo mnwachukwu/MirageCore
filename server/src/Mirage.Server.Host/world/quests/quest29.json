@@ -1,0 +1,41 @@
+{
+  "name": "Deserters in the Reeds",
+  "description": "3 deserters. They are frightened rather than dangerous, and someone steady should do it rather than someone eager.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 3,
+      "count": 3,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 3,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "allowedClasses": [
+    6,
+    9,
+    10
+  ],
+  "prereqQuest": 0,
+  "rewardExp": 650,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 11
+    }
+  ],
+  "repeatRewardExp": 347,
+  "repeatRewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 6
+    }
+  ],
+  "giverNpc": 126,
+  "turnInNpc": 0,
+  "repeatable": true,
+  "cadence": "Daily"
+}

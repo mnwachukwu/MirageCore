@@ -1,0 +1,9 @@
+{
+  "name": "Journeyman Exhaustion",
+  "allowedClasses": [
+    10
+  ],
+  "type": "SubSp",
+  "vitalAmount": 24,
+  "levelReq": 10
+}

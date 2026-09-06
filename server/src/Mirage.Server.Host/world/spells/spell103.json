@@ -1,0 +1,13 @@
+{
+  "name": "Master Focus",
+  "allowedClasses": [
+    4,
+    5,
+    6,
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 95,
+  "levelReq": 100
+}

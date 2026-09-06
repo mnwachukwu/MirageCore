@@ -1,0 +1,14 @@
+{
+  "name": "Lesser Healing Elixir",
+  "pic": 25,
+  "itemSheet": 0,
+  "type": "PotionAddHp",
+  "vitalAmount": 14,
+  "levelReq": 5,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1
+}

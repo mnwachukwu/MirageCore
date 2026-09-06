@@ -1,0 +1,11 @@
+{
+  "name": "Celestial Enervation",
+  "allowedClasses": [
+    6,
+    7,
+    10
+  ],
+  "type": "SubSp",
+  "vitalAmount": 307,
+  "levelReq": 250
+}

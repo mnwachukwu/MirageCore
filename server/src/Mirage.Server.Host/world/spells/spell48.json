@@ -1,0 +1,10 @@
+{
+  "name": "Journeyman Restoration",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 24,
+  "levelReq": 10
+}

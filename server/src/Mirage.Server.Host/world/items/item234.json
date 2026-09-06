@@ -1,0 +1,14 @@
+{
+  "name": "Radiant Vigor Elixir",
+  "pic": 21,
+  "itemSheet": 0,
+  "type": "PotionAddSp",
+  "vitalAmount": 103,
+  "levelReq": 115,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2603
+}

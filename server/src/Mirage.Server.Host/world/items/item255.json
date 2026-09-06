@@ -1,0 +1,14 @@
+{
+  "name": "Peerless Enervating Vial",
+  "pic": 26,
+  "itemSheet": 0,
+  "type": "PotionSubSp",
+  "vitalAmount": 212,
+  "levelReq": 240,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 18628
+}

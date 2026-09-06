@@ -1,0 +1,9 @@
+{
+  "name": "The Dry Deck Inn",
+  "fixesItems": false,
+  "shopType": "Inn",
+  "allowBanking": true,
+  "keeper": 133,
+  "barterItem": [],
+  "salesItem": []
+}

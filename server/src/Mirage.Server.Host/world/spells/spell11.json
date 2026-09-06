@@ -1,0 +1,10 @@
+{
+  "name": "Novice Heal",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 8,
+  "levelReq": 1
+}

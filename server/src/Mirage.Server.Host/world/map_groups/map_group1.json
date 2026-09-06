@@ -1,0 +1,14 @@
+{
+  "name": "Fenn's Landing",
+  "displayName": "Fenn's Landing",
+  "music": 5,
+  "moral": "Safe",
+  "alwaysLit": true,
+  "bootMap": 0,
+  "bootX": 0,
+  "bootY": 0,
+  "greetingSpeaker": "",
+  "joinSay": "",
+  "leaveSay": "",
+  "territory": false
+}

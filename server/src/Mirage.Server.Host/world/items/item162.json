@@ -1,0 +1,19 @@
+{
+  "name": "Godmarked Greataxe",
+  "pic": 12,
+  "itemSheet": 0,
+  "type": "Weapon",
+  "durability": 1980,
+  "power": 384,
+  "levelReq": 250,
+  "allowedClasses": [
+    1,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1659357
+}

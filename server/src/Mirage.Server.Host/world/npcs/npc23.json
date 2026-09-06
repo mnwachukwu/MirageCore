@@ -1,0 +1,18 @@
+{
+  "name": "Ash Strider",
+  "attackSay": "",
+  "sprite": 21,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 25,
+  "behavior": "AttackWhenAttacked",
+  "group": 0,
+  "range": 2,
+  "str": 11,
+  "def": 8,
+  "spd": 4,
+  "int": 1,
+  "extraHp": 0,
+  "isBoss": false,
+  "emitsLight": false
+}

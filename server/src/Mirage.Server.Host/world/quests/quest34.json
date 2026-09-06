@@ -1,0 +1,41 @@
+{
+  "name": "The Court Drowned",
+  "description": "5 of the court, weekly, from as far back as the shelf allows. They are not fast. They are simply very hard to stop once they have started.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 68,
+      "count": 5,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 112,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "allowedClasses": [
+    4,
+    5,
+    8
+  ],
+  "prereqQuest": 0,
+  "rewardExp": 96346,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 18627
+    }
+  ],
+  "repeatRewardExp": 96346,
+  "repeatRewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 18627
+    }
+  ],
+  "giverNpc": 134,
+  "turnInNpc": 0,
+  "repeatable": true,
+  "cadence": "Weekly"
+}

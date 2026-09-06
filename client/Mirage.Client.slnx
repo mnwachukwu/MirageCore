@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Mirage.Client.Core/Mirage.Client.Core.csproj" />
+    <Project Path="src/Mirage.Client.Shell/Mirage.Client.Shell.csproj" />
+  </Folder>
+  <Folder Name="/Shared/">
+    <Project Path="../shared/src/Mirage.Shared/Mirage.Shared.csproj" />
+    <Project Path="../shared/src/Mirage.Updates/Mirage.Updates.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="../tests/Mirage.Client.Test.csproj" />
+    <Project Path="../tests/src/Mirage.Client.Core.Tests/Mirage.Client.Core.Tests.csproj" />
+    <Project Path="../tests/src/Mirage.Client.Shell.Tests/Mirage.Client.Shell.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Publish/">
+    <Project Path="../publish/Mirage.Client.Publish.csproj" />
+  </Folder>
+</Solution>

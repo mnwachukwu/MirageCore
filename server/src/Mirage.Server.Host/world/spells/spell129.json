@@ -1,0 +1,10 @@
+{
+  "name": "Arch Exsanguination",
+  "allowedClasses": [
+    4,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 174,
+  "levelReq": 110
+}

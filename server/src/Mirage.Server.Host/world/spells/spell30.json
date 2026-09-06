@@ -1,0 +1,10 @@
+{
+  "name": "Apprentice Restoration",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 16,
+  "levelReq": 5
+}

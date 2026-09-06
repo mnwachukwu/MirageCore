@@ -1,0 +1,14 @@
+{
+  "name": "Sovereign Bloodletting",
+  "allowedClasses": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 113,
+  "levelReq": 120
+}

@@ -1,0 +1,45 @@
+{
+  "name": "Wolfman Alpha",
+  "attackSay": "AWOOOOOOOOO!",
+  "sprite": 13,
+  "spriteSheet": 0,
+  "size": 2,
+  "spawnSecs": 300,
+  "behavior": "AttackWhenAttacked",
+  "group": 1,
+  "range": 5,
+  "drops": [
+    {
+      "itemNum": 46,
+      "quantity": 0,
+      "chance": 16
+    },
+    {
+      "itemNum": 49,
+      "quantity": 0,
+      "chance": 12
+    },
+    {
+      "itemNum": 202,
+      "quantity": 0,
+      "chance": 30
+    },
+    {
+      "itemNum": 343,
+      "quantity": 0,
+      "chance": 20
+    },
+    {
+      "itemNum": 348,
+      "quantity": 0,
+      "chance": 15
+    }
+  ],
+  "str": 37,
+  "def": 29,
+  "spd": 4,
+  "int": 2,
+  "extraHp": 797,
+  "isBoss": true,
+  "emitsLight": false
+}

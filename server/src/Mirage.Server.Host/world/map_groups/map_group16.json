@@ -1,0 +1,13 @@
+{
+  "name": "The Ridge",
+  "displayName": "The Ridge",
+  "music": 4,
+  "moral": "None",
+  "bootMap": 0,
+  "bootX": 0,
+  "bootY": 0,
+  "greetingSpeaker": "",
+  "joinSay": "",
+  "leaveSay": "",
+  "territory": true
+}

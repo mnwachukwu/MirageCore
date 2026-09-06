@@ -1,0 +1,10 @@
+{
+  "name": "Journeyman Attunement",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 24,
+  "levelReq": 10
+}

@@ -1,0 +1,35 @@
+{
+  "name": "Company Halberdier",
+  "attackSay": "Form up! Form up!",
+  "sprite": 4,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 40,
+  "behavior": "AttackOnSight",
+  "group": 4,
+  "range": 3,
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 17,
+      "chance": 60
+    },
+    {
+      "itemNum": 275,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 275,
+      "quantity": 0,
+      "chance": 2
+    }
+  ],
+  "str": 19,
+  "def": 16,
+  "spd": 4,
+  "int": 3,
+  "extraHp": 0,
+  "isBoss": false,
+  "emitsLight": true
+}

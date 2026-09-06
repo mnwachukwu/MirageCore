@@ -1,0 +1,10 @@
+{
+  "name": "Void Attunement",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 368,
+  "levelReq": 240
+}

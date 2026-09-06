@@ -1,0 +1,14 @@
+{
+  "name": "Lesser Enervating Vial",
+  "pic": 26,
+  "itemSheet": 0,
+  "type": "PotionSubSp",
+  "vitalAmount": 7,
+  "levelReq": 5,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1
+}

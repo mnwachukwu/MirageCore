@@ -1,0 +1,125 @@
+{
+  "name": "The Kiln Warden",
+  "attackSay": "The Kiln takes what it is owed.",
+  "sprite": 36,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 300,
+  "behavior": "AttackWhenAttacked",
+  "group": 3,
+  "range": 5,
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 358,
+      "chance": 90
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 42,
+      "quantity": 0,
+      "chance": 16
+    },
+    {
+      "itemNum": 41,
+      "quantity": 0,
+      "chance": 12
+    },
+    {
+      "itemNum": 203,
+      "quantity": 0,
+      "chance": 30
+    },
+    {
+      "itemNum": 357,
+      "quantity": 0,
+      "chance": 20
+    },
+    {
+      "itemNum": 344,
+      "quantity": 0,
+      "chance": 15
+    }
+  ],
+  "str": 37,
+  "def": 29,
+  "spd": 4,
+  "int": 2,
+  "extraHp": 454,
+  "isBoss": true,
+  "emitsLight": true
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Adept Mana Rupture",
+  "allowedClasses": [
+    10
+  ],
+  "type": "SubMp",
+  "vitalAmount": 31,
+  "levelReq": 15
+}

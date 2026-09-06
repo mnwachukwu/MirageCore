@@ -1,0 +1,9 @@
+{
+  "name": "Journeyman Mana Rupture",
+  "allowedClasses": [
+    10
+  ],
+  "type": "SubMp",
+  "vitalAmount": 24,
+  "levelReq": 10
+}

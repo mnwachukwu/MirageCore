@@ -1,0 +1,14 @@
+{
+  "name": "Master Bloodletting",
+  "allowedClasses": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 95,
+  "levelReq": 100
+}

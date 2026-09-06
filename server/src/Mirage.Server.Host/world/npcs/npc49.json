@@ -1,0 +1,25 @@
+{
+  "name": "Bog Runner",
+  "attackSay": "",
+  "sprite": 20,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 20,
+  "behavior": "AttackWhenAttacked",
+  "group": 0,
+  "range": 2,
+  "drops": [
+    {
+      "itemNum": 186,
+      "quantity": 0,
+      "chance": 10
+    }
+  ],
+  "str": 7,
+  "def": 5,
+  "spd": 3,
+  "int": 1,
+  "extraHp": 0,
+  "isBoss": false,
+  "emitsLight": false
+}

@@ -1,0 +1,41 @@
+{
+  "name": "Darters off the Shelf",
+  "description": "Reef darters are quick and they do not close. 3, at range, before they nest.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 56,
+      "count": 3,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 103,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "allowedClasses": [
+    4,
+    5,
+    8
+  ],
+  "prereqQuest": 0,
+  "rewardExp": 3136,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 573
+    }
+  ],
+  "repeatRewardExp": 1673,
+  "repeatRewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 306
+    }
+  ],
+  "giverNpc": 134,
+  "turnInNpc": 0,
+  "repeatable": true,
+  "cadence": "Daily"
+}

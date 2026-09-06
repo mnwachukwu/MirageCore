@@ -1,0 +1,10 @@
+{
+  "name": "Celestial Endurance",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddSp",
+  "vitalAmount": 384,
+  "levelReq": 250
+}

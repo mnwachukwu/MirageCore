@@ -1,0 +1,130 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Mirage.Server.Shell.ViewModels"
+        x:Class="Mirage.Server.Shell.Views.BenchWindow"
+        x:DataType="vm:BenchViewModel"
+        Title="{Binding Title}"
+        Width="760" Height="720"
+        MinWidth="620" MinHeight="480"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource MirageBgBrush}">
+
+  <!-- A dialog rather than a tab: this is a measurement an operator takes once and then acts on, not a
+       place they work. It owns a whole second server for as long as it is open, which is another reason
+       not to leave it sitting in the tab strip. -->
+  <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="16,14,16,12">
+
+    <StackPanel Grid.Row="0" Spacing="8">
+      <TextBlock Classes="hint" Text="{Binding Blurb}" TextWrapping="Wrap"/>
+      <!-- The warning is the one line here that costs somebody something if it is missed, so it is the
+           one line that is not grey. -->
+      <TextBlock Text="{Binding Warning}" TextWrapping="Wrap" FontSize="12"
+                 Foreground="{DynamicResource MirageWarnBrush}"/>
+      <TextBlock Classes="hint" Text="{Binding Caveat}" TextWrapping="Wrap"/>
+    </StackPanel>
+
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,14,0,10">
+      <TextBlock Text="{Binding TargetLabel}" VerticalAlignment="Center"/>
+      <NumericUpDown Value="{Binding Target}" Minimum="1" Maximum="{Binding MaxTarget}"
+                     FormatString="0" Increment="25" ParsingNumberStyle="Integer"
+                     IsEnabled="{Binding CanEditTarget}" MinWidth="130"/>
+      <Button Content="{Binding RunLabel}" Command="{Binding RunCommand}"
+              IsEnabled="{Binding !IsRunning}" MinWidth="88"/>
+      <Button Content="{Binding StopLabel}" Command="{Binding StopCommand}"
+              IsEnabled="{Binding IsRunning}" MinWidth="88"/>
+      <StackPanel Orientation="Vertical" VerticalAlignment="Center" IsVisible="{Binding IsRunning}">
+        <TextBlock Classes="t1" Text="{Binding PhaseText}"/>
+        <TextBlock Classes="hint" Text="{Binding ProgressText}"/>
+      </StackPanel>
+    </StackPanel>
+
+    <ScrollViewer Grid.Row="2">
+      <StackPanel Spacing="0">
+
+        <TextBlock Text="{Binding ErrorText}" TextWrapping="Wrap" Margin="0,0,0,10"
+                   Foreground="{DynamicResource MirageBadBrush}" IsVisible="{Binding HasError}"/>
+
+        <Border Classes="card" IsVisible="{Binding HasSummary}">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="t1" Text="{Binding SummaryText}" TextWrapping="Wrap"/>
+            <TextBlock Classes="t2" Text="{Binding CoresText}" TextWrapping="Wrap"/>
+            <TextBlock Classes="t2" Text="{Binding BaselineText}" TextWrapping="Wrap"/>
+            <TextBlock Classes="t2" Text="{Binding PerPlayerText}" TextWrapping="Wrap"/>
+            <TextBlock Text="{Binding MissedBeatsText}" TextWrapping="Wrap" FontSize="12" Margin="0,4,0,0"
+                       Foreground="{DynamicResource MirageWarnBrush}" IsVisible="{Binding HasMissedBeats}"/>
+          </StackPanel>
+        </Border>
+
+        <!-- ── The headroom bands ────────────────────────────────────────────
+             The answer an operator is actually after: not the maximum, but how many players fit at each
+             price in machine. Each row carries the button that adopts its number. -->
+        <StackPanel IsVisible="{Binding HasBands}">
+          <TextBlock Classes="group" Text="{Binding BandsHeading}"/>
+          <ItemsControl ItemsSource="{Binding Bands}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:BenchBandRow">
+                <Border Classes="card">
+                  <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                    <TextBlock Grid.Column="0" Classes="t1" Text="{Binding PlayersText}"
+                               MinWidth="80" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Classes="t2" Text="{Binding Label}"
+                               VerticalAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock Grid.Column="2" Classes="t2" Text="{Binding Memory}"
+                               VerticalAlignment="Center" Margin="12,0,12,0"/>
+                    <Button Grid.Column="3"
+                            Content="{Binding $parent[Window].((vm:BenchViewModel)DataContext).ApplyLabel}"
+                            Command="{Binding $parent[Window].((vm:BenchViewModel)DataContext).UseBandCommand}"
+                            CommandParameter="{Binding}"/>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+
+        <!-- ── Every step ────────────────────────────────────────────────────
+             Rows land as they are measured, so a long ramp shows its shape while it runs. -->
+        <StackPanel IsVisible="{Binding HasSteps}">
+          <TextBlock Classes="group" Text="{Binding StepsHeading}"/>
+          <Grid ColumnDefinitions="70,90,80,80,80,*" Margin="14,0,14,4">
+            <TextBlock Grid.Column="0" Classes="hint" Text="{Binding ColPlayers}"/>
+            <TextBlock Grid.Column="1" Classes="hint" Text="{Binding ColGameThread}"/>
+            <TextBlock Grid.Column="2" Classes="hint" Text="{Binding ColCpu}"/>
+            <TextBlock Grid.Column="3" Classes="hint" Text="{Binding ColMemory}"/>
+            <TextBlock Grid.Column="4" Classes="hint" Text="{Binding ColOverruns}"/>
+            <TextBlock Grid.Column="5" Classes="hint" Text="{Binding ColPackets}"/>
+          </Grid>
+          <ItemsControl ItemsSource="{Binding Steps}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:BenchStepRow">
+                <Border Classes="card">
+                  <Grid ColumnDefinitions="70,90,80,80,80,*">
+                    <TextBlock Grid.Column="0" Classes="t1" Text="{Binding Players}"/>
+                    <TextBlock Grid.Column="1" Classes="t1" Text="{Binding GameThread}"/>
+                    <TextBlock Grid.Column="2" Classes="t2" Text="{Binding Cpu}"/>
+                    <TextBlock Grid.Column="3" Classes="t2" Text="{Binding Memory}"/>
+                    <TextBlock Grid.Column="4" Classes="t2" Text="{Binding Overruns}"/>
+                    <TextBlock Grid.Column="5" Classes="t2" Text="{Binding Packets}"/>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+
+        <!-- The scratch server's own console. Here for the case where it never boots — without it, a
+             failure is a timeout with no cause attached. -->
+        <TextBox Classes="log" Text="{Binding LogText, Mode=OneWay}" Margin="0,12,0,0"
+                 MinHeight="110" MaxHeight="180" TextWrapping="Wrap" Padding="8"
+                 VerticalContentAlignment="Top"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+      </StackPanel>
+    </ScrollViewer>
+
+    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+      <Button Content="{Binding CloseLabel}" Click="CloseDialog" MinWidth="88"/>
+    </StackPanel>
+
+  </Grid>
+</Window>

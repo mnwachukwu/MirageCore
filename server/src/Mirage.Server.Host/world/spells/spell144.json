@@ -1,0 +1,10 @@
+{
+  "name": "Arch Endurance",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddSp",
+  "vitalAmount": 174,
+  "levelReq": 110
+}

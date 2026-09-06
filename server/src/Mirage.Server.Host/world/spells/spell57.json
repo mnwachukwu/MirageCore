@@ -1,0 +1,10 @@
+{
+  "name": "Adept Exsanguination",
+  "allowedClasses": [
+    4,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 31,
+  "levelReq": 15
+}

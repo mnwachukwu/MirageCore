@@ -1,0 +1,41 @@
+{
+  "name": "Whatever the Fen Horror Is",
+  "description": "5 of them a week keeps the count level. Nobody has ever explained what they are and I have stopped putting it in the margin.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 11,
+      "count": 5,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 11,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "allowedClasses": [
+    6,
+    9,
+    10
+  ],
+  "prereqQuest": 0,
+  "rewardExp": 2239,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 90
+    }
+  ],
+  "repeatRewardExp": 2239,
+  "repeatRewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 90
+    }
+  ],
+  "giverNpc": 126,
+  "turnInNpc": 0,
+  "repeatable": true,
+  "cadence": "Weekly"
+}

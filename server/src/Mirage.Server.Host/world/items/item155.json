@@ -1,0 +1,20 @@
+{
+  "name": "Eternal Helm",
+  "pic": 35,
+  "itemSheet": 0,
+  "type": "Helmet",
+  "durability": 1570,
+  "power": 301,
+  "levelReq": 245,
+  "allowedClasses": [
+    2,
+    3,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1257379
+}

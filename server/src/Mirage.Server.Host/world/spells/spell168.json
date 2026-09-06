@@ -1,0 +1,9 @@
+{
+  "name": "Sovereign Mana Rupture",
+  "allowedClasses": [
+    10
+  ],
+  "type": "SubMp",
+  "vitalAmount": 188,
+  "levelReq": 120
+}

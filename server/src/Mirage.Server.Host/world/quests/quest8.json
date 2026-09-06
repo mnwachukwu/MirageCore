@@ -1,0 +1,31 @@
+{
+  "name": "The Shelf Below",
+  "description": "You came down the shelf, so you have already seen them - the Reach drowned, standing about in the shallows with nowhere in particular to be.\n\n12. Start there. Everything else I have to ask you is worse, and I would rather know what you are first.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 53,
+      "count": 12,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 100,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereqQuest": 0,
+  "rewardExp": 600000,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 107459
+    }
+  ],
+  "repeatRewardExp": 0,
+  "repeatRewardItems": [],
+  "giverNpc": 134,
+  "turnInNpc": 0,
+  "repeatable": false,
+  "cadence": "None"
+}

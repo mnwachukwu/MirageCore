@@ -1,0 +1,179 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- The palette. Neutrals sit in the ACCENT'S OWN HUE, which is what makes the surfaces read as violet
+       rather than as grey — the accent itself is unchanged and is the same #9AA8F5 the site, the favicon
+       and all three app icons already use.
+
+       CHROMA IS THE WHOLE POINT HERE. A tint of five or ten points off neutral measures as violet and
+       still reads as black on a screen; these sit far enough out to be seen. The three semantic colours
+       stay outside the family on purpose: their job is to not look like everything else.
+
+       Flat rather than under ThemeDictionaries: both apps are dark-only by design, so a variant lookup
+       would be one more thing to get wrong for no gain. -->
+
+  <!-- ── Ramp ────────────────────────────────────────────────────────────── -->
+  <Color x:Key="MirageVoid">#FF100C20</Color>
+  <Color x:Key="MirageBg">#FF16122A</Color>
+  <Color x:Key="MirageBgAlt">#FF1B1634</Color>
+  <Color x:Key="MirageSurface">#FF211B3D</Color>
+  <Color x:Key="MirageSurfaceHi">#FF292148</Color>
+  <Color x:Key="MirageLine">#FF3B3266</Color>
+  <Color x:Key="MirageLineSoft">#FF302A55</Color>
+  <Color x:Key="MirageConsole">#FF120E26</Color>
+
+  <Color x:Key="MirageText">#FFEDEAF8</Color>
+  <Color x:Key="MirageMuted">#FFA9A2C9</Color>
+  <Color x:Key="MirageFaint">#FF7A739F</Color>
+
+  <Color x:Key="MirageAccent">#FF9AA8F5</Color>
+  <Color x:Key="MirageAccentHi">#FFC1C9FF</Color>
+  <Color x:Key="MirageAccentDim">#FF4A4585</Color>
+  <Color x:Key="MirageOnAccent">#FF14122B</Color>
+
+  <Color x:Key="MirageOk">#FF4ADE80</Color>
+  <Color x:Key="MirageWarn">#FFFBBF24</Color>
+  <Color x:Key="MirageBad">#FFF87171</Color>
+
+  <!-- ── Brushes ─────────────────────────────────────────────────────────── -->
+  <SolidColorBrush x:Key="MirageBgBrush" Color="{StaticResource MirageBg}"/>
+  <SolidColorBrush x:Key="MirageBgAltBrush" Color="{StaticResource MirageBgAlt}"/>
+  <SolidColorBrush x:Key="MirageSurfaceBrush" Color="{StaticResource MirageSurface}"/>
+  <SolidColorBrush x:Key="MirageSurfaceHiBrush" Color="{StaticResource MirageSurfaceHi}"/>
+  <SolidColorBrush x:Key="MirageLineBrush" Color="{StaticResource MirageLine}"/>
+  <SolidColorBrush x:Key="MirageLineSoftBrush" Color="{StaticResource MirageLineSoft}"/>
+  <SolidColorBrush x:Key="MirageConsoleBrush" Color="{StaticResource MirageConsole}"/>
+  <SolidColorBrush x:Key="MirageTextBrush" Color="{StaticResource MirageText}"/>
+  <SolidColorBrush x:Key="MirageMutedBrush" Color="{StaticResource MirageMuted}"/>
+  <SolidColorBrush x:Key="MirageFaintBrush" Color="{StaticResource MirageFaint}"/>
+  <SolidColorBrush x:Key="MirageAccentBrush" Color="{StaticResource MirageAccent}"/>
+  <SolidColorBrush x:Key="MirageAccentDimBrush" Color="{StaticResource MirageAccentDim}"/>
+  <SolidColorBrush x:Key="MirageOkBrush" Color="{StaticResource MirageOk}"/>
+  <SolidColorBrush x:Key="MirageWarnBrush" Color="{StaticResource MirageWarn}"/>
+  <SolidColorBrush x:Key="MirageBadBrush" Color="{StaticResource MirageBad}"/>
+
+  <!-- The semantic colours as a GROUND rather than as ink: the same hue at low alpha, so a badge or a
+       button reads as one object instead of as coloured text sitting on a coloured chip. Alpha rather
+       than a mixed solid, because these sit on three different surfaces and have to tint whichever one
+       they land on. Hi is the pointer-over step. -->
+  <SolidColorBrush x:Key="MirageOkFillBrush" Color="#244ADE80"/>
+  <SolidColorBrush x:Key="MirageBadFillBrush" Color="#24F87171"/>
+  <SolidColorBrush x:Key="MirageBadFillHiBrush" Color="#3DF87171"/>
+
+  <!-- ── FluentAvalonia's own keys, repointed at the ramp ─────────────────── -->
+  <!-- The WinUI names every built-in control theme reads. Overriding them is what moves the whole
+       control set onto this palette; restyling controls one at a time leaves the ones nobody
+       remembered still wearing stock grey.
+
+       Each appears TWICE, as a Color and as a Brush. Not redundant: the theme builds its brushes from
+       its own colours with StaticResource, so a brush is resolved once and replacing the colour beneath
+       it changes nothing. There is no way to tell from outside which form a given control theme binds
+       to, so both are replaced. -->
+
+  <Color x:Key="SolidBackgroundFillColorBase">#FF16122A</Color>
+  <Color x:Key="SolidBackgroundFillColorSecondary">#FF1B1634</Color>
+  <Color x:Key="SolidBackgroundFillColorTertiary">#FF211B3D</Color>
+  <Color x:Key="SolidBackgroundFillColorQuarternary">#FF292148</Color>
+  <Color x:Key="SolidBackgroundFillColorBaseAlt">#FF100C20</Color>
+  <Color x:Key="LayerFillColorDefault">#FF211B3D</Color>
+  <Color x:Key="LayerFillColorAlt">#FF292148</Color>
+  <Color x:Key="CardBackgroundFillColorDefault">#FF292148</Color>
+  <Color x:Key="CardBackgroundFillColorSecondary">#FF211B3D</Color>
+  <Color x:Key="ControlFillColorDefault">#FF332B57</Color>
+  <Color x:Key="ControlFillColorSecondary">#FF3A3163</Color>
+  <Color x:Key="ControlFillColorTertiary">#FF2C254B</Color>
+  <Color x:Key="ControlFillColorDisabled">#FF241E42</Color>
+  <Color x:Key="ControlFillColorInputActive">#FF191430</Color>
+  <Color x:Key="ControlAltFillColorSecondary">#FF191430</Color>
+  <Color x:Key="ControlAltFillColorTertiary">#FF282148</Color>
+  <Color x:Key="ControlAltFillColorQuarternary">#FF302853</Color>
+  <Color x:Key="ControlStrokeColorDefault">#FF473C78</Color>
+  <Color x:Key="ControlStrokeColorSecondary">#FF554894</Color>
+  <Color x:Key="ControlStrongStrokeColorDefault">#FF7A739F</Color>
+  <Color x:Key="DividerStrokeColorDefault">#FF3B3266</Color>
+  <Color x:Key="CardStrokeColorDefault">#FF3F3670</Color>
+  <Color x:Key="SurfaceStrokeColorDefault">#FF3B3266</Color>
+  <Color x:Key="TextFillColorPrimary">#FFEDEAF8</Color>
+  <Color x:Key="TextFillColorSecondary">#FFA9A2C9</Color>
+  <Color x:Key="TextFillColorTertiary">#FF7A739F</Color>
+  <Color x:Key="TextFillColorDisabled">#FF615A8A</Color>
+  <Color x:Key="SubtleFillColorTransparent">#00000000</Color>
+  <Color x:Key="SubtleFillColorSecondary">#FF332B57</Color>
+  <Color x:Key="SubtleFillColorTertiary">#FF2C254B</Color>
+  <!-- Text ON the accent has to be dark: #9AA8F5 is a light colour, so white on it fails contrast. -->
+  <Color x:Key="TextOnAccentFillColorPrimary">#FF14122B</Color>
+  <Color x:Key="TextOnAccentFillColorSecondary">#CC14122B</Color>
+
+  <!-- ── The accent ramp, stated rather than derived ──────────────────────── -->
+  <!-- FluentAvaloniaTheme.CustomAccentColor does not reach every control: a ToggleSwitch's ON track
+       came through white while its knob correctly took the on-accent colour, so the shades are written
+       out here instead of trusted to be computed. The Light/Dark variants are what the WinUI control
+       themes actually reference. -->
+  <Color x:Key="SystemAccentColor">#FF9AA8F5</Color>
+  <Color x:Key="SystemAccentColorLight1">#FFADB8F7</Color>
+  <Color x:Key="SystemAccentColorLight2">#FFC1C9FF</Color>
+  <Color x:Key="SystemAccentColorLight3">#FFD4D9FF</Color>
+  <Color x:Key="SystemAccentColorDark1">#FF8494E8</Color>
+  <Color x:Key="SystemAccentColorDark2">#FF6D7FD6</Color>
+  <Color x:Key="SystemAccentColorDark3">#FF566AC0</Color>
+
+  <Color x:Key="AccentFillColorDefault">#FF9AA8F5</Color>
+  <Color x:Key="AccentFillColorSecondary">#E69AA8F5</Color>
+  <Color x:Key="AccentFillColorTertiary">#CC9AA8F5</Color>
+  <Color x:Key="AccentFillColorDisabled">#FF3E3768</Color>
+  <Color x:Key="AccentTextFillColorPrimary">#FFC1C9FF</Color>
+  <Color x:Key="AccentTextFillColorSecondary">#FFADB8F7</Color>
+  <Color x:Key="AccentTextFillColorTertiary">#FF9AA8F5</Color>
+  <Color x:Key="AccentControlElevationBorderColor">#FF6D7FD6</Color>
+
+  <SolidColorBrush x:Key="SystemAccentColorBrush" Color="#FF9AA8F5"/>
+  <SolidColorBrush x:Key="SystemAccentColorLight1Brush" Color="#FFADB8F7"/>
+  <SolidColorBrush x:Key="SystemAccentColorLight2Brush" Color="#FFC1C9FF"/>
+  <SolidColorBrush x:Key="SystemAccentColorLight3Brush" Color="#FFD4D9FF"/>
+  <SolidColorBrush x:Key="SystemAccentColorDark1Brush" Color="#FF8494E8"/>
+  <SolidColorBrush x:Key="SystemAccentColorDark2Brush" Color="#FF6D7FD6"/>
+  <SolidColorBrush x:Key="SystemAccentColorDark3Brush" Color="#FF566AC0"/>
+
+  <SolidColorBrush x:Key="AccentFillColorDefaultBrush" Color="#FF9AA8F5"/>
+  <SolidColorBrush x:Key="AccentFillColorSecondaryBrush" Color="#E69AA8F5"/>
+  <SolidColorBrush x:Key="AccentFillColorTertiaryBrush" Color="#CC9AA8F5"/>
+  <SolidColorBrush x:Key="AccentFillColorDisabledBrush" Color="#FF3E3768"/>
+  <SolidColorBrush x:Key="AccentTextFillColorPrimaryBrush" Color="#FFC1C9FF"/>
+  <SolidColorBrush x:Key="AccentTextFillColorSecondaryBrush" Color="#FFADB8F7"/>
+  <SolidColorBrush x:Key="AccentTextFillColorTertiaryBrush" Color="#FF9AA8F5"/>
+
+  <SolidColorBrush x:Key="ApplicationPageBackgroundThemeBrush" Color="#FF16122A"/>
+  <SolidColorBrush x:Key="SolidBackgroundFillColorBaseBrush" Color="#FF16122A"/>
+  <SolidColorBrush x:Key="SolidBackgroundFillColorSecondaryBrush" Color="#FF1B1634"/>
+  <SolidColorBrush x:Key="SolidBackgroundFillColorTertiaryBrush" Color="#FF211B3D"/>
+  <SolidColorBrush x:Key="SolidBackgroundFillColorQuarternaryBrush" Color="#FF292148"/>
+  <SolidColorBrush x:Key="SolidBackgroundFillColorBaseAltBrush" Color="#FF100C20"/>
+  <SolidColorBrush x:Key="LayerFillColorDefaultBrush" Color="#FF211B3D"/>
+  <SolidColorBrush x:Key="LayerFillColorAltBrush" Color="#FF292148"/>
+  <SolidColorBrush x:Key="CardBackgroundFillColorDefaultBrush" Color="#FF292148"/>
+  <SolidColorBrush x:Key="CardBackgroundFillColorSecondaryBrush" Color="#FF211B3D"/>
+  <SolidColorBrush x:Key="ControlFillColorDefaultBrush" Color="#FF332B57"/>
+  <SolidColorBrush x:Key="ControlFillColorSecondaryBrush" Color="#FF3A3163"/>
+  <SolidColorBrush x:Key="ControlFillColorTertiaryBrush" Color="#FF2C254B"/>
+  <SolidColorBrush x:Key="ControlFillColorDisabledBrush" Color="#FF241E42"/>
+  <SolidColorBrush x:Key="ControlFillColorInputActiveBrush" Color="#FF191430"/>
+  <SolidColorBrush x:Key="ControlAltFillColorSecondaryBrush" Color="#FF191430"/>
+  <SolidColorBrush x:Key="ControlAltFillColorTertiaryBrush" Color="#FF282148"/>
+  <SolidColorBrush x:Key="ControlAltFillColorQuarternaryBrush" Color="#FF302853"/>
+  <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="#FF473C78"/>
+  <SolidColorBrush x:Key="ControlStrokeColorSecondaryBrush" Color="#FF554894"/>
+  <SolidColorBrush x:Key="ControlStrongStrokeColorDefaultBrush" Color="#FF7A739F"/>
+  <SolidColorBrush x:Key="DividerStrokeColorDefaultBrush" Color="#FF3B3266"/>
+  <SolidColorBrush x:Key="CardStrokeColorDefaultBrush" Color="#FF3F3670"/>
+  <SolidColorBrush x:Key="SurfaceStrokeColorDefaultBrush" Color="#FF3B3266"/>
+  <SolidColorBrush x:Key="TextFillColorPrimaryBrush" Color="#FFEDEAF8"/>
+  <SolidColorBrush x:Key="TextFillColorSecondaryBrush" Color="#FFA9A2C9"/>
+  <SolidColorBrush x:Key="TextFillColorTertiaryBrush" Color="#FF7A739F"/>
+  <SolidColorBrush x:Key="TextFillColorDisabledBrush" Color="#FF615A8A"/>
+  <SolidColorBrush x:Key="SubtleFillColorTransparentBrush" Color="#00000000"/>
+  <SolidColorBrush x:Key="SubtleFillColorSecondaryBrush" Color="#FF332B57"/>
+  <SolidColorBrush x:Key="SubtleFillColorTertiaryBrush" Color="#FF2C254B"/>
+  <SolidColorBrush x:Key="TextOnAccentFillColorPrimaryBrush" Color="#FF14122B"/>
+  <SolidColorBrush x:Key="TextOnAccentFillColorSecondaryBrush" Color="#CC14122B"/>
+
+</ResourceDictionary>

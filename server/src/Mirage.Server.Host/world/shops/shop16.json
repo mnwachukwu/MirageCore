@@ -1,0 +1,16 @@
+{
+  "name": "Hammer-Priest Dain, Weaponsmith",
+  "fixesItems": true,
+  "shopType": "Store",
+  "allowBanking": false,
+  "keeper": 143,
+  "barterItem": [],
+  "salesItem": [
+    136,
+    137,
+    138,
+    160,
+    161,
+    162
+  ]
+}

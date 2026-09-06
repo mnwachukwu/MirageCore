@@ -1,0 +1,42 @@
+{
+  "name": "Thin the Poachers",
+  "description": "Someone with a strong arm, ideally. 3 poachers off the low ground and the snares stop appearing. It is not glory. It is Tuesday.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 6,
+      "count": 3,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 6,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "allowedClasses": [
+    1,
+    2,
+    3,
+    7
+  ],
+  "prereqQuest": 0,
+  "rewardExp": 1070,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 29
+    }
+  ],
+  "repeatRewardExp": 571,
+  "repeatRewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 15
+    }
+  ],
+  "giverNpc": 126,
+  "turnInNpc": 0,
+  "repeatable": true,
+  "cadence": "Daily"
+}

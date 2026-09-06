@@ -1,0 +1,1365 @@
+{
+  "name": "The Molten Line 5",
+  "displayName": "",
+  "revision": 3,
+  "up": 125,
+  "down": 121,
+  "left": 0,
+  "right": 124,
+  "music": 0,
+  "bootMap": 0,
+  "bootX": 0,
+  "bootY": 0,
+  "greetingSpeaker": "",
+  "joinSay": "",
+  "leaveSay": "",
+  "mapGroup": 17,
+  "tile": [
+    [
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      }
+    ],
+    [
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      }
+    ],
+    [
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      }
+    ],
+    [
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282,
+          291
+        ],
+        "fringe": [
+          291
+        ],
+        "type": "Blocked",
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282,
+          298
+        ],
+        "fringe": [
+          298
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          305
+        ],
+        "fringe": [
+          305
+        ],
+        "type": "Blocked",
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282,
+          0,
+          312
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          0,
+          319
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      }
+    ],
+    [
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282,
+          292
+        ],
+        "fringe": [
+          292
+        ],
+        "type": "Blocked",
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282,
+          282
+        ],
+        "fringe": [
+          282
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          282
+        ],
+        "fringe": [
+          282
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          0,
+          313,
+          288
+        ],
+        "type": "Blocked",
+        "fringeAttr": {
+          "type": "LayerRamp",
+          "rampGroundSide": "Down"
+        }
+      },
+      {
+        "ground": [
+          282,
+          0,
+          320,
+          295
+        ],
+        "type": "Blocked",
+        "fringeAttr": {
+          "type": "LayerRamp",
+          "rampGroundSide": "Down"
+        }
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      }
+    ],
+    [
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282,
+          114
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          121
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          121
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          128
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          293
+        ],
+        "fringe": [
+          293
+        ],
+        "type": "Blocked",
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282,
+          300
+        ],
+        "fringe": [
+          300
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          307
+        ],
+        "fringe": [
+          307
+        ],
+        "type": "Blocked",
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282,
+          0,
+          314
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          0,
+          321
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      }
+    ],
+    [
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282,
+          115
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          122
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          122
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          129
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringe": [
+          303
+        ]
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      }
+    ],
+    [
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282,
+          115
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          122
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          122
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          129
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringe": [
+          303
+        ]
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      }
+    ],
+    [
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282,
+          115
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          122
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          122
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          129
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringe": [
+          303
+        ]
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      }
+    ],
+    [
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282,
+          115
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          122
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          122
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          130
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringe": [
+          303
+        ]
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      }
+    ],
+    [
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282,
+          115
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          122
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          0,
+          493
+        ],
+        "type": "Warp",
+        "warpMap": 134,
+        "warpX": 8,
+        "warpY": 10
+      },
+      {
+        "ground": [
+          282
+        ],
+        "type": "NpcAvoid"
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringe": [
+          303
+        ]
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      }
+    ],
+    [
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282,
+          115
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          122
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          130
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282,
+          291
+        ],
+        "fringe": [
+          291
+        ],
+        "type": "Blocked",
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282,
+          298
+        ],
+        "fringe": [
+          298
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          305
+        ],
+        "fringe": [
+          305
+        ],
+        "type": "Blocked",
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282,
+          0,
+          312
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          0,
+          319
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      }
+    ],
+    [
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282,
+          115
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          129
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282,
+          292
+        ],
+        "fringe": [
+          292
+        ],
+        "type": "Blocked",
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282,
+          282
+        ],
+        "fringe": [
+          282
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          282
+        ],
+        "fringe": [
+          282
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          0,
+          313,
+          288
+        ],
+        "type": "Blocked",
+        "fringeAttr": {
+          "type": "LayerRamp",
+          "rampGroundSide": "Down"
+        }
+      },
+      {
+        "ground": [
+          282,
+          0,
+          320,
+          295
+        ],
+        "type": "Blocked",
+        "fringeAttr": {
+          "type": "LayerRamp",
+          "rampGroundSide": "Down"
+        }
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      }
+    ],
+    [
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282,
+          115
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          129
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282,
+          293
+        ],
+        "fringe": [
+          293
+        ],
+        "type": "Blocked",
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282,
+          300
+        ],
+        "fringe": [
+          300
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          307
+        ],
+        "fringe": [
+          307
+        ],
+        "type": "Blocked",
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282,
+          0,
+          314
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          0,
+          321
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      }
+    ],
+    [
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282,
+          116
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282,
+          130
+        ],
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ],
+        "fringeAttr": {
+          "type": "Blocked",
+          "blocksLight": false,
+          "blocksSight": false
+        }
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      }
+    ],
+    [
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      },
+      {
+        "ground": [
+          282
+        ]
+      }
+    ]
+  ],
+  "npcs": [
+    {
+      "npc": 102
+    },
+    {
+      "npc": 103
+    },
+    {
+      "npc": 104
+    },
+    {
+      "npc": 102
+    }
+  ],
+  "lights": []
+}

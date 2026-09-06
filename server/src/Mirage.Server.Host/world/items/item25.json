@@ -1,0 +1,22 @@
+{
+  "name": "Iron Buckler",
+  "pic": 19,
+  "itemSheet": 0,
+  "type": "Shield",
+  "durability": 170,
+  "power": 10,
+  "levelReq": 5,
+  "allowedClasses": [
+    2,
+    3,
+    6,
+    7,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 77
+}

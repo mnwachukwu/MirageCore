@@ -1,0 +1,9 @@
+{
+  "name": "Novice Mana Rupture",
+  "allowedClasses": [
+    10
+  ],
+  "type": "SubMp",
+  "vitalAmount": 10,
+  "levelReq": 1
+}

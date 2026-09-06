@@ -1,0 +1,11 @@
+{
+  "name": "Celestial Mend",
+  "allowedClasses": [
+    6,
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 230,
+  "levelReq": 250
+}

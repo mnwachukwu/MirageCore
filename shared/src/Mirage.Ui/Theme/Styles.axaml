@@ -1,0 +1,353 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- The type ramp and the handful of shared control shapes. Windows 11's own ramp, because
+       FluentAvaloniaTheme.UseSystemFontOnWindows already puts Segoe UI Variable underneath it — the
+       sizes are what turn one font into a hierarchy.
+
+       Everything here is opt-in by class. Nothing restyles a control globally except where the stock
+       shape is actively wrong for the job. -->
+
+  <!-- ── Type ramp ─────────────────────────────────────────────────────────── -->
+
+  <Style Selector="TextBlock.title">
+    <Setter Property="FontSize" Value="28"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+  </Style>
+
+  <Style Selector="TextBlock.subtitle">
+    <Setter Property="FontSize" Value="20"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+  </Style>
+
+  <!-- The section header inside a page. Named "heading" because both apps already use that class. -->
+  <Style Selector="TextBlock.heading">
+    <Setter Property="FontSize" Value="16"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+  </Style>
+
+  <Style Selector="TextBlock.strong">
+    <Setter Property="FontSize" Value="14"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+  </Style>
+
+  <!-- The quieter line under a label. -->
+  <Style Selector="TextBlock.hint">
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="Foreground" Value="{DynamicResource MirageMutedBrush}"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+  </Style>
+
+  <!-- A group label above a run of cards: small, spaced, and quiet enough to not compete. -->
+  <Style Selector="TextBlock.group">
+    <Setter Property="FontSize" Value="11"/>
+    <Setter Property="FontWeight" Value="Bold"/>
+    <Setter Property="Foreground" Value="{DynamicResource MirageFaintBrush}"/>
+    <Setter Property="Margin" Value="0,16,0,6"/>
+  </Style>
+
+  <!-- ── One spacing scale ─────────────────────────────────────────────────── -->
+  <!-- A page's outer StackPanel sets a single Spacing and NOTHING adds its own top margin on top of it;
+       mixing the two is what produced gutters of 14, 18, 20 and 24 on the same page. A section header
+       block carries this class to buy the one deliberate extra gap that separates sections. -->
+
+  <Style Selector="StackPanel.section">
+    <Setter Property="Margin" Value="0,8,0,0"/>
+    <Setter Property="Spacing" Value="4"/>
+  </Style>
+
+  <!-- ── Section panel ─────────────────────────────────────────────────────── -->
+  <!-- A whole section of a page, on its own ground. Three steps of elevation, and the order is the point:
+       page background -> panel -> card. A run of cards inside a panel therefore still reads as raised,
+       which a panel painted at the card's own value would have flattened. -->
+
+  <Style Selector="Border.panel">
+    <Setter Property="Background" Value="{DynamicResource MirageSurfaceBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource MirageLineBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="8"/>
+    <Setter Property="Padding" Value="16,14,16,18"/>
+  </Style>
+
+  <!-- The panel's own title. A section title, NOT another sub-heading: at the same 16px as the headings
+       inside it, the two halves of a settings page read as peers of their own contents. -->
+  <Style Selector="TextBlock.panelTitle">
+    <Setter Property="FontSize" Value="20"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+  </Style>
+
+  <!-- ── Settings card ─────────────────────────────────────────────────────── -->
+  <!-- The Windows 11 Settings shape: a bordered row carrying its own explanation, with the control on
+       the right. Replaces a bare checkbox plus a loose paragraph underneath it. -->
+
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{DynamicResource MirageSurfaceHiBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource MirageLineBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="CornerRadius" Value="6"/>
+    <Setter Property="Padding" Value="14,11"/>
+    <Setter Property="Margin" Value="0,0,0,4"/>
+  </Style>
+
+  <!-- A card whose control could not be resolved. Dimmed rather than hidden: an operator needs to see
+       that the setting exists and why it is not editable. -->
+  <Style Selector="Border.card:disabled">
+    <Setter Property="Opacity" Value="0.45"/>
+  </Style>
+
+  <!-- The title line and the explanation inside a card. Scoped so they do not need a class each. -->
+  <Style Selector="Border.card TextBlock.t1">
+    <Setter Property="FontSize" Value="13"/>
+    <Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+  </Style>
+  <Style Selector="Border.card TextBlock.t2">
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="Foreground" Value="{DynamicResource MirageMutedBrush}"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+    <Setter Property="Margin" Value="0,2,0,0"/>
+  </Style>
+
+  <!-- ── Reading surfaces ──────────────────────────────────────────────────── -->
+  <!-- A log pane is a reading surface that happens to be a TextBox. All four states are pinned to the
+       same chrome so clicking in to copy a line does not repaint the panel. -->
+
+  <Style Selector="TextBox.log">
+    <Setter Property="FontFamily" Value="Cascadia Mono,Consolas,Menlo,DejaVu Sans Mono,monospace"/>
+    <Setter Property="FontSize" Value="12"/>
+    <Setter Property="IsReadOnly" Value="True"/>
+    <Setter Property="AcceptsReturn" Value="True"/>
+    <Setter Property="CornerRadius" Value="6"/>
+    <Setter Property="Foreground" Value="#FFC7C1E4"/>
+  </Style>
+
+  <Style Selector="TextBox.log /template/ Border#PART_BorderElement">
+    <Setter Property="Background" Value="{DynamicResource MirageConsoleBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource MirageLineBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+  </Style>
+  <Style Selector="TextBox.log:pointerover /template/ Border#PART_BorderElement">
+    <Setter Property="Background" Value="{DynamicResource MirageConsoleBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource MirageLineBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+  </Style>
+  <Style Selector="TextBox.log:focus /template/ Border#PART_BorderElement">
+    <Setter Property="Background" Value="{DynamicResource MirageConsoleBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource MirageLineBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+  </Style>
+  <Style Selector="TextBox.log:focus-within /template/ Border#PART_BorderElement">
+    <Setter Property="Background" Value="{DynamicResource MirageConsoleBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource MirageLineBrush}"/>
+    <Setter Property="BorderThickness" Value="1"/>
+  </Style>
+
+  <!-- ── Tabs ──────────────────────────────────────────────────────────────── -->
+  <!-- Real tab SHAPES joined to the pane below them, not underlined words floating over it. The
+       selected tab shares the content pane's fill and squares off its bottom corners, so the two read
+       as one surface with a notch cut for the label — which is what makes a tab strip look like a tab
+       strip rather than a row of links. -->
+
+  <Style Selector="TabControl">
+    <Setter Property="Padding" Value="0"/>
+  </Style>
+
+  <!-- The pane the selected tab attaches to. -->
+  <Style Selector="TabControl /template/ ContentPresenter#PART_SelectedContentHost">
+    <Setter Property="Background" Value="{DynamicResource MirageSurfaceBrush}"/>
+    <Setter Property="CornerRadius" Value="0,7,7,7"/>
+  </Style>
+
+  <!-- TabItem itself is a whole ControlTheme in Theme/Controls.axaml — see the note there for why. -->
+
+  <!-- ── Navigation rail ───────────────────────────────────────────────────── -->
+  <!-- A ListBox wearing the shape a nav rail actually has. The selected row keeps an accent bar down
+       its left edge as well as a fill, because on a dark ground a fill alone is a weak signal. -->
+
+  <Style Selector="ListBox.rail > ListBoxItem">
+    <Setter Property="Padding" Value="12,7"/>
+    <Setter Property="Margin" Value="0,1"/>
+    <Setter Property="CornerRadius" Value="5"/>
+    <Setter Property="Foreground" Value="{DynamicResource MirageMutedBrush}"/>
+  </Style>
+
+  <Style Selector="ListBox.rail > ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="CornerRadius" Value="5"/>
+  </Style>
+
+  <Style Selector="ListBox.rail > ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource MirageSurfaceBrush}"/>
+  </Style>
+
+  <Style Selector="ListBox.rail > ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource MirageSurfaceHiBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource MirageAccentBrush}"/>
+    <Setter Property="BorderThickness" Value="3,0,0,0"/>
+  </Style>
+
+  <Style Selector="ListBox.rail > ListBoxItem:selected">
+    <Setter Property="Foreground" Value="{DynamicResource MirageTextBrush}"/>
+  </Style>
+
+  <Style Selector="ListBox.rail > ListBoxItem:selected PathIcon">
+    <Setter Property="Foreground" Value="{DynamicResource MirageAccentBrush}"/>
+  </Style>
+
+  <!-- Icons only. The row's side padding goes, and what is left is centred — a rail narrowed around a
+       left-aligned icon reads as a column that failed to load rather than as a deliberate shape. The
+       selected row keeps BOTH its accent bar and its accent icon here, because with the labels gone the
+       fill alone is the only other thing saying which section you are in. -->
+  <Style Selector="ListBox.rail.collapsed > ListBoxItem">
+    <Setter Property="Padding" Value="0,7"/>
+    <Setter Property="HorizontalContentAlignment" Value="Center"/>
+  </Style>
+  <Style Selector="ListBox.rail.collapsed > ListBoxItem Grid">
+    <Setter Property="HorizontalAlignment" Value="Center"/>
+  </Style>
+
+  <!-- ── Status pill ───────────────────────────────────────────────────────── -->
+  <!-- State as a shape, not just coloured text: it survives a screenshot and a colourblind reader,
+       where a hue on its own does not. -->
+
+  <Style Selector="Border.pill">
+    <Setter Property="CornerRadius" Value="999"/>
+    <Setter Property="Padding" Value="10,3"/>
+    <Setter Property="BorderThickness" Value="1"/>
+    <Setter Property="VerticalAlignment" Value="Center"/>
+  </Style>
+
+  <!-- Good and bad as classes, so a view can state its condition (Classes.ok="{Binding IsOnline}") and
+       never name a colour. The dot and the word are reached by descent rather than carrying a brush each,
+       which is what keeps a pill to one binding at the call site. -->
+
+  <Style Selector="Border.pill.ok">
+    <Setter Property="Background" Value="{DynamicResource MirageOkFillBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource MirageOkBrush}"/>
+  </Style>
+  <Style Selector="Border.pill.ok TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource MirageOkBrush}"/>
+  </Style>
+  <Style Selector="Border.pill.ok Ellipse">
+    <Setter Property="Fill" Value="{DynamicResource MirageOkBrush}"/>
+  </Style>
+
+  <Style Selector="Border.pill.bad">
+    <Setter Property="Background" Value="{DynamicResource MirageBadFillBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource MirageBadBrush}"/>
+  </Style>
+  <Style Selector="Border.pill.bad TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource MirageBadBrush}"/>
+  </Style>
+  <Style Selector="Border.pill.bad Ellipse">
+    <Setter Property="Fill" Value="{DynamicResource MirageBadBrush}"/>
+  </Style>
+
+  <!-- ── Buttons that mean something ───────────────────────────────────────── -->
+  <!-- Colour here encodes the KIND of action, never its scope — "Save" and "Save All" are the same verb
+       and wear the same treatment, because the scope is already in the label. Two classes is the whole
+       vocabulary; a third hue would only add a distinction nobody can name.
+
+       Every state is pinned on the template part rather than on the button. Setting Background on the
+       button itself covers the resting state only, so the theme's own pointer-over and disabled fills
+       come back the moment the mouse arrives — which is how a red button turned blue on hover. -->
+
+  <Style Selector="Button.primary /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource MirageAccentBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource MirageAccentBrush}"/>
+    <!-- The accent is a LIGHT colour, so its text has to be dark. -->
+    <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
+  </Style>
+  <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight2Brush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorLight2Brush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
+  </Style>
+  <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SystemAccentColorDark1Brush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorDark1Brush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
+  </Style>
+  <Style Selector="Button.primary:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource AccentFillColorDisabledBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource AccentFillColorDisabledBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}"/>
+  </Style>
+
+  <!-- Destructive. Outlined rather than filled: a solid red block beside a solid accent block reads as
+       two equal offers, and discarding your work is not an equal offer. -->
+  <Style Selector="Button.danger /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource MirageBadFillBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource MirageBadBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource MirageBadBrush}"/>
+  </Style>
+  <Style Selector="Button.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource MirageBadFillHiBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource MirageBadBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource MirageBadBrush}"/>
+  </Style>
+  <Style Selector="Button.danger:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource MirageBadBrush}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource MirageBadBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
+  </Style>
+  <Style Selector="Button.danger:disabled /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource MirageLineBrush}"/>
+    <Setter Property="Foreground" Value="{DynamicResource TextFillColorDisabledBrush}"/>
+  </Style>
+
+  <!-- A reference to another record. It navigates rather than acts, so it is drawn as a link: a column of
+       filled buttons reads as a column of commands, and none of these do anything to your data. Chrome is
+       cleared on the template part in every state, for the reason given above the primary block — clearing it
+       on the button alone lets the theme's own pointer-over fill come back. -->
+  <Style Selector="Button.link">
+    <Setter Property="Cursor" Value="Hand"/>
+    <Setter Property="Padding" Value="2,3"/>
+    <Setter Property="MinHeight" Value="0"/>
+    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+  </Style>
+  <Style Selector="Button.link /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="Foreground" Value="{DynamicResource MirageAccentBrush}"/>
+  </Style>
+  <Style Selector="Button.link:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="Foreground" Value="{DynamicResource SystemAccentColorLight2Brush}"/>
+  </Style>
+  <Style Selector="Button.link:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent"/>
+    <Setter Property="BorderBrush" Value="Transparent"/>
+    <Setter Property="Foreground" Value="{DynamicResource SystemAccentColorDark1Brush}"/>
+  </Style>
+
+  <!-- ── Editor action bar ─────────────────────────────────────────────────── -->
+
+  <!-- The strip along the bottom of an editor: copy / discard / save and friends. Sized here so every
+       editor's row reads as one row; a button that needs a different size still says so on itself, since
+       a local value beats a style setter. -->
+  <Style Selector="Border.actionBar Button">
+    <Setter Property="Padding" Value="10,3"/>
+    <Setter Property="FontSize" Value="11"/>
+  </Style>
+
+  <!-- ── Tooltips ──────────────────────────────────────────────────────────── -->
+
+  <!-- Anchored to the control, not to the cursor. Avalonia places a tooltip at the pointer with a 20px
+       downward offset; against the bottom of a window there is no room below, the popup flips upward
+       onto the control, and since it is a plain hit-testable Popup it takes the click aimed at the
+       control underneath. Anchoring keeps the popup outside the control's own bounds whichever side it
+       ends up on, and the offset goes to zero because Top would otherwise push it back down over the
+       control. One of the few global rules here: the stock behaviour is wrong for anything clickable. -->
+  <Style Selector=":is(Control)">
+    <Setter Property="ToolTip.Placement" Value="Top"/>
+    <Setter Property="ToolTip.VerticalOffset" Value="0"/>
+  </Style>
+
+</Styles>

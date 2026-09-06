@@ -1,0 +1,20 @@
+{
+  "name": "Meteoric Helm",
+  "pic": 37,
+  "itemSheet": 0,
+  "type": "Helmet",
+  "durability": 1000,
+  "power": 127,
+  "levelReq": 100,
+  "allowedClasses": [
+    2,
+    3,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 118076
+}

@@ -1,0 +1,25 @@
+{
+  "name": "Godmarked Dagger",
+  "pic": 12,
+  "itemSheet": 0,
+  "type": "Weapon",
+  "durability": 1190,
+  "power": 230,
+  "levelReq": 250,
+  "allowedClasses": [
+    1,
+    2,
+    3,
+    5,
+    6,
+    7,
+    9,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 993886
+}

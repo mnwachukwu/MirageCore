@@ -1,0 +1,9 @@
+{
+  "name": "Grand Exhaustion",
+  "allowedClasses": [
+    10
+  ],
+  "type": "SubSp",
+  "vitalAmount": 166,
+  "levelReq": 105
+}

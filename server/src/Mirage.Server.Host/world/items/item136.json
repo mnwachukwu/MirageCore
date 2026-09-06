@@ -1,0 +1,25 @@
+{
+  "name": "Sundered Dagger",
+  "pic": 11,
+  "itemSheet": 0,
+  "type": "Weapon",
+  "durability": 1160,
+  "power": 221,
+  "levelReq": 240,
+  "allowedClasses": [
+    1,
+    2,
+    3,
+    5,
+    6,
+    7,
+    9,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 891825
+}

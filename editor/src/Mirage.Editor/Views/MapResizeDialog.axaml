@@ -1,0 +1,68 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Mirage.Editor.ViewModels"
+        x:Class="Mirage.Editor.Views.MapResizeDialog"
+        x:DataType="vm:MapResizeDialogViewModel"
+        Width="470" SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+  <DockPanel Margin="20">
+
+    <TextBlock DockPanel.Dock="Top" Text="{Binding Intro}"
+               TextWrapping="Wrap" Margin="0,0,0,4"
+               Foreground="{DynamicResource MirageMutedBrush}" FontSize="12"/>
+
+    <TextBlock DockPanel.Dock="Top" Text="{Binding CurrentSizeText}"
+               Margin="0,0,0,12"
+               Foreground="{DynamicResource MirageMutedBrush}" FontSize="12"/>
+
+    <!-- A linked map is refused outright: the fields below stay disabled and this says why. -->
+    <Border DockPanel.Dock="Top" Margin="0,0,0,12" Padding="10,8" CornerRadius="4"
+            IsVisible="{Binding !CanResize}"
+            Background="{DynamicResource MirageBgAltBrush}"
+            BorderBrush="{DynamicResource MirageBadBrush}" BorderThickness="1,0,0,0">
+      <TextBlock Text="{Binding LinkedRefusal}" TextWrapping="Wrap"
+                 Foreground="{DynamicResource MirageBadBrush}" FontSize="12"/>
+    </Border>
+
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                HorizontalAlignment="Right" Spacing="8" Margin="0,14,0,0">
+      <Button x:Name="_cancelBtn" Command="{Binding CancelCommand}" IsCancel="True"/>
+      <Button x:Name="_confirmBtn" Command="{Binding ConfirmCommand}"
+              IsEnabled="{Binding CanResize}"
+              IsDefault="True" Classes="primary"/>
+    </StackPanel>
+
+    <StackPanel IsEnabled="{Binding CanResize}">
+
+      <Grid ColumnDefinitions="Auto,*,Auto,*" Margin="0,0,0,4">
+        <TextBlock Grid.Column="0" Text="{Binding WidthLabel}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+        <NumericUpDown Grid.Column="1" Minimum="1" Maximum="4096" Increment="1" FormatString="0"
+                       Value="{Binding Width, Mode=TwoWay}"/>
+        <TextBlock Grid.Column="2" Text="{Binding HeightLabel}" VerticalAlignment="Center" Margin="12,0,8,0"/>
+        <NumericUpDown Grid.Column="3" Minimum="1" Maximum="4096" Increment="1" FormatString="0"
+                       Value="{Binding Height, Mode=TwoWay}"/>
+      </Grid>
+
+      <TextBlock Text="{Binding SoftCapWarning}" TextWrapping="Wrap" Margin="0,8,0,0"
+                 IsVisible="{Binding SoftCapWarning, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                 Foreground="{DynamicResource MirageWarnBrush}" FontSize="11"/>
+
+      <!-- Everything the new size would discard, itemized, with the line saying none of it comes back. -->
+      <Border Margin="0,12,0,0" Padding="10,8" CornerRadius="4"
+              IsVisible="{Binding HasLoss}"
+              Background="{DynamicResource MirageBgAltBrush}"
+              BorderBrush="{DynamicResource MirageBadBrush}" BorderThickness="1,0,0,0">
+        <StackPanel Spacing="6">
+          <TextBlock Text="{Binding LossSummary}" TextWrapping="Wrap"
+                     Foreground="{DynamicResource MirageBadBrush}" FontSize="12"/>
+          <TextBlock Text="{Binding Irreversible}" TextWrapping="Wrap"
+                     Foreground="{DynamicResource MirageBadBrush}" FontSize="12" FontWeight="SemiBold"/>
+        </StackPanel>
+      </Border>
+
+    </StackPanel>
+
+  </DockPanel>
+</Window>

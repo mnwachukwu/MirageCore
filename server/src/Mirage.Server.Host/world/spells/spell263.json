@@ -1,0 +1,10 @@
+{
+  "name": "Absolute Heal",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 313,
+  "levelReq": 255
+}

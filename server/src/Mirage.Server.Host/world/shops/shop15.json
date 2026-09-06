@@ -1,0 +1,9 @@
+{
+  "name": "The Cold Forge Inn",
+  "fixesItems": false,
+  "shopType": "Inn",
+  "allowBanking": true,
+  "keeper": 141,
+  "barterItem": [],
+  "salesItem": []
+}

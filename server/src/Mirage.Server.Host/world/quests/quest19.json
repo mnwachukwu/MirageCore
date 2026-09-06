@@ -1,0 +1,31 @@
+{
+  "name": "The Ashen Throne",
+  "description": "The door is open and there is a throne behind it, and the throne is what has been counting us out all this time.\n\nGo and end the count. If you come back, come back to the cold room - I will have the ledger open and I would very much like to write down what you saw.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 123,
+      "count": 1,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 255,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereqQuest": 18,
+  "rewardExp": 13005000,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 4381421
+    }
+  ],
+  "repeatRewardExp": 0,
+  "repeatRewardItems": [],
+  "giverNpc": 142,
+  "turnInNpc": 0,
+  "repeatable": false,
+  "cadence": "None"
+}

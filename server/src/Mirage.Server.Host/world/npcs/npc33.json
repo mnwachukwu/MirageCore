@@ -1,0 +1,30 @@
+{
+  "name": "Crag Birdman",
+  "attackSay": "SKRAAAAA!",
+  "sprite": 14,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 50,
+  "behavior": "AttackOnSight",
+  "group": 8,
+  "range": 4,
+  "drops": [
+    {
+      "itemNum": 31,
+      "quantity": 0,
+      "chance": 4
+    },
+    {
+      "itemNum": 196,
+      "quantity": 0,
+      "chance": 10
+    }
+  ],
+  "str": 29,
+  "def": 23,
+  "spd": 3,
+  "int": 1,
+  "extraHp": 0,
+  "isBoss": false,
+  "emitsLight": false
+}

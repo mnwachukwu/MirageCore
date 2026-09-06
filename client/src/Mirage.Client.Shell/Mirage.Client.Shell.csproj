@@ -1,0 +1,127 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Mirage.Client.Shell</RootNamespace>
+    <AssemblyName>$(GameNameSlug)</AssemblyName>
+    <!-- Both icons come from Directory.Build.props, alongside GameName — see the note there.
+         Changing the icon on an already-built client is a repackaging step rather than a build one;
+         see "Shipping your own client" in docs/branding.md. -->
+    <ApplicationIcon>$(ClientIcon)</ApplicationIcon>
+  </PropertyGroup>
+
+  <!-- The window and taskbar icon for the running game.
+       MonoGame's SdlGameWindow looks for an embedded resource in the entry assembly, then falls
+       back to `MonoGame.bmp` — its own logo, embedded in the framework.
+
+       LogicalName pins the name to exactly `Icon.bmp`, which is deliberate. The name MonoGame tries
+       *first* is derived from the assembly: `<AssemblyName>.Icon.bmp` in 3.8.4, and
+       `<EntryNamespace>.Icon.bmp` in 3.8.1 — it has already changed once. Our AssemblyName is
+       $(GameNameSlug), so anything keyed on it would break the moment a fork renames the game. The
+       bare `Icon.bmp` fallback is the one stable name across both versions and every rename.
+
+       It must be a BMP, and a BITMAPV4HEADER one: the framework loads it through SDL_LoadBMP. -->
+  <ItemGroup>
+    <EmbeddedResource Include="$(ClientWindowIcon)" LogicalName="Icon.bmp" />
+  </ItemGroup>
+
+  <!-- Expose internals to the unit-test project so headless input/widget interaction (e.g. the
+       channel dropdown's press handling) can be driven without a MonoGame window. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Mirage.Client.Shell.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Velopack" Version="1.2.0" />
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.4.1" />
+    <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.4.1" />
+    <PackageReference Include="NVorbis" Version="0.10.5" />
+    <PackageReference Include="TextCopy" Version="6.2.1" />
+  </ItemGroup>
+
+  <!-- CONTENT IS COMMITTED, NOT COMPILED.
+       Everything under Content/prebuilt/ is a build output kept in the tree, and an ordinary build only
+       copies it. Neither half of this pipeline runs off Windows: the effect compiler is
+       SharpDX.D3DCompiler plus libmojoshader_64.dll, and four of the five spritefonts are drawn from
+       Tahoma, which ships with Windows and with nothing else. Compiling on the one platform that can and
+       shipping the result keeps a from-source build to "the .NET SDK and nothing else" on all three,
+       and keeps every platform looking identical.
+
+       EnableMGCBItems is off so the **/*.mgcb glob cannot sweep the manifest into an ordinary build.
+       Nothing names a MonoGameContentReference, so the content targets never run at all. -->
+  <PropertyGroup>
+    <EnableMGCBItems>false</EnableMGCBItems>
+    <!-- No ordinary build reaches for mgcb, so it is not fetched for one. BuildContent restores it itself. -->
+    <AutoRestoreMGCBTool>false</AutoRestoreMGCBTool>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Content\prebuilt\**\*.xnb"
+             Link="Content\%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Recompile it, on Windows, by explicit request:
+         dotnet msbuild client/src/Mirage.Client.Shell/Mirage.Client.Shell.csproj -t:BuildContent
+       mgcb writes straight into Content/prebuilt/, so `git status` afterwards is the review — the same
+       shape as regenerating the seed. sources.sha256 records every input the committed output was built
+       from; .github/checks/check-prebuilt-content.mjs fails the build when they disagree. -->
+  <Target Name="BuildContent">
+    <Error Condition="!$([MSBuild]::IsOSPlatform('Windows'))"
+           Text="BuildContent needs Windows: MonoGame's effect compiler ships no Linux or macOS build, and the spritefonts are drawn from Tahoma, which only Windows has. Rebuild on Windows and commit Content/prebuilt/." />
+    <Exec Command="dotnet tool restore" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)"
+          Command="dotnet mgcb /quiet /@:&quot;$(MSBuildProjectDirectory)\Content\Content.mgcb&quot; /platform:DesktopGL /outputDir:&quot;$(MSBuildProjectDirectory)\Content\prebuilt&quot; /intermediateDir:&quot;$(MSBuildProjectDirectory)\Content\obj\Prebuilt&quot; /workingDir:&quot;$(MSBuildProjectDirectory)\Content&quot;" />
+
+    <!-- Every input the atlases and the effect are built FROM: the font descriptions, the one font file
+         bundled beside them, and the shader. A change to any of them makes the committed output stale. -->
+    <ItemGroup>
+      <_ContentSource Include="Content\**\*.spritefont;Content\**\*.ttf;Content\**\*.fx"
+                      Exclude="Content\bin\**;Content\obj\**;Content\prebuilt\**" />
+    </ItemGroup>
+    <GetFileHash Files="@(_ContentSource)" Algorithm="SHA256">
+      <Output TaskParameter="Items" ItemName="_ContentHashed" />
+    </GetFileHash>
+    <!-- Identity, not RecursiveDir: GetFileHash does not carry the latter through, and two files of the
+         same name in different folders have to stay distinguishable. -->
+    <WriteLinesToFile File="Content\prebuilt\sources.sha256" Overwrite="true"
+                      Lines="@(_ContentHashed->'%(FileHash) *%(Identity)')" />
+    <Message Importance="High"
+             Text="Content rebuilt into Content/prebuilt/. Commit what git reports there, sources.sha256 included." />
+  </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\shared\src\Mirage.Shared\Mirage.Shared.csproj" />
+    <ProjectReference Include="..\Mirage.Client.Core\Mirage.Client.Core.csproj" />
+    <ProjectReference Include="..\..\..\shared\src\Mirage.Updates\Mirage.Updates.csproj" />
+  </ItemGroup>
+
+  <!-- Localization string files. -->
+  <ItemGroup>
+    <Content Include="lang\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Menu art and control diagrams at the graphics root. -->
+  <ItemGroup>
+    <Content Include="assets\graphics\*.jpg" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="assets\graphics\*.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Per-class graphics folders. Tiles are multi-sheet (leading number = stable sheet index);
+       sprites/items are single-sheet for now. Globbed so adding/removing files is picked up on the
+       next build with no project edit. -->
+  <ItemGroup>
+    <Content Include="assets\graphics\tiles\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="assets\graphics\sprites\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="assets\graphics\items\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Background music tracks. -->
+  <ItemGroup>
+    <Content Include="assets\music\*.ogg" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

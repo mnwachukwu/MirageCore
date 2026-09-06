@@ -1,0 +1,73 @@
+{
+  "name": "Sera Quill (Quest-giver)",
+  "speakerNpc": 126,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "You're upright and you're armed. I have a list, and everyone on it is neither.\n\nI don't send people to die. I send them to fetch, and if fetching turns into dying that's the marsh's doing, not mine.",
+      "choices": [
+        {
+          "label": "What needs doing?",
+          "nextNodeId": 0,
+          "action": "OpenQuests"
+        },
+        {
+          "label": "Who put you in charge of a list?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "What's the Company?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "Not today.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "Nobody. That's rather the point - there's no one left to. I started writing things down so we'd know what we'd lost, and it turned into a list of things someone might go and get back.",
+      "choices": [
+        {
+          "label": "Show me the list.",
+          "nextNodeId": 0,
+          "action": "OpenQuests"
+        },
+        {
+          "label": "What's the Company?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "I see.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "speaker": "",
+      "text": "Warlord Hesk's outfit. Halberdiers, outriders, a captain who was a decent man before the pay stopped. They hold the causeway and tax anyone crossing it.\n\nThey're not monsters. That's what makes them a problem - a monster you can simply kill.",
+      "choices": [
+        {
+          "label": "Show me the list.",
+          "nextNodeId": 0,
+          "action": "OpenQuests"
+        },
+        {
+          "label": "Enough.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Dawnforged Tunic",
+  "pic": 8,
+  "itemSheet": 0,
+  "type": "Armor",
+  "durability": 820,
+  "power": 113,
+  "levelReq": 120,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 142631
+}

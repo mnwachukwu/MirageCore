@@ -1,0 +1,11 @@
+{
+  "name": "Empyrean Meditation",
+  "allowedClasses": [
+    6,
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 289,
+  "levelReq": 235
+}

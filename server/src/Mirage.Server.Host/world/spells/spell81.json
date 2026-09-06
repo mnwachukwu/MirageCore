@@ -1,0 +1,9 @@
+{
+  "name": "Expert Exhaustion",
+  "allowedClasses": [
+    10
+  ],
+  "type": "SubSp",
+  "vitalAmount": 38,
+  "levelReq": 20
+}

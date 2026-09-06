@@ -1,0 +1,10 @@
+{
+  "name": "Eternal Attunement",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 376,
+  "levelReq": 245
+}

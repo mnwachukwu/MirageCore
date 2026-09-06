@@ -1,0 +1,13 @@
+{
+  "name": "Scroll of Void Attunement",
+  "pic": 29,
+  "itemSheet": 0,
+  "type": "Spell",
+  "spellNum": 213,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2380890
+}

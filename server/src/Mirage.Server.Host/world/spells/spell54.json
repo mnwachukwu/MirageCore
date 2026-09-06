@@ -1,0 +1,10 @@
+{
+  "name": "Journeyman Endurance",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddSp",
+  "vitalAmount": 24,
+  "levelReq": 10
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Sovereign Exsanguination",
+  "allowedClasses": [
+    4,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 188,
+  "levelReq": 120
+}

@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>Mirage.Editor</RootNamespace>
+    <AssemblyName>$(GameNameSlug)-Editor</AssemblyName>
+    <ApplicationIcon>$(EditorIcon)</ApplicationIcon>
+    <!-- ON: a binding to a missing property is a build error rather than an empty control that logs
+         nothing. Cost: every binding scope needs an x:DataType, templates included. -->
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Velopack" Version="1.2.0" />
+    <PackageReference Include="Avalonia"               Version="12.0.4" />
+    <PackageReference Include="Avalonia.Desktop"       Version="12.0.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.4" />
+    <PackageReference Include="Avalonia.Fonts.Inter"   Version="12.0.4" />
+    <PackageReference Include="Avalonia.Controls.ColorPicker" Version="12.0.4" />
+    <PackageReference Include="Avalonia.Skia" Version="12.0.4" />
+    <PackageReference Include="SkiaSharp" Version="3.119.4" />
+<PackageReference Include="CommunityToolkit.Mvvm"  Version="8.4.2" />
+    <PackageReference Include="Serilog" Version="4.4.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\shared\src\Mirage.Shared\Mirage.Shared.csproj" />
+    <!-- The palette and type ramp, shared with the server shell so the two cannot drift into
+         separate looks. Brings FluentAvalonia with it. -->
+    <ProjectReference Include="..\..\..\shared\src\Mirage.Ui\Mirage.Ui.csproj" />
+    <ProjectReference Include="..\..\..\shared\src\Mirage.Updates\Mirage.Updates.csproj" />
+  </ItemGroup>
+
+  <!-- Localization string files. -->
+  <ItemGroup>
+    <Content Include="lang\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Tile/sprite/item bitmaps live alongside the client shell; reference them directly so there is
+       only one copy in the repo. The client nests these under graphics/ because it carries music and
+       interface art beside them; the editor reads only sheets, so Link drops that level and puts each
+       per-class folder straight under assets/ — the root EditorPaths resolves and the loaders open. -->
+  <ItemGroup>
+    <Content Include="..\..\..\client\src\Mirage.Client.Shell\assets\graphics\tiles\**\*.*"
+             CopyToOutputDirectory="PreserveNewest"
+             Link="assets\tiles\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\..\..\client\src\Mirage.Client.Shell\assets\graphics\sprites\**\*.*"
+             CopyToOutputDirectory="PreserveNewest"
+             Link="assets\sprites\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\..\..\client\src\Mirage.Client.Shell\assets\graphics\items\**\*.*"
+             CopyToOutputDirectory="PreserveNewest"
+             Link="assets\items\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Mirage.Editor.Tests" />
+  </ItemGroup>
+
+</Project>

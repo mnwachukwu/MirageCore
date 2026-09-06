@@ -1,0 +1,10 @@
+{
+  "name": "Novice Exsanguination",
+  "allowedClasses": [
+    4,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 10,
+  "levelReq": 1
+}

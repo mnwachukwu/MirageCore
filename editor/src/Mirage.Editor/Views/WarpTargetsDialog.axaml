@@ -1,0 +1,50 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Mirage.Editor.ViewModels"
+        x:Class="Mirage.Editor.Views.WarpTargetsDialog"
+        x:DataType="vm:WarpTargetsDialogViewModel"
+        Width="720" Height="560"
+        CanResize="True"
+        MinWidth="420" MinHeight="300"
+        WindowStartupLocation="CenterOwner">
+
+  <DockPanel Margin="20">
+
+    <TextBlock DockPanel.Dock="Top" Text="{Binding Intro}"
+               TextWrapping="Wrap" Margin="0,0,0,12"/>
+
+    <TextBlock x:Name="_noneNote" IsVisible="{Binding !HasTargets}"
+               TextWrapping="Wrap" Opacity="0.75"/>
+
+    <ScrollViewer IsVisible="{Binding HasTargets}">
+      <ItemsControl ItemsSource="{Binding Targets}">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel Orientation="Horizontal"/>
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:WarpTargetRowViewModel">
+            <!-- The whole card follows through to the map, so the picture is the target as well as the
+                 label: a reader who recognizes the place should not have to find the words for it. -->
+            <Button Command="{Binding OpenCommand}" Padding="6" Margin="0,0,10,10"
+                    HorizontalContentAlignment="Left">
+              <StackPanel Width="196" Spacing="4">
+                <!-- No backdrop behind the image. The preview is cropped to the maps that exist, so its
+                     shape varies; a black plate behind it would put back the empty space the crop removed. -->
+                <Border CornerRadius="2" ClipToBounds="True" Height="147">
+                  <Image Source="{Binding Preview}" Stretch="Uniform"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Text="{Binding Title}" FontWeight="SemiBold"
+                           TextTrimming="CharacterEllipsis"/>
+                <TextBlock Text="{Binding EntryText}" Opacity="0.7" FontSize="11"/>
+              </StackPanel>
+            </Button>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+  </DockPanel>
+</Window>

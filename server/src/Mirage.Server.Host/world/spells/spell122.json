@@ -1,0 +1,11 @@
+{
+  "name": "Grand Meditation",
+  "allowedClasses": [
+    6,
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 133,
+  "levelReq": 105
+}

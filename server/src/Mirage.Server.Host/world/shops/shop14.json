@@ -1,0 +1,40 @@
+{
+  "name": "Coin, Fence",
+  "fixesItems": false,
+  "shopType": "Store",
+  "allowBanking": false,
+  "keeper": 140,
+  "barterItem": [
+    {
+      "giveItem": 279,
+      "giveQuantity": 1,
+      "getItem": 1,
+      "getQuantity": 4521
+    },
+    {
+      "giveItem": 280,
+      "giveQuantity": 1,
+      "getItem": 1,
+      "getQuantity": 4794
+    },
+    {
+      "giveItem": 281,
+      "giveQuantity": 1,
+      "getItem": 1,
+      "getQuantity": 5069
+    },
+    {
+      "giveItem": 282,
+      "giveQuantity": 1,
+      "getItem": 1,
+      "getQuantity": 5347
+    },
+    {
+      "giveItem": 283,
+      "giveQuantity": 1,
+      "getItem": 1,
+      "getQuantity": 5627
+    }
+  ],
+  "salesItem": []
+}

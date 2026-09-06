@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Mirage.Server.Shell</RootNamespace>
+    <!-- The plain name: this is the face of the server package. The headless CLI beside it is
+         "-Server-Console". -->
+    <AssemblyName>$(GameNameSlug)-Server</AssemblyName>
+    <!-- The server's own icon, not a new one: this is the same application wearing a window. -->
+    <ApplicationIcon>$(ServerIcon)</ApplicationIcon>
+    <!-- ON, unlike the editor, where bindings resolve by reflection and fail SILENTLY. Here a binding to
+         a missing property is a build error. Cost: every binding scope needs an x:DataType. -->
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Velopack" Version="1.2.0" />
+    <PackageReference Include="Avalonia"               Version="12.0.4" />
+    <PackageReference Include="Avalonia.Desktop"       Version="12.0.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.4" />
+    <PackageReference Include="Avalonia.Fonts.Inter"   Version="12.0.4" />
+    <PackageReference Include="CommunityToolkit.Mvvm"  Version="8.4.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\shared\src\Mirage.Shared\Mirage.Shared.csproj" />
+    <!-- For ServerConfig + ServerConfigStore. The shell edits the same file the server reads, through
+         the same type, so a field can never mean one thing here and another there. -->
+    <ProjectReference Include="..\Mirage.Server.Core\Mirage.Server.Core.csproj" />
+    <!-- The palette, the type ramp, and FluentAvalonia transitively. Shared with the editor so the two
+         cannot drift into separate looks. -->
+    <ProjectReference Include="..\..\..\shared\src\Mirage.Ui\Mirage.Ui.csproj" />
+    <ProjectReference Include="..\..\..\shared\src\Mirage.Updates\Mirage.Updates.csproj" />
+  </ItemGroup>
+
+  <!-- NESTED under lang/shell/, not lang/. The shell and the server ship into ONE directory and both
+       want a lang/en.json; whichever copies second wins, and if it is the shell the server dies at
+       startup on `Missing key: "Server_Starting"`. A solution build never sees it — in the repo the two
+       land in separate bin folders. -->
+  <ItemGroup>
+    <Content Include="lang\shell\*.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- The log settings this window edits live in the SERVER's appsettings.json, and the path is
+         resolved off AppContext.BaseDirectory. Published, that is the same folder — the server and this
+         shell publish side by side. Run from source they are two different bin folders, so without this
+         link "Save" reports a file it cannot find and the whole Configuration tab is dead in dev. -->
+    <Content Include="..\Mirage.Server.Host\appsettings.json" Link="appsettings.json"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

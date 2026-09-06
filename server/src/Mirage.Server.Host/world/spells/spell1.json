@@ -1,0 +1,14 @@
+{
+  "name": "Novice Bloodletting",
+  "allowedClasses": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 6,
+  "levelReq": 1
+}

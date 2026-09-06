@@ -1,0 +1,25 @@
+{
+  "name": "Iron Dagger",
+  "pic": 13,
+  "itemSheet": 0,
+  "type": "Weapon",
+  "durability": 170,
+  "power": 10,
+  "levelReq": 5,
+  "allowedClasses": [
+    1,
+    2,
+    3,
+    5,
+    6,
+    7,
+    9,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 77
+}

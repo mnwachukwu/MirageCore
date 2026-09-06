@@ -1,0 +1,19 @@
+{
+  "name": "Eternal Greataxe",
+  "pic": 11,
+  "itemSheet": 0,
+  "type": "Weapon",
+  "durability": 1960,
+  "power": 376,
+  "levelReq": 245,
+  "allowedClasses": [
+    1,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1570680
+}

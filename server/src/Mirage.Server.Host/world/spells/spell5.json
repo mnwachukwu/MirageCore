@@ -1,0 +1,10 @@
+{
+  "name": "Novice Mana Siphon",
+  "allowedClasses": [
+    6,
+    10
+  ],
+  "type": "SubMp",
+  "vitalAmount": 8,
+  "levelReq": 1
+}

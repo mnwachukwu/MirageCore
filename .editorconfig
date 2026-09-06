@@ -1,0 +1,143 @@
+# Mirage Source Remastered — C# style.
+#
+# Encodes the house style so it is enforced rather than remembered: `dotnet format` applies it,
+# and Visual Studio / Rider honor it automatically, so new code lands correct instead of drifting.
+#
+# The two deliberate exceptions are documented at their rules below (single-line guard clauses, and
+# switch case bodies). Both are project-scoped choices, not general C# advice.
+
+root = true
+
+[*]
+charset = utf-8
+# LF, because that is what every source file in this repo already uses. Declaring crlf here would
+# rewrite all 585 of them and turn every future diff into noise.
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+
+[*.{cs,csx}]
+indent_size = 4
+max_line_length = 120
+
+# ── Braces ────────────────────────────────────────────────────────────────────
+#
+# `when_multiline` is the house rule exactly: a construct whose body sits on its own line gets
+# braces; a construct written entirely on one line does not.
+#
+#     if (!sp.IsPlaying) return;          <- stays as-is (guard clause, the one exception)
+#     if (x)                              <- gets braces
+#         Foo();
+#
+# Guard clauses are the dominant pattern here (~2,100 of them) and bracing each into four lines
+# would work against readability rather than for it. This exception is specific to this project.
+#
+# Switch `case` bodies are NOT affected by this rule and are deliberately left unbraced — braces on
+# a case are only ever added here when load-bearing (sibling cases sharing a local name would
+# otherwise collide, CS0128).
+csharp_prefer_braces = when_multiline:warning
+
+# ── Statements per line ───────────────────────────────────────────────────────
+# One statement per line; no `a = 1; b = 2;` pileups. (No analyzer enforces this — it is a review
+# rule, applied in the style pass and expected of new code.)
+
+# ── Newlines ──────────────────────────────────────────────────────────────────
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+# Initializer members are not statements, so the one-statement-per-line rule does not reach them:
+# a compact `new() { A = a, B = b }` stays on one line. An initializer already written across
+# several lines keeps its shape — this setting only stops the formatter from forcing the split.
+csharp_new_line_before_members_in_object_initializers = false
+csharp_new_line_before_members_in_anonymous_types = false
+csharp_new_line_between_query_expression_clauses = true
+
+# ── Indentation ───────────────────────────────────────────────────────────────
+csharp_indent_case_contents = true
+csharp_indent_case_contents_when_block = false
+csharp_indent_switch_labels = true
+csharp_indent_labels = one_less_than_current
+csharp_indent_block_contents = true
+csharp_indent_braces = false
+
+# ── Spacing ───────────────────────────────────────────────────────────────────
+csharp_space_after_cast = false
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_before_colon_in_inheritance_clause = true
+csharp_space_after_colon_in_inheritance_clause = true
+csharp_space_around_binary_operators = before_and_after
+csharp_space_between_method_declaration_parameter_list_parentheses = false
+csharp_space_between_method_declaration_empty_parameter_list_parentheses = false
+csharp_space_between_method_declaration_name_and_open_parenthesis = false
+csharp_space_between_method_call_parameter_list_parentheses = false
+csharp_space_between_method_call_empty_parameter_list_parentheses = false
+csharp_space_between_method_call_name_and_opening_parenthesis = false
+csharp_space_between_parentheses = false
+csharp_space_between_square_brackets = false
+csharp_space_before_open_square_brackets = false
+csharp_space_after_comma = true
+csharp_space_before_comma = false
+csharp_space_after_dot = false
+csharp_space_before_dot = false
+csharp_space_after_semicolon_in_for_statement = true
+csharp_space_before_semicolon_in_for_statement = false
+
+# ── Wrapping ──────────────────────────────────────────────────────────────────
+# Both left ON deliberately, because Roslyn's versions of these rules are too blunt for the house
+# style and each breaks one of the two exceptions:
+#
+#   preserve_single_line_statements = false  would also split single-line GUARD CLAUSES
+#                                            (`if (bad) return;` -> two unbraced lines), and those
+#                                            are the one construct that stays on one line here.
+#   preserve_single_line_blocks     = false  would also expand auto-property accessor lists
+#                                            (`{ get; set; }` -> a three-line block).
+#
+# One-statement-per-line is therefore a review rule rather than an analyzer rule: multi-statement
+# lines were split in the style pass, and new code is expected to keep one statement per line.
+csharp_preserve_single_line_statements = true
+csharp_preserve_single_line_blocks = true
+
+# ── using directives ──────────────────────────────────────────────────────────
+# One block above the namespace, sorted by NAMESPACE — plain directives first, then `using static`,
+# then aliases. Ordinal, so `System` lands at the bottom on its own and needs no rule of its own;
+# that is what `sort_system_directives_first = false` says here. No blank lines between groups.
+#
+# Sort on the namespace and not on the line: with the trailing `;` included, '.' sorts before ';',
+# which files a child namespace ahead of its own parent (`Mirage.Shared.Records` before
+# `Mirage.Shared`).
+csharp_using_directive_placement = outside_namespace:silent
+dotnet_sort_system_directives_first = false
+dotnet_separate_import_directive_groups = false
+
+# ── Language-feature preferences ──────────────────────────────────────────────
+# Kept at `silent` on purpose: these express house preference for NEW code without turning the
+# existing codebase into a wall of suggested rewrites during a formatting pass.
+csharp_style_var_for_built_in_types = false:silent
+csharp_style_var_when_type_is_apparent = true:silent
+csharp_style_var_elsewhere = false:silent
+csharp_style_expression_bodied_methods = when_on_single_line:silent
+csharp_style_expression_bodied_properties = when_on_single_line:silent
+csharp_style_expression_bodied_accessors = when_on_single_line:silent
+csharp_style_prefer_switch_expression = true:silent
+csharp_style_namespace_declarations = file_scoped:silent
+csharp_prefer_simple_using_statement = true:silent
+dotnet_style_prefer_conditional_expression_over_assignment = false:silent
+dotnet_style_prefer_conditional_expression_over_return = false:silent
+
+# ── Naming ────────────────────────────────────────────────────────────────────
+dotnet_naming_rule.private_fields_underscore.severity = silent
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_camel
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel.required_prefix = _
+dotnet_naming_style.underscore_camel.capitalization = camel_case
+
+# Generated code is not ours to format.
+[*.{Designer.cs,g.cs,generated.cs}]
+generated_code = true
+
+[*.{json,axaml,xaml,csproj,props,targets,slnx}]
+indent_size = 2

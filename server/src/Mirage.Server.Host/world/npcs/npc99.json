@@ -1,0 +1,35 @@
+{
+  "name": "Molten Colossus",
+  "attackSay": "SSSSHHHLLLAG",
+  "sprite": 35,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 210,
+  "behavior": "AttackWhenAttacked",
+  "group": 11,
+  "range": 6,
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 1036,
+      "chance": 60
+    },
+    {
+      "itemNum": 286,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 157,
+      "quantity": 0,
+      "chance": 1
+    }
+  ],
+  "str": 366,
+  "def": 311,
+  "spd": 24,
+  "int": 54,
+  "extraHp": 5969,
+  "isBoss": false,
+  "emitsLight": true
+}

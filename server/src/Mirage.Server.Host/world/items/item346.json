@@ -1,0 +1,13 @@
+{
+  "name": "Scroll of Adept Mana Leech",
+  "pic": 30,
+  "itemSheet": 0,
+  "type": "Spell",
+  "spellNum": 58,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1987
+}

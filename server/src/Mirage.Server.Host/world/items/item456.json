@@ -1,0 +1,13 @@
+{
+  "name": "Scroll of Sovereign Mana Rupture",
+  "pic": 30,
+  "itemSheet": 0,
+  "type": "Spell",
+  "spellNum": 168,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 381192
+}

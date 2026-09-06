@@ -1,0 +1,15 @@
+{
+  "name": "Mythic Cap",
+  "pic": 35,
+  "itemSheet": 0,
+  "type": "Helmet",
+  "durability": 1200,
+  "power": 235,
+  "levelReq": 255,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1027989
+}

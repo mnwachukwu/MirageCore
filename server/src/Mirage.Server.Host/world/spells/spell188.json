@@ -1,0 +1,11 @@
+{
+  "name": "Empyrean Enervation",
+  "allowedClasses": [
+    6,
+    7,
+    10
+  ],
+  "type": "SubSp",
+  "vitalAmount": 289,
+  "levelReq": 235
+}

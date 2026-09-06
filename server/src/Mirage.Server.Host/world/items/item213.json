@@ -1,0 +1,14 @@
+{
+  "name": "Potent Enervating Vial",
+  "pic": 26,
+  "itemSheet": 0,
+  "type": "PotionSubSp",
+  "vitalAmount": 20,
+  "levelReq": 20,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 24
+}

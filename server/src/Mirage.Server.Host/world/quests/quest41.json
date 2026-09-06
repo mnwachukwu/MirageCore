@@ -1,0 +1,41 @@
+{
+  "name": "Slagborn on the Path",
+  "description": "3 slagborn. Slow, dull, and they will kill anyone who treats them as slow and dull.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 86,
+      "count": 3,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 237,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "allowedClasses": [
+    6,
+    9,
+    10
+  ],
+  "prereqQuest": 0,
+  "rewardExp": 5937,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 1904
+    }
+  ],
+  "repeatRewardExp": 3166,
+  "repeatRewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 1015
+    }
+  ],
+  "giverNpc": 142,
+  "turnInNpc": 0,
+  "repeatable": true,
+  "cadence": "Daily"
+}

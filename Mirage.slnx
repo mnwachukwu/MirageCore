@@ -1,0 +1,40 @@
+<Solution>
+  <Folder Name="/Shared/">
+    <Project Path="shared/src/Mirage.Shared/Mirage.Shared.csproj" />
+    <Project Path="shared/src/Mirage.Ui/Mirage.Ui.csproj" />
+    <Project Path="shared/src/Mirage.Updates/Mirage.Updates.csproj" />
+  </Folder>
+  <Folder Name="/Server/">
+    <Project Path="server/src/Mirage.Server.Core/Mirage.Server.Core.csproj" />
+    <Project Path="server/src/Mirage.Server.Host/Mirage.Server.Host.csproj" />
+    <Project Path="server/src/Mirage.Server.Shell/Mirage.Server.Shell.csproj" />
+  </Folder>
+  <Folder Name="/Client/">
+    <Project Path="client/src/Mirage.Client.Core/Mirage.Client.Core.csproj" />
+    <Project Path="client/src/Mirage.Client.Shell/Mirage.Client.Shell.csproj" />
+  </Folder>
+  <Folder Name="/Editor/">
+    <Project Path="editor/src/Mirage.Editor/Mirage.Editor.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/Mirage.Test.csproj" />
+    <Project Path="tests/Mirage.Shared.Test.csproj" />
+    <Project Path="tests/Mirage.Server.Test.csproj" />
+    <Project Path="tests/Mirage.Client.Test.csproj" />
+    <Project Path="tests/Mirage.Editor.Test.csproj" />
+  </Folder>
+  <Folder Name="/Tests/src/">
+    <Project Path="tests/src/Mirage.Shared.Tests/Mirage.Shared.Tests.csproj" />
+    <Project Path="tests/src/Mirage.Server.Tests/Mirage.Server.Tests.csproj" />
+    <Project Path="tests/src/Mirage.Server.Shell.Tests/Mirage.Server.Shell.Tests.csproj" />
+    <Project Path="tests/src/Mirage.Client.Core.Tests/Mirage.Client.Core.Tests.csproj" />
+    <Project Path="tests/src/Mirage.Client.Shell.Tests/Mirage.Client.Shell.Tests.csproj" />
+    <Project Path="tests/src/Mirage.Editor.Tests/Mirage.Editor.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Publish/">
+    <Project Path="publish/Mirage.Publish.csproj" />
+    <Project Path="publish/Mirage.Server.Publish.csproj" />
+    <Project Path="publish/Mirage.Client.Publish.csproj" />
+    <Project Path="publish/Mirage.Editor.Publish.csproj" />
+  </Folder>
+</Solution>

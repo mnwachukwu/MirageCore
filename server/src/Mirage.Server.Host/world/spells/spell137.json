@@ -1,0 +1,10 @@
+{
+  "name": "Arch Heal",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 139,
+  "levelReq": 110
+}

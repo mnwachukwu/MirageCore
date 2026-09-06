@@ -1,0 +1,14 @@
+{
+  "name": "Absolute Vigor Elixir",
+  "pic": 21,
+  "itemSheet": 0,
+  "type": "PotionAddSp",
+  "vitalAmount": 225,
+  "levelReq": 255,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 21907
+}

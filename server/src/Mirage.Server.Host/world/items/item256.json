@@ -1,0 +1,14 @@
+{
+  "name": "Transcendent Healing Elixir",
+  "pic": 25,
+  "itemSheet": 0,
+  "type": "PotionAddHp",
+  "vitalAmount": 2937,
+  "levelReq": 245,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 19684
+}

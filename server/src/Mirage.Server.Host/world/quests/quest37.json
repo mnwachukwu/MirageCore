@@ -1,0 +1,42 @@
+{
+  "name": "Halberdiers in the Cut",
+  "description": "3. Close, hot, and over quickly if you know what you are doing.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 92,
+      "count": 3,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 241,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "allowedClasses": [
+    1,
+    2,
+    3,
+    7
+  ],
+  "prereqQuest": 0,
+  "rewardExp": 6002,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 1947
+    }
+  ],
+  "repeatRewardExp": 3201,
+  "repeatRewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 1038
+    }
+  ],
+  "giverNpc": 142,
+  "turnInNpc": 0,
+  "repeatable": true,
+  "cadence": "Daily"
+}

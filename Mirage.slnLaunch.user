@@ -1,0 +1,82 @@
+[
+  {
+    "Name": "Client + Server",
+    "Projects": [
+      {
+        "Path": "client\\src\\Mirage.Client.Shell\\Mirage.Client.Shell.csproj",
+        "Action": "Start",
+        "DebugTarget": "Mirage.Client.Shell"
+      },
+      {
+        "Path": "server\\src\\Mirage.Server.Host\\Mirage.Server.Host.csproj",
+        "Action": "Start",
+        "DebugTarget": "Mirage.Server.Host"
+      }
+    ]
+  },
+  {
+    "Name": "Editor + Server",
+    "Projects": [
+      {
+        "Path": "editor\\src\\Mirage.Editor\\Mirage.Editor.csproj",
+        "Action": "Start",
+        "DebugTarget": "Mirage.Editor"
+      },
+      {
+        "Path": "server\\src\\Mirage.Server.Host\\Mirage.Server.Host.csproj",
+        "Action": "Start",
+        "DebugTarget": "Mirage.Server.Host"
+      }
+    ]
+  },
+  {
+    "Name": "Client",
+    "Projects": [
+      {
+        "Path": "client\\src\\Mirage.Client.Shell\\Mirage.Client.Shell.csproj",
+        "Action": "Start",
+        "DebugTarget": "Mirage.Client.Shell"
+      }
+    ]
+  },
+  {
+    "Name": "Server",
+    "Projects": [
+      {
+        "Path": "server\\src\\Mirage.Server.Host\\Mirage.Server.Host.csproj",
+        "Action": "Start",
+        "DebugTarget": "Mirage.Server.Host"
+      }
+    ]
+  },
+  {
+    "Name": "Editor",
+    "Projects": [
+      {
+        "Path": "editor\\src\\Mirage.Editor\\Mirage.Editor.csproj",
+        "Action": "Start",
+        "DebugTarget": "Mirage.Editor"
+      }
+    ]
+  },
+  {
+    "Name": "Trifecta",
+    "Projects": [
+      {
+        "Path": "client\\src\\Mirage.Client.Shell\\Mirage.Client.Shell.csproj",
+        "Action": "Start",
+        "DebugTarget": "Mirage.Client.Shell"
+      },
+      {
+        "Path": "editor\\src\\Mirage.Editor\\Mirage.Editor.csproj",
+        "Action": "Start",
+        "DebugTarget": "Mirage.Editor"
+      },
+      {
+        "Path": "server\\src\\Mirage.Server.Host\\Mirage.Server.Host.csproj",
+        "Action": "Start",
+        "DebugTarget": "Mirage.Server.Host"
+      }
+    ]
+  }
+]

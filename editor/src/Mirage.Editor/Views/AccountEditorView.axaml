@@ -1,0 +1,421 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:proto="using:Mirage.Shared.Protocol.Packets"
+             xmlns:vm="using:Mirage.Editor.ViewModels" xmlns:models="using:Mirage.Editor.Models"
+             xmlns:controls="using:Mirage.Editor.Controls"
+             xmlns:mui="using:Mirage.Ui.Controls"
+             Grid.IsSharedSizeScope="True"
+             x:DataType="vm:AccountEditorViewModel"
+             x:Class="Mirage.Editor.Views.AccountEditorView">
+
+  <!-- The only ONLINE-ONLY section. Accounts live on the server, so there is nothing to show against a
+       world folder — the offline notice says that rather than presenting an empty list, which would read
+       as "this server has no accounts". -->
+  <Grid RowDefinitions="Auto,*">
+
+    <!-- Spans both rows and centers in them: the browser it replaces is never visible at the same time,
+         and a notice pinned to the top-left of an otherwise empty pane reads as a caption for nothing. -->
+    <TextBlock Grid.Row="0" Grid.RowSpan="2" x:Name="_offlineNotice" Margin="16"
+               HorizontalAlignment="Center" VerticalAlignment="Center"
+               MaxWidth="360" TextAlignment="Center"
+               Foreground="{DynamicResource MirageMutedBrush}" TextWrapping="Wrap"
+               IsVisible="{Binding IsOffline}"/>
+
+    <mui:FormRow Grid.Row="1" LabelWidth="300" IsVisible="{Binding !IsOffline}">
+
+      <!-- ── Browser ── -->
+      <DockPanel Grid.Column="0" Background="{DynamicResource MirageBgAltBrush}">
+        <TextBox x:Name="_searchBox" DockPanel.Dock="Top" Margin="6,6,6,2" FontSize="11"
+                 Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+        <!-- Access filter. A picker rather than a live-typed field because it costs the server a full
+             scan: the level is inside each record, not in its file name. -->
+        <!-- Options carry their own caption rather than being raw enum values with a null in the list:
+             the "any level" entry then needs no TargetNullValue (which cannot take a binding) and no
+             sentinel enum member that could be mistaken for a real access level. -->
+        <ComboBox DockPanel.Dock="Top" Margin="6,0,6,4" HorizontalAlignment="Stretch" FontSize="11"
+                  ItemsSource="{Binding AccessFilters}" SelectedItem="{Binding SelectedAccessFilter}">
+          <ComboBox.ItemTemplate>
+            <DataTemplate DataType="vm:AccessFilterOption">
+              <TextBlock Text="{Binding Label}"/>
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+
+        <!-- Pager. The count is stated in full because a Creator looking for one person needs to know
+             whether the name they want is simply on another page. -->
+        <Grid DockPanel.Dock="Bottom" ColumnDefinitions="Auto,*,Auto" Margin="6,2,6,6">
+          <Button Grid.Column="0" x:Name="_prevBtn" Command="{Binding PrevPageCommand}"
+                  IsEnabled="{Binding CanPrev}" Padding="8,2" FontSize="11"/>
+          <TextBlock Grid.Column="1" Text="{Binding PageText}" HorizontalAlignment="Center"
+                     VerticalAlignment="Center" FontSize="11"
+                     Foreground="{DynamicResource MirageMutedBrush}"/>
+          <Button Grid.Column="2" x:Name="_nextBtn" Command="{Binding NextPageCommand}"
+                  IsEnabled="{Binding CanNext}" Padding="8,2" FontSize="11"/>
+        </Grid>
+
+        <ListBox ItemsSource="{Binding Accounts}" SelectedItem="{Binding SelectedAccount}"
+                 Background="Transparent">
+          <ListBox.ItemTemplate>
+            <DataTemplate DataType="proto:EditorAccountRow">
+              <Grid ColumnDefinitions="*,Auto" Height="30">
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding Login}" FontSize="12"/>
+                  <TextBlock Text="{Binding Access}" FontSize="10"
+                             Foreground="{DynamicResource MirageFaintBrush}"/>
+                </StackPanel>
+                <!-- Online is live state, so it is only as fresh as the last fetch. Shown as a dot plus
+                     the character name, the same shape the server window's badge uses. -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5"
+                            VerticalAlignment="Center" IsVisible="{Binding IsOnline}">
+                  <Ellipse Width="6" Height="6" Fill="{DynamicResource MirageOkBrush}"
+                           VerticalAlignment="Center"/>
+                  <TextBlock Text="{Binding PlayingAs}" FontSize="10"
+                             Foreground="{DynamicResource MirageOkBrush}" VerticalAlignment="Center"/>
+                </StackPanel>
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+
+      <!-- ── Detail ── -->
+      <Grid Grid.Column="1" RowDefinitions="*,Auto">
+        <TextBlock Grid.Row="0" x:Name="_pickHint" Margin="16"
+                   Foreground="{DynamicResource MirageFaintBrush}" FontStyle="Italic"
+                   IsVisible="{Binding !HasSelection}"/>
+
+        <ScrollViewer Grid.Row="0" IsVisible="{Binding HasSelection}">
+          <StackPanel Margin="16,14" Spacing="10" MaxWidth="720" HorizontalAlignment="Left">
+
+            <TextBlock Text="{Binding Login}" FontSize="18" FontWeight="SemiBold"/>
+
+            <Grid ColumnDefinitions="120,220,Auto" RowDefinitions="Auto,Auto">
+              <TextBlock Grid.Row="0" Grid.Column="0" x:Name="_accessLabel" VerticalAlignment="Center"/>
+              <!-- Disabled on your OWN account: the server refuses a self-change, and a live-looking
+                   control that silently does nothing is worse than one plainly greyed out. -->
+              <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding AccessLevels}"
+                        SelectedItem="{Binding Access}" HorizontalAlignment="Stretch"
+                        IsEnabled="{Binding CanEditAccess}"/>
+              <TextBlock Grid.Row="0" Grid.Column="2" x:Name="_selfHint" VerticalAlignment="Center"
+                         Margin="10,0,0,0" FontSize="11" FontStyle="Italic"
+                         Foreground="{DynamicResource MirageFaintBrush}"
+                         IsVisible="{Binding IsSelf}"/>
+
+              <!-- Read-only on purpose: the guild's roster cache is kept in step by the guild system, so
+                   writing the account's copy from here would leave the two disagreeing. -->
+              <TextBlock Grid.Row="1" Grid.Column="0" x:Name="_guildLabel" VerticalAlignment="Center"
+                         Margin="0,8,0,0"/>
+              <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding GuildText}" VerticalAlignment="Center"
+                         Margin="0,8,0,0" Foreground="{DynamicResource MirageMutedBrush}"/>
+            </Grid>
+
+            <!-- The vault sits with the account's own fields, not on a character card: it is account-shared,
+                 so every character on the account is looking at this one. -->
+            <TextBlock Text="{Binding VaultHeader}" FontWeight="SemiBold" Margin="0,6,0,0"/>
+            <TextBlock Text="{Binding VaultEmpty}" Foreground="{DynamicResource MirageFaintBrush}"
+                       FontStyle="Italic" FontSize="11" IsVisible="{Binding HasNoBank}"/>
+            <!-- Ten rows, then it scrolls. A stocked vault would otherwise push everything below it off
+                 the panel. The row height is pinned so ten of them is what the ceiling measures. -->
+            <ScrollViewer MaxHeight="260" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Bank}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="proto:EditorInvSlot">
+                  <Grid ColumnDefinitions="34,*,60,Auto" Height="24" Margin="0,0,0,2">
+                    <TextBlock Grid.Column="0" Text="{Binding Slot}" FontSize="11" VerticalAlignment="Center"
+                               Foreground="{DynamicResource MirageFaintBrush}"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="11" VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Grid.Column="2" Text="{Binding Quantity}" FontSize="11"
+                               VerticalAlignment="Center" HorizontalAlignment="Right"
+                               Foreground="{DynamicResource MirageMutedBrush}"/>
+                    <Button Grid.Column="3" Content="-" FontWeight="Bold" Classes="glyph" Margin="6,0,0,0"
+                            Command="{Binding $parent[UserControl].DataContext.TakeFromBankCommand}"
+                            CommandParameter="{Binding}"/>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            </ScrollViewer>
+            <Grid ColumnDefinitions="*,132,Auto" MaxWidth="540" HorizontalAlignment="Left" Margin="0,4,0,0">
+              <controls:DropdownAutoCompleteBox Grid.Column="0"
+                               ItemsSource="{Binding ItemEntries}"
+                               SelectedItem="{Binding BankItem, Mode=TwoWay}"
+                               ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                               FilterMode="Custom" MinimumPrefixLength="0"/>
+              <!-- Maximum is what a stack holds, not a round number: gold is an int with no ceiling of
+                   its own, and PlayerInvSlot.AddQuantity saturates rather than wrapping. -->
+              <NumericUpDown Grid.Column="1" Margin="6,0,0,0" Value="{Binding BankQuantity}"
+                             Minimum="1" Maximum="2147483647" FormatString="0"
+                             ParsingNumberStyle="Integer" ShowButtonSpinner="False"/>
+              <Button Grid.Column="2" Margin="6,0,0,0" Padding="10,3" x:Name="_bankGiveBtn"
+                      IsEnabled="{Binding CanGiveToBank}"
+                      Command="{Binding GiveToBankCommand}"/>
+            </Grid>
+
+            <TextBlock x:Name="_charsHeader" FontWeight="SemiBold" Margin="0,6,0,0"/>
+            <TextBlock x:Name="_noCharsHint" Foreground="{DynamicResource MirageFaintBrush}"
+                       FontStyle="Italic" IsVisible="{Binding !Chars.Count}"/>
+
+            <ItemsControl ItemsSource="{Binding Chars}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:AccountCharRowViewModel">
+                  <Border BorderBrush="{DynamicResource MirageLineBrush}" BorderThickness="1"
+                          CornerRadius="4" Padding="10,8" Margin="0,0,0,6">
+                    <StackPanel Spacing="6">
+                      <!-- The name is its own operation, not a field the Save carries: the server can refuse
+                           it and says why, so it gets its own button and its own round trip. -->
+                      <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Grid.Column="0" Text="{Binding RenameTo, Mode=TwoWay}"
+                                 PlaceholderText="{Binding RenamePlaceholder}" FontWeight="SemiBold" FontSize="13"/>
+                        <Button Grid.Column="1" Margin="6,0,0,0" Padding="10,3"
+                                Content="{Binding RenameLabel}"
+                                IsEnabled="{Binding CanRename}"
+                                Command="{Binding $parent[ItemsControl].DataContext.RenameCharCommand}"
+                                CommandParameter="{Binding}"/>
+                      </Grid>
+                      <!--  EVERY field states its Maximum. Avalonia's NumericUpDown defaults Maximum to
+                           100, so a field without one silently clamps — which for Exp, Points, Map and
+                           the stats would have quietly rewritten a character on save.
+
+                           Exp gets its own wide row: it reaches six and seven digits on a 255-level
+                           curve, and a column sized for a stat would hide most of it behind the spinner
+                           buttons. The rest are three or four digits and share the narrower columns. -->
+                      <Grid ColumnDefinitions="56,148,56,148,56,148" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Level" VerticalAlignment="Center" FontSize="11"/>
+                        <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding Level}" Minimum="1"
+                                       Maximum="255" FormatString="0" ParsingNumberStyle="Integer" Margin="0,0,10,0"/>
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="Points" VerticalAlignment="Center" FontSize="11"/>
+                        <NumericUpDown Grid.Row="0" Grid.Column="3" Value="{Binding Points}" Minimum="0"
+                                       Maximum="999999" FormatString="0" ParsingNumberStyle="Integer" Margin="0,0,10,0"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Exp" VerticalAlignment="Center"
+                                   Margin="0,8,0,0" FontSize="11"/>
+                        <NumericUpDown Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="5" Value="{Binding Exp}"
+                                       Minimum="0" Maximum="9999999999" FormatString="0"
+                                       ParsingNumberStyle="Integer" Margin="0,8,0,0"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Map" VerticalAlignment="Center"
+                                   Margin="0,8,0,0" FontSize="11"/>
+                        <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding Map}" Minimum="1"
+                                       Maximum="100000" FormatString="0" ParsingNumberStyle="Integer" Margin="0,8,10,0"/>
+                        <TextBlock Grid.Row="2" Grid.Column="2" Text="X" VerticalAlignment="Center"
+                                   Margin="0,8,0,0" FontSize="11"/>
+                        <NumericUpDown Grid.Row="2" Grid.Column="3" Value="{Binding X}" Minimum="0"
+                                       Maximum="15" FormatString="0" ParsingNumberStyle="Integer" Margin="0,8,10,0"/>
+                        <TextBlock Grid.Row="2" Grid.Column="4" Text="Y" VerticalAlignment="Center"
+                                   Margin="0,8,0,0" FontSize="11"/>
+                        <NumericUpDown Grid.Row="2" Grid.Column="5" Value="{Binding Y}" Minimum="0"
+                                       Maximum="11" FormatString="0" ParsingNumberStyle="Integer" Margin="0,8,0,0"/>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="STR" VerticalAlignment="Center"
+                                   Margin="0,8,0,0" FontSize="11"/>
+                        <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding Str}" Minimum="0"
+                                       Maximum="999999" FormatString="0" ParsingNumberStyle="Integer" Margin="0,8,10,0"/>
+                        <TextBlock Grid.Row="3" Grid.Column="2" Text="DEF" VerticalAlignment="Center"
+                                   Margin="0,8,0,0" FontSize="11"/>
+                        <NumericUpDown Grid.Row="3" Grid.Column="3" Value="{Binding Def}" Minimum="0"
+                                       Maximum="999999" FormatString="0" ParsingNumberStyle="Integer" Margin="0,8,10,0"/>
+                        <TextBlock Grid.Row="3" Grid.Column="4" Text="SPD" VerticalAlignment="Center"
+                                   Margin="0,8,0,0" FontSize="11"/>
+                        <NumericUpDown Grid.Row="3" Grid.Column="5" Value="{Binding Spd}" Minimum="0"
+                                       Maximum="999999" FormatString="0" ParsingNumberStyle="Integer" Margin="0,8,0,0"/>
+
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="INT" VerticalAlignment="Center"
+                                   Margin="0,8,0,0" FontSize="11"/>
+                        <NumericUpDown Grid.Row="4" Grid.Column="1" Value="{Binding Int}" Minimum="0"
+                                       Maximum="999999" FormatString="0" ParsingNumberStyle="Integer" Margin="0,8,10,0"/>
+                      </Grid>
+
+                      <!-- What the sheet holds against what the level allows. Two TextBlocks rather than
+                           one with a switched brush: the bindings here resolve by reflection, so a
+                           visibility flag is the shape that cannot silently fall back to a wrong color.
+                           Red blocks the save — the server refuses the row too. -->
+                      <TextBlock Text="{Binding BudgetText}" FontSize="11"
+                                 IsVisible="{Binding IsWithinBudget}"
+                                 Foreground="{DynamicResource MirageMutedBrush}"/>
+                      <TextBlock Text="{Binding OverBudgetText}" FontSize="11" FontWeight="SemiBold"
+                                 TextWrapping="Wrap"
+                                 IsVisible="{Binding IsOverBudget}"
+                                 Foreground="{DynamicResource MirageBadBrush}"/>
+
+                      <!-- The bag. Read-only rows; giving and taking are each one round trip naming one
+                           slot, so nothing here rides on the account Save. -->
+                      <TextBlock Text="{Binding BagHeader}" FontWeight="SemiBold" FontSize="11"
+                                 Margin="0,6,0,0" Foreground="{DynamicResource MirageMutedBrush}"/>
+                      <TextBlock Text="{Binding BagEmpty}" FontSize="11" FontStyle="Italic"
+                                 IsVisible="{Binding HasNoInv}"
+                                 Foreground="{DynamicResource MirageFaintBrush}"/>
+                      <!-- Ten rows, then it scrolls. A full bag would otherwise push the spell book and
+                           the quest log off the panel. -->
+                      <ScrollViewer MaxHeight="260" HorizontalScrollBarVisibility="Disabled">
+                      <ItemsControl ItemsSource="{Binding Inv}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate DataType="proto:EditorInvSlot">
+                            <Grid ColumnDefinitions="34,*,70,60,Auto" Height="24" Margin="0,0,0,2">
+                              <TextBlock Grid.Column="0" Text="{Binding Slot}" FontSize="11"
+                                         VerticalAlignment="Center"
+                                         Foreground="{DynamicResource MirageFaintBrush}"/>
+                              <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="11"
+                                         VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                              <!-- Worn is called out because taking the slot strips the piece. -->
+                              <TextBlock Grid.Column="2" Text="{Binding $parent[UserControl].DataContext.WornLabel}" FontSize="10" VerticalAlignment="Center"
+                                         IsVisible="{Binding Worn}"
+                                         Foreground="{DynamicResource MirageWarnBrush}"/>
+                              <TextBlock Grid.Column="3" Text="{Binding Quantity}" FontSize="11"
+                                         VerticalAlignment="Center" HorizontalAlignment="Right"
+                                         Foreground="{DynamicResource MirageMutedBrush}"/>
+                              <Button Grid.Column="4" Content="-" FontWeight="Bold" Classes="glyph"
+                                      Margin="6,0,0,0"
+                                      Command="{Binding $parent[UserControl].DataContext.TakeItemCommand}"
+                                      CommandParameter="{Binding}"/>
+                            </Grid>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                      </ScrollViewer>
+
+                      <Grid ColumnDefinitions="*,132,Auto" Margin="0,4,0,0">
+                        <controls:DropdownAutoCompleteBox Grid.Column="0"
+                                         ItemsSource="{Binding ItemEntries}"
+                                         SelectedItem="{Binding GiveItem, Mode=TwoWay}"
+                                         ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                                         FilterMode="Custom" MinimumPrefixLength="0"
+                                         PlaceholderText="{Binding ItemPlaceholder}"/>
+                        <NumericUpDown Grid.Column="1" Margin="6,0,0,0" Value="{Binding GiveQuantity}"
+                                       Minimum="1" Maximum="2147483647" FormatString="0"
+                                       ParsingNumberStyle="Integer" ShowButtonSpinner="False"/>
+                        <Button Grid.Column="2" Margin="6,0,0,0" Padding="10,3"
+                                Content="{Binding GiveLabel}"
+                                IsEnabled="{Binding CanGiveItem}"
+                                Command="{Binding $parent[UserControl].DataContext.GiveItemCommand}"
+                                CommandParameter="{Binding}"/>
+                      </Grid>
+
+                      <!-- The spell book. Teaching skips the class, level and INT gates a scroll enforces:
+                           an operator granting a spell means it, and casting re-checks INT live anyway. -->
+                      <TextBlock Text="{Binding BookHeader}" FontWeight="SemiBold" FontSize="11"
+                                 Margin="0,6,0,0" Foreground="{DynamicResource MirageMutedBrush}"/>
+                      <TextBlock Text="{Binding BookEmpty}" FontSize="11" FontStyle="Italic"
+                                 IsVisible="{Binding HasNoSpells}"
+                                 Foreground="{DynamicResource MirageFaintBrush}"/>
+                      <ScrollViewer MaxHeight="260" HorizontalScrollBarVisibility="Disabled">
+                      <ItemsControl ItemsSource="{Binding Spells}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate DataType="proto:EditorSpellSlot">
+                            <Grid ColumnDefinitions="34,*,Auto" Height="24" Margin="0,0,0,2">
+                              <TextBlock Grid.Column="0" Text="{Binding Slot}" FontSize="11"
+                                         VerticalAlignment="Center"
+                                         Foreground="{DynamicResource MirageFaintBrush}"/>
+                              <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="11"
+                                         VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                              <Button Grid.Column="2" Content="-" FontWeight="Bold" Classes="glyph"
+                                      Margin="6,0,0,0"
+                                      Command="{Binding $parent[UserControl].DataContext.ForgetSpellCommand}"
+                                      CommandParameter="{Binding}"/>
+                            </Grid>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                      </ScrollViewer>
+
+                      <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+                        <controls:DropdownAutoCompleteBox Grid.Column="0"
+                                         ItemsSource="{Binding SpellEntries}"
+                                         SelectedItem="{Binding LearnSpell, Mode=TwoWay}"
+                                         ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                                         FilterMode="Custom" MinimumPrefixLength="0"
+                                         PlaceholderText="{Binding SpellPlaceholder}"/>
+                        <Button Grid.Column="1" Margin="6,0,0,0" Padding="10,3"
+                                Content="{Binding TeachLabel}"
+                                IsEnabled="{Binding CanLearnSpell}"
+                                Command="{Binding $parent[UserControl].DataContext.LearnSpellCommand}"
+                                CommandParameter="{Binding}"/>
+                      </Grid>
+
+                      <!-- The quest log. A row whose requirements the character does not meet is flagged in
+                           place: seeing a quest somebody should not have is why the log is here. -->
+                      <TextBlock Text="{Binding LogHeader}" FontWeight="SemiBold" FontSize="11"
+                                 Margin="0,6,0,0" Foreground="{DynamicResource MirageMutedBrush}"/>
+                      <TextBlock Text="{Binding LogEmpty}" FontSize="11" FontStyle="Italic"
+                                 IsVisible="{Binding HasNoQuests}"
+                                 Foreground="{DynamicResource MirageFaintBrush}"/>
+                      <ScrollViewer MaxHeight="260" HorizontalScrollBarVisibility="Disabled">
+                      <ItemsControl ItemsSource="{Binding Quests}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate DataType="proto:EditorQuestRow">
+                            <Grid ColumnDefinitions="*,110,90,80,Auto" Height="24" Margin="0,0,0,2">
+                              <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="11"
+                                         VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                              <TextBlock Grid.Column="1" Text="{Binding Status}" FontSize="11"
+                                         VerticalAlignment="Center"
+                                         Foreground="{DynamicResource MirageMutedBrush}"/>
+                              <TextBlock Grid.Column="2" Text="{Binding Progress}" FontSize="11"
+                                         VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                         Foreground="{DynamicResource MirageFaintBrush}"/>
+                              <TextBlock Grid.Column="3" FontSize="10" VerticalAlignment="Center"
+                                         Text="{Binding $parent[ItemsControl].((vm:AccountCharRowViewModel)DataContext).IneligibleLabel}"
+                                         IsVisible="{Binding !Eligible}"
+                                         Foreground="{DynamicResource MirageBadBrush}"/>
+                              <Button Grid.Column="4" Content="-" FontWeight="Bold" Classes="glyph"
+                                      Margin="6,0,0,0"
+                                      Command="{Binding $parent[UserControl].DataContext.ClearQuestCommand}"
+                                      CommandParameter="{Binding}"/>
+                            </Grid>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                      </ScrollViewer>
+
+                      <!-- One control for both jobs: the state IS the operation, so setting a state on a
+                           quest that is not in the log yet is what adds it. -->
+                      <Grid ColumnDefinitions="*,130,Auto" Margin="0,4,0,0">
+                        <controls:DropdownAutoCompleteBox Grid.Column="0"
+                                         ItemsSource="{Binding QuestEntries}"
+                                         SelectedItem="{Binding QuestToSet, Mode=TwoWay}"
+                                         ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                                         FilterMode="Custom" MinimumPrefixLength="0"
+                                         PlaceholderText="{Binding QuestPlaceholder}"/>
+                        <ComboBox Grid.Column="1" Margin="6,0,0,0" HorizontalAlignment="Stretch"
+                                  ItemsSource="{Binding QuestStatuses}"
+                                  SelectedItem="{Binding QuestStatusToSet, Mode=TwoWay}"/>
+                        <Button Grid.Column="2" Margin="6,0,0,0" Padding="10,3"
+                                Content="{Binding SetLabel}"
+                                IsEnabled="{Binding CanSetQuest}"
+                                Command="{Binding $parent[UserControl].DataContext.SetQuestStatusCommand}"
+                                CommandParameter="{Binding}"/>
+                      </Grid>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </ScrollViewer>
+
+        <!-- ── Footer: status line and actions ── -->
+        <Border Classes="actionBar" Grid.Row="1" Background="{DynamicResource MirageSurfaceBrush}" Padding="8,6"
+                BorderBrush="{DynamicResource MirageLineSoftBrush}" BorderThickness="0,1,0,0">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6">
+              <Button x:Name="_reloadBtn" Command="{Binding ReloadCommand}"
+                      IsEnabled="{Binding HasSelection}"/>
+              <Button x:Name="_saveBtn" Classes="primary" Command="{Binding SaveCommand}"
+                      IsEnabled="{Binding CanSave}"
+                      HotKey="Ctrl+S" ToolTip.Tip="Ctrl+S"/>
+            </StackPanel>
+            <!-- Says WHY the greyed-out Save is greyed out; the red line on the offending character says
+                 which one. -->
+            <TextBlock x:Name="_blockedHint" Foreground="{DynamicResource MirageBadBrush}"
+                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                       IsVisible="{Binding HasOverBudgetChar}"/>
+            <TextBlock Text="{Binding StatusMessage}"
+                       Foreground="{DynamicResource MirageOkBrush}"
+                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                       IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          </DockPanel>
+        </Border>
+      </Grid>
+    </mui:FormRow>
+  </Grid>
+</UserControl>

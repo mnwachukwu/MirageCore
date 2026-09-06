@@ -1,0 +1,10 @@
+{
+  "name": "Elder Heal",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 145,
+  "levelReq": 115
+}

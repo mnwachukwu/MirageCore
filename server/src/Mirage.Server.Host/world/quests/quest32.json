@@ -1,0 +1,42 @@
+{
+  "name": "Break the Skirmish Line",
+  "description": "Riptide skirmishers, 5 of them, weekly. They will try to pull you off the shelf. Do not let them.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 74,
+      "count": 5,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 115,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "allowedClasses": [
+    1,
+    2,
+    3,
+    7
+  ],
+  "prereqQuest": 0,
+  "rewardExp": 6347,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 1249
+    }
+  ],
+  "repeatRewardExp": 6347,
+  "repeatRewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 1249
+    }
+  ],
+  "giverNpc": 134,
+  "turnInNpc": 0,
+  "repeatable": true,
+  "cadence": "Weekly"
+}

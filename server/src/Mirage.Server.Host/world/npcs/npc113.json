@@ -1,0 +1,110 @@
+{
+  "name": "The Marsh Tyrant",
+  "attackSay": "TWO OF YOU. GOOD.",
+  "sprite": 37,
+  "spriteSheet": 0,
+  "size": 2,
+  "spawnSecs": 300,
+  "behavior": "AttackWhenAttacked",
+  "group": 0,
+  "range": 3,
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 179,
+      "chance": 90
+    },
+    {
+      "itemNum": 276,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 39,
+      "quantity": 0,
+      "chance": 16
+    },
+    {
+      "itemNum": 32,
+      "quantity": 0,
+      "chance": 12
+    },
+    {
+      "itemNum": 197,
+      "quantity": 0,
+      "chance": 30
+    },
+    {
+      "itemNum": 342,
+      "quantity": 0,
+      "chance": 20
+    },
+    {
+      "itemNum": 329,
+      "quantity": 0,
+      "chance": 15
+    }
+  ],
+  "str": 26,
+  "def": 12,
+  "spd": 5,
+  "int": 5,
+  "extraHp": 853,
+  "isBoss": true,
+  "emitsLight": true
+}

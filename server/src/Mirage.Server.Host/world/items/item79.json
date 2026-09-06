@@ -1,0 +1,15 @@
+{
+  "name": "Runed Tunic",
+  "pic": 3,
+  "itemSheet": 0,
+  "type": "Armor",
+  "durability": 770,
+  "power": 100,
+  "levelReq": 105,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 100900
+}

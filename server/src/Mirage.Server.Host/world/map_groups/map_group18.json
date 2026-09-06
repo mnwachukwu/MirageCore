@@ -1,0 +1,13 @@
+{
+  "name": "The Ashfall",
+  "displayName": "The Ashfall",
+  "music": 7,
+  "moral": "None",
+  "bootMap": 0,
+  "bootX": 0,
+  "bootY": 0,
+  "greetingSpeaker": "",
+  "joinSay": "",
+  "leaveSay": "",
+  "territory": true
+}

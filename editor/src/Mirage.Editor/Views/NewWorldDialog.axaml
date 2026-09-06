@@ -1,0 +1,34 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Mirage.Editor.ViewModels"
+        x:DataType="vm:NewWorldDialogViewModel"
+        x:Class="Mirage.Editor.Views.NewWorldDialog"
+        Width="480"
+        SizeToContent="Height"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner">
+
+  <StackPanel Margin="24" Spacing="14">
+
+    <TextBlock Text="{Binding Header}" FontSize="15" FontWeight="Bold"/>
+
+    <TextBlock Text="{Binding Explanation}" TextWrapping="Wrap" FontSize="12"
+               Foreground="{DynamicResource MirageMutedBrush}"/>
+
+    <StackPanel Spacing="4">
+      <TextBlock Text="{Binding NameLabel}" FontSize="11"
+                 Foreground="{DynamicResource MirageMutedBrush}"/>
+      <TextBox Text="{Binding WorldName, Mode=TwoWay}" MaxLength="60"
+               PlaceholderText="{Binding UntitledPlaceholder}"/>
+    </StackPanel>
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,6,0,0">
+      <Button Content="{Binding CancelLabel}" Command="{Binding CancelCommand}" IsCancel="True"/>
+      <Button Content="{Binding ConfirmLabel}" Command="{Binding ConfirmCommand}"
+              IsDefault="True" Classes="primary"/>
+    </StackPanel>
+
+  </StackPanel>
+
+</Window>

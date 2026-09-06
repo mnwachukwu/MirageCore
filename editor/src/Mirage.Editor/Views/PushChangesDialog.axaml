@@ -1,0 +1,48 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Mirage.Editor.ViewModels"
+        x:Class="Mirage.Editor.Views.PushChangesDialog"
+        x:DataType="vm:PushChangesDialogViewModel"
+        Width="580"
+        SizeToContent="Height"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+  <DockPanel Margin="20">
+
+    <TextBlock DockPanel.Dock="Top"
+               Text="{Binding MessageText}"
+               TextWrapping="Wrap"
+               Margin="0,0,0,12"/>
+
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                HorizontalAlignment="Right" Spacing="8" Margin="0,12,0,0">
+      <Button x:Name="_cancelBtn"
+              Command="{Binding CancelCommand}"
+              IsCancel="True"
+              IsVisible="{Binding !IsReconnecting}"/>
+      <Button Content="{Binding ProceedButtonText}"
+              Command="{Binding DiscardAndProceedCommand}"/>
+      <Button Content="{Binding SaveButtonText}"
+              Command="{Binding SaveAndProceedCommand}"
+              IsEnabled="{Binding !IsBusy}"
+              Classes="primary"/>
+    </StackPanel>
+
+    <TextBlock DockPanel.Dock="Bottom"
+               Text="{Binding StatusMessage}"
+               Foreground="{DynamicResource MirageBadBrush}"
+               IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+    <Border BorderBrush="{DynamicResource MirageLineBrush}" BorderThickness="1" CornerRadius="4">
+      <ListBox ItemsSource="{Binding DirtyNames}" Background="Transparent">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding}" Padding="4,2"/>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </Border>
+
+  </DockPanel>
+</Window>

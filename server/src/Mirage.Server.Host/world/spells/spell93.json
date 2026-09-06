@@ -1,0 +1,10 @@
+{
+  "name": "Master Exsanguination",
+  "allowedClasses": [
+    4,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 158,
+  "levelReq": 100
+}

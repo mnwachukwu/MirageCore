@@ -1,0 +1,11 @@
+{
+  "name": "Absolute Meditation",
+  "allowedClasses": [
+    6,
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 313,
+  "levelReq": 255
+}

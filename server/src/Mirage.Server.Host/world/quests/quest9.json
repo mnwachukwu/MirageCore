@@ -1,0 +1,31 @@
+{
+  "name": "The Oarsmen's Watch",
+  "description": "There are oarsmen below the shelf holding a station that has not existed for two hundred years.\n\n18 of them. They will not stop and they will not turn - they are not defending anything, they are simply still on duty. Do it quickly and do not talk to them.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 58,
+      "count": 18,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 105,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereqQuest": 8,
+  "rewardExp": 882000,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 163253
+    }
+  ],
+  "repeatRewardExp": 0,
+  "repeatRewardItems": [],
+  "giverNpc": 134,
+  "turnInNpc": 0,
+  "repeatable": false,
+  "cadence": "None"
+}

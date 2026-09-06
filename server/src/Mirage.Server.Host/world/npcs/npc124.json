@@ -1,0 +1,115 @@
+{
+  "name": "The First Flame",
+  "attackSay": "I am what the Kiln was for.",
+  "sprite": 15,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 1800,
+  "behavior": "AttackWhenAttacked",
+  "group": 3,
+  "range": 6,
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 8652,
+      "chance": 90
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 12,
+      "chance": 45
+    },
+    {
+      "itemNum": 176,
+      "quantity": 0,
+      "chance": 4
+    },
+    {
+      "itemNum": 183,
+      "quantity": 0,
+      "chance": 3
+    },
+    {
+      "itemNum": 270,
+      "quantity": 0,
+      "chance": 30
+    },
+    {
+      "itemNum": 545,
+      "quantity": 0,
+      "chance": 20
+    },
+    {
+      "itemNum": 550,
+      "quantity": 0,
+      "chance": 15
+    }
+  ],
+  "str": 78,
+  "def": 196,
+  "spd": 78,
+  "int": 429,
+  "extraHp": 231729,
+  "isBoss": true,
+  "emitsLight": true
+}

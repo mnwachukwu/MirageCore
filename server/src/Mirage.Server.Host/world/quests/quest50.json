@@ -1,0 +1,31 @@
+{
+  "name": "What the Waders Are Doing",
+  "description": "Silt waders move in a formation and I want to know why. 14 of them, and pay attention while you do it - that is the part I am actually asking for.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 54,
+      "count": 14,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 101,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 112,
+  "prereqQuest": 0,
+  "rewardExp": 612060,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 110357
+    }
+  ],
+  "repeatRewardExp": 0,
+  "repeatRewardItems": [],
+  "giverNpc": 134,
+  "turnInNpc": 0,
+  "repeatable": false,
+  "cadence": "None"
+}

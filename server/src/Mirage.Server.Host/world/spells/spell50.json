@@ -1,0 +1,11 @@
+{
+  "name": "Journeyman Meditation",
+  "allowedClasses": [
+    6,
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 19,
+  "levelReq": 10
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Apprentice Exhaustion",
+  "allowedClasses": [
+    10
+  ],
+  "type": "SubSp",
+  "vitalAmount": 16,
+  "levelReq": 5
+}

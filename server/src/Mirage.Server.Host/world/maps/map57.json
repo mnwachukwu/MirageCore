@@ -1,0 +1,981 @@
+{
+  "name": "The Warlord's Shore 5",
+  "displayName": "The Warlord's Shore, Tower",
+  "revision": 4,
+  "up": 58,
+  "down": 0,
+  "left": 0,
+  "right": 0,
+  "music": 0,
+  "bootMap": 0,
+  "bootX": 0,
+  "bootY": 0,
+  "indoors": true,
+  "greetingSpeaker": "",
+  "joinSay": "",
+  "leaveSay": "",
+  "mapGroup": 7,
+  "tile": [
+    [
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      },
+      {
+        "type": "Blocked"
+      },
+      {
+        "type": "Blocked"
+      }
+    ],
+    [
+      {
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      },
+      {
+        "type": "Blocked"
+      }
+    ],
+    [
+      {
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      }
+    ],
+    [
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      }
+    ],
+    [
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      }
+    ],
+    [
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      }
+    ],
+    [
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      },
+      {
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      }
+    ],
+    [
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ],
+        "type": "NpcAvoid"
+      },
+      {
+        "ground": [
+          0,
+          96
+        ],
+        "type": "Warp",
+        "warpMap": 55,
+        "warpX": 4,
+        "warpY": 11
+      }
+    ],
+    [
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ],
+        "type": "NpcAvoid"
+      },
+      {
+        "ground": [
+          0,
+          96
+        ],
+        "type": "Warp",
+        "warpMap": 55,
+        "warpX": 4,
+        "warpY": 11
+      }
+    ],
+    [
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ],
+        "type": "NpcAvoid"
+      },
+      {
+        "ground": [
+          0,
+          96
+        ],
+        "type": "Warp",
+        "warpMap": 55,
+        "warpX": 4,
+        "warpY": 11
+      }
+    ],
+    [
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      }
+    ],
+    [
+      {
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      }
+    ],
+    [
+      {
+        "type": "Blocked"
+      },
+      {
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      }
+    ],
+    [
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      }
+    ],
+    [
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      },
+      {
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      }
+    ],
+    [
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      },
+      {
+        "type": "Blocked"
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "ground": [
+          96
+        ]
+      },
+      {
+        "type": "Blocked"
+      }
+    ]
+  ],
+  "npcs": [
+    {
+      "npc": 45
+    },
+    {
+      "npc": 45
+    }
+  ],
+  "lights": []
+}

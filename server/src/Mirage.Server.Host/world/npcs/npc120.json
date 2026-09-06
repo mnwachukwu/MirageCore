@@ -1,0 +1,115 @@
+{
+  "name": "The Sunken Crown",
+  "attackSay": "A drowned king needs a court.",
+  "sprite": 38,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 1200,
+  "behavior": "AttackWhenAttacked",
+  "group": 2,
+  "range": 6,
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 3500,
+      "chance": 90
+    },
+    {
+      "itemNum": 283,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 12,
+      "chance": 45
+    },
+    {
+      "itemNum": 112,
+      "quantity": 0,
+      "chance": 8
+    },
+    {
+      "itemNum": 115,
+      "quantity": 0,
+      "chance": 6
+    },
+    {
+      "itemNum": 238,
+      "quantity": 0,
+      "chance": 30
+    },
+    {
+      "itemNum": 463,
+      "quantity": 0,
+      "chance": 20
+    },
+    {
+      "itemNum": 468,
+      "quantity": 0,
+      "chance": 15
+    }
+  ],
+  "str": 38,
+  "def": 94,
+  "spd": 38,
+  "int": 207,
+  "extraHp": 64224,
+  "isBoss": true,
+  "emitsLight": true
+}

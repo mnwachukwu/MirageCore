@@ -1,0 +1,46 @@
+{
+  "name": "Brac Ironhand (Weaponsmith)",
+  "speakerNpc": 135,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "Salt eats everything. That's my whole trade in three words.\n\nBuy new, or bring me what the sea's been chewing and I'll see what's left under it.",
+      "choices": [
+        {
+          "label": "Show me.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Why not just make it out of something better?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "No.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "There isn't anything better. There's only iron that hasn't been in the water yet.\n\nThe drowned carry coral through their armor and it holds - grows into the gaps and stops the rot. I've tried it. You can't forge it, you can only be dead long enough to grow it.",
+      "choices": [
+        {
+          "label": "Show me.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Grim.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

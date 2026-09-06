@@ -1,0 +1,41 @@
+{
+  "name": "Cut the Snare Lines",
+  "description": "Snare-setters work at distance and run when you close. 3 of them - bring something you can throw, or something you can say.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 25,
+      "count": 3,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 5,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "allowedClasses": [
+    4,
+    5,
+    8
+  ],
+  "prereqQuest": 0,
+  "rewardExp": 673,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 16
+    }
+  ],
+  "repeatRewardExp": 359,
+  "repeatRewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 8
+    }
+  ],
+  "giverNpc": 126,
+  "turnInNpc": 0,
+  "repeatable": true,
+  "cadence": "Daily"
+}

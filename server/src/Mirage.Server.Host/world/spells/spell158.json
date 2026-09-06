@@ -1,0 +1,11 @@
+{
+  "name": "Elder Meditation",
+  "allowedClasses": [
+    6,
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 145,
+  "levelReq": 115
+}

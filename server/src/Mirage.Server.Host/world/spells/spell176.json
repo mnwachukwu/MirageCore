@@ -1,0 +1,11 @@
+{
+  "name": "Sovereign Meditation",
+  "allowedClasses": [
+    6,
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 151,
+  "levelReq": 120
+}

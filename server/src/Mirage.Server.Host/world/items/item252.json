@@ -1,0 +1,14 @@
+{
+  "name": "Peerless Vigor Elixir",
+  "pic": 21,
+  "itemSheet": 0,
+  "type": "PotionAddSp",
+  "vitalAmount": 212,
+  "levelReq": 240,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 18628
+}

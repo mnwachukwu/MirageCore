@@ -1,0 +1,25 @@
+{
+  "name": "Gravebound",
+  "attackSay": "UUURRRGHH...",
+  "sprite": 18,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 110,
+  "behavior": "AttackWhenAttacked",
+  "group": 9,
+  "range": 4,
+  "drops": [
+    {
+      "itemNum": 29,
+      "quantity": 0,
+      "chance": 4
+    }
+  ],
+  "str": 23,
+  "def": 18,
+  "spd": 3,
+  "int": 5,
+  "extraHp": 43,
+  "isBoss": false,
+  "emitsLight": false
+}

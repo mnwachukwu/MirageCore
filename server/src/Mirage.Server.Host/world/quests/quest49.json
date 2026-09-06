@@ -1,0 +1,31 @@
+{
+  "name": "The Tidewatch Line",
+  "description": "14 pikemen, and pikes only work on someone who lets them set. Do not let them set.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 81,
+      "count": 14,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 120,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 132,
+  "reqInt": 0,
+  "prereqQuest": 0,
+  "rewardExp": 864000,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 175005
+    }
+  ],
+  "repeatRewardExp": 0,
+  "repeatRewardItems": [],
+  "giverNpc": 134,
+  "turnInNpc": 0,
+  "repeatable": false,
+  "cadence": "None"
+}

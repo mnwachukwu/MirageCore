@@ -1,0 +1,13 @@
+{
+  "name": "Scroll of Elder Mend",
+  "pic": 29,
+  "itemSheet": 0,
+  "type": "Spell",
+  "spellNum": 154,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 340831
+}

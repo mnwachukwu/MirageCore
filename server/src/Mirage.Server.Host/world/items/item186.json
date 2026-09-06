@@ -1,0 +1,14 @@
+{
+  "name": "Minor Vigor Elixir",
+  "pic": 21,
+  "itemSheet": 0,
+  "type": "PotionAddSp",
+  "vitalAmount": 3,
+  "levelReq": 1,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1
+}

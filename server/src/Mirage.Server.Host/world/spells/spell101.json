@@ -1,0 +1,10 @@
+{
+  "name": "Master Heal",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 127,
+  "levelReq": 100
+}

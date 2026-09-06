@@ -1,0 +1,10 @@
+{
+  "name": "Arch Restoration",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 174,
+  "levelReq": 110
+}

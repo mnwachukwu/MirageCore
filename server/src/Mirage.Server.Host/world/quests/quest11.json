@@ -1,0 +1,31 @@
+{
+  "name": "The Coral Wall",
+  "description": "Past the line the coral starts, and the halberdiers in it have been growing into their armor since before the water came.\n\n33. They do not tire and they do not break formation, so you will have to. Rest between them. That is an order, not advice.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 73,
+      "count": 33,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 115,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereqQuest": 10,
+  "rewardExp": 1719250,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 338376
+    }
+  ],
+  "repeatRewardExp": 0,
+  "repeatRewardItems": [],
+  "giverNpc": 134,
+  "turnInNpc": 0,
+  "repeatable": false,
+  "cadence": "None"
+}

@@ -1,0 +1,41 @@
+{
+  "name": "Flarewings at Altitude",
+  "description": "5 a week, off the ridge line. Nobody with a sword has ever completed this one.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 98,
+      "count": 5,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 245,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "allowedClasses": [
+    4,
+    5,
+    8
+  ],
+  "prereqQuest": 0,
+  "rewardExp": 9857,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 3232
+    }
+  ],
+  "repeatRewardExp": 9857,
+  "repeatRewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 3232
+    }
+  ],
+  "giverNpc": 142,
+  "turnInNpc": 0,
+  "repeatable": true,
+  "cadence": "Weekly"
+}

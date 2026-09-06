@@ -1,0 +1,30 @@
+{
+  "name": "Storm Roc",
+  "attackSay": "",
+  "sprite": 22,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 140,
+  "behavior": "AttackWhenAttacked",
+  "group": 0,
+  "range": 5,
+  "drops": [
+    {
+      "itemNum": 47,
+      "quantity": 0,
+      "chance": 4
+    },
+    {
+      "itemNum": 204,
+      "quantity": 0,
+      "chance": 10
+    }
+  ],
+  "str": 33,
+  "def": 28,
+  "spd": 2,
+  "int": 5,
+  "extraHp": 74,
+  "isBoss": false,
+  "emitsLight": false
+}

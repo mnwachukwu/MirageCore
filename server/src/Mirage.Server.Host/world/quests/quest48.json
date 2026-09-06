@@ -1,0 +1,31 @@
+{
+  "name": "Outlast the Deepwatch",
+  "description": "Deepwatch serjeants do not tire. 14 of them, and the only way through is being the one who is still standing.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 72,
+      "count": 14,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 114,
+  "reqStr": 0,
+  "reqDef": 126,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereqQuest": 0,
+  "rewardExp": 779760,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 152567
+    }
+  ],
+  "repeatRewardExp": 0,
+  "repeatRewardItems": [],
+  "giverNpc": 134,
+  "turnInNpc": 0,
+  "repeatable": false,
+  "cadence": "None"
+}

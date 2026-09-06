@@ -1,0 +1,10 @@
+{
+  "name": "Expert Restoration",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 38,
+  "levelReq": 20
+}

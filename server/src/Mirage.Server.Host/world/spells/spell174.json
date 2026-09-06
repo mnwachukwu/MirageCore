@@ -1,0 +1,10 @@
+{
+  "name": "Sovereign Restoration",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 188,
+  "levelReq": 120
+}

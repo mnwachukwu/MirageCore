@@ -1,0 +1,14 @@
+{
+  "name": "Radiant Healing Elixir",
+  "pic": 25,
+  "itemSheet": 0,
+  "type": "PotionAddHp",
+  "vitalAmount": 721,
+  "levelReq": 115,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2603
+}

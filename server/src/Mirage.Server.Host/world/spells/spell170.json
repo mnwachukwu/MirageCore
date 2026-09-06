@@ -1,0 +1,11 @@
+{
+  "name": "Sovereign Enervation",
+  "allowedClasses": [
+    6,
+    7,
+    10
+  ],
+  "type": "SubSp",
+  "vitalAmount": 151,
+  "levelReq": 120
+}

@@ -1,0 +1,14 @@
+{
+  "name": "Greater Mana Elixir",
+  "pic": 27,
+  "itemSheet": 0,
+  "type": "PotionAddMp",
+  "vitalAmount": 561,
+  "levelReq": 100,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1791
+}

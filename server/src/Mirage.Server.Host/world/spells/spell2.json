@@ -1,0 +1,12 @@
+{
+  "name": "Novice Life Siphon",
+  "allowedClasses": [
+    4,
+    5,
+    8,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 8,
+  "levelReq": 1
+}

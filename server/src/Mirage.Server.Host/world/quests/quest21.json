@@ -1,0 +1,36 @@
+{
+  "name": "The First Flame",
+  "description": "It relights. Every week, in the same place, and every week it is a little harder to put out.\n\nI do not think it can be killed - I think it can only be delayed, and I have made my peace with being a man whose life's work is a delay. Go and buy us another week.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 124,
+      "count": 1,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 254,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereqQuest": 0,
+  "rewardExp": 2898704,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 973995
+    }
+  ],
+  "repeatRewardExp": 2898704,
+  "repeatRewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 973995
+    }
+  ],
+  "giverNpc": 142,
+  "turnInNpc": 0,
+  "repeatable": true,
+  "cadence": "Weekly"
+}

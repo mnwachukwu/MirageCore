@@ -1,0 +1,10 @@
+{
+  "name": "Absolute Endurance",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddSp",
+  "vitalAmount": 391,
+  "levelReq": 255
+}

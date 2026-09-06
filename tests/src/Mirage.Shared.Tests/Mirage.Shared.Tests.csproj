@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="NUnit" Version="4.5.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+  </ItemGroup>
+
+  <!-- All three projects under shared/: the protocol, records and formulas both sides evaluate, the
+       Avalonia theme the two desktop apps share, and the Velopack update check. None of them references
+       a server, a client or an editor, so this suite runs without any of the three. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\shared\src\Mirage.Shared\Mirage.Shared.csproj" />
+    <ProjectReference Include="..\..\..\shared\src\Mirage.Ui\Mirage.Ui.csproj" />
+    <ProjectReference Include="..\..\..\shared\src\Mirage.Updates\Mirage.Updates.csproj" />
+  </ItemGroup>
+
+  <!-- Baked in at build time for the checks that read repository FILES rather than an assembly:
+       UpdateChannelTests reads the three *.Publish.csproj, and the theme tests read Mirage.Ui's XAML,
+       which ships as an AvaloniaResource and so is not a file beside the test binary. Walking up from
+       AppContext.BaseDirectory works only from the normal output path, and a redirected build (how the
+       suites run while an app holds a file lock) would skip those checks instead of running them. -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RepoRoot</_Parameter1>
+      <_Parameter2>$(MSBuildThisFileDirectory)..\..\..</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>

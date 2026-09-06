@@ -1,0 +1,13 @@
+{
+  "name": "Scroll of Grand Meditation",
+  "pic": 29,
+  "itemSheet": 0,
+  "type": "Spell",
+  "spellNum": 122,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 268393
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Celestial Attunement",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 384,
+  "levelReq": 250
+}

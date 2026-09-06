@@ -1,0 +1,41 @@
+{
+  "name": "Silt Runners",
+  "description": "5 a week. Bring patience rather than force; they scatter and reform and scatter again.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 79,
+      "count": 5,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 118,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "allowedClasses": [
+    6,
+    9,
+    10
+  ],
+  "prereqQuest": 0,
+  "rewardExp": 6370,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 1276
+    }
+  ],
+  "repeatRewardExp": 6370,
+  "repeatRewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 1276
+    }
+  ],
+  "giverNpc": 134,
+  "turnInNpc": 0,
+  "repeatable": true,
+  "cadence": "Weekly"
+}

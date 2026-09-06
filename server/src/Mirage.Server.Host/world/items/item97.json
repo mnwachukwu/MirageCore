@@ -1,0 +1,22 @@
+{
+  "name": "Warded Buckler",
+  "pic": 15,
+  "itemSheet": 0,
+  "type": "Shield",
+  "durability": 790,
+  "power": 104,
+  "levelReq": 110,
+  "allowedClasses": [
+    2,
+    3,
+    6,
+    7,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 113449
+}

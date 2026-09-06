@@ -1,0 +1,31 @@
+{
+  "name": "Catch a Storm Roc",
+  "description": "You will not corner one. You will only outpace one.\n\n10, and I will believe it when I see you back before dusk.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 37,
+      "count": 10,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 17,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 24,
+  "reqInt": 0,
+  "prereqQuest": 0,
+  "rewardExp": 17340,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 939
+    }
+  ],
+  "repeatRewardExp": 0,
+  "repeatRewardItems": [],
+  "giverNpc": 126,
+  "turnInNpc": 0,
+  "repeatable": false,
+  "cadence": "None"
+}

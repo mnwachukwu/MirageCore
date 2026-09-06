@@ -1,0 +1,11 @@
+{
+  "name": "Journeyman Enervation",
+  "allowedClasses": [
+    6,
+    7,
+    10
+  ],
+  "type": "SubSp",
+  "vitalAmount": 19,
+  "levelReq": 10
+}

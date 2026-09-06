@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.Build.NoTargets/3.7.0">
+
+  <!-- Runs the shared suite — the test-side mirror of the publish drivers, and one of four such drivers
+       (shared, server, client, editor, plus the aggregate Mirage.Test.csproj beside them).
+
+         dotnet msbuild tests/Mirage.Shared.Test.csproj -t:TestAll
+
+       One suite, covering all three projects under shared/: Mirage.Shared, Mirage.Ui and Mirage.Updates.
+       None of them references a server, a client or an editor, so this is the one driver that needs no
+       application built to run. -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <_SharedTests>$(MSBuildThisFileDirectory)src/Mirage.Shared.Tests/Mirage.Shared.Tests.csproj</_SharedTests>
+  </PropertyGroup>
+
+  <!-- Built through the MSBuild task rather than left to `dotnet test`, for the reason spelled out at
+       length in Mirage.Test.csproj: a nested `dotnet test` is a separate MSBuild PROCESS writing the
+       same bin/obj as an outer solution build, and cross-process builds share no result cache. -->
+  <Target Name="BuildSuites">
+    <MSBuild Projects="$(_SharedTests)" Targets="Restore" Properties="_RestorePass=true" />
+    <!-- The distinguishing property goes on RESTORE, not Build. Both calls need their own evaluation -
+         sharing one leaves a never-restored suite compiling with no package assets - but a global property
+         forks the build configuration and flows down every ProjectReference, so on Build it starts a second
+         compile of the whole dependency graph into the same obj/. See Mirage.Test.csproj for the full note. -->
+    <MSBuild Projects="$(_SharedTests)" Targets="Build" />
+  </Target>
+
+  <Target Name="TestAll" DependsOnTargets="BuildSuites">
+    <Message Text="── Shared ──" Importance="High" />
+    <Exec Command="dotnet test &quot;$(_SharedTests)&quot; --no-build --configuration $(Configuration) --nologo" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="_SharedExit" />
+    </Exec>
+
+    <Error Condition="'$(_SharedExit)' != '0'" Text="Shared test suite failed." />
+    <Message Text="═══ Shared test suite passed ═══" Importance="High" />
+  </Target>
+
+  <!-- Build does NOT chain to TestAll: this project is a member of Mirage.slnx, where
+       Mirage.Test.csproj already runs every suite on a solution build. Requesting TestAll explicitly is
+       what makes an area driver free to sit in the solution. -->
+  <Target Name="Build">
+    <Message Importance="High"
+             Text="Mirage.Shared.Test: nothing run. Use -t:TestAll to test the shared suite on its own; a solution build already tests everything via Mirage.Test.csproj." />
+  </Target>
+
+</Project>

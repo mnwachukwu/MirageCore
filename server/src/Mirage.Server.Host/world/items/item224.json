@@ -1,0 +1,14 @@
+{
+  "name": "Superior Siphon Vial",
+  "pic": 22,
+  "itemSheet": 0,
+  "type": "PotionSubMp",
+  "vitalAmount": 613,
+  "levelReq": 105,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2041
+}

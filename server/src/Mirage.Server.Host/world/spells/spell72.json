@@ -1,0 +1,10 @@
+{
+  "name": "Adept Endurance",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddSp",
+  "vitalAmount": 31,
+  "levelReq": 15
+}

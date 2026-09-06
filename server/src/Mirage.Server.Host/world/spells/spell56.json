@@ -1,0 +1,12 @@
+{
+  "name": "Adept Life Siphon",
+  "allowedClasses": [
+    4,
+    5,
+    8,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 25,
+  "levelReq": 15
+}

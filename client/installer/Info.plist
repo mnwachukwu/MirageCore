@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- The executable, bundle name, and version strings below are substituted at pack time
+     from Directory.Build.props (see Mirage.Client.Publish.csproj). CFBundleIdentifier is a
+     stable id, intentionally not derived; it is a com.example.* placeholder that forks should change
+     to their own unique reverse-DNS id. -->
+<plist version="1.0">
+<dict>
+  <key>CFBundleExecutable</key>
+  <string>@EXECUTABLE@</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.example.client</string>
+  <key>CFBundleName</key>
+  <string>@DISPLAYNAME@</string>
+  <key>CFBundleDisplayName</key>
+  <string>@DISPLAYNAME@</string>
+  <key>CFBundleVersion</key>
+  <string>@VERSION@</string>
+  <key>CFBundleShortVersionString</key>
+  <string>@VERSION@</string>
+  <!-- Named without the extension, which is what macOS expects. The file itself is copied to
+       Contents/Resources/AppIcon.icns at pack time. -->
+  <key>CFBundleIconFile</key>
+  <string>AppIcon</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>NSHighResolutionCapable</key>
+  <true/>
+</dict>
+</plist>

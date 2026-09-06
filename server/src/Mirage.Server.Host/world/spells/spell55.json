@@ -1,0 +1,14 @@
+{
+  "name": "Adept Bloodletting",
+  "allowedClasses": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 19,
+  "levelReq": 15
+}

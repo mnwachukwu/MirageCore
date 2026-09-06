@@ -1,0 +1,15 @@
+{
+  "name": "Dawnforged Cap",
+  "pic": 38,
+  "itemSheet": 0,
+  "type": "Helmet",
+  "durability": 820,
+  "power": 113,
+  "levelReq": 120,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 142631
+}

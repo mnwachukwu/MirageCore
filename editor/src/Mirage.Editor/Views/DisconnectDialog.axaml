@@ -1,0 +1,20 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Mirage.Editor.ViewModels"
+        x:Class="Mirage.Editor.Views.DisconnectDialog"
+        x:DataType="vm:DisconnectDialogViewModel"
+        Width="480"
+        SizeToContent="Height"
+        MinHeight="160"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner">
+  <StackPanel Margin="28" Spacing="16">
+    <TextBlock x:Name="_headerBlock" FontSize="15" FontWeight="Bold"/>
+    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"/>
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,12,0,0">
+      <Button x:Name="_abandonBtn"   Command="{Binding GoOfflineCommand}" IsCancel="True"/>
+      <Button x:Name="_reconnectBtn" Command="{Binding AttemptReconnectCommand}" IsDefault="True"/>
+    </StackPanel>
+  </StackPanel>
+</Window>

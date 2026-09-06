@@ -1,0 +1,10 @@
+{
+  "name": "Apprentice Mana Siphon",
+  "allowedClasses": [
+    6,
+    10
+  ],
+  "type": "SubMp",
+  "vitalAmount": 13,
+  "levelReq": 5
+}

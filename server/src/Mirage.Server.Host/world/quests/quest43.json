@@ -1,0 +1,31 @@
+{
+  "name": "Arm Enough to Swing It",
+  "description": "Bandit enforcers wear more than they can carry, which is the joke, and it makes them heavy to put down.\n\n10 of them. I am asking for strength specifically.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 8,
+      "count": 10,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 8,
+  "reqStr": 14,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereqQuest": 0,
+  "rewardExp": 3840,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 125
+    }
+  ],
+  "repeatRewardExp": 0,
+  "repeatRewardItems": [],
+  "giverNpc": 126,
+  "turnInNpc": 0,
+  "repeatable": false,
+  "cadence": "None"
+}

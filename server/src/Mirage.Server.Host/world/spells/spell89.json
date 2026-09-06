@@ -1,0 +1,12 @@
+{
+  "name": "Expert Vigor",
+  "allowedClasses": [
+    7,
+    8,
+    9,
+    10
+  ],
+  "type": "AddSp",
+  "vitalAmount": 31,
+  "levelReq": 20
+}

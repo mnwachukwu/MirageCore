@@ -1,0 +1,41 @@
+{
+  "name": "Silence the Heralds",
+  "description": "Plague heralds carry it on them and they will not let you near. 5, from as far off as you can manage. Do not be clever about the distance.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 34,
+      "count": 5,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 13,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "allowedClasses": [
+    4,
+    5,
+    8
+  ],
+  "prereqQuest": 0,
+  "rewardExp": 7707,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 348
+    }
+  ],
+  "repeatRewardExp": 7707,
+  "repeatRewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 348
+    }
+  ],
+  "giverNpc": 126,
+  "turnInNpc": 0,
+  "repeatable": true,
+  "cadence": "Weekly"
+}

@@ -1,0 +1,24 @@
+{
+  "name": "Brac Ironhand",
+  "attackSay": "Careful - everything on that wall is sharper than it looks.",
+  "sprite": 10,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 60,
+  "behavior": "Friendly",
+  "group": 0,
+  "range": 4,
+  "str": 18,
+  "def": 143,
+  "spd": 18,
+  "int": 18,
+  "extraHp": 0,
+  "isBoss": false,
+  "emitsLight": true,
+  "light": {
+    "rgb": 11834985,
+    "radius": 3,
+    "flicker": "Flame",
+    "intensity": 1
+  }
+}

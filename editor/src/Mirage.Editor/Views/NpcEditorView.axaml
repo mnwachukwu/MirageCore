@@ -1,0 +1,583 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="using:Mirage.Editor.Models"
+             xmlns:controls="using:Mirage.Editor.Controls"
+             xmlns:mui="using:Mirage.Ui.Controls"
+             xmlns:vm="using:Mirage.Editor.ViewModels"
+             Grid.IsSharedSizeScope="True"
+             x:DataType="vm:NpcEditorViewModel"
+             x:Class="Mirage.Editor.Views.NpcEditorView">
+
+  <Grid x:Name="PanelGrid" RowDefinitions="*,Auto">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="200" MinWidth="120"/>
+      <ColumnDefinition Width="5"/>
+      <ColumnDefinition Width="*" MinWidth="200"/>
+      <ColumnDefinition Width="5"/>
+      <ColumnDefinition Width="220" MinWidth="140"/>
+    </Grid.ColumnDefinitions>
+
+    <!-- ── Left: NPC list ── -->
+    <DockPanel x:Name="LeftPanel" Grid.Column="0">
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="4,4,4,2">
+        <ComboBox x:Name="_behaviorFilterCombo"
+                  Grid.Column="0"
+                  ItemsSource="{Binding BehaviorFilters}"
+                  SelectedItem="{Binding BehaviorFilter, Mode=TwoWay}"
+                  HorizontalAlignment="Stretch"
+                  FontSize="11"/>
+        <Button Grid.Column="1" Content="×"
+                Command="{Binding ClearBehaviorFilterCommand}"
+                IsVisible="{Binding BehaviorFilter, Converter={x:Static ObjectConverters.IsNotNull}}"
+                FontSize="11" Padding="6,0" Margin="2,0,0,0"/>
+      </Grid>
+      <TextBox x:Name="_nameFilterTextBox"
+               DockPanel.Dock="Top"
+               Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+               Margin="4,0,4,2"
+               FontSize="11">
+        <TextBox.InnerRightContent>
+          <Button Classes="clearFilter" Content="×" Focusable="False"
+                  Command="{Binding ClearFilterCommand}"
+                  IsVisible="{Binding FilterText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+        </TextBox.InnerRightContent>
+      </TextBox>
+      <TextBlock DockPanel.Dock="Bottom"
+                 Text="{Binding FilterStatus}"
+                 IsVisible="{Binding IsFilterActive}"
+                 FontSize="11" Foreground="#8B84AE"
+                 Margin="4,2" HorizontalAlignment="Right"/>
+      <ListBox ItemsSource="{Binding FilteredItems}"
+               SelectedItem="{Binding SelectedNpc}"
+               Background="Transparent">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <TextBlock Text="&#x1F512;" FontSize="10" VerticalAlignment="Center"
+                         Foreground="{DynamicResource MirageFaintBrush}"
+                         IsVisible="{Binding LockedByOther}"
+                         ToolTip.Tip="{Binding LockHolder}"/>
+              <Ellipse Width="7" Height="7" Fill="{DynamicResource MirageWarnBrush}"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding IsDirty}"/>
+              <TextBlock Text="{Binding DisplayName}" Padding="4,2"/>
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </DockPanel>
+
+    <GridSplitter Grid.Column="1" Width="5" Background="{DynamicResource MirageLineSoftBrush}"
+                  ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"/>
+
+    <!-- ── Right: editor panel ── -->
+    <Grid Grid.Column="2">
+      <TextBlock x:Name="_selectPromptText"
+                 IsVisible="{Binding SelectedNpc, Converter={x:Static ObjectConverters.IsNull}}"
+                 Foreground="#6B6491" HorizontalAlignment="Center" VerticalAlignment="Center"
+                 FontStyle="Italic"/>
+      <ScrollViewer IsVisible="{Binding SelectedNpc, Converter={x:Static ObjectConverters.IsNotNull}}"
+                    IsEnabled="{Binding !IsSelectedLocked}">
+        <StackPanel Margin="16" Spacing="8">
+
+          <TextBlock x:Name="_sectionTitle" FontSize="16" FontWeight="Bold" Margin="0,0,0,4"/>
+
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_nameLabel"      Grid.Column="0" VerticalAlignment="Center"/>
+            <TextBox   Grid.Column="1" Text="{Binding SelectedNpc.Name}" />
+          </mui:FormRow>
+
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_attackSayLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <TextBox   Grid.Column="1" Text="{Binding SelectedNpc.AttackSay}" />
+          </mui:FormRow>
+
+          <!-- Which sheet, then which row of it. The number is what the record stores, so the sheet is
+               picked by index-prefixed name the same way the map editor picks a tileset. -->
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_spriteSheetLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <controls:DropdownAutoCompleteBox Grid.Column="1"
+                                 ItemsSource="{Binding SpriteSheetEntries}"
+                                 SelectedItem="{Binding SelectedSpriteSheetEntry, Mode=TwoWay}"
+                                 ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrIndex}"
+                                 FilterMode="Custom"
+                                 MinimumPrefixLength="0"/>
+          </mui:FormRow>
+
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_spriteLabel"    Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox Grid.Column="1"
+                      ItemsSource="{Binding SpriteEntries}"
+                      SelectedItem="{Binding SelectedNpc.Sprite, Mode=TwoWay}"
+                      HorizontalAlignment="Stretch"
+                      MaxDropDownHeight="320">
+              <ComboBox.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <controls:AtlasFramePreview
+                        FrameIndex="{Binding}"
+                        Atlas="{Binding $parent[ComboBox].DataContext.SpriteBitmap}"
+                        CellSize="{Binding $parent[ComboBox].DataContext.SpriteCellSize}"
+                        Mode="SpriteStrip"
+                        Animated="True"
+                        IsHighlighted="{Binding $parent[ComboBoxItem].IsPointerOver}"/>
+                    <TextBlock Text="{Binding, StringFormat='#{0}'}"
+                               VerticalAlignment="Center"/>
+                  </StackPanel>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+          </mui:FormRow>
+
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_sizeLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox Grid.Column="1"
+                      ItemsSource="{Binding NpcSizes}"
+                      SelectedItem="{Binding SelectedNpcSize}"
+                      HorizontalAlignment="Stretch"/>
+          </mui:FormRow>
+
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_spawnSecsLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding SelectedNpc.SpawnSecs}"
+                           Minimum="0" Maximum="9999" FormatString="0"/>
+          </mui:FormRow>
+
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_behaviorLabel"  Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox  Grid.Column="1"
+                       ItemsSource="{Binding Behaviors}"
+                       SelectedItem="{Binding SelectedNpc.Behavior}"
+                       HorizontalAlignment="Stretch"/>
+          </mui:FormRow>
+
+          <!-- Boss flag — an author classification (not derived from HP/size); gives guild quests a compressed
+               kill count for this NPC so "kill hundreds of bosses" can't happen. See NpcRecord.IsBoss. -->
+          <CheckBox x:Name="_isBossCheck" IsChecked="{Binding SelectedNpc.IsBoss}"/>
+
+          <!-- Lighting group — the Emits Light toggle plus (when on) the light-layer config, boxed so it reads
+               clearly as the light layer rather than part of the NPC's own fields. -->
+          <Border Background="#14140F" BorderBrush="#3A3A28" BorderThickness="1" CornerRadius="4"
+                  Padding="10,8" Margin="0,2,0,0">
+            <StackPanel Spacing="6">
+              <TextBlock x:Name="_lightingHeader" FontWeight="SemiBold" Foreground="#CCAA66" FontSize="11"/>
+              <CheckBox x:Name="_emitsLightCheck"
+                        IsChecked="{Binding SelectedNpc.EmitsLight}"/>
+
+              <!-- Light config — visible only while Emits Light is checked -->
+              <StackPanel IsVisible="{Binding SelectedNpc.LightBlockVisible}" Spacing="6">
+                <mui:FormRow LabelWidth="130">
+                  <TextBlock x:Name="_lightColorLabel" Grid.Column="0" VerticalAlignment="Center"/>
+                  <Grid Grid.Column="1" ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                    <ColorPicker Grid.Column="0" Color="{Binding SelectedNpc.LightColor, Mode=TwoWay}"/>
+                    <TextBox Grid.Column="1" Text="{Binding SelectedNpc.LightColorHex, Mode=TwoWay}" VerticalAlignment="Center"/>
+                  </Grid>
+                </mui:FormRow>
+                <mui:FormRow LabelWidth="130">
+                  <TextBlock x:Name="_lightRadiusLabel" Grid.Column="0" VerticalAlignment="Center"/>
+                  <NumericUpDown Grid.Column="1" Value="{Binding SelectedNpc.LightRadius}"
+                                 Minimum="0.5" Maximum="15" Increment="0.5" FormatString="0.0"/>
+                </mui:FormRow>
+                <mui:FormRow LabelWidth="130">
+                  <TextBlock x:Name="_lightIntensityLabel" Grid.Column="0" VerticalAlignment="Center"/>
+                  <NumericUpDown Grid.Column="1" Value="{Binding SelectedNpc.LightIntensity}"
+                                 Minimum="0" Maximum="100" Increment="5" FormatString="0"/>
+                </mui:FormRow>
+                <mui:FormRow LabelWidth="130">
+                  <TextBlock x:Name="_lightFlickerLabel" Grid.Column="0" VerticalAlignment="Center"/>
+                  <ComboBox Grid.Column="1" ItemsSource="{Binding FlickerStyles}" ItemTemplate="{StaticResource VocabularyItem}"
+                            SelectedItem="{Binding SelectedNpc.LightFlicker}" HorizontalAlignment="Stretch"/>
+                </mui:FormRow>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_groupLabel"     Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding SelectedNpc.Group}"
+                           Minimum="0" Maximum="255" FormatString="0"/>
+          </mui:FormRow>
+
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_rangeLabel"     Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding SelectedNpc.Range}"
+                           Minimum="0" Maximum="255" FormatString="0"/>
+          </mui:FormRow>
+
+          <!-- A reach that will read as a surprise in play, at either end: past what a player can see, or
+               so short the mob notices nothing until you are beside it. Said, not refused — the record is
+               legal and occasionally a deliberate one. -->
+          <TextBlock Text="{Binding SelectedNpc.RangeWarning}"
+                     IsVisible="{Binding SelectedNpc.HasRangeWarning}"
+                     Foreground="#E0A030" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,2"/>
+
+    <!-- Drop table. A child table like the quest editor's rewards: every line is an item, a
+         quantity (currency only) and a chance, and each rolls INDEPENDENTLY on a kill — which is
+         why the yield readout sums the chances rather than showing a single number.
+
+         BOXED, matching the class editor's starting-loadout panel. It is a nested table of its own
+         rows sitting in a column of plain single-value fields, and unboxed it read as though the
+         drop rows were more stat fields — the eye had nothing telling it where the mob's own
+         properties stopped and its loot began. -->
+    <Border BorderBrush="{DynamicResource MirageLineSoftBrush}" BorderThickness="1" CornerRadius="3" Padding="10" Margin="0,8,0,0">
+      <StackPanel Spacing="4">
+
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_dropTableLabel" Grid.Column="0" VerticalAlignment="Center" FontWeight="SemiBold"/>
+            <TextBlock Grid.Column="1" Text="{Binding SelectedNpc.DropYieldText}"
+                       Foreground="#AAFFAA" FontWeight="SemiBold" FontSize="11" VerticalAlignment="Center"/>
+          </mui:FormRow>
+
+          <!-- Column headers: three unlabeled number boxes in a row is a guessing game, and quantity
+               only applies to currency, which is impossible to infer from a disabled spinner alone. -->
+          <Grid ColumnDefinitions="*,70,70,28">
+            <TextBlock x:Name="_dropItemHeader"     Grid.Column="1" FontSize="10" Foreground="#8B84AE" HorizontalAlignment="Center"/>
+            <TextBlock x:Name="_dropChanceHeader"   Grid.Column="2" FontSize="10" Foreground="#8B84AE" HorizontalAlignment="Center"/>
+          </Grid>
+
+          <ItemsControl ItemsSource="{Binding SelectedNpc.Drops}" Margin="0,2,0,0">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid ColumnDefinitions="*,70,70,28" Margin="0,0,0,3">
+                  <controls:DropdownAutoCompleteBox Grid.Column="0"
+                                   ItemsSource="{Binding ItemEntries}"
+                                   SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                                   PlaceholderText="{Binding ItemPlaceholder}"
+                                   ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                                   FilterMode="Custom" MinimumPrefixLength="0"/>
+                  <!-- Quantity is meaningless off a currency item; the server zeroes it on save, so the
+                       spinner disables rather than showing a number the game discards. -->
+                  <NumericUpDown Grid.Column="1" Margin="4,0,0,0"
+                                 Value="{Binding Value}"
+                                 IsEnabled="{Binding ValueApplies}"
+                                 Minimum="{Binding ValueMin}" Maximum="{Binding ValueMax}"
+                                 FormatString="0" ShowButtonSpinner="False"/>
+                  <NumericUpDown Grid.Column="2" Margin="4,0,0,0"
+                                 Value="{Binding Chance}"
+                                 Minimum="0" Maximum="100" FormatString="0" ShowButtonSpinner="False"/>
+                  <Button Grid.Column="3" Content="X" Margin="4,0,0,0" Padding="6,2" FontSize="11"
+                          Command="{Binding $parent[ItemsControl].DataContext.SelectedNpc.RemoveDropCommand}"
+                          CommandParameter="{Binding}"/>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <Button x:Name="_addDropButton" Command="{Binding SelectedNpc.AddDropCommand}"
+                  Padding="8,2" FontSize="11" HorizontalAlignment="Left" Margin="0,2,0,0"/>
+
+          <TextBlock Text="{Binding SelectedNpc.DropConfigWarning}"
+                     IsVisible="{Binding SelectedNpc.HasDropConfigWarning}"
+                     Foreground="#E0A030" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,2"/>
+
+      </StackPanel>
+    </Border>
+
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_strLabel"       Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding SelectedNpc.Str}"
+                           Minimum="0" Maximum="255" FormatString="0"/>
+          </mui:FormRow>
+
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_intLabel"      Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding SelectedNpc.Int}"
+                           Minimum="0" Maximum="255" FormatString="0"/>
+          </mui:FormRow>
+
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_defLabel"       Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding SelectedNpc.Def}"
+                           Minimum="0" Maximum="255" FormatString="0"/>
+          </mui:FormRow>
+
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_spdLabel"     Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding SelectedNpc.Spd}"
+                           Minimum="0" Maximum="255" FormatString="0"/>
+          </mui:FormRow>
+
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_extraHpLabel"  Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding SelectedNpc.ExtraHp}"
+                           Minimum="0" Maximum="1000000" Increment="10" FormatString="0"/>
+          </mui:FormRow>
+          <TextBlock x:Name="_extraHpNote" Foreground="#8B84AE" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,2"/>
+
+          <Separator Margin="0,4,0,2" Background="{DynamicResource MirageLineSoftBrush}"/>
+
+          <!-- Stat-budget preview — raw total + Total Level (all stats incl SPD) and Combat Level (Str+Def+Int
+               only) so designers can size the whole NPC AND its combat toughness against the player curve. -->
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_totalStatsLabel" Grid.Column="0" VerticalAlignment="Center"
+                       Foreground="#8B84AE" FontStyle="Italic"/>
+            <TextBlock Grid.Column="1"
+                       Text="{Binding SelectedNpc.StatTotal}"
+                       VerticalAlignment="Center"
+                       Foreground="#CCCCFF" FontWeight="SemiBold"/>
+          </mui:FormRow>
+
+          <mui:FormRow LabelWidth="130">
+            <TextBlock x:Name="_equivLevelLabel" Grid.Column="0" VerticalAlignment="Center"
+                       Foreground="#8B84AE" FontStyle="Italic"/>
+            <TextBlock Grid.Column="1"
+                       Text="{Binding SelectedNpc.Level}"
+                       VerticalAlignment="Center"
+                       Foreground="#CCCCFF" FontWeight="SemiBold"/>
+          </mui:FormRow>
+
+          <TextBlock x:Name="_levelNote" Foreground="#8B84AE" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,2"/>
+
+          <Separator Margin="0,4,0,2" Background="{DynamicResource MirageLineSoftBrush}"/>
+
+          <!-- Calculated values grouped into columns: Vitals / Regen / Effectiveness / Chance /
+               Rewards.  Chance sits beside Effectiveness so all fight-focused calcs read as one
+               block, letting the designer trace a stat change across every combat consequence
+               without scrolling. -->
+          <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="6" Margin="0,2,0,0">
+
+            <!-- Vitals -->
+            <Border Grid.Column="0" Background="{DynamicResource MirageBgBrush}" BorderBrush="{DynamicResource MirageSurfaceBrush}" BorderThickness="1" CornerRadius="3" Padding="7,5">
+            <StackPanel Spacing="3">
+              <TextBlock x:Name="_vitalsHeader" FontWeight="SemiBold" FontSize="10" Foreground="#AAAACC" Margin="0,0,0,2"/>
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="_maxHpLabel" Grid.Column="0" Foreground="#8B84AE" FontStyle="Italic" FontSize="11"/>
+                <TextBlock Grid.Column="1" Text="{Binding SelectedNpc.MaxHp}" Foreground="#88AAFF" FontWeight="SemiBold" FontSize="11"/>
+              </Grid>
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="_maxMpLabel" Grid.Column="0" Foreground="#8B84AE" FontStyle="Italic" FontSize="11"/>
+                <TextBlock Grid.Column="1" Text="{Binding SelectedNpc.MaxMp}" Foreground="#88AAFF" FontWeight="SemiBold" FontSize="11"/>
+              </Grid>
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="_maxSpLabel" Grid.Column="0" Foreground="#8B84AE" FontStyle="Italic" FontSize="11"/>
+                <TextBlock Grid.Column="1" Text="{Binding SelectedNpc.MaxSp}" Foreground="#88AAFF" FontWeight="SemiBold" FontSize="11"/>
+              </Grid>
+            </StackPanel>
+            </Border>
+
+            <!-- Regen -->
+            <Border Grid.Column="1" Background="{DynamicResource MirageBgBrush}" BorderBrush="{DynamicResource MirageSurfaceBrush}" BorderThickness="1" CornerRadius="3" Padding="7,5">
+            <StackPanel Spacing="3">
+              <TextBlock x:Name="_regenHeader" FontWeight="SemiBold" FontSize="10" Foreground="#AAAACC" Margin="0,0,0,2"/>
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="_hpRegenLabel" Grid.Column="0" Foreground="#8B84AE" FontStyle="Italic" FontSize="11"/>
+                <TextBlock Grid.Column="1" Text="{Binding SelectedNpc.HpRegen}" Foreground="#88AAFF" FontWeight="SemiBold" FontSize="11"/>
+              </Grid>
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="_mpRegenLabel" Grid.Column="0" Foreground="#8B84AE" FontStyle="Italic" FontSize="11"/>
+                <TextBlock Grid.Column="1" Text="{Binding SelectedNpc.MpRegen}" Foreground="#88AAFF" FontWeight="SemiBold" FontSize="11"/>
+              </Grid>
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="_spRegenLabel" Grid.Column="0" Foreground="#8B84AE" FontStyle="Italic" FontSize="11"/>
+                <TextBlock Grid.Column="1" Text="{Binding SelectedNpc.SpRegen}" Foreground="#88AAFF" FontWeight="SemiBold" FontSize="11"/>
+              </Grid>
+            </StackPanel>
+            </Border>
+
+            <!-- Effectiveness — damage and mitigation the NPC actually rolls in a fight. -->
+            <Border Grid.Column="2" Background="{DynamicResource MirageBgBrush}" BorderBrush="{DynamicResource MirageSurfaceBrush}" BorderThickness="1" CornerRadius="3" Padding="7,5">
+            <StackPanel Spacing="3">
+              <TextBlock x:Name="_effHeader" FontWeight="SemiBold" FontSize="10" Foreground="#AAAACC" Margin="0,0,0,2"/>
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="_pdmgLabel" Grid.Column="0" Foreground="#8B84AE" FontStyle="Italic" FontSize="11"/>
+                <TextBlock Grid.Column="1" Text="{Binding SelectedNpc.PhysDamage}" Foreground="#FFCC66" FontWeight="SemiBold" FontSize="11"/>
+              </Grid>
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="_mdmgLabel" Grid.Column="0" Foreground="#8B84AE" FontStyle="Italic" FontSize="11"/>
+                <TextBlock Grid.Column="1" Text="{Binding SelectedNpc.MagicDamage}" Foreground="#FFCC66" FontWeight="SemiBold" FontSize="11"/>
+              </Grid>
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="_mitLabel" Grid.Column="0" Foreground="#8B84AE" FontStyle="Italic" FontSize="11"/>
+                <TextBlock Grid.Column="1" Text="{Binding SelectedNpc.Mit}" Foreground="#FFCC66" FontWeight="SemiBold" FontSize="11"/>
+              </Grid>
+            </StackPanel>
+            </Border>
+
+            <!-- Chance -->
+            <Border Grid.Column="3" Background="{DynamicResource MirageBgBrush}" BorderBrush="{DynamicResource MirageSurfaceBrush}" BorderThickness="1" CornerRadius="3" Padding="7,5">
+            <StackPanel Spacing="3">
+              <TextBlock x:Name="_chanceHeader" FontWeight="SemiBold" FontSize="10" Foreground="#AAAACC" Margin="0,0,0,2"/>
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="_critLabel" Grid.Column="0" Foreground="#8B84AE" FontStyle="Italic" FontSize="11"/>
+                <TextBlock Grid.Column="1" Text="{Binding SelectedNpc.CritChancePct}" Foreground="#FFAA44" FontWeight="SemiBold" FontSize="11"/>
+              </Grid>
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="_spellCritLabel" Grid.Column="0" Foreground="#8B84AE" FontStyle="Italic" FontSize="11"/>
+                <TextBlock Grid.Column="1" Text="{Binding SelectedNpc.SpellCritChancePct}" Foreground="#FFAA44" FontWeight="SemiBold" FontSize="11"/>
+              </Grid>
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="_blockLabel" Grid.Column="0" Foreground="#8B84AE" FontStyle="Italic" FontSize="11"/>
+                <TextBlock Grid.Column="1" Text="{Binding SelectedNpc.BlockChancePct}" Foreground="#FFAA44" FontWeight="SemiBold" FontSize="11"/>
+              </Grid>
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="_dodgeLabel" Grid.Column="0" Foreground="#8B84AE" FontStyle="Italic" FontSize="11"/>
+                <TextBlock Grid.Column="1" Text="{Binding SelectedNpc.DodgeChancePct}" Foreground="#FFAA44" FontWeight="SemiBold" FontSize="11"/>
+              </Grid>
+            </StackPanel>
+            </Border>
+
+            <!-- Rewards -->
+            <Border Grid.Column="4" Background="{DynamicResource MirageBgBrush}" BorderBrush="{DynamicResource MirageSurfaceBrush}" BorderThickness="1" CornerRadius="3" Padding="7,5">
+            <StackPanel Spacing="3">
+              <TextBlock x:Name="_rewardsHeader" FontWeight="SemiBold" FontSize="10" Foreground="#AAAACC" Margin="0,0,0,2"/>
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="_expLabel" Grid.Column="0" Foreground="#8B84AE" FontStyle="Italic" FontSize="11"/>
+                <TextBlock Grid.Column="1" Text="{Binding SelectedNpc.ExpDrop}" Foreground="#AAFFAA" FontWeight="SemiBold" FontSize="11"/>
+              </Grid>
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock x:Name="_previewLevelLabel" Grid.Column="0" VerticalAlignment="Center" Foreground="#8B84AE" FontStyle="Italic" FontSize="11"/>
+                <NumericUpDown Grid.Column="1" Value="{Binding SelectedNpc.PreviewLevel}" Minimum="1" Maximum="255"
+                               FormatString="0" FontSize="11" Width="140"/>
+              </Grid>
+            </StackPanel>
+            </Border>
+
+          </Grid>
+
+          <!-- Formula notes panel -->
+          <Expander x:Name="_notesExpander" IsExpanded="False" Margin="0,4,0,0"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+            <StackPanel Spacing="6">
+
+              <TextBlock x:Name="_fmtVitalsHeader" FontWeight="SemiBold" Foreground="#99BBDD" FontSize="11" Margin="0,6,0,0"/>
+              <StackPanel Margin="8,0,0,0" Spacing="3">
+                <TextBlock x:Name="_fmtVitalsBaseHp"   TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <TextBlock x:Name="_fmtVitalsFavorPct" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <TextBlock x:Name="_fmtVitalsMaxHp"    TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <TextBlock x:Name="_fmtVitalsMaxMp"    TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <TextBlock x:Name="_fmtVitalsMaxSp"    TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+              </StackPanel>
+              <TextBlock x:Name="_fmtVitalsNote" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
+
+              <TextBlock x:Name="_fmtRegenHeader" FontWeight="SemiBold" Foreground="#99BBDD" FontSize="11" Margin="0,6,0,0"/>
+              <StackPanel Margin="8,0,0,0" Spacing="3">
+                <TextBlock x:Name="_fmtRegenHp" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <TextBlock x:Name="_fmtRegenMp" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <TextBlock x:Name="_fmtRegenSp" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+              </StackPanel>
+              <TextBlock x:Name="_fmtRegenNote" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
+
+              <TextBlock x:Name="_fmtCombatHeader" FontWeight="SemiBold" Foreground="#99BBDD" FontSize="11" Margin="0,6,0,0"/>
+              <StackPanel Margin="8,0,0,0" Spacing="3">
+                <TextBlock x:Name="_fmtCombatPDmg" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <TextBlock x:Name="_fmtCombatMDmg" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <TextBlock x:Name="_fmtCombatMit" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <!-- The floor is Boss-dependent, so an author ticking that box needs to know what it changes. -->
+                <TextBlock x:Name="_fmtCombatFloor" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11" Margin="0,4,0,0"/>
+              </StackPanel>
+              <TextBlock x:Name="_fmtCombatNote" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
+
+              <TextBlock x:Name="_fmtExpHeader" FontWeight="SemiBold" Foreground="#99BBDD" FontSize="11" Margin="0,6,0,0"/>
+              <StackPanel Margin="8,0,0,0" Spacing="3">
+                <TextBlock x:Name="_fmtExpLine1" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <TextBlock x:Name="_fmtExpLine2" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+              </StackPanel>
+              <TextBlock x:Name="_fmtExpNote" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11" Margin="0,4,0,0"/>
+
+              <TextBlock x:Name="_fmtDropChanceHeader" FontWeight="SemiBold" Foreground="#99BBDD" FontSize="11" Margin="0,6,0,0"/>
+              <StackPanel Margin="8,0,0,0" Spacing="3">
+                <TextBlock x:Name="_fmtDropChance1" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <TextBlock x:Name="_fmtDropChance2" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <TextBlock x:Name="_fmtDropChance3" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <TextBlock x:Name="_fmtDropChance4" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <TextBlock x:Name="_fmtDropChance5" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+              </StackPanel>
+              <TextBlock x:Name="_fmtDropChanceNote" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11" Margin="0,4,0,0"/>
+
+              <TextBlock x:Name="_fmtChancesHeader" FontWeight="SemiBold" Foreground="#99BBDD" FontSize="11" Margin="0,6,0,0"/>
+              <StackPanel Margin="8,0,0,0" Spacing="3">
+                <TextBlock x:Name="_fmtChancesCrit"      TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <TextBlock x:Name="_fmtChancesSpellCrit" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <TextBlock x:Name="_fmtChancesBlock"     TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                <TextBlock x:Name="_fmtChancesDodge"     TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+              </StackPanel>
+              <TextBlock x:Name="_fmtChancesNote" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11" Margin="0,4,0,0"/>
+            </StackPanel>
+          </Expander>
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
+
+    <!-- ── Footer: status line, and the always-visible Save / Discard strip ── -->
+
+    <GridSplitter Grid.Column="3" Width="5" Background="{DynamicResource MirageLineSoftBrush}"
+                  ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"/>
+
+    <!-- ── Far right: what refers to this record. Its own column rather than a block at the foot of the
+         form, so it is visible without scrolling past every field first. Each row opens its record. ── -->
+    <DockPanel x:Name="RightPanel" Grid.Column="4" Margin="8,16,8,8"
+               IsVisible="{Binding SelectedNpc, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <TextBlock x:Name="_refsHeader" DockPanel.Dock="Top"
+                 FontSize="13" FontWeight="Bold" Margin="0,0,0,6" TextWrapping="Wrap"/>
+      <TextBlock x:Name="_noRefs" DockPanel.Dock="Top"
+                 IsVisible="{Binding !HasInboundRefs}"
+                 Foreground="{DynamicResource MirageMutedBrush}" FontStyle="Italic"
+                 FontSize="11" TextWrapping="Wrap"/>
+      <ScrollViewer>
+        <ItemsControl ItemsSource="{Binding InboundRefs}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Margin="0,0,0,8">
+                <TextBlock Text="{Binding Header}" FontSize="11"
+                           Foreground="{DynamicResource MirageMutedBrush}"/>
+                <ItemsControl ItemsSource="{Binding Links}" Margin="8,0,0,0">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Button Classes="link" Command="{Binding OpenCommand}"
+                              Content="{Binding DisplayName}"
+                              HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </DockPanel>
+
+    <Border Classes="actionBar" Grid.Row="1" Grid.ColumnSpan="5" Padding="8,6"
+            BorderBrush="{DynamicResource MirageLineBrush}" BorderThickness="0,1,0,0">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6">
+          <Button x:Name="_copyBtn"
+                  ToolTip.Tip="{Binding CopyTooltip}"
+                  ToolTip.ShowOnDisabled="True"
+                  Command="{Binding CopyCommand}"
+                  IsEnabled="{Binding CanCopy}"/>
+          <Button x:Name="_discardBtn"
+                  Command="{Binding DiscardCommand}"
+                  IsEnabled="{Binding IsSelectedDirty}"
+                  Classes="danger"/>
+          <Button x:Name="_discardAllBtn"
+                  Command="{Binding DiscardAllCommand}"
+                  IsEnabled="{Binding HasAnyDirty}"
+                  Classes="danger"/>
+          <Button x:Name="_saveNpcBtn"
+                  Command="{Binding SaveCommand}"
+                  IsEnabled="{Binding IsSelectedDirty}"
+                  HotKey="Ctrl+S" ToolTip.Tip="Ctrl+S"
+                  Classes="primary"/>
+          <Button x:Name="_saveAllBtn"
+                  Command="{Binding SaveAllCommand}"
+                  IsEnabled="{Binding HasAnyDirty}"
+                  HotKey="Ctrl+Shift+S" ToolTip.Tip="Ctrl+Shift+S"
+                  Classes="primary"/>
+        </StackPanel>
+        <TextBlock Text="{Binding StatusMessage}"
+                   Foreground="{DynamicResource MirageOkBrush}"
+                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                   IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </DockPanel>
+    </Border>
+
+  </Grid>
+</UserControl>

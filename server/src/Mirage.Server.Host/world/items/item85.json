@@ -1,0 +1,22 @@
+{
+  "name": "Runed Buckler",
+  "pic": 15,
+  "itemSheet": 0,
+  "type": "Shield",
+  "durability": 770,
+  "power": 100,
+  "levelReq": 105,
+  "allowedClasses": [
+    2,
+    3,
+    6,
+    7,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 100900
+}

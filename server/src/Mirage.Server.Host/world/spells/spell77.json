@@ -1,0 +1,10 @@
+{
+  "name": "Expert Mana Siphon",
+  "allowedClasses": [
+    6,
+    10
+  ],
+  "type": "SubMp",
+  "vitalAmount": 31,
+  "levelReq": 20
+}

@@ -1,0 +1,31 @@
+{
+  "name": "Emberguard Serjeants",
+  "description": "18. There is no craft in this one. There is only whether you can.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 95,
+      "count": 18,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 243,
+  "reqStr": 261,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereqQuest": 0,
+  "rewardExp": 3542940,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 1155415
+    }
+  ],
+  "repeatRewardExp": 0,
+  "repeatRewardItems": [],
+  "giverNpc": 142,
+  "turnInNpc": 0,
+  "repeatable": false,
+  "cadence": "None"
+}

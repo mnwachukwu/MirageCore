@@ -1,0 +1,49 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Mirage.Editor.Views.GeneralHelpDialog"
+        Width="580" Height="620"
+        CanResize="True"
+        MinWidth="480" MinHeight="400"
+        WindowStartupLocation="CenterOwner">
+
+  <ScrollViewer Margin="20">
+    <StackPanel Spacing="16">
+
+      <TextBlock x:Name="_header" FontSize="17" FontWeight="Bold"/>
+
+      <!-- ══ Assets ════════════════════════════════════════════════════════════ -->
+      <StackPanel Spacing="6">
+        <TextBlock x:Name="_assetsHeader" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource MirageMutedBrush}"/>
+        <Separator Background="{DynamicResource MirageLineSoftBrush}"/>
+        <TextBlock x:Name="_assetsIntro" TextWrapping="Wrap" Foreground="#6B6491" FontSize="11"/>
+
+        <Border BorderThickness="4,0,0,0" BorderBrush="{DynamicResource MirageAccentDimBrush}"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_assetsSheets" FontWeight="SemiBold" Foreground="{DynamicResource MirageAccentBrush}"/>
+            <TextBlock x:Name="_assetsSheetsDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+          </StackPanel>
+        </Border>
+
+        <Border BorderThickness="4,0,0,0" BorderBrush="{DynamicResource MirageAccentDimBrush}"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_assetsManager" FontWeight="SemiBold" Foreground="{DynamicResource MirageAccentBrush}"/>
+            <TextBlock x:Name="_assetsManagerDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+          </StackPanel>
+        </Border>
+
+        <Border BorderThickness="4,0,0,0" BorderBrush="{DynamicResource MirageAccentDimBrush}"
+                Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
+          <StackPanel Spacing="3">
+            <TextBlock x:Name="_assetsReload" FontWeight="SemiBold" Foreground="{DynamicResource MirageAccentBrush}"/>
+            <TextBlock x:Name="_assetsReloadDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+          </StackPanel>
+        </Border>
+
+      </StackPanel>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</Window>

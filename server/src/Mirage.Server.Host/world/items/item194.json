@@ -1,0 +1,14 @@
+{
+  "name": "Lesser Siphon Vial",
+  "pic": 22,
+  "itemSheet": 0,
+  "type": "PotionSubMp",
+  "vitalAmount": 14,
+  "levelReq": 5,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1
+}

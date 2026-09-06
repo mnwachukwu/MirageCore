@@ -1,0 +1,11 @@
+{
+  "name": "Grand Enervation",
+  "allowedClasses": [
+    6,
+    7,
+    10
+  ],
+  "type": "SubSp",
+  "vitalAmount": 133,
+  "levelReq": 105
+}

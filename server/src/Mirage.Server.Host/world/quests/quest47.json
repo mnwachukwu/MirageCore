@@ -1,0 +1,31 @@
+{
+  "name": "Shoal Prowlers",
+  "description": "14. They are built like a door and they have to be moved like one.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 66,
+      "count": 14,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 111,
+  "reqStr": 122,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereqQuest": 0,
+  "rewardExp": 739260,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 142063
+    }
+  ],
+  "repeatRewardExp": 0,
+  "repeatRewardItems": [],
+  "giverNpc": 134,
+  "turnInNpc": 0,
+  "repeatable": false,
+  "cadence": "None"
+}

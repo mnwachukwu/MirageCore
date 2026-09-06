@@ -1,0 +1,73 @@
+{
+  "name": "Last Legate Muren (Quest-giver)",
+  "speakerNpc": 142,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "Legate of nothing, commander of no one. The title outlived the office and I've not had the heart to drop it.\n\nBut I still know what needs doing, and you look like someone who does things.",
+      "choices": [
+        {
+          "label": "What needs doing?",
+          "nextNodeId": 0,
+          "action": "OpenQuests"
+        },
+        {
+          "label": "What was the office?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "What is the First Flame?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "Not now.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "I held the Throne's ledger. Every legion, every ordinal, every soul the Kiln spent and what it bought.\n\nIt balances. That's what I can't put down. Everything the Kiln burned, it burned for a reason, and the reasons are all written in my hand, and they were all good reasons, and here we are.",
+      "choices": [
+        {
+          "label": "What needs doing?",
+          "nextNodeId": 0,
+          "action": "OpenQuests"
+        },
+        {
+          "label": "And the First Flame?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "I understand.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "speaker": "",
+      "text": "What the Kiln was for. Its own words, not mine.\n\nEverything else here - the choir, the throne, the ordinals, the whole burning apparatus - is scaffolding around one fire that was lit on purpose. Nobody living knows what for. Muren of forty years ago thought he did.",
+      "choices": [
+        {
+          "label": "Show me the work.",
+          "nextNodeId": 0,
+          "action": "OpenQuests"
+        },
+        {
+          "label": "That's enough.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

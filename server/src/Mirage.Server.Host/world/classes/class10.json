@@ -1,0 +1,63 @@
+{
+  "name": "Wanderer",
+  "description": "Past unknown, future undecided. Jack of all trades.",
+  "spriteMale": 1,
+  "spriteFemale": 1,
+  "spriteSheetMale": 0,
+  "spriteSheetFemale": 0,
+  "str": 5,
+  "def": 5,
+  "spd": 5,
+  "int": 5,
+  "startingItems": [
+    {
+      "itemNum": 1,
+      "quantity": 71
+    },
+    {
+      "itemNum": 4,
+      "quantity": 0
+    },
+    {
+      "itemNum": 7,
+      "quantity": 0
+    },
+    {
+      "itemNum": 10,
+      "quantity": 0
+    },
+    {
+      "itemNum": 13,
+      "quantity": 0
+    },
+    {
+      "itemNum": 184,
+      "quantity": 0
+    },
+    {
+      "itemNum": 184,
+      "quantity": 0
+    },
+    {
+      "itemNum": 185,
+      "quantity": 0
+    },
+    {
+      "itemNum": 185,
+      "quantity": 0
+    },
+    {
+      "itemNum": 186,
+      "quantity": 0
+    },
+    {
+      "itemNum": 186,
+      "quantity": 0
+    }
+  ],
+  "startingSpells": [
+    13,
+    16,
+    4
+  ]
+}

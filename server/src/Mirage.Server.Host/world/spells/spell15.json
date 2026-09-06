@@ -1,0 +1,10 @@
+{
+  "name": "Novice Attunement",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 10,
+  "levelReq": 1
+}

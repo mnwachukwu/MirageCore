@@ -1,0 +1,10 @@
+{
+  "name": "Eternal Exsanguination",
+  "allowedClasses": [
+    4,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 376,
+  "levelReq": 245
+}

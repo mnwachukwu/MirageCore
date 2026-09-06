@@ -1,0 +1,10 @@
+{
+  "name": "Grand Attunement",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 166,
+  "levelReq": 105
+}

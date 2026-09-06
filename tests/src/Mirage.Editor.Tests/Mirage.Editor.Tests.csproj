@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="NUnit" Version="4.5.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+    <!-- Builds windows and views on a headless platform, which is the only thing that proves the XAML
+         actually loads: bindings here are reflective and a broken view compiles clean. -->
+    <PackageReference Include="Avalonia.Headless.NUnit" Version="12.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\editor\src\Mirage.Editor\Mirage.Editor.csproj" />
+  </ItemGroup>
+
+  <!-- Hands the editor's source path to LocalizationConventionTests. Reflection can tell us a type's
+       BASE CLASS but not whether it USES localized strings, and "uses localized strings" is the
+       condition that actually needs a refresh hook - so that one check reads the sources. -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>EditorSourceRoot</_Parameter1>
+      <!-- Baked in at build time because the test reads the editor's SOURCE, not its assembly, and a
+           test binary has no idea where the repository is. It is a separate literal from the
+           ProjectReference above, so relocating either project means editing both. The two tests
+           that use it fail loudly with "Editor source root not found" rather than scanning zero
+           files and passing. -->
+      <_Parameter2>$(MSBuildThisFileDirectory)..\..\..\editor\src\Mirage.Editor</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+
+  <!-- Source-scanning checks need the repo, not the output dir: a redirected build (how the suites run
+       while the editor holds a file lock) puts the binary outside the tree, so walking up from
+       AppContext.BaseDirectory would silently find nothing and skip the check instead of running it. -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RepoRoot</_Parameter1>
+      <_Parameter2>$(MSBuildThisFileDirectory)..\..\..</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,13 @@
+{
+  "name": "The Cut",
+  "displayName": "The Cut",
+  "music": 3,
+  "moral": "None",
+  "bootMap": 0,
+  "bootX": 0,
+  "bootY": 0,
+  "greetingSpeaker": "",
+  "joinSay": "",
+  "leaveSay": "",
+  "territory": true
+}

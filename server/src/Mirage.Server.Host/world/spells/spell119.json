@@ -1,0 +1,10 @@
+{
+  "name": "Grand Heal",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 133,
+  "levelReq": 105
+}

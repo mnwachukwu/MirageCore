@@ -1,0 +1,14 @@
+{
+  "name": "Transcendent Siphon Vial",
+  "pic": 22,
+  "itemSheet": 0,
+  "type": "PotionSubMp",
+  "vitalAmount": 2937,
+  "levelReq": 245,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 19684
+}

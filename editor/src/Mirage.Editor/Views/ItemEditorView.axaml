@@ -1,0 +1,345 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="using:Mirage.Editor.Models"
+             xmlns:controls="using:Mirage.Editor.Controls"
+             xmlns:mui="using:Mirage.Ui.Controls"
+             xmlns:vm="using:Mirage.Editor.ViewModels"
+             Grid.IsSharedSizeScope="True"
+             x:DataType="vm:ItemEditorViewModel"
+             x:Class="Mirage.Editor.Views.ItemEditorView">
+
+  <Grid x:Name="PanelGrid" RowDefinitions="*,Auto">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="200" MinWidth="120"/>
+      <ColumnDefinition Width="5"/>
+      <ColumnDefinition Width="*" MinWidth="200"/>
+      <ColumnDefinition Width="5"/>
+      <ColumnDefinition Width="220" MinWidth="140"/>
+    </Grid.ColumnDefinitions>
+
+    <!-- ── Left: item list ── -->
+    <DockPanel x:Name="LeftPanel" Grid.Column="0">
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="4,4,4,2">
+        <ComboBox x:Name="_typeFilterCombo"
+                  Grid.Column="0"
+                  ItemsSource="{Binding ItemTypeFilters}"
+                  SelectedItem="{Binding TypeFilter, Mode=TwoWay}"
+                  HorizontalAlignment="Stretch"
+                  FontSize="11"/>
+        <Button Grid.Column="1" Content="×"
+                Command="{Binding ClearTypeFilterCommand}"
+                IsVisible="{Binding TypeFilter, Converter={x:Static ObjectConverters.IsNotNull}}"
+                FontSize="11" Padding="6,0" Margin="2,0,0,0"/>
+      </Grid>
+      <TextBox x:Name="_filterTextBox"
+               DockPanel.Dock="Top"
+               Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+               Margin="4,0,4,2"
+               FontSize="11">
+        <TextBox.InnerRightContent>
+          <Button Classes="clearFilter" Content="×" Focusable="False"
+                  Command="{Binding ClearFilterCommand}"
+                  IsVisible="{Binding FilterText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+        </TextBox.InnerRightContent>
+      </TextBox>
+      <TextBlock DockPanel.Dock="Bottom"
+                 Text="{Binding FilterStatus}"
+                 IsVisible="{Binding IsFilterActive}"
+                 FontSize="11" Foreground="#8B84AE"
+                 Margin="4,2" HorizontalAlignment="Right"/>
+      <ListBox ItemsSource="{Binding FilteredItems}"
+               SelectedItem="{Binding SelectedItem}"
+               Background="Transparent">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <TextBlock Text="&#x1F512;" FontSize="10" VerticalAlignment="Center"
+                         Foreground="{DynamicResource MirageFaintBrush}"
+                         IsVisible="{Binding LockedByOther}"
+                         ToolTip.Tip="{Binding LockHolder}"/>
+              <Ellipse Width="7" Height="7" Fill="{DynamicResource MirageWarnBrush}"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding IsDirty}"/>
+              <TextBlock Text="{Binding DisplayName}" Padding="4,2"/>
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </DockPanel>
+
+    <GridSplitter Grid.Column="1" Width="5" Background="{DynamicResource MirageLineSoftBrush}"
+                  ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"/>
+
+    <!-- ── Right: editor panel ── -->
+    <Grid Grid.Column="2">
+      <TextBlock x:Name="_selectPrompt"
+                 IsVisible="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNull}}"
+                 Foreground="#6B6491" HorizontalAlignment="Center" VerticalAlignment="Center"
+                 FontStyle="Italic"/>
+      <ScrollViewer IsVisible="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+                    IsEnabled="{Binding !IsSelectedLocked}">
+        <StackPanel Margin="16" Spacing="8">
+
+          <TextBlock x:Name="_sectionTitle" FontSize="16" FontWeight="Bold" Margin="0,0,0,4"/>
+
+          <mui:FormRow LabelWidth="120">
+            <TextBlock x:Name="_nameLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <TextBox   Grid.Column="1" Text="{Binding SelectedItem.Name}" />
+          </mui:FormRow>
+
+          <!-- Which sheet, then which row of it. The number is what the record stores, so the sheet is
+               picked by index-prefixed name the same way the map editor picks a tileset. -->
+          <mui:FormRow LabelWidth="120">
+            <TextBlock x:Name="_itemSheetLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <controls:DropdownAutoCompleteBox Grid.Column="1"
+                                 ItemsSource="{Binding ItemSheetEntries}"
+                                 SelectedItem="{Binding SelectedItemSheetEntry, Mode=TwoWay}"
+                                 ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrIndex}"
+                                 FilterMode="Custom"
+                                 MinimumPrefixLength="0"/>
+          </mui:FormRow>
+
+          <mui:FormRow LabelWidth="120">
+            <TextBlock x:Name="_picLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox Grid.Column="1"
+                      ItemsSource="{Binding ItemPicEntries}"
+                      SelectedItem="{Binding SelectedItem.PicAsInt, Mode=TwoWay}"
+                      HorizontalAlignment="Stretch"
+                      MaxDropDownHeight="320">
+              <ComboBox.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <controls:AtlasFramePreview
+                        FrameIndex="{Binding}"
+                        Atlas="{Binding $parent[ComboBox].DataContext.ItemBitmap}"
+                        Mode="ItemStrip"
+                        IsHighlighted="{Binding $parent[ComboBoxItem].IsPointerOver}"/>
+                    <TextBlock Text="{Binding, StringFormat='#{0}'}"
+                               VerticalAlignment="Center"/>
+                  </StackPanel>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+          </mui:FormRow>
+
+          <mui:FormRow LabelWidth="120">
+            <TextBlock x:Name="_typeLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox  Grid.Column="1"
+                       ItemsSource="{Binding ItemTypes}"
+                       SelectedItem="{Binding SelectedItem.Type}"
+                       HorizontalAlignment="Stretch" />
+          </mui:FormRow>
+
+          <!-- Each type-specific field is its own row, shown only for the types that use it. A row the
+               author cannot see is one the save zeroes out — both sides ask ItemRecord the same question. -->
+
+          <!-- Durability: equipment only -->
+          <mui:FormRow LabelWidth="120"
+                IsVisible="{Binding SelectedItem.DurabilityVisible}">
+            <TextBlock x:Name="_durabilityLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding SelectedItem.Durability}"
+                           Minimum="0" Maximum="9999" FormatString="0"/>
+          </mui:FormRow>
+
+          <!-- Power (damage / defense): equipment only -->
+          <mui:FormRow LabelWidth="120"
+                IsVisible="{Binding SelectedItem.PowerVisible}">
+            <TextBlock Grid.Column="0"
+                       Text="{Binding SelectedItem.PowerLabel}"
+                       VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding SelectedItem.Power}"
+                           Minimum="0" Maximum="9999" FormatString="0"/>
+          </mui:FormRow>
+
+          <!-- Level requirement: anything equipped or consumed. What actually paces the tier ladder —
+               Power's stat requirement gates WHO may wear a piece, this gates WHEN. -->
+          <mui:FormRow LabelWidth="120"
+                IsVisible="{Binding SelectedItem.LevelReqVisible}">
+            <TextBlock x:Name="_levelReqLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding SelectedItem.LevelReq}"
+                           Minimum="0" Maximum="255" FormatString="0"/>
+          </mui:FormRow>
+
+          <!-- Allowed classes: equipment only. A multi-select, so one piece can be shared by a whole
+               group (all three Strength classes, say) rather than locked to a single class. -->
+          <mui:FormRow LabelWidth="120"
+                IsVisible="{Binding SelectedItem.AllowedClassesVisible}">
+            <TextBlock x:Name="_allowedClassesLabel" Grid.Column="0" VerticalAlignment="Top" Margin="0,2,0,0"/>
+            <controls:ClassSelector Grid.Column="1" DataContext="{Binding ClassSelection}"/>
+          </mui:FormRow>
+
+          <!-- Vital amount: potions only -->
+          <mui:FormRow LabelWidth="120"
+                IsVisible="{Binding SelectedItem.VitalAmountVisible}">
+            <TextBlock Grid.Column="0"
+                       Text="{Binding SelectedItem.VitalAmountLabel}"
+                       VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding SelectedItem.VitalAmount}"
+                           Minimum="0" Maximum="9999" FormatString="0"/>
+          </mui:FormRow>
+
+          <!-- Spell taught: spell scrolls only — picks from the live spell list. -->
+          <mui:FormRow LabelWidth="120"
+                IsVisible="{Binding SelectedItem.SpellNumVisible}">
+            <TextBlock x:Name="_spellNumLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <controls:DropdownAutoCompleteBox x:Name="_spellPicker" Grid.Column="1"
+                             ItemsSource="{Binding SpellEntries}"
+                             SelectedItem="{Binding SelectedSpellItem, Mode=TwoWay}"
+                             ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
+                             FilterMode="Custom" MinimumPrefixLength="0"/>
+          </mui:FormRow>
+
+          <!-- Item restriction flags (S10 authoring surface; enforcement of the new flags lands in S10) -->
+          <TextBlock x:Name="_restrictionsLabel" FontWeight="SemiBold" Margin="0,6,0,0"/>
+          <StackPanel Margin="8,0,0,0" Spacing="2">
+            <CheckBox x:Name="_nonTradeableCheck"  IsChecked="{Binding SelectedItem.NonTradeable}"/>
+            <CheckBox x:Name="_nonListableCheck"   IsChecked="{Binding SelectedItem.NonListable}"/>
+            <CheckBox x:Name="_nonMailableCheck"   IsChecked="{Binding SelectedItem.NonMailable}"/>
+            <CheckBox x:Name="_destroyOnDropCheck" IsChecked="{Binding SelectedItem.DestroyOnDrop}"/>
+            <CheckBox x:Name="_nonJunkableCheck"   IsChecked="{Binding SelectedItem.NonJunkable}"/>
+          </StackPanel>
+
+          <!-- Gold worth. Seeded across the armory by the economy generator, so a hand-typed value here is
+               an override — which is how a treasure item gets a worth no formula can derive. -->
+          <mui:FormRow LabelWidth="165" Margin="0,6,0,0">
+            <TextBlock x:Name="_priceLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1" Value="{Binding SelectedItem.Price}"
+                           Minimum="0" Maximum="2000000000" Increment="1" FormatString="0"/>
+          </mui:FormRow>
+
+          <Separator Margin="0,4,0,2" Background="{DynamicResource MirageLineSoftBrush}"/>
+
+          <!-- Item type notes panel -->
+          <Expander x:Name="_notesExpander" IsExpanded="False" Margin="0,4,0,0"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+            <StackPanel Spacing="6">
+
+              <!-- Equipment -->
+              <TextBlock x:Name="_notesEquipmentHeader"
+                         FontWeight="SemiBold" Foreground="#99BBDD" FontSize="11" Margin="0,6,0,0"/>
+              <StackPanel Margin="8,0,0,0" Spacing="3">
+                <TextBlock x:Name="_notesEquipmentDurability" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
+                <TextBlock x:Name="_notesEquipmentPower"  TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
+                <StackPanel Margin="12,0,0,0" Spacing="2">
+                  <TextBlock x:Name="_notesEquipmentWeapon" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                  <TextBlock x:Name="_notesEquipmentArmor"  TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                  <TextBlock x:Name="_notesEquipmentHelmet" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                  <TextBlock x:Name="_notesEquipmentShield" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
+                </StackPanel>
+                <TextBlock x:Name="_notesEquipmentClassReq"   TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
+                <TextBlock x:Name="_notesEquipmentShieldSide" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
+              </StackPanel>
+
+              <!-- Potions -->
+              <TextBlock x:Name="_notesPotionsHeader"
+                         FontWeight="SemiBold" Foreground="#99BBDD" FontSize="11" Margin="0,6,0,0"/>
+              <StackPanel Margin="8,0,0,0" Spacing="3">
+                <TextBlock x:Name="_notesPotionsAmount" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
+              </StackPanel>
+
+              <!-- Spell scrolls -->
+              <TextBlock x:Name="_notesSpellScrollHeader"
+                         FontWeight="SemiBold" Foreground="#99BBDD" FontSize="11" Margin="0,6,0,0"/>
+              <StackPanel Margin="8,0,0,0" Spacing="3">
+                <TextBlock x:Name="_notesSpellScrollSpell" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
+              </StackPanel>
+
+              <!-- Key -->
+              <TextBlock x:Name="_notesKeyHeader"
+                         FontWeight="SemiBold" Foreground="#99BBDD" FontSize="11" Margin="0,6,0,0"/>
+              <StackPanel Margin="8,0,0,0" Spacing="3">
+                <TextBlock x:Name="_notesKeyId" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
+              </StackPanel>
+
+              <!-- Currency -->
+              <TextBlock x:Name="_notesCurrencyHeader"
+                         FontWeight="SemiBold" Foreground="#99BBDD" FontSize="11" Margin="0,6,0,0"/>
+              <StackPanel Margin="8,0,0,0" Spacing="3">
+                <TextBlock x:Name="_notesCurrencyDesc" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
+              </StackPanel>
+
+            </StackPanel>
+          </Expander>
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
+
+    <!-- ── Footer: status line, and the always-visible Save / Discard strip ── -->
+
+    <GridSplitter Grid.Column="3" Width="5" Background="{DynamicResource MirageLineSoftBrush}"
+                  ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"/>
+
+    <!-- ── Far right: what refers to this record. Its own column rather than a block at the foot of the
+         form, so it is visible without scrolling past every field first. Each row opens its record. ── -->
+    <DockPanel x:Name="RightPanel" Grid.Column="4" Margin="8,16,8,8"
+               IsVisible="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <TextBlock x:Name="_refsHeader" DockPanel.Dock="Top"
+                 FontSize="13" FontWeight="Bold" Margin="0,0,0,6" TextWrapping="Wrap"/>
+      <TextBlock x:Name="_noRefs" DockPanel.Dock="Top"
+                 IsVisible="{Binding !HasInboundRefs}"
+                 Foreground="{DynamicResource MirageMutedBrush}" FontStyle="Italic"
+                 FontSize="11" TextWrapping="Wrap"/>
+      <ScrollViewer>
+        <ItemsControl ItemsSource="{Binding InboundRefs}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Margin="0,0,0,8">
+                <TextBlock Text="{Binding Header}" FontSize="11"
+                           Foreground="{DynamicResource MirageMutedBrush}"/>
+                <ItemsControl ItemsSource="{Binding Links}" Margin="8,0,0,0">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Button Classes="link" Command="{Binding OpenCommand}"
+                              Content="{Binding DisplayName}"
+                              HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </DockPanel>
+
+    <Border Classes="actionBar" Grid.Row="1" Grid.ColumnSpan="5" Padding="8,6"
+            BorderBrush="{DynamicResource MirageLineBrush}" BorderThickness="0,1,0,0">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6">
+          <Button x:Name="_copyBtn"
+                  ToolTip.Tip="{Binding CopyTooltip}"
+                  ToolTip.ShowOnDisabled="True"
+                  Command="{Binding CopyCommand}"
+                  IsEnabled="{Binding CanCopy}"/>
+          <Button x:Name="_discardBtn"
+                  Command="{Binding DiscardCommand}"
+                  IsEnabled="{Binding IsSelectedDirty}"
+                  Classes="danger"/>
+          <Button x:Name="_discardAllBtn"
+                  Command="{Binding DiscardAllCommand}"
+                  IsEnabled="{Binding HasAnyDirty}"
+                  Classes="danger"/>
+          <Button x:Name="_saveBtn"
+                  Command="{Binding SaveCommand}"
+                  IsEnabled="{Binding IsSelectedDirty}"
+                  HotKey="Ctrl+S" ToolTip.Tip="Ctrl+S"
+                  Classes="primary"/>
+          <Button x:Name="_saveAllBtn"
+                  Command="{Binding SaveAllCommand}"
+                  IsEnabled="{Binding HasAnyDirty}"
+                  HotKey="Ctrl+Shift+S" ToolTip.Tip="Ctrl+Shift+S"
+                  Classes="primary"/>
+        </StackPanel>
+        <TextBlock Text="{Binding StatusMessage}"
+                   Foreground="{DynamicResource MirageOkBrush}"
+                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                   IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </DockPanel>
+    </Border>
+
+  </Grid>
+</UserControl>

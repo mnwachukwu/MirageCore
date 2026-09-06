@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The look, in one place. Both Avalonia apps reference this; neither carries its own palette.
+       Lives beside Mirage.Shared because that is already where code shared across the trees sits. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Mirage.Ui</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.0.4" />
+    <!-- The WinUI 3 control set. Its FAAppWindow title bar is Windows-only BY CONSTRUCTION: the
+         ExtendClientAreaToDecorationsHint default is only overridden under OperatingSystem.IsWindows(),
+         so Linux and macOS keep native decorations and lose no window behaviour. -->
+    <PackageReference Include="FluentAvaloniaUI" Version="3.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Theme\**\*.axaml" />
+  </ItemGroup>
+
+</Project>

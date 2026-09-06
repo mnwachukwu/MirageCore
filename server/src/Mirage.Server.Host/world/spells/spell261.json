@@ -1,0 +1,9 @@
+{
+  "name": "Absolute Exhaustion",
+  "allowedClasses": [
+    10
+  ],
+  "type": "SubSp",
+  "vitalAmount": 391,
+  "levelReq": 255
+}

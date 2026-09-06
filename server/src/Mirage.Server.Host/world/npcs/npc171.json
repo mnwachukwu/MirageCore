@@ -1,0 +1,24 @@
+{
+  "name": "Deck Warden",
+  "attackSay": "Nothing comes up the shelf. Nothing.",
+  "sprite": 5,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 120,
+  "behavior": "Guard",
+  "group": 0,
+  "range": 6,
+  "str": 352,
+  "def": 274,
+  "spd": 156,
+  "int": 0,
+  "extraHp": 500000,
+  "isBoss": false,
+  "emitsLight": true,
+  "light": {
+    "rgb": 11834985,
+    "radius": 3,
+    "flicker": "Flame",
+    "intensity": 1
+  }
+}

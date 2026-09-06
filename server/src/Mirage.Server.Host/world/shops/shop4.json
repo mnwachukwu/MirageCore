@@ -1,0 +1,16 @@
+{
+  "name": "Bittern, Alchemist",
+  "fixesItems": false,
+  "shopType": "Store",
+  "allowBanking": false,
+  "keeper": 129,
+  "barterItem": [],
+  "salesItem": [
+    190,
+    191,
+    192,
+    202,
+    203,
+    204
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Fenn's Clearing Inn",
+  "fixesItems": false,
+  "shopType": "Inn",
+  "allowBanking": true,
+  "keeper": 125,
+  "barterItem": [],
+  "salesItem": []
+}

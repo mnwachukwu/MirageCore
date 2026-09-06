@@ -1,0 +1,14 @@
+{
+  "name": "Superior Mana Elixir",
+  "pic": 27,
+  "itemSheet": 0,
+  "type": "PotionAddMp",
+  "vitalAmount": 613,
+  "levelReq": 105,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2041
+}

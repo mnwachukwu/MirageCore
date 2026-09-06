@@ -1,0 +1,58 @@
+{
+  "name": "Wick the Waymarker (Local)",
+  "speakerNpc": 175,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "That's the marsh road, and it's the one you want if you have to ask.\n\nReeds, bandits, a few things in the water. Nothing out there is above twenty, and most of it is well under.",
+      "choices": [
+        {
+          "label": "What's the worst of it?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "What if I'm already past twenty?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "Thanks.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "Warlord Hesk, at the far end, and the Drowned King under the water beside him. Both worth bringing someone for.\n\nEverything before them you can manage alone if you're paced right.",
+      "choices": [
+        {
+          "label": "And after that?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "Good enough.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "speaker": "",
+      "text": "Then this road has nothing left to teach you. Take the ferry.\n\nMind - there's no gentle step up. The next road starts at a hundred. You do not walk from twenty to a hundred out here; there is nothing in between to walk through.",
+      "choices": [
+        {
+          "label": "Understood.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

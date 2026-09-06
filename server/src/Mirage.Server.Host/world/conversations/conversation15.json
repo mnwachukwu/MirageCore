@@ -1,0 +1,46 @@
+{
+  "name": "Vesk the Unsunk (Spell vendor (Sub))",
+  "speakerNpc": 139,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "They call me that because I came back up. It's meant kindly and it isn't.\n\nI sell taking-words. I learned them from something that was using them on me.",
+      "choices": [
+        {
+          "label": "Show me.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "You came back up from where?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "No.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "The trench. Three days. I don't know how - I've stopped asking, because the only answer that fits is one I'd rather not have.\n\nWhat I brought back was the grammar. Down there, taking isn't cruelty. It's just how anything moves from one thing to another. I find that more frightening than teeth.",
+      "choices": [
+        {
+          "label": "Show me.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "I'll leave you.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

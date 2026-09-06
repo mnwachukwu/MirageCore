@@ -1,0 +1,31 @@
+{
+  "name": "Count the Legion",
+  "description": "18 ash legionaries, and I want the count broken down by which furnace mark they carry. That second part is the reason I am asking someone clever.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 84,
+      "count": 18,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 235,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 253,
+  "prereqQuest": 0,
+  "rewardExp": 3313500,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 1056447
+    }
+  ],
+  "repeatRewardExp": 0,
+  "repeatRewardItems": [],
+  "giverNpc": 142,
+  "turnInNpc": 0,
+  "repeatable": false,
+  "cadence": "None"
+}

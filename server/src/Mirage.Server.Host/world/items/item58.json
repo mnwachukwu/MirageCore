@@ -1,0 +1,15 @@
+{
+  "name": "Kilnforged Cap",
+  "pic": 37,
+  "itemSheet": 0,
+  "type": "Helmet",
+  "durability": 340,
+  "power": 23,
+  "levelReq": 20,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1460
+}

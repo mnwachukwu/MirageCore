@@ -1,0 +1,42 @@
+{
+  "name": "The Pyre Vanguard",
+  "description": "5 of the vanguard, weekly. They come in a line and they expect you to be in one too.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 105,
+      "count": 5,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 249,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "allowedClasses": [
+    1,
+    2,
+    3,
+    7
+  ],
+  "prereqQuest": 0,
+  "rewardExp": 175391,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 58148
+    }
+  ],
+  "repeatRewardExp": 175391,
+  "repeatRewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 58148
+    }
+  ],
+  "giverNpc": 142,
+  "turnInNpc": 0,
+  "repeatable": true,
+  "cadence": "Weekly"
+}

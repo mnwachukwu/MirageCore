@@ -1,0 +1,14 @@
+{
+  "name": "The Cold Forge",
+  "displayName": "The Cold Forge",
+  "music": 16,
+  "moral": "Safe",
+  "alwaysLit": true,
+  "bootMap": 0,
+  "bootX": 0,
+  "bootY": 0,
+  "greetingSpeaker": "",
+  "joinSay": "",
+  "leaveSay": "",
+  "territory": false
+}

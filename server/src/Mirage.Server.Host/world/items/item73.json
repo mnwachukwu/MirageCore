@@ -1,0 +1,22 @@
+{
+  "name": "Meteoric Buckler",
+  "pic": 15,
+  "itemSheet": 0,
+  "type": "Shield",
+  "durability": 750,
+  "power": 95,
+  "levelReq": 100,
+  "allowedClasses": [
+    2,
+    3,
+    6,
+    7,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 88325
+}

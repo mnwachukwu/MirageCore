@@ -1,0 +1,36 @@
+{
+  "name": "Leviathan",
+  "description": "Once a week the deep water goes quiet, and a week later it is quiet a little closer in.\n\nThat is Leviathan Prime surfacing to feed. I cannot stop it surfacing. I can send someone down to meet it every time it does, and so far that has been enough.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 119,
+      "count": 1,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 120,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereqQuest": 0,
+  "rewardExp": 751861,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 152291
+    }
+  ],
+  "repeatRewardExp": 751861,
+  "repeatRewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 152291
+    }
+  ],
+  "giverNpc": 134,
+  "turnInNpc": 0,
+  "repeatable": true,
+  "cadence": "Weekly"
+}

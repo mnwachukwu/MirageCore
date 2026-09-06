@@ -1,0 +1,50 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Mirage.Editor.Controls"
+        xmlns:vm="using:Mirage.Editor.ViewModels"
+        x:Class="Mirage.Editor.Views.WorldPreviewWindow"
+        x:DataType="vm:WorldPreviewViewModel"
+        Width="760" Height="620"
+        CanResize="True"
+        MinWidth="320" MinHeight="240"
+        ShowInTaskbar="False"
+        Topmost="True">
+
+  <DockPanel>
+
+    <Border DockPanel.Dock="Top" Padding="10,7"
+            Background="{DynamicResource MirageSurfaceBrush}">
+      <!-- The reach is stated, not offered: the status line carries it so the edge of the picture is never
+           mistaken for the edge of the world. -->
+      <TextBlock Text="{Binding Status}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+    </Border>
+
+    <Border DockPanel.Dock="Bottom" Padding="10,5"
+            Background="{DynamicResource MirageSurfaceBrush}">
+      <TextBlock x:Name="_hint" Opacity="0.75" TextTrimming="CharacterEllipsis"/>
+    </Border>
+
+    <!-- The two states share one cell rather than docking beside each other, so the empty note centers in
+         the whole canvas area instead of against its left edge. -->
+    <Grid>
+      <!-- Nothing to draw is its own state: a bare black canvas reads as a preview that failed rather
+           than as a world with no map open. -->
+      <TextBlock x:Name="_emptyNote" IsVisible="{Binding !HasMaps}"
+                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                 Opacity="0.7" TextWrapping="Wrap" Margin="24"/>
+
+      <ScrollViewer x:Name="_scroll" IsVisible="{Binding HasMaps}"
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Auto">
+        <!-- The canvas grows to at least the viewport so pointer input reaches it across the whole window,
+             not only where maps happen to be drawn. A region smaller than the window would otherwise leave
+             dead space that swallows a drag or a wheel. -->
+        <controls:WorldPreviewControl x:Name="_canvas"
+                                      HorizontalAlignment="Left" VerticalAlignment="Top"
+                                      MinWidth="{Binding #_scroll.Viewport.Width}"
+                                      MinHeight="{Binding #_scroll.Viewport.Height}"/>
+      </ScrollViewer>
+    </Grid>
+
+  </DockPanel>
+</Window>

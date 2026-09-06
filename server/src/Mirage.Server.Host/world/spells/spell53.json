@@ -1,0 +1,12 @@
+{
+  "name": "Journeyman Vigor",
+  "allowedClasses": [
+    7,
+    8,
+    9,
+    10
+  ],
+  "type": "AddSp",
+  "vitalAmount": 19,
+  "levelReq": 10
+}

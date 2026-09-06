@@ -1,0 +1,110 @@
+<Project Sdk="Microsoft.Build.NoTargets/3.7.0" DefaultTargets="TestAll">
+
+  <!-- Thin delegator — the test-side mirror of Mirage.Publish.csproj.
+       Right-click → Build (or `dotnet msbuild tests/Mirage.Test.csproj -t:TestAll`, or a bare
+       `dotnet msbuild tests/Mirage.Test.csproj`) runs all six suites in one shot and fails if any fails.
+       Lives in tests/, one level above the suites it drives. -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <_SharedTests>$(MSBuildThisFileDirectory)src/Mirage.Shared.Tests/Mirage.Shared.Tests.csproj</_SharedTests>
+    <_ServerTests>$(MSBuildThisFileDirectory)src/Mirage.Server.Tests/Mirage.Server.Tests.csproj</_ServerTests>
+    <_ClientCoreTests>$(MSBuildThisFileDirectory)src/Mirage.Client.Core.Tests/Mirage.Client.Core.Tests.csproj</_ClientCoreTests>
+    <_ClientShellTests>$(MSBuildThisFileDirectory)src/Mirage.Client.Shell.Tests/Mirage.Client.Shell.Tests.csproj</_ClientShellTests>
+    <_EditorTests>$(MSBuildThisFileDirectory)src/Mirage.Editor.Tests/Mirage.Editor.Tests.csproj</_EditorTests>
+    <_ServerShellTests>$(MSBuildThisFileDirectory)src/Mirage.Server.Shell.Tests/Mirage.Server.Shell.Tests.csproj</_ServerShellTests>
+    <_AllTests>$(_SharedTests);$(_ServerTests);$(_ClientCoreTests);$(_ClientShellTests);$(_EditorTests);$(_ServerShellTests)</_AllTests>
+  </PropertyGroup>
+
+  <!-- Build the suites through the MSBuild task rather than letting each `dotnet test` build its own.
+       This project is a solution member with no dependency edge to the suites, so under a parallel
+       `dotnet build Mirage.slnx` the outer build and the nested `dotnet test` are separate MSBuild
+       PROCESSES building the same projects into the same bin/obj.  Cross-process builds share no result
+       cache, so nothing serializes those writes; routing the build through the MSBuild task puts the
+       request in the outer build's own scheduler, which blocks on an in-flight build instead of starting
+       a second one.  Restore is a separate submission: folding it into the Build call would evaluate
+       package-supplied targets before restore wrote them.  With the suites already built, the
+       `dotnet test` calls below skip their own build (~15% off solution-build wall time, 80s -> 68s).
+       Measured on a quiet tree, forcing a recompile each run: the nested process ran its own Build pass
+       every time, and in 1 run of 3 it invoked csc on Mirage.Server.Tests WHILE the outer build was
+       still writing that same assembly; the other 2 runs its up-to-date check happened to land after
+       the outer build finished, so it skipped.  That timing window is the point.
+       NOTE: this never actually corrupted a run in testing — it is a latent same-path-two-writers
+       hazard, not an observed failure.  The build failures originally blamed on it turned out to be a
+       second agent building the tree concurrently; do not re-attribute flakiness here without evidence. -->
+  <Target Name="BuildSuites">
+    <!-- The distinguishing property goes on RESTORE, not Build. Both calls need separate evaluations -
+         sharing one leaves a never-restored suite compiling with no package assets: no copied dependencies
+         and no runtimeconfig.json, so a no-build `dotnet test` aborts on a missing assembly - but which
+         call carries the property decides whether this doubles the build. A global property forks the
+         configuration, and configuration is what MSBuild keys results on; it also flows down every
+         ProjectReference. On Build that forked every transitive dependency into a SECOND compile racing
+         the outer one into the same obj/, which is the CS2012/MSB3883 file-lock failure. On Restore it
+         forks a pass that writes package assets and never invokes the compiler, while Build now runs in
+         the outer build's own configuration and reuses its result instead of starting a rival. -->
+    <MSBuild Projects="$(_AllTests)" Targets="Restore" BuildInParallel="true" Properties="_RestorePass=true" />
+    <MSBuild Projects="$(_AllTests)" Targets="Build" BuildInParallel="true" />
+  </Target>
+
+  <Target Name="TestAll" DependsOnTargets="BuildSuites">
+    <!-- ContinueOnError so one red suite doesn't hide the rest; each exit code is captured, then the
+         run fails at the end if any suite returned non-zero (all-pass concatenates to "000000"). -->
+    <Message Text="── Shared ──" Importance="High" />
+    <Exec Command="dotnet test &quot;$(_SharedTests)&quot; --no-build --configuration $(Configuration) --nologo" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="_SharedExit" />
+    </Exec>
+    <Message Text="── Server ──" Importance="High" />
+    <Exec Command="dotnet test &quot;$(_ServerTests)&quot; --no-build --configuration $(Configuration) --nologo --filter &quot;TestCategory!=Content&quot;" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="_ServerExit" />
+    </Exec>
+    <Message Text="── Client.Core ──" Importance="High" />
+    <Exec Command="dotnet test &quot;$(_ClientCoreTests)&quot; --no-build --configuration $(Configuration) --nologo" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="_ClientCoreExit" />
+    </Exec>
+    <Message Text="── Client.Shell ──" Importance="High" />
+    <Exec Command="dotnet test &quot;$(_ClientShellTests)&quot; --no-build --configuration $(Configuration) --nologo" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="_ClientShellExit" />
+    </Exec>
+    <Message Text="── Editor ──" Importance="High" />
+    <Exec Command="dotnet test &quot;$(_EditorTests)&quot; --no-build --configuration $(Configuration) --nologo" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="_EditorExit" />
+    </Exec>
+
+    <Message Text="── Server.Shell ──" Importance="High" />
+    <Exec Command="dotnet test &quot;$(_ServerShellTests)&quot; --no-build --configuration $(Configuration) --nologo" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="_ServerShellExit" />
+    </Exec>
+
+    <!-- The same guards CI runs over what no compiler reads: seed counts, README facts, relative
+         links, and the committed content against its sources. They live outside the test suites because
+         none of them checks code, and running them here is what stops such a change from passing
+         locally and failing on push. Skipped with a warning where node is absent, so a green local
+         run without it is not a silent pass. -->
+    <Message Text="── Checks ──" Importance="High" />
+    <!-- The guards that read committed artifacts rather than exercise code: the seed against the engine's
+         rules, then the four documentation checks below. Kept out of the unit pass above by category. -->
+    <Exec Command="dotnet test &quot;$(_ServerTests)&quot; --no-build --configuration $(Configuration) --nologo --filter &quot;TestCategory=Content&quot;" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="_ContentExit" />
+    </Exec>
+    <Exec Command="node --version" ContinueOnError="true" StandardOutputImportance="low">
+      <Output TaskParameter="ExitCode" PropertyName="_NodeExit" />
+    </Exec>
+    <Warning Condition="'$(_NodeExit)' != '0'"
+             Text="node not found — the repository checks did NOT run. CI still runs them." />
+    <Exec Condition="'$(_NodeExit)' == '0'"
+          Command="node .github/checks/check-seed-counts.mjs &amp;&amp; node .github/checks/check-readme-facts.mjs &amp;&amp; node .github/checks/check-doc-links.mjs &amp;&amp; node .github/checks/check-prebuilt-content.mjs &amp;&amp; node .github/checks/check-build-graph.mjs"
+          WorkingDirectory="$(RepoRoot)" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="_DocsExit" />
+    </Exec>
+
+    <Error Condition="'$(_SharedExit)$(_ServerExit)$(_ClientCoreExit)$(_ClientShellExit)$(_EditorExit)$(_ServerShellExit)$(_ContentExit)$(_DocsExit)' != '00000000'"
+           Text="Test suites failed — Shared=$(_SharedExit) Server=$(_ServerExit) Client.Core=$(_ClientCoreExit) Client.Shell=$(_ClientShellExit) Editor=$(_EditorExit) Server.Shell=$(_ServerShellExit) Content=$(_ContentExit) Docs=$(_DocsExit)." />
+    <Message Text="═══ All test suites passed ═══" Importance="High" />
+  </Target>
+
+  <!-- VS right-click → Build triggers TestAll — same convention as Mirage.Publish.csproj.
+       To keep it out of Ctrl+Shift+B, open Build → Configuration Manager and uncheck this
+       project's Build checkbox (exactly as you would for the Publish project). -->
+  <Target Name="Build" DependsOnTargets="TestAll" />
+
+</Project>

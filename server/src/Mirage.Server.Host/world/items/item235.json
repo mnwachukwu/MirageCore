@@ -1,0 +1,14 @@
+{
+  "name": "Radiant Bloodletting Vial",
+  "pic": 23,
+  "itemSheet": 0,
+  "type": "PotionSubHp",
+  "vitalAmount": 721,
+  "levelReq": 115,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2603
+}

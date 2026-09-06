@@ -1,0 +1,54 @@
+{
+  "name": "Warrior",
+  "description": "Fights for honor. High power melee.",
+  "spriteMale": 34,
+  "spriteFemale": 10,
+  "spriteSheetMale": 0,
+  "spriteSheetFemale": 0,
+  "str": 15,
+  "def": 5,
+  "spd": 0,
+  "int": 0,
+  "startingItems": [
+    {
+      "itemNum": 1,
+      "quantity": 75
+    },
+    {
+      "itemNum": 6,
+      "quantity": 0
+    },
+    {
+      "itemNum": 7,
+      "quantity": 0
+    },
+    {
+      "itemNum": 10,
+      "quantity": 0
+    },
+    {
+      "itemNum": 184,
+      "quantity": 0
+    },
+    {
+      "itemNum": 184,
+      "quantity": 0
+    },
+    {
+      "itemNum": 184,
+      "quantity": 0
+    },
+    {
+      "itemNum": 184,
+      "quantity": 0
+    },
+    {
+      "itemNum": 186,
+      "quantity": 0
+    },
+    {
+      "itemNum": 186,
+      "quantity": 0
+    }
+  ]
+}

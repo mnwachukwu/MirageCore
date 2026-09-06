@@ -1,0 +1,11 @@
+{
+  "name": "Eternal Enervation",
+  "allowedClasses": [
+    6,
+    7,
+    10
+  ],
+  "type": "SubSp",
+  "vitalAmount": 301,
+  "levelReq": 245
+}

@@ -1,0 +1,31 @@
+{
+  "name": "The Sunken Crown",
+  "description": "At the bottom of the trench there is a court, and at the center of the court there is a crown that has been assembling one since the day it drowned.\n\nEnd it. I have had two hundred years of reports about that court and not one of them ends with anybody coming back up.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 120,
+      "count": 1,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 120,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereqQuest": 11,
+  "rewardExp": 2880000,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 583351
+    }
+  ],
+  "repeatRewardExp": 0,
+  "repeatRewardItems": [],
+  "giverNpc": 134,
+  "turnInNpc": 0,
+  "repeatable": false,
+  "cadence": "None"
+}

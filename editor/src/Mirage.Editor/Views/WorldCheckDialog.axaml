@@ -1,0 +1,55 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Mirage.Editor.ViewModels"
+        x:Class="Mirage.Editor.Views.WorldCheckDialog"
+        x:DataType="vm:WorldCheckDialogViewModel"
+        Width="720" Height="560"
+        CanResize="True"
+        MinWidth="520" MinHeight="320"
+        WindowStartupLocation="CenterOwner">
+
+  <DockPanel Margin="20">
+
+    <TextBlock x:Name="_intro" DockPanel.Dock="Top"
+               TextWrapping="Wrap" Margin="0,0,0,6"/>
+
+    <TextBlock DockPanel.Dock="Top" Text="{Binding Summary}" Margin="0,0,0,12"
+               FontWeight="SemiBold" TextWrapping="Wrap"/>
+
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                HorizontalAlignment="Right" Spacing="8" Margin="0,14,0,0">
+      <Button x:Name="_closeBtn" Command="{Binding CloseCommand}" IsCancel="True" IsDefault="True"/>
+    </StackPanel>
+
+    <!-- Nothing to show is its own state: an empty list under a heading reads as a list that failed to
+         load, where a sentence saying the world holds together does not. -->
+    <TextBlock x:Name="_cleanNote" DockPanel.Dock="Top" IsVisible="{Binding IsClean}"
+               TextWrapping="Wrap" Foreground="{DynamicResource MirageOkBrush}"/>
+
+    <ScrollViewer IsVisible="{Binding !IsClean}">
+      <ItemsControl ItemsSource="{Binding Rows}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Border BorderThickness="4,0,0,0" BorderBrush="{DynamicResource MirageWarnBrush}"
+                    Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0"
+                    Padding="10,8" Margin="0,0,0,6">
+              <DockPanel>
+                <Button DockPanel.Dock="Right" VerticalAlignment="Center" Margin="10,0,0,0"
+                        Command="{Binding GoCommand}"
+                        Content="{Binding GoLabel}"/>
+                <StackPanel Spacing="3">
+                  <TextBlock Text="{Binding Where}" FontWeight="SemiBold"
+                             Foreground="{DynamicResource MirageAccentBrush}"/>
+                  <TextBlock Text="{Binding What}" TextWrapping="Wrap" FontSize="11"
+                             Foreground="{DynamicResource MirageTextBrush}"/>
+                </StackPanel>
+              </DockPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+  </DockPanel>
+
+</Window>

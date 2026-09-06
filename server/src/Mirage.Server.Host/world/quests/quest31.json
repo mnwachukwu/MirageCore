@@ -1,0 +1,42 @@
+{
+  "name": "Hold the Pikes",
+  "description": "3 sunken pikemen at the stair. Close work, and they do not give ground.",
+  "objectives": [
+    {
+      "kind": "Kill",
+      "target": 62,
+      "count": 3,
+      "progress": 0
+    }
+  ],
+  "reqLevel": 107,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "allowedClasses": [
+    1,
+    2,
+    3,
+    7
+  ],
+  "prereqQuest": 0,
+  "rewardExp": 3902,
+  "rewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 731
+    }
+  ],
+  "repeatRewardExp": 2081,
+  "repeatRewardItems": [
+    {
+      "itemNum": 1,
+      "quantity": 390
+    }
+  ],
+  "giverNpc": 134,
+  "turnInNpc": 0,
+  "repeatable": true,
+  "cadence": "Daily"
+}

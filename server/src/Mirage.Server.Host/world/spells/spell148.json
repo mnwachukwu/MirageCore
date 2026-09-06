@@ -1,0 +1,15 @@
+{
+  "name": "Elder Mana Leech",
+  "allowedClasses": [
+    1,
+    2,
+    5,
+    6,
+    8,
+    9,
+    10
+  ],
+  "type": "SubMp",
+  "vitalAmount": 109,
+  "levelReq": 115
+}

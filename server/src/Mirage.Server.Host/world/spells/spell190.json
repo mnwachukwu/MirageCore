@@ -1,0 +1,11 @@
+{
+  "name": "Empyrean Mend",
+  "allowedClasses": [
+    6,
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 217,
+  "levelReq": 235
+}

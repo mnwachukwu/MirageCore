@@ -1,0 +1,110 @@
+{
+  "name": "Tide Marshal Orun",
+  "attackSay": "The Reach answers to me.",
+  "sprite": 7,
+  "spriteSheet": 0,
+  "size": 2,
+  "spawnSecs": 900,
+  "behavior": "AttackWhenAttacked",
+  "group": 2,
+  "range": 6,
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 3153,
+      "chance": 90
+    },
+    {
+      "itemNum": 281,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 91,
+      "quantity": 0,
+      "chance": 8
+    },
+    {
+      "itemNum": 88,
+      "quantity": 0,
+      "chance": 6
+    },
+    {
+      "itemNum": 226,
+      "quantity": 0,
+      "chance": 30
+    },
+    {
+      "itemNum": 424,
+      "quantity": 0,
+      "chance": 20
+    },
+    {
+      "itemNum": 429,
+      "quantity": 0,
+      "chance": 15
+    }
+  ],
+  "str": 191,
+  "def": 87,
+  "spd": 35,
+  "int": 35,
+  "extraHp": 12977,
+  "isBoss": true,
+  "emitsLight": true
+}

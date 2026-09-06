@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>false</IsPublishable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="NUnit" Version="4.5.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+  </ItemGroup>
+
+  <!-- Tests the server as a whole (logic core + host), not split by project. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\server\src\Mirage.Server.Core\Mirage.Server.Core.csproj" />
+    <ProjectReference Include="..\..\..\server\src\Mirage.Server.Host\Mirage.Server.Host.csproj" />
+    <ProjectReference Include="..\..\..\shared\src\Mirage.Updates\Mirage.Updates.csproj" />
+  </ItemGroup>
+
+  <!-- Baked in at build time for the checks that read repository FILES rather than the assembly -
+       UpdateChannelTests reads the three *.Publish.csproj. Walking up from AppContext.BaseDirectory
+       works only when the tests run from their normal output path; a build redirected elsewhere
+       (which is how the suites are run while an app holds a file lock) finds nothing and the checks
+       quietly skip. A guard that can silently not run is not a guard. -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RepoRoot</_Parameter1>
+      <_Parameter2>$(MSBuildThisFileDirectory)..\..\..</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>

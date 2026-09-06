@@ -1,0 +1,22 @@
+{
+  "name": "Sundered Sword",
+  "pic": 11,
+  "itemSheet": 0,
+  "type": "Weapon",
+  "durability": 1550,
+  "power": 295,
+  "levelReq": 240,
+  "allowedClasses": [
+    1,
+    2,
+    3,
+    7,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1190445
+}

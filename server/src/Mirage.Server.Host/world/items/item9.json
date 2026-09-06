@@ -1,0 +1,19 @@
+{
+  "name": "Rusted Plate",
+  "pic": 7,
+  "itemSheet": 0,
+  "type": "Armor",
+  "durability": 130,
+  "power": 10,
+  "levelReq": 1,
+  "allowedClasses": [
+    3,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 18
+}

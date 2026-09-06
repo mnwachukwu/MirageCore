@@ -1,0 +1,54 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Mirage.Editor.ViewModels"
+        x:Class="Mirage.Editor.Views.ConsoleWindow"
+        x:DataType="vm:ConsoleViewModel"
+        Width="820" Height="460"
+        CanResize="True"
+        MinWidth="480" MinHeight="240"
+        SizeToContent="Manual"
+        ShowInTaskbar="False">
+
+  <DockPanel Margin="14">
+
+    <TextBlock x:Name="_intro" DockPanel.Dock="Top" TextWrapping="Wrap"
+               Opacity="0.8" Margin="0,0,0,10"/>
+
+    <Border DockPanel.Dock="Bottom" Margin="0,10,0,0">
+      <DockPanel>
+        <Button x:Name="_clearButton" DockPanel.Dock="Right" Margin="8,0,0,0"
+                Command="{Binding ClearCommand}" MinWidth="96"/>
+        <Button x:Name="_openFolderButton" DockPanel.Dock="Right" Margin="8,0,0,0"
+                Command="{Binding OpenFolderCommand}" MinWidth="120"/>
+        <!-- The Help menu's own Logging dialog, not a copy of it: how much detail is captured is one
+             setting, and it governs this window and the file together. -->
+        <Button x:Name="_configureButton" DockPanel.Dock="Right"
+                Command="{Binding ConfigureCommand}" MinWidth="96"/>
+        <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Opacity="0.75"
+                   TextTrimming="CharacterEllipsis"/>
+      </DockPanel>
+    </Border>
+
+    <!-- Monospaced and non-wrapping: these are timestamped lines read down the left edge, and wrapping
+         one long line would push every line under it out of that column. The horizontal scrollbar is the
+         trade, and it is the right one for a log. -->
+    <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1"
+            CornerRadius="4" Padding="6">
+      <ScrollViewer x:Name="_scroller"
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Auto">
+        <ItemsControl ItemsSource="{Binding Lines}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:ConsoleLineViewModel">
+              <SelectableTextBlock Text="{Binding Text}"
+                                   Foreground="{Binding Brush}"
+                                   FontFamily="Consolas,Menlo,monospace"
+                                   FontSize="12"
+                                   TextWrapping="NoWrap"/>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </Border>
+  </DockPanel>
+</Window>

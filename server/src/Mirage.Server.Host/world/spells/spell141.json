@@ -1,0 +1,10 @@
+{
+  "name": "Arch Attunement",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 174,
+  "levelReq": 110
+}

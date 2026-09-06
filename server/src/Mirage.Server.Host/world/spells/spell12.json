@@ -1,0 +1,10 @@
+{
+  "name": "Novice Restoration",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 10,
+  "levelReq": 1
+}

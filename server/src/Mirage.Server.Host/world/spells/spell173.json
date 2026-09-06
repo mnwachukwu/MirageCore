@@ -1,0 +1,10 @@
+{
+  "name": "Sovereign Heal",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 151,
+  "levelReq": 120
+}

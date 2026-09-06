@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.Build.NoTargets/3.7.0">
+
+  <!-- Runs the editor suite on its own — the test-side mirror of Mirage.Editor.Publish.csproj.
+       See Mirage.Server.Test.csproj for why these area drivers exist.
+
+         dotnet msbuild tests/Mirage.Editor.Test.csproj /t:TestAll -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <_EditorTests>$(MSBuildThisFileDirectory)src/Mirage.Editor.Tests/Mirage.Editor.Tests.csproj</_EditorTests>
+  </PropertyGroup>
+
+  <Target Name="BuildSuite">
+    <MSBuild Projects="$(_EditorTests)" Targets="Restore" Properties="_RestorePass=true" />
+    <!-- The distinguishing property goes on RESTORE, not Build. Both calls need their own evaluation -
+         sharing one leaves a never-restored suite compiling with no package assets - but a global property
+         forks the build configuration and flows down every ProjectReference, so on Build it starts a second
+         compile of the whole dependency graph into the same obj/. See Mirage.Test.csproj for the full note. -->
+    <MSBuild Projects="$(_EditorTests)" Targets="Build" />
+  </Target>
+
+  <Target Name="TestAll" DependsOnTargets="BuildSuite">
+    <Message Text="── Editor ──" Importance="High" />
+    <Exec Command="dotnet test &quot;$(_EditorTests)&quot; --no-build --configuration $(Configuration) --nologo" />
+  </Target>
+
+  <!-- Deliberately not chained to TestAll — see the note in Mirage.Server.Test.csproj. A solution
+       build already tests everything once, through Mirage.Test.csproj. -->
+  <Target Name="Build">
+    <Message Importance="High"
+             Text="Mirage.Editor.Test: nothing run. Use /t:TestAll to test the editor on its own." />
+  </Target>
+
+</Project>

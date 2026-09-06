@@ -1,0 +1,10 @@
+{
+  "name": "Elder Attunement",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 181,
+  "levelReq": 115
+}

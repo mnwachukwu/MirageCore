@@ -1,0 +1,10 @@
+{
+  "name": "Empyrean Exsanguination",
+  "allowedClasses": [
+    4,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 361,
+  "levelReq": 235
+}

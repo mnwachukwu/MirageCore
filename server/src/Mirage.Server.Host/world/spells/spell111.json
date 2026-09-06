@@ -1,0 +1,10 @@
+{
+  "name": "Grand Exsanguination",
+  "allowedClasses": [
+    4,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 166,
+  "levelReq": 105
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Tempered Cap",
+  "pic": 37,
+  "itemSheet": 0,
+  "type": "Helmet",
+  "durability": 290,
+  "power": 19,
+  "levelReq": 15,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 755
+}

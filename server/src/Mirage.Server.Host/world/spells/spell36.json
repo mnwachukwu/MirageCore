@@ -1,0 +1,10 @@
+{
+  "name": "Apprentice Endurance",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddSp",
+  "vitalAmount": 16,
+  "levelReq": 5
+}

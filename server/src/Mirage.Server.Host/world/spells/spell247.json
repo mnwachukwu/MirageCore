@@ -1,0 +1,13 @@
+{
+  "name": "Celestial Focus",
+  "allowedClasses": [
+    4,
+    5,
+    6,
+    9,
+    10
+  ],
+  "type": "AddMp",
+  "vitalAmount": 230,
+  "levelReq": 250
+}

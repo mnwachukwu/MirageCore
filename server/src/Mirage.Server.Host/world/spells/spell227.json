@@ -1,0 +1,10 @@
+{
+  "name": "Eternal Heal",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 301,
+  "levelReq": 245
+}

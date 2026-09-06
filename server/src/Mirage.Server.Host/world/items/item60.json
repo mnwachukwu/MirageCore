@@ -1,0 +1,19 @@
+{
+  "name": "Kilnforged Greathelm",
+  "pic": 37,
+  "itemSheet": 0,
+  "type": "Helmet",
+  "durability": 560,
+  "power": 38,
+  "levelReq": 20,
+  "allowedClasses": [
+    3,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2412
+}

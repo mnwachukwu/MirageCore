@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Staying current, in one place. The three shipped apps reference this; nothing else does, which
+       is the point — Velopack is a packaging concern, and it has no business reaching the content
+       generators or the test suites through Mirage.Shared. Lives beside Mirage.Shared and Mirage.Ui
+       because that is already where code shared across the trees sits.
+
+       References nothing of ours: the channel names and the call that uses them are the whole of it. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Mirage.Updates</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Velopack" Version="1.2.0" />
+  </ItemGroup>
+
+</Project>

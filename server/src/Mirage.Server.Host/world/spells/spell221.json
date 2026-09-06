@@ -1,0 +1,10 @@
+{
+  "name": "Eternal Mana Siphon",
+  "allowedClasses": [
+    6,
+    10
+  ],
+  "type": "SubMp",
+  "vitalAmount": 301,
+  "levelReq": 245
+}

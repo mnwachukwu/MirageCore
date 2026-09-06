@@ -1,0 +1,35 @@
+{
+  "name": "Shoal Prowler",
+  "attackSay": "SKRRT",
+  "sprite": 42,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 55,
+  "behavior": "AttackWhenAttacked",
+  "group": 10,
+  "range": 6,
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 398,
+      "chance": 45
+    },
+    {
+      "itemNum": 279,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 94,
+      "quantity": 0,
+      "chance": 2
+    }
+  ],
+  "str": 157,
+  "def": 118,
+  "spd": 56,
+  "int": 19,
+  "extraHp": 0,
+  "isBoss": false,
+  "emitsLight": true
+}

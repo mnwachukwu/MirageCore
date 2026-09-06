@@ -1,0 +1,20 @@
+# Line endings are normalized to LF in the repository AND on checkout, matching
+# .editorconfig's `end_of_line = lf`. Checking out as LF (rather than relying on
+# core.autocrlf) means a file's bytes are identical on every machine, and the
+# server's JSON serializer — which writes Environment.NewLine, i.e. CRLF on
+# Windows — cannot produce phantom diffs: the clean filter normalizes on the way in.
+* text=auto eol=lf
+
+# Windows shells genuinely require CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets: never diff, never convert.
+*.bmp  binary
+*.png  binary
+*.jpg  binary
+*.ico  binary
+*.icns binary
+*.ogg  binary
+*.ttf  binary
+*.xnb  binary

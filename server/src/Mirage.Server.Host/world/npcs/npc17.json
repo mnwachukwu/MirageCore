@@ -1,0 +1,25 @@
+{
+  "name": "Skyclaw",
+  "attackSay": "",
+  "sprite": 22,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 60,
+  "behavior": "AttackWhenAttacked",
+  "group": 0,
+  "range": 5,
+  "drops": [
+    {
+      "itemNum": 203,
+      "quantity": 0,
+      "chance": 10
+    }
+  ],
+  "str": 30,
+  "def": 23,
+  "spd": 11,
+  "int": 4,
+  "extraHp": 0,
+  "isBoss": false,
+  "emitsLight": false
+}

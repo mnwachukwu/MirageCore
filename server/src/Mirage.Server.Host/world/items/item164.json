@@ -1,0 +1,22 @@
+{
+  "name": "Godmarked Hauberk",
+  "pic": 6,
+  "itemSheet": 0,
+  "type": "Armor",
+  "durability": 1580,
+  "power": 307,
+  "levelReq": 250,
+  "allowedClasses": [
+    1,
+    2,
+    3,
+    6,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1326622
+}

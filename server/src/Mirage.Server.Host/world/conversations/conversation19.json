@@ -1,0 +1,46 @@
+{
+  "name": "Hammer-Priest Dain (Weaponsmith)",
+  "speakerNpc": 143,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "You'll want to know why a smith is a priest. Everyone does.\n\nBecause here the fire is the congregation and I'm the one who talks to it. Blades second. But yes - blades.",
+      "choices": [
+        {
+          "label": "Show me the blades.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "You worship the fire?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "No.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "I negotiate with it. Worship implies it's listening for my sake.\n\nEvery edge I've drawn out here came from a forge I had to relight, feed, and talk down. Slag Titans were poured in furnaces like mine. I try to make things that cut them instead.",
+      "choices": [
+        {
+          "label": "Show me the blades.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Understood.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

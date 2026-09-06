@@ -1,0 +1,20 @@
+{
+  "name": "Tempered Helm",
+  "pic": 37,
+  "itemSheet": 0,
+  "type": "Helmet",
+  "durability": 390,
+  "power": 25,
+  "levelReq": 15,
+  "allowedClasses": [
+    2,
+    3,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 993
+}

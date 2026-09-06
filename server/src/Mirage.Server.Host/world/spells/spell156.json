@@ -1,0 +1,10 @@
+{
+  "name": "Elder Restoration",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddHp",
+  "vitalAmount": 181,
+  "levelReq": 115
+}

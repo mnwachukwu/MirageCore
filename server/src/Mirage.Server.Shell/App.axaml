@@ -1,0 +1,26 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sty="using:FluentAvalonia.Styling"
+             x:Class="Mirage.Server.Shell.App"
+             RequestedThemeVariant="Dark">
+
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Mirage.Ui/Theme/Colors.axaml"/>
+        <ResourceInclude Source="avares://Mirage.Ui/Theme/Controls.axaml"/>
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+
+  <Application.Styles>
+    <!-- PreferSystemTheme off and PreferUserAccentColor off: this window wears the PROJECT's identity,
+         not whatever the operator has set Windows to. UseSystemFontOnWindows stays on (its default),
+         which is what puts Segoe UI Variable under the type ramp. -->
+    <sty:FluentAvaloniaTheme PreferSystemTheme="False"
+                             PreferUserAccentColor="False"
+                             CustomAccentColor="#9AA8F5"/>
+    <StyleInclude Source="avares://Mirage.Ui/Theme/Styles.axaml"/>
+  </Application.Styles>
+
+</Application>

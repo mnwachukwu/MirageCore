@@ -1,0 +1,110 @@
+{
+  "name": "The Ashen Throne",
+  "attackSay": "SIT, IF YOU CAN.",
+  "sprite": 3,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 1800,
+  "behavior": "AttackWhenAttacked",
+  "group": 3,
+  "range": 6,
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 8652,
+      "chance": 90
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 0,
+      "chance": 2
+    },
+    {
+      "itemNum": 181,
+      "quantity": 0,
+      "chance": 4
+    },
+    {
+      "itemNum": 178,
+      "quantity": 0,
+      "chance": 3
+    },
+    {
+      "itemNum": 268,
+      "quantity": 0,
+      "chance": 30
+    },
+    {
+      "itemNum": 556,
+      "quantity": 0,
+      "chance": 20
+    },
+    {
+      "itemNum": 543,
+      "quantity": 0,
+      "chance": 15
+    }
+  ],
+  "str": 430,
+  "def": 196,
+  "spd": 78,
+  "int": 78,
+  "extraHp": 231729,
+  "isBoss": true,
+  "emitsLight": true
+}

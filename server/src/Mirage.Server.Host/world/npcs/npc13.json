@@ -1,0 +1,25 @@
+{
+  "name": "Rookery Birdman",
+  "attackSay": "SKREEEEE!",
+  "sprite": 14,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 50,
+  "behavior": "AttackOnSight",
+  "group": 8,
+  "range": 4,
+  "drops": [
+    {
+      "itemNum": 198,
+      "quantity": 0,
+      "chance": 10
+    }
+  ],
+  "str": 25,
+  "def": 19,
+  "spd": 9,
+  "int": 3,
+  "extraHp": 0,
+  "isBoss": false,
+  "emitsLight": false
+}

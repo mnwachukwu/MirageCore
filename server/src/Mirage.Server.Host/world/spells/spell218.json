@@ -1,0 +1,12 @@
+{
+  "name": "Eternal Life Siphon",
+  "allowedClasses": [
+    4,
+    5,
+    8,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 301,
+  "levelReq": 245
+}

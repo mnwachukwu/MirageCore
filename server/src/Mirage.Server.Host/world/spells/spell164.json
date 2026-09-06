@@ -1,0 +1,12 @@
+{
+  "name": "Sovereign Life Siphon",
+  "allowedClasses": [
+    4,
+    5,
+    8,
+    10
+  ],
+  "type": "SubHp",
+  "vitalAmount": 151,
+  "levelReq": 120
+}

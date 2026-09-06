@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- The CLI is the "-Console" exe; the plain "-Server" name belongs to the WINDOW, because that is
+         what an operator double-clicks and what the installer's shortcut points at. -->
+    <AssemblyName>$(GameNameSlug)-Server-Console</AssemblyName>
+    <ApplicationIcon>$(ServerIcon)</ApplicationIcon>
+    <!-- The world is resident for the process's whole life and the game loop's tightest tick is 100ms, so
+         collection pauses are the cost that matters, not peak footprint. Measured on a 13-million-object
+         heap: full gen2 243ms -> 135ms, and a large map's deserialize 168ms -> 76ms. -->
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\shared\src\Mirage.Shared\Mirage.Shared.csproj" />
+    <ProjectReference Include="..\Mirage.Server.Core\Mirage.Server.Core.csproj" />
+    <ProjectReference Include="..\..\..\shared\src\Mirage.Updates\Mirage.Updates.csproj" />
+  </ItemGroup>
+
+  <!-- The tracked world, listed so the IDE shows it. Not copied anywhere: the installers ship it as
+       seed/ (see publish/), and a source run reads it wherever WorldDir points. -->
+  <ItemGroup>
+    <None Include="world\*.json" />
+    <Content Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Shipped rather than written on first boot, so the settings are discoverable. Every value is a
+         default, so deleting it changes nothing. -->
+    <Content Include="serverconfig.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Velopack" Version="1.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
+    <PackageReference Include="Serilog.Expressions" Version="5.0.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.1" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+  </ItemGroup>
+
+</Project>

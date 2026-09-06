@@ -1,0 +1,19 @@
+{
+  "name": "Tempered Greataxe",
+  "pic": 10,
+  "itemSheet": 0,
+  "type": "Weapon",
+  "durability": 480,
+  "power": 31,
+  "levelReq": 15,
+  "allowedClasses": [
+    1,
+    10
+  ],
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1232
+}

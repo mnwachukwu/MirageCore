@@ -1,0 +1,10 @@
+{
+  "name": "Novice Endurance",
+  "allowedClasses": [
+    9,
+    10
+  ],
+  "type": "AddSp",
+  "vitalAmount": 10,
+  "levelReq": 1
+}
