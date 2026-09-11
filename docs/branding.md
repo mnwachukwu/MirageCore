@@ -100,7 +100,7 @@ the shared part, and changing *that* means changing all of them.
 
 Running a world and want players to install *your* game rather than this one? You do not need the
 source. Velopack packages a folder of files and does not care where the folder came from, so a
-published client — a portable zip from a release, with your own graphics, music and data swapped in —
+published client — a portable zip from a release, with your own graphics, music, and data swapped in —
 is enough input.
 
 ```sh

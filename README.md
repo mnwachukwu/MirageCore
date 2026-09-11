@@ -1,6 +1,6 @@
 # Mirage Source Remastered — C# Rewrite
 
-[![Build, test and release](https://github.com/mnwachukwu/MirageSourceRemastered/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mnwachukwu/MirageSourceRemastered/actions/workflows/ci.yml)
+[![Build, test, and release](https://github.com/mnwachukwu/MirageSourceRemastered/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mnwachukwu/MirageSourceRemastered/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/mnwachukwu/MirageSourceRemastered?display_name=tag&color=9aa8f5)](https://github.com/mnwachukwu/MirageSourceRemastered/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/mnwachukwu/MirageSourceRemastered/total?color=9aa8f5)](https://github.com/mnwachukwu/MirageSourceRemastered/releases)
 
@@ -32,7 +32,7 @@ editor.
 | | | `Mirage.Server.Host` — TCP, DI, entry point; runs headless |
 | | | `Mirage.Server.Shell` — optional Avalonia front end for the same server |
 | `client/` | `client/src/` | `Mirage.Client.Core` — game state and logic, no MonoGame dependency |
-| | | `Mirage.Client.Shell` — MonoGame rendering, input and audio |
+| | | `Mirage.Client.Shell` — MonoGame rendering, input, and audio |
 | `client/` (editor forms) | `editor/src/` | `Mirage.Editor` — Avalonia editor, offline against a world folder or live against a running server |
 | — | `shared/src/` | `Mirage.Shared` — protocol types, records, and the formulas both sides evaluate |
 | | | `Mirage.Ui` — the theme and shared controls the two Avalonia apps use |
@@ -40,9 +40,9 @@ editor.
 
 `Mirage.Shared` is referenced by all three solutions, replacing VB6's duplicated `modTypes.bas` definitions and the server/client divergence they caused. Every formula that both the client and the server must agree on — damage, requirements, prices, vitals — lives there and is evaluated from the same code on both sides.
 
-`server/`, `client/` and `editor/` each carry a satellite `.slnx` for working on one area alone. The rest
+`server/`, `client/`, and `editor/` each carry a satellite `.slnx` for working on one area alone. The rest
 of the tree is not source: `tests/` holds the suites in `src/` and their drivers above, `publish/` holds
-the packaging drivers, and `assets/`, `docs/`, `tools/` and `.github/checks/` hold what is neither.
+the packaging drivers, and `assets/`, `docs/`, `tools/`, and `.github/checks/` hold what is neither.
 
 The root `Mirage.slnx` ties all twenty-four projects together, and the split is lopsided on purpose: **nine of the twenty-four are the game. The other fifteen exist to test and publish those nine.**
 
@@ -123,27 +123,27 @@ from source there is no bundled copy, so the first Open is yours to aim.
 
 > **`world.json`** at a world folder's root is what the folder says about itself: its **name**, the **size new maps are created at**, and its record ceilings. Set them in the editor under **World → World Settings**. The file is optional — a folder without one runs on the stock answers.
 >
-> **The world name and the game name are different things, and only one of them is public.** The *game* name is what a player sees — the window title, the login screen, the chat greeting. The *world* name identifies one set of records, and exists so an operator can tell a live world from a test copy of it in the editor's title bar, the server window and the logs. **It never reaches a player**, so there is no reason to make it presentable and no harm in calling a folder "friday-rollback-test".
+> **The world name and the game name are different things, and only one of them is public.** The *game* name is what a player sees — the window title, the login screen, the chat greeting. The *world* name identifies one set of records, and exists so an operator can tell a live world from a test copy of it in the editor's title bar, the server window, and the logs. **It never reaches a player**, so there is no reason to make it presentable and no harm in calling a folder "friday-rollback-test".
 >
 > **Map size.** A map is 16×12 tiles unless it says otherwise; `world.json` sets what a *new* map starts at, and any map can be resized in its properties. Maps joined by an edge must all be the same size — world coordinates run continuously across a seam, so a mismatch would make a step across one land somewhere other than where it looks — and the editor refuses to resize a linked map rather than letting that happen. **Resizing cannot be undone**: shrinking discards the tiles outside the new bounds and nothing writes them anywhere first, so the editor itemizes exactly what would go and tells you to copy the folder first.
 >
-> Past 128 tiles on an axis the editor warns, but nothing breaks. Drawing the world costs the same at every size — the client only ever draws what fits on screen — so what grows with a map is the two things that read it whole: crossing a seam loads three maps, and an NPC that loses its path searches the whole nine-map neighbourhood before giving up. At 128×128 each takes about 40 ms, a few frames and under a tenth of an AI tick; at 256×256 both are about 180 ms, which is a visible stall. Resident memory is 96 bytes a tile, so 1.5 MB for a 128×128 map against 18 KB for the default. The actual ceiling is 65,535 on either axis, which is how wide a warp's destination coordinate is: past that, a map could hold tiles no door could point at.
+> Past 128 tiles on an axis the editor warns, but nothing breaks. Drawing the world costs the same at every size — the client only ever draws what fits on screen — so what grows with a map is the two things that read it whole: crossing a seam loads three maps, and an NPC that loses its path searches the whole nine-map neighborhood before giving up. At 128×128 each takes about 40 ms, a few frames and under a tenth of an AI tick; at 256×256 both are about 180 ms, which is a visible stall. Resident memory is 96 bytes a tile, so 1.5 MB for a 128×128 map against 18 KB for the default. The actual ceiling is 65,535 on either axis, which is how wide a warp's destination coordinate is: past that, a map could hold tiles no door could point at.
 
 > **A server runs on two folders, and the split is one question: does it change while the server runs?**
 >
-> `world/` is what an author wrote — maps, items, NPCs, spells, shops, quests, conversations, classes and `world.json`. Nothing in it changes unless somebody edits it, which is what lets a world be zipped up and handed to another machine. It is the folder the **editor** opens.
+> `world/` is what an author wrote — maps, items, NPCs, spells, shops, quests, conversations, classes, and `world.json`. Nothing in it changes unless somebody edits it, which is what lets a world be zipped up and handed to another machine. It is the folder the **editor** opens.
 >
-> `data/` is what one installation accumulated — accounts, guilds, market listings, trade journals, seasons, dropped items, the name registry, the ban lists, the clock and the MOTD. It belongs to that server on that machine and means nothing beside a different world. Keeping the two apart is what stops a copied world carrying somebody's password hashes with it.
+> `data/` is what one installation accumulated — accounts, guilds, market listings, trade journals, seasons, dropped items, the name registry, the ban lists, the clock, and the MOTD. It belongs to that server on that machine and means nothing beside a different world. Keeping the two apart is what stops a copied world carrying somebody's password hashes with it.
 >
 > Both are set independently, `WorldDir` and `DataDir`, and both default to a per-user folder — `%LocalAppData%\Mirage Source Remastered Server\` on Windows, `~/.local/share/mirage-source-remastered-server/` on Linux, `~/Library/Application Support/` on macOS. Not beside the executable: an installed server runs out of a folder the updater replaces wholesale, so a world and a set of accounts kept there would last exactly one update.
 >
-> **Seed data:** `server/src/Mirage.Server.Host/world/` is the shipped default configuration — 147 maps, 10 classes, 558 items, 270 spells, 177 NPCs, 38 conversations, 54 quests and 21 shops. Any collection you leave out is created empty and written on first save, so a partial world folder boots fine.
+> **Seed data:** `server/src/Mirage.Server.Host/world/` is the shipped default configuration — 147 maps, 10 classes, 558 items, 270 spells, 177 NPCs, 38 conversations, 54 quests, and 21 shops. Any collection you leave out is created empty and written on first save, so a partial world folder boots fine.
 >
 > Those counts are checked against the folder by `.github/checks/check-seed-counts.mjs`, which CI runs — they have gone stale twice.
 >
-> **It is a placed world, not just a library.** 133 of the maps carry spawns, and 175 of the 177 NPCs stand somewhere: three towns with their shops, inns and quest-givers, the routes between them, and the boss rooms at the end of each. You can start a server, make a character and walk it.
+> **It is a placed world, not just a library.** 133 of the maps carry spawns, and 175 of the 177 NPCs stand somewhere: three towns with their shops, inns, and quest-givers, the routes between them, and the boss rooms at the end of each. You can start a server, make a character, and walk it.
 >
-> **It is still TEST data rather than a game.** It exercises the engine at three specific bands — **levels 1–20, 100–120, and 235–255** — and there is deliberately *nothing in between*. Levels 21–99 and 121–234 have no mobs, no gear and no spells at all: a character leveling normally runs out of world twice. The three bands exist so combat, gearing and party scaling could be measured at the bottom, middle and top of the curve without authoring 255 levels of content to get there. Each band is a self-contained region reached from the hub, so the gap between them is a wall you arrive at rather than a stretch of empty map.
+> **It is still TEST data rather than a game.** It exercises the engine at three specific bands — **levels 1–20, 100–120, and 235–255** — and there is deliberately *nothing in between*. Levels 21–99 and 121–234 have no mobs, no gear, and no spells at all: a character leveling normally runs out of world twice. The three bands exist so combat, gearing, and party scaling could be measured at the bottom, middle, and top of the curve without authoring 255 levels of content to get there. Each band is a self-contained region reached from the hub, so the gap between them is a wall you arrive at rather than a stretch of empty map.
 >
 > It is included as a courtesy — enough to start a server and see the systems work end to end, and a worked example of what the record formats look like — but it is not a finished game and was never intended as one. The content is regular enough to look machine-written because most of it is: the generators that wrote the records and laid out the route maps are published, so the seed can be regenerated, retuned, or replaced wholesale rather than treated as fixed. See [Authoring tools](#authoring-tools).
 
@@ -193,7 +193,7 @@ already baked into the numbers the generators use, and nothing here builds them.
 
 The client ships branded **Mirage Source Remastered** — the engine's name. It has no game identity of its
 own, because one client is meant to reach every server. On connect, before you log in, the server tells it
-the game's name, and the window title, the menu and the HUD show that from then on.
+the game's name, and the window title, the menu, and the HUD show that from then on.
 
 So launching "Mirage Source Remastered" and arriving in "Brightwater" is expected. It is a handshake, not
 a rebrand and not a bait and switch: the engine cannot know what to call itself until a server says.
@@ -220,7 +220,7 @@ This file covers what the project is and how to get it running. Everything else 
 
 | Document | What it answers |
 |---|---|
-| [Building, publishing and releasing](docs/building.md) | How a working tree becomes installers, what the version number is bound to, how a tag cuts a release, and which platforms the output runs on |
+| [Building, publishing, and releasing](docs/building.md) | How a working tree becomes installers, what the version number is bound to, how a tag cuts a release, and which platforms the output runs on |
 | [Icons and shipping your own client](docs/branding.md) | Rebranding a fork: the four icon locations, the MonoGame window-icon trap, and repackaging a client without a compiler |
 | [Testing](docs/testing.md) | What the six suites cover, how to run one on its own, and why the cross-platform matrix exists |
 | [Technical decisions](docs/architecture.md) | Choices that are not obvious from the code, recorded with the reasoning that produced them |

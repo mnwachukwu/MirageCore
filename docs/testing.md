@@ -34,8 +34,8 @@ So **there is no `Mirage.Server.Core.Tests` and no `Mirage.Server.Host.Tests`.**
 the counterpart of `Mirage.Client.Core.Tests` by role, not by name.
 
 **`shared/` is the one area whose suite covers three projects.** `Mirage.Shared.Tests` holds the formulas,
-records, protocol and security helpers, the `Mirage.Ui` theme dictionaries and the `Mirage.Updates` feed
-resolution. It is the only suite that references no server, client or editor, so it runs without any
+records, protocol and security helpers, the `Mirage.Ui` theme dictionaries, and the `Mirage.Updates` feed
+resolution. It is the only suite that references no server, client, or editor, so it runs without any
 application built — which is why CI runs it first.
 
 | Scope | Command |
@@ -56,7 +56,7 @@ you to remember a path. `shared/` has no publish profile, because nothing ships 
 Two areas hold two suites each, and the driver names both: the server driver runs `Mirage.Server.Tests`
 and `Mirage.Server.Shell.Tests`, the client driver runs `Mirage.Client.Core.Tests` and
 `Mirage.Client.Shell.Tests`. Each keeps going after a failure and reports both results, so one red suite
-never hides its neighbour.
+never hides its neighbor.
 
 The area drivers deliberately do **not** run on a solution build; only the aggregate
 `Mirage.Test.csproj` does. Both would mean every suite running twice — the same double-work that once
@@ -74,7 +74,7 @@ namespace in C# and renaming them would be churn no reader benefits from.
 
 ## No suite reads authored content
 
-**Unit tests build their own fixtures.** Anything that needs records, a world or a data directory writes
+**Unit tests build their own fixtures.** Anything that needs records, a world, or a data directory writes
 one into a temp folder and deletes it afterwards; nothing under `tests/src/` asserts against
 `server/src/Mirage.Server.Host/world`. Real content changes for content reasons, and a test that reads it
 fails for reasons that have nothing to do with the code it names.
@@ -115,7 +115,7 @@ What they actually pin, by kind:
 
 ## Across platforms
 
-CI runs **every suite on Linux, macOS and Windows**.
+CI runs **every suite on Linux, macOS, and Windows**.
 
 Cross-building for three platforms from one runner proves they *compile* and nothing more — it never
 runs a line of code on the other two. That gap is not theoretical here:
@@ -147,7 +147,7 @@ is native code and whose inputs have to exist on the machine doing the building.
 
 ## What has actually been played
 
-Automated tests say the logic runs; they say nothing about rendering, audio, input or windowing. Those
+Automated tests say the logic runs; they say nothing about rendering, audio, input, or windowing. Those
 have been exercised by hand, and unevenly:
 
 | | Played on |
@@ -157,7 +157,7 @@ have been exercised by hand, and unevenly:
 | macOS | **never** |
 
 Worth stating plainly because the download page offers all three. The macOS build is compiled, unit
-tested and unplayed.
+tested, and unplayed.
 
 ## What no compiler reads is checked too
 
@@ -185,7 +185,7 @@ repository and follows every link that points inside it — a path, an in-page a
 as its own CI job and gates a release alongside the suites.
 
 **Node, in a C# repository, on purpose.** It imports nothing outside Node's standard library, so
-there is no `package.json`, no install step and nothing to keep up to date — and every GitHub-hosted
+there is no `package.json`, no install step, and nothing to keep up to date — and every GitHub-hosted
 runner ships Node, so the CI job needs no toolchain setup and costs seconds. The first version was a
 .NET 10 file-based program, which read better beside the rest of the codebase but required
 `setup-dotnet`: .NET 10 is not preinstalled on the runner images, and file-based programs are a .NET

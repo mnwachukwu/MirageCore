@@ -22,7 +22,7 @@ nobody "tidies it up" later — or copies the pattern somewhere it does not appl
 **The client's content pipeline cannot run anywhere but Windows, for two unrelated reasons.**
 
 - The effect compiler is `SharpDX.D3DCompiler` plus `libmojoshader_64.dll`. The `mgcb` tool ships
-  freetype, FreeImage, nvtt and PVRTexLib as `.so` and `.dylib`, but neither of those two. MonoGame's own
+  freetype, FreeImage, nvtt, and PVRTexLib as `.so` and `.dylib`, but neither of those two. MonoGame's own
   answer off Windows is to run the compiler under **Wine**.
 - Four of the five spritefonts are drawn from **Tahoma**, resolved out of `C:\WINDOWS\Fonts`. Tahoma ships
   with Windows and with nothing else, and it is proprietary, so it cannot be bundled beside the

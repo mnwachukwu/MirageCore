@@ -1,4 +1,4 @@
-# Building, publishing and releasing
+# Building, publishing, and releasing
 
 How a working tree becomes installers, what the version number is bound to, and which
 platforms the result runs on.
@@ -68,7 +68,7 @@ input the committed output was built from. Commit whatever it changed, that file
 
 ## Versioning and releases
 
-The version lives in `MajorVersion` / `MinorVersion` / `PatchVersion` in [`Directory.Build.props`](../Directory.Build.props), and flows from there into `AssemblyVersion`, `FileVersion`, `InformationalVersion` and Velopack's `--packVersion` — so it is what the executables report and what the installers are named for.
+The version lives in `MajorVersion` / `MinorVersion` / `PatchVersion` in [`Directory.Build.props`](../Directory.Build.props), and flows from there into `AssemblyVersion`, `FileVersion`, `InformationalVersion`, and Velopack's `--packVersion` — so it is what the executables report and what the installers are named for.
 
 **A release is a tag, and the tag has to match that version.** Pushing `v1.2.0` requires the three values to read 1, 2, 0; CI checks this immediately after restore and fails the run otherwise, before spending a build on it. The order is: bump the three values, commit, then tag.
 
@@ -92,9 +92,9 @@ git tag -f v1.0.0 && git push --force origin v1.0.0
 
 ## Platform support
 
-Windows, Linux and macOS, all x64, on .NET 10. This section is the source of truth for that.
+Windows, Linux, and macOS, all x64, on .NET 10. This section is the source of truth for that.
 
-> **The README's badges restate it and nothing checks them.** The `.NET 10`, `Windows`, `Linux` and
+> **The README's badges restate it and nothing checks them.** The `.NET 10`, `Windows`, `Linux`, and
 > `macOS` badges use shields.io's `/badge/` endpoint, which renders whatever text it is handed — they
 > are hand-written labels, not readings. Dropping a platform or moving to a new .NET means editing
 > them by hand, exactly like `GameName` above; otherwise they go on advertising something that

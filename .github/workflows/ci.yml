@@ -21,7 +21,7 @@
 # is the client — which is exactly what the packaging below emits, so the two stay in step without
 # either knowing about the other.
 
-name: Build, test and release
+name: Build, test, and release
 
 on:
   push:

@@ -8,7 +8,7 @@ Three item slots are reserved by the engine and must be authored in the editor. 
 |---|---|---|
 | **1** | Currency | **Gold.** Every system that charges or rewards gold (shop repairs, Inn set-spawn cost, marketplace) operates on this index. It **must exist** and **must be a Currency-type item** or all gold transactions silently fail. |
 | **2** | Any | **Casting reagent.** Consumed by every SubHp (damage) spell cast; a caster with none is refused the cast. See *Caster resource model* under Balance Changes. |
-| **3** | Currency | **Valor.** Guild-war currency, held in the guild vault. Should be authored character-bound — non-tradeable, non-listable, non-mailable and destroy-on-drop — since each of those is otherwise a route to moving earned war currency between players. |
+| **3** | Currency | **Valor.** Guild-war currency, held in the guild vault. Should be authored character-bound — non-tradeable, non-listable, non-mailable, and destroy-on-drop — since each of those is otherwise a route to moving earned war currency between players. |
 
 The shipped seed authors all three (`Gold`, `Magical Reagent`, `Valor`) and the generator that produces it treats them as fixed slots, so a world built on top of that seed inherits them.
 
