@@ -5,7 +5,6 @@ using Mirage.Shared;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
-using System.Text.Json;
 
 namespace Mirage.Client.Core.Net;
 
@@ -70,11 +69,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
     private readonly ClientPacketSender _sender;
     private readonly IMapCache _mapCache;
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    };
-
     public ClientPacketHandler(ClientState state, ClientPacketSender sender, IMapCache mapCache)
     {
         _state = state;
@@ -88,29 +82,13 @@ public sealed partial class ClientPacketHandler : IClientEvents
     {
         if (string.IsNullOrWhiteSpace(line)) return;
 
-        // Read the header (cmd + whether an "index" field is present) without building a DOM, so we
-        // can handle shared-cmd collisions. The cmd is handed back to TryDeserialize below rather
-        // than re-scanned.
-        var (cmd, hasIndex) = PacketSerializer.ReadHeader(line);
-        if (cmd is null) return;
+        // Read the header without building a DOM, and hand it back rather than paying for a second
+        // scan. It carries whether a top-level "index" is present, which is what resolves the two
+        // commands used in both directions — the registry picks the right shape from it.
+        var header = PacketSerializer.ReadHeader(line);
+        if (header.Cmd is null) return;
 
-        // "playermove": both C→S PlayerMovePacket (no index) and S→C SendPlayerMovePacket (has index).
-        if (cmd == PacketNames.PlayerMove && hasIndex)
-        {
-            var p = JsonSerializer.Deserialize<SendPlayerMovePacket>(line, JsonOptions);
-            if (p != null) HandleSendPlayerMove(p);
-            return;
-        }
-
-        // "playerdir": both C→S PlayerDirPacket (no index) and S→C SendPlayerDirPacket (has index).
-        if (cmd == PacketNames.SendPlayerDir && hasIndex)
-        {
-            var p = JsonSerializer.Deserialize<SendPlayerDirPacket>(line, JsonOptions);
-            if (p != null) HandleSendPlayerDir(p);
-            return;
-        }
-
-        var packet = PacketSerializer.TryDeserialize(line, cmd);
+        var packet = PacketSerializer.TryDeserialize(line, header);
         if (packet is null) return;
 
         switch (packet)
@@ -141,6 +119,15 @@ public sealed partial class ClientPacketHandler : IClientEvents
                 break;
             case PlayerInGamePacket:
                 HandlePlayerInGame();
+                break;
+
+            // Movement. These two commands are also sent the other way, carrying no index; the
+            // registry resolves which shape arrived, so only the inbound form reaches here.
+            case SendPlayerMovePacket p:
+                HandleSendPlayerMove(p);
+                break;
+            case SendPlayerDirPacket p:
+                HandleSendPlayerDir(p);
                 break;
 
             // Map loading
