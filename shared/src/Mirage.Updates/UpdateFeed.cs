@@ -28,8 +28,15 @@ public enum UpdatableApp
 /// </summary>
 public static class UpdateFeed
 {
-    /// <summary>The GitHub repository whose releases carry the packages.</summary>
-    public const string RepositoryUrl = "https://github.com/mnwachukwu/MirageSourceRemastered";
+    /// <summary>The GitHub repository whose releases carry the packages.
+    ///
+    /// <para>Core publishes none, so an update check here finds nothing and every caller takes its
+    /// null path. It names this repository rather than the engine Core was cut from because the
+    /// channel tokens below are unchanged from it: pointed at that one, a Core build would match
+    /// <c>client-win</c> against that engine's packages and update itself into a different game.</para>
+    ///
+    /// <para>A game built on Core replaces this with its own.</para></summary>
+    public const string RepositoryUrl = "https://github.com/mnwachukwu/MirageSourceRemasteredCore";
 
     /// <summary>The channel token for an app on the platform this process is running on, or null where
     /// no feed is published. Null is the normal answer on macOS and on any platform we do not ship.</summary>

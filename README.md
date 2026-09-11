@@ -1,8 +1,6 @@
 # Mirage Source Remastered — C# Rewrite
 
-[![Build, test, and release](https://github.com/mnwachukwu/MirageSourceRemastered/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mnwachukwu/MirageSourceRemastered/actions/workflows/ci.yml)
-[![Latest release](https://img.shields.io/github/v/release/mnwachukwu/MirageSourceRemastered?display_name=tag&color=9aa8f5)](https://github.com/mnwachukwu/MirageSourceRemastered/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/mnwachukwu/MirageSourceRemastered/total?color=9aa8f5)](https://github.com/mnwachukwu/MirageSourceRemastered/releases)
+[![Build and test](https://github.com/mnwachukwu/MirageSourceRemasteredCore/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mnwachukwu/MirageSourceRemasteredCore/actions/workflows/ci.yml)
 
 ![.NET 10](https://img.shields.io/badge/.NET-10-9aa8f5)
 ![Windows](https://img.shields.io/badge/Windows-x64-9aa8f5?logo=windows&logoColor=white)
@@ -81,8 +79,8 @@ by hand and was wrong about all of it within a few months.
 **Prerequisite:** [.NET 10 SDK](https://dotnet.microsoft.com/download) (10.x or later)
 
 ```sh
-git clone https://github.com/mnwachukwu/MirageSourceRemastered.git
-cd MirageSourceRemastered
+git clone https://github.com/mnwachukwu/MirageSourceRemasteredCore.git
+cd MirageSourceRemasteredCore
 dotnet tool restore
 dotnet tool restore --tool-manifest client/.config/dotnet-tools.json
 ```

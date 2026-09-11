@@ -1,27 +1,14 @@
-# What a change to the engine is held to, and how a version becomes downloadable.
+# What a change to the engine is held to.
 #
-# **One Windows runner, for all three platforms.** That is not a limitation — it is what the publish
-# system is built for. `vpk` packs Windows natively, cross-compiles Linux through its `[linux]`
-# directive, and macOS is hand-rolled into a .app.tar.gz because it cannot be cross-built by vpk at
-# all. Windows is also the platform where the MonoGame content pipeline and the Avalonia editor are
-# known to build without extra setup. A matrix across three runners would buy nothing and would need
-# the artifacts stitched back together afterwards.
+# Core is source-only. It publishes no installers, cuts no releases, and produces nothing
+# downloadable — a push, a pull request, or a tag builds every project, runs every suite, and stops
+# there. That is the point: Core is the foundation a game is built on, and the thing that ships is
+# the game.
 #
-# Checked on everything, shipped on a tag. A push or a pull request builds and runs every test and
-# stops there; a tag of the form v1.0.0 does all of that and then publishes and cuts a GitHub
-# Release. workflow_dispatch does everything except create the release, which makes it a rehearsal —
-# it still publishes and uploads the installers as a run artifact, so you can download exactly what
-# a release would have contained and look at it first.
-#
-#     git tag v1.0.0
-#     git push origin v1.0.0
-#
-# The release this creates is what https://mirage.pluperfect.dev reads to fill in its download
-# table. It resolves assets by name — `-Server-` and `-Editor-` identify those two and anything else
-# is the client — which is exactly what the packaging below emits, so the two stay in step without
-# either knowing about the other.
+# The publish projects are still on disk, and UpdateChannelTests still reads them, so removing them
+# is a later decision than this one. Nothing here invokes them.
 
-name: Build, test, and release
+name: Build and test
 
 on:
   push:
@@ -31,7 +18,6 @@ on:
     branches: [main]
   workflow_dispatch:
 
-# Read-only by default; the release job asks for more where it needs it.
 permissions:
   contents: read
 
@@ -185,10 +171,10 @@ jobs:
       - name: Build the client
         run: dotnet build client/src/Mirage.Client.Shell/Mirage.Client.Shell.csproj -c Release --nologo
 
-  # ---- Everything, and the shipping artifacts --------------------------------------------------
+  # ---- The whole solution, in Release ----------------------------------------------------------
 
   build:
-    name: Build, test and publish
+    name: Full solution
     runs-on: windows-latest
 
     steps:
@@ -249,109 +235,3 @@ jobs:
       # repository's own convention; asking for the tests separately here would just run them twice.
       - name: Build and test
         run: dotnet build Mirage.slnx -c Release --no-restore --nologo
-
-      # Nine publish passes plus packaging — slow, so it is reached only when something is actually
-      # being shipped or deliberately rehearsed. Packaging is behind an explicit target on purpose:
-      # every publish project is a solution member, and defaulting them to PublishAll once turned a
-      # 9-second solution build into a 127-second one that wrote the same dist/ paths from two
-      # directions at once.
-      - name: Publish and package all platforms
-        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
-        run: dotnet msbuild publish/Mirage.Publish.csproj /t:PublishAll -v:minimal
-
-      - name: Show what was produced
-        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
-        shell: bash
-        run: |
-          set -euo pipefail
-          find dist/installers -type f | sort
-          echo
-          du -sh dist/installers/* || true
-
-      # Handed to the release job rather than rebuilt there. Building again would mean publishing a
-      # set of installers that no test ever ran against.
-      - name: Keep the installers
-        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
-        uses: actions/upload-artifact@v7
-        with:
-          name: installers
-          path: dist/installers
-          retention-days: 7
-          if-no-files-found: error
-
-  # ---- Shipping it -----------------------------------------------------------------------------
-
-  release:
-    name: Release
-    # All three, not just build. A green Windows build says nothing about whether the thing runs on
-    # the other two platforms it is about to be published for; and a release is exactly the moment
-    # people arrive at the documentation for the first time, so shipping one with links that go
-    # nowhere is the worst time to find out. Docs takes seconds and gates nothing in practice.
-    needs: [docs, test, build]
-    runs-on: ubuntu-latest
-
-    # A tag and nothing else. The rehearsal button publishes and keeps the artifact, but never
-    # creates a release — so the only way something becomes downloadable is somebody naming a
-    # version and pushing it.
-    if: startsWith(github.ref, 'refs/tags/v')
-
-    permissions:
-      contents: write
-
-    # Two runs creating the same release would race. Not cancel-in-progress: a half-uploaded release
-    # is worse than a slow one.
-    concurrency:
-      group: release-${{ github.ref_name }}
-      cancel-in-progress: false
-
-    steps:
-      - name: Take the installers that were built and tested
-        uses: actions/download-artifact@v8
-        with:
-          name: installers
-          path: installers
-
-      # GH_REPO because this job never checks out: it takes the installers from the artifact and has
-      # no working tree. Without it `gh` looks for a git remote to infer the repository from, finds
-      # no .git, and every call fails before it reaches the API. A checkout would also fix it, at the
-      # cost of cloning the repo to upload files that are already downloaded.
-      - name: Create or update the release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          mapfile -t assets < <(find installers -type f | sort)
-          if [ ${#assets[@]} -eq 0 ]; then
-            echo "::error::No installers in the artifact; refusing to cut an empty release."
-            exit 1
-          fi
-
-          printf 'attaching %s\n' "${assets[@]}"
-
-          # Moving a tag is the documented way to redeploy a version after a rollback, so a release
-          # for this tag may already exist. Replacing its assets is the right answer there; failing
-          # would leave the tag pointing at a release nobody refreshed.
-          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            echo "release $GITHUB_REF_NAME exists — replacing its assets"
-            gh release upload "$GITHUB_REF_NAME" "${assets[@]}" --clobber
-          else
-            gh release create "$GITHUB_REF_NAME" \
-              --title "$GITHUB_REF_NAME" \
-              --generate-notes \
-              "${assets[@]}"
-          fi
-
-      # The site reads releases/latest and matches assets by name. If that ever returns something
-      # this run did not produce, the download page is describing a release that does not exist.
-      - name: Check the release is what the site will read
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "--- what /releases/latest now resolves to ---"
-          gh release view --json tagName,assets --jq '.tagName, (.assets[].name)'
