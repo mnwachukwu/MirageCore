@@ -121,7 +121,6 @@ public sealed partial class GameplayScreen : IGameScreen
         }
 
         // PlayerSpellsPacket arrives before this screen is created, so sync from state now.
-        _spells.SetPreparedSlot(_ctx.State.Me.PreparedSpell);
     }
 
     public void OnExit() => CloseAllPanels();

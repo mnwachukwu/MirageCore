@@ -492,9 +492,6 @@ public sealed partial class ChatPanel
                 AddLine(ClientStrings.Get(state.ShowFps ? ClientStrings.ChatPanel_FpsOn : ClientStrings.ChatPanel_FpsOff),
                         GameColor.Pink);
                 break;
-            case "stats":
-                OnToggleStats?.Invoke();
-                break;
             case "who":
                 sender.SendWhoIsOnline();
                 break;
@@ -519,9 +516,6 @@ public sealed partial class ChatPanel
                 break;
             case "inv":
                 OnToggleInventory?.Invoke();
-                break;
-            case "train":
-                OnToggleTraining?.Invoke();
                 break;
             case "join":
                 // /join <name> sends a party invite (and the server treats it as an acceptance

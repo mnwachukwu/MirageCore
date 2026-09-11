@@ -124,29 +124,6 @@ public static partial class ClientStrings
     public const string InventoryPanel_MpPotionsShort = nameof(InventoryPanel_MpPotionsShort);
     public const string InventoryPanel_SpPotionsShort = nameof(InventoryPanel_SpPotionsShort);
 
-    // ── SpellPanel ────────────────────────────────────────────────────────────
-    public const string SpellPanel_Title = nameof(SpellPanel_Title);
-    public const string SpellPanel_CastButton = nameof(SpellPanel_CastButton);
-    public const string SpellPanel_PrepareButton = nameof(SpellPanel_PrepareButton);
-    public const string SpellPanel_ForgetButton = nameof(SpellPanel_ForgetButton);
-    public const string SpellPanel_ForgetPrompt = nameof(SpellPanel_ForgetPrompt);
-    public const string SpellPanel_ForgetHint1 = nameof(SpellPanel_ForgetHint1);
-    public const string SpellPanel_ForgetHint2 = nameof(SpellPanel_ForgetHint2);
-
-    // ── StatsPanel ────────────────────────────────────────────────────────────
-    public const string StatsPanel_Title = nameof(StatsPanel_Title);
-    public const string StatsPanel_TotalExpFormat = nameof(StatsPanel_TotalExpFormat);
-    public const string StatsPanel_MaxVitalFormat = nameof(StatsPanel_MaxVitalFormat);
-
-    // ── TrainingPanel ─────────────────────────────────────────────────────────
-    public const string TrainingPanel_Title = nameof(TrainingPanel_Title);
-    public const string TrainingPanel_StrFormat = nameof(TrainingPanel_StrFormat);
-    public const string TrainingPanel_DefFormat = nameof(TrainingPanel_DefFormat);
-    public const string TrainingPanel_SpdFormat = nameof(TrainingPanel_SpdFormat);
-    public const string TrainingPanel_IntFormat = nameof(TrainingPanel_IntFormat);
-    public const string TrainingPanel_PointsFormat = nameof(TrainingPanel_PointsFormat);
-    public const string TrainingPanel_ResetButton = nameof(TrainingPanel_ResetButton);
-
     // ── ModerationPanel (Creator only) ────────────────────────────────────────
     public const string ModerationPanel_Title = nameof(ModerationPanel_Title);
     public const string ModerationPanel_TabBans = nameof(ModerationPanel_TabBans);
@@ -167,9 +144,6 @@ public static partial class ClientStrings
 
     // ── HudPanel ──────────────────────────────────────────────────────────────
     public const string HudPanel_InventoryButton = nameof(HudPanel_InventoryButton);
-    public const string HudPanel_SpellsButton = nameof(HudPanel_SpellsButton);
-    public const string HudPanel_StatsButton = nameof(HudPanel_StatsButton);
-    public const string HudPanel_TrainingButton = nameof(HudPanel_TrainingButton);
     public const string HudPanel_QuestLogButton = nameof(HudPanel_QuestLogButton);
     public const string HudPanel_SocialButton = nameof(HudPanel_SocialButton);
     public const string HudPanel_LogoutButton = nameof(HudPanel_LogoutButton);

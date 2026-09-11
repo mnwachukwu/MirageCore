@@ -27,10 +27,7 @@ public class GamePanelBehaviorTests
     static IEnumerable<IGamePanel> Panels()
     {
         yield return new InventoryPanel();
-        yield return new SpellPanel();
-        yield return new TrainingPanel();
         yield return new ShopPanel();
-        yield return new StatsPanel();
         yield return new HelpPanel();
         yield return new BankPanel();
         yield return new InnPanel();

@@ -84,14 +84,11 @@ public sealed partial class GameplayScreen : IGameScreen
     private readonly ChatPanel _chat;
     private readonly ChatOptionsPanel _chatOptions = new();
     private readonly InventoryPanel _inv = new();
-    private readonly SpellPanel _spells = new();
-    private readonly TrainingPanel _training = new();
     private readonly ShopPanel _shop = new();
     private readonly BankPanel _bank = new();
     private readonly InnPanel _inn = new();
     private readonly MarketPanel _market = new();
     private readonly TradePanel _trade = new();
-    private readonly StatsPanel _stats = new();
     private readonly HelpPanel _help = new();
     private readonly ControlsPanel _controls;
     private readonly MailPanel _mail = new();
@@ -109,11 +106,8 @@ public sealed partial class GameplayScreen : IGameScreen
     // Aliases for PanelSlots, which is the single source of truth shared with the policy table —
     // aliased rather than referenced directly so the ~83 call sites here stay short.
     private const int PanelInventory = PanelSlots.Inventory;
-    private const int PanelSpells = PanelSlots.Spells;
-    private const int PanelTraining = PanelSlots.Training;
     private const int PanelShop = PanelSlots.Shop;
     private const int PanelOptions = PanelSlots.Options;
-    private const int PanelStats = PanelSlots.Stats;
     private const int PanelHelp = PanelSlots.Help;
     private const int PanelControls = PanelSlots.Controls;
     private const int PanelBank = PanelSlots.Bank;
@@ -174,16 +168,6 @@ public sealed partial class GameplayScreen : IGameScreen
             (sb, font, now, active, hover) => _inv.Draw(sb, font, _ctx.State, now, _items, active, hover),
             () => _inv.Toggle(), () => _inv.Toggle(), () => _inv.IsCapturingInput);
 
-        _panels[PanelSpells] = new(PanelSpells, _spells,
-            (input, active) => _spells.Update(input, _ctx.State, _ctx.Sender, active),
-            (sb, font, _, active, hover) => _spells.Draw(sb, font, _ctx.State, active, hover),
-            () => _spells.Toggle(), () => _spells.Toggle(), () => _spells.IsCapturingInput);
-
-        _panels[PanelTraining] = new(PanelTraining, _training,
-            (input, _) => _training.Update(input, _ctx.State, _ctx.Sender),
-            (sb, font, _, active, _) => _training.Draw(sb, font, _ctx.State, active),
-            () => _training.Toggle(), () => _training.Toggle());
-
         _panels[PanelShop] = new(PanelShop, _shop,
             (input, _) => _shop.Update(input, _ctx.State, _ctx.Sender),
             (sb, font, _, active, hover) => _shop.Draw(sb, font, _ctx.State, _items, active, hover),
@@ -193,12 +177,6 @@ public sealed partial class GameplayScreen : IGameScreen
             (input, _) => UpdateOptionsPanel(input),
             (sb, font, _, active, _) => options.Draw(sb, font, _lastInput, active),
             () => options.Toggle(), () => options.Toggle());
-
-        _panels[PanelStats] = new(PanelStats, _stats,
-            (input, _) => _stats.Update(input, _ctx.State),
-            (sb, font, _, active, _) => _stats.Draw(sb, font, _ctx.State, _lastInput, _sprites,
-                                                    _hud.DispHp, _hud.DispMp, _hud.DispSp, _hud.DispExp, active),
-            () => _stats.Toggle(), () => _stats.Toggle());
 
         _panels[PanelHelp] = new(PanelHelp, _help,
             (input, active) => _help.Update(input, active),
@@ -277,8 +255,8 @@ public sealed partial class GameplayScreen : IGameScreen
     // Z-order for floating panels: index 0 = bottom, last index = topmost.
     private readonly List<int> _zOrder = new()
     {
-        PanelInventory, PanelSpells, PanelTraining, PanelShop,
-        PanelOptions, PanelStats, PanelHelp, PanelControls, PanelBank, PanelInn, PanelMail, PanelSocial, PanelMarket, PanelTrade,
+        PanelInventory, PanelShop,
+        PanelOptions, PanelHelp, PanelControls, PanelBank, PanelInn, PanelMail, PanelSocial, PanelMarket, PanelTrade,
         PanelQuestLog, PanelQuestDialog, PanelConversation
     };
 
@@ -424,8 +402,6 @@ public sealed partial class GameplayScreen : IGameScreen
 
         _chat = new ChatPanel(0, Camera.ViewH, Camera.ViewW, UiHelper.RefH - Camera.ViewH);
         _chat.OnToggleInventory = () => ActivatePanel(PanelInventory);
-        _chat.OnToggleTraining = () => ActivatePanel(PanelTraining);
-        _chat.OnToggleStats = () => ActivatePanel(PanelStats);
         _chat.OnToggleHelp = () => ActivateHelpPanel();
         _chat.OnActiveChannelChanged = SaveCharPrefs;
         _help.OnToggleControls = () => ActivatePanel(PanelControls);

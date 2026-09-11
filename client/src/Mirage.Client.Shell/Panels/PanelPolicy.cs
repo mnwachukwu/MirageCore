@@ -6,23 +6,20 @@ namespace Mirage.Client.Shell.Panels;
 public static class PanelSlots
 {
     public const int Inventory = 0;
-    public const int Spells = 1;
-    public const int Training = 2;
-    public const int Shop = 3;
-    public const int Options = 4;
-    public const int Stats = 5;
-    public const int Help = 6;
-    public const int Controls = 7;
-    public const int Bank = 8;
-    public const int Inn = 9;
-    public const int Mail = 10;
-    public const int Social = 11;
-    public const int Market = 12;
-    public const int Trade = 13;
-    public const int QuestLog = 14;
-    public const int QuestDialog = 15;
-    public const int Conversation = 16;
-    public const int Moderation = 17;
+    public const int Shop = 1;
+    public const int Options = 2;
+    public const int Help = 3;
+    public const int Controls = 4;
+    public const int Bank = 5;
+    public const int Inn = 6;
+    public const int Mail = 7;
+    public const int Social = 8;
+    public const int Market = 9;
+    public const int Trade = 10;
+    public const int QuestLog = 11;
+    public const int QuestDialog = 12;
+    public const int Conversation = 13;
+    public const int Moderation = 14;
 
     /// <summary>Number of slots — the registry and the policy table are both this long.</summary>
     public const int Count = Moderation + 1;
@@ -72,8 +69,6 @@ public static class PanelPolicies
 
         // ── Player-opened panels ──────────────────────────────────────────────
         t[PanelSlots.Inventory] = new("Inventory", PlayerToggleable: true, BlocksMovement: false, ClosesOnLeave: true, CountsAsOpenForEscape: true);
-        t[PanelSlots.Spells] = new("Spells", PlayerToggleable: true, BlocksMovement: false, ClosesOnLeave: true, CountsAsOpenForEscape: true);
-        t[PanelSlots.Stats] = new("Stats", PlayerToggleable: true, BlocksMovement: false, ClosesOnLeave: true, CountsAsOpenForEscape: true);
         t[PanelSlots.Help] = new("Help", PlayerToggleable: true, BlocksMovement: false, ClosesOnLeave: true, CountsAsOpenForEscape: true);
         t[PanelSlots.Social] = new("Social", PlayerToggleable: true, BlocksMovement: false, ClosesOnLeave: true, CountsAsOpenForEscape: true);
 
@@ -94,7 +89,6 @@ public static class PanelPolicies
         t[PanelSlots.Moderation] = new("Moderation", PlayerToggleable: true, BlocksMovement: false, ClosesOnLeave: true, CountsAsOpenForEscape: true);
 
         // ── Movement-locking counters and modals ──────────────────────────────
-        t[PanelSlots.Training] = new("Training", PlayerToggleable: true, BlocksMovement: true, ClosesOnLeave: true, CountsAsOpenForEscape: true);
         t[PanelSlots.Bank] = new("Bank", PlayerToggleable: true, BlocksMovement: true, ClosesOnLeave: true, CountsAsOpenForEscape: true);
         t[PanelSlots.Inn] = new("Inn", PlayerToggleable: true, BlocksMovement: true, ClosesOnLeave: true, CountsAsOpenForEscape: true);
         t[PanelSlots.Mail] = new("Mail", PlayerToggleable: true, BlocksMovement: true, ClosesOnLeave: true, CountsAsOpenForEscape: true);

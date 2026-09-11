@@ -152,7 +152,7 @@ public sealed partial class GameplayScreen : IGameScreen
         }
 
         bool chatFocused = _chat.IsFocused || _chat.IsLogFocused;
-        bool panelOpen = _inv.IsOpen || _spells.IsOpen || _training.IsOpen || _shop.IsOpen || _stats.IsOpen;
+        bool panelOpen = _inv.IsOpen || _shop.IsOpen;
 
         bool mouseOverFloating = MouseOverFloatingAt(input.MousePosition);
 
@@ -172,15 +172,6 @@ public sealed partial class GameplayScreen : IGameScreen
         {
             case HudAction.ToggleInventory:
                 ActivatePanel(PanelInventory);
-                break;
-            case HudAction.ToggleSpells:
-                ActivatePanel(PanelSpells);
-                break;
-            case HudAction.ToggleStats:
-                ActivatePanel(PanelStats);
-                break;
-            case HudAction.ToggleTraining:
-                ActivatePanel(PanelTraining);
                 break;
             case HudAction.ToggleQuestLog:
                 ActivatePanel(PanelQuestLog);
@@ -214,8 +205,6 @@ public sealed partial class GameplayScreen : IGameScreen
         {
             bool ctrl = input.IsKeyDown(Keys.LeftControl) || input.IsKeyDown(Keys.RightControl);
             if (input.IsKeyPressed(Keys.I)) ActivatePanel(PanelInventory);
-            if (input.IsKeyPressed(Keys.P)) ActivatePanel(PanelSpells);
-            if (input.IsKeyPressed(Keys.T)) ActivatePanel(PanelTraining);
             if (input.IsKeyPressed(Keys.O)) ActivatePanel(PanelOptions);
             if (input.IsKeyPressed(Keys.H)) ActivateHelpPanel();
             if (input.IsKeyPressed(Keys.M)) ActivatePanel(PanelMail);
@@ -245,8 +234,6 @@ public sealed partial class GameplayScreen : IGameScreen
                     if (rbPressed) CycleTabTarget(reverse: true);
                 }
             }
-            // Bare C opens the stats panel; guard against Ctrl+C so copying text never toggles it.
-            if (input.IsKeyPressed(Keys.C) && !ctrl) ActivatePanel(PanelStats);
 
             // ── Casting and the action bar ───────────────────────────────────
             // The two split cleanly along the line the caster resource model already draws: SubHp is the
@@ -263,7 +250,6 @@ public sealed partial class GameplayScreen : IGameScreen
             // swinging. TryCastPrepared paces the repeat on the cast beat — both the beat the server confirms
             // and a local one, so a refused cast cannot re-send every frame while the key stays down.
             if ((kbActive && input.IsKeyDown(Keys.Q)) || (padActive && input.IsGamePadButtonDown(Buttons.Y) && !hotkeyModifier))
-                _spells.TryCastPrepared(_ctx.State, _ctx.Sender);
 
             // Each slot answers to the clock its contents keep: a spell to the action beat it shares
             // with attacking, a potion to the slower drinking clock, anything else to neither. Checked
@@ -477,7 +463,7 @@ public sealed partial class GameplayScreen : IGameScreen
         }
 
         // Persist layout the moment a drag or resize completes, so config survives crashes.
-        if (_inv.LayoutChanged || _spells.LayoutChanged || _training.LayoutChanged || _shop.LayoutChanged || _bank.LayoutChanged || _inn.LayoutChanged || _stats.LayoutChanged || _help.LayoutChanged || _controls.LayoutChanged || _mail.LayoutChanged || _mail.ColumnsChanged || _market.LayoutChanged || _market.ColumnsChanged || _trade.LayoutChanged || _social.LayoutChanged || _social.TabChanged || _social.ColumnsChanged || _questLog.ColumnsChanged || _death.LayoutChanged)
+        if (_inv.LayoutChanged || _shop.LayoutChanged || _bank.LayoutChanged || _inn.LayoutChanged || _help.LayoutChanged || _controls.LayoutChanged || _mail.LayoutChanged || _mail.ColumnsChanged || _market.LayoutChanged || _market.ColumnsChanged || _trade.LayoutChanged || _social.LayoutChanged || _social.TabChanged || _social.ColumnsChanged || _questLog.ColumnsChanged || _death.LayoutChanged)
             SavePanelConfig();
         if (_ctx.OptionsPanel.LayoutChanged) _ctx.SaveSettings();
 

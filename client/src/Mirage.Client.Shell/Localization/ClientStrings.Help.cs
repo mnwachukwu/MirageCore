@@ -36,8 +36,6 @@ public static partial class ClientStrings
     public const string HelpText_Cmd_Who = nameof(HelpText_Cmd_Who);
     public const string HelpText_Cmd_Fps = nameof(HelpText_Cmd_Fps);
     public const string HelpText_Cmd_Inv = nameof(HelpText_Cmd_Inv);
-    public const string HelpText_Cmd_Stats = nameof(HelpText_Cmd_Stats);
-    public const string HelpText_Cmd_Train = nameof(HelpText_Cmd_Train);
     public const string HelpText_Cmd_Join = nameof(HelpText_Cmd_Join);
     public const string HelpText_Cmd_Leave = nameof(HelpText_Cmd_Leave);
     public const string HelpText_Cmd_Trade = nameof(HelpText_Cmd_Trade);

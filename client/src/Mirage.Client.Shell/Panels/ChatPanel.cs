@@ -85,8 +85,6 @@ public sealed partial class ChatPanel
     private int _historyPos = -1; // -1 = not browsing history
 
     public Action? OnToggleInventory { get; set; }
-    public Action? OnToggleTraining { get; set; }
-    public Action? OnToggleStats { get; set; }
     public Action? OnToggleHelp { get; set; }
     public Action? OnToggleDebug { get; set; }
     public Action? OnToggleModeration { get; set; }

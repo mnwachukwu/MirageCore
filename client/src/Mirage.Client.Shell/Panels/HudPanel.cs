@@ -8,7 +8,7 @@ using Mirage.Shared;
 
 namespace Mirage.Client.Shell.Panels;
 
-public enum HudAction { None, ToggleInventory, ToggleSpells, ToggleStats, ToggleTraining, ToggleQuestLog, ToggleSocial, Quit }
+public enum HudAction { None, ToggleInventory, ToggleQuestLog, ToggleSocial, Quit }
 
 /// <summary>
 /// Right sidebar drawn while in-game.
@@ -109,9 +109,6 @@ public sealed class HudPanel
     // 7 buttons: row0=Inventory/Spells, row1=Stats/Train, row2=QuestLog/Social, row3=Logout (lone, centered).
     // Shop/Inn buttons retired (shops open by interacting with their keeper NPC now).
     private readonly Button _invBtn = new();
-    private readonly Button _spellBtn = new();
-    private readonly Button _statsBtn = new();
-    private readonly Button _trainBtn = new();
     private readonly Button _questLogBtn = new();
     private readonly Button _socialBtn = new();
     private readonly Button _quitBtn = new();
@@ -168,17 +165,14 @@ public sealed class HudPanel
     public HudPanel()
     {
         _invBtn.Bounds = BtnRect(0, 0, ButtonBaseY);
-        _spellBtn.Bounds = BtnRect(1, 0, ButtonBaseY);
-        _statsBtn.Bounds = BtnRect(0, 1, ButtonBaseY);
-        _trainBtn.Bounds = BtnRect(1, 1, ButtonBaseY);
-        _questLogBtn.Bounds = BtnRect(0, 2, ButtonBaseY);
-        _socialBtn.Bounds = BtnRect(1, 2, ButtonBaseY);
+        _questLogBtn.Bounds = BtnRect(1, 0, ButtonBaseY);
+        _socialBtn.Bounds = BtnRect(0, 1, ButtonBaseY);
         // Logout sits alone on row 3, centered across the two columns.
         _quitBtn.Bounds = new Rectangle(InnerLeft + (InnerWidth - BtnW) / 2, LogoutY, BtnW, BtnH);
     }
 
     // The lone Logout button's row, and the top of the empty sidebar below it.
-    private const int LogoutRow = 3;
+    private const int LogoutRow = 2;
     private static int LogoutY => ButtonBaseY + LogoutRow * (BtnH + 4);
 
     /// <summary>Where a panel of <paramref name="width"/> sits when it hangs in the sidebar's free space:
@@ -234,9 +228,6 @@ public sealed class HudPanel
     public HudAction Update(InputState input)
     {
         if (_invBtn.IsClicked(input)) return HudAction.ToggleInventory;
-        if (_spellBtn.IsClicked(input)) return HudAction.ToggleSpells;
-        if (_statsBtn.IsClicked(input)) return HudAction.ToggleStats;
-        if (_trainBtn.IsClicked(input)) return HudAction.ToggleTraining;
         if (_questLogBtn.IsClicked(input)) return HudAction.ToggleQuestLog;
         if (_socialBtn.IsClicked(input)) return HudAction.ToggleSocial;
         if (_quitBtn.IsClicked(input)) return HudAction.Quit;
@@ -253,9 +244,6 @@ public sealed class HudPanel
         {
             _labelsGeneration = ClientStrings.Generation;
             _invBtn.Label = ClientStrings.Get(ClientStrings.HudPanel_InventoryButton);
-            _spellBtn.Label = ClientStrings.Get(ClientStrings.HudPanel_SpellsButton);
-            _statsBtn.Label = ClientStrings.Get(ClientStrings.HudPanel_StatsButton);
-            _trainBtn.Label = ClientStrings.Get(ClientStrings.HudPanel_TrainingButton);
             _questLogBtn.Label = ClientStrings.Get(ClientStrings.HudPanel_QuestLogButton);
             _socialBtn.Label = ClientStrings.Get(ClientStrings.HudPanel_SocialButton);
             _quitBtn.Label = ClientStrings.Get(ClientStrings.HudPanel_LogoutButton);
@@ -365,9 +353,6 @@ public sealed class HudPanel
 
         // Panel buttons: row0=Inventory/Spells, row1=Stats/Train, row2=QuestLog/Social, row3=Logout (centered)
         _invBtn.Draw(sb, font, input);
-        _spellBtn.Draw(sb, font, input);
-        _statsBtn.Draw(sb, font, input);
-        _trainBtn.Draw(sb, font, input);
         _questLogBtn.Draw(sb, font, input);
         _socialBtn.Draw(sb, font, input);
         _quitBtn.Draw(sb, font, input);

@@ -379,9 +379,6 @@ public sealed partial class MirageGame : Game
         _handler.OpenNpcConversation += (map, slot, conv) =>
             (_screens.Current as GameplayScreen)?.OpenConversationAt(map, slot, conv);
 
-        _handler.PreparedSpellReceived += slot =>
-            (_screens.Current as GameplayScreen)?.SyncPreparedSpell(slot);
-
         _handler.TargetAssigned += t =>
             (_screens.Current as GameplayScreen)?.SetTabTarget(t);
 

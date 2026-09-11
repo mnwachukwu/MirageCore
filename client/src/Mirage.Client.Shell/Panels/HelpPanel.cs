@@ -52,8 +52,6 @@ public sealed class HelpPanel : IGamePanel
         new("/who",                        ClientStrings.HelpText_Cmd_Who,     AdminLevel.Player),
         new("/fps",                        ClientStrings.HelpText_Cmd_Fps,     AdminLevel.Player),
         new("/inv",                        ClientStrings.HelpText_Cmd_Inv,     AdminLevel.Player),
-        new("/stats",                      ClientStrings.HelpText_Cmd_Stats,   AdminLevel.Player),
-        new("/train",                      ClientStrings.HelpText_Cmd_Train,   AdminLevel.Player),
         new("/join [name]",                ClientStrings.HelpText_Cmd_Join,    AdminLevel.Player),
         new("/leave",                      ClientStrings.HelpText_Cmd_Leave,   AdminLevel.Player),
         new("/trade [name]",               ClientStrings.HelpText_Cmd_Trade,   AdminLevel.Player),

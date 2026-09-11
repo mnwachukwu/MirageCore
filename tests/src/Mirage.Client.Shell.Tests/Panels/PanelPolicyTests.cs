@@ -118,7 +118,7 @@ public class PanelPolicyTests
     {
         int[] expected =
         [
-            PanelSlots.Training, PanelSlots.Shop, PanelSlots.Bank, PanelSlots.Inn, PanelSlots.Mail,
+            PanelSlots.Shop, PanelSlots.Bank, PanelSlots.Inn, PanelSlots.Mail,
             PanelSlots.Market, PanelSlots.Trade, PanelSlots.QuestLog, PanelSlots.QuestDialog,
             PanelSlots.Conversation,
         ];
@@ -137,7 +137,7 @@ public class PanelPolicyTests
         {
             // Moderation is here for the same reason as the rest: a Creator reading a list of who is
             // punished should still be able to walk away from whatever is happening around them.
-            foreach (int slot in new[] { PanelSlots.Inventory, PanelSlots.Spells, PanelSlots.Stats,
+            foreach (int slot in new[] { PanelSlots.Inventory,
                                          PanelSlots.Help, PanelSlots.Controls, PanelSlots.Social,
                                          PanelSlots.Options, PanelSlots.Moderation })
             {
@@ -238,8 +238,8 @@ public class PanelPolicyTests
     {
         int[] slots =
         [
-            PanelSlots.Inventory, PanelSlots.Spells, PanelSlots.Training, PanelSlots.Shop,
-            PanelSlots.Options, PanelSlots.Stats, PanelSlots.Help, PanelSlots.Controls,
+            PanelSlots.Inventory, PanelSlots.Shop,
+            PanelSlots.Options, PanelSlots.Help, PanelSlots.Controls,
             PanelSlots.Bank, PanelSlots.Inn, PanelSlots.Mail, PanelSlots.Social,
             PanelSlots.Market, PanelSlots.Trade, PanelSlots.QuestLog, PanelSlots.QuestDialog,
             PanelSlots.Conversation, PanelSlots.Moderation,

@@ -22,7 +22,7 @@ public class GamePanelContractTests
     // overlay are drawn directly rather than being z-ordered, hit-tested and persisted as a set.
     private static readonly string[] RegistryPanels =
     [
-        "InventoryPanel", "SpellPanel", "TrainingPanel", "ShopPanel", "OptionsPanel", "StatsPanel",
+        "InventoryPanel", "ShopPanel", "OptionsPanel",
         "HelpPanel", "ControlsPanel", "BankPanel", "InnPanel", "MailPanel", "SocialPanel",
         "MarketPanel", "TradePanel", "QuestLogPanel", "QuestDialogPanel", "ConversationPanel",
     ];

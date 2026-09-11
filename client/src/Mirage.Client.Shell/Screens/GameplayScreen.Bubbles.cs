@@ -237,7 +237,6 @@ public sealed partial class GameplayScreen : IGameScreen
         _inn.Open();
         BringToFront(PanelInn);
     }
-    public void SyncPreparedSpell(int slot) => _spells.SetPreparedSlot(slot);
     public void SetTabTarget(TargetRef t) => _tabTarget = t;
 
     /// <summary>Fire one action-bar slot. The binding names an item or spell by NUMBER, so this resolves
