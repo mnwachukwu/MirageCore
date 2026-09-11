@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Mirage.Editor.Localization;
 using Mirage.Editor.Services;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using System.Collections.ObjectModel;
@@ -114,9 +115,16 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [ObservableProperty] private bool _isLoading = true;
     private CancellationTokenSource? _eagerLoadCts;
 
+    /// <summary>Accounts are authored here but are not world content: they belong to the installation
+    /// rather than to the world, and never travel with one. So the rail lists them, and
+    /// <see cref="CoreRecordFamilies.World"/> does not.</summary>
+    public const string AccountsSection = "Accounts";
+
     // Stable section ids — used for switching and lookup. Display labels are localized separately
-    // via SectionLabelKey, so these strings never reach the UI.
-    private static readonly string[] AllSectionNames = ["Maps", "MapGroups", "Items", "NPCs", "Shops", "Spells", "Classes", "Quests", "Conversations", "Accounts"];
+    // via SectionLabelKey, so these strings never reach the UI. The world families come from the
+    // family table in their declared order, so a family registered there appears here too.
+    private static readonly string[] AllSectionNames =
+        [.. CoreRecordFamilies.World.Select(f => f.Id), AccountsSection];
     private readonly Dictionary<string, SectionViewModel> _sectionMap;
     /// <summary>The nav sections currently visible, narrowed by the connected account's access level.</summary>
     public ObservableCollection<SectionViewModel> Sections { get; }
@@ -365,22 +373,18 @@ public sealed partial class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(RecentWorlds));
     }
 
-    // Maps the stable section id to its localized nav label key. Logic (switch/lookup) keeps using
-    // the id; only the displayed label is localized.
-    internal static string SectionLabelKey(string id) => id switch
+    /// <summary>The localized nav label for a section id. Only the displayed label is localized; every
+    /// lookup and comparison elsewhere keeps using the id.
+    ///
+    /// <para>A world family carries its own key on its row, so a family a game registers is labeled
+    /// from that game's catalog without the editor knowing the key.</para></summary>
+    internal static string SectionLabelKey(string id)
     {
-        "Maps" => EditorStrings.MainWindow_Section_Maps,
-        "MapGroups" => EditorStrings.MainWindow_Section_MapGroups,
-        "Items" => EditorStrings.MainWindow_Section_Items,
-        "NPCs" => EditorStrings.MainWindow_Section_Npcs,
-        "Shops" => EditorStrings.MainWindow_Section_Shops,
-        "Spells" => EditorStrings.MainWindow_Section_Spells,
-        "Classes" => EditorStrings.MainWindow_Section_Classes,
-        "Quests" => EditorStrings.MainWindow_Section_Quests,
-        "Conversations" => EditorStrings.MainWindow_Section_Conversations,
-        "Accounts" => EditorStrings.MainWindow_Section_Accounts,
-        _ => EditorStrings.MainWindow_Section_Maps,
-    };
+        if (id == AccountsSection) return EditorStrings.MainWindow_Section_Accounts;
+
+        string? key = CoreRecordFamilies.Find(id)?.LabelKey;
+        return string.IsNullOrEmpty(key) ? EditorStrings.MainWindow_Section_Maps : key;
+    }
 
     // ── Online connect / disconnect ───────────────────────────────────────────
 

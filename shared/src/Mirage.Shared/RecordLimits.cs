@@ -61,4 +61,30 @@ public sealed record RecordLimits
     /// ends. Raise it if a world genuinely needs more.</summary>
     [JsonIgnore]
     public static int Ceiling => 100_000;
+
+    /// <summary>How many <paramref name="familyId"/> this server has room for.
+    ///
+    /// <para>Lets a caller holding a <see cref="Extensibility.RecordFamily"/> ask about it without a
+    /// switch over family names. A family whose ceiling is fixed answers with that ceiling whatever is
+    /// configured, and an id this server does not know answers 0 — which reads as a family with no room
+    /// rather than as a family of unlimited size.</para></summary>
+    public int For(string familyId)
+    {
+        var family = Extensibility.CoreRecordFamilies.Find(familyId);
+        if (family is null) return 0;
+        if (family.LimitIsFixed) return family.DefaultLimit;
+
+        return familyId switch
+        {
+            Extensibility.CoreRecordFamilies.Maps => Maps,
+            Extensibility.CoreRecordFamilies.MapGroups => MapGroups,
+            Extensibility.CoreRecordFamilies.Items => Items,
+            Extensibility.CoreRecordFamilies.Npcs => Npcs,
+            Extensibility.CoreRecordFamilies.Shops => Shops,
+            Extensibility.CoreRecordFamilies.Spells => Spells,
+            Extensibility.CoreRecordFamilies.Quests => Quests,
+            Extensibility.CoreRecordFamilies.Conversations => Conversations,
+            _ => family.DefaultLimit,
+        };
+    }
 }

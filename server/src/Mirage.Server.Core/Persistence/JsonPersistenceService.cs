@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Mirage.Server.Core.Logging;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Records;
 using Mirage.Shared.Security;
 using System.Security.Cryptography;
@@ -51,13 +52,9 @@ public sealed class JsonPersistenceService : IPersistenceService
         _logger = logger;
         _chatLog = chatLog;
 
-        foreach (string dir in new[]
-                 {
-                     MapsPath, ItemsPath, QuestsPath, ConversationsPath, NpcsPath, ShopsPath, SpellsPath,
-                     ClassesPath, MapGroupsPath,
-                 })
+        foreach (var family in CoreRecordFamilies.World)
         {
-            Directory.CreateDirectory(dir);
+            Directory.CreateDirectory(Path.Combine(_worldPath, family.EffectiveDirectory));
         }
 
         foreach (string dir in new[]
@@ -71,15 +68,27 @@ public sealed class JsonPersistenceService : IPersistenceService
     }
 
     // ── The world: authored, and unchanged by anything the server does ──────
-    private string MapsPath => Path.Combine(_worldPath, "maps");
-    private string ItemsPath => Path.Combine(_worldPath, "items");
-    private string QuestsPath => Path.Combine(_worldPath, "quests");
-    private string ConversationsPath => Path.Combine(_worldPath, "conversations");
-    private string NpcsPath => Path.Combine(_worldPath, "npcs");
-    private string ShopsPath => Path.Combine(_worldPath, "shops");
-    private string SpellsPath => Path.Combine(_worldPath, "spells");
-    private string ClassesPath => Path.Combine(_worldPath, "classes");
-    private string MapGroupsPath => Path.Combine(_worldPath, "map_groups");
+    //
+    // Folder and filename both come from the family table, so a world folder on disk and the row that
+    // describes it cannot drift apart, and a family added there needs no edit here.
+    private string WorldDir(string familyId) =>
+        Path.Combine(_worldPath, CoreRecordFamilies.Get(familyId).EffectiveDirectory);
+
+    private string WorldFile(string familyId, int num)
+    {
+        var family = CoreRecordFamilies.Get(familyId);
+        return Path.Combine(_worldPath, family.EffectiveDirectory, family.FileNameFor(num));
+    }
+
+    private string MapsPath => WorldDir(CoreRecordFamilies.Maps);
+    private string ItemsPath => WorldDir(CoreRecordFamilies.Items);
+    private string QuestsPath => WorldDir(CoreRecordFamilies.Quests);
+    private string ConversationsPath => WorldDir(CoreRecordFamilies.Conversations);
+    private string NpcsPath => WorldDir(CoreRecordFamilies.Npcs);
+    private string ShopsPath => WorldDir(CoreRecordFamilies.Shops);
+    private string SpellsPath => WorldDir(CoreRecordFamilies.Spells);
+    private string ClassesPath => WorldDir(CoreRecordFamilies.Classes);
+    private string MapGroupsPath => WorldDir(CoreRecordFamilies.MapGroups);
 
     // ── This installation: everything the server itself writes ──────────────
     private string AccountsPath => Path.Combine(_dataPath, "accounts");
@@ -93,19 +102,19 @@ public sealed class JsonPersistenceService : IPersistenceService
         Path.Combine(AccountsPath, $"{login.ToLowerInvariant()}.json");
 
     private string MapFile(int mapNum) =>
-        Path.Combine(MapsPath, $"map{mapNum}.json");
+        WorldFile(CoreRecordFamilies.Maps, mapNum);
     private string DroppedItemFile(int mapNum) =>
         Path.Combine(MapItemsPath, $"map{mapNum}.json");
 
-    private string ItemFile(int num) => Path.Combine(ItemsPath, $"item{num}.json");
-    private string QuestFile(int num) => Path.Combine(QuestsPath, $"quest{num}.json");
-    private string ConversationFile(int num) => Path.Combine(ConversationsPath, $"conversation{num}.json");
-    private string NpcFile(int num) => Path.Combine(NpcsPath, $"npc{num}.json");
-    private string ShopFile(int num) => Path.Combine(ShopsPath, $"shop{num}.json");
-    private string SpellFile(int num) => Path.Combine(SpellsPath, $"spell{num}.json");
-    private string ClassFile(int num) => Path.Combine(ClassesPath, $"class{num}.json");
+    private string ItemFile(int num) => WorldFile(CoreRecordFamilies.Items, num);
+    private string QuestFile(int num) => WorldFile(CoreRecordFamilies.Quests, num);
+    private string ConversationFile(int num) => WorldFile(CoreRecordFamilies.Conversations, num);
+    private string NpcFile(int num) => WorldFile(CoreRecordFamilies.Npcs, num);
+    private string ShopFile(int num) => WorldFile(CoreRecordFamilies.Shops, num);
+    private string SpellFile(int num) => WorldFile(CoreRecordFamilies.Spells, num);
+    private string ClassFile(int num) => WorldFile(CoreRecordFamilies.Classes, num);
     private string GuildFile(int num) => Path.Combine(GuildsPath, $"{GuildRecord.FileStem}{num}.json");
-    private string MapGroupFile(int num) => Path.Combine(MapGroupsPath, $"{MapGroupRecord.FileStem}{num}.json");
+    private string MapGroupFile(int num) => WorldFile(CoreRecordFamilies.MapGroups, num);
     private string TerritoryFile(int num) => Path.Combine(TerritoriesPath, $"{TerritoryRecord.FileStem}{num}.json");
     private string SeasonFile(int num) => Path.Combine(SeasonsPath, $"season{num}.json");
     private string MarketListingFile(int id) => Path.Combine(MarketListingsPath, $"{MarketListing.FileStem}{id}.json");

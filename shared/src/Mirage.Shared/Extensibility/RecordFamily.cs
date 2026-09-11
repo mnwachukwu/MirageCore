@@ -19,10 +19,32 @@ namespace Mirage.Shared.Extensibility;
 /// </summary>
 public sealed record RecordFamily
 {
-    /// <summary>Stable identifier. The folder name under the world directory, the token on the wire,
-    /// and the editor's section id. Lower-case and plural by convention — <c>items</c>,
-    /// <c>npcs</c>.</summary>
+    /// <summary>Stable identifier: the token on the wire and the editor's section id.
+    ///
+    /// <para><b>Persisted, so it cannot be renamed freely.</b> The editor keys per-section settings by
+    /// it, and a changed id reads as a section nobody has configured rather than as an error.</para></summary>
     [JsonPropertyName("id")] public string Id { get; init; } = string.Empty;
+
+    /// <summary>The folder its records live in, under the world directory.
+    ///
+    /// <para>Separate from <see cref="Id"/> because both are fixed and they need not agree: the folder
+    /// is a path in every world on disk, while the id is a settings key. Defaults to the id lowercased
+    /// when left blank.</para></summary>
+    [JsonPropertyName("directory")] public string Directory { get; init; } = string.Empty;
+
+    /// <summary>True when records are read and written one file at a time rather than loaded as a whole
+    /// numbered set at boot.
+    ///
+    /// <para>Maps are the reason this exists: a world holds more map data than a server has any reason
+    /// to hold open, so a map is fetched when somebody goes there.</para></summary>
+    [JsonPropertyName("loadsIndividually")] public bool LoadsIndividually { get; init; }
+
+    /// <summary>True when <see cref="DefaultLimit"/> is the only allowed ceiling.
+    ///
+    /// <para>A fixed ceiling means the count is baked into something that is not a setting — a save
+    /// format, a wire shape — so raising it is a data migration rather than a configuration
+    /// change.</para></summary>
+    [JsonPropertyName("limitIsFixed")] public bool LimitIsFixed { get; init; }
 
     /// <summary>Localization key for the editor's rail label, plural — "Items".</summary>
     [JsonPropertyName("labelKey")] public string LabelKey { get; init; } = string.Empty;
@@ -54,11 +76,18 @@ public sealed record RecordFamily
     /// <summary>The file <paramref name="number"/> is stored in, without a directory.</summary>
     public string FileNameFor(int number) => $"{EffectiveFilePrefix}{number}.json";
 
-    /// <summary><see cref="FilePrefix"/>, or <see cref="Id"/> singularized when it is blank.</summary>
+    /// <summary><see cref="FilePrefix"/>, or <see cref="EffectiveDirectory"/> singularized when it is
+    /// blank.</summary>
     [JsonIgnore]
     public string EffectiveFilePrefix => string.IsNullOrWhiteSpace(FilePrefix)
-        ? Id.EndsWith('s') ? Id[..^1] : Id
+        ? EffectiveDirectory.EndsWith('s') ? EffectiveDirectory[..^1] : EffectiveDirectory
         : FilePrefix;
+
+    /// <summary><see cref="Directory"/>, or <see cref="Id"/> lowercased when it is blank.</summary>
+    [JsonIgnore]
+    public string EffectiveDirectory => string.IsNullOrWhiteSpace(Directory)
+        ? Id.ToLowerInvariant()
+        : Directory;
 
     /// <summary>The field with this key, across the family's own fields and every kind's, or null.</summary>
     public FieldDescriptor? FindField(string key, ChoiceSet? kinds = null)

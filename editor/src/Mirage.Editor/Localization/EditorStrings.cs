@@ -15,6 +15,76 @@ public static partial class EditorStrings
 
     private static IReadOnlyDictionary<string, string> _current = new Dictionary<string, string>();
 
+    /// <summary>Extra catalog folders, searched after the editor's own.
+    ///
+    /// <para><b>This is how a game layer names the things it adds.</b> The editor's own catalog is a
+    /// closed set — every key it holds has a constant, and every constant has a key, in all four
+    /// languages, asserted both ways. A game cannot add a key to it without failing that assertion, and
+    /// cannot declare a constant in it at all. So a game ships its own <c>lang</c> folder and registers
+    /// it here, and its record families, sections and fields carry keys that resolve out of it.</para>
+    ///
+    /// <para>Later folders win, so a game may also replace a string the editor ships.</para></summary>
+    private static readonly List<string> _extraCatalogs = new();
+
+    /// <summary>Adds a catalog folder to search after the editor's own, and reloads so its strings take
+    /// effect immediately. Registering the same folder twice does nothing.</summary>
+    public static void AddCatalog(string langDir)
+    {
+        if (string.IsNullOrWhiteSpace(langDir)) return;
+        if (_extraCatalogs.Contains(langDir, StringComparer.OrdinalIgnoreCase)) return;
+
+        _extraCatalogs.Add(langDir);
+        if (!string.IsNullOrEmpty(LangDir)) Load(LangDir, _langCode);
+    }
+
+    /// <summary>Folders currently searched for strings, the editor's own first.</summary>
+    public static IReadOnlyList<string> Catalogs =>
+        string.IsNullOrEmpty(LangDir) ? _extraCatalogs : [LangDir, .. _extraCatalogs];
+
+    // Which language the last Load resolved, so adding a catalog can reload the same one.
+    private static string _langCode = "en";
+
+    /// <summary>Reads <paramref name="langCode"/> out of every registered extra catalog and lays the
+    /// results over <paramref name="baseStrings"/>.
+    ///
+    /// <para>A catalog with no file for this language contributes nothing rather than failing: a game
+    /// translated into fewer languages than the editor should still run, showing the editor's own
+    /// language for its own strings and English for the game's.</para></summary>
+    private static IReadOnlyDictionary<string, string> WithExtraCatalogs(
+        IReadOnlyDictionary<string, string> baseStrings, string langCode)
+    {
+        if (_extraCatalogs.Count == 0) return baseStrings;
+
+        var merged = new Dictionary<string, string>(baseStrings, StringComparer.Ordinal);
+        foreach (string dir in _extraCatalogs)
+        {
+            foreach (string file in CatalogFiles(dir, langCode))
+            {
+                try
+                {
+                    foreach (var (key, value) in StringLoader.Load(file)) merged[key] = value;
+                }
+                catch
+                {
+                    // A game's catalog is not the editor's to validate. A malformed or unreadable file
+                    // costs that catalog's strings, not the editor's ability to start.
+                }
+            }
+        }
+
+        return merged;
+    }
+
+    // The requested language, then English as the fallback within that same catalog.
+    private static IEnumerable<string> CatalogFiles(string dir, string langCode)
+    {
+        string english = Path.Combine(dir, "en.json");
+        if (langCode != "en" && File.Exists(english)) yield return english;
+
+        string wanted = Path.Combine(dir, $"{langCode}.json");
+        if (File.Exists(wanted)) yield return wanted;
+    }
+
     /// <summary>Increments on each <see cref="Load"/> call so consumers can detect language changes.</summary>
     public static int Generation { get; private set; }
 
@@ -55,10 +125,11 @@ public static partial class EditorStrings
     {
         Generation++;
         LangDir = langDir;
+        _langCode = langCode;
         var english = StringLoader.Load(Path.Combine(langDir, "en.json"));
         if (langCode == "en")
         {
-            _current = english;
+            _current = WithExtraCatalogs(english, langCode);
             LanguageChanged?.Invoke();
             return;
         }
@@ -75,12 +146,12 @@ public static partial class EditorStrings
                 System.Diagnostics.Debug.WriteLine(e);
             var merged = new Dictionary<string, string>(english);
             foreach (var (k, v) in translation) merged[k] = v;
-            _current = merged;
+            _current = WithExtraCatalogs(merged, langCode);
             LanguageChanged?.Invoke();
             return;
 #endif
         }
-        _current = translation;
+        _current = WithExtraCatalogs(translation, langCode);
         LanguageChanged?.Invoke();
     }
 
