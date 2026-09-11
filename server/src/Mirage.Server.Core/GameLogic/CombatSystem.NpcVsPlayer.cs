@@ -40,7 +40,7 @@ public sealed partial class CombatSystem : GameSystem
     public bool CanNpcAttackPlayer(int mapNum, MapNpcRecord mapNpc, int victimIndex, long now)
     {
         long windMult = _world.WeatherOn(mapNum) == WeatherType.HeavyWind ? Constants.WeatherHeavyWindCooldownMultiplier : 1L;
-        if (!AiCadence.Elapsed(now, mapNpc.AttackTimer, Constants.NpcAttackCooldownMs * windMult)) return false;
+        if (!TickCadence.Elapsed(now, mapNpc.AttackTimer, Constants.NpcAttackCooldownMs * windMult)) return false;
         return NpcInMeleeRangeOfPlayer(mapNum, mapNpc, victimIndex);
     }
 
@@ -226,7 +226,8 @@ public sealed partial class CombatSystem : GameSystem
         var strip = WorldCoordHelper.LeadingEdgeTiles(aWX, aWY, npcRec.EffectiveSize, mapNpc.Dir);
         var (edx, edy) = WorldCoordHelper.DirDelta(mapNpc.Dir);   // strip tile is one step in Dir from the NPC's front row
         // Who is standing on the strip — asked of the tiles, not of every roster in the world.
-        foreach (var body in SweepTiles(in grid, in strip, view, mapNpc.Layer, edx, edy))
+        _queries.SweepTiles(in grid, in strip, mapNpc.Layer, edx, edy, _swept);
+        foreach (var body in _swept)
         {
             int i = body.PlayerIndex;
             if (i <= 0) continue;                  // other NPCs are the melee-on-npc path's business
@@ -411,7 +412,8 @@ public sealed partial class CombatSystem : GameSystem
         // Everything caught in the break, asked of the tiles. (0,0) for the step-back: a spell breaks where
         // it landed, so there is no attacker's front row to measure the plane from — the impact's own plane
         // is what it spreads across.
-        foreach (var body in SweepTiles(in grid, in run, view, vp.Layer, 0, 0))
+        _queries.SweepTiles(in grid, in run, vp.Layer, 0, 0, _swept);
+        foreach (var body in _swept)
         {
             if (body.PlayerIndex <= 0 || body.PlayerIndex == victimIndex) continue;
             ApplyNpcSpellHitOnPlayer(mapNum, mapNpc, npcRec, body.PlayerIndex, now);

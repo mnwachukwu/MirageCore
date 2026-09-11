@@ -57,7 +57,21 @@ public sealed partial class CombatSystem : GameSystem
         _guilds = guilds;
         _guildWar = guildWar;
         _territory = territory;
+        _queries = new WorldQueries(world, pm);
+        _selection = new SelectionTracking(pm);
     }
+
+    /// <summary>Reach, sweeps, viewport scans and identity resolution — the geometry underneath the
+    /// rules in these files.</summary>
+    private readonly WorldQueries _queries;
+
+    /// <summary>Keeps players' selections pointing at the right body as NPCs cross seams and
+    /// despawn.</summary>
+    private readonly SelectionTracking _selection;
+
+    /// <summary>This system's sweep buffer. Reused across sweeps so a swing allocates nothing; the
+    /// results are valid until the next sweep THIS system performs, and no further.</summary>
+    private readonly List<WorldQueries.SweptBody> _swept = new();
 
     // The guild a player's account belongs to, or null if guildless — for the guild-perk gates + guild XP
     // on the kill/loot paths. Resolves straight off GameWorld (no GuildSystem needed for a read), so it is

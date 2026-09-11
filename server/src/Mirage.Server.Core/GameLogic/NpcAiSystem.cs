@@ -36,7 +36,16 @@ public sealed partial class NpcAiSystem : GameSystem
         _blood = blood;
         _occupancyCache = new byte[_world.Limits.Maps + 1][];
         _occupancyCacheTicks = new long[_world.Limits.Maps + 1];
+        _queries = new WorldQueries(world, pm);
+        _selection = new SelectionTracking(pm);
     }
+
+    /// <summary>Reach, viewport scans and identity resolution — the geometry the brain reasons over.</summary>
+    private readonly WorldQueries _queries;
+
+    /// <summary>Keeps players' selections pointing at the right body as NPCs cross seams and
+    /// despawn.</summary>
+    private readonly SelectionTracking _selection;
 
     // A badly wounded NPC/guest (<= BloodTrailHpThreshold of max HP) drips onto each fresh tile it moves to.
     private void NpcBloodTrail(int mapNum, int x, int y, int hp, int npcNum, WorldLayer layer)
@@ -265,7 +274,7 @@ public sealed partial class NpcAiSystem : GameSystem
     private void AdvanceNativeNpcChaseStep(int mapNum, int slot, MapNpcRecord mn, long now)
     {
         if (now < mn.NextMoveMs) return;
-        var resolved = _combat.ResolveNpcByIdentity(mn.NpcTargetSpawnMap, mn.NpcTargetSpawnSlot);
+        var resolved = _queries.ResolveNpc(mn.NpcTargetSpawnMap, mn.NpcTargetSpawnSlot);
         if (resolved is null) return;                               // victim gone — brain drops it
         var (victimMap, _, victimMn) = resolved.Value;
         if (mn.WantsKite)
@@ -331,7 +340,7 @@ public sealed partial class NpcAiSystem : GameSystem
         }
         else
         {
-            var resolved = _combat.ResolveNpcByIdentity(t.NpcTargetSpawnMap, t.NpcTargetSpawnSlot);
+            var resolved = _queries.ResolveNpc(t.NpcTargetSpawnMap, t.NpcTargetSpawnSlot);
             if (resolved is null) return;
             var (victimMap, _, victimMn) = resolved.Value;
             if (t.WantsKite)

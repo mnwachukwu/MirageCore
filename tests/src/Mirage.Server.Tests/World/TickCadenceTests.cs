@@ -1,8 +1,8 @@
-using Mirage.Server.Core.GameLogic;
+using Mirage.Server.Core.World;
 using Mirage.Shared;
 using NUnit.Framework;
 
-namespace Mirage.Server.Tests.Ai;
+namespace Mirage.Server.Tests.World;
 
 /// <summary>
 /// The rule that decides whether an NPC may act this tick.
@@ -18,7 +18,7 @@ namespace Mirage.Server.Tests.Ai;
 /// between the two depending on how much work the tick had already done.</para>
 /// </summary>
 [TestFixture]
-public class AiCadenceTests
+public class TickCadenceTests
 {
     private const long Tick = Constants.AiTickIntervalMs;          // 500
     private const long Cooldown = Constants.NpcAttackCooldownMs;   // 1000
@@ -26,7 +26,7 @@ public class AiCadenceTests
     [Test]
     public void ATickLandingExactlyOnTheDeadline_Counts()
     {
-        Assert.That(AiCadence.Elapsed(now: 1000, since: 0, Cooldown), Is.True);
+        Assert.That(TickCadence.Elapsed(now: 1000, since: 0, Cooldown), Is.True);
     }
 
     /// <summary>The case that made it intermittent. The gate is reached partway through a tick's work, so
@@ -37,13 +37,13 @@ public class AiCadenceTests
     [TestCase(40, TestName = "a tick arriving late counts")]
     public void ATickEitherSideOfTheDeadline_Counts(long skew)
     {
-        Assert.That(AiCadence.Elapsed(now: 1000 + skew, since: 0, Cooldown), Is.True);
+        Assert.That(TickCadence.Elapsed(now: 1000 + skew, since: 0, Cooldown), Is.True);
     }
 
     [Test]
     public void TheTickBefore_DoesNot()
     {
-        Assert.That(AiCadence.Elapsed(now: 500, since: 0, Cooldown), Is.False,
+        Assert.That(TickCadence.Elapsed(now: 500, since: 0, Cooldown), Is.False,
             "one tick in is half the cooldown, however the clock jitters");
     }
 
@@ -52,8 +52,8 @@ public class AiCadenceTests
     [Test]
     public void ItNeverLetsABeatLandAWholeTickEarly()
     {
-        Assert.That(AiCadence.TickToleranceMs, Is.LessThan(Tick));
-        Assert.That(AiCadence.Elapsed(now: 1000 - Tick, since: 0, Cooldown), Is.False);
+        Assert.That(TickCadence.TickToleranceMs, Is.LessThan(Tick));
+        Assert.That(TickCadence.Elapsed(now: 1000 - Tick, since: 0, Cooldown), Is.False);
     }
 
     /// <summary>Walked out over a run of ticks: the swing lands on every second one, which is the cooldown
@@ -65,7 +65,7 @@ public class AiCadenceTests
         var beats = new List<long>();
         for (long now = Tick; now <= 20 * Tick; now += Tick)
         {
-            if (!AiCadence.Elapsed(now, attackTimer, Cooldown)) continue;
+            if (!TickCadence.Elapsed(now, attackTimer, Cooldown)) continue;
             beats.Add(now - attackTimer);
             attackTimer = now;
         }
@@ -82,8 +82,8 @@ public class AiCadenceTests
         long doubled = Cooldown * Constants.WeatherHeavyWindCooldownMultiplier;
         Assert.Multiple(() =>
         {
-            Assert.That(AiCadence.Elapsed(now: doubled, since: 0, doubled), Is.True);
-            Assert.That(AiCadence.Elapsed(now: doubled - Tick, since: 0, doubled), Is.False);
+            Assert.That(TickCadence.Elapsed(now: doubled, since: 0, doubled), Is.True);
+            Assert.That(TickCadence.Elapsed(now: doubled - Tick, since: 0, doubled), Is.False);
         });
     }
 }

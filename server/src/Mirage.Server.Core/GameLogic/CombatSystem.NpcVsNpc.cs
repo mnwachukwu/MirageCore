@@ -21,7 +21,7 @@ public sealed partial class CombatSystem : GameSystem
     public bool CanNpcAttackNpc(int attackerMap, MapNpcRecord attackerMn, int victimMap, MapNpcRecord victimMn, long now)
     {
         long windMult = _world.WeatherOn(attackerMap) == WeatherType.HeavyWind ? Constants.WeatherHeavyWindCooldownMultiplier : 1L;
-        if (!AiCadence.Elapsed(now, attackerMn.AttackTimer, Constants.NpcAttackCooldownMs * windMult)) return false;
+        if (!TickCadence.Elapsed(now, attackerMn.AttackTimer, Constants.NpcAttackCooldownMs * windMult)) return false;
         return NpcInMeleeRangeOfNpc(attackerMap, attackerMn, victimMap, victimMn);
     }
 
@@ -119,7 +119,8 @@ public sealed partial class CombatSystem : GameSystem
         var (edx, edy) = WorldCoordHelper.DirDelta(attackerMn.Dir);
 
         // Who is standing on the three tiles — asked of the tiles, not of every roster in the world.
-        foreach (var body in SweepTiles(in grid, in strip, view, attackerMn.Layer, edx, edy))
+        _queries.SweepTiles(in grid, in strip, attackerMn.Layer, edx, edy, _swept);
+        foreach (var body in _swept)
         {
             var other = body.Npc;
             if (other is null) continue;                       // players are the melee-on-player path's business
@@ -422,7 +423,8 @@ public sealed partial class CombatSystem : GameSystem
         var run = SplashRun(iWX, iWY, attackerMn.Dir, attackerNpc.EffectiveSize);
         var view = new ServerTileView(_world, grid);
 
-        foreach (var body in SweepTiles(in grid, in run, view, victimMn.Layer, 0, 0))
+        _queries.SweepTiles(in grid, in run, victimMn.Layer, 0, 0, _swept);
+        foreach (var body in _swept)
         {
             var other = body.Npc;
             if (other is null) continue;

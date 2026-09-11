@@ -21,7 +21,7 @@ public sealed partial class NpcAiSystem : GameSystem
     private void RunGuestNpcVsNpcStep(int mapNum, int listIndex, TraversalNpcRecord t, long now)
     {
         var npc = _world.Npcs[t.Num];
-        var resolved = _combat.ResolveNpcByIdentity(t.NpcTargetSpawnMap, t.NpcTargetSpawnSlot);
+        var resolved = _queries.ResolveNpc(t.NpcTargetSpawnMap, t.NpcTargetSpawnSlot);
         if (resolved is null)
         {
             // Victim died/despawned — drop target and revert to idle scan/wander.  Combat keeps

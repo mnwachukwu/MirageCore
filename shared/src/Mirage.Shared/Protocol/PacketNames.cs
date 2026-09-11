@@ -191,21 +191,6 @@ public static class PacketNames
     public const string SetAccess = "setaccess";
     public const string SetMotd = "setmotd";
 
-    // ── C→S: editor (game client path removed; sent by Mirage.Editor) ───────
-    public const string RequestEditMap = "requesteditmap";
-    public const string RequestEditItem = "requestedititem";
-    public const string EditItem = "edititem";
-    public const string SaveItem = "saveitem";
-    public const string RequestEditNpc = "requesteditnpc";
-    public const string EditNpc = "editnpc";
-    public const string SaveNpc = "savenpc";
-    public const string RequestEditShop = "requesteditshop";
-    public const string EditShop = "editshop";
-    public const string SaveShop = "saveshop";
-    public const string RequestEditSpell = "requesteditspell";
-    public const string EditSpell = "editspell";
-    public const string SaveSpell = "savespell";
-
     // ── C→S: editor session auth (Mirage.Editor only) ───────────────────────
     public const string EditorLogin = "editorlogin";
     public const string EditorSaveItem = "editorsaveitem";
@@ -286,17 +271,13 @@ public static class PacketNames
     public const string LeftGame = "leftgame";
     public const string PlayerXY = "playerxy";
     public const string UpdateItem = "updateitem";
-    public const string EditItemData = "edititemdata";
     public const string UpdateNpc = "updatenpc";
-    public const string EditNpcData = "editnpcdata";
     public const string SendShops = "sendshops";
     public const string UpdateShop = "updateshop";
     public const string UpdateQuest = "updatequest";
     public const string UpdateConversation = "updateconv";
-    public const string EditShopData = "editshopdata";
     public const string SendSpells = "sendspells";
     public const string UpdateSpell = "updatespell";
-    public const string EditSpellData = "editspelldata";
     public const string ShopContents = "shopcontents";             // S→C: an open shop's barter rows AND its sales list
     public const string OpenInn = "openinn";                       // S→C: raise the client-local Inn panel (from an NPC interact)
     public const string PlayerSpells = "playerspells";

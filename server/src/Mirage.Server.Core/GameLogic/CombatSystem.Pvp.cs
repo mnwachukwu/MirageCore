@@ -114,10 +114,10 @@ public sealed partial class CombatSystem : GameSystem
         if (Environment.TickCount64 <= _pm[attacker].AttackTimer + Constants.PlayerAttackCooldownMs * windMult) return false;
         // Cross-map melee: adjacency is checked in world space; the helper also rejects
         // targets on maps the attacker can't observe.
-        if (!IsFacingTargetAcrossMaps(ap.Map, ap.Dir, ap.X, ap.Y, vp.Map, vp.X, vp.Y)) return false;
+        if (!_queries.IsFacingAcrossMaps(ap.Map, ap.Dir, ap.X, ap.Y, vp.Map, vp.X, vp.Y)) return false;
         // Two-layer connect ("layer 1.5"): a bridge-top defender is out of reach of a ground attacker below (and
         // vice-versa) unless a legal step connects the two layers (e.g. at a ramp's foot).  A silent whiff.
-        if (!MeleeLayerConnects(ap.Map, ap.X, ap.Y, ap.Layer, ap.Dir, vp.Layer)) return false;
+        if (!_queries.LayerConnectsInDir(ap.Map, ap.X, ap.Y, ap.Layer, ap.Dir, vp.Layer)) return false;
 
         // Same-side protection is the highest-priority PvP gate — it applies regardless of PK
         // status, safe-zone, or level gap. Checked before GetPvpBlock so a friendly attack attempt

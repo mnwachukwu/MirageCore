@@ -40,10 +40,10 @@ public sealed partial class CombatSystem : GameSystem
 
         // Cross-map melee: world-space adjacency in the attacker's facing direction.  Against a large NPC the
         // player connects if their faced tile lands on ANY tile of the NPC's footprint (not just its anchor).
-        if (!IsFacingNpcAcrossMaps(p.Map, p.Dir, p.X, p.Y, mapNum, mapNpc, npcRec.EffectiveSize)) return false;
+        if (!_queries.IsFacingNpcAcrossMaps(p.Map, p.Dir, p.X, p.Y, mapNum, mapNpc, npcRec.EffectiveSize)) return false;
         // Two-layer connect ("layer 1.5"): the faced step must reach the NPC's layer — a ground player can't melee
         // a mob up on the bridge (or vice-versa) except where a ramp connects the two layers.
-        if (!MeleeLayerConnects(p.Map, p.X, p.Y, p.Layer, p.Dir, mapNpc.Layer)) return false;
+        if (!_queries.LayerConnectsInDir(p.Map, p.X, p.Y, p.Layer, p.Dir, mapNpc.Layer)) return false;
 
         if (npcRec.Behavior is NpcBehavior.Friendly or NpcBehavior.Stationary)
         {
@@ -201,7 +201,7 @@ public sealed partial class CombatSystem : GameSystem
         if (mapNpc.DamageByNpc is not { } list) return false;
         for (int i = 0; i < list.Count; i++)
         {
-            var resolved = ResolveNpcByIdentity(list[i].SpawnMap, list[i].SpawnSlot);
+            var resolved = _queries.ResolveNpc(list[i].SpawnMap, list[i].SpawnSlot);
             if (resolved is not null && _world.Npcs[resolved.Value.Record.Num].Behavior == NpcBehavior.Guard)
                 return true;
         }
@@ -684,7 +684,7 @@ public sealed partial class CombatSystem : GameSystem
             home.Num = 0;
             home.Hp = 0;
             home.SpawnWait = Environment.TickCount64;
-            DropPlayerTargetsOnTraversal(t.SpawnMapNum, t.SpawnSlot);
+            _selection.ClearSelectionsOfVisitor(t.SpawnMapNum, t.SpawnSlot);
             ClearNpcTargetsForNpc(mapNum, t.SpawnMapNum, t.SpawnSlot);
         }
         else
@@ -694,7 +694,7 @@ public sealed partial class CombatSystem : GameSystem
             mapNpc.Hp = 0;
             mapNpc.SpawnWait = Environment.TickCount64;
             SendToMap(_world, mapNum, new NpcDeadPacket { MapNum = mapNum, NpcSlot = npcSlot, Damage = dmg, IsCrit = isCrit });
-            DropPlayerTargetsOnNpcSlot(mapNum, npcSlot);
+            _selection.ClearSelectionsOfNpcSlot(mapNum, npcSlot);
             ClearNpcTargetsForNpc(mapNum, spawnMap, spawnSlot);
         }
     }

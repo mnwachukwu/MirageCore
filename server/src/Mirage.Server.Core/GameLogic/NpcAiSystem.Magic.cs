@@ -71,7 +71,7 @@ public sealed partial class NpcAiSystem : GameSystem
         // Heavy Wind doubles the cast-to-cast cooldown (there is no post-cast move lock to scale).
         long windMult = _world.WeatherOn(mapNum) == WeatherType.HeavyWind ? Constants.WeatherHeavyWindCooldownMultiplier : 1L;
         // castReady uses AttackTimer (shared with melee) for player-parity cooldown beats.
-        bool castReady = AiCadence.Elapsed(now, mn.AttackTimer, Constants.SpellCastCooldownMs * windMult);
+        bool castReady = TickCadence.Elapsed(now, mn.AttackTimer, Constants.SpellCastCooldownMs * windMult);
 
         // Out of mana — fall through to the close-distance / melee logic.  Mana regenerates; on the next
         // ready tick the NPC re-enters this branch.  There is no post-cast move lock, so a caster is free

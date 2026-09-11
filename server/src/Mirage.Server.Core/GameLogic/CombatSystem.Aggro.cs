@@ -14,63 +14,6 @@ namespace Mirage.Server.Core.GameLogic;
 /// aggro propagation, and the weighted pick that chooses an NPC's next target.</summary>
 public sealed partial class CombatSystem : GameSystem
 {
-    // ── Player→NPC target maintenance across NPC map changes ─────────────────────
-    // The seamless world vacates/reuses both native slots and traversal identities, so a player's
-    // lock must move with the NPC and be cleared when that instance ends — otherwise a stale target
-    // re-binds to a new entity that reuses the slot/identity.
-
-    /// <summary>Transfers any native-slot lock to the guest's identity when an NPC crosses a seam,
-    /// so the player keeps tracking the same monster as it becomes a traversal guest.</summary>
-    public void TransferTargetsToTraversal(int fromMap, int npcSlot, int toMap)
-    {
-        for (int i = 1; i <= _pm.Slots; i++)
-        {
-            var sp = _pm[i];
-            if (!sp.IsPlaying) continue;
-            if (sp.TargetType == 1 && sp.Target == npcSlot && sp.TargetMap == fromMap)
-            {
-                sp.TargetType = 3;
-                sp.Target = 0;
-                sp.TargetSpawnMap = fromMap;
-                sp.TargetSpawnSlot = npcSlot;
-                sp.TargetMap = toMap;
-            }
-        }
-    }
-
-    /// <summary>Clears every player's lock on a native NPC slot (the NPC died or left the slot).</summary>
-    public void DropPlayerTargetsOnNpcSlot(int mapNum, int npcSlot)
-    {
-        for (int i = 1; i <= _pm.Slots; i++)
-        {
-            var sp = _pm[i];
-            if (!sp.IsPlaying) continue;
-            if (sp.TargetType == 1 && sp.Target == npcSlot && sp.TargetMap == mapNum)
-            {
-                sp.Target = 0;
-                sp.TargetType = 0;
-                sp.TargetMap = 0;
-            }
-        }
-    }
-
-    /// <summary>Clears every player's lock on a traversal guest identity (it died or returned home).</summary>
-    public void DropPlayerTargetsOnTraversal(int spawnMap, int spawnSlot)
-    {
-        for (int i = 1; i <= _pm.Slots; i++)
-        {
-            var sp = _pm[i];
-            if (!sp.IsPlaying) continue;
-            if (sp.TargetType == 3 && sp.TargetSpawnMap == spawnMap && sp.TargetSpawnSlot == spawnSlot)
-            {
-                sp.Target = 0;
-                sp.TargetType = 0;
-                sp.TargetMap = 0;
-                sp.TargetSpawnSlot = 0;
-            }
-        }
-    }
-
     /// <summary>Tagged target descriptor for guard comrade-alert propagation.  Either a player index
     /// (<see cref="Player"/> > 0) or an NPC identity (<see cref="NpcSpawnSlot"/> > 0); all-zeros
     /// means "clear" (used when an aggro re-eval found no surviving contributor, so woken comrades
@@ -278,32 +221,10 @@ public sealed partial class CombatSystem : GameSystem
     /// area.</summary>
     public bool HasGuardInViewport(MapNpcRecord mn, int currentMapNum)
     {
-        var grid = WorldCoordHelper.BuildMapGrid(_world.Maps, currentMapNum);
-        var (mnWX, mnWY) = grid.CenterToWorld(mn.X, mn.Y);
-        for (int col = 0; col < 3; col++)
+        foreach (var seen in _queries.NpcsInViewport(currentMapNum, mn.X, mn.Y))
         {
-            for (int row = 0; row < 3; row++)
-            {
-                int m = grid[col, row];
-                if (m <= 0) continue;
-                for (int s = 1; s <= Constants.MaxMapNpcs; s++)
-                {
-                    var other = _world.MapNpcs[m, s];
-                    if (other.Num <= 0 || other.Hp <= 0) continue;
-                    if (_world.Npcs[other.Num].Behavior != NpcBehavior.Guard) continue;
-                    var (oWX, oWY) = grid.ToWorld(col, row, other.X, other.Y);
-                    if (WorldCoordHelper.IsWithinViewport(mnWX, mnWY, oWX, oWY)) return true;
-                }
-                var guests = _world.MapTraversalNpcs[m];
-                for (int g = 0; g < guests.Count; g++)
-                {
-                    var gt = guests[g];
-                    if (gt.Num <= 0 || gt.Hp <= 0) continue;
-                    if (_world.Npcs[gt.Num].Behavior != NpcBehavior.Guard) continue;
-                    var (oWX, oWY) = grid.ToWorld(col, row, gt.X, gt.Y);
-                    if (WorldCoordHelper.IsWithinViewport(mnWX, mnWY, oWX, oWY)) return true;
-                }
-            }
+            if (seen.Record.Hp <= 0) continue;
+            if (_world.Npcs[seen.Record.Num].Behavior == NpcBehavior.Guard) return true;
         }
 
         return false;
@@ -409,7 +330,7 @@ public sealed partial class CombatSystem : GameSystem
             for (int j = 0; j < list.Count; j++)
             {
                 var e = list[j];
-                var resolved = ResolveNpcByIdentity(e.SpawnMap, e.SpawnSlot);
+                var resolved = _queries.ResolveNpc(e.SpawnMap, e.SpawnSlot);
                 if (resolved is null) continue;
                 var (cMap, _, rec) = resolved.Value;
                 if (grid.PositionOf(cMap) is null) continue;
@@ -467,31 +388,6 @@ public sealed partial class CombatSystem : GameSystem
         }
 
         return new AggroPick(winPlayer, winNpcMap, winNpcSlot, winDmg);
-    }
-
-    /// <summary>Resolve an NPC's stable (SpawnMap, SpawnSlot) identity to its current live record.
-    /// Tries the home slot first; if reserved (native is currently away as a guest), scans the
-    /// game-wide guest lists.  Returns null when the NPC is dead, despawned, or never spawned.
-    /// Game-wide scan is cheap — typical guest count is in the low single digits.</summary>
-    public (int CurrentMap, int CurrentSlot, MapNpcRecord Record)? ResolveNpcByIdentity(int spawnMap, int spawnSlot)
-    {
-        if (spawnMap <= 0 || spawnSlot <= 0 || spawnMap > _world.Limits.Maps || spawnSlot > Constants.MaxMapNpcs) return null;
-        var native = _world.MapNpcs[spawnMap, spawnSlot];
-        if (native.Num > 0 && !native.IsReservedSlot) return (spawnMap, spawnSlot, native);
-        if (native.IsReservedSlot)
-        {
-            for (int m = 1; m <= _world.Limits.Maps; m++)
-            {
-                var guests = _world.MapTraversalNpcs[m];
-                for (int g = 0; g < guests.Count; g++)
-                {
-                    var t = guests[g];
-                    if (t.SpawnMapNum == spawnMap && t.SpawnSlot == spawnSlot && t.Num > 0 && t.Hp > 0)
-                        return (m, 0, t);  // CurrentSlot=0 → caller must use the record directly (it's a guest)
-                }
-            }
-        }
-        return null;
     }
 
     internal void ClearPlayerNpcContributions(int playerIndex, int mapNum)

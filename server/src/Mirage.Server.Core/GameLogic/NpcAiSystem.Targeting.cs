@@ -276,7 +276,7 @@ public sealed partial class NpcAiSystem : GameSystem
         int victimSpawnSlot = mn.NpcTargetSpawnSlot;
         if (victimSpawnSlot <= 0) return;
 
-        var resolved = _combat.ResolveNpcByIdentity(victimSpawnMap, victimSpawnSlot);
+        var resolved = _queries.ResolveNpc(victimSpawnMap, victimSpawnSlot);
         if (resolved is null)
         {
             DropNpcTarget(mapNum, slot, mn);

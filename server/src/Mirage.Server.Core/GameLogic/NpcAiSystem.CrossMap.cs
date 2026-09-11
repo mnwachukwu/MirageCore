@@ -203,7 +203,7 @@ public sealed partial class NpcAiSystem : GameSystem
         mn.ClearDamageCredit();
 
         // Any player locked onto the native slot keeps tracking this same monster as a guest.
-        _combat.TransferTargetsToTraversal(fromMap, slot, toMap);
+        _selection.FollowNpcAcrossSeam(fromMap, slot, toMap);
 
         var pkt = BuildTraversalPacket(t, stepped);
         SendToMap(_world, fromMap, pkt);
@@ -626,7 +626,7 @@ public sealed partial class NpcAiSystem : GameSystem
             new NpcDespawnPacket { SpawnMapNum = t.SpawnMapNum, SpawnSlot = t.SpawnSlot });
         _world.MapTraversalNpcs[mapNum].RemoveAt(listIndex);
         // This guest instance is over (it reappears as a fresh native respawn) — clear any locks on it.
-        _combat.DropPlayerTargetsOnTraversal(t.SpawnMapNum, t.SpawnSlot);
+        _selection.ClearSelectionsOfVisitor(t.SpawnMapNum, t.SpawnSlot);
         // Other NPCs that targeted this guest mid-fight would otherwise resolve through to the freshly
         // respawned native at the same identity and silently keep fighting it; clear them too.
         _combat.ClearNpcTargetsForNpc(mapNum, t.SpawnMapNum, t.SpawnSlot);
