@@ -1,6 +1,7 @@
 using Mirage.Editor.Models;
 using Mirage.Editor.ViewModels;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -261,33 +262,11 @@ public static class WorldTransfer
         return written;
     }
 
-    private static string DirectoryOf(string section) => section switch
-    {
-        "Maps" => "maps",
-        "MapGroups" => "map_groups",
-        "Items" => "items",
-        "NPCs" => "npcs",
-        "Shops" => "shops",
-        "Spells" => "spells",
-        "Classes" => "classes",
-        "Quests" => "quests",
-        "Conversations" => "conversations",
-        _ => throw new ArgumentOutOfRangeException(nameof(section), section, "Unknown world section."),
-    };
+    // Folder and filename both come off the family row, so a folder written here and a folder the server
+    // reads are the same string by construction rather than by two lists agreeing.
+    private static string DirectoryOf(string section) => CoreRecordFamilies.Get(section).EffectiveDirectory;
 
-    private static string FileStemOf(string section) => section switch
-    {
-        "Maps" => "map",
-        "MapGroups" => MapGroupRecord.FileStem,
-        "Items" => "item",
-        "NPCs" => "npc",
-        "Shops" => "shop",
-        "Spells" => "spell",
-        "Classes" => "class",
-        "Quests" => "quest",
-        "Conversations" => "conversation",
-        _ => throw new ArgumentOutOfRangeException(nameof(section), section, "Unknown world section."),
-    };
+    private static string FileStemOf(string section) => CoreRecordFamilies.Get(section).EffectiveFilePrefix;
 
     private static async Task WriteJsonAsync(string path, object value)
     {

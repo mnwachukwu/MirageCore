@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mirage.Editor.Localization;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Records;
 using System.Collections.ObjectModel;
 
@@ -9,8 +10,14 @@ namespace Mirage.Editor.ViewModels;
 
 /// <summary>One record family's ceiling. Clamped as it is typed, so the dialog cannot hold a value the
 /// world would refuse.</summary>
-public sealed partial class WorldLimitRowViewModel(string labelKey, int value) : ObservableObject
+public sealed partial class WorldLimitRowViewModel(string familyId, string labelKey, int value)
+    : ObservableObject
 {
+    /// <summary>Which family this row sets the ceiling for. Carried so the dialog reads its rows back by
+    /// name: added in one order and read by position, a reordered or removed row silently moves every
+    /// ceiling after it onto the wrong family.</summary>
+    public string FamilyId { get; } = familyId;
+
     public string Label => EditorStrings.Get(labelKey);
 
     [ObservableProperty] private int _value = value;
@@ -90,17 +97,24 @@ public sealed partial class WorldSettingsDialogViewModel : ObservableObject
         DefaultMapWidth = manifest.DefaultMapSize.Width;
         DefaultMapHeight = manifest.DefaultMapSize.Height;
         var limits = manifest.Records;
-        Rows.Add(new(MainWindowViewModel.SectionLabelKey("Items"), limits.Items));
-        Rows.Add(new(MainWindowViewModel.SectionLabelKey("NPCs"), limits.Npcs));
-        Rows.Add(new(MainWindowViewModel.SectionLabelKey("Shops"), limits.Shops));
-        Rows.Add(new(MainWindowViewModel.SectionLabelKey("Spells"), limits.Spells));
-        Rows.Add(new(MainWindowViewModel.SectionLabelKey("Quests"), limits.Quests));
-        Rows.Add(new(MainWindowViewModel.SectionLabelKey("Conversations"), limits.Conversations));
-        Rows.Add(new(MainWindowViewModel.SectionLabelKey("Maps"), limits.Maps));
-        Rows.Add(new(MainWindowViewModel.SectionLabelKey("MapGroups"), limits.MapGroups));
+        _limits = limits;
+        // One row per family whose ceiling an operator may set. A family with a fixed ceiling is left
+        // out: its count is baked into the save format, so offering it as a setting would offer a
+        // change the world cannot take.
+        foreach (var family in CoreRecordFamilies.World.Where(f => !f.LimitIsFixed))
+        {
+            Rows.Add(new(family.Id, MainWindowViewModel.SectionLabelKey(family.Id), limits.For(family.Id)));
+        }
     }
 
-    private int At(int i) => Rows[i].Value;
+    // What the dialog opened on. Read back for any family it does not offer a row for.
+    private readonly RecordLimits _limits = RecordLimits.Default;
+
+    /// <summary>The ceiling typed for one family, or its current value when the dialog has no row for it
+    /// — a family with a fixed ceiling is never offered, and must come back unchanged rather than
+    /// zeroed.</summary>
+    private int Of(string familyId, int current) =>
+        Rows.FirstOrDefault(r => r.FamilyId == familyId)?.Value ?? current;
 
     [RelayCommand]
     private void Confirm() => Confirmed?.Invoke(new WorldManifest
@@ -109,14 +123,14 @@ public sealed partial class WorldSettingsDialogViewModel : ObservableObject
         DefaultMapSize = new MapSize(DefaultMapWidth, DefaultMapHeight),
         Records = new RecordLimits
         {
-            Items = At(0),
-            Npcs = At(1),
-            Shops = At(2),
-            Spells = At(3),
-            Quests = At(4),
-            Conversations = At(5),
-            Maps = At(6),
-            MapGroups = At(7),
+            Items = Of(CoreRecordFamilies.Items, _limits.Items),
+            Npcs = Of(CoreRecordFamilies.Npcs, _limits.Npcs),
+            Shops = Of(CoreRecordFamilies.Shops, _limits.Shops),
+            Spells = Of(CoreRecordFamilies.Spells, _limits.Spells),
+            Quests = Of(CoreRecordFamilies.Quests, _limits.Quests),
+            Conversations = Of(CoreRecordFamilies.Conversations, _limits.Conversations),
+            Maps = Of(CoreRecordFamilies.Maps, _limits.Maps),
+            MapGroups = Of(CoreRecordFamilies.MapGroups, _limits.MapGroups),
         }.Clamped(RecordLimits.Ceiling),
     });
 

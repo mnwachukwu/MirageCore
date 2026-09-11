@@ -5,6 +5,7 @@ using Mirage.Editor.Localization;
 using Mirage.Editor.Models;
 using Mirage.Editor.Services;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -122,7 +123,7 @@ public sealed partial class ItemEditorViewModel : EditorViewModelBase<ItemRowVie
         if (_data.IsOnline) _data.PatchOnlineItem(vm.Index, vm.Name, vm.Type);
     }
 
-    protected override string SectionId => "Items";
+    protected override string SectionId => CoreRecordFamilies.Items;
     protected override string TypeName => EditorStrings.Get(EditorStrings.ItemEditor_TypeName);
     protected override string TypeNamePlural => EditorStrings.Get(EditorStrings.ItemEditor_TypeNamePlural);
     protected override int GetIndex(ItemRowViewModel vm) => vm.Index;

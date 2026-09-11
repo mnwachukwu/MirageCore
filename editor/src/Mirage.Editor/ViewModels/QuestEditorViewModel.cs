@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Mirage.Editor.Localization;
 using Mirage.Editor.Services;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -63,7 +64,7 @@ public sealed partial class QuestEditorViewModel : EditorViewModelBase<QuestRowV
             RebuildClassSelection();
     }
 
-    protected override string SectionId => "Quests";
+    protected override string SectionId => CoreRecordFamilies.Quests;
     protected override string TypeName => EditorStrings.Get(EditorStrings.QuestEditor_TypeName);
     protected override string TypeNamePlural => EditorStrings.Get(EditorStrings.QuestEditor_TypeNamePlural);
     protected override int GetIndex(QuestRowViewModel vm) => vm.Index;

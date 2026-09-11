@@ -4,6 +4,7 @@ using Mirage.Editor.Localization;
 using Mirage.Editor.Models;
 using Mirage.Editor.Services;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -141,7 +142,7 @@ public sealed partial class ClassEditorViewModel : EditorViewModelBase<ClassRowV
                            or nameof(ClassRowViewModel.SpriteSheetFemale)) NotifySpriteChanged();
     }
 
-    protected override string SectionId => "Classes";
+    protected override string SectionId => CoreRecordFamilies.Classes;
     protected override string TypeName => EditorStrings.Get(EditorStrings.ClassEditor_TypeName);
     protected override string TypeNamePlural => EditorStrings.Get(EditorStrings.ClassEditor_TypeNamePlural);
     /// <inheritdoc/>

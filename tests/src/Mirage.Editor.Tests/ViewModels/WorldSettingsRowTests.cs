@@ -1,0 +1,115 @@
+using Mirage.Editor.ViewModels;
+using Mirage.Shared;
+using Mirage.Shared.Extensibility;
+using Mirage.Shared.Records;
+using NUnit.Framework;
+
+namespace Mirage.Editor.Tests.ViewModels;
+
+/// <summary>
+/// Each ceiling has to come back on the family it was typed for.
+///
+/// <para>The dialog builds a row per family and reads the values back to rebuild
+/// <see cref="RecordLimits"/>. Matching the two by position works right up until a row is added,
+/// removed or reordered — and then every ceiling after the moved one lands on the wrong family, with
+/// nothing to see: the dialog looks right, the numbers are all plausible, and the world quietly gets
+/// the item ceiling applied to its NPCs.</para>
+/// </summary>
+[TestFixture]
+public class WorldSettingsRowTests
+{
+    private static WorldSettingsDialogViewModel Open(RecordLimits limits) =>
+        new(new WorldManifest { Name = "w", Records = limits }, isOnline: false);
+
+    private static RecordLimits Confirmed(WorldSettingsDialogViewModel vm)
+    {
+        WorldManifest? result = null;
+        vm.Confirmed += m => result = m;
+        vm.ConfirmCommand.Execute(null);
+        return result!.Records;
+    }
+
+    /// <summary>Every configurable ceiling is given a different value, so a swapped pair cannot look
+    /// correct by coincidence.</summary>
+    private static readonly RecordLimits Distinct = new()
+    {
+        Maps = 101, MapGroups = 102, Items = 103, Npcs = 104,
+        Shops = 105, Spells = 106, Quests = 107, Conversations = 108,
+    };
+
+    [Test]
+    public void EveryCeilingComesBackOnTheFamilyItWasTypedFor()
+    {
+        var back = Confirmed(Open(Distinct));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(back.Maps, Is.EqualTo(101));
+            Assert.That(back.MapGroups, Is.EqualTo(102));
+            Assert.That(back.Items, Is.EqualTo(103));
+            Assert.That(back.Npcs, Is.EqualTo(104));
+            Assert.That(back.Shops, Is.EqualTo(105));
+            Assert.That(back.Spells, Is.EqualTo(106));
+            Assert.That(back.Quests, Is.EqualTo(107));
+            Assert.That(back.Conversations, Is.EqualTo(108));
+        });
+    }
+
+    /// <summary>Editing one row moves that family's ceiling and leaves every other alone.</summary>
+    [Test]
+    public void EditingOneRowMovesOnlyThatFamily()
+    {
+        var vm = Open(Distinct);
+        var npcRow = vm.Rows.First(r => r.FamilyId == CoreRecordFamilies.Npcs);
+
+        npcRow.Value = 555;
+        var back = Confirmed(vm);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(back.Npcs, Is.EqualTo(555));
+            Assert.That(back.Items, Is.EqualTo(103), "the row before it");
+            Assert.That(back.Shops, Is.EqualTo(105), "the row after it");
+        });
+    }
+
+    [Test]
+    public void EveryRowNamesAFamilyThatExists()
+    {
+        Assert.Multiple(() =>
+        {
+            foreach (var row in Open(Distinct).Rows)
+            {
+                Assert.That(CoreRecordFamilies.Find(row.FamilyId), Is.Not.Null, row.FamilyId);
+            }
+        });
+    }
+
+    /// <summary>A class number rides in every saved character, so its ceiling is not something an
+    /// operator can be offered — and it has to survive the round trip untouched rather than coming back
+    /// as zero.</summary>
+    [Test]
+    public void AFixedCeilingIsNotOfferedAndSurvivesUnchanged()
+    {
+        var vm = Open(Distinct);
+
+        Assert.That(vm.Rows.Any(r => r.FamilyId == CoreRecordFamilies.Classes), Is.False);
+        Assert.That(Confirmed(vm).For(CoreRecordFamilies.Classes), Is.EqualTo(Constants.MaxClasses));
+    }
+
+    [Test]
+    public void TheDialogOffersEveryConfigurableFamily()
+    {
+        Assert.That(Open(Distinct).Rows.Select(r => r.FamilyId),
+                    Is.EquivalentTo(CoreRecordFamilies.World.Where(f => !f.LimitIsFixed).Select(f => f.Id)));
+    }
+
+    [Test]
+    public void ACeilingAboveWhatAWorldTakesIsBroughtBackDown()
+    {
+        var vm = Open(Distinct);
+        vm.Rows.First(r => r.FamilyId == CoreRecordFamilies.Items).Value = RecordLimits.Ceiling + 5_000;
+
+        Assert.That(Confirmed(vm).Items, Is.LessThanOrEqualTo(RecordLimits.Ceiling));
+    }
+}

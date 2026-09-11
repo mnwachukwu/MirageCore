@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Mirage.Editor.Localization;
 using Mirage.Editor.Models;
 using Mirage.Editor.Services;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -57,7 +58,7 @@ public sealed partial class MapGroupEditorViewModel : EditorViewModelBase<MapGro
         EditorStrings.LanguageChanged += () => { foreach (var g in MapGroups) g.RefreshMoralOptions(); };
     }
 
-    protected override string SectionId => "MapGroups";
+    protected override string SectionId => CoreRecordFamilies.MapGroups;
     protected override string TypeName => EditorStrings.Get(EditorStrings.MapGroupEditor_TypeName);
     protected override string TypeNamePlural => EditorStrings.Get(EditorStrings.MapGroupEditor_TypeNamePlural);
     protected override int GetIndex(MapGroupRowViewModel vm) => vm.Index;

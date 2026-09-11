@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mirage.Editor.Localization;
 using Mirage.Editor.Services;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -56,7 +57,7 @@ public sealed partial class ConversationEditorViewModel : EditorViewModelBase<Co
         await ShowNodeDialogAsync(SelectedConversation, node);
     }
 
-    protected override string SectionId => "Conversations";
+    protected override string SectionId => CoreRecordFamilies.Conversations;
     protected override string TypeName => EditorStrings.Get(EditorStrings.ConversationEditor_TypeName);
     protected override string TypeNamePlural => EditorStrings.Get(EditorStrings.ConversationEditor_TypeNamePlural);
     protected override int GetIndex(ConversationRowViewModel vm) => vm.Index;

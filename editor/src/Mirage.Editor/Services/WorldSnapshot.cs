@@ -1,4 +1,5 @@
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Records;
 
 namespace Mirage.Editor.Services;
@@ -22,23 +23,11 @@ public sealed class WorldSnapshot
 
     /// <summary>The section ids the transfer walks, in the order a reader sees them. The same ids the lock
     /// table and the nav rail use, so labels and log lines come from one place.</summary>
-    public static readonly string[] Sections =
-        ["Maps", "MapGroups", "Items", "NPCs", "Shops", "Spells", "Classes", "Quests", "Conversations"];
+    public static readonly string[] Sections = [.. CoreRecordFamilies.World.Select(f => f.Id)];
 
-    /// <summary>How many slots this side holds for <paramref name="section"/>.</summary>
-    public int CountOf(string section) => section switch
-    {
-        "Maps" => Limits.Maps,
-        "MapGroups" => Limits.MapGroups,
-        "Items" => Limits.Items,
-        "NPCs" => Limits.Npcs,
-        "Shops" => Limits.Shops,
-        "Spells" => Limits.Spells,
-        "Classes" => Constants.MaxClasses,
-        "Quests" => Limits.Quests,
-        "Conversations" => Limits.Conversations,
-        _ => 0,
-    };
+    /// <summary>How many slots this side holds for <paramref name="section"/>. A section this side does
+    /// not know holds none, so a transfer skips it rather than walking a ceiling it cannot fill.</summary>
+    public int CountOf(string section) => Limits.For(section);
 
     /// <summary>The record in a slot, or null when the slot is past this side's ceiling.</summary>
     public object? At(string section, int num)

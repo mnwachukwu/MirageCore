@@ -5,6 +5,7 @@ using Mirage.Editor.Localization;
 using Mirage.Editor.Models;
 using Mirage.Editor.Services;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -128,7 +129,7 @@ public sealed partial class NpcEditorViewModel : EditorViewModelBase<NpcRowViewM
         if (_data.IsOnline) _data.PatchOnlineNpcName(vm.Index, vm.Name);
     }
 
-    protected override string SectionId => "NPCs";
+    protected override string SectionId => CoreRecordFamilies.Npcs;
     protected override string TypeName => EditorStrings.Get(EditorStrings.NpcEditor_TypeName);
     protected override string TypeNamePlural => EditorStrings.Get(EditorStrings.NpcEditor_TypeNamePlural);
     protected override int GetIndex(NpcRowViewModel vm) => vm.Index;

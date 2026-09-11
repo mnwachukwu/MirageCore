@@ -5,6 +5,7 @@ using Mirage.Server.Core.Persistence;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -496,7 +497,7 @@ public sealed partial class EditorPacketHandler
         if (!RequireAccess(editorIndex, AdminLevel.Developer)) return;
         int n = p.ClassNum;
         if (!SlotValidation.IsValidClassNum(n)) return;
-        if (LockedByAnother(editorIndex, "Classes", n)) return;
+        if (LockedByAnother(editorIndex, CoreRecordFamilies.Classes, n)) return;
 
         var cls = _world.Classes[n];
         cls.Name = p.Name;
@@ -538,7 +539,7 @@ public sealed partial class EditorPacketHandler
 
         int n = p.ItemNum;
         if (!SlotValidation.IsValidItemNum(n, _world.Limits.Items)) return;
-        if (LockedByAnother(editorIndex, "Items", n)) return;
+        if (LockedByAnother(editorIndex, CoreRecordFamilies.Items, n)) return;
 
         var item = _world.Items[n];
         item.Name = p.Name;
@@ -575,7 +576,7 @@ public sealed partial class EditorPacketHandler
 
         int n = p.NpcNum;
         if (!SlotValidation.IsValidNpcNum(n, _world.Limits.Npcs)) return;
-        if (LockedByAnother(editorIndex, "NPCs", n)) return;
+        if (LockedByAnother(editorIndex, CoreRecordFamilies.Npcs, n)) return;
 
         var npc = _world.Npcs[n];
         npc.Name = p.Name;
@@ -638,7 +639,7 @@ public sealed partial class EditorPacketHandler
 
         int n = p.ShopNum;
         if (!SlotValidation.IsValidShopNum(n, _world.Limits.Shops)) return;
-        if (LockedByAnother(editorIndex, "Shops", n)) return;
+        if (LockedByAnother(editorIndex, CoreRecordFamilies.Shops, n)) return;
 
         var shop = _world.Shops[n];
         // Capture the pre-save keeper binding + type: a change to either moves/relabels the $ glyph and the
@@ -713,7 +714,7 @@ public sealed partial class EditorPacketHandler
         if (!RequireAccess(editorIndex, AdminLevel.Developer)) return;
         int n = p.QuestNum;
         if (!SlotValidation.IsValidQuestNum(n, _world.Limits.Quests)) return;
-        if (LockedByAnother(editorIndex, "Quests", n)) return;
+        if (LockedByAnother(editorIndex, CoreRecordFamilies.Quests, n)) return;
 
         var quest = _world.Quests[n];
         quest.Name = p.Name;
@@ -819,7 +820,7 @@ public sealed partial class EditorPacketHandler
         if (!RequireAccess(editorIndex, AdminLevel.Developer)) return;
         int n = p.ConvNum;
         if (!SlotValidation.IsValidConversationNum(n, _world.Limits.Conversations)) return;
-        if (LockedByAnother(editorIndex, "Conversations", n)) return;
+        if (LockedByAnother(editorIndex, CoreRecordFamilies.Conversations, n)) return;
 
         var conv = _world.Conversations[n];
         conv.Name = p.Name;
@@ -886,7 +887,7 @@ public sealed partial class EditorPacketHandler
 
         int n = p.SpellNum;
         if (!SlotValidation.IsValidSpellNum(n, _world.Limits.Spells)) return;
-        if (LockedByAnother(editorIndex, "Spells", n)) return;
+        if (LockedByAnother(editorIndex, CoreRecordFamilies.Spells, n)) return;
 
         var spell = _world.Spells[n];
         spell.Name = p.Name;
@@ -914,7 +915,7 @@ public sealed partial class EditorPacketHandler
 
         int mapNum = p.MapNum;
         if (!SlotValidation.IsValidMapNum(mapNum, _world.Limits.Maps)) return;
-        if (LockedByAnother(editorIndex, "Maps", mapNum)) return;
+        if (LockedByAnother(editorIndex, CoreRecordFamilies.Maps, mapNum)) return;
 
         var src = p.Map;
         var map = _world.Maps[mapNum];
@@ -1073,7 +1074,7 @@ public sealed partial class EditorPacketHandler
 
         int n = p.GroupNum;
         if (!SlotValidation.IsValidMapGroupNum(n, _world.Limits.MapGroups)) return;
-        if (LockedByAnother(editorIndex, "MapGroups", n)) return;
+        if (LockedByAnother(editorIndex, CoreRecordFamilies.MapGroups, n)) return;
 
         // Reuse the existing record, or create it on first save (groups are a sparse Dictionary, unlike the
         // pre-sized record arrays). Everything on a group is authored, so the whole of it is the editor's to

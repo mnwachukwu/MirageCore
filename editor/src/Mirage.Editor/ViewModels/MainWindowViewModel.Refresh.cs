@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Mirage.Editor.Localization;
 using Mirage.Editor.Services;
+using Mirage.Shared.Extensibility;
 using System.Text;
 
 namespace Mirage.Editor.ViewModels;
@@ -19,13 +20,20 @@ namespace Mirage.Editor.ViewModels;
 /// </summary>
 public sealed partial class MainWindowViewModel
 {
-    /// <summary>The offline store folder behind each section. A section absent from here keeps no folder.</summary>
-    private static readonly Dictionary<string, string> SectionFolder = new()
+    /// <summary>The offline store folder behind each section. A section absent from here keeps no folder.
+    ///
+    /// <para>The world families name their own folders, so this and the folders the server reads are the
+    /// same strings by construction. Accounts is added on top: it is authored here but belongs to the
+    /// installation rather than to the world.</para></summary>
+    private static readonly Dictionary<string, string> SectionFolder = BuildSectionFolders();
+
+    private static Dictionary<string, string> BuildSectionFolders()
     {
-        ["Maps"] = "maps", ["MapGroups"] = "map_groups", ["Items"] = "items", ["NPCs"] = "npcs",
-        ["Shops"] = "shops", ["Spells"] = "spells", ["Classes"] = "classes", ["Quests"] = "quests",
-        ["Conversations"] = "conversations", ["Accounts"] = "accounts",
-    };
+        var folders = CoreRecordFamilies.World.ToDictionary(
+            f => f.Id, f => f.EffectiveDirectory, StringComparer.Ordinal);
+        folders[AccountsSection] = "accounts";
+        return folders;
+    }
 
     /// <summary>What each section's folder looked like at the last load, so the next refresh can say whether
     /// anything actually arrived.</summary>

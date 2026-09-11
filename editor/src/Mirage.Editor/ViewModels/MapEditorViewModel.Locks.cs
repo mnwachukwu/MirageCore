@@ -1,3 +1,4 @@
+using Mirage.Shared.Extensibility;
 using Mirage.Editor.Localization;
 using Mirage.Editor.Services;
 using Mirage.Shared.Protocol.Packets;
@@ -15,7 +16,7 @@ namespace Mirage.Editor.ViewModels;
 /// </summary>
 public sealed partial class MapEditorViewModel
 {
-    private const string LockSection = "Maps";
+    private static readonly string LockSection = CoreRecordFamilies.Maps;
 
     /// <summary>The shared table, assigned by the shell. Null offline.</summary>
     public EditorLockState? Locks { get; set; }

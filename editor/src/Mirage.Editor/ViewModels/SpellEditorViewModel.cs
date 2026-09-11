@@ -4,6 +4,7 @@ using Mirage.Editor.Localization;
 using Mirage.Editor.Models;
 using Mirage.Editor.Services;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -126,7 +127,7 @@ public sealed partial class SpellEditorViewModel : EditorViewModelBase<SpellRowV
         if (_data.IsOnline) _data.PatchOnlineSpellName(vm.Index, vm.Name);
     }
 
-    protected override string SectionId => "Spells";
+    protected override string SectionId => CoreRecordFamilies.Spells;
     protected override string TypeName => EditorStrings.Get(EditorStrings.SpellEditor_TypeName);
     protected override string TypeNamePlural => EditorStrings.Get(EditorStrings.SpellEditor_TypeNamePlural);
     /// <inheritdoc/>
