@@ -639,43 +639,6 @@ public sealed partial class ChatPanel
                 if (t.Length == 2 && byte.TryParse(t[0], out byte lvl) && Enum.IsDefined(typeof(AdminLevel), lvl))
                     sender.SendSetAccess(t[1], (AdminLevel)lvl);
                 break;
-            case "startwar":
-                if (state.Me.Access < AdminLevel.Creator) goto default;
-                sender.SendTerritoryWarDebug(TerritoryWarDebugAction.Start);
-                break;
-            case "advancewar":
-                if (state.Me.Access < AdminLevel.Creator) goto default;
-                sender.SendTerritoryWarDebug(TerritoryWarDebugAction.Advance);
-                break;
-            case "endwar":
-                if (state.Me.Access < AdminLevel.Creator) goto default;
-                sender.SendTerritoryWarDebug(TerritoryWarDebugAction.End);
-                break;
-            case "guildreset":
-                if (state.Me.Access < AdminLevel.Creator) goto default;
-                {
-                    var scope = SettlementScope.Day;
-                    string arg = parts.Length > 1 ? parts[1].Trim().ToLowerInvariant() : "day";
-                    if (arg is "" or "day")
-                    {
-                        scope = SettlementScope.Day;
-                    }
-                    else if (arg == "week")
-                    {
-                        scope = SettlementScope.Week;
-                    }
-                    else if (arg == "season")
-                    {
-                        scope = SettlementScope.Season;
-                    }
-                    else
-                    {
-                        AddLine(ClientStrings.Get(ClientStrings.ChatPanel_UsageGuildReset), GameColor.Warning);
-                        break;
-                    }
-                    sender.SendGuildReset(scope);
-                }
-                break;
             case "setsprite":
                 if (state.Me.Access < AdminLevel.Mapper) goto default;
                 if (parts.Length > 1 && short.TryParse(parts[1], out short spr)) sender.SendSetSprite(spr);

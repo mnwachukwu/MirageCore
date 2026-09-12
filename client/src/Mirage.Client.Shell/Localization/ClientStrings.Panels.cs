@@ -116,7 +116,6 @@ public static partial class ClientStrings
     public const string InventoryPanel_DropItemButton = nameof(InventoryPanel_DropItemButton);
     public const string InventoryPanel_DropItemLabel = nameof(InventoryPanel_DropItemLabel);
     public const string InventoryPanel_DestroyDropWarn = nameof(InventoryPanel_DestroyDropWarn);
-    public const string InventoryPanel_AmountPrompt = nameof(InventoryPanel_AmountPrompt);
     public const string InventoryPanel_HpPotionsLong = nameof(InventoryPanel_HpPotionsLong);
     public const string InventoryPanel_MpPotionsLong = nameof(InventoryPanel_MpPotionsLong);
     public const string InventoryPanel_SpPotionsLong = nameof(InventoryPanel_SpPotionsLong);

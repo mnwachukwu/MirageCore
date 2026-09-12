@@ -79,44 +79,6 @@ public sealed partial class PacketHandler
         _guilds.SetShowRankOverhead(index, p.Show);
     }
 
-    // ── Creator debug: guild settlement + territory war lifecycle (affect every guild) ────────────────────
-    private void HandleAdminGuildReset(int index, AdminGuildResetPacket p)
-    {
-        if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Access < AdminLevel.Creator)
-        {
-            HackingAttempt(index, "Guild reset");
-            return;
-        }
-        _guildSchedule.RunManualSettlement(p.Scope);
-        _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_GuildReset,
-            new ChatMetadata(GameColor.Pink, ChatChannel.Notice), ("Scope", p.Scope.ToString()));
-    }
-
-    private void HandleAdminTerritoryWar(int index, AdminTerritoryWarPacket p)
-    {
-        if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Access < AdminLevel.Creator)
-        {
-            HackingAttempt(index, "Territory war debug");
-            return;
-        }
-        var meta = new ChatMetadata(GameColor.Pink, ChatChannel.Notice);
-        switch (p.Action)
-        {
-            case TerritoryWarDebugAction.Start:
-                _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_WarStarted, meta, ("Count", _territory.DebugStartWarNight()));
-                break;
-            case TerritoryWarDebugAction.Advance:
-                _dispatcher.SendLocalizedChatTo(index,
-                    _territory.DebugAdvanceWar() ? ServerStrings.AdminCommand_WarAdvanced : ServerStrings.AdminCommand_NoWarInProgress, meta);
-                break;
-            case TerritoryWarDebugAction.End:
-                _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_WarEnded, meta, ("Count", _territory.DebugEndWar()));
-                break;
-        }
-    }
-
     private void HandleGuildLeave(int index, GuildLeavePacket p)
     {
         if (!IsActing(index)) return;
@@ -184,46 +146,6 @@ public sealed partial class PacketHandler
         }
         if (IsMutedAndNotify(index)) return;
         _guilds.GuildChat(index, msg, p.Officer);
-    }
-
-    private void HandleGuildWarPeace(int index, GuildWarPeacePacket p)
-    {
-        if (!_pm[index].IsPlaying) return;
-        switch (p.Action)
-        {
-            case GuildWarPeaceAction.Offer:
-                _guildWar.OfferPeace(index, p.OpponentIndex, p.Offering);
-                break;
-            case GuildWarPeaceAction.Withdraw:
-                _guildWar.WithdrawPeace(index, p.OpponentIndex);
-                break;
-            case GuildWarPeaceAction.Accept:
-                _guildWar.RespondPeace(index, p.OpponentIndex, accept: true);
-                break;
-            case GuildWarPeaceAction.Reject:
-                _guildWar.RespondPeace(index, p.OpponentIndex, accept: false);
-                break;
-        }
-    }
-
-    private void HandleGuildWarWager(int index, GuildWarWagerPacket p)
-    {
-        if (!_pm[index].IsPlaying) return;
-        switch (p.Action)
-        {
-            case GuildWarWagerAction.Propose:
-                _guildWar.ProposeWager(index, p.OpponentIndex, p.Amount);
-                break;
-            case GuildWarWagerAction.Withdraw:
-                _guildWar.WithdrawWager(index, p.OpponentIndex);
-                break;
-            case GuildWarWagerAction.Accept:
-                _guildWar.AcceptWager(index, p.OpponentIndex);
-                break;
-            case GuildWarWagerAction.Reject:
-                _guildWar.RejectWager(index, p.OpponentIndex);
-                break;
-        }
     }
 
     private void HandleGuildBrowseRequest(int index)

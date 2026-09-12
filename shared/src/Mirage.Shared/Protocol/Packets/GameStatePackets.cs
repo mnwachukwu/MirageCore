@@ -59,14 +59,10 @@ public sealed record SendPlayerDataPacket : IPacket
     // Overhead guild-name color, packed 0xRRGGBB (0 = unset → a neutral default). Nullable like the
     // other guild fields so only guild-aware broadcasts carry it.
     [JsonPropertyName("gcolor")] public int? GuildColor { get; init; }
-    // Leader toggle (field name predates the repurpose): when on, show the guild's SEASONAL STANDING as "(N)"
-    // in the overhead cluster. The member RANK word now shows unconditionally; this gates only the
-    // standing. Nullable like the other guild fields — carried only on guild-aware broadcasts; the client keeps
-    // its cached value otherwise.
+    // Leader toggle: when on, a member's rank word shows beside their overhead guild name. Nullable like
+    // the other guild fields — carried only on guild-aware broadcasts; the client keeps its cached value
+    // otherwise.
     [JsonPropertyName("gshowrank")] public bool? GuildShowRank { get; init; }
-    // The guild's 1-based seasonal standing (leaderboard position; 0 = unranked). Shown as "(N)" in the overhead
-    // cluster when GuildShowRank is on. Nullable/guild-aware-only, like the fields above.
-    [JsonPropertyName("gstanding")] public int? GuildStanding { get; init; }
     // Death state: observers render a corpse while Dead; the victim's own copy drives the
     // death-panel countdown from RespawnReadyUtc.
     [JsonPropertyName("dead")] public bool Dead { get; init; }

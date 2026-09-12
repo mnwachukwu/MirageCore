@@ -115,7 +115,7 @@ public static class PacketBuilder
     public static SendPlayerDataPacket PlayerData(int index, PlayerRecord p, int mapNum,
         long graceUntilUtc = 0, long aggressorUntilUtc = 0,
         int? guildId = null, GuildRank? guildRank = null, string? guildName = null, bool? guildOpen = null,
-        int? guildColor = null, bool? guildShowRank = null, int? guildStanding = null,
+        int? guildColor = null, bool? guildShowRank = null,
         bool? godMode = null) =>
         new()
         {
@@ -142,7 +142,6 @@ public static class PacketBuilder
             GuildOpen = guildOpen,
             GuildColor = guildColor,
             GuildShowRank = guildShowRank,
-            GuildStanding = guildStanding,
             Dead = p.Dead,
             RespawnReadyUtc = p.RespawnReadyUtc,
         };

@@ -114,33 +114,6 @@ public sealed record GuildDonatePacket : IPacket
     [JsonPropertyName("amount")] public int Amount { get; init; }
 }
 
-/// <summary>C→S: donate valor (the war currency) from the sender into their guild's vault. Vault valor
-/// auto-offsets the weekly tax at settlement.</summary>
-public sealed record GuildDonateValorPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.GuildDonateValor;
-    [JsonPropertyName("amount")] public int Amount { get; init; }
-}
-
-/// <summary>C→S: (Officer+) pay one week's tax late to restore suspended guild perks at once.</summary>
-public sealed record GuildPayTaxPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.GuildPayTax;
-}
-
-/// <summary>C→S: (Leader) acquire a new guild quest.</summary>
-public sealed record GuildQuestAcquirePacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.GuildQuestAcquire;
-}
-
-/// <summary>C→S: (Leader) abandon the active guild quest, forfeiting all progress (no gold refund) so a
-/// fresh quest can be acquired.</summary>
-public sealed record GuildQuestAbandonPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.GuildQuestAbandon;
-}
-
 /// <summary>C→S: a guild-chat line. <see cref="Officer"/> routes it to the Guild Officer channel
 /// (leader/officers only) instead of the guild-wide Guild channel. Guildless senders are a no-op.</summary>
 public sealed record GuildChatPacket : IPacket
@@ -226,35 +199,11 @@ public sealed record GuildInfoPacket : IPacket
     [JsonPropertyName("open")] public bool OpenForMembership { get; init; }
     [JsonPropertyName("showRankOverhead")] public bool ShowRankOverhead { get; init; }
     [JsonPropertyName("color")] public int Color { get; init; }
-    [JsonPropertyName("level")] public int Level { get; init; }
-    /// <summary>Cumulative guild XP — with <see cref="Level"/>, drives the panel's progress-to-next-level.</summary>
-    [JsonPropertyName("exp")] public long Exp { get; init; }
-    /// <summary>Vault balances (gold + war-currency valor) and whether level perks are currently in force
-    /// (false = suspended for unpaid tax).</summary>
+    /// <summary>Vault balance — the shared purse.</summary>
     [JsonPropertyName("vaultGold")] public long VaultGold { get; init; }
-    [JsonPropertyName("vaultValor")] public int VaultValor { get; init; }
-    [JsonPropertyName("perksActive")] public bool PerksActive { get; init; }
-    /// <summary>Everything the guild has earned and not yet banked: what arrives in
-    /// <see cref="VaultGold"/> at the next daily settlement.
-    ///
-    /// <para>🔴 It is a SUM of two accumulators that reach the vault by different routes — the L5 perk pot
-    /// (<c>GuildRecord.PendingPerkIncome</c>, banked by <c>CreditDailyGold</c>) and the pending income of
-    /// every territory the guild controls (banked by <c>SettleTerritoryIncome</c>, which credits the vault
-    /// directly and never touches the perk pot). Reporting only the perk half shows nothing at all to a
-    /// guild below level 5, which is most of them, while their territories are earning.</para>
-    ///
-    /// <para>Kept beside the balance rather than folded into it: it climbs while the guild hunts and drops
-    /// to zero when it lands, so adding it in would make the vault look like it lost that gold every
-    /// settlement.</para></summary>
-    [JsonPropertyName("pendingIncomeTotal")] public long PendingIncomeTotal { get; init; }
-    /// <summary>Weekly financial-health running totals for the vault dashboard (income received, member
-    /// donations, war spend this week — all on the season-week cadence). The expected weekly tax amount is
-    /// derived client-side from Level; <see cref="DaysUntilTax"/> carries its SEPARATE founding-weekday
-    /// cadence (1-7, days until the next tax settlement) so the client shows tax on its own schedule.</summary>
-    [JsonPropertyName("weeklyIncome")] public long WeeklyIncome { get; init; }
-    [JsonPropertyName("weeklyDonations")] public long WeeklyDonations { get; init; }
-    [JsonPropertyName("weeklyWarCosts")] public long WeeklyWarCosts { get; init; }
-    [JsonPropertyName("daysUntilTax")] public int DaysUntilTax { get; init; }
+    /// <summary>Vault dashboard totals: gold credited from any other source, and gold donated by members.</summary>
+    [JsonPropertyName("income")] public long Income { get; init; }
+    [JsonPropertyName("donations")] public long Donations { get; init; }
     /// <summary>The recipient's own rank — drives which management controls the panel enables.</summary>
     [JsonPropertyName("myRank")] public GuildRank MyRank { get; init; }
     /// <summary>One row per member account, ordered by rank then character level (the panel's display order).</summary>
@@ -262,64 +211,9 @@ public sealed record GuildInfoPacket : IPacket
     /// <summary>Pending applicant logins (only acted on by a Leader/Officer; the panel shows the review
     /// controls to them). Empty for a non-open guild or one with no applications.</summary>
     [JsonPropertyName("applications")] public List<string> Applications { get; init; } = new();
-    /// <summary>The guild's active quest for the Quests board, or null if none.</summary>
-    [JsonPropertyName("quest")] public GuildQuestView? Quest { get; init; }
-    /// <summary>Active wars for the War sub-panel, one row per opposing guild (empty if the guild is at
-    /// peace). See <see cref="GuildWarView"/>.</summary>
-    [JsonPropertyName("wars")] public List<GuildWarView> Wars { get; init; } = new();
-    /// <summary>Pending officer war-requests awaiting Leader review — populated only for Officer+ recipients
-    /// (the leadership queue); empty for a Member. See <see cref="GuildWarRequestView"/>.</summary>
-    [JsonPropertyName("warRequests")] public List<GuildWarRequestView> WarRequests { get; init; } = new();
-    /// <summary>Every territory (all guilds), alphabetical, for the Territories sub-tab — owner, weeks held,
-    /// and previous-week income. Global data (same for everyone); carried here since the tab is guild-scoped.
-    /// See <see cref="TerritoryView"/>.</summary>
-    [JsonPropertyName("territories")] public List<TerritoryView> Territories { get; init; } = new();
-    /// <summary>Recent vault donations (newest first) for the Vault tab's donor log — the donor ACCOUNT, gold
-    /// vs valor, and amount. See <see cref="GuildDonationEntry"/>.</summary>
+    /// <summary>Recent vault donations (newest first) for the Vault tab's donor log — the donor ACCOUNT and
+    /// the amount. See <see cref="GuildDonationEntry"/>.</summary>
     [JsonPropertyName("recentDonations")] public List<GuildDonationEntry> RecentDonations { get; init; } = new();
-    /// <summary>Recent vault SPENDING (war-death repairs the vault absorbed) for the Vault tab's Spending view.
-    /// See <see cref="GuildSpendingEntry"/>.</summary>
+    /// <summary>Recent vault SPENDING for the Vault tab's Spending view. See <see cref="GuildSpendingEntry"/>.</summary>
     [JsonPropertyName("recentSpending")] public List<GuildSpendingEntry> RecentSpending { get; init; } = new();
-}
-
-/// <summary>S→C: one territory row for the Territories sub-tab. <see cref="Owner"/> is the
-/// controlling guild's name, or blank when unclaimed. <see cref="PreviousWeekIncome"/> is 0 for
-/// unclaimed/untaxed. Contesting-guild info rides the own-territory flag.</summary>
-public sealed record TerritoryView
-{
-    /// <summary>The territory's MapGroup index — what a challenge packet references.</summary>
-    [JsonPropertyName("index")] public int Index { get; init; }
-    [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("owner")] public string Owner { get; init; } = "";
-    [JsonPropertyName("weeksHeld")] public int WeeksHeld { get; init; }
-    [JsonPropertyName("prevIncome")] public long PreviousWeekIncome { get; init; }
-    /// <summary>Gold accrued since the last midnight settlement, not yet in the vault. Sent only for the
-    /// viewer’s OWN territory (0 elsewhere) — it is a live read on how hard a guild is being farmed right
-    /// now, which is theirs to see and nobody else’s. Recipient-specific.</summary>
-    [JsonPropertyName("pendingTerritoryIncome")] public long PendingTerritoryIncome { get; init; }
-    /// <summary>Settled income so far this week, before the weekly roll into <see cref="PreviousWeekIncome"/>.
-    /// Own territory only, for the same reason. Recipient-specific.</summary>
-    [JsonPropertyName("incomeWeek")] public long IncomeThisWeek { get; init; }
-    /// <summary>True when the viewing player’s guild controls this territory — what tells a genuine zero
-    /// income from a figure that was never sent. Recipient-specific.</summary>
-    [JsonPropertyName("ours")] public bool OwnedByUs { get; init; }
-    /// <summary>The registered challengers' guild names (comma-joined; blank when none) — the "contesting"
-    /// flag for the Territories tab (esp. on the guild's own territory).</summary>
-    [JsonPropertyName("contesting")] public string Contesting { get; init; } = "";
-    /// <summary>True when the viewing player's own guild is registered to challenge this territory (drives the
-    /// Challenge/Withdraw button). Recipient-specific.</summary>
-    [JsonPropertyName("byUs")] public bool ChallengedByUs { get; init; }
-}
-
-/// <summary>S→C: the active guild quest for the Quests board — target mob, kill progress, rewards, and
-/// expiry (the client renders the countdown from <see cref="ExpiresUtc"/>).</summary>
-public sealed record GuildQuestView
-{
-    [JsonPropertyName("npc")] public int TargetNpc { get; init; }
-    [JsonPropertyName("npcName")] public string TargetNpcName { get; init; } = "";
-    [JsonPropertyName("count")] public int Count { get; init; }
-    [JsonPropertyName("progress")] public int Progress { get; init; }
-    [JsonPropertyName("rewardExp")] public long RewardExp { get; init; }
-    [JsonPropertyName("rewardGold")] public long RewardGold { get; init; }
-    [JsonPropertyName("expiresUtc")] public long ExpiresUtc { get; init; }
 }

@@ -67,44 +67,4 @@ public class GuildActionGateTests
     [TestCase(GuildRank.Officer, ExpectedResult = false)]
     [TestCase(GuildRank.Member, ExpectedResult = false)]
     public bool CanEditSettings_ByRank(GuildRank me) => GuildActionGate.CanEditSettings(me);
-
-    // ── Acquire quest: leader only, when no quest is active ─────────────────────
-    [TestCase(GuildRank.Leader, false, ExpectedResult = true)]
-    [TestCase(GuildRank.Leader, true, ExpectedResult = false)]  // one already active
-    [TestCase(GuildRank.Officer, false, ExpectedResult = false)]
-    [TestCase(GuildRank.Member, false, ExpectedResult = false)]
-    public bool CanAcquireQuest_ByRank(GuildRank me, bool hasQuest) => GuildActionGate.CanAcquireQuest(me, hasQuest);
-
-    // ── Abandon quest: leader only, when a quest is active ──────────────────────
-    [TestCase(GuildRank.Leader, true, ExpectedResult = true)]
-    [TestCase(GuildRank.Leader, false, ExpectedResult = false)] // nothing to abandon
-    [TestCase(GuildRank.Officer, true, ExpectedResult = false)]
-    public bool CanAbandonQuest_ByRank(GuildRank me, bool hasQuest) => GuildActionGate.CanAbandonQuest(me, hasQuest);
-
-    // ── Pay tax late: officer+, only while perks are suspended ──────────────────
-    [TestCase(GuildRank.Officer, false, ExpectedResult = true)]  // suspended → can pay
-    [TestCase(GuildRank.Leader, false, ExpectedResult = true)]
-    [TestCase(GuildRank.Officer, true, ExpectedResult = false)]  // perks active → nothing to pay
-    [TestCase(GuildRank.Member, false, ExpectedResult = false)]  // members can't
-    public bool CanPayTax_ByRankAndPerks(GuildRank me, bool perksActive) => GuildActionGate.CanPayTax(me, perksActive);
-
-    // ── Declare war: officer+, and the guild must meet the minimum war level ────
-    [TestCase(GuildRank.Leader, 1, ExpectedResult = true)]
-    [TestCase(GuildRank.Officer, 1, ExpectedResult = true)]      // officer's send is queued server-side
-    [TestCase(GuildRank.Officer, 5, ExpectedResult = true)]
-    [TestCase(GuildRank.Leader, 0, ExpectedResult = false)]      // level-0 guild can't declare or return
-    [TestCase(GuildRank.Member, 1, ExpectedResult = false)]      // members can't
-    public bool CanDeclareWar_ByRankAndLevel(GuildRank me, int level) => GuildActionGate.CanDeclareWar(me, level);
-
-    // ── Request war (retract / sue-for-peace): officer+ ─────────────────────────
-    [TestCase(GuildRank.Leader, ExpectedResult = true)]
-    [TestCase(GuildRank.Officer, ExpectedResult = true)]
-    [TestCase(GuildRank.Member, ExpectedResult = false)]
-    public bool CanRequestWar_ByRank(GuildRank me) => GuildActionGate.CanRequestWar(me);
-
-    // ── Resolve war (review queue / withdraw / accept / reject peace): leader only
-    [TestCase(GuildRank.Leader, ExpectedResult = true)]
-    [TestCase(GuildRank.Officer, ExpectedResult = false)]
-    [TestCase(GuildRank.Member, ExpectedResult = false)]
-    public bool CanResolveWar_ByRank(GuildRank me) => GuildActionGate.CanResolveWar(me);
 }

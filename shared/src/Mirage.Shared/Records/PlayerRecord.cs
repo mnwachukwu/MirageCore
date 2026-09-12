@@ -190,8 +190,7 @@ public sealed class PlayerRecord
     /// repurpose. Wire-fed by the nullable guild fields on SendPlayerData; never persisted.</summary>
     [JsonIgnore] public bool GuildShowRank { get; set; }
     /// <summary>Client-only: the guild's 1-based seasonal standing (leaderboard position; 0 = unranked), shown
-    /// as "(N)" in the overhead cluster when <see cref="GuildShowRank"/> is on. Wire-fed; never persisted.</summary>
-    [JsonIgnore] public int GuildStanding { get; set; }
+    /// Wire-fed; never persisted.</summary>
 
     // Animated display values for world-space bars (-1f = uninitialized → snap on first Tick)
     [JsonIgnore] public float DispHp { get; set; }

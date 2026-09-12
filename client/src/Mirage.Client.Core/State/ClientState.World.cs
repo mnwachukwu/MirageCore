@@ -4,57 +4,10 @@ using Mirage.Shared.Records;
 
 namespace Mirage.Client.Core.State;
 
-/// <summary>Ambient world state and the frame-level bookkeeping over it: territory contests,
-/// weather and time of day, animation clocks, and the grid shift on a seamless crossing.</summary>
+/// <summary>Ambient world state and the frame-level bookkeeping over it: weather and time of day,
+/// animation clocks, and the grid shift on a seamless crossing.</summary>
 public sealed partial class ClientState
 {
-    // ── Territory contest render state (participant-only, pushed live) ─────────────
-    /// <summary>Latest live territory-contest render state (capture points + KotH scores), or null when no
-    /// contest is active for us. Pushed only to participant-guild members; drives the in-world flags/circles/
-    /// names + the capture-status/score HUD. An Active=false push at war end sets this back to null.</summary>
-    public TerritoryContestPacket? Contest { get; private set; }
-
-    public void SetContest(TerritoryContestPacket? contest) => Contest = contest;
-
-    /// <summary>The capture point whose radius this player is standing in, or null.
-    ///
-    /// <para>Measured in world coordinates across the 3x3, which is the reach the SERVER scores with — a
-    /// point near a map edge spills its zone over the seam, so the tile it is held from is not always on the
-    /// point's own map.</para></summary>
-    public ContestPointView? ContestPointHeld()
-    {
-        if (Contest is not { Active: true } contest) return null;
-        var (myWx, myWy) = CenterToWorld(Me.X, Me.Y);
-        foreach (var pt in contest.Points)
-        {
-            if (pt.Layer != Me.Layer) continue;
-            if (!ContestCellOf(pt.Map, out int col, out int row)) continue;
-            var (ptWx, ptWy) = ToWorld(col, row, pt.X, pt.Y);
-            if (TerritoryContestFormulas.WithinRadius(myWx, myWy, ptWx, ptWy, Constants.TerritoryCapturePointRadius))
-                return pt;
-        }
-        return null;
-    }
-
-    /// <summary>True when this player is AT the contest: standing in the contested territory, or holding one
-    /// of its points from wherever that point's zone reaches. Gates the score HUD and the off-screen
-    /// point markers, which are both for someone taking part rather than passing through.</summary>
-    public bool AtContest()
-    {
-        if (Contest is not { Active: true } contest) return false;
-        return Map.MapGroup == contest.TerritoryIndex || ContestPointHeld() is not null;
-    }
-
-    /// <summary>Which 3x3 cell a map occupies; false when it is not one of the nine loaded.</summary>
-    public bool ContestCellOf(int mapNum, out int col, out int row)
-    {
-        for (col = 0; col < 3; col++)
-            for (row = 0; row < 3; row++)
-                if (NeighborMapNums[col, row] == mapNum) return true;
-        col = row = 0;
-        return false;
-    }
-
     // ── World events ──────────────────────────────────────────────────────────
 
     public WeatherType Weather { get; set; }

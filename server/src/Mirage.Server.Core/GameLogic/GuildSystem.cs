@@ -115,35 +115,7 @@ public sealed partial class GuildSystem : GameSystem
         ChainGuildWrite(guild.Index, () => _persistence.SaveGuildAsync(guild.Index, snapshot));
     }
 
-    // Off-thread persist of a mutated territory (Clone so a concurrent per-kill income accrual can't corrupt
-    // the write) — the same shape GuildTerritorySystem uses. Needed because a disband releases territory.
-    private void SaveTerritory(TerritoryRecord terr) =>
-        _bg.Run(_persistence.SaveTerritoryAsync(terr.MapGroup, terr.Clone()), nameof(IPersistenceService.SaveTerritoryAsync));
-
-    // ── Progression & vault ───────────────────────────────────────────────────────
-
-    /// <summary>Add guild XP (mob kills 1/KO + guild quests) and apply any level-up it triggers, capped at
-    /// <see cref="Constants.GuildMaxLevel"/>. Announces each level-up on the Guild channel and persists.
-    /// A level-up is the only case that saves + broadcasts — otherwise the trickle accumulates in memory
-    /// (persisted on the next save for another reason), so a mob kill never churns a guild file write.
-    /// No-op for a null guild, a non-positive amount, or an already-max guild.</summary>
-    public void AddGuildExp(GuildRecord? guild, long amount)
-    {
-        if (guild is null || amount <= 0 || guild.Level >= Constants.GuildMaxLevel) return;
-        guild.Exp += amount;
-        int newLevel = GuildLeveling.LevelForExp(guild.Exp);
-        // No level-up: the XP trickle accrues in memory (no per-kill broadcast) but is flagged so the periodic
-        // save + shutdown flush persist it — the trickle is never lost to a restart.
-        if (newLevel <= guild.Level)
-        {
-            _world.DirtyGuilds.Add(guild.Index);
-            return;
-        }
-        guild.Level = newLevel;
-        _dispatcher.SendLocalizedChatToGuild(guild.Index, ServerStrings.Guild_LeveledUp,
-            new ChatMetadata(GameColor.Guild, ChatChannel.Guild), ("Level", newLevel));
-        SaveGuild(guild);
-    }
+    // ── Vault ─────────────────────────────────────────────────────────────────────
 
     /// <summary>Donate gold from the member at <paramref name="index"/> into their guild's vault. Server-
     /// authoritative: re-checks membership + funds, takes the gold (a transfer into the vault, not a sink),
@@ -162,46 +134,21 @@ public sealed partial class GuildSystem : GameSystem
 
         _items.TakeItem(index, Constants.GoldItemIndex, amount);
         guild.VaultGold += amount;
-        guild.WeeklyDonations += amount;   // vault dashboard: member donations this week
-        RecordDonation(guild, sp.Login, valor: false, amount);
+        guild.Donations += amount;   // vault dashboard: what the members have put in
+        RecordDonation(guild, sp.Login, amount);
         SaveGuild(guild);
         NotifyOk(index, ServerStrings.Guild_DonateOk, ("Amount", amount));
         _dispatcher.SendLocalizedChatToGuild(guild.Index, ServerStrings.Guild_DonateAnnounce,
             new ChatMetadata(GameColor.Guild, ChatChannel.Guild), ("Name", sp.Char.TrimmedName), ("Amount", amount));
     }
 
-    /// <summary>Donate valor from the player into the guild vault (<see cref="GuildRecord.VaultValor"/>).
-    /// Vault valor auto-offsets the weekly tax at settlement (10 valor = 100 gold off, capped at 50%).
-    /// Mirrors <see cref="DonateGold"/>.</summary>
-    public void DonateValor(int index, int amount)
-    {
-        var sp = _pm[index];
-        if (!sp.IsPlaying) return;
-        if (GuildOf(sp) is not { } guild) { Notify(index, ServerStrings.Guild_NotInOne); return; }
-        if (amount <= 0) return;   // the client validates; a non-positive amount is ignored
-        if (ItemSystem.CountItem(sp.Char, _world.Items, Constants.ValorItemIndex) < amount)
-        {
-            Notify(index, ServerStrings.Guild_DonateNeedValor, ("Amount", amount));
-            return;
-        }
-
-        _items.TakeItem(index, Constants.ValorItemIndex, amount);
-        guild.VaultValor += amount;
-        RecordDonation(guild, sp.Login, valor: true, amount);
-        SaveGuild(guild);
-        NotifyOk(index, ServerStrings.Guild_DonateValorOk, ("Amount", amount));
-        _dispatcher.SendLocalizedChatToGuild(guild.Index, ServerStrings.Guild_DonateValorAnnounce,
-            new ChatMetadata(GameColor.Guild, ChatChannel.Guild), ("Name", sp.Char.TrimmedName), ("Amount", amount));
-    }
-
     // Prepend a donation to the guild's recent-donor log (newest first) + trim to the cap. Records the donor's
     // ACCOUNT login (membership is per-account) for the Vault-tab log; the chat announce still names the character.
-    private void RecordDonation(GuildRecord guild, string account, bool valor, long amount)
+    private void RecordDonation(GuildRecord guild, string account, long amount)
     {
         guild.RecentDonations.Insert(0, new GuildDonationEntry
         {
             Account = account,
-            Valor = valor,
             Amount = amount,
             TimeUtc = NowUtc,
         });
@@ -212,10 +159,19 @@ public sealed partial class GuildSystem : GameSystem
         }
     }
 
+    /// <summary>Pay <paramref name="amount"/> into a guild's vault from something other than a member's
+    /// donation, and count it as income. This is the seam a game credits a group through — Core moves gold into
+    /// a vault on its own only when a member donates. Caller persists.</summary>
+    public static void CreditVault(GuildRecord guild, long amount)
+    {
+        if (amount <= 0) return;
+        guild.VaultGold += amount;
+        guild.Income += amount;
+    }
+
     /// <summary>Append an outgoing vault payment to the guild's recent-SPENDING log (newest first, capped) for
     /// the Vault tab's Spending view. <paramref name="account"/> = the member the payment was on behalf of and
-    /// <paramref name="character"/> = the specific character whose gear was repaired (e.g. the war death). Public
-    /// — the combat war-death sink calls it. Caller persists.</summary>
+    /// <paramref name="character"/> = the specific character it was for. Caller persists.</summary>
     public void RecordSpending(GuildRecord guild, string account, string character, long amount)
     {
         guild.RecentSpending.Insert(0, new GuildSpendingEntry
@@ -232,40 +188,4 @@ public sealed partial class GuildSystem : GameSystem
         }
     }
 
-    /// <summary>Manual late tax payment: an Officer+ pays one week's tax between settlements to restore
-    /// suspended perks at once (no proration, no back taxes — it reuses the same one-week deduction the
-    /// 00:00 settlement applies via <see cref="GuildScheduleSystem.ApplyWeeklyTax"/>). No-op if the perks
-    /// aren't suspended; refused if the vault can't cover it.</summary>
-    public void PayTaxLate(int index)
-    {
-        var sp = _pm[index];
-        if (!sp.IsPlaying) return;
-        if (GuildOf(sp) is not { } guild) { Notify(index, ServerStrings.Guild_NotInOne); return; }
-        if (sp.GuildRank < GuildRank.Officer)
-        {
-            Notify(index, ServerStrings.Guild_NeedOfficer);
-            return;
-        }
-        if (guild.Level < 1 || guild.PerksActive)
-        {
-            Notify(index, ServerStrings.Guild_TaxNothingDue);
-            return;
-        }
-
-        long tax = (long)guild.Level * Constants.GuildTaxPerLevel;
-        if (GuildScheduleSystem.ApplyWeeklyTax(guild) != TaxOutcome.RestoredAndPaid)
-        {
-            Notify(index, ServerStrings.Guild_TaxUnaffordable, ("Amount", tax));
-            return;
-        }
-
-        // Stamp the settlement's own per-date guard (server-LOCAL date, as GuildScheduleSystem derives it) so a
-        // forced re-settlement of today — /guildreset → RunManualSettlement — can't charge this week's tax twice.
-        guild.LastTaxPaidDate = DateOnly.FromDateTime(Clock.LocalNow);
-        SaveGuild(guild);
-        _dispatcher.SendLocalizedChatToGuild(guild.Index, ServerStrings.GuildSchedule_TaxPaid,
-            new ChatMetadata(GameColor.Guild, ChatChannel.Guild), ("Amount", tax));
-        _dispatcher.SendLocalizedChatToGuild(guild.Index, ServerStrings.GuildSchedule_PerksRestored,
-            new ChatMetadata(GameColor.Guild, ChatChannel.Guild));
-    }
 }

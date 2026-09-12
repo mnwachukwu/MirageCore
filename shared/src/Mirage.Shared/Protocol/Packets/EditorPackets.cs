@@ -274,7 +274,6 @@ public sealed record EditorSaveMapGroupPacket : IPacket
     [JsonPropertyName("greetingSpeaker")] public string GreetingSpeaker { get; init; } = "";
     [JsonPropertyName("joinSay")] public string JoinSay { get; init; } = "";
     [JsonPropertyName("leaveSay")] public string LeaveSay { get; init; } = "";
-    [JsonPropertyName("territory")] public bool Territory { get; init; }
 }
 
 // ── S→C: editor session ──────────────────────────────────────────────────────
@@ -446,7 +445,6 @@ public sealed record UpdateMapGroupPacket : IPacket
     [JsonPropertyName("greetingSpeaker")] public string GreetingSpeaker { get; init; } = "";
     [JsonPropertyName("joinSay")] public string JoinSay { get; init; } = "";
     [JsonPropertyName("leaveSay")] public string LeaveSay { get; init; } = "";
-    [JsonPropertyName("territory")] public bool Territory { get; init; }
 }
 
 public sealed record EditorAllMapGroupsPacket : IPacket

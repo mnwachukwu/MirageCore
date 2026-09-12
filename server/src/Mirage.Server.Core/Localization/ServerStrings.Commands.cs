@@ -29,11 +29,6 @@ public static partial class ServerStrings
     public const string AdminCommand_StatsAttributes = nameof(AdminCommand_StatsAttributes);
     public const string AdminCommand_StatsChances = nameof(AdminCommand_StatsChances);
     public const string AdminCommand_Location = nameof(AdminCommand_Location);
-    public const string AdminCommand_GuildReset = nameof(AdminCommand_GuildReset);
-    public const string AdminCommand_WarStarted = nameof(AdminCommand_WarStarted);
-    public const string AdminCommand_WarAdvanced = nameof(AdminCommand_WarAdvanced);
-    public const string AdminCommand_WarEnded = nameof(AdminCommand_WarEnded);
-    public const string AdminCommand_NoWarInProgress = nameof(AdminCommand_NoWarInProgress);
     public const string AdminCommand_GodModeOn = nameof(AdminCommand_GodModeOn);
     public const string AdminCommand_GodModeOff = nameof(AdminCommand_GodModeOff);
     public const string AdminCommand_WarpedToPlayer = nameof(AdminCommand_WarpedToPlayer);
@@ -72,10 +67,6 @@ public static partial class ServerStrings
     public const string AdminCommand_HwBanNoKey = nameof(AdminCommand_HwBanNoKey);
     /// <summary>Signal mode only: what every Monitor and above is told when a banned machine gets in.</summary>
     public const string AdminCommand_MachineBanHit = nameof(AdminCommand_MachineBanHit);
-    public const string AdminCommand_ModerationBans = nameof(AdminCommand_ModerationBans);
-    public const string AdminCommand_ModerationBanLine = nameof(AdminCommand_ModerationBanLine);
-    public const string AdminCommand_ModerationPenalties = nameof(AdminCommand_ModerationPenalties);
-    public const string AdminCommand_ModerationPenaltyLine = nameof(AdminCommand_ModerationPenaltyLine);
     public const string AdminCommand_MuteBroadcast = nameof(AdminCommand_MuteBroadcast);
     public const string AdminCommand_YouAreMuted = nameof(AdminCommand_YouAreMuted);
     public const string AdminCommand_CannotModifyAccess = nameof(AdminCommand_CannotModifyAccess);

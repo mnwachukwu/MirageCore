@@ -82,7 +82,7 @@ public class MapGroupIndexTests
     public async Task SavingThenLoading_RoundTripsEveryGroup()
     {
         await _svc.SaveMapGroupAsync(2, new MapGroupRecord { Index = 2, Name = "Harbour", Music = 9 });
-        await _svc.SaveMapGroupAsync(5, new MapGroupRecord { Index = 5, Name = "Catacombs", Territory = true });
+        await _svc.SaveMapGroupAsync(5, new MapGroupRecord { Index = 5, Name = "Catacombs", Music = 4 });
 
         var loaded = await _svc.LoadAllMapGroupsAsync();
 
@@ -91,7 +91,7 @@ public class MapGroupIndexTests
             Assert.That(loaded.Keys, Is.EquivalentTo(new[] { 2, 5 }));
             Assert.That(loaded[2].Name, Is.EqualTo("Harbour"));
             Assert.That(loaded[2].Music, Is.EqualTo(9));
-            Assert.That(loaded[5].Territory, Is.True);
+            Assert.That(loaded[5].Music, Is.EqualTo(4));
         });
     }
 

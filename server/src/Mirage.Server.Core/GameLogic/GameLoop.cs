@@ -27,9 +27,6 @@ public sealed class GameLoop : IDisposable
     private readonly PlayerSaver _saver;
     private readonly TimeOfDaySystem _tod;
     private readonly WeatherSystem _weather;
-    private readonly GuildScheduleSystem _guildSchedule;
-    private readonly GuildWarSystem _guildWar;
-    private readonly GuildTerritorySystem _territory;
     private readonly MailSystem _mail;
     private readonly MarketSystem _market;
     private readonly TradeSystem _trade;
@@ -67,7 +64,6 @@ public sealed class GameLoop : IDisposable
 
     public GameLoop(GameWorld world, PlayerManager pm, NpcAiSystem npcAi, PartySystem party,
                     ItemSystem items, PlayerSaver saver, TimeOfDaySystem tod, WeatherSystem weather,
-                    GuildScheduleSystem guildSchedule, GuildWarSystem guildWar, GuildTerritorySystem territory,
                     MailSystem mail, MarketSystem market, TradeSystem trade,
                     IPersistenceService persistence, IBackgroundPersistence bg, ILogger<GameLoop> logger,
                     IClock? clock = null)
@@ -80,9 +76,6 @@ public sealed class GameLoop : IDisposable
         _saver = saver;
         _tod = tod;
         _weather = weather;
-        _guildSchedule = guildSchedule;
-        _guildWar = guildWar;
-        _territory = territory;
         _mail = mail;
         _market = market;
         _trade = trade;
@@ -255,9 +248,6 @@ public sealed class GameLoop : IDisposable
         _trade.Tick();          // cancel trades whose parties drifted out of range + expire stale invites
         _tod.Tick();
         _weather.Tick();
-        _guildSchedule.Tick();
-        _guildWar.Tick();       // fire a war's go-live announcement once its warmup elapses
-        _territory.Tick();      // fire the weekly territory war night when its slot arrives
     }
 
     // Fast NPC movement pass — advances committed chase-steps on each NPC's SPD step-clock (see
@@ -298,18 +288,9 @@ public sealed class GameLoop : IDisposable
             sp.SaveDirty = false;   // periodic save covers this player; skip a redundant dirty-flush
         }
         PersistEnvironmentNow();
-        _guildSchedule.FlushDirtyAccumulators();   // flush per-kill guild/territory income accrual to disk
         _market.TickExpiry();                       // return listings past their 30-day lifetime to their sellers
         _mail.TickExpiry();                         // delete mail past its 30-day retention (from every online mailbox)
     }
-
-    /// <summary>Shutdown flush of unsaved income accrual — call after <see cref="Stop"/> (game thread joined,
-    /// state frozen). Pairs with <see cref="DrainGuildWritesAsync"/> so nothing accrued is lost on restart.</summary>
-    public void FlushWorldDataNow() => _guildSchedule.FlushDirtyAccumulators();
-
-    /// <summary>Await pending guild-file writes at shutdown (the guild write chain isn't part of the
-    /// IBackgroundPersistence queue). Map-group writes drain via that queue separately.</summary>
-    public Task DrainGuildWritesAsync() => _guildSchedule.DrainGuildWritesAsync();
 
     /// <summary>End-of-iteration flush: persists every player flagged by <see cref="PlayerManager.MarkDirty"/>
     /// this tick, then clears the flag, so an exploitable change (item drop/pickup, durability break,
@@ -333,13 +314,7 @@ public sealed class GameLoop : IDisposable
     /// called immediately after an admin /tod or /weather change so the jump survives a crash.</summary>
     public void PersistEnvironmentNow()
     {
-        var env = new EnvironmentState(_tod.CurrentPosMs, _weather.CurrentWeather, _weather.CurrentRemainingMs)
-        {
-            LastSettledDate = _guildSchedule.LastSettledDate,
-            NextWarNightUtc = _territory.NextWarNightUtc,
-            SeasonNumber = _guildSchedule.SeasonNumber,
-            SeasonStartDate = _guildSchedule.SeasonStartDate,
-        };
+        var env = new EnvironmentState(_tod.CurrentPosMs, _weather.CurrentWeather, _weather.CurrentRemainingMs);
         _bg.Run(_persistence.SaveEnvironmentAsync(env), nameof(IPersistenceService.SaveEnvironmentAsync));
     }
 }

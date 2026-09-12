@@ -37,7 +37,6 @@ public sealed partial class SocialPanel : IGamePanel
             _colorPicker.Close();
             _confirm.Close();
             _reviewingApps = false;
-            _reviewingWarReqs = false;
             return;
         }
 
@@ -76,11 +75,6 @@ public sealed partial class SocialPanel : IGamePanel
         if (_reviewingApps)
         {
             UpdateAppsReview(input, sender, body);
-            return;
-        }
-        if (_reviewingWarReqs)
-        {
-            UpdateWarReqs(input, state, sender, body);
             return;
         }
 
@@ -161,12 +155,7 @@ public sealed partial class SocialPanel : IGamePanel
             var tab = (GuildSub)i;
             if (!input.IsClickIn(subtabs[i]) || tab == _guildSubTab) continue;
             _guildSubTab = tab;
-            sender.SendGuildInfoRequest();   // refresh live data (roster online column, quest progress, wars)
-            if (tab == GuildSub.Standings)
-            {
-                _viewingHistory = false;
-                sender.SendGuildLeaderboardRequest();
-            }  // open on the current season
+            sender.SendGuildInfoRequest();   // refresh live data (the roster's online column has no push)
         }
 
         var gbody = GuildContentRect(body);
@@ -177,18 +166,6 @@ public sealed partial class SocialPanel : IGamePanel
                 break;
             case GuildSub.Vault:
                 UpdateGuildVault(input, sender, gbody, info);
-                break;
-            case GuildSub.Quests:
-                UpdateGuildQuests(input, sender, gbody, info);
-                break;
-            case GuildSub.Wars:
-                UpdateWars(input, state, sender, gbody);
-                break;
-            case GuildSub.Territories:
-                UpdateGuildTerritories(input, sender, info, gbody);
-                break;
-            case GuildSub.Standings:
-                UpdateGuildStandings(input, state, sender, gbody);
                 break;
             case GuildSub.Main:
             default:
@@ -287,49 +264,10 @@ public sealed partial class SocialPanel : IGamePanel
         }
     }
 
-    // Vault page: donate gold, donate valor, pay late tax.
-    // Territories page: the territory Table + a Challenge/Withdraw action on the selected territory.
-    private void UpdateGuildTerritories(InputState input, ClientPacketSender sender, GuildInfoPacket info, Rectangle gbody)
-    {
-        LayoutGuildTerritories(gbody, out var tableRect);
-        _territoryTable.Update(input, tableRect, keyboardActive: false);
-        ColumnsChanged |= _territoryTable.LayoutChanged;   // persisted by the host when set
-
-        var sel = _territoryTable.SelectedItem;
-        bool officer = GuildActionGate.CanChallengeTerritory(info.MyRank);
-        bool isOwn = sel is not null && !string.IsNullOrEmpty(sel.Owner) &&
-                     string.Equals(sel.Owner, info.Name, StringComparison.OrdinalIgnoreCase);
-        bool withdrawing = sel is { ChallengedByUs: true };
-        _challengeBtn.Label = ClientStrings.Get(withdrawing
-            ? ClientStrings.SocialPanel_WithdrawChallengeButton : ClientStrings.SocialPanel_ChallengeButton);
-        // Challenge any territory we don't own; withdraw one we're already challenging. Officer+ only.
-        _challengeBtn.Enabled = sel is not null && officer && (withdrawing || !isOwn);
-
-        if (_challengeBtn.IsClicked(input) && _challengeBtn.Enabled && sel is not null)
-        {
-            // Challenging spends from the vault and withdrawing does NOT give it back, so the spend is
-            // confirmed before it happens. Withdrawing is not confirmed: it costs nothing, and the money
-            // it fails to return was already gone before the button was reached.
-            if (withdrawing)
-            {
-                sender.SendGuildTerritoryWithdraw(sel.Index);
-            }
-            else
-            {
-                int territory = sel.Index;
-                _confirm.Open(
-                    ClientStrings.Format(ClientStrings.SocialPanel_ChallengeConfirmFormat, ("Territory", sel.Name)),
-                    () => sender.SendGuildTerritoryChallenge(territory));
-            }
-        }
-    }
-
     private void UpdateGuildVault(InputState input, ClientPacketSender sender, Rectangle gbody, GuildInfoPacket info)
     {
         LayoutGuildVault(gbody);
-        _donateBtn.Enabled = true;                                                    // any member
-        _donateValorBtn.Enabled = true;
-        _payTaxBtn.Enabled = GuildActionGate.CanPayTax(info.MyRank, info.PerksActive);
+        _donateBtn.Enabled = true;   // any member
 
         // Log-view toggle (Bounds set last frame in DrawGuildVault): switch the recent-entries list.
         if (_vaultDonationsBtn.IsClicked(input))
@@ -344,138 +282,6 @@ public sealed partial class SocialPanel : IGamePanel
         {
             _prompt.Open(ClientStrings.Get(ClientStrings.SocialPanel_DonatePrompt), "", maxLength: 9, allowEmpty: false,
                 s => { if (int.TryParse(s, out int amt) && amt > 0) sender.SendGuildDonate(amt); });
-        }
-        else if (_donateValorBtn.IsClicked(input))
-        {
-            _prompt.Open(ClientStrings.Get(ClientStrings.SocialPanel_DonateValorPrompt), "", maxLength: 9, allowEmpty: false,
-                s => { if (int.TryParse(s, out int amt) && amt > 0) sender.SendGuildDonateValor(amt); });
-        }
-        else if (_payTaxBtn.IsClicked(input) && _payTaxBtn.Enabled)
-        {
-            sender.SendGuildPayTax();
-        }
-    }
-
-    // Quests page: the active quest board + Acquire / Abandon (Leader-only, gated), each behind a
-    // confirmation — Acquire shows the gold cost; Abandon warns that progress + gold are forfeit.
-    private void UpdateGuildQuests(InputState input, ClientPacketSender sender, Rectangle gbody, GuildInfoPacket info)
-    {
-        LayoutGuildQuests(gbody);
-        _questAcquireBtn.Enabled = GuildActionGate.CanAcquireQuest(info.MyRank, info.Quest is not null);
-        _questAbandonBtn.Enabled = GuildActionGate.CanAbandonQuest(info.MyRank, info.Quest is not null);
-
-        if (_questAcquireBtn.IsClicked(input) && _questAcquireBtn.Enabled)
-        {
-            _confirm.Open(ClientStrings.Format(ClientStrings.SocialPanel_QuestAcquireConfirmFormat,
-                ("Cost", GuildQuests.AcquireCost(info.Level))), sender.SendGuildQuestAcquire);
-        }
-        else if (_questAbandonBtn.IsClicked(input) && _questAbandonBtn.Enabled)
-        {
-            _confirm.Open(ClientStrings.Get(ClientStrings.SocialPanel_QuestAbandonConfirm), sender.SendGuildQuestAbandon);
-        }
-    }
-
-    // Wars page: a war list + the selected war's action buttons. Declare (by name) and Requests are
-    // list-independent; the rest act on the selected war and adapt to its status/peace state.
-    private void UpdateWars(InputState input, ClientState state, ClientPacketSender sender, Rectangle body)
-    {
-        var info = state.GuildInfo;
-        if (info is null || !info.InGuild) return;
-
-        LayoutWars(body, out var listRect, out _);
-        _warList.Update(input, listRect, keyboardActive: false);
-
-        var sel = SelectedWar(info);
-        var myRank = info.MyRank;
-        long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        bool oneSidedAggr = sel is { Status: GuildWarStatus.OneSidedAggressor };
-        bool mutual = sel is { Status: GuildWarStatus.Mutual };
-        bool retractReady = sel is not null && now >= sel.DeclaredUtc + Constants.GuildWarRetractionLockSeconds;
-        bool peaceByUs = sel is { PeaceOfferedByUs: true };
-        bool peaceByThem = sel is { PeaceOfferedByThem: true };
-        // Wager state: leader-only, mutual, before the window closes and while no ante is locked.
-        bool anteLocked = sel is { AnteEscrow: > 0 };
-        bool wagerWindow = sel is not null && now < sel.WagerDeadlineUtc;
-        bool wagerByUs = sel is { WagerProposedByUs: > 0 };
-        bool wagerByThem = sel is { WagerProposedByThem: > 0 };
-        bool canWager = mutual && !anteLocked && wagerWindow && GuildActionGate.CanWager(myRank);
-
-        _warDeclareBtn.Enabled = GuildActionGate.CanDeclareWar(myRank, info.Level);
-        _warReqsBtn.Enabled = GuildActionGate.CanResolveWar(myRank) && info.WarRequests.Count > 0;
-        _warRetractBtn.Enabled = oneSidedAggr && retractReady && GuildActionGate.CanRequestWar(myRank);
-        // One toggle button: withdraw our pending plea (leader) or sue for peace (officer+), never while they
-        // already hold an offer on the table (accept/reject that instead).
-        _warPeaceBtn.Enabled = mutual && (peaceByUs ? GuildActionGate.CanResolveWar(myRank)
-                                                    : (!peaceByThem && GuildActionGate.CanRequestWar(myRank)));
-        _warAcceptBtn.Enabled = mutual && peaceByThem && GuildActionGate.CanResolveWar(myRank);
-        _warRejectBtn.Enabled = mutual && peaceByThem && GuildActionGate.CanResolveWar(myRank);
-        _warWagerBtn.Enabled = canWager;                          // toggles Propose / Withdraw
-        _warWagerAcceptBtn.Enabled = canWager && wagerByThem;
-        _warWagerRejectBtn.Enabled = canWager && wagerByThem;
-
-        if (_warDeclareBtn.IsClicked(input) && _warDeclareBtn.Enabled)
-        {
-            _prompt.Open(ClientStrings.Get(ClientStrings.SocialPanel_WarDeclarePrompt), "",
-                Constants.NameLength, allowEmpty: false, name => sender.SendGuildWarDeclareByName(name));
-        }
-        else if (_warReqsBtn.IsClicked(input) && _warReqsBtn.Enabled)
-        {
-            _reviewingWarReqs = true;
-            _warReqList.SelectedIndex = -1;
-        }
-        else if (sel is null)
-        {
-            return;
-        }
-        else if (_warRetractBtn.IsClicked(input) && _warRetractBtn.Enabled)
-        {
-            sender.SendGuildWarRetract(sel.OpponentIndex);
-        }
-        else if (_warPeaceBtn.IsClicked(input) && _warPeaceBtn.Enabled)
-        {
-            int opp = sel.OpponentIndex;   // captured for the offering-prompt closure below
-            if (peaceByUs)
-            {
-                sender.SendGuildWarPeace(opp, GuildWarPeaceAction.Withdraw);
-            }
-            else if (anteLocked)
-            {
-                sender.SendGuildWarPeace(opp, GuildWarPeaceAction.Offer);   // concede the ante — no offering
-            }
-            else
-            {
-                PromptGold(ClientStrings.SocialPanel_WarPeaceOfferPrompt,   // no ante: the plea must carry a pot
-                amt => sender.SendGuildWarPeace(opp, GuildWarPeaceAction.Offer, amt));
-            }
-        }
-        else if (_warAcceptBtn.IsClicked(input) && _warAcceptBtn.Enabled)
-        {
-            sender.SendGuildWarPeace(sel.OpponentIndex, GuildWarPeaceAction.Accept);
-        }
-        else if (_warRejectBtn.IsClicked(input) && _warRejectBtn.Enabled)
-        {
-            sender.SendGuildWarPeace(sel.OpponentIndex, GuildWarPeaceAction.Reject);
-        }
-        else if (_warWagerBtn.IsClicked(input) && _warWagerBtn.Enabled)
-        {
-            int opp = sel.OpponentIndex;   // captured for the ante-prompt closure below
-            if (wagerByUs)
-            {
-                sender.SendGuildWarWager(opp, GuildWarWagerAction.Withdraw);
-            }
-            else
-            {
-                PromptGold(ClientStrings.SocialPanel_WarWagerPrompt,
-                amt => sender.SendGuildWarWager(opp, GuildWarWagerAction.Propose, amt));
-            }
-        }
-        else if (_warWagerAcceptBtn.IsClicked(input) && _warWagerAcceptBtn.Enabled)
-        {
-            sender.SendGuildWarWager(sel.OpponentIndex, GuildWarWagerAction.Accept);
-        }
-        else if (_warWagerRejectBtn.IsClicked(input) && _warWagerRejectBtn.Enabled)
-        {
-            sender.SendGuildWarWager(sel.OpponentIndex, GuildWarWagerAction.Reject);
         }
     }
 
@@ -511,35 +317,6 @@ public sealed partial class SocialPanel : IGamePanel
         }
     }
 
-    // War-requests review overlay (leader): accept/deny the officer queue, addressed by (kind, target).
-    private void UpdateWarReqs(InputState input, ClientState state, ClientPacketSender sender, Rectangle body)
-    {
-        LayoutWarReqs(body, out var listRect);
-        _warReqList.Update(input, listRect, keyboardActive: false);
-        int s = _warReqList.SelectedIndex;
-        bool has = s >= 0 && s < _warReqKeys.Count;
-        _warReqAcceptBtn.Enabled = has;
-        _warReqDenyBtn.Enabled = has;
-
-        if (_warReqAcceptBtn.IsClicked(input) && has)
-        {
-            var (k, t) = _warReqKeys[s];
-            sender.SendGuildWarReviewRequest(k, t, accept: true);
-            _warReqList.SelectedIndex = -1;
-        }
-        else if (_warReqDenyBtn.IsClicked(input) && has)
-        {
-            var (k, t) = _warReqKeys[s];
-            sender.SendGuildWarReviewRequest(k, t, accept: false);
-            _warReqList.SelectedIndex = -1;
-        }
-        else if (_warReqBackBtn.IsClicked(input) || input.IsKeyPressed(Keys.Escape))
-        {
-            input.ConsumeKey(Keys.Escape);
-            _reviewingWarReqs = false;
-        }
-    }
-
     private void UpdateLabelEditor(InputState input, ClientPacketSender sender, Rectangle body)
     {
         LayoutLabelEditor(body);
@@ -564,29 +341,4 @@ public sealed partial class SocialPanel : IGamePanel
         }
     }
 
-    private void UpdateGuildStandings(InputState input, ClientState state, ClientPacketSender sender, Rectangle gbody)
-    {
-        LayoutStandingsButtons(gbody);
-        if (_historyBtn.IsClicked(input))
-        {
-            _viewingHistory = !_viewingHistory;
-            if (_viewingHistory) sender.SendSeasonArchiveRequest(0);   // 0 = latest archived season
-        }
-        if (_viewingHistory)
-        {
-            var seasons = state.SeasonArchive?.AvailableSeasons ?? new List<int>();
-            int idx = seasons.IndexOf(state.SeasonArchive?.Season ?? 0);
-            _prevSeasonBtn.Enabled = idx > 0;                                 // an older season exists
-            _nextSeasonBtn.Enabled = idx >= 0 && idx < seasons.Count - 1;    // a newer season exists
-            if (_prevSeasonBtn.IsClicked(input) && _prevSeasonBtn.Enabled) sender.SendSeasonArchiveRequest(seasons[idx - 1]);
-            else if (_nextSeasonBtn.IsClicked(input) && _nextSeasonBtn.Enabled) sender.SendSeasonArchiveRequest(seasons[idx + 1]);
-            _archiveTable.Update(input, StandingsTableRect(gbody), keyboardActive: false);
-            ColumnsChanged |= _archiveTable.LayoutChanged;
-        }
-        else
-        {
-            _standingsTable.Update(input, StandingsTableRect(gbody), keyboardActive: false);
-            ColumnsChanged |= _standingsTable.LayoutChanged;
-        }
-    }
 }

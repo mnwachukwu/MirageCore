@@ -31,7 +31,6 @@ public sealed partial class GuildSystem : GameSystem
                 {
                     Index = g.Index,
                     Name = g.Name,
-                    Level = g.Level,
                     Members = g.Members.Count,
                     Labels = new List<GuildLabel>(g.Labels),
                 });

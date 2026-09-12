@@ -115,15 +115,8 @@ public sealed class ServerPlayer
     // total lives on PlayerRecord.PlayTimeSeconds.
     public long PlayTimeAnchorUtc { get; set; }
     // UTC-seconds this session began (set once at JoinGame, never re-anchored). The session length it
-    // yields is what accrues into the guild active-member rolling total at logout.
+    // yields is what accrues into the guild member's rolling active total at logout.
     public long SessionStartUtc { get; set; }
-
-    // Per-target guild-war diminishing returns: how farmed this player is as a war-kill target.
-    // Stage 1 = fresh (full attrition value), climbing per war death of this player; it decays 1 stage per
-    // GuildWarDrRecoverySeconds and recovers 1 whenever this player earns a war kill. Transient (a fresh
-    // login is treated as stage 1) — DR is a short-horizon anti-farm dial, not persisted state.
-    public int WarDrStage { get; set; }
-    public long WarDrLastUtc { get; set; }
 
     // UTC-seconds mirror of AccountRecord.MutedUntilUtc — copied on login so chat handlers do an O(1)
     // check without disk I/O. The persistent value still lives on AccountRecord.

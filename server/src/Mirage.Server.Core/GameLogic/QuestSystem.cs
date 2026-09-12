@@ -25,7 +25,6 @@ public sealed class QuestSystem : GameSystem
     private readonly ItemSystem _items;
     private readonly MailSystem _mail;
     private readonly ObjectiveSystem _objectives;
-    private readonly GuildScheduleSystem _guildSchedule;
 
     // Per online player: the kernel handles for each active quest's tracked objectives, so they can be Stopped
     // on turn-in / abandon / logout. Keyed by quest number.
@@ -34,7 +33,7 @@ public sealed class QuestSystem : GameSystem
     private static string QuestSender => ServerStrings.Get(ServerStrings.Quest_Sender);
 
     public QuestSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher, ItemSystem items,
-        MailSystem mail, ObjectiveSystem objectives, GuildScheduleSystem guildSchedule,
+        MailSystem mail, ObjectiveSystem objectives,
                        IClock? clock = null)
         : base(dispatcher, clock: clock)
     {
@@ -43,7 +42,6 @@ public sealed class QuestSystem : GameSystem
         _items = items;
         _mail = mail;
         _objectives = objectives;
-        _guildSchedule = guildSchedule;
         _tracked = new Dictionary<int, List<ObjectiveSystem.Handle>>[_pm.Slots + 1];
         for (int i = 0; i <= _pm.Slots; i++) _tracked[i] = new();
     }
@@ -381,17 +379,16 @@ public sealed class QuestSystem : GameSystem
     private static int GetProgress(PlayerQuest pq, int k) => k < pq.Progress.Count ? pq.Progress[k] : 0;
 
     // The stable period key a Repeatable quest's completion is stamped with; eligibility re-lights when the
-    // current key differs. Server-local dates (matching the guild schedule boundaries), no scheduler needed.
+    // current key differs. Server-local dates, no scheduler needed.
     private string PeriodKeyFor(QuestCadence cadence) => cadence switch
     {
         QuestCadence.Daily => DateOnly.FromDateTime(Clock.LocalNow).ToString("yyyy-MM-dd"),
         QuestCadence.Weekly => WeekKey(),
         QuestCadence.Monthly => Clock.LocalNow.ToString("yyyy-MM"),
-        QuestCadence.Seasonally => "S" + _guildSchedule.SeasonNumber,
         _ => "",
     };
 
-    // Current week bucket, keyed by the most recent territory reset weekday (matches the guild weekly boundary).
+    // Current week bucket, keyed by the most recent ScheduleConfig.WeekResetDay.
     private string WeekKey()
     {
         var today = DateOnly.FromDateTime(Clock.LocalNow);

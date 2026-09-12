@@ -164,11 +164,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
 
     private void HandleGuildBrowse(GuildBrowsePacket p) => _state.SetGuildBrowse(p.Guilds);
 
-    // Live war-attrition push (per death): update the matching war row's meters in place + record the
-    // trend so the War panel's bar + direction arrow animate without a full GuildInfo resync.
-    private void HandleGuildWarAttrition(GuildWarAttritionPacket p)
-        => _state.ApplyWarAttrition(p.OpponentIndex, p.OurAttrition, p.TheirAttrition);
-
     private void HandlePartyVitals(PartyVitalsPacket p)
     {
         var party = _state.Party;
@@ -199,4 +194,5 @@ public sealed partial class ClientPacketHandler : IClientEvents
             ? 0
             : Environment.TickCount64 - p.MsSinceCombat;
     }
+
 }

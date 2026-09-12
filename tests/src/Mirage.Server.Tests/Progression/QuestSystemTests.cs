@@ -35,8 +35,7 @@ public class QuestSystemTests
         var saver = new PlayerSaver(persistence: null!, NullLogger<PlayerSaver>.Instance);
         var mail = new MailSystem(pm, dispatcher, saver, items);
         var objectives = new ObjectiveSystem();
-        var quests = new QuestSystem(world, pm, dispatcher, items, mail, objectives,
-            guildSchedule: null!);   // guildSchedule only used by Seasonally
+        var quests = new QuestSystem(world, pm, dispatcher, items, mail, objectives);
         return (world, pm, objectives, quests);
     }
 

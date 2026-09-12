@@ -192,9 +192,6 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<PlayerSpawnSystem>();
         services.AddSingleton<PartySystem>();
         services.AddSingleton<GuildSystem>();
-        services.AddSingleton<GuildScheduleSystem>();
-        services.AddSingleton<GuildTerritorySystem>();
-        services.AddSingleton<GuildWarSystem>();
         services.AddSingleton<MailSystem>();
         services.AddSingleton<MarketSystem>();
         services.AddSingleton<TradeSystem>();

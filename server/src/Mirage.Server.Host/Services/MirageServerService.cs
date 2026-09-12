@@ -32,8 +32,6 @@ public sealed class MirageServerService : IHostedService
     private readonly TimeOfDaySystem _tod;
     private readonly WeatherSystem _weather;
     private readonly GuildSystem _guilds;
-    private readonly GuildScheduleSystem _guildSchedule;
-    private readonly GuildTerritorySystem _territory;
     private readonly TradeSystem _trade;
     private readonly QuestSystem _quests;
     private readonly TcpConnectionAcceptor _acceptor;
@@ -54,8 +52,6 @@ public sealed class MirageServerService : IHostedService
         TimeOfDaySystem tod,
         WeatherSystem weather,
         GuildSystem guilds,
-        GuildScheduleSystem guildSchedule,
-        GuildTerritorySystem territory,
         TradeSystem trade,
         QuestSystem quests,
         TcpConnectionAcceptor acceptor,
@@ -74,8 +70,6 @@ public sealed class MirageServerService : IHostedService
         _tod = tod;
         _weather = weather;
         _guilds = guilds;
-        _guildSchedule = guildSchedule;
-        _territory = territory;
         _trade = trade;
         _quests = quests;
         _acceptor = acceptor;
@@ -115,12 +109,12 @@ public sealed class MirageServerService : IHostedService
             if (drops.Length > 0) _items.LoadDroppedItems(i, drops);
         }
 
-        // Runtime-data load summary: guilds + archived seasons (loaded in LoadWorldDataAsync) and the map items
-        // now present across all maps (spawned + restored above).
+        // Runtime-data load summary: guilds (loaded in LoadWorldDataAsync) and the map items now present
+        // across all maps (spawned + restored above).
         int mapItemCount = 0;
         for (int i = 1; i <= _world.Limits.Maps; i++) mapItemCount += _world.MapItems[i]?.Count ?? 0;
         LocalizedLog.Info(_logger, ServerStrings.Server_RuntimeDataSummary,
-            ("Guilds", _world.Guilds.Count), ("Seasons", _world.SeasonArchives.Count), ("MapItems", mapItemCount));
+            ("Guilds", _world.Guilds.Count), ("MapItems", mapItemCount));
 
         // Spawn NPC slots
         _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_SpawningNpcs));
@@ -141,10 +135,6 @@ public sealed class MirageServerService : IHostedService
 
         _acceptor.Stop();
         _gameLoop.Stop();   // game thread fully joined here — state is frozen, safe to read directly
-
-        // Flush per-kill income accrual (guild PendingPerkIncome + territory PendingTerritoryIncome) that the periodic
-        // save may not have caught, so a restart never loses it (queued writes are awaited by the drains below).
-        _gameLoop.FlushWorldDataNow();
 
         // Final save of everyone still in-world.  The periodic tick may be up to a minute stale, and
         // disconnect saves posted after the game thread stopped won't run, so flush them here while
@@ -169,8 +159,8 @@ public sealed class MirageServerService : IHostedService
         catch (Exception ex) { _logger.LogWarning(ex, "Error draining background persistence queue"); }
 
         // Guild-file writes use their own serialized chain (not the IBackgroundPersistence queue), so drain
-        // them explicitly — otherwise a just-queued guild save (vault, income, war state) can be lost at exit.
-        try { await _gameLoop.DrainGuildWritesAsync(); }
+        // them explicitly — otherwise a just-queued guild save can be lost at exit.
+        try { await _guilds.DrainAsync(); }
         catch (Exception ex) { _logger.LogWarning(ex, "Error draining guild write chain"); }
 
         _cts?.Cancel();
@@ -259,10 +249,6 @@ public sealed class MirageServerService : IHostedService
         foreach (var (index, guild) in guilds) _world.Guilds[index] = guild;
         // Retired numbers are not in that map, so the high-water mark comes off the folders instead.
         _world.HighestGuildNumber = await _persistence.HighestGuildNumberAsync();
-        // Re-register every still-active guild quest with the objective kernel — in-memory registrations don't
-        // survive a restart (the quests themselves persisted on the guild records).
-        _guilds.ReTrackActiveQuests();
-
         // Marketplace listings — unbounded like guilds; load every listing file present into the sparse map.
         var marketListings = await _persistence.LoadAllMarketListingsAsync();
         foreach (var (id, listing) in marketListings) _world.MarketListings[id] = listing;
@@ -276,14 +262,6 @@ public sealed class MirageServerService : IHostedService
         // Map groups — unbounded like guilds; load every mapgroup file present into the sparse map.
         var mapGroups = await _persistence.LoadAllMapGroupsAsync();
         foreach (var (index, group) in mapGroups) _world.MapGroups[index] = group;
-
-        // Territory state, keyed by the group whose maps it is. A contestable group with no file is simply
-        // unclaimed, so only what a server has actually written is here.
-        var territories = await _persistence.LoadAllTerritoriesAsync();
-        foreach (var (index, terr) in territories) _world.Territories[index] = terr;
-
-        // Perpetual season archive — load past seasons for the historical-season browser.
-        _world.SeasonArchives.AddRange(await _persistence.LoadAllSeasonArchivesAsync());
 
         // Maps — load all; create an empty file for any that don't exist on disk, at the size this world
         // says a map is (world.json, read at the top). An authored map is whatever size it was authored at.
@@ -327,17 +305,10 @@ public sealed class MirageServerService : IHostedService
             _world.Motd = motd;
         }
 
-        // Environment — restore Time of Day + Weather from environment.json so both pause while offline,
-        // and seed the guild daily-settlement cursor (wall-clock, so downtime is caught up on the first tick).
+        // Environment — restore Time of Day + Weather from environment.json so both pause while offline.
         var env = await _persistence.LoadEnvironmentAsync() ?? new EnvironmentState(0, WeatherType.Clear, 0);
         _tod.Init(env.TodPositionMs);
         _weather.Init(env.Weather, env.WeatherRemainingMs);
-        _guildSchedule.Seed(env.LastSettledDate);
-        _guildSchedule.SeedSeason(env.SeasonNumber, env.SeasonStartDate);
-        // Seed each guild's cached seasonal standing from the loaded season scores, so the overhead standing is
-        // correct on the first login after boot (before the first weekly settlement recomputes it).
-        _guildSchedule.RecomputeStandings();
-        _territory.Seed(env.NextWarNightUtc);
 
         LocalizedLog.Info(_logger, ServerStrings.Server_LoadedSummary,
             ("Items", items.Length - 1), ("Npcs", npcs.Length - 1), ("Shops", shops.Length - 1),

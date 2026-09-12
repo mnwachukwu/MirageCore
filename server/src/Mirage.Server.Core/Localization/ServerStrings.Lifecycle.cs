@@ -136,12 +136,6 @@ public static partial class ServerStrings
     public const string Console_RespawnUsage = nameof(Console_RespawnUsage);
     public const string Console_MapRespawned = nameof(Console_MapRespawned);
     public const string Console_MapReport = nameof(Console_MapReport);
-    public const string Console_WarStarted = nameof(Console_WarStarted);
-    public const string Console_WarAdvanced = nameof(Console_WarAdvanced);
-    public const string Console_WarEnded = nameof(Console_WarEnded);
-    public const string Console_NoWarInProgress = nameof(Console_NoWarInProgress);
-    public const string Console_GuildResetUsage = nameof(Console_GuildResetUsage);
-    public const string Console_GuildReset = nameof(Console_GuildReset);
 
     // ── Common ────────────────────────────────────────────────────────────────
     public const string Common_InventoryFull = nameof(Common_InventoryFull);

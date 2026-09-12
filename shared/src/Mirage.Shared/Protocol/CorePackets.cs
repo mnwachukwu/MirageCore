@@ -75,10 +75,6 @@ public static class CorePackets
         builder.Register(PacketNames.GuildSetLabels, Read<GuildSetLabelsPacket>);
         builder.Register(PacketNames.GuildSetColor, Read<GuildSetColorPacket>);
         builder.Register(PacketNames.GuildDonate, Read<GuildDonatePacket>);
-        builder.Register(PacketNames.GuildDonateValor, Read<GuildDonateValorPacket>);
-        builder.Register(PacketNames.GuildPayTax, Read<GuildPayTaxPacket>);
-        builder.Register(PacketNames.GuildQuestAcquire, Read<GuildQuestAcquirePacket>);
-        builder.Register(PacketNames.GuildQuestAbandon, Read<GuildQuestAbandonPacket>);
         builder.Register(PacketNames.GuildChat, Read<GuildChatPacket>);
         builder.Register(PacketNames.GuildBrowseRequest, Read<GuildBrowseRequestPacket>);
         builder.Register(PacketNames.GuildBrowse, Read<GuildBrowsePacket>);
@@ -86,22 +82,6 @@ public static class CorePackets
         builder.Register(PacketNames.GuildReviewApplication, Read<GuildReviewApplicationPacket>);
         builder.Register(PacketNames.GuildInfo, Read<GuildInfoPacket>);
         builder.Register(PacketNames.GuildInfoRequest, Read<GuildInfoRequestPacket>);
-        builder.Register(PacketNames.GuildWarDeclare, Read<GuildWarDeclarePacket>);
-        builder.Register(PacketNames.GuildWarDeclareByName, Read<GuildWarDeclareByNamePacket>);
-        builder.Register(PacketNames.GuildWarRetract, Read<GuildWarRetractPacket>);
-        builder.Register(PacketNames.GuildWarReviewRequest, Read<GuildWarReviewRequestPacket>);
-        builder.Register(PacketNames.GuildWarPeace, Read<GuildWarPeacePacket>);
-        builder.Register(PacketNames.GuildWarWager, Read<GuildWarWagerPacket>);
-        builder.Register(PacketNames.GuildTerritoryChallenge, Read<GuildTerritoryChallengePacket>);
-        builder.Register(PacketNames.TerritoryContest, Read<TerritoryContestPacket>);
-        builder.Register(PacketNames.AdminGuildReset, Read<AdminGuildResetPacket>);
-        builder.Register(PacketNames.AdminTerritoryWar, Read<AdminTerritoryWarPacket>);
-        builder.Register(PacketNames.GuildLeaderboard, Read<GuildLeaderboardPacket>);
-        builder.Register(PacketNames.GuildLeaderboardRequest, Read<GuildLeaderboardRequestPacket>);
-        builder.Register(PacketNames.SeasonArchiveRequest, Read<SeasonArchiveRequestPacket>);
-        builder.Register(PacketNames.SeasonArchive, Read<SeasonArchivePacket>);
-        builder.Register(PacketNames.GuildTerritoryWithdraw, Read<GuildTerritoryWithdrawPacket>);
-        builder.Register(PacketNames.GuildWarAttrition, Read<GuildWarAttritionPacket>);
 
         // Social (friends / ignore)
         builder.Register(PacketNames.SocialList, Read<SocialListPacket>);

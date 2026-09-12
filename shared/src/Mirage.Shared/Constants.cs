@@ -416,7 +416,6 @@ public static class Constants
     // this index to check/consume the stack, exactly as gold does.
     public const int CastingReagentItemIndex = 2;
 
-    // Item slot 3 is valor — the war currency (a Currency item authored in data, flagged NonTradeable).
     // Earned from war kills + guild quests, spent at the war shop, donated to the guild vault (tax relief),
     // or banked. Per-character; the code references this index to grant/spend it, exactly like gold.
     public const int ValorItemIndex = 3;
@@ -446,16 +445,6 @@ public static class Constants
     // Gold to found a new guild. Consumed on success (a creation sink; the new guild's vault starts
     // empty). Charged via GoldItemIndex, client-blocked then server-revalidated.
     public const int GuildCreationCost = 35_000;
-    // Weekly guild tax = guild Level * this, taken from the vault at the daily 00:00 settlement on the
-    // guild's founding weekday. L0 = free (no perks either); L1 = 35,000, ... L5 = 175,000.
-    public const int GuildTaxPerLevel = 35_000;
-    // Valor auto-offsets the weekly tax at settlement (consumed before gold): every
-    // GuildValorPerTaxDiscount valor in the vault removes GuildGoldPerTaxDiscount gold from the tax, in whole
-    // increments, capped at GuildValorTaxOffsetCapPercent% of the tax (at L5: 250 valor → 87,500 off of
-    // 175,000). Scales with the tax it offsets, so valor's relief stays a fixed share of the bill.
-    public const int GuildValorPerTaxDiscount = 10;
-    public const int GuildGoldPerTaxDiscount = 3_500;
-    public const int GuildValorTaxOffsetCapPercent = 50;
     // Max descriptive labels (GuildLabel) a leader may apply to a guild.
     public const int MaxGuildLabels = 3;
     // Max length of a guild's message-of-the-day.
@@ -470,235 +459,12 @@ public static class Constants
     // 32*32: a shade must differ from every reserved color by ~32 in RGB space.
     public const int GuildColorReservedDistanceSq = 32 * 32;
 
-    // ── Guild leveling & perks ─────────────────────────────────────────────────
-    // Levels 0-5; start at 0, perks begin at level 1.
-    public const int GuildMaxLevel = 5;
-    // Guild XP per member mob-KO (the minor trickle; guild quests are the main XP driver).
-    public const int GuildExpPerKill = 1;
-    // Cumulative guild XP to REACH each level (0 => level 0). The curve balloons (~4x per tier) so higher
-    // tiers are near-impossible solo; recruiting + questing accelerate it.
-    public const long GuildLevel1Exp = 1_000_000;
-    public const long GuildLevel2Exp = 4_000_000;
-    public const long GuildLevel3Exp = 16_000_000;
-    public const long GuildLevel4Exp = 64_000_000;
-    public const long GuildLevel5Exp = 256_000_000;
-    // Perks unlock one per level, cumulative, and apply only when the guild is >= the perk's level AND its
-    // tax is paid (GuildRecord.PerksActive). L1 items drop more often; L2 chance to shrug off durability/
-    // reagent wear (NOT death wear); L3 +% individual EXP; L4 chance to double a drop; L5 (vault chunk)
-    // chance a mob kill trickles gold to the vault.
-    public const int GuildPerkLevelDropRate = 1;
-    public const int GuildPerkDropRateBonusPercent = 20;
-    public const int GuildPerkLevelPreventWear = 2;
-    public const int GuildPerkPreventWearChancePercent = 20;
-    public const int GuildPerkLevelBonusExp = 3;
-    public const int GuildPerkBonusExpPercent = 10;
-    public const int GuildPerkLevelDoubleDrop = 4;
-    public const int GuildPerkDoubleDropChancePercent = 5;
-    public const int GuildPerkLevelVaultGold = 5;
-    public const int GuildPerkVaultGoldChancePercent = 25;
-    // Gold the L5 perk trickles into the vault on a qualifying KO. A constant rather than a literal at
-    // its call site because it belongs to the guild gold family above and has to move with it.
-    public const int GuildPerkVaultGold = 35;
     // Recent vault-log entries kept for the Vault tab's Donations + Spending views (newest-first, capped). Display-only.
     public const int GuildRecentVaultLogMax = 15;
 
-    // ── Guild quests ───────────────────────────────────────────────────────────
-    // One active quest at a time; up to this many completed per day. A quest can be abandoned (freeing a
-    // fresh acquire) with no refund; the acquire cost is what limits re-rolling.
-    public const int GuildQuestMaxPerDay = 3;
-    // Acquire cost = this * guild level (L0 = free), charged in gold.
-    public const int GuildQuestCostPerLevel = 17_500;
-    // A quest expires this many hours after it is acquired.
-    public const int GuildQuestDurationHours = 24;
-    // Kill count = base + difficulty/perKill, clamped to max; difficulty = the target NPC's Str+Def+Int.
-    // Quest kill count is a BIG objective (hundreds of kills) that scales UP with mob difficulty — tougher
-    // mobs mean more (and harder) kills, matched to the bigger XP reward. Base is for the weakest mob; each
-    // point of difficulty adds kills, capped at the maximum.
-    public const int GuildQuestBaseKills = 300;
-    public const int GuildQuestKillsAddedPerDifficulty = 1;   // kills added per point of NPC difficulty (Str+Def+Int)
-    public const int GuildQuestMaxKills = 1000;
-    // +/- spread applied to the baseline kill count (and the rewards, in lockstep) so quests aren't a flat,
-    // linear grind: a bigger roll = more kills AND more XP/gold, a smaller roll = fewer of each.
-    public const int GuildQuestVariationPercent = 25;
-    // Reward XP/gold = base*(guildLevel+1) + difficulty*perDifficulty. ~33k XP for an L0 guild on a low-
-    // difficulty mob; scales with guild level (to chase the ballooning curve) + mob difficulty.
-    public const long GuildQuestBaseExp = 33_000;
-    public const long GuildQuestExpPerDifficulty = 300;
-    // The gold half of the reward scales with the acquire cost that gates it — a quest has to stay worth
-    // running, and cost and payout are two ends of the same lever. The XP half is untouched: guild XP is
-    // its own currency and has no exchange rate with the player economy.
-    public const long GuildQuestBaseGold = 8_750;
-    public const long GuildQuestGoldPerDifficulty = 175;
-    // BOSS mobs (NpcRecord.IsBoss) use a COMPRESSED kill-count curve so a quest to kill bosses is tens, not
-    // hundreds: kills = clamp(BossBaseKills + difficulty * BossKillsPer100Difficulty / 100, 1, BossMaxKills).
-    // Still scales with strength, just on a much smaller axis (~30 for a weak boss up to the cap for a maxed one).
-    public const int GuildQuestBossBaseKills = 30;
-    public const int GuildQuestBossKillsPer100Difficulty = 10;   // kills added per 100 points of difficulty (Str+Def+Int)
-    public const int GuildQuestBossMaxKills = 100;
-    // A boss quest pays this percent of the XP + gold a same-difficulty normal mob would (far fewer kills, so a
-    // slighter reward): attractive but never best-in-slot. The 3/day acquire cap blocks any reroll-for-boss.
-    public const int GuildQuestBossRewardPercent = 50;
-    // At MAX guild level quest XP is worthless (the guild can't level), so it is ESCHEWED entirely (0) and the
-    // gold reward is bumped by this percent instead — keeping maxed guilds running quests to bolster the vault.
-    public const int GuildQuestMaxLevelGoldBonusPercent = 25;
-
-    // ── Guild wars ─────────────────────────────────────────────────────────────
-    // A level-0 guild can neither declare NOR return a declaration (it defends only) — leveling is grindy,
-    // so throwaway guilds can't become war-harassment machines.
-    public const int GuildWarMinLevelToDeclare = 1;
-    // Declare cost (gold, from the vault) = base - (targetLevel - declarerLevel) x step: punching DOWN
-    // (a lower target) costs more, punching UP costs less, same level = flat base. E.g. L1-on-L5 = 21,000,
-    // L5-on-L1 = 49,000. Floored so a huge gap can't drive it to nothing.
-    public const int GuildWarDeclareBaseCost = 35_000;
-    public const int GuildWarDeclareLevelStep = 3_500;
-    public const int GuildWarDeclareMinCost = 3_500;
-    // Declaring on a level-0 guild DOUBLES the whole cost (that war can never go mutual, so its daily
-    // maintenance is paid indefinitely — costly for a low payout, which protects level-0 guilds).
-    public const int GuildWarL0TargetCostMultiplier = 2;
-    // Declarer's daily maintenance = this % of the declare cost, taken at the 00:00 settlement while the
-    // war stays one-sided (a mutual war waives it for both). Inability to pay drops the declaration.
-    public const int GuildWarDailyMaintenancePercent = 50;
-    // A one-sided grievance goes live after this warmup grace; a mutual war (reciprocated) pops immediately.
-    public const int GuildWarWarmupSeconds = 600;   // 10 min
-    // A declaration can't be retracted until this long after it was made.
-    public const int GuildWarRetractionLockSeconds = 900;   // 15 min
-    // Declare on up to this many guilds at once (receiving declarations is unlimited).
-    public const int GuildWarMaxConcurrentDeclarations = 5;
-    // Cap on officer war-action requests pending Leader approval (declare/retract), to bound the queue.
-    public const int GuildWarMaxPendingRequests = 10;
-
-    // ── Guild war combat ─────────────────────────────────────────────────────
-    // A war death's penalty is worn-gear durability ONLY (no item drops, no EXP loss/transfer). The wear is
-    // DOUBLED vs a normal death (normal = 10% of max; war = 20%).
-    public const int GuildWarDeathWearPercent = 20;
-    // On death the vault pays this % of the repair cost of that doubled wear, whole-or-nothing; if it pays,
-    // only the remaining % of the wear lands on the gear (25% => half a normal death's wear). If the vault
-    // can't cover the full share it pays nothing and the FULL doubled wear falls on the player.
-    public const int GuildWarVaultRepairPercent = 75;
-    public const int GuildWarPlayerWearPercent = 25;
-    // A guild-war participant's respawn timer is a flat value — it neither escalates nor decays, and
-    // is independent of the normal death penalty steps.
-    public const int GuildWarRespawnSeconds = 30;
-
-    // ── Guild war attrition & resolution (MUTUAL wars only) ──────────────────
-    // Each side's tug-of-war meter starts here; a war death depletes the victim's side and restores the
-    // killer's by the same amount (loss = the other side's gain). Push the enemy's meter to 0 to win.
-    public const int GuildWarAttritionPool = 1000;
-    // A war death's attrition swing has TWO parts:
-    //   1. Durability "war spend" — the gold this death drained from the vault (its repair cost). Applied in
-    //      FULL with NO diminishing returns: real economic loss always drives attrition. It's 0 for a naked /
-    //      uncovered death (nothing to repair), which is what part 2 covers.
-    //   2. A flat base-death rate (this const), DR-scaled by how farmed the target is but floored at the DR
-    //      table's minimum (never 0) — so EVERY death moves the meter and you can't unequip to contribute
-    //      nothing to your own war score.
-    public const int GuildWarBaseDeathAttrition = 20;
-    // Per-target DR applied ONLY to the base-death rate: the % counted at stages 1..N; beyond the last stage
-    // it STAYS at the minimum (the last entry), never 0, so a heavily-farmed target is still worth some
-    // attrition. The treasury "war spend" is never DR-scaled. The target recovers 1 stage per recovery period.
-    public static readonly int[] GuildWarDrStagePercents = { 100, 75, 50, 25 };
-    public const int GuildWarDrRecoverySeconds = 300;   // 5 min per recovered DR stage
-    // Bankruptcy short-circuit: this many consecutive vault-uncovered war deaths auto-loses a mutual war.
-    public const int GuildWarBankruptcyStreak = 5;
-    // A mutual war goes cold (a draw) if neither side pushes the other to a new attrition low for this long.
-    public const int GuildWarColdSeconds = 2 * 60 * 60;   // 2 hours
-    // After a war with an opponent ends, this cooldown must elapse before re-declaring on them (anti-pile-on).
-    public const int GuildWarRedeclareCooldownSeconds = 60 * 60;   // 1 hour
-
-    // ── Guild war wagers (MUTUAL wars only, consensual) ──────────────────────
-    // A matched ante must be agreed within this long of the war becoming mutual; after the window closes no
-    // new ante can be set (an already-locked ante rides to the war's end regardless).
-    public const int GuildWarWagerWindowSeconds = 60 * 60;   // 1 hour
-    // The ante (and a no-ante peace offering) is capped at this % of the staking guild's vault. Since an ante
-    // is matched, this effectively caps it at 50% of the SMALLER of the two vaults (the other side can't
-    // accept more than it can stake). Winner-take-all; a cold draw returns each side's own stake.
-    public const int GuildWarWagerMaxVaultPercent = 50;
-
-    // ── Territory income ─────────────────────────────────────────────────────
-    // Per PvE mob-kill in a controlled territory (by ANYONE), a chance to generate gold into the controlling
-    // guild's vault: the non-owner base if the killer isn't in the owning guild, the owner base if they are
-    // (stacks with the L5 perk for an owning member). Scaled by the weeks-held multiplier. PvP never feeds it.
-    public const int TerritoryIncomeChancePercent = 25;
-    public const int TerritoryIncomeNonOwnerGold = 35;
-    public const int TerritoryIncomeOwnerGold = 70;
-    // Weeks-held income multiplier caps here (= 1 "month"): weeks 0→x1, 1→x2, 2→x3, 3+→x4.
-    public const int TerritoryWeeksHeldCap = 4;
-    // Per-territory per-day accrual cap (anti-snowball); resets when the day's income is credited.
-    public const long TerritoryIncomeDailyCap = 17_500;
-    // ── Territory war night ──────────────────────────────────────────────────
-    // The weekly contest slot and the weekly boundary that follows it are server SETTINGS — see
-    // ServerConfig.Schedule. They default to Saturday 8pm and the Sunday after, which is what they were
-    // when they lived here. WeeksHeld itself ticks at war-night retention, not at the boundary.
-    // Up to this many challengers per territory; with the defender that's TerritoryMaxChallengers + 1 guilds.
-    public const int TerritoryMaxChallengers = 4;
-    // Flat cost to challenge an UNCLAIMED territory (a non-refundable sink). An OWNED territory costs the base
-    // grudge-war declare formula on the two guilds' levels (no level-0-target doubling) — GuildWarFormulas.BaseDeclareCost.
-    public const int TerritoryUnclaimedChallengeCost = 35_000;
-
-    // ── Seasonal leaderboard ─────────────────────────────────────────────────
-    // A season is this many whole weeks (4 x 13 = 52/yr). Boundaries roll on the configured week reset day (Sunday,
-    // the day after war night). Scoring skips the season's first week so established control carries in.
-    public const int TerritorySeasonWeeks = 13;
-    public const int TerritorySeasonScoringStartWeek = 1;
-    // Season active-member gate: a member earns the per-member placing payout only if they were online >= this
-    // many seconds (3h) within the trailing window (3 days). Tracked as a rolling total that resets after an
-    // offline gap longer than the window (see GuildMember.ActiveSeconds).
+    // How far back a guild member's rolling "recently active" total reaches. The total resets after an
+    // offline gap longer than this (see GuildMember.ActiveSeconds).
     public const long GuildActiveMemberWindowSeconds = 3 * 24 * 3600;
-    public const long GuildActiveMemberMinSeconds = 3 * 3600;
-    // Weekly leaderboard points for holding a territory: a base per week times a consecutive-hold bonus that
-    // compounds (+bonus% per consecutive week held, capped) — losing the territory resets WeeksHeld (the streak).
-    public const long TerritorySeasonPointsPerWeek = 100;
-    public const int TerritorySeasonHoldBonusPercentPerWeek = 25;
-    public const int TerritorySeasonHoldBonusCapWeeks = 12;   // streak weeks the bonus scales with, then flat
-    // Season-end placing payouts: the per-active-member gold (delivered to their account; DEFERRED delivery) and
-    // the guild-vault gold (credited now). "Other scorers" (4th+) get the flat scorer payout; non-scorers get 0.
-    public const long TerritorySeason1stMemberGold = 175_000, TerritorySeason1stVaultGold = 700_000;
-    public const long TerritorySeason2ndMemberGold = 87_500, TerritorySeason2ndVaultGold = 350_000;
-    public const long TerritorySeason3rdMemberGold = 35_000, TerritorySeason3rdVaultGold = 175_000;
-    public const long TerritorySeasonScorerMemberGold = 17_500, TerritorySeasonScorerVaultGold = 35_000;
-
-    // ── Territory capture contest (king-of-the-hill) ─────────────────────────
-    // War-night phases (Server Time): a 10-min setup ramp, the 20-min king-of-the-hill contest, a 10-min
-    // cooldown. The contest scores on a 5s tick (20 min = 240 ticks).
-    public const int TerritoryContestSetupSeconds = 10 * 60;
-    public const int TerritoryContestSeconds = 20 * 60;
-    public const int TerritoryContestCooldownSeconds = 10 * 60;
-    public const int TerritoryContestTickSeconds = 5;
-    // Capture points: 1 per this many maps, clamped to [min, max]; randomly placed, labeled Alpha..Echo.
-    public const int TerritoryCapturePointMapsPer = 5;
-    public const int TerritoryMinCapturePoints = 2;
-    public const int TerritoryMaxCapturePoints = 5;
-    // Capture radius, in tiles. Sized against SpellRangeTiles (5), which is what makes the ranged/melee trade
-    // on a point work out, and both edges land exactly at 4:
-    //   - A caster OUTSIDE the zone reaches inward to (R + 1) - SpellRange. At 4 that is the center exactly
-    //     and nothing past it, so poking from outside pressures a holder without owning the point.
-    //   - A melee at the center answering that caster closes to adjacent, landing at distance R from the
-    //     center — still inside, still contesting. At R = 3 the same answer would step them out of the zone.
-    //   - A caster INSIDE the zone contests, but the zone is only 2R across, so it has 3 tiles of retreat
-    //     before falling out — a kite it loses to a melee that commits (7 tiles, about a second sprinting).
-    // Also 9 tiles across, so the whole zone fits the viewport (ViewportTilesY = 12) and can be read at once.
-    public const int TerritoryCapturePointRadius = 4;
-    // Capture meter: signed [-Full, +Full]. -Full = the owner securely holds; a challenger with the tick's
-    // strict-plurality pushes it up (+1/tick); the owner pushes it back down; a contested/empty point drifts
-    // toward 0 (neutral). At +Full the point flips to the challenger (reset to -Full = they now securely hold).
-    // A full owner→challenger swing is 2*Full ticks; at 5s/tick and Full=3 that's ~30s.
-    public const int TerritoryCaptureFull = 3;
-    // The owner scores a held point only while the meter is at/below -NeutralBand; the band around 0 scores
-    // nobody (a ~10s neutral zone mid-swing).
-    public const int TerritoryCaptureNeutralBand = 1;
-    // KotH scoring: an owned point scores this per tick for its owner, plus a defender edge when the owner is
-    // the territory's defender (so a held point pays 2/tick vs an attacker's 1/tick).
-    public const int TerritoryOwnedScorePerTick = 1;
-    public const int TerritoryDefenderScoreBonus = 1;
-
-    // ── Valor earning (war currency, ValorItemIndex) ─────────────────────────────
-    // Per-kill chance for each war-participant damage contributor to earn 1 valor from a grudge-war kill.
-    public const int GuildWarGrudgeValorChancePercent = 10;
-    // Per-kill chance for each war-participant damage contributor to earn 1 valor from a TERRITORY-contest
-    // kill — the higher rate that makes holding land the richer valor source.
-    public const int GuildWarTerritoryValorChancePercent = 50;
-    // Per-kill chance for each guild-quest contributor to earn 1 valor when they help kill their guild's
-    // active quest mob.
-    public const int GuildQuestValorChancePercent = 25;
 
     /// <summary>The share of a mob's damage a player deals for the kill to count toward their quest
     /// objectives — player and guild alike, and the valor rolled for advancing one.

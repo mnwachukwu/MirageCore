@@ -85,19 +85,6 @@ public interface IPersistenceService
     Task<Dictionary<int, MapGroupRecord>> LoadAllMapGroupsAsync();
     Task SaveMapGroupAsync(int num, MapGroupRecord group);
 
-    // ── Territories ─────────────────────────────────────────────────────────────
-    // Keyed by the map group whose maps they are, and part of this installation rather than of the world.
-    Task<Dictionary<int, TerritoryRecord>> LoadAllTerritoriesAsync();
-    Task SaveTerritoryAsync(int mapGroup, TerritoryRecord territory);
-    Task DeleteTerritoryAsync(int mapGroup);
-
-    /// <summary>Persist a finished season's final leaderboard to seasons/season{N}.json (archived
-    /// in perpetuity).</summary>
-    Task SaveSeasonArchiveAsync(int season, SeasonArchive archive);
-
-    /// <summary>Load every archived season (seasons/season{N}.json), ascending by season number — the
-    /// perpetual record surfaced by the historical-season browser. Empty if none exist.</summary>
-    Task<List<SeasonArchive>> LoadAllSeasonArchivesAsync();
     Task DeleteMapGroupAsync(int num);
 
     // Marketplace listings — unbounded, keyed by global listing id (mirrors the guild file pattern).

@@ -26,7 +26,6 @@ public sealed partial class GameplayScreen : IGameScreen
     private readonly ShellContext _ctx;
     private readonly HudPanel _hud = new();
     private readonly PartyOverlayPanel _partyOverlay = new();
-    private readonly ContestHudPanel _contestHud = new();
     private const float TickMs = 100f;   // action-send gate; ~10 ticks/s
     private float _tickAccMs;
 

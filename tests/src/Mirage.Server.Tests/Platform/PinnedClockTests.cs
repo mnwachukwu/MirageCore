@@ -153,61 +153,6 @@ public class PinnedClockTests
         });
     }
 
-    // ── Guild weekly tax date arithmetic ──────────────────────────────────────
-
-    // Days-until-tax counts forward from today to the guild's founding weekday, and "today" counts as a
-    // full 7 rather than 0 (today's settlement already ran). Both halves are pure calendar arithmetic
-    // off the clock's LOCAL date — untestable before, since it read DateTime.Now.
-    [Test]
-    public void DaysUntilTax_CountsForwardToTheFoundingWeekday()
-    {
-        var world = new GameWorld();
-        var pm = new PlayerManager();
-        var clock = new FixedClock();
-        var guilds = new GuildSystem(world, pm, new NoOpDispatcher(),
-            persistence: null!, bg: null!, saver: null!, items: null!, mail: null!, objectives: null!,
-            NullLogger<GuildSystem>.Instance, clock: clock);
-
-        // Wednesday 2026-01-07.
-        clock.LocalNow = new DateTime(2026, 1, 7, 12, 0, 0, DateTimeKind.Local);
-        Assert.That(clock.LocalNow.DayOfWeek, Is.EqualTo(DayOfWeek.Wednesday), "sanity: the fixture date");
-
-        var guild = new GuildRecord { Index = 1, Name = "G" };
-
-        guild.FoundingWeekday = DayOfWeek.Friday;
-        Assert.That(Invoke<int>(guilds, "ComputeDaysUntilTax", guild), Is.EqualTo(2),
-                    "Wednesday to Friday is two days");
-
-        guild.FoundingWeekday = DayOfWeek.Tuesday;
-        Assert.That(Invoke<int>(guilds, "ComputeDaysUntilTax", guild), Is.EqualTo(6),
-                    "Wednesday to next Tuesday wraps the week");
-
-        guild.FoundingWeekday = DayOfWeek.Wednesday;
-        Assert.That(Invoke<int>(guilds, "ComputeDaysUntilTax", guild), Is.EqualTo(7),
-                    "today counts as a full week out — today's tax has already run");
-    }
-
-    // Moving only the clock, with the guild unchanged, must move the answer — so the test above is not
-    // reading a stored value.
-    [Test]
-    public void DaysUntilTax_MovesWithTheClock()
-    {
-        var world = new GameWorld();
-        var pm = new PlayerManager();
-        var clock = new FixedClock();
-        var guilds = new GuildSystem(world, pm, new NoOpDispatcher(),
-            persistence: null!, bg: null!, saver: null!, items: null!, mail: null!, objectives: null!,
-            NullLogger<GuildSystem>.Instance, clock: clock);
-
-        var guild = new GuildRecord { Index = 1, Name = "G", FoundingWeekday = DayOfWeek.Sunday };
-
-        clock.LocalNow = new DateTime(2026, 1, 5, 12, 0, 0, DateTimeKind.Local);   // Monday
-        Assert.That(Invoke<int>(guilds, "ComputeDaysUntilTax", guild), Is.EqualTo(6));
-
-        clock.LocalNow = new DateTime(2026, 1, 9, 12, 0, 0, DateTimeKind.Local);   // Friday
-        Assert.That(Invoke<int>(guilds, "ComputeDaysUntilTax", guild), Is.EqualTo(2));
-    }
-
     // ── No-op dispatcher ──────────────────────────────────────────────────────
 
     sealed class NoOpDispatcher : IPacketDispatcher

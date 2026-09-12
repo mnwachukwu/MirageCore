@@ -9,13 +9,11 @@ public static partial class ClientStrings
     public const string Common_Confirm = nameof(Common_Confirm);
     public const string Common_Cancel = nameof(Common_Cancel);
     public const string Common_OK = nameof(Common_OK);
-    public const string Common_Drop = nameof(Common_Drop);
     public const string Common_Delete = nameof(Common_Delete);
     public const string Common_Create = nameof(Common_Create);
     public const string Common_Equipped = nameof(Common_Equipped);
     public const string Common_Broken = nameof(Common_Broken);
     public const string Common_Empty = nameof(Common_Empty);
-    public const string Common_Prepared = nameof(Common_Prepared);
     // Inventory-panel link labels (Sort/Equipment) + the equipment sub-view's back button; the Link
     // widget adds the "[…]" brackets, so the strings stay plain.
     public const string Common_SortHeader = nameof(Common_SortHeader);
@@ -54,10 +52,6 @@ public static partial class ClientStrings
     public const string Stats_Def = nameof(Stats_Def);
     public const string Stats_Int = nameof(Stats_Int);
     public const string Stats_Spd = nameof(Stats_Spd);
-    public const string Stats_PCrit = nameof(Stats_PCrit);
-    public const string Stats_MCrit = nameof(Stats_MCrit);
-    public const string Stats_Block = nameof(Stats_Block);
-    public const string Stats_Dodge = nameof(Stats_Dodge);
     public const string Stats_PDmg = nameof(Stats_PDmg);
     public const string Stats_MDmg = nameof(Stats_MDmg);
     public const string Stats_MpDmg = nameof(Stats_MpDmg);
@@ -66,19 +60,8 @@ public static partial class ClientStrings
     public const string Stats_MpRestore = nameof(Stats_MpRestore);
     public const string Stats_SpRestore = nameof(Stats_SpRestore);
     public const string Stats_Mit = nameof(Stats_Mit);
-    public const string Stats_Sprint = nameof(Stats_Sprint);
-    public const string Stats_HpRegen = nameof(Stats_HpRegen);
-    public const string Stats_MpRegen = nameof(Stats_MpRegen);
-    public const string Stats_SpRegen = nameof(Stats_SpRegen);
-    public const string Stats_RegenFormat = nameof(Stats_RegenFormat);
-    public const string Stats_PkTimer = nameof(Stats_PkTimer);
-    public const string Stats_Points = nameof(Stats_Points);
 
     // Floating combat text (Block/Dodge over an entity; vital labels reuse Stats_*).
-    public const string Combat_Blocked = nameof(Combat_Blocked);
-    public const string Combat_Dodged = nameof(Combat_Dodged);
-    public const string Combat_Missed = nameof(Combat_Missed);
-    public const string Combat_LevelUp = nameof(Combat_LevelUp);
     public const string Combat_EnterCombat = nameof(Combat_EnterCombat);
     public const string Combat_EndCombat = nameof(Combat_EndCombat);
 
@@ -103,7 +86,6 @@ public static partial class ClientStrings
     public const string HotkeyBar_Clear = nameof(HotkeyBar_Clear);
     public const string HotkeyBar_NothingBound = nameof(HotkeyBar_NothingBound);
     public const string HotkeyBar_ItemGone = nameof(HotkeyBar_ItemGone);
-    public const string HotkeyBar_SpellGone = nameof(HotkeyBar_SpellGone);
     public const string Tooltip_ReagentCost = nameof(Tooltip_ReagentCost);
     public const string Tooltip_ReagentCostRained = nameof(Tooltip_ReagentCostRained);   // rain-doubled value: "{Count} (x2)"
     public const string Tooltip_ReagentDepletes = nameof(Tooltip_ReagentDepletes);

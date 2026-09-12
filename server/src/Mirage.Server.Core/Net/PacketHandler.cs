@@ -37,9 +37,6 @@ public sealed partial class PacketHandler
     private readonly PlayerSpawnSystem _playerSpawn;
     private readonly PartySystem _party;
     private readonly GuildSystem _guilds;
-    private readonly GuildWarSystem _guildWar;
-    private readonly GuildTerritorySystem _territory;
-    private readonly GuildScheduleSystem _guildSchedule;
     private readonly MailSystem _mail;
     private readonly MarketSystem _market;
     private readonly TradeSystem _trade;
@@ -90,7 +87,7 @@ public sealed partial class PacketHandler
         GameWorld world, PlayerManager pm,
         IPacketDispatcher dispatcher, IPersistenceService persistence, IBackgroundPersistence bg, PlayerSaver saver,
         JoinLeaveSystem joinLeave, MovementSystem movement, ItemSystem items, ShopSystem shop, BankSystem bank, PlayerSpawnSystem playerSpawn,
-        PartySystem party, GuildSystem guilds, GuildWarSystem guildWar, GuildTerritorySystem territory, GuildScheduleSystem guildSchedule, MailSystem mail, MarketSystem market, TradeSystem trade, QuestSystem quests, ConversationSystem conversations, SocialSystem social, SpawnSystem spawn, TimeOfDaySystem tod, WeatherSystem weather, GameLoop gameLoop,
+        PartySystem party, GuildSystem guilds, MailSystem mail, MarketSystem market, TradeSystem trade, QuestSystem quests, ConversationSystem conversations, SocialSystem social, SpawnSystem spawn, TimeOfDaySystem tod, WeatherSystem weather, GameLoop gameLoop,
         ILogger<PacketHandler> logger,
         IClock? clock = null, IRandomSource? rng = null, ServerConfig? config = null)
     {
@@ -108,9 +105,6 @@ public sealed partial class PacketHandler
         _playerSpawn = playerSpawn;
         _party = party;
         _guilds = guilds;
-        _guildWar = guildWar;
-        _territory = territory;
-        _guildSchedule = guildSchedule;
         _mail = mail;
         _market = market;
         _trade = trade;
@@ -179,8 +173,7 @@ public sealed partial class PacketHandler
         // Asking, never changing.
         or WhoIsOnlinePacket or PlayerInfoRequestPacket or PlayedRequestPacket
         or RequestLocationPacket or MapReportPacket or HomeCooldownRequestPacket
-        or GuildInfoRequestPacket or GuildBrowseRequestPacket or GuildLeaderboardRequestPacket
-        or SeasonArchiveRequestPacket or RequestModerationPacket
+        or GuildInfoRequestPacket or GuildBrowseRequestPacket or RequestModerationPacket
 
         // Map streaming. Refusing these leaves the death screen with nothing to draw over.
         or MapDataClientPacket or NeedMapPacket or NeedNeighborMapPacket or RequestNewMapPacket
@@ -199,8 +192,8 @@ public sealed partial class PacketHandler
         // Operator tools. An admin's own death is not a reason their moderation stops working.
         or KickPlayerPacket or BanPlayerPacket or MutePlayerPacket or UnbanPlayerPacket
         or UnkickPlayerPacket or UnmutePlayerPacket or HwBanPlayerPacket or HwUnbanPlayerPacket
-        or RefreshBanListPacket or SetAccessPacket or SetMotdPacket or AdminGuildResetPacket
-        or AdminTerritoryWarPacket or MapRespawnPacket or SetTimeOfDayPacket or SetWeatherPacket
+        or RefreshBanListPacket or SetAccessPacket or SetMotdPacket
+        or MapRespawnPacket or SetTimeOfDayPacket or SetWeatherPacket
         or GodModePacket or SetSpritePacket
 
         // Delivered ONLY so their handler can refuse them out loud — see the note above.
@@ -381,56 +374,8 @@ public sealed partial class PacketHandler
                 case GuildDonatePacket p:
                     _guilds.DonateGold(index, p.Amount);
                     break;
-                case GuildDonateValorPacket p:
-                    _guilds.DonateValor(index, p.Amount);
-                    break;
-                case GuildPayTaxPacket:
-                    _guilds.PayTaxLate(index);
-                    break;
-                case GuildQuestAcquirePacket:
-                    _guilds.AcquireQuest(index);
-                    break;
-                case GuildQuestAbandonPacket:
-                    _guilds.AbandonQuest(index);
-                    break;
                 case GuildChatPacket p:
                     HandleGuildChat(index, p);
-                    break;
-                case GuildWarDeclarePacket p:
-                    _guildWar.DeclareWar(index, p.TargetGuildIndex);
-                    break;
-                case GuildWarDeclareByNamePacket p:
-                    _guildWar.DeclareWarByName(index, p.TargetName);
-                    break;
-                case GuildWarRetractPacket p:
-                    _guildWar.RetractWar(index, p.OpponentIndex);
-                    break;
-                case GuildWarReviewRequestPacket p:
-                    _guildWar.ReviewRequest(index, p.Kind, p.TargetIndex, p.Accept);
-                    break;
-                case GuildWarPeacePacket p:
-                    HandleGuildWarPeace(index, p);
-                    break;
-                case GuildWarWagerPacket p:
-                    HandleGuildWarWager(index, p);
-                    break;
-                case GuildTerritoryChallengePacket p:
-                    _territory.ChallengeTerritory(index, p.TerritoryIndex);
-                    break;
-                case GuildLeaderboardRequestPacket:
-                    _guildSchedule.SendLeaderboard(index);
-                    break;
-                case SeasonArchiveRequestPacket p:
-                    _guildSchedule.SendSeasonArchive(index, p.Season);
-                    break;
-                case GuildTerritoryWithdrawPacket p:
-                    _territory.WithdrawChallenge(index, p.TerritoryIndex);
-                    break;
-                case AdminGuildResetPacket p:
-                    HandleAdminGuildReset(index, p);
-                    break;
-                case AdminTerritoryWarPacket p:
-                    HandleAdminTerritoryWar(index, p);
                     break;
                 case GuildBrowseRequestPacket:
                     HandleGuildBrowseRequest(index);

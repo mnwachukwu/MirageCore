@@ -44,24 +44,6 @@ public readonly record struct SpriteDrawCmd(
 /// (<see cref="ScreenX"/>/<see cref="ScreenY"/>) in place of the live sprite.</summary>
 public readonly record struct CorpseDrawCmd(float ScreenX, float ScreenY, WorldLayer Layer = WorldLayer.Ground);
 
-/// <summary>Per-viewer control of a territory-contest capture point — drives the flag/circle color
-/// — blue when the viewer's own guild controls it, red for an enemy guild, gray for
-/// neutral/contested.</summary>
-public enum ContestControl { Neutral, Own, Enemy }
-
-/// <summary>A territory-contest capture point rendered in the world layer for a war participant:
-/// a triangular flag + the tinted capture zone + the point's name label, colored per-viewer by
-/// <see cref="Control"/>. <see cref="ScreenX"/>/<see cref="ScreenY"/> is the point's tile origin (matching
-/// <see cref="SpriteDrawCmd"/>); the zone's extent comes from
-/// <see cref="Constants.TerritoryCapturePointRadius"/>, which the shell walks a tile at a time.</summary>
-public readonly record struct ContestPointCmd(
-    float ScreenX, float ScreenY, ContestControl Control, string Label,
-    WorldLayer Layer = WorldLayer.Ground,
-    /// <summary>True when the point itself is outside the viewport. Its flag, zone and light are not drawn
-    /// at all — only the label survives, pinned to the edge the point lies past, so it reads as a bearing on
-    /// an objective rather than a thing standing in the room.</summary>
-    bool OffScreen = false);
-
 // FlickerStyle now lives in Mirage.Shared (shared by LightSpec + records); resolved via `using Mirage.Shared`.
 
 /// <summary>A light emitter at the given screen position (tile origin, matching <see cref="SpriteDrawCmd"/>;
@@ -118,15 +100,13 @@ public readonly record struct GlowCmd(float ScreenX, float ScreenY, uint Rgb, fl
 /// <see cref="LineOffset"/> shifts the text up by that many name-line-heights using the real font metrics
 /// at draw time, so a caller can stack a line without knowing the font from the logic layer.</para>
 ///
-/// <para><see cref="GuildRankWord"/> (0 = none, else a <c>GuildRank</c>) appends the localized rank word,
-/// and <see cref="GuildStanding"/> (0 = none, else the 1-based seasonal standing) appends " (N)". Both
-/// are assembled and localized in the Shell layer, which owns the string table — only the numbers travel
-/// on the command. <see cref="AtWar"/> draws a crossed-swords marker to the left, flagging a guild the
-/// viewer's guild is at war with.</para>
+/// <para><see cref="GuildRankWord"/> (0 = none, else a <c>GuildRank</c>) appends the localized rank word.
+/// It is assembled and localized in the Shell layer, which owns the string table — only the number travels
+/// on the command.</para>
 /// </summary>
 public readonly record struct TextDrawCmd(float ScreenX, float ScreenY, string Text, int ColorIndex,
-    bool AlignBottom = false, int RgbOverride = -1, int LineOffset = 0, int GuildRankWord = 0, bool AtWar = false,
-    int GuildStanding = 0, WorldLayer Layer = WorldLayer.Ground);
+    bool AlignBottom = false, int RgbOverride = -1, int LineOffset = 0, int GuildRankWord = 0,
+    WorldLayer Layer = WorldLayer.Ground);
 
 /// <summary>
 /// Draw the tab-target indicator arrow above or below an entity's name.
@@ -203,7 +183,6 @@ public sealed class RenderFrame
     public List<TextDrawCmd> CorpseNames { get; } = new();
     /// <summary>Territory-contest capture points (participant-only) — flag + radius circle + name, drawn in the
     /// world layer so they scroll with the map and living entities draw over them.</summary>
-    public List<ContestPointCmd> ContestPoints { get; } = new();
     /// <summary>Light emitters (players + NPCs) within the halo-reach of the viewport. Wider cull than
     /// <see cref="Npcs"/>/<see cref="Players"/> so off-screen entities still light the view edge.</summary>
     public List<LightSourceCmd> Lights { get; } = new();
@@ -242,7 +221,6 @@ public sealed class RenderFrame
         Players.Clear();
         Corpses.Clear();
         CorpseNames.Clear();
-        ContestPoints.Clear();
         Lights.Clear();
         AlwaysLitMapLights.Clear();
         AlwaysDarkMapLights.Clear();

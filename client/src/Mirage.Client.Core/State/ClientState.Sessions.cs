@@ -173,27 +173,6 @@ public sealed partial class ClientState
     // refreshed by each live attrition push. Keyed by opponent guild index.
     private readonly Dictionary<int, int> _warTrend = new();
 
-    /// <summary>The last-known attrition direction for the war with <paramref name="opponentIndex"/>
-    /// (+1 rising / -1 falling / 0 steady or unknown).</summary>
-    public int WarTrend(int opponentIndex) => _warTrend.GetValueOrDefault(opponentIndex);
-
-    /// <summary>Apply a live war-attrition push: update the matching war row's meters in place and record the
-    /// trend (comparing our new meter to the previous value), so the War panel animates between full syncs.
-    /// No-op if the war isn't in the current snapshot yet (a full GuildInfo will carry it).</summary>
-    public void ApplyWarAttrition(int opponentIndex, int ourAttrition, int theirAttrition)
-    {
-        var wars = GuildInfo?.Wars;
-        if (wars is null) return;
-        for (int i = 0; i < wars.Count; i++)
-        {
-            if (wars[i].OpponentIndex != opponentIndex) continue;
-            _warTrend[opponentIndex] = Math.Sign(ourAttrition - wars[i].Attrition);
-            wars[i] = wars[i] with { Attrition = ourAttrition, OpponentAttrition = theirAttrition };
-            SocialVersion++;
-            return;
-        }
-    }
-
     public void SetSocialLists(List<SocialEntry> friends, List<SocialEntry> ignore)
     {
         Friends = friends;
@@ -248,23 +227,4 @@ public sealed partial class ClientState
         SocialVersion++;
     }
 
-    /// <summary>Latest seasonal leaderboard (every guild, pre-ordered best-first) + its season number, or null
-    /// until requested; pushed when the Standings sub-tab opens. Shares the <see cref="SocialVersion"/> trigger.</summary>
-    public GuildLeaderboardPacket? Leaderboard { get; private set; }
-
-    public void SetLeaderboard(GuildLeaderboardPacket leaderboard)
-    {
-        Leaderboard = leaderboard;
-        SocialVersion++;
-    }
-
-    /// <summary>The archived past season currently shown in the historical-season browser (null until the first
-    /// request). Shares the <see cref="SocialVersion"/> rebuild trigger.</summary>
-    public SeasonArchivePacket? SeasonArchive { get; private set; }
-
-    public void SetSeasonArchive(SeasonArchivePacket archive)
-    {
-        SeasonArchive = archive;
-        SocialVersion++;
-    }
 }

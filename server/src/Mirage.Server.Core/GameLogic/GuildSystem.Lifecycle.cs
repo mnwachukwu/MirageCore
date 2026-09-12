@@ -85,7 +85,7 @@ public sealed partial class GuildSystem : GameSystem
         _items.TakeItem(index, Constants.GoldItemIndex, Constants.GuildCreationCost);
 
         int id = AllocateGuildIndex();
-        var guild = new GuildRecord { Index = id, Name = name, FoundingWeekday = Clock.LocalNow.DayOfWeek };
+        var guild = new GuildRecord { Index = id, Name = name };
         guild.Members.Add(new GuildMember
         {
             Login = sp.Login,
@@ -139,34 +139,6 @@ public sealed partial class GuildSystem : GameSystem
         string guildName = guild.Name;
         int id = guild.Index;
 
-        // Disbanding mid-war = forfeit: the opponent wins each active war decisively, taking any wager
-        // pot (their own ante back + our escrowed stake), before the guild dissolves. Done via the shared static
-        // helpers (no GuildWarSystem dependency → no cycle); GuildSystem owns the announce path directly.
-        foreach (var war in guild.Wars.ToList())
-        {
-            var opponent = GuildById(war.OpponentIndex);
-            if (opponent is null) continue;
-            long pot = GuildWarFormulas.SettleWagerPot(opponent, guild, opponent);   // opponent wins, pre-unlink
-            GuildWarFormulas.Unlink(guild, opponent);
-            SaveGuild(opponent);   // persists + broadcasts the opponent's War panel (the war is gone)
-            _dispatcher.SendLocalizedChatToAll(ServerStrings.GuildWar_WonForfeit,
-                new ChatMetadata(GameColor.War, ChatChannel.War), ("Guild1", opponent.Name), ("Guild2", guildName));
-            if (pot > 0)
-            {
-                _dispatcher.SendLocalizedChatToGuild(opponent.Index, ServerStrings.GuildWar_WonPot,
-                    new ChatMetadata(GameColor.Guild, ChatChannel.Guild), ("GuildName", guildName), ("Gold", pot));
-            }
-        }
-
-        // A dissolved guild also gives up its territory: what it controlled falls unclaimed and any challenge it
-        // registered is withdrawn. Operates on the territory records directly — GuildSystem takes no
-        // GuildTerritorySystem dependency (that would be a cycle), the same reason the war forfeits above go
-        // through static helpers.
-        foreach (var (_, terr) in _world.AllTerritories())
-        {
-            if (ReleaseTerritory(terr, id)) SaveTerritory(terr);
-        }
-
         _world.Guilds.Remove(id);
         RetireGuild(id, guild);
 
@@ -179,23 +151,6 @@ public sealed partial class GuildSystem : GameSystem
         _dispatcher.SendLocalizedChatToAll(ServerStrings.Guild_Disbanded,
             new ChatMetadata(GameColor.BrightGreen, ChatChannel.Notice), ("GuildName", guildName));
         _logger.LogInformation("{Player} disbanded guild {Guild} (#{Id}).", sp.Char.TrimmedName, guildName, id);
-    }
-
-    /// <summary>Release everything the guild at <paramref name="guildIndex"/> holds on one territory: its
-    /// ownership falls unclaimed (weeks-held resets with it — a consecutive-hold streak is meaningless without an
-    /// owner) and its pending challenge, if any, is dropped. Returns whether the territory actually changed, so
-    /// the caller persists only what it touched. Pure — mutates <paramref name="terr"/> alone; exposed for
-    /// tests.</summary>
-    public static bool ReleaseTerritory(TerritoryRecord terr, int guildIndex)
-    {
-        bool changed = terr.Challengers.Remove(guildIndex);
-        if (terr.ControllingGuild == guildIndex)
-        {
-            terr.ControllingGuild = 0;
-            terr.WeeksHeld = 0;
-            changed = true;
-        }
-        return changed;
     }
 
     /// <summary>Leader-only: open or close the guild to join-requests. Open = the request flow and

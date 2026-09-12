@@ -61,7 +61,6 @@ public static class RenderCommandBuilder
         EmitItems(state, frame, camera);
         EmitNpcs(state, frame, camera, tickNow, alwaysShowBars, hoveredEntity, targetEntity, showNpcNames, nameLineH);
         EmitPlayers(state, frame, camera, tickNow, alwaysShowBars, hoveredEntity, targetEntity, showOtherPlayerNames, showPlayerName, myIndex, nameLineH);
-        EmitContest(state, frame, camera);
         EmitMapPlacedLights(state, frame, camera);
         EmitTileFringe(state, frame, camera);
         EmitTileCanopy(state, frame, camera);
@@ -605,127 +604,6 @@ public static class RenderCommandBuilder
         return null;
     }
 
-    // ── Territory contest (participant-only capture-point flags/circles/names) ─────────────
-    // state.Contest is non-null only for a war participant (the server gates the push). Each point renders on
-    // whichever of the 9 observable cells currently holds its map; the radius circle can reach well past the
-    // point's own tile, so cell-observability (not the tight per-tile OnScreen cull) is the gate here.
-    private static void EmitContest(ClientState state, RenderFrame frame, Camera camera)
-    {
-        var contest = state.Contest;
-        if (contest is null) return;
-
-        // Markers are for finding an objective while you are AT the war. Standing somewhere else in the
-        // world during war night is not that, so they are gated on being in the contested territory — or on
-        // holding a point, which a border point's spill lets you do from a tile outside it.
-        var layout = ContestLayout(state, contest);
-        if (layout is null) return;
-
-        int myGuild = state.Me.GuildId;
-        float radiusPx = Constants.TerritoryCapturePointRadius * Constants.PicX;
-        int lightId = ContestLightIdBase;
-        foreach (var pt in contest.Points)
-        {
-            // A point on one of the nine loaded maps is placed from the grid, exactly as everything else is.
-            // Anything further is placed through the territory layout, which reaches maps this client has
-            // never seen — that is the whole point of an off-screen marker.
-            var off = CellOffsetForMap(state, pt.Map);
-            int wx, wy;
-            if (off is not null)
-            {
-                wx = off.Value.offX + pt.X;
-                wy = off.Value.offY + pt.Y;
-            }
-            else if (layout.Value.TryPlace(pt.Map, pt.X, pt.Y, out int lx, out int ly))
-            {
-                wx = lx;
-                wy = ly;
-            }
-            else
-            {
-                continue;   // a point on a map the layout could not reach
-            }
-
-            var (screenX, screenY) = camera.WorldTileToScreen(wx, wy, 0f, 0f);
-            ContestControl control =
-                pt.OwnerGuild <= 0 ? ContestControl.Neutral :
-                pt.OwnerGuild == myGuild ? ContestControl.Own : ContestControl.Enemy;
-            // 🔴 OffScreen moves the LABEL to the viewport edge. It does not decide whether the zone is
-            // drawn: a point standing just past the border still holds ground inside the view, and its ring
-            // is the only thing that shows where that ground ends. The zone and the light are gated on
-            // REACH — LightReachesR, the point's tile plus its radius — never on the tile alone.
-            bool offScreen = screenX < 0 || screenY < 0
-                             || screenX >= Camera.ViewW - Constants.PicX
-                             || screenY >= Camera.ViewH - Constants.PicY;
-            frame.ContestPoints.Add(new ContestPointCmd(screenX, screenY, control, pt.Label, pt.Layer, offScreen));
-
-            // The flag lights its own capture radius, in the viewer's control color, so the zone reads at
-            // night without hunting for the ring. Steady (a flag is not a flame) and UNOCCLUDED — the capture
-            // test is pure distance with no line-of-sight term, so a light that stopped at a wall would draw a
-            // smaller zone than the one being scored.
-            float effectiveDark = InAlwaysDark(state, wx, wy) ? 1f : state.GetCurrentDarkness();
-            if (LightReachesR(screenX, screenY, radiusPx))
-            {
-                frame.Lights.Add(new LightSourceCmd(screenX, screenY, 1f, ContestLightRgb(control),
-                    radiusPx, FlickerStyle.None, lightId, effectiveDark, pt.Layer));
-            }
-            lightId++;
-        }
-    }
-
-    /// <summary>The territory's map layout, anchored on the player, or null when they are not at the war.
-    ///
-    /// <para>The server sends every map of the territory placed on one tile grid. Anchoring that grid on the
-    /// player's own map turns it into the same world-tile space the 3x3 already uses, so a point five maps
-    /// away and a point on the next screen are placed by the same arithmetic.</para></summary>
-    private readonly record struct ContestGrid(
-        Dictionary<int, (int X, int Y)> Origins, int AnchorX, int AnchorY, int MyOriginX, int MyOriginY)
-    {
-        /// <summary>World-tile position of a tile on one of the territory's maps.</summary>
-        public bool TryPlace(int map, int x, int y, out int wx, out int wy)
-        {
-            wx = wy = 0;
-            if (!Origins.TryGetValue(map, out var o)) return false;
-            wx = AnchorX + (o.X + x) - MyOriginX;
-            wy = AnchorY + (o.Y + y) - MyOriginY;
-            return true;
-        }
-    }
-
-    private static ContestGrid? ContestLayout(ClientState state, TerritoryContestPacket contest)
-    {
-        if (contest.Layout.Count == 0 || !state.AtContest()) return null;
-        var origins = new Dictionary<int, (int X, int Y)>(contest.Layout.Count);
-        foreach (var m in contest.Layout) origins[m.Map] = (m.OriginX, m.OriginY);
-
-        // Anchored on ANY loaded map the territory knows, not on the player's own. Usually they are the
-        // same map — but a border point can be held from a tile just outside the territory, and there the
-        // player's map is not in the layout at all while a neighbour of it is.
-        for (int col = 0; col < 3; col++)
-        {
-            for (int row = 0; row < 3; row++)
-            {
-                int m = state.NeighborMapNums[col, row];
-                if (m <= 0 || !origins.TryGetValue(m, out var o)) continue;
-                var (ax, ay) = state.ToWorld(col, row, 0, 0);
-                return new ContestGrid(origins, ax, ay, o.X, o.Y);
-            }
-        }
-        return null;
-    }
-
-    // Flag-light ids sit in their own range, like the NPC/traversal seeds above.
-    private const int ContestLightIdBase = 3_000_000;
-
-    // The flag light's core color: a softer, lighter reading of the flag's own control color (which stays the
-    // saturated ContestOwn/Enemy/Neutral in the shell), because a full-strength tint over a 10-tile radius
-    // washes the ground it is meant to mark.
-    private static uint ContestLightRgb(ContestControl control) => control switch
-    {
-        ContestControl.Own => 0x8CEBF5,     // soft cyan
-        ContestControl.Enemy => 0xFFAAC8,   // light pink
-        _ => 0xD2D2D7,                      // neutral, matching the gray flag
-    };
-
     // ── Ground items ──────────────────────────────────────────────────────────
 
     private static void EmitItems(ClientState state, RenderFrame frame, Camera camera)
@@ -1068,35 +946,6 @@ public static class RenderCommandBuilder
         }
     }
 
-    // Whether the viewer's guild is in a LIVE war (past warmup) with the observed player's guild — drives the
-    // overhead crossed-swords marker. Allocation-free (this runs per visible player per frame); the Wars list
-    // is tiny (<= a handful). Territory-war swords ride the same marker, shown only when both players are
-    // in the contested territory.
-    private static bool ViewerAtWarWith(ClientState state, int observedGuildId)
-    {
-        if (observedGuildId <= 0) return false;
-        var gi = state.GuildInfo;
-        if (gi is null || !gi.InGuild) return false;
-        foreach (var w in gi.Wars)
-        {
-            if (w.OpponentIndex == observedGuildId && w.Status != GuildWarStatus.Warmup)
-                return true;
-        }
-
-        return false;
-    }
-
-    // Territory-war swords: the observed player is a RIVAL participant in the viewer's live contest, standing in
-    // the contested territory. Rides the same overhead crossed-swords marker as a grudge war.
-    private static bool ViewerContestOpponent(ClientState state, PlayerRecord p)
-    {
-        var c = state.Contest;
-        if (c is null || p.GuildId <= 0 || p.GuildId == state.Me.GuildId) return false;
-        bool participant = false;
-        foreach (var s in c.Scores) if (s.GuildId == p.GuildId) { participant = true; break; }
-        return participant && MapGroupOfLoaded(state, p.Map) == c.TerritoryIndex;
-    }
-
     // The MapGroup of a currently-loaded map (center or a neighbor cell), or 0 if not loaded — for the
     // territory-membership check above without a server round-trip.
     private static int MapGroupOfLoaded(ClientState state, int mapNum)
@@ -1244,20 +1093,16 @@ public static class RenderCommandBuilder
             // ONE overhead guild line directly above the player name, in the guild's chosen color (a neutral
             // default until the leader picks one): "Guild {Rank} ({Standing})". The guild's color (distinct from
             // the white player name) already sets it apart, so the name is plain — no angle brackets.
-            // The member's rank word (Officer+) always renders to the RIGHT of the name; the guild's seasonal
-            // standing "(N)" is appended only when the leader toggle is on and the guild is ranked.
-            // A crossed-swords marker prefixes the line when the viewer's guild is at war with this guild. The
-            // rank word + standing are assembled + localized in the draw layer (which owns the string table);
-            // only the numeric rank + standing travel on the command. Shares the name's show rules + alignment.
+            // The member's rank word (Officer+) renders to the RIGHT of the name when the guild's leader has
+            // the toggle on. It is assembled and localized in the draw layer (which owns the string table);
+            // only the numeric rank travels on the command. Shares the name's show rules + alignment.
             if (!string.IsNullOrEmpty(p.GuildName))
             {
                 int guildRgb = p.GuildColor != 0 ? p.GuildColor : GuildNameDefaultRgb;
-                bool atWar = ViewerAtWarWith(state, p.GuildId) || ViewerContestOpponent(state, p);
-                int rankWord = p.GuildRank >= GuildRank.Officer ? (int)p.GuildRank : 0;   // 0 = plain Member, no word
-                int standing = p.GuildShowRank && p.GuildStanding > 0 ? p.GuildStanding : 0;   // 0 = don't show
+                int rankWord = p.GuildShowRank && p.GuildRank >= GuildRank.Officer ? (int)p.GuildRank : 0;   // 0 = no word
                 frame.Names.Add(new TextDrawCmd(screenX + Constants.PicX / 2, plrNameY, p.GuildName, GameColor.White,
-                    plrNameAlignBottom, RgbOverride: guildRgb, LineOffset: 1, GuildRankWord: rankWord, AtWar: atWar,
-                    GuildStanding: standing, Layer: p.Layer));
+                    plrNameAlignBottom, RgbOverride: guildRgb, LineOffset: 1, GuildRankWord: rankWord,
+                    Layer: p.Layer));
             }
         }
 

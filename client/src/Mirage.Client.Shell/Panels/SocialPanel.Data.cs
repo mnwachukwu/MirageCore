@@ -40,23 +40,8 @@ public sealed partial class SocialPanel : IGamePanel
         _rejectBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_RejectButton);
         _appsBackBtn.Label = ClientStrings.Get(ClientStrings.Common_Back);
         _donateBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_DonateButton);
-        _donateValorBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_DonateValorButton);
-        _payTaxBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_PayTaxButton);
         _vaultDonationsBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_DonationsTab);
         _vaultSpendingBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_SpendingTab);
-        _questAcquireBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_QuestAcquireButton);
-        _questAbandonBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_QuestAbandonButton);
-        // War page (the peace toggle + requests-count labels are dynamic, set in DrawWars).
-        _warDeclareBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_WarDeclareButton);
-        _warRetractBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_WarRetractButton);
-        _warAcceptBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_WarAcceptButton);
-        _warRejectBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_WarRejectButton);
-        // Wager accept/reject are static (the Propose/Withdraw toggle label is set in DrawWars).
-        _warWagerAcceptBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_WarWagerAcceptButton);
-        _warWagerRejectBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_WarWagerRejectButton);
-        _warReqAcceptBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_WarReqAccept);
-        _warReqDenyBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_WarReqDeny);
-        _warReqBackBtn.Label = ClientStrings.Get(ClientStrings.Common_Back);
         for (int i = 0; i < _labelBtns.Length; i++)
             _labelBtns[i].Label = LabelName(AllLabels[i]);
         // Roster column headers re-localize automatically (declared as Func<string>, synced by the Table).
@@ -72,14 +57,6 @@ public sealed partial class SocialPanel : IGamePanel
             // Roster → the data-bound Table: feed the collection; it declares its own columns and follows
             // the selected member by login (WithRowKey) across this wholesale push.
             _rosterTable.Items = info?.Roster ?? new List<SocialEntry>();
-
-            // Territories → its read-only Table (every territory, all guilds).
-            _territoryTable.Items = info?.Territories ?? new List<TerritoryView>();
-
-            // Standings → the seasonal leaderboard Table (every guild; server-ordered best-first).
-            _standingsTable.Items = state.Leaderboard?.Rows ?? new List<LeaderboardEntry>();
-            // Historical browser → the selected archived season's standings.
-            _archiveTable.Items = state.SeasonArchive?.Standings ?? new List<SeasonStanding>();
 
             // Open-guild browser (guildless view).
             _browseList.Items.Clear();
@@ -98,29 +75,6 @@ public sealed partial class SocialPanel : IGamePanel
             {
                 _appList.Items.Add(login);
                 _appLogins.Add(login);
-            }
-
-            // Active wars (war page), preserving the selected war by opponent index — the live attrition
-            // push bumps SocialVersion, which would otherwise deselect the row on every war death.
-            int prevWarOpp = SelectedWarOpp();
-            _warList.Items.Clear();
-            _warOpp.Clear();
-            foreach (var w in info?.Wars ?? new List<GuildWarView>())
-            {
-                _warList.Items.Add(ClientStrings.Format(ClientStrings.SocialPanel_WarRowFormat,
-                    ("Name", w.OpponentName), ("Status", WarStatusName(w.Status))));
-                _warOpp.Add(w.OpponentIndex);
-            }
-            _warList.SelectedIndex = prevWarOpp == 0 ? -1 : _warOpp.IndexOf(prevWarOpp);
-
-            // Pending officer war-requests (leader review overlay).
-            _warReqList.Items.Clear();
-            _warReqKeys.Clear();
-            foreach (var r in info?.WarRequests ?? new List<GuildWarRequestView>())
-            {
-                _warReqList.Items.Add(ClientStrings.Format(ClientStrings.SocialPanel_WarReqRowFormat,
-                    ("By", r.RequesterName), ("Kind", WarReqKindName(r.Kind)), ("Target", r.TargetName)));
-                _warReqKeys.Add((r.Kind, r.TargetIndex));
             }
         }
         else
@@ -180,30 +134,4 @@ public sealed partial class SocialPanel : IGamePanel
             ? classes[classIndex]?.Name?.TrimEnd() ?? "" : "";
     }
 
-    // The selected war's opponent index (0 = none) — the war list's stable key across rebuilds.
-    private int SelectedWarOpp()
-        => _warList.SelectedIndex >= 0 && _warList.SelectedIndex < _warOpp.Count ? _warOpp[_warList.SelectedIndex] : 0;
-
-    private GuildWarView? SelectedWar(GuildInfoPacket info)
-    {
-        int opp = SelectedWarOpp();
-        if (opp == 0) return null;
-        foreach (var w in info.Wars) if (w.OpponentIndex == opp) return w;
-        return null;
-    }
-
-    private static string WarStatusName(GuildWarStatus status) => ClientStrings.Get(status switch
-    {
-        GuildWarStatus.OneSidedAggressor => ClientStrings.SocialPanel_WarStatusAggressor,
-        GuildWarStatus.OneSidedDefender => ClientStrings.SocialPanel_WarStatusDefender,
-        GuildWarStatus.Mutual => ClientStrings.SocialPanel_WarStatusMutual,
-        _ => ClientStrings.SocialPanel_WarStatusWarmup,
-    });
-
-    private static string WarReqKindName(GuildWarRequestKind kind) => ClientStrings.Get(kind switch
-    {
-        GuildWarRequestKind.Retract => ClientStrings.SocialPanel_WarReqKindRetract,
-        GuildWarRequestKind.Peace => ClientStrings.SocialPanel_WarReqKindPeace,
-        _ => ClientStrings.SocialPanel_WarReqKindDeclare,
-    });
 }

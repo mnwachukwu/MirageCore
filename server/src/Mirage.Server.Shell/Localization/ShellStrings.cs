@@ -141,7 +141,6 @@ public static class ShellStrings
     public const string Commands_Blurb = nameof(Commands_Blurb);
     public const string Commands_Players = nameof(Commands_Players);
     public const string Commands_World = nameof(Commands_World);
-    public const string Commands_Guilds = nameof(Commands_Guilds);
     public const string Commands_Run = nameof(Commands_Run);
     public const string Commands_Confirm = nameof(Commands_Confirm);
     public const string Commands_Cancel = nameof(Commands_Cancel);
@@ -167,10 +166,6 @@ public static class ShellStrings
     public const string Commands_Motd = nameof(Commands_Motd);
     public const string Commands_Respawn = nameof(Commands_Respawn);
     public const string Commands_MapReport = nameof(Commands_MapReport);
-    public const string Commands_StartWar = nameof(Commands_StartWar);
-    public const string Commands_AdvanceWar = nameof(Commands_AdvanceWar);
-    public const string Commands_EndWar = nameof(Commands_EndWar);
-    public const string Commands_GuildReset = nameof(Commands_GuildReset);
 
     public const string Action_Start = nameof(Action_Start);
     public const string Action_Stop = nameof(Action_Stop);

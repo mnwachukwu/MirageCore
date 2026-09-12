@@ -50,14 +50,7 @@ public enum ChatChannel : byte
     Rewards,
 
     // Guild group — private to a guild. Appended at the end so the existing values above keep their
-    // wire numbers. Guild carries member chat + guild system notices; GuildOfficer is leader/officer-only
-    // chat. GuildWar (also guild-private, member-only) carries the private war messages — peace negotiation
-    // and per-guild war results.
+    // wire numbers. Guild carries member chat + guild system notices; GuildOfficer is leader/officer-only chat.
     Guild,
     GuildOfficer,
-    GuildWar,
-
-    // War — public war messages (grudge declarations/retractions/resolutions + war-death readouts). A
-    // combat-group channel: opt-in like Combat.
-    War,
 }

@@ -159,79 +159,6 @@ public enum GuildLabel : byte
     VeteranFocused = 9,
 }
 
-/// <summary>The derived status of a <see cref="Records.GuildWar"/> entry from one guild's perspective —
-/// computed (not stored) via <see cref="GuildWarFormulas.Status"/> for display + the combat ruleset.
-/// A one-sided grievance is <see cref="Warmup"/> until it goes live, then splits into aggressor/defender;
-/// once both guilds have declared it is <see cref="Mutual"/>.</summary>
-public enum GuildWarStatus : byte
-{
-    /// <summary>A one-sided declaration still inside its warmup grace — not yet live (either side's view).</summary>
-    Warmup = 0,
-    /// <summary>Live one-sided war, this guild is the aggressor: it bears the war-death cost and the daily
-    /// maintenance tax.</summary>
-    OneSidedAggressor = 1,
-    /// <summary>Live one-sided war, this guild is the defender: it loses nothing and pays nothing (it can
-    /// return the declaration to go mutual, or simply wait the aggressor out).</summary>
-    OneSidedDefender = 2,
-    /// <summary>Live mutual war (both guilds declared) — the full war of attrition, with zero ongoing tax
-    /// for either side.</summary>
-    Mutual = 3,
-}
-
-/// <summary>The kind of war action an Officer has queued for Leader approval: a declaration
-/// (which the Leader's acceptance resolves as a fresh grudge or a reciprocation, whichever applies), a
-/// retraction of a still one-sided declaration, or suing for peace (conceding a mutual war). See
-/// <see cref="Records.GuildWarRequest"/>.</summary>
-public enum GuildWarRequestKind : byte
-{
-    Declare = 0,
-    Retract = 1,
-    Peace = 2,
-    // Territory challenge: the same Officer-requests / Leader-approves queue, but TargetIndex is a
-    // MapGroup (territory) index rather than a guild index.
-    TerritoryChallenge = 3,
-    TerritoryWithdraw = 4,
-}
-
-/// <summary>Cadence of a creator <c>/guildreset</c>: run the day's routines, or additionally the
-/// weekly ones (financial reset + hold-score accrual + income roll), or additionally the season end. Ordered
-/// so a larger scope includes the smaller (Day < Week < Season).</summary>
-public enum SettlementScope : byte
-{
-    Day = 0,
-    Week = 1,
-    Season = 2,
-}
-
-/// <summary>A creator territory-war debug action: start a war night off-schedule (full ramp-up),
-/// advance the live contest one phase, or bring it straight to cooldown.</summary>
-public enum TerritoryWarDebugAction : byte
-{
-    Start = 0,
-    Advance = 1,
-    End = 2,
-}
-
-/// <summary>A peace action on a mutual war: the OFFERER sues for peace (a concession) or
-/// withdraws a pending offer; the OPPONENT accepts (they win, the war ends) or rejects it.</summary>
-public enum GuildWarPeaceAction : byte
-{
-    Offer = 0,
-    Withdraw = 1,
-    Accept = 2,
-    Reject = 3,
-}
-
-/// <summary>A wager action on a mutual war: the PROPOSER offers a matched ante (or withdraws a
-/// pending proposal); the OPPONENT accepts (both escrow it) or rejects it. Leader-only either side.</summary>
-public enum GuildWarWagerAction : byte
-{
-    Propose = 0,
-    Withdraw = 1,
-    Accept = 2,
-    Reject = 3,
-}
-
 /// <summary>What action a shared-kernel <see cref="Records.Objective"/> tracks. Only <see cref="Kill"/>
 /// is wired in v1 (the mob-kill hook); <see cref="Fetch"/>/<see cref="Gather"/>/<see cref="Explore"/>
 /// are declared plumbing for later objective kinds. 0 = unset (an empty objective).</summary>
@@ -265,7 +192,6 @@ public enum QuestCadence : byte
     Daily = 1,
     Weekly = 2,
     Monthly = 3,
-    Seasonally = 4,
 }
 
 /// <summary>What a dialogue choice does when picked (NPC conversations). None = pure text navigation (follow

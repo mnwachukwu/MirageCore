@@ -44,8 +44,6 @@ namespace Mirage.Server.Host.Services;
 ///   /respawn map                — reset one map's items and NPCs
 ///   /mapreport                  — list unauthored map numbers
 /// Guilds and territory:
-///   /startwar /advancewar /endwar   — drive war night
-///   /guildreset [day|week|season]   — force a settlement
 /// Server:
 ///   /shutdown                   — request graceful shutdown
 ///   /help                       — list commands
@@ -78,8 +76,6 @@ public sealed partial class ConsoleCommands : IHostedService
     private readonly SpawnSystem _spawn;
     private readonly TimeOfDaySystem _tod;
     private readonly WeatherSystem _weather;
-    private readonly GuildScheduleSystem _guildSchedule;
-    private readonly GuildTerritorySystem _territory;
     // The moderation report goes out on the same machine-line stream the dashboard already reads, so the
     // page updates itself after a lift instead of waiting to be asked again.
     private readonly Management.StatusBroadcaster _status;
@@ -111,8 +107,6 @@ public sealed partial class ConsoleCommands : IHostedService
         SpawnSystem spawn,
         TimeOfDaySystem tod,
         WeatherSystem weather,
-        GuildScheduleSystem guildSchedule,
-        GuildTerritorySystem territory,
         Management.StatusBroadcaster status,
         ModerationSystem moderation,
         EditorSessionManager editors,
@@ -143,8 +137,6 @@ public sealed partial class ConsoleCommands : IHostedService
         _spawn = spawn;
         _tod = tod;
         _weather = weather;
-        _guildSchedule = guildSchedule;
-        _territory = territory;
         _logger = logger;
     }
 
@@ -314,22 +306,6 @@ public sealed partial class ConsoleCommands : IHostedService
 
             case "/mapreport":
                 _gameLoop.Post(CmdMapReport);
-                break;
-
-            case "/startwar":
-                _gameLoop.Post(CmdStartWar);
-                break;
-
-            case "/advancewar":
-                _gameLoop.Post(CmdAdvanceWar);
-                break;
-
-            case "/endwar":
-                _gameLoop.Post(CmdEndWar);
-                break;
-
-            case "/guildreset":
-                _gameLoop.Post(() => CmdGuildReset(args));
                 break;
 
             case "/shutdown":

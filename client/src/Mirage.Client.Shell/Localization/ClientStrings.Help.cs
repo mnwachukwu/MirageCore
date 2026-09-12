@@ -119,10 +119,8 @@ public static partial class ClientStrings
     public const string QuestPanel_Empty = nameof(QuestPanel_Empty);
     public const string QuestPanel_AbandonButton = nameof(QuestPanel_AbandonButton);
     public const string QuestPanel_AbandonConfirm = nameof(QuestPanel_AbandonConfirm);
-    public const string QuestPanel_StateReady = nameof(QuestPanel_StateReady);
     public const string QuestPanel_StateInProgress = nameof(QuestPanel_StateInProgress);
     public const string QuestPanel_StateAvailable = nameof(QuestPanel_StateAvailable);
-    public const string QuestPanel_StateDone = nameof(QuestPanel_StateDone);
     public const string QuestPanel_StateIneligible = nameof(QuestPanel_StateIneligible);
     public const string QuestPanel_StateComplete = nameof(QuestPanel_StateComplete);
     public const string QuestPanel_StateRepeatable = nameof(QuestPanel_StateRepeatable);
@@ -136,7 +134,6 @@ public static partial class ClientStrings
     public const string QuestPanel_ReqDoneToday = nameof(QuestPanel_ReqDoneToday);
     public const string QuestPanel_ReqDoneThisWeek = nameof(QuestPanel_ReqDoneThisWeek);
     public const string QuestPanel_ReqDoneThisMonth = nameof(QuestPanel_ReqDoneThisMonth);
-    public const string QuestPanel_ReqDoneThisSeason = nameof(QuestPanel_ReqDoneThisSeason);
 
     // ── NPC conversations (dialogue panel) ─────────────────────────────────────
     public const string ConversationPanel_Title = nameof(ConversationPanel_Title);
@@ -146,11 +143,6 @@ public static partial class ClientStrings
     public const string PartyOverlay_ConfirmTitle = nameof(PartyOverlay_ConfirmTitle);
     public const string PartyOverlay_ConfirmBody = nameof(PartyOverlay_ConfirmBody);
     // Territory-contest in-world HUD.
-    public const string Contest_ScoreHeader = nameof(Contest_ScoreHeader);
-    public const string Contest_Neutral = nameof(Contest_Neutral);
-    public const string Contest_HeldByYou = nameof(Contest_HeldByYou);
-    public const string Contest_HeldByEnemy = nameof(Contest_HeldByEnemy);
-    public const string Contest_UnderAttack = nameof(Contest_UnderAttack);
     public const string Common_Yes = nameof(Common_Yes);
     public const string Common_No = nameof(Common_No);
     public const string GuildOffer_Invite = nameof(GuildOffer_Invite);

@@ -33,7 +33,6 @@ public class MapGroupRoundTripTests
         BootMap = 9,
         BootX = 2,
         BootY = 5,
-        Territory = true,
     };
 
     [Test]
@@ -57,7 +56,6 @@ public class MapGroupRoundTripTests
             Assert.That(r.BootMap, Is.EqualTo(9));
             Assert.That(r.BootX, Is.EqualTo(2));
             Assert.That(r.BootY, Is.EqualTo(5));
-            Assert.That(r.Territory, Is.True);
             Assert.That(r.Index, Is.EqualTo(3));
         });
     }

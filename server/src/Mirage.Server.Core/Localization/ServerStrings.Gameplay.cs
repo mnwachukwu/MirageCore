@@ -13,23 +13,6 @@ public static partial class ServerStrings
     public const string MapGreeting_LeaveSay = nameof(MapGreeting_LeaveSay);
 
     // ── SpellSystem ───────────────────────────────────────────────────────────
-    public const string SpellSystem_NoSpell = nameof(SpellSystem_NoSpell);
-    public const string SpellSystem_NotEnoughMana = nameof(SpellSystem_NotEnoughMana);
-    public const string SpellSystem_LevelRequired = nameof(SpellSystem_LevelRequired);
-    public const string SpellSystem_NotEnoughReagents = nameof(SpellSystem_NotEnoughReagents);
-    public const string SpellSystem_IntRequired = nameof(SpellSystem_IntRequired);
-    public const string SpellSystem_CannotCastOnNpc = nameof(SpellSystem_CannotCastOnNpc);
-    public const string SpellSystem_OutOfRange = nameof(SpellSystem_OutOfRange);
-    public const string SpellSystem_NoLineOfSight = nameof(SpellSystem_NoLineOfSight);
-    public const string SpellSystem_NoTarget = nameof(SpellSystem_NoTarget);
-    public const string SpellSystem_CannotHarmSelf = nameof(SpellSystem_CannotHarmSelf);
-    public const string SpellSystem_CannotHarmParty = nameof(SpellSystem_CannotHarmParty);
-    public const string SpellSystem_CannotHarmGuild = nameof(SpellSystem_CannotHarmGuild);
-    public const string SpellSystem_CannotHarmPlayer = nameof(SpellSystem_CannotHarmPlayer);
-    public const string SpellSystem_CannotTargetDead = nameof(SpellSystem_CannotTargetDead);
-    public const string SpellSystem_CannotCastOnFriendlyNpc = nameof(SpellSystem_CannotCastOnFriendlyNpc);
-    public const string SpellSystem_TargetInventoryFull = nameof(SpellSystem_TargetInventoryFull);
-    public const string SpellSystem_TargetInvalid = nameof(SpellSystem_TargetInvalid);
 
     // ── MovementSystem ────────────────────────────────────────────────────────
     public const string MovementSystem_EnterSafeBase = nameof(MovementSystem_EnterSafeBase);
@@ -72,21 +55,13 @@ public static partial class ServerStrings
     public const string PkExpirySystem_CrimesFaded = nameof(PkExpirySystem_CrimesFaded);
 
     // ── RegenerationSystem ────────────────────────────────────────────────────
-    public const string RegenerationSystem_CombatEnded = nameof(RegenerationSystem_CombatEnded);
 
     // ── PacketHandler ─────────────────────────────────────────────────────────
     public const string PacketHandler_NotNearShop = nameof(PacketHandler_NotNearShop);
     public const string PacketHandler_CannotLogoutCombat = nameof(PacketHandler_CannotLogoutCombat);
-    public const string PacketHandler_StudyCombat = nameof(PacketHandler_StudyCombat);
-    public const string PacketHandler_ForgotSpell = nameof(PacketHandler_ForgotSpell);
     public const string PacketHandler_TellFrom = nameof(PacketHandler_TellFrom);
     public const string PacketHandler_TellTo = nameof(PacketHandler_TellTo);
     public const string PacketHandler_PlayerNotOnline = nameof(PacketHandler_PlayerNotOnline);
-    public const string PacketHandler_NoStatPoints = nameof(PacketHandler_NoStatPoints);
-    public const string PacketHandler_GainedStr = nameof(PacketHandler_GainedStr);
-    public const string PacketHandler_GainedDef = nameof(PacketHandler_GainedDef);
-    public const string PacketHandler_GainedInt = nameof(PacketHandler_GainedInt);
-    public const string PacketHandler_GainedSpd = nameof(PacketHandler_GainedSpd);
     public const string PacketHandler_RollCoin = nameof(PacketHandler_RollCoin);
     public const string PacketHandler_RollDice = nameof(PacketHandler_RollDice);
     public const string PacketHandler_SelfMumble = nameof(PacketHandler_SelfMumble);
@@ -98,18 +73,10 @@ public static partial class ServerStrings
     public const string PacketHandler_Admin = nameof(PacketHandler_Admin);
 
     // ── SearchSystem ──────────────────────────────────────────────────────────
-    public const string SearchSystem_WouldntStandChance = nameof(SearchSystem_WouldntStandChance);
-    public const string SearchSystem_TheyHaveAdvantage = nameof(SearchSystem_TheyHaveAdvantage);
-    public const string SearchSystem_EvenFight = nameof(SearchSystem_EvenFight);
-    public const string SearchSystem_YouHaveAdvantage = nameof(SearchSystem_YouHaveAdvantage);
-    public const string SearchSystem_TheyWouldntChance = nameof(SearchSystem_TheyWouldntChance);
-    public const string SearchSystem_YouHaveAdvantageNpc = nameof(SearchSystem_YouHaveAdvantageNpc);
-    public const string SearchSystem_NpcWouldntChance = nameof(SearchSystem_NpcWouldntChance);
     public const string SearchSystem_TargetNow = nameof(SearchSystem_TargetNow);
     public const string SearchSystem_TargetNowNpc = nameof(SearchSystem_TargetNowNpc);
     public const string SearchSystem_TargetSelf = nameof(SearchSystem_TargetSelf);
     public const string SearchSystem_SeeCurrency = nameof(SearchSystem_SeeCurrency);
-    public const string SearchSystem_SeeEquipment = nameof(SearchSystem_SeeEquipment);
     public const string SearchSystem_SeeItem = nameof(SearchSystem_SeeItem);
 
     // ── TimeOfDaySystem ───────────────────────────────────────────────────────

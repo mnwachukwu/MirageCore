@@ -323,18 +323,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
             case GuildBrowsePacket p:
                 HandleGuildBrowse(p);
                 break;
-            case GuildWarAttritionPacket p:
-                HandleGuildWarAttrition(p);
-                break;
-            case TerritoryContestPacket p:
-                _state.SetContest(p.Active ? p : null);
-                break;
-            case GuildLeaderboardPacket p:
-                _state.SetLeaderboard(p);
-                break;
-            case SeasonArchivePacket p:
-                _state.SetSeasonArchive(p);
-                break;
 
             case PlayersOnlinePacket p:
                 HandlePlayersOnline(p);

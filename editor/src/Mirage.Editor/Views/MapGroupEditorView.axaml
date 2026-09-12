@@ -88,15 +88,6 @@
             <TextBox Grid.Column="1" Text="{Binding SelectedMapGroup.DisplayNameText}"/>
           </Grid>
 
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto" SharedSizeGroup="GroupPropLabel"/>
-              <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <TextBlock x:Name="_territoryLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
-            <CheckBox  Grid.Column="1" IsChecked="{Binding SelectedMapGroup.Territory}"/>
-          </Grid>
-
           <!-- Everything from here down is an inheritable fallback: a map's own value overrides it. -->
           <TextBlock x:Name="_fallbackHeader" Margin="0,8,0,0" FontWeight="SemiBold"/>
 

@@ -74,10 +74,6 @@ public static class PacketNames
     public const string GuildSetLabels = "guildsetlabels";
     public const string GuildSetColor = "guildsetcolor";
     public const string GuildDonate = "guilddonate";
-    public const string GuildDonateValor = "guilddonatevalor";
-    public const string GuildPayTax = "guildpaytax";
-    public const string GuildQuestAcquire = "guildquestacquire";
-    public const string GuildQuestAbandon = "guildquestabandon";
     public const string GuildChat = "guildchat";
     public const string GuildBrowseRequest = "guildbrowsereq";
     public const string GuildBrowse = "guildbrowse";                 // S→C: open-guild list
@@ -86,22 +82,6 @@ public static class PacketNames
     public const string GuildOfferNotify = "guildoffernotify";   // S→C: prompt the recipient
     public const string GuildInfo = "guildinfo";                 // S→C: guild identity + roster
     public const string GuildInfoRequest = "guildinforequest";
-    public const string GuildWarDeclare = "guildwardeclare";
-    public const string GuildWarDeclareByName = "guildwardeclarebyname";   // C→S: declare by guild name
-    public const string GuildWarRetract = "guildwarretract";
-    public const string GuildWarReviewRequest = "guildwarreview";
-    public const string GuildWarPeace = "guildwarpeace";
-    public const string GuildWarWager = "guildwarwager";                   // C→S: propose/accept/reject/withdraw an ante
-    public const string GuildTerritoryChallenge = "guildterrchallenge";     // C→S: register a territory challenge
-    public const string GuildTerritoryWithdraw = "guildterrwithdraw";       // C→S: withdraw a territory challenge
-    public const string GuildWarAttrition = "guildwarattrition";           // S→C: live meter push
-    public const string TerritoryContest = "territorycontest";             // S→C: live contest render state (participants)
-    public const string AdminGuildReset = "adminguildreset";               // C→S: creator /guildreset day|week|season
-    public const string AdminTerritoryWar = "adminterritorywar";           // C→S: creator /startwar //endwar //advancewar
-    public const string GuildLeaderboard = "guildleaderboard";             // S→C: seasonal standings (all guilds)
-    public const string GuildLeaderboardRequest = "guildleaderboardreq";   // C→S: request the seasonal standings
-    public const string SeasonArchiveRequest = "seasonarchivereq";         // C→S: request an archived past season
-    public const string SeasonArchive = "seasonarchive";                   // S→C: an archived season's standings
 
     // ── Social (friends / ignore) ─────────────────────────────────────────────
     public const string SocialList = "sociallist";               // S→C: full friends + ignore lists

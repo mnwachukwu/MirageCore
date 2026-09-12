@@ -9,7 +9,7 @@ namespace Mirage.Shared.Records;
 ///
 /// <para>Everything here is AUTHORED, and a world folder holds nothing else. Who controls a territory, what it
 /// has earned and who is challenging for it belong to one running server rather than to the world, and live
-/// apart in <see cref="TerritoryRecord"/> — see <see cref="Territory"/>.</para></summary>
+/// apart.</para></summary>
 public sealed class MapGroupRecord
 {
     /// <summary>Filename stem inside <c>map_groups/</c>; the trailing number is the <see cref="Index"/>.</summary>
@@ -50,12 +50,6 @@ public sealed class MapGroupRecord
     public string GreetingSpeaker { get; set; } = string.Empty;
     public string JoinSay { get; set; } = string.Empty;
     public string LeaveSay { get; set; } = string.Empty;
-
-    // ── Territory ──────────────────────────────────────────────────────────────────────────────────────
-    /// <summary>When true this group's maps are a contestable territory (they must be non-safe). That is the
-    /// whole of what a group says about one: who holds it, what it earns and who is challenging for it are
-    /// <see cref="TerritoryRecord"/>'s, keyed by this group's <see cref="Index"/>.</summary>
-    public bool Territory { get; set; }
 
     /// <summary>Copy for an off-thread save snapshot. Every field is a value type or an immutable string, so
     /// a shallow copy is a whole one.</summary>

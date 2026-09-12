@@ -43,7 +43,6 @@ internal static class QuestRequirements
         QuestCadence.Daily => ClientStrings.QuestPanel_ReqDoneToday,
         QuestCadence.Weekly => ClientStrings.QuestPanel_ReqDoneThisWeek,
         QuestCadence.Monthly => ClientStrings.QuestPanel_ReqDoneThisMonth,
-        QuestCadence.Seasonally => ClientStrings.QuestPanel_ReqDoneThisSeason,
         _ => ClientStrings.QuestPanel_ReqDoneAlready,
     };
 }

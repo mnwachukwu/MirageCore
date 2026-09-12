@@ -18,7 +18,7 @@ namespace Mirage.Client.Shell.Panels;
 /// Social (G) panel — the account's people, in three tabs: Friends, Ignore, and Guild. All three are
 /// per-ACCOUNT lists rendered from <see cref="ClientState"/> (pushed wholesale by the server), so a row's
 /// identity is a login and its character columns are only meaningful while that account is online.
-/// The Guild tab is itself organized into second-level sub-tabs — Main / Roster / Vault / Quests / Wars —
+/// The Guild tab is itself organized into second-level sub-tabs — Main / Roster / Vault —
 /// so each management surface gets its own uncluttered page (a create/browse on-ramp shows instead when
 /// guildless). The Roster page is a full <see cref="Table{T}"/> (sortable/resizable/reorderable columns).
 /// Rebuilds its lists only when <see cref="ClientState.SocialVersion"/> changes. Tab strip mirrors ControlsPanel's.
@@ -36,13 +36,13 @@ public sealed partial class SocialPanel : IGamePanel
     // A text prompt (create name / MOTD), the label editor, or the color picker owns the keyboard/mouse
     // while up, so the GameplayScreen world-input gate must treat this panel as modal — same contract as
     // other panels.
-    public bool IsCapturingInput => _prompt.IsCapturingInput || _labelEditing || _colorPicker.IsOpen || _confirm.IsCapturingInput || _reviewingApps || _reviewingWarReqs;
+    public bool IsCapturingInput => _prompt.IsCapturingInput || _labelEditing || _colorPicker.IsOpen || _confirm.IsCapturingInput || _reviewingApps;
 
     // Tab strip — same metrics/colors as ControlsPanel so the two panels read as one UI.
     private const int TabStripH = 26;
     private const int TabGap = 2;
     private const int MinTabW = 80;
-    private const int MinSubTabW = 48;   // the guild has 6 sub-tabs, so they pack tighter than the top strip
+    private const int MinSubTabW = 48;
 
     private const int TabFriends = 0;
     private const int TabIgnore = 1;
@@ -51,13 +51,11 @@ public sealed partial class SocialPanel : IGamePanel
     private int _activeTab;
 
     // Guild sub-tabs (second level, shown only in-guild).
-    private enum GuildSub { Main, Roster, Vault, Quests, Wars, Territories, Standings }
+    private enum GuildSub { Main, Roster, Vault }
     private static readonly GuildSub[] AllGuildSubs = Enum.GetValues<GuildSub>();
     private GuildSub _guildSubTab;
 
     private const int ButtonH = 24;
-    private const int HistoryBtnW = 70;   // standings "History"/"Current" toggle
-    private const int SeasonNavW = 24;    // standings prev/next season arrows
     private const int Pad = 4;
     private const int RowH = 18;
     private const int HeaderH = RowH * 3; // Main page: name / labels / MOTD, so the level bar start is stable
@@ -104,44 +102,17 @@ public sealed partial class SocialPanel : IGamePanel
     private bool _reviewingApps;
     // Vault page.
     private readonly Button _donateBtn = new();
-    private readonly Button _donateValorBtn = new();
-    private readonly Button _payTaxBtn = new();
-    // Vault log view toggle: Donations (incoming member gifts) vs Spending (outgoing war-repair payouts).
+    // Vault log view toggle: Donations (incoming member gifts) vs Spending (outgoing payments).
     private readonly Button _vaultDonationsBtn = new();
     private readonly Button _vaultSpendingBtn = new();
     private bool _vaultShowSpending;
-    // Quests page.
-    private readonly Button _questAcquireBtn = new();
-    private readonly Button _questAbandonBtn = new();
-    // Territories page: the Challenge/Withdraw action on the selected territory.
-    private readonly Button _challengeBtn = new();
-    // Wars page: a selectable war list + the selected war's status area + action buttons.
-    private readonly ListBox _warList = new();
-    private readonly List<int> _warOpp = new();        // war row → opponent guild index
-    private readonly Button _warDeclareBtn = new();
-    private readonly Button _warRetractBtn = new();
-    private readonly Button _warPeaceBtn = new();      // toggles Sue-for-Peace / Withdraw
-    private readonly Button _warAcceptBtn = new();
-    private readonly Button _warRejectBtn = new();
-    // Wager row (leader-only, mutual war within the first hour).
-    private readonly Button _warWagerBtn = new();       // toggles Propose-Wager / Withdraw
-    private readonly Button _warWagerAcceptBtn = new();
-    private readonly Button _warWagerRejectBtn = new();
-    private readonly Button _warReqsBtn = new();        // leader: open the officer request queue
-    // War-requests review overlay (leader) — the officer queue of declare/retract/peace asks.
-    private readonly ListBox _warReqList = new();
-    private readonly List<(GuildWarRequestKind Kind, int Target)> _warReqKeys = new(); // req row → (kind, target)
-    private readonly Button _warReqAcceptBtn = new();
-    private readonly Button _warReqDenyBtn = new();
-    private readonly Button _warReqBackBtn = new();
-    private bool _reviewingWarReqs;
     // Set when the panel opens already on the Guild tab (restored from config), so we fire the same
     // roster/browser refresh that switching TO the Guild tab does (the live online column has no push).
     private bool _pendingGuildRefresh;
 
     private readonly TextPromptDialog _prompt = new();
     private readonly ColorPickerDialog _colorPicker = new();
-    private readonly ConfirmDialog _confirm = new();   // quest acquire/abandon confirmations
+    private readonly ConfirmDialog _confirm = new();
     private bool _labelEditing;
     private readonly List<GuildLabel> _pendingLabels = new();
 
@@ -151,19 +122,6 @@ public sealed partial class SocialPanel : IGamePanel
     // SocialEntry fields and follows the selected member by login across server pushes.
     private readonly Table<SocialEntry> _rosterTable;
     private const int RosterColAccount = 1;   // Account = the WithRowKey column + default sort (matches the .Column() order)
-
-    // Territories page: a read-only, data-bound Table of every territory (alphabetical) — owner, weeks held,
-    // and previous-week income. No row actions, so no WithRowKey.
-    private readonly Table<TerritoryView> _territoryTable;
-
-    // Standings page: a read-only, data-bound Table of the seasonal leaderboard (every guild).
-    private readonly Table<LeaderboardEntry> _standingsTable;
-    // Historical-season browser: a past season's archived standings + a toggle + prev/next season paging.
-    private readonly Table<SeasonStanding> _archiveTable;
-    private bool _viewingHistory;
-    private readonly Button _historyBtn = new();       // toggle current ↔ past seasons
-    private readonly Button _prevSeasonBtn = new();     // "<" older season
-    private readonly Button _nextSeasonBtn = new();     // ">" newer season
 
     private int _labelsGeneration = -1;
     private int _lastSocialVersion = -1;
@@ -181,7 +139,7 @@ public sealed partial class SocialPanel : IGamePanel
 
     public SocialPanel()
     {
-        // Min height fits the Guild tab's tallest sub-page (Wars: list + a 6-line status block + three button
+        // Min height fits the Guild tab's tallest sub-page (Vault: the balance block + a log table + button
         // rows — peace / wager / declare) under both tab strips. The default (440x366) is a playtested size
         // that shows every tab — including the widest tables (roster/standings/territory) — without truncation.
         _panel = new DraggablePanel(new Rectangle(20, 20, 440, 365),
@@ -206,48 +164,9 @@ public sealed partial class SocialPanel : IGamePanel
         _rosterTable.SortBy(RosterColAccount);   // default-sort by the row-key column so its sort arrow shows immediately
         _rosterTable.AllowReorder = true;   // the roster is the one table that opts in to drag-to-reorder columns
 
-        _territoryTable = new Table<TerritoryView>()
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColTerritory), t => t.Name, width: 104, minWidth: 70)
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColOwner),
-                    t => t.Owner,   // "" (unclaimed) sorts first
-                    t => string.IsNullOrEmpty(t.Owner) ? ClientStrings.Get(ClientStrings.SocialPanel_Unclaimed) : t.Owner, 96, 60)
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColWeeksHeld), t => t.WeeksHeld, width: 56, minWidth: 40)
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColPrevIncome), t => t.PreviousWeekIncome, width: 72, minWidth: 50)
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColIncomeWeek),
-                    t => t.IncomeThisWeek,
-                    t => t.OwnedByUs ? t.IncomeThisWeek.ToString() : "-", 76, 52)
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColPending),
-                    t => t.PendingTerritoryIncome,
-                    t => t.OwnedByUs ? t.PendingTerritoryIncome.ToString() : "-", 70, 50)
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColContesting), t => t.Contesting, width: 100, minWidth: 60)
-            .WithRowKey(t => t.Index);   // selection follows a territory across pushes (for the Challenge button)
-        _territoryTable.SortBy(0);   // default alphabetical by territory name (matches the server order)
-
-        _standingsTable = new Table<LeaderboardEntry>()
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColPlacing),
-                    e => (long)e.Rank, e => e.Rank > 0 ? e.Rank.ToString() : "-", 44, 32)   // seasonal standing (0 = unranked)
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColGuild), e => e.Guild, width: 118, minWidth: 80)
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColScore), e => e.Score, width: 80, minWidth: 55)
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColKD),
-                    e => (long)(e.Kills - e.Deaths),   // sort by net territory-war K/D
-                    e => $"{e.Kills}/{e.Deaths}", 66, 50)
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColSize), e => e.Size, width: 56, minWidth: 40);
-        _standingsTable.SortBy(2, ascending: false);   // default: highest season score first (the server order); Rank col shifted Score to index 2
-
-        _archiveTable = new Table<SeasonStanding>()
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColPlacing),
-                    s => (long)s.Placing, s => s.Placing > 0 ? s.Placing.ToString() : "-", 44, 32)
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColGuild), s => s.Guild, width: 120, minWidth: 80)
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColScore), s => s.Score, width: 76, minWidth: 55)
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColKD),
-                    s => (long)(s.Kills - s.Deaths), s => $"{s.Kills}/{s.Deaths}", 66, 50);
-        _archiveTable.SortBy(2, ascending: false);   // highest score first (non-scorers, placing 0, sink to the bottom)
         ColumnTables = new Dictionary<string, IColumnLayoutTable>
         {
             ["social.roster"] = _rosterTable,
-            ["social.territory"] = _territoryTable,
-            ["social.standings"] = _standingsTable,
-            ["social.archive"] = _archiveTable,
         };
     }
 
@@ -289,7 +208,6 @@ public sealed partial class SocialPanel : IGamePanel
             _colorPicker.Close();
             _confirm.Close();
             _reviewingApps = false;
-            _reviewingWarReqs = false;
         }
     }
 

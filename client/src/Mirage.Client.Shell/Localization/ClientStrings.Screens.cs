@@ -83,7 +83,6 @@ public static partial class ClientStrings
     // ── GameplayScreen ────────────────────────────────────────────────────────
     public const string GameplayScreen_DebugOverlayOn = nameof(GameplayScreen_DebugOverlayOn);
     public const string GameplayScreen_DebugOverlayOff = nameof(GameplayScreen_DebugOverlayOff);
-    public const string GameplayScreen_NoPotionFormat = nameof(GameplayScreen_NoPotionFormat);
     // Refusal when the player tries to interact with an NPC standing on the other plane of a two-layer map.
     public const string GameplayScreen_NpcOtherLayer = nameof(GameplayScreen_NpcOtherLayer);
 

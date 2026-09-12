@@ -41,44 +41,4 @@ public static class GuildActionGate
     public static bool CanEditSettings(GuildRank myRank)
         => myRank == GuildRank.Leader;
 
-    /// <summary>Acquire a new guild quest — leader only, and only when no quest is active.</summary>
-    public static bool CanAcquireQuest(GuildRank myRank, bool hasActiveQuest)
-        => myRank == GuildRank.Leader && !hasActiveQuest;
-
-    /// <summary>Abandon the active guild quest (freeing a fresh acquire) — leader only, and only when one is active.</summary>
-    public static bool CanAbandonQuest(GuildRank myRank, bool hasActiveQuest)
-        => myRank == GuildRank.Leader && hasActiveQuest;
-
-    /// <summary>Pay the weekly tax late to restore perks — officer+, and only while perks are suspended.</summary>
-    public static bool CanPayTax(GuildRank myRank, bool perksActive)
-        => myRank >= GuildRank.Officer && !perksActive;
-
-    // ── War actions ───────────────────────────────────────────────────────────
-    // Officer+ may DECLARE/RETRACT/offer-PEACE (a non-leader's send is queued server-side for Leader
-    // review); only the Leader RESOLVES the queue and the incoming/outgoing peace pleas directly. The
-    // server re-validates level, cost, cooldowns, warmup, and the retraction lock.
-
-    /// <summary>Declare (or return) a war — officer+, and the guild must be at least the minimum war level
-    /// (both a fresh declaration and returning one require it).</summary>
-    public static bool CanDeclareWar(GuildRank myRank, int guildLevel)
-        => myRank >= GuildRank.Officer && guildLevel >= Constants.GuildWarMinLevelToDeclare;
-
-    /// <summary>Request a war action that an officer may queue — retracting a one-sided declaration, or suing
-    /// for peace on a mutual war (leader direct, officer queued).</summary>
-    public static bool CanRequestWar(GuildRank myRank)
-        => myRank >= GuildRank.Officer;
-
-    /// <summary>Resolve a war decision the Leader alone makes: reviewing the officer request queue, and
-    /// withdrawing our own / accepting / rejecting a peace plea.</summary>
-    public static bool CanResolveWar(GuildRank myRank)
-        => myRank == GuildRank.Leader;
-
-    /// <summary>Register/withdraw a territory challenge — Officer+ (Officer queues, Leader acts), mirroring
-    /// the grudge-war declare authority.</summary>
-    public static bool CanChallengeTerritory(GuildRank myRank)
-        => myRank >= GuildRank.Officer;
-
-    /// <summary>Set/accept/reject a wager — the Leader alone can ante the guild's gold.</summary>
-    public static bool CanWager(GuildRank myRank)
-        => myRank == GuildRank.Leader;
 }

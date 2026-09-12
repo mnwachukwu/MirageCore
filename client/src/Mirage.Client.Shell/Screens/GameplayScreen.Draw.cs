@@ -69,138 +69,14 @@ public sealed partial class GameplayScreen : IGameScreen
     // LineOffset stacking by real font height, and an edge clamp so a name near the viewport border slides
     // inward instead of getting scissor-clipped.
     // Capture-point flag geometry (px), drawn within one 32x32 tile.
-    private const float ContestFlagPoleInset = 6f;     // pole x, left of the tile center
-    private const float ContestFlagMargin = 3f;        // pole top/bottom inset from the tile edges
-    private const float ContestFlagPennantW = 14f;     // pennant reach to the right of the pole
-    private const float ContestFlagPennantApexY = 5f;  // pennant apex y, below the pole top
-    private const float ContestFlagPennantBotY = 10f;  // pennant base y, below the pole top
-    private const float ContestLabelGap = 2f;          // gap between the flag top and the name label
-    private const float ContestZoneEdgeAlpha = 0.85f;  // the staircase boundary, the line that answers "in or out"
-    private const float ContestEdgeMargin = 6f;        // how far an off-screen marker sits inside the viewport edge
-    private const float ContestZoneEdgeThickness = 1.5f;
-
-    // Draw one contest capture point in the world layer: the capture zone, a small triangular flag, and the
-    // point's name above it, all in the per-viewer control color. Walk-over-able (drawn under the entities).
-    private static void DrawContestPoint(SpriteBatch sb, SpriteFont nameFont, ContestPointCmd cp, float nameCellW, float nameLineH)
-    {
-        Color color = cp.Control switch
-        {
-            ContestControl.Own => UiHelper.ContestOwnColor,
-            ContestControl.Enemy => UiHelper.ContestEnemyColor,
-            _ => UiHelper.ContestNeutralColor,
-        };
-
-        // 🔴 The zone is drawn whenever it REACHES the view, including from a point standing outside it. A
-        // point near the border holds ground you can be standing on, and the ring is the only thing saying
-        // where that ground ends — cutting it because the flag's own tile left the viewport takes the mark
-        // off ground that is still being scored.
-        float reach = (Constants.TerritoryCapturePointRadius + 1) * Constants.PicX;
-        if (cp.ScreenX > -reach && cp.ScreenX < Camera.ViewW + reach
-            && cp.ScreenY > -reach && cp.ScreenY < Camera.ViewH + reach)
-        {
-            DrawContestZone(sb, cp, color);
-        }
-
-        // Past the viewport the point is a BEARING: the label alone, pinned to the edge it lies past, with
-        // the other axis left where the point really is. Walk that way on that axis and the label slides to
-        // the corner, then onto the screen with the flag under it. The FLAG is skipped because it is a
-        // 32px mark on a tile nobody can see; the zone above is not, because it is not on that tile.
-        if (cp.OffScreen)
-        {
-            float totalW = nameCellW * cp.Label.Length;
-            var edgeCmd = new TextDrawCmd(
-                Math.Clamp(cp.ScreenX + Constants.PicX / 2f, totalW / 2f + ContestEdgeMargin,
-                           Camera.ViewW - totalW / 2f - ContestEdgeMargin),
-                Math.Clamp(cp.ScreenY, ContestEdgeMargin + nameLineH, Camera.ViewH - ContestEdgeMargin),
-                cp.Label, 0, AlignBottom: true,
-                RgbOverride: (color.R << 16) | (color.G << 8) | color.B);
-            DrawWorldName(sb, nameFont, edgeCmd, nameCellW, nameLineH);
-            return;
-        }
-
-        // Flag: a dark pole + a colored triangular pennant near its top, centered on the tile.
-        float poleX = cp.ScreenX + Constants.PicX / 2f - ContestFlagPoleInset;
-        float poleTop = cp.ScreenY + ContestFlagMargin;
-        float poleBot = cp.ScreenY + Constants.PicY - ContestFlagMargin;
-        UiHelper.DrawLine(sb, new Vector2(poleX, poleTop), new Vector2(poleX, poleBot), Color.Black, 2f);
-        var apexA = new Vector2(poleX, poleTop);
-        var apexB = new Vector2(poleX + ContestFlagPennantW, poleTop + ContestFlagPennantApexY);
-        var apexC = new Vector2(poleX, poleTop + ContestFlagPennantBotY);
-        UiHelper.FillTriangle(sb, apexA, apexB, apexC, color);
-        UiHelper.DrawLine(sb, apexA, apexB, Color.Black, 1f);
-        UiHelper.DrawLine(sb, apexB, apexC, Color.Black, 1f);
-
-        // Name above the flag, colored to match via RgbOverride; drawn in the world layer like a corpse name.
-        int rgb = (color.R << 16) | (color.G << 8) | color.B;
-        var labelCmd = new TextDrawCmd(cp.ScreenX + Constants.PicX / 2f, poleTop - ContestLabelGap, cp.Label,
-            0, AlignBottom: true, RgbOverride: rgb);
-        DrawWorldName(sb, nameFont, labelCmd, nameCellW, nameLineH);
-    }
-
-    /// <summary>The capture zone's boundary: the line between the tiles that score and the tiles that do not.
-    ///
-    /// <para>Only the edge is drawn. The interior needs no marking — the flag light already washes exactly
-    /// this ground in a pale cyan/pink, and the flag and label name the point — so between them the zone is
-    /// found at a glance and this line answers the only question that is ever close: which side of it a
-    /// particular tile is on.</para>
-    ///
-    /// <para>🔴 The boundary is a STAIRCASE, never a circle. <see cref="TerritoryContestFormulas.WithinRadius"/>
-    /// asks whether a tile's CENTER is within the radius, so scoring is decided a whole tile at a time and the
-    /// edge of the scoring set runs along tile sides. Drawing it as a smooth curve puts the line through the
-    /// middle of tiles, where it disagrees with the rule in both directions at once — a tile scoring with half
-    /// of it outside the line, and a tile the line crosses scoring nothing. Drawn as the staircase, "inside
-    /// the line" and "this tile scores" are one statement.</para>
-    ///
-    /// <para>The flag color, not the flag LIGHT's color: the light is a pale wash of a neighboring hue over
-    /// the same ground, so the two stay separable by saturation.</para></summary>
-    private static void DrawContestZone(SpriteBatch sb, ContestPointCmd cp, Color color)
-    {
-        var origin = new Vector2(cp.ScreenX, cp.ScreenY);
-        foreach (var (a, b) in ContestZoneEdges(Constants.TerritoryCapturePointRadius))
-            UiHelper.DrawLine(sb, origin + a, origin + b, color * ContestZoneEdgeAlpha, ContestZoneEdgeThickness);
-    }
-
-    // The boundary segments, in pixels relative to the point tile's own origin. Fixed for a given radius, so
-    // it is built once rather than per point per frame.
-    private static List<(Vector2 A, Vector2 B)> ContestZoneEdges(int radius)
-    {
-        if (_contestZoneRadius == radius) return _contestZoneEdges;
-
-        _contestZoneEdges.Clear();
-        bool Scores(int dx, int dy) => TerritoryContestFormulas.WithinRadius(dx, dy, 0, 0, radius);
-
-        for (int dy = -radius; dy <= radius; dy++)
-        {
-            for (int dx = -radius; dx <= radius; dx++)
-            {
-                if (!Scores(dx, dy)) continue;
-
-                // A side is on the boundary when the tile across it does not score. Corners need no special
-                // case: each is where two of these segments meet.
-                float x0 = dx * Constants.PicX, y0 = dy * Constants.PicY;
-                float x1 = x0 + Constants.PicX, y1 = y0 + Constants.PicY;
-                if (!Scores(dx - 1, dy)) _contestZoneEdges.Add((new Vector2(x0, y0), new Vector2(x0, y1)));
-                if (!Scores(dx + 1, dy)) _contestZoneEdges.Add((new Vector2(x1, y0), new Vector2(x1, y1)));
-                if (!Scores(dx, dy - 1)) _contestZoneEdges.Add((new Vector2(x0, y0), new Vector2(x1, y0)));
-                if (!Scores(dx, dy + 1)) _contestZoneEdges.Add((new Vector2(x0, y1), new Vector2(x1, y1)));
-            }
-        }
-
-        _contestZoneRadius = radius;
-        return _contestZoneEdges;
-    }
-
-    private static int _contestZoneRadius = -1;
-    private static readonly List<(Vector2 A, Vector2 B)> _contestZoneEdges = [];
 
     private static void DrawWorldName(SpriteBatch sb, SpriteFont nameFont, TextDrawCmd cmd, float nameCellW, float nameLineH)
     {
-        // The overhead guild line carries the guild name in Text plus (optionally) a numeric rank + standing to
-        // append: "<Guild> {Rank} ({Standing})". Localize the rank word + assemble here (the logic layer that
-        // built the command has no string table).
+        // The overhead guild line carries the guild name in Text plus (optionally) a numeric rank to append:
+        // "<Guild> {Rank}". Localize the rank word + assemble here (the logic layer that built the command has
+        // no string table).
         string text = cmd.Text;
         if (cmd.GuildRankWord > 0) text += " " + OverheadRankWord((GuildRank)cmd.GuildRankWord);
-        if (cmd.GuildStanding > 0) text += " (" + cmd.GuildStanding + ")";
         Color nameColor = cmd.RgbOverride >= 0
             ? new Color(GameColor.RedOf(cmd.RgbOverride), GameColor.GreenOf(cmd.RgbOverride), GameColor.BlueOf(cmd.RgbOverride))
             : ChatPanel.GetColor(cmd.ColorIndex);
@@ -217,8 +93,6 @@ public sealed partial class GameplayScreen : IGameScreen
         if (maxNameX < 0) maxNameX = 0;
         nameX = Math.Clamp(nameX, 0, maxNameX);
         var namePos = new Vector2(nameX, drawY);
-        // Crossed-swords "at war" marker to the left of the guild name (plan: identify guilds you're at war with).
-        if (cmd.AtWar) DrawCrossedSwords(sb, nameX, drawY, nameLineH, nameColor);
         DrawStringFixed(sb, nameFont, text, namePos + new Vector2(2, 2), Color.Black, nameCellW);
         DrawStringFixed(sb, nameFont, text, namePos + new Vector2(1, 1), Color.Black, nameCellW);
         DrawStringFixed(sb, nameFont, text, namePos, nameColor, nameCellW);
@@ -231,24 +105,6 @@ public sealed partial class GameplayScreen : IGameScreen
         GuildRank.Officer => ClientStrings.SocialPanel_RankOfficer,
         _ => ClientStrings.SocialPanel_RankMember,
     });
-
-    // An improvised crossed-swords glyph (two blades + a crossguard bar) drawn just left of the guild name,
-    // in the guild's color, when the viewer is at war with that guild. A black shadow underlay keeps it
-    // legible over any terrain, matching the name text's outline.
-    private static void DrawCrossedSwords(SpriteBatch sb, float textLeftX, float topY, float lineH, Color color)
-    {
-        float sz = Math.Max(6f, lineH - 4f);
-        float x = textLeftX - sz - 2f;   // sits just left of the text's left edge
-        float y = topY + 2f;
-        void Swords(Vector2 off, Color c)
-        {
-            UiHelper.DrawLine(sb, new Vector2(x, y + sz) + off, new Vector2(x + sz, y) + off, c, 2f);          // "/" blade
-            UiHelper.DrawLine(sb, new Vector2(x, y) + off, new Vector2(x + sz, y + sz) + off, c, 2f);          // "\" blade
-            UiHelper.DrawLine(sb, new Vector2(x + 1, y + sz - 3) + off, new Vector2(x + sz - 1, y + sz - 3) + off, c, 1f); // crossguard
-        }
-        Swords(new Vector2(1, 1), Color.Black);   // shadow
-        Swords(Vector2.Zero, color);
-    }
 
     private static void DrawStringFixed(SpriteBatch sb, SpriteFont font, string text, Vector2 pos, Color color, float cellW)
     {
@@ -332,7 +188,6 @@ public sealed partial class GameplayScreen : IGameScreen
 
         _hud.Draw(sb, font, _ctx.TitleFont ?? font, _ctx.State, _lastInput);
         _partyOverlay.Draw(sb, font, _ctx.State, _lastInput, _tabTarget, nowMs);
-        _contestHud.Draw(sb, font, _ctx.State);
         _chat.Draw(sb, font, nowMs);
 
         // Sidebar [Options (O)] / [Help (H)] links — drawn BEFORE the panel z-order so any

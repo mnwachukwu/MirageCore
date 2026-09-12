@@ -60,10 +60,6 @@ public sealed partial class SocialPanel : IGamePanel
         GuildSub.Main => ClientStrings.SocialPanel_SubTabMain,
         GuildSub.Roster => ClientStrings.SocialPanel_SubTabRoster,
         GuildSub.Vault => ClientStrings.SocialPanel_SubTabVault,
-        GuildSub.Quests => ClientStrings.SocialPanel_SubTabQuests,
-        GuildSub.Wars => ClientStrings.SocialPanel_SubTabWars,
-        GuildSub.Territories => ClientStrings.SocialPanel_SubTabTerritories,
-        GuildSub.Standings => ClientStrings.SocialPanel_SubTabStandings,
         _ => throw new ArgumentOutOfRangeException(nameof(tab)),
     };
 
@@ -133,18 +129,11 @@ public sealed partial class SocialPanel : IGamePanel
         tableRect = new Rectangle(gbody.X + Pad, top, gbody.Width - Pad * 2, Math.Max(0, rowY - top - Pad));
     }
 
-    // Vault page: one button row (donate gold / donate valor / pay tax).
+    // Vault page: one button row.
     private void LayoutGuildVault(Rectangle gbody)
     {
         int rowY = gbody.Bottom - ButtonH - Pad;
-        LayoutRow(gbody, rowY, _donateBtn, _donateValorBtn, _payTaxBtn);
-    }
-
-    // Quests page: one button row (acquire / abandon).
-    private void LayoutGuildQuests(Rectangle gbody)
-    {
-        int rowY = gbody.Bottom - ButtonH - Pad;
-        LayoutRow(gbody, rowY, _questAcquireBtn, _questAbandonBtn);
+        LayoutRow(gbody, rowY, _donateBtn);
     }
 
     // Guildless: a centered Create button up top, then the open-guild browser filling to an Apply button.
@@ -165,31 +154,6 @@ public sealed partial class SocialPanel : IGamePanel
         LayoutRow(body, btnY, _approveBtn, _rejectBtn, _appsBackBtn);
         int top = body.Y + Pad + RowH;
         appRect = new Rectangle(body.X + Pad, top, body.Width - Pad * 2, Math.Max(0, btnY - top - Pad));
-    }
-
-    // War page: the war list up top, the selected war's status area beneath it, then three button rows
-    // (peace actions, wager actions, then declare/requests).
-    private void LayoutWars(Rectangle body, out Rectangle listRect, out int statusY)
-    {
-        int rowCY = body.Bottom - ButtonH - Pad;
-        int rowBY = rowCY - ButtonH - 2;
-        int rowAY = rowBY - ButtonH - 2;
-        LayoutRow(body, rowAY, _warRetractBtn, _warPeaceBtn, _warAcceptBtn, _warRejectBtn);
-        LayoutRow(body, rowBY, _warWagerBtn, _warWagerAcceptBtn, _warWagerRejectBtn);
-        LayoutRow(body, rowCY, _warDeclareBtn, _warReqsBtn);
-        int statusH = RowH * 6;   // header + score + favor/trend + bar + peace + wager line
-        statusY = rowAY - 2 - statusH;
-        int listTop = body.Y + Pad;
-        listRect = new Rectangle(body.X + Pad, listTop, body.Width - Pad * 2, Math.Max(0, statusY - listTop - Pad));
-    }
-
-    // War-requests overlay: a header line, the request list, then Accept / Deny / Back.
-    private void LayoutWarReqs(Rectangle body, out Rectangle listRect)
-    {
-        int btnY = body.Bottom - ButtonH - Pad;
-        LayoutRow(body, btnY, _warReqAcceptBtn, _warReqDenyBtn, _warReqBackBtn);
-        int top = body.Y + Pad + RowH;
-        listRect = new Rectangle(body.X + Pad, top, body.Width - Pad * 2, Math.Max(0, btnY - top - Pad));
     }
 
     private static void LayoutRow(Rectangle body, int y, params Button[] buttons)
@@ -217,20 +181,4 @@ public sealed partial class SocialPanel : IGamePanel
         _labelCancelBtn.Bounds = UiHelper.PanelBottomButton(body, 1);
     }
 
-    // Standings header buttons (right-aligned on the header row): History toggle + prev/next season paging.
-    private void LayoutStandingsButtons(Rectangle gbody)
-    {
-        int y = gbody.Y + Pad;
-        _historyBtn.Bounds = new Rectangle(gbody.Right - Pad - HistoryBtnW, y, HistoryBtnW, ButtonH);
-        _nextSeasonBtn.Bounds = new Rectangle(_historyBtn.Bounds.Left - Pad - SeasonNavW, y, SeasonNavW, ButtonH);
-        _prevSeasonBtn.Bounds = new Rectangle(_nextSeasonBtn.Bounds.Left - Pad - SeasonNavW, y, SeasonNavW, ButtonH);
-    }
-
-    private void LayoutGuildTerritories(Rectangle gbody, out Rectangle tableRect)
-    {
-        int rowY = gbody.Bottom - ButtonH - Pad;
-        _challengeBtn.Bounds = new Rectangle(gbody.Right - Pad - 130, rowY, 130, ButtonH);
-        int top = gbody.Y + Pad;
-        tableRect = new Rectangle(gbody.X + Pad, top, gbody.Width - Pad * 2, Math.Max(0, rowY - top - Pad));
-    }
 }

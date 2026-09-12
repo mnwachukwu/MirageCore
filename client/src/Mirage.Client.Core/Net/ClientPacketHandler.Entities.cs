@@ -44,7 +44,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
         if (p.GuildOpen.HasValue) player.GuildOpen = p.GuildOpen.Value;
         if (p.GuildColor.HasValue) player.GuildColor = p.GuildColor.Value;
         if (p.GuildShowRank.HasValue) player.GuildShowRank = p.GuildShowRank.Value;
-        if (p.GuildStanding.HasValue) player.GuildStanding = p.GuildStanding.Value;
         // Death state: non-nullable, so every broadcast carries the current value. Drives the
         // corpse render (other players) and the death panel (yourself).
         player.Dead = p.Dead;

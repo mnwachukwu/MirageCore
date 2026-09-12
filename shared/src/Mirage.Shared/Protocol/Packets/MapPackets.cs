@@ -54,7 +54,7 @@ public sealed record SendMapGroupsPacket : IPacket
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.SendMapGroups;
     [JsonPropertyName("groups")] public GroupData[] Groups { get; init; } = [];
 
-    // Only the inheritable fields the client resolves against. Territory / ControllingGuild are server- and
+    // Only the inheritable fields the client resolves against. Anything server- or
     // contest-side concerns the client's render/predict paths never read, so they stay off the wire here.
     public sealed record GroupData(
         [property: JsonPropertyName("num")] int Num,

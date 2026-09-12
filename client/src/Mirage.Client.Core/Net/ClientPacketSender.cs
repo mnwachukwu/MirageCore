@@ -323,12 +323,6 @@ public sealed class ClientPacketSender
     public void SendGuildSetShowRank(bool show)
         => _transport.Send(new GuildSetShowRankPacket { Show = show });
 
-    // Creator debug.
-    public void SendGuildReset(SettlementScope scope)
-        => _transport.Send(new AdminGuildResetPacket { Scope = scope });
-    public void SendTerritoryWarDebug(TerritoryWarDebugAction action)
-        => _transport.Send(new AdminTerritoryWarPacket { Action = action });
-
     public void SendGuildLeave()
         => _transport.Send(new GuildLeavePacket());
 
@@ -365,22 +359,6 @@ public sealed class ClientPacketSender
     public void SendGuildDonate(int amount)
         => _transport.Send(new GuildDonatePacket { Amount = amount });
 
-    /// <summary>Donate valor (war currency) from the player into the guild vault (auto-offsets weekly tax).</summary>
-    public void SendGuildDonateValor(int amount)
-        => _transport.Send(new GuildDonateValorPacket { Amount = amount });
-
-    /// <summary>(Officer+) pay one week's tax late to restore suspended guild perks.</summary>
-    public void SendGuildPayTax()
-        => _transport.Send(new GuildPayTaxPacket());
-
-    /// <summary>(Leader) acquire a new guild quest.</summary>
-    public void SendGuildQuestAcquire()
-        => _transport.Send(new GuildQuestAcquirePacket());
-
-    /// <summary>(Leader) abandon the active guild quest, forfeiting progress (no refund).</summary>
-    public void SendGuildQuestAbandon()
-        => _transport.Send(new GuildQuestAbandonPacket());
-
     // ── Guild discovery ────────────────────────────────────────────────────────
 
     /// <summary>Request the open-for-membership guild list (the guildless browser).</summary>
@@ -393,42 +371,6 @@ public sealed class ClientPacketSender
     public void SendGuildReviewApplication(string login, bool accept)
         => _transport.Send(new GuildReviewApplicationPacket { Login = login, Accept = accept });
 
-    // ── Guild wars ──────────────────────────────────────────────────────────────
-
-    /// <summary>Declare war on a guild by name (the client has no guild-index list). Leader acts directly;
-    /// an Officer's send is queued for Leader review server-side. Doubles as "return a declaration" when the
-    /// named guild has already declared on us.</summary>
-    public void SendGuildWarDeclareByName(string guildName)
-        => _transport.Send(new GuildWarDeclareByNamePacket { TargetName = guildName });
-
-    /// <summary>Retract a still one-sided declaration against <paramref name="opponentIndex"/> (Officer+ —
-    /// leader direct, officer queued).</summary>
-    public void SendGuildWarRetract(int opponentIndex)
-        => _transport.Send(new GuildWarRetractPacket { OpponentIndex = opponentIndex });
-
-    /// <summary>(Leader) accept or deny a pending officer war-request, addressed by its (kind, target).</summary>
-    public void SendGuildWarReviewRequest(GuildWarRequestKind kind, int targetIndex, bool accept)
-        => _transport.Send(new GuildWarReviewRequestPacket { Kind = kind, TargetIndex = targetIndex, Accept = accept });
-
-    /// <summary>A peace action on a mutual war (offer/withdraw/accept/reject). Offer is Officer+ (queued for a
-    /// non-leader); withdraw/accept/reject are Leader-only. With no ante locked, an offer must carry an
-    /// <paramref name="offering"/> (the vault gold staked as the pot); it is ignored for the other actions.</summary>
-    public void SendGuildWarPeace(int opponentIndex, GuildWarPeaceAction action, long offering = 0)
-        => _transport.Send(new GuildWarPeacePacket { OpponentIndex = opponentIndex, Action = action, Offering = offering });
-
-    /// <summary>(Leader) a wager action on a mutual war (propose/accept/reject/withdraw). <paramref name="amount"/>
-    /// is the proposed ante for Propose (ignored otherwise).</summary>
-    public void SendGuildWarWager(int opponentIndex, GuildWarWagerAction action, long amount = 0)
-        => _transport.Send(new GuildWarWagerPacket { OpponentIndex = opponentIndex, Action = action, Amount = amount });
-
-    /// <summary>Register a challenge for a territory at the next war night (Leader acts, Officer queues).</summary>
-    public void SendGuildTerritoryChallenge(int territoryIndex)
-        => _transport.Send(new GuildTerritoryChallengePacket { TerritoryIndex = territoryIndex });
-
-    /// <summary>Withdraw our pending challenge for a territory (Officer+; cost not refunded).</summary>
-    public void SendGuildTerritoryWithdraw(int territoryIndex)
-        => _transport.Send(new GuildTerritoryWithdrawPacket { TerritoryIndex = territoryIndex });
-
     // ── Death & respawn ────────────────────────────────────────────────────────
 
     /// <summary>Request respawn after death — honored server-side only once the respawn timer has elapsed.</summary>
@@ -439,12 +381,6 @@ public sealed class ClientPacketSender
     /// live online column is current (a member going offline can't push one).</summary>
     public void SendGuildInfoRequest()
         => _transport.Send(new GuildInfoRequestPacket());
-
-    public void SendGuildLeaderboardRequest()
-        => _transport.Send(new GuildLeaderboardRequestPacket());
-
-    public void SendSeasonArchiveRequest(int season)
-        => _transport.Send(new SeasonArchiveRequestPacket { Season = season });
 
     // ── Social (friends / ignore) ─────────────────────────────────────────────
     // Adds take a CHARACTER name (what the player can see/right-click); the server resolves it to that

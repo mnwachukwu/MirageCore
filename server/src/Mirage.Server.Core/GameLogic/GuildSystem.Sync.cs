@@ -29,7 +29,7 @@ public sealed partial class GuildSystem : GameSystem
         var pkt = PacketBuilder.PlayerData(index, sp.Char, sp.Char.Map,
             sp.PkGraceUntilUtc, sp.AggressorUntilUtcNow,
             sp.Guild, sp.GuildRank, guild?.Name ?? "", guild?.OpenForMembership ?? false, guild?.Color ?? 0,
-            guild?.ShowRankOverhead ?? false, guild?.SeasonStanding ?? 0);
+            guild?.ShowRankOverhead ?? false);
         SendToMap(_world, sp.Char.Map, pkt);
     }
 
@@ -67,147 +67,15 @@ public sealed partial class GuildSystem : GameSystem
             OpenForMembership = guild.OpenForMembership,
             ShowRankOverhead = guild.ShowRankOverhead,
             Color = guild.Color,
-            Level = guild.Level,
-            Exp = guild.Exp,
             VaultGold = guild.VaultGold,
-            VaultValor = guild.VaultValor,
-            PerksActive = guild.PerksActive,
-            PendingIncomeTotal = PendingIncomeTotalOf(guild),
-            WeeklyIncome = guild.WeeklyIncome,
-            WeeklyDonations = guild.WeeklyDonations,
-            WeeklyWarCosts = guild.WeeklyWarCosts,
-            DaysUntilTax = ComputeDaysUntilTax(guild),
+            Income = guild.Income,
+            Donations = guild.Donations,
             MyRank = sp.GuildRank,
             Roster = BuildRoster(guild),
             Applications = new List<string>(guild.Applications),
-            Quest = QuestView(guild),
-            Wars = WarViews(guild),
-            // Pending war-requests are the leadership queue — shown to Officer+ only (mirrors the
-            // Guild Officer channel where the requests are nudged).
-            WarRequests = sp.GuildRank >= GuildRank.Officer ? RequestViews(guild) : new List<GuildWarRequestView>(),
-            Territories = TerritoryViews(guild.Index),
             RecentDonations = new List<GuildDonationEntry>(guild.RecentDonations),
             RecentSpending = new List<GuildSpendingEntry>(guild.RecentSpending),
         });
-    }
-
-    // Gold this guild has earned but not yet banked — what the next daily settlement will pay into the vault.
-    // Two accumulators, because the two reach the vault by different routes: the L5 perk pot on the guild
-    // record, and the pending income of every territory it controls.
-    private long PendingIncomeTotalOf(GuildRecord guild)
-    {
-        long pending = guild.PendingPerkIncome;
-        foreach (var (_, terr) in _world.AllTerritories())
-            if (terr.ControllingGuild == guild.Index) pending += terr.PendingTerritoryIncome;
-        return pending;
-    }
-
-    // Days (1-7) until this guild's next weekly tax settlement (charged on its founding weekday). Today counts
-    // as 7 — today's 00:00 tax already ran — so the vault dashboard can show tax on its own founding-weekday
-    // cadence, distinct from the season-week running totals.
-    private int ComputeDaysUntilTax(GuildRecord guild)
-    {
-        int d = ((int)guild.FoundingWeekday - (int)DateOnly.FromDateTime(Clock.LocalNow).DayOfWeek + 7) % 7;
-        return d == 0 ? 7 : d;
-    }
-
-    // Every territory (all guilds), alphabetical by display name, for the Territories sub-tab.
-    // Owner is blank when unclaimed; Contesting lists the registered challengers; ChallengedByUs is per-viewer.
-    private List<TerritoryView> TerritoryViews(int viewerGuildIndex)
-    {
-        var views = new List<TerritoryView>();
-        foreach (var (g, terr) in _world.AllTerritories())
-        {
-            var challengerNames = terr.Challengers
-                .Select(c => _world.Guilds.GetValueOrDefault(c)?.Name)
-                .Where(n => !string.IsNullOrEmpty(n));
-            // Last week's figure is public — a settled number saying what the land is worth, which is the
-            // point of listing it. The live ones are not: pending income tracks a guild's hunting hour by
-            // hour, so it goes only to the guild it belongs to.
-            bool ours = viewerGuildIndex > 0 && terr.ControllingGuild == viewerGuildIndex;
-            views.Add(new TerritoryView
-            {
-                Index = g.Index,
-                Name = string.IsNullOrWhiteSpace(g.DisplayName) ? g.Name : g.DisplayName.Trim(),
-                Owner = terr.ControllingGuild > 0 ? (_world.Guilds.GetValueOrDefault(terr.ControllingGuild)?.Name ?? "") : "",
-                WeeksHeld = terr.WeeksHeld,
-                PreviousWeekIncome = terr.PreviousWeekIncome,
-                PendingTerritoryIncome = ours ? terr.PendingTerritoryIncome : 0,
-                IncomeThisWeek = ours ? terr.IncomeThisWeek : 0,
-                OwnedByUs = ours,
-                Contesting = string.Join(", ", challengerNames),
-                ChallengedByUs = terr.Challengers.Contains(viewerGuildIndex),
-            });
-        }
-        views.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
-        return views;
-    }
-
-    // The guild's active wars as client-facing rows, each with its status + tug-of-war meters resolved now.
-    private List<GuildWarView> WarViews(GuildRecord guild)
-    {
-        long now = NowUtc;
-        var views = new List<GuildWarView>(guild.Wars.Count);
-        foreach (var war in guild.Wars)
-        {
-            var oppWar = GuildById(war.OpponentIndex) is { } opp ? GuildWarFormulas.Find(opp, guild.Index) : null;
-            views.Add(new GuildWarView
-            {
-                OpponentIndex = war.OpponentIndex,
-                OpponentName = war.OpponentName,
-                Status = GuildWarFormulas.Status(war, now),
-                GoLiveUtc = war.GoLiveUtc,
-                DeclaredUtc = war.DeclaredUtc,
-                // Daily maintenance for the war-tab detail: only a one-sided war we declared costs upkeep
-                // (mutual waives it; a pure defender pays nothing).
-                DailyCost = war.WeDeclared && !war.TheyDeclared ? GuildWarFormulas.DailyMaintenance(war.DeclareCost) : 0,
-                Attrition = war.Attrition,
-                OpponentAttrition = oppWar?.Attrition ?? 0,
-                PeaceOfferedByUs = war.PeaceOfferedByUs,
-                PeaceOfferedByThem = oppWar?.PeaceOfferedByUs ?? false,
-                PeaceEscrowByUs = war.PeaceEscrow,
-                PeaceEscrowByThem = oppWar?.PeaceEscrow ?? 0,
-                AnteEscrow = war.AnteEscrow,
-                WagerProposedByUs = war.WagerProposedByUs,
-                WagerProposedByThem = oppWar?.WagerProposedByUs ?? 0,
-                WagerDeadlineUtc = war.MutualSinceUtc > 0 ? war.MutualSinceUtc + Constants.GuildWarWagerWindowSeconds : 0,
-            });
-        }
-        return views;
-    }
-
-    // Pending officer war-requests as client-facing rows for the Leader's review UI.
-    private static List<GuildWarRequestView> RequestViews(GuildRecord guild)
-    {
-        var views = new List<GuildWarRequestView>(guild.WarRequests.Count);
-        foreach (var r in guild.WarRequests)
-        {
-            views.Add(new GuildWarRequestView
-            {
-                Kind = r.Kind,
-                TargetIndex = r.TargetIndex,
-                TargetName = r.TargetName,
-                RequesterName = r.RequesterName,
-            });
-        }
-
-        return views;
-    }
-
-    // The active quest as a client-facing view (target mob name resolved), or null if none.
-    private GuildQuestView? QuestView(GuildRecord guild)
-    {
-        if (guild.Quest is not { } q) return null;
-        return new GuildQuestView
-        {
-            TargetNpc = q.Objective.Target,
-            TargetNpcName = _world.Npcs[q.Objective.Target]?.TrimmedName ?? "",
-            Count = q.Objective.Count,
-            Progress = q.Objective.Progress,
-            RewardExp = q.RewardExp,
-            RewardGold = q.RewardGold,
-            ExpiresUtc = q.ExpiresUtc,
-        };
     }
 
     /// <summary>Re-send the Guild-tab data to every online member — call after a guild mutation so an
@@ -303,7 +171,7 @@ public sealed partial class GuildSystem : GameSystem
             _dispatcher.SendTo(index, PacketBuilder.PlayerData(i, osp.Char, osp.Char.Map,
                 osp.PkGraceUntilUtc, osp.AggressorUntilUtcNow,
                 osp.Guild, osp.GuildRank, guild?.Name ?? "", guild?.OpenForMembership ?? false, guild?.Color ?? 0,
-                guild?.ShowRankOverhead ?? false, guild?.SeasonStanding ?? 0));
+                guild?.ShowRankOverhead ?? false));
         }
     }
 

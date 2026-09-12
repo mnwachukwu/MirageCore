@@ -56,17 +56,11 @@ public static partial class ServerStrings
     public const string EditorAccounts_RenameUnchanged = nameof(EditorAccounts_RenameUnchanged);
     public const string EditorAccounts_BagEdited = nameof(EditorAccounts_BagEdited);
     public const string EditorAccounts_BagSlotEmpty = nameof(EditorAccounts_BagSlotEmpty);
-    public const string EditorAccounts_SpellKnown = nameof(EditorAccounts_SpellKnown);
-    public const string EditorAccounts_SpellWrongClass = nameof(EditorAccounts_SpellWrongClass);
-    public const string EditorAccounts_SpellLevelReq = nameof(EditorAccounts_SpellLevelReq);
-    public const string EditorAccounts_SpellIntReq = nameof(EditorAccounts_SpellIntReq);
-    public const string EditorAccounts_QuestSet = nameof(EditorAccounts_QuestSet);
     public const string EditorAccounts_QuestLevelReq = nameof(EditorAccounts_QuestLevelReq);
     public const string EditorAccounts_QuestStatReq = nameof(EditorAccounts_QuestStatReq);
     public const string EditorAccounts_QuestWrongClass = nameof(EditorAccounts_QuestWrongClass);
     public const string EditorAccounts_QuestPrereq = nameof(EditorAccounts_QuestPrereq);
     public const string EditorAccounts_QuestNotInLog = nameof(EditorAccounts_QuestNotInLog);
-    public const string EditorAccounts_BookFull = nameof(EditorAccounts_BookFull);
     public const string EditorAccounts_BookSlotEmpty = nameof(EditorAccounts_BookSlotEmpty);
     public const string EditorAccounts_BankFull = nameof(EditorAccounts_BankFull);
     public const string EditorAccounts_BankSlotEmpty = nameof(EditorAccounts_BankSlotEmpty);

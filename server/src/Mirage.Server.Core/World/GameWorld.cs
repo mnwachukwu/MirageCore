@@ -57,21 +57,6 @@ public sealed class GameWorld
     // map_groups/map_group{Index}.json. Maps reference a group via MapRecord.MapGroup.
     public Dictionary<int, MapGroupRecord> MapGroups { get; } = new();
 
-    // What each territory has become since the server started running — owner, income, war-night queue.
-    // Keyed by the MAP GROUP index, because a territory IS the maps of its group and the key is the whole of
-    // the link. Backed by data/territories/territory{group}.json, so none of it rides along in a world.
-    public Dictionary<int, TerritoryRecord> Territories { get; } = new();
-
-    // Perpetual season-leaderboard archive, loaded from seasons/season{N}.json on boot and appended
-    // when a season ends; ascending by season number. Served to the historical-season browser (read-only).
-    public List<SeasonArchive> SeasonArchives { get; } = new();
-
-    // Income accumulators (guild PendingPerkIncome + territory PendingTerritoryIncome) mutate per-kill in memory; these
-    // sets flag which guilds/territories have unsaved accrual so the periodic save + shutdown flush persist
-    // them (GuildScheduleSystem.FlushDirtyAccumulators) — the accrual sites just Add here, no per-kill write.
-    public HashSet<int> DirtyGuilds { get; } = new();
-    public HashSet<int> DirtyTerritories { get; } = new();
-
     // ── Effective map properties ─────────────────────────────────────────────────
     // A map's inheritable properties (Moral/Music/Shop/Indoors/lighting/Boot) are nullable: null = inherit
     // from the map's MapGroup. ALWAYS resolve them through these helpers, never a raw Maps[n].X read, so the
@@ -356,59 +341,6 @@ public sealed class GameWorld
     {
         (0, -1, Direction.Up), (0, 1, Direction.Down), (-1, 0, Direction.Left), (1, 0, Direction.Right),
     };
-
-    /// <summary>The map's MapGroup iff it is a contestable TERRITORY (Territory = true), else null — the
-    /// territory-income hook's fast gate (a group-less or non-territory map returns null).</summary>
-    public MapGroupRecord? TerritoryGroupOf(int mapNum)
-    {
-        var g = GroupOf(mapNum);
-        return g is { Territory: true } ? g : null;
-    }
-
-    /// <summary>The state of the territory that <paramref name="groupIndex"/>'s maps make up, made on first
-    /// ask.
-    ///
-    /// <para>A territory group with no file yet is simply unclaimed, so there is nothing to seed and nothing
-    /// to migrate: declaring a territory in the editor is enough, and the record reaches disk the moment
-    /// something changes it. Ask through here rather than indexing <see cref="Territories"/>, or a first
-    /// challenge on a fresh territory has nowhere to land.</para></summary>
-    public TerritoryRecord TerritoryFor(int groupIndex)
-    {
-        if (Territories.TryGetValue(groupIndex, out var t)) return t;
-        t = new TerritoryRecord { MapGroup = groupIndex };
-        Territories[groupIndex] = t;
-        return t;
-    }
-
-    /// <summary>The territory <paramref name="mapNum"/> stands in, or null when its map has no group or the
-    /// group is not contestable.</summary>
-    public TerritoryRecord? TerritoryOf(int mapNum) =>
-        TerritoryGroupOf(mapNum) is { } g ? TerritoryFor(g.Index) : null;
-
-    /// <summary>Every contestable group paired with its state, for the sweeps that visit all of them
-    /// (war-night resolution, the settlement, the Territories tab).</summary>
-    public IEnumerable<(MapGroupRecord Group, TerritoryRecord State)> AllTerritories()
-    {
-        foreach (var g in MapGroups.Values)
-            if (g.Territory) yield return (g, TerritoryFor(g.Index));
-    }
-
-    // ── Live territory contest coordination ──────────────────────────────────────
-    // Runtime-only projection of the active KotH contests, published by GuildTerritorySystem so MovementSystem
-    // (non-participant entry warnings) and SpawnSystem (NPC spawn suppression) can read the war state without a
-    // GuildTerritorySystem reference (which would cycle — GuildTerritorySystem already depends on SpawnSystem
-    // for the despawns). Empty whenever no contest is running.
-    public List<ContestZone> ContestZones { get; } = new();
-
-    /// <summary>True while <paramref name="mapNum"/> is in a territory with a live contest — NPCs neither spawn
-    /// nor respawn there for the whole war state (setup + contest + cooldown).</summary>
-    public bool IsContestSuppressedMap(int mapNum)
-    {
-        foreach (var z in ContestZones)
-            if (z.Maps.Contains(mapNum)) return true;
-        return false;
-    }
-
 
     // Dropped/spawned items per map: a dynamic list (no cap on raw size — voluntary-drop cap is
     // enforced in ItemSystem.PlayerMapDropItem against PlayerDropped count only, so death drops and

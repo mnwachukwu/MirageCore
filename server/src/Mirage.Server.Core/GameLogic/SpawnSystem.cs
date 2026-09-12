@@ -34,12 +34,6 @@ public sealed class SpawnSystem : GameSystem
         int npcNum = entry.Npc;
         if (npcNum <= 0) return;
 
-        // Territory war: a map whose territory has a live contest spawns no NPCs for the whole war
-        // state (setup + contest + cooldown), guards excepted. The single spawn chokepoint, so respawn /
-        // guest-return / bulk spawn are all covered; the contest-end resume clears the suppression before
-        // re-spawning. Asked AFTER the slot resolves, because the answer depends on which NPC this is.
-        if (_world.IsContestSuppressedMap(mapNum)) return;
-
         var mn = _world.MapNpcs[mapNum, mapNpcSlot];
         // A copy of this NPC is away chasing as a traversal guest — its slot is held.  Spawning now would
         // create a DUPLICATE native (a phantom blocker that lingers).  The chase-return path clears the

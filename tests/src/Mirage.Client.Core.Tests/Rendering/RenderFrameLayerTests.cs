@@ -47,7 +47,6 @@ public class RenderFrameLayerTests
             Assert.That(new SpriteDrawCmd(0, 0, 0, 0, Direction.Down, 1, WorldLayer.Fringe).Layer, Is.EqualTo(WorldLayer.Fringe));
             Assert.That(new ItemDrawCmd(0, 0, 5).Layer, Is.EqualTo(WorldLayer.Ground));
             Assert.That(new CorpseDrawCmd(0, 0, WorldLayer.Fringe).Layer, Is.EqualTo(WorldLayer.Fringe));
-            Assert.That(new ContestPointCmd(0, 0, ContestControl.Neutral, "P", WorldLayer.Fringe).Layer, Is.EqualTo(WorldLayer.Fringe));
         });
     }
 

@@ -59,8 +59,7 @@ public sealed class JsonPersistenceService : IPersistenceService
 
         foreach (string dir in new[]
                  {
-                     AccountsPath, MapItemsPath, GuildsPath, SeasonsPath, MarketListingsPath, TradeJournalsPath,
-                     TerritoriesPath,
+                     AccountsPath, MapItemsPath, GuildsPath, MarketListingsPath, TradeJournalsPath,
                  })
         {
             Directory.CreateDirectory(dir);
@@ -94,10 +93,7 @@ public sealed class JsonPersistenceService : IPersistenceService
     private string AccountsPath => Path.Combine(_dataPath, "accounts");
     private string MapItemsPath => Path.Combine(_dataPath, "map_items");
     private string GuildsPath => Path.Combine(_dataPath, "guilds");
-    private string SeasonsPath => Path.Combine(_dataPath, "seasons");
     private string MarketListingsPath => Path.Combine(_dataPath, "market");
-    private string TerritoriesPath => Path.Combine(_dataPath, "territories");
-
     private string AccountFile(string login) =>
         Path.Combine(AccountsPath, $"{login.ToLowerInvariant()}.json");
 
@@ -115,8 +111,6 @@ public sealed class JsonPersistenceService : IPersistenceService
     private string ClassFile(int num) => WorldFile(CoreRecordFamilies.Classes, num);
     private string GuildFile(int num) => Path.Combine(GuildsPath, $"{GuildRecord.FileStem}{num}.json");
     private string MapGroupFile(int num) => WorldFile(CoreRecordFamilies.MapGroups, num);
-    private string TerritoryFile(int num) => Path.Combine(TerritoriesPath, $"{TerritoryRecord.FileStem}{num}.json");
-    private string SeasonFile(int num) => Path.Combine(SeasonsPath, $"season{num}.json");
     private string MarketListingFile(int id) => Path.Combine(MarketListingsPath, $"{MarketListing.FileStem}{id}.json");
     private string MarketSalesFile => Path.Combine(MarketListingsPath, "sales.json");
     private string TradeJournalsPath => Path.Combine(_dataPath, "trades");
@@ -753,75 +747,10 @@ public sealed class JsonPersistenceService : IPersistenceService
         await File.WriteAllTextAsync(MapGroupFile(num), JsonSerializer.Serialize(group, Options));
     }
 
-    public async Task SaveSeasonArchiveAsync(int season, SeasonArchive archive)
-    {
-        if (season < 1) return;
-        await File.WriteAllTextAsync(SeasonFile(season), JsonSerializer.Serialize(archive, Options));
-    }
-
-    public async Task<List<SeasonArchive>> LoadAllSeasonArchivesAsync()
-    {
-        var result = new List<SeasonArchive>();
-        if (!Directory.Exists(SeasonsPath)) return result;
-        foreach (string path in Directory.EnumerateFiles(SeasonsPath, "season*.json"))
-        {
-            try
-            {
-                string json = await File.ReadAllTextAsync(path);
-                if (JsonSerializer.Deserialize<SeasonArchive>(json, Options) is { } a) result.Add(a);
-            }
-            catch (Exception ex) { _logger.LogWarning(ex, "Failed to load {File}", path); }
-        }
-        result.Sort((a, b) => a.Season.CompareTo(b.Season));
-        return result;
-    }
-
     public Task DeleteMapGroupAsync(int num)
     {
         if (num < 1) return Task.CompletedTask;
         string path = MapGroupFile(num);
-        if (File.Exists(path)) File.Delete(path);
-        return Task.CompletedTask;
-    }
-
-    // ── Territories ───────────────────────────────────────────────────────────
-    // Keyed by the MAP GROUP whose maps they are, and stored beside the installation rather than in the
-    // world: a world folder says which groups are contestable, and nothing about who won them.
-
-    public async Task<Dictionary<int, TerritoryRecord>> LoadAllTerritoriesAsync()
-    {
-        var result = new Dictionary<int, TerritoryRecord>();
-        if (!Directory.Exists(TerritoriesPath)) return result;
-        foreach (string path in Directory.EnumerateFiles(TerritoriesPath, $"{TerritoryRecord.FileStem}*.json"))
-        {
-            string stem = Path.GetFileNameWithoutExtension(path);   // "territory{N}"
-            if (stem.Length <= TerritoryRecord.FileStem.Length ||
-                !int.TryParse(stem.AsSpan(TerritoryRecord.FileStem.Length), out int index) || index < 1) continue;
-            try
-            {
-                string json = await File.ReadAllTextAsync(path);
-                var terr = JsonSerializer.Deserialize<TerritoryRecord>(json, Options);
-                if (terr is null) continue;
-                // The FILENAME is the authority on which group this belongs to, the same way a map group's
-                // own index comes from its filename.
-                terr.MapGroup = index;
-                result[index] = terr;
-            }
-            catch (Exception ex) { _logger.LogWarning(ex, "Failed to load {File}", path); }
-        }
-        return result;
-    }
-
-    public async Task SaveTerritoryAsync(int mapGroup, TerritoryRecord territory)
-    {
-        if (mapGroup < 1) return;
-        await File.WriteAllTextAsync(TerritoryFile(mapGroup), JsonSerializer.Serialize(territory, Options));
-    }
-
-    public Task DeleteTerritoryAsync(int mapGroup)
-    {
-        if (mapGroup < 1) return Task.CompletedTask;
-        string path = TerritoryFile(mapGroup);
         if (File.Exists(path)) File.Delete(path);
         return Task.CompletedTask;
     }

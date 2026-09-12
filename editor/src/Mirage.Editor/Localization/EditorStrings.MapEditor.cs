@@ -129,7 +129,6 @@ public static partial class EditorStrings
     public const string MapEditor_AttrDesc_KeyOpen = nameof(MapEditor_AttrDesc_KeyOpen);
     public const string MapEditor_AttrDesc_NpcSpawn = nameof(MapEditor_AttrDesc_NpcSpawn);
     public const string MapEditor_AttrDesc_LayerRamp = nameof(MapEditor_AttrDesc_LayerRamp);
-    public const string MapEditor_AttrDesc_FringeSurface = nameof(MapEditor_AttrDesc_FringeSurface);
     public const string MapEditor_LayerRampDir = nameof(MapEditor_LayerRampDir);
     public const string MapEditor_AttrLayer = nameof(MapEditor_AttrLayer);
     public const string MapEditor_AttrText_None = nameof(MapEditor_AttrText_None);
@@ -214,15 +213,12 @@ public static partial class EditorStrings
     public const string MapEditorStatus_PlaceOnBlocked = nameof(MapEditorStatus_PlaceOnBlocked);
     public const string MapEditorStatus_PlaceOverlap = nameof(MapEditorStatus_PlaceOverlap);
     public const string MapEditorStatus_AttrUnderNpc = nameof(MapEditorStatus_AttrUnderNpc);
-    public const string MapEditorStatus_FringeDialogAttrGroundOnly = nameof(MapEditorStatus_FringeDialogAttrGroundOnly);
     public const string MapEditor_PlaceNpcTooltip = nameof(MapEditor_PlaceNpcTooltip);
     public const string MapEditorStatus_PlaceNeedsNpc = nameof(MapEditorStatus_PlaceNeedsNpc);
     public const string MapEditorStatus_PlacePrompt = nameof(MapEditorStatus_PlacePrompt);
     public const string MapEditorStatus_PlaceCanceled = nameof(MapEditorStatus_PlaceCanceled);
     public const string MapEditorStatus_PlaceDone = nameof(MapEditorStatus_PlaceDone);
-    public const string MapEditorStatus_LoadingOffline = nameof(MapEditorStatus_LoadingOffline);
     public const string MapEditorStatus_LoadedOffline = nameof(MapEditorStatus_LoadedOffline);
-    public const string MapEditorStatus_LoadingOnline = nameof(MapEditorStatus_LoadingOnline);
     public const string MapEditorStatus_LoadedOnline = nameof(MapEditorStatus_LoadedOnline);
     public const string MapEditorStatus_LoadingMap = nameof(MapEditorStatus_LoadingMap);
     public const string MapEditorStatus_LoadedMap = nameof(MapEditorStatus_LoadedMap);

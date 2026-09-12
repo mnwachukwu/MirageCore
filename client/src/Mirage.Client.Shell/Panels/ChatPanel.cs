@@ -345,8 +345,6 @@ public sealed partial class ChatPanel
         ChatChannel.System => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_System),
         ChatChannel.Combat => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_Combat),
         ChatChannel.Rewards => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_Rewards),
-        ChatChannel.War => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_War),
-        ChatChannel.GuildWar => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_GuildWar),
         ChatChannel.Guild => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_Guild),
         ChatChannel.GuildOfficer => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_GuildOfficer),
         _ => null,

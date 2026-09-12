@@ -78,7 +78,6 @@ public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRo
             BootMap = r.BootMap;
             BootX = r.BootX;
             BootY = r.BootY;
-            Territory = r.Territory;
         }
         finally { _loading = false; }
     }
@@ -152,7 +151,6 @@ public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRo
     }
     partial void OnBootXChanged(int value) => MarkDirty();
     partial void OnBootYChanged(int value) => MarkDirty();
-    partial void OnTerritoryChanged(bool value) => MarkDirty();
 
     public void ClearDirty()
     {
@@ -212,7 +210,6 @@ public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRo
             BootMap = pkt.BootMap;
             BootX = pkt.BootX;
             BootY = pkt.BootY;
-            Territory = pkt.Territory;
         }
         finally { _loading = false; }
 
@@ -239,7 +236,6 @@ public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRo
         BootMap = BootMap,
         BootX = BootX,
         BootY = BootY,
-        Territory = Territory,
     };
 
     /// <summary>Project the row into the online save packet. The single source of that mapping — both the
@@ -260,6 +256,5 @@ public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRo
         BootMap = BootMap,
         BootX = BootX,
         BootY = BootY,
-        Territory = Territory,
     };
 }

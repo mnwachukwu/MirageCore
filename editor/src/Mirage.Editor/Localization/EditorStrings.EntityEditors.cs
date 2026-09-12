@@ -58,9 +58,6 @@ public static partial class EditorStrings
     public const string NpcEditor_LightFlickerLabel = nameof(NpcEditor_LightFlickerLabel);
     public const string NpcEditor_GroupLabel = nameof(NpcEditor_GroupLabel);
     public const string NpcEditor_RangeLabel = nameof(NpcEditor_RangeLabel);
-    public const string NpcEditor_DropChanceLabel = nameof(NpcEditor_DropChanceLabel);
-    public const string NpcEditor_DropItemLabel = nameof(NpcEditor_DropItemLabel);
-    public const string NpcEditor_DropValueLabel = nameof(NpcEditor_DropValueLabel);
     public const string NpcEditor_StrLabel = nameof(NpcEditor_StrLabel);
     public const string NpcEditor_DefLabel = nameof(NpcEditor_DefLabel);
     public const string NpcEditor_SpdLabel = nameof(NpcEditor_SpdLabel);
@@ -89,7 +86,6 @@ public static partial class EditorStrings
     public const string NpcEditor_ExpLabel = nameof(NpcEditor_ExpLabel);
     public const string NpcEditor_PreviewLevelLabel = nameof(NpcEditor_PreviewLevelLabel);
     public const string NpcEditor_SaveNpcButton = nameof(NpcEditor_SaveNpcButton);
-    public const string NpcEditor_DropItemSearchPlaceholder = nameof(NpcEditor_DropItemSearchPlaceholder);
     // Formula-notes panel — sub-headers, formula lines, and explanatory paragraphs.
     public const string NpcEditor_Formula_VitalsHeader = nameof(NpcEditor_Formula_VitalsHeader);
     public const string NpcEditor_Formula_VitalsBaseHp = nameof(NpcEditor_Formula_VitalsBaseHp);
@@ -345,7 +341,6 @@ public static partial class EditorStrings
     public const string MapGroupEditor_TypeNamePlural = nameof(MapGroupEditor_TypeNamePlural);   // "Map Groups"
     public const string MapGroupEditor_SelectPrompt = nameof(MapGroupEditor_SelectPrompt);
     public const string MapGroupEditor_SectionTitle = nameof(MapGroupEditor_SectionTitle);
-    public const string MapGroupEditor_TerritoryLabel = nameof(MapGroupEditor_TerritoryLabel);
     public const string MapGroupEditor_FallbackHeader = nameof(MapGroupEditor_FallbackHeader);
     public const string MapGroupEditor_TriStateHint = nameof(MapGroupEditor_TriStateHint);
     public const string MapGroupEditor_SaveButton = nameof(MapGroupEditor_SaveButton);
@@ -389,6 +384,4 @@ public static partial class EditorStrings
     public const string NpcEditor_RangeWarnTooShort = nameof(NpcEditor_RangeWarnTooShort);
     public const string NpcEditor_RangeWarnTooFar = nameof(NpcEditor_RangeWarnTooFar);
     public const string NpcEditor_DropWarnItemNoChance = nameof(NpcEditor_DropWarnItemNoChance);  // item set, 0 chance
-    public const string NpcEditor_DropWarnCurrencyQty = nameof(NpcEditor_DropWarnCurrencyQty);     // currency, qty < 1
-    public const string NpcEditor_DropWarnNonCurrencyQty = nameof(NpcEditor_DropWarnNonCurrencyQty);  // non-currency, qty > 0
 }

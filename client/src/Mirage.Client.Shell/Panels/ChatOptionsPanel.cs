@@ -71,8 +71,8 @@ public sealed class ChatOptionsPanel
             ChatChannel.AdminChat, ChatChannel.Guild, ChatChannel.GuildOfficer,
             // System group
             ChatChannel.Notice, ChatChannel.JoinLeaveNotice, ChatChannel.System,
-            // Combat group (both war channels group here)
-            ChatChannel.Combat, ChatChannel.Rewards, ChatChannel.War, ChatChannel.GuildWar,
+            // Combat group
+            ChatChannel.Combat, ChatChannel.Rewards,
         };
         _channelLabelKeys = new[]
         {
@@ -88,8 +88,6 @@ public sealed class ChatOptionsPanel
             ClientStrings.ChatOptionsPanel_Channel_System,
             ClientStrings.ChatOptionsPanel_Channel_Combat,
             ClientStrings.ChatOptionsPanel_Channel_Rewards,
-            ClientStrings.ChatOptionsPanel_Channel_War,
-            ClientStrings.ChatOptionsPanel_Channel_GuildWar,
         };
         _channelChecks = new Checkbox[_channelOrder.Length];
         for (int i = 0; i < _channelChecks.Length; i++)
@@ -141,7 +139,7 @@ public sealed class ChatOptionsPanel
     private bool IsChannelVisible(ChatChannel ch)
     {
         if (ch == ChatChannel.AdminChat) return _isAdmin;
-        if (ch is ChatChannel.Guild or ChatChannel.GuildOfficer or ChatChannel.GuildWar) return _inGuild;
+        if (ch is ChatChannel.Guild or ChatChannel.GuildOfficer) return _inGuild;
         return true;
     }
 

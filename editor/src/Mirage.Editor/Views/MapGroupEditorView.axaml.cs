@@ -24,7 +24,6 @@ public partial class MapGroupEditorView : LocalizedUserControl
         _sectionTitle.Text = EditorStrings.Get(EditorStrings.MapGroupEditor_SectionTitle);
         _nameLabel.Text = EditorStrings.Get(EditorStrings.Common_NameLabel);
         _displayNameLabel.Text = EditorStrings.Get(EditorStrings.Common_DisplayNameLabel);
-        _territoryLabel.Text = EditorStrings.Get(EditorStrings.MapGroupEditor_TerritoryLabel);
         _fallbackHeader.Text = EditorStrings.Get(EditorStrings.MapGroupEditor_FallbackHeader);
         // Reuse the map editor's labels for the shared fallback fields (identical wording).
         _moralLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_MoralLabel);

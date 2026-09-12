@@ -10,7 +10,7 @@ using System.Collections.ObjectModel;
 namespace Mirage.Editor.ViewModels;
 
 /// <summary>The MapGroup editor: a sibling of the record editors that authors map groups
-/// (map-like fallback props + the Territory flag). Dual-mode like the others; the server stores groups in a
+/// (map-like fallback props). Dual-mode like the others; the server stores groups in a
 /// sparse Dictionary but the editor presents the standard 1-based slot list.</summary>
 public sealed partial class MapGroupEditorViewModel : EditorViewModelBase<MapGroupRowViewModel>
 {

@@ -494,7 +494,6 @@ public static partial class EditorStrings
     public const string World_Menu = nameof(World_Menu);
     public const string World_EmptyTitle = nameof(World_EmptyTitle);
     public const string World_EmptyHint = nameof(World_EmptyHint);
-    public const string World_ReopenLast = nameof(World_ReopenLast);
     public const string World_Settings = nameof(World_Settings);
     public const string World_Check = nameof(World_Check);
     public const string World_Untitled = nameof(World_Untitled);
@@ -556,11 +555,8 @@ public static partial class EditorStrings
     public const string WorldSettings_DefaultMapSizeLabel = nameof(WorldSettings_DefaultMapSizeLabel);
     public const string WorldSettings_DefaultMapSizeHint = nameof(WorldSettings_DefaultMapSizeHint);
     public const string WorldSettings_MapSizeSoftCapWarning = nameof(WorldSettings_MapSizeSoftCapWarning);   // "{Cap}"
-    public const string WorldTransfer_DownloadTitle = nameof(WorldTransfer_DownloadTitle);
     public const string WorldTransfer_UploadTitle = nameof(WorldTransfer_UploadTitle);
     public const string WorldTransfer_NeedsConnection = nameof(WorldTransfer_NeedsConnection);
-    public const string WorldTransfer_PickDownloadFolder = nameof(WorldTransfer_PickDownloadFolder);
-    public const string WorldTransfer_PickUploadFolder = nameof(WorldTransfer_PickUploadFolder);
     public const string WorldTransfer_TargetNotEmpty = nameof(WorldTransfer_TargetNotEmpty);
     public const string WorldTransfer_Reading = nameof(WorldTransfer_Reading);
     public const string WorldTransfer_ReadingMaps = nameof(WorldTransfer_ReadingMaps);
@@ -590,10 +586,5 @@ public static partial class EditorStrings
     public const string Refresh_Skipped = nameof(Refresh_Skipped);
 
     // ── Status / Connection ───────────────────────────────────────────────────
-    public const string Status_Offline = nameof(Status_Offline);
-    public const string Status_Online = nameof(Status_Online);
-    public const string Status_LoadingMaps = nameof(Status_LoadingMaps);
-    public const string Status_LoadingMapsProgress = nameof(Status_LoadingMapsProgress);
-    public const string Status_LoadingSection = nameof(Status_LoadingSection);
     public const string Status_FilterCount = nameof(Status_FilterCount);
 }

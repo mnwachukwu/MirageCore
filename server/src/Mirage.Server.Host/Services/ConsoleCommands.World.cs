@@ -138,47 +138,6 @@ public sealed partial class ConsoleCommands
         Write(ServerStrings.Console_MapReport, ("Ranges", sb.Length > 0 ? sb.ToString() : "-"));
     }
 
-    // ── Territory war lifecycle ──────────────────────────────────────────────
-
-    private void CmdStartWar()
-    {
-        int count = _territory.DebugStartWarNight();
-        Write(ServerStrings.Console_WarStarted, ("Count", count));
-        _logger.LogInformation("Console started war night ({Count} contest(s)).", count);
-    }
-
-    private void CmdAdvanceWar()
-    {
-        bool advanced = _territory.DebugAdvanceWar();
-        Write(advanced ? ServerStrings.Console_WarAdvanced : ServerStrings.Console_NoWarInProgress);
-        if (advanced) _logger.LogInformation("Console advanced the war-night phase.");
-    }
-
-    private void CmdEndWar()
-    {
-        int count = _territory.DebugEndWar();
-        Write(ServerStrings.Console_WarEnded, ("Count", count));
-        _logger.LogInformation("Console ended war night ({Count} contest(s)).", count);
-    }
-
-    // ── /guildreset ──────────────────────────────────────────────────────────
-
-    private void CmdGuildReset(string args)
-    {
-        // Defaults to the daily settlement, matching the in-game command: it is the one that runs on its
-        // own every night, so it is the one an operator most often wants to force.
-        string arg = string.IsNullOrWhiteSpace(args) ? "day" : args.Trim();
-        if (!Enum.TryParse<SettlementScope>(arg, ignoreCase: true, out var scope) ||
-            !Enum.IsDefined(typeof(SettlementScope), scope))
-        {
-            Write(ServerStrings.Console_GuildResetUsage);
-            return;
-        }
-        _guildSchedule.RunManualSettlement(scope);
-        Write(ServerStrings.Console_GuildReset, ("Scope", scope));
-        _logger.LogInformation("Console ran a manual {Scope} settlement.", scope);
-    }
-
     // ── Shared parsing ───────────────────────────────────────────────────────
 
     /// <summary>Usage lines list valid values from the enum itself, so the console can never offer one

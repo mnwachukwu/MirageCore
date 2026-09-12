@@ -78,7 +78,6 @@ public static partial class ClientStrings
     public const string ChatPanel_UsageTell = nameof(ChatPanel_UsageTell);
     public const string ChatPanel_InvalidMapNumber = nameof(ChatPanel_InvalidMapNumber);
     public const string ChatPanel_UsageRoll = nameof(ChatPanel_UsageRoll);
-    public const string ChatPanel_UsageGuildReset = nameof(ChatPanel_UsageGuildReset);
     public const string ChatPanel_UnknownCommand = nameof(ChatPanel_UnknownCommand);
     public const string ChatPanel_NotInGuild = nameof(ChatPanel_NotInGuild);
     public const string ChatPanel_NotOfficer = nameof(ChatPanel_NotOfficer);
@@ -96,7 +95,6 @@ public static partial class ClientStrings
     public const string ChatOptionsPanel_SectionChat = nameof(ChatOptionsPanel_SectionChat);
     public const string ChatOptionsPanel_SectionSystem = nameof(ChatOptionsPanel_SectionSystem);
     public const string ChatOptionsPanel_SectionCombat = nameof(ChatOptionsPanel_SectionCombat);
-    public const string ChatOptionsPanel_SectionGuild = nameof(ChatOptionsPanel_SectionGuild);
     public const string ChatOptionsPanel_Channel_Say = nameof(ChatOptionsPanel_Channel_Say);
     public const string ChatOptionsPanel_Channel_Yell = nameof(ChatOptionsPanel_Channel_Yell);
     public const string ChatOptionsPanel_Channel_Broadcast = nameof(ChatOptionsPanel_Channel_Broadcast);
@@ -109,8 +107,6 @@ public static partial class ClientStrings
     public const string ChatOptionsPanel_Channel_Rewards = nameof(ChatOptionsPanel_Channel_Rewards);
     public const string ChatOptionsPanel_Channel_Guild = nameof(ChatOptionsPanel_Channel_Guild);
     public const string ChatOptionsPanel_Channel_GuildOfficer = nameof(ChatOptionsPanel_Channel_GuildOfficer);
-    public const string ChatOptionsPanel_Channel_GuildWar = nameof(ChatOptionsPanel_Channel_GuildWar);
-    public const string ChatOptionsPanel_Channel_War = nameof(ChatOptionsPanel_Channel_War);
 
     // ── QuitConfirmDialog ────────────────────────────────────────────────────
     public const string QuitConfirm_Quit = nameof(QuitConfirm_Quit);

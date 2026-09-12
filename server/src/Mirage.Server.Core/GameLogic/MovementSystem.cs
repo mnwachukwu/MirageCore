@@ -387,11 +387,6 @@ public sealed class MovementSystem : GameSystem
         if (moralChanged)
         {
             AnnounceEnteringZone(index, oldMoral, newMoral, isPk, p.Level);
-
-            // Territory war: warn a non-participant crossing INTO a territory that has a live
-            // contest (any phase) — a courtesy so they can clear the area; participants already got the notice.
-            if (_world.ContestZones.Count > 0)
-                WarnIfEnteringContestZone(index, oldMap, mapNum);
         }
 
         if (_pm.GetTotalMapPlayers(oldMap) == 0)
@@ -695,26 +690,6 @@ public sealed class MovementSystem : GameSystem
             }
         }
         return true;
-    }
-
-    // Non-participant entry warning: fired on a map change into a contested territory from outside
-    // it, so a bystander is told to clear the area. Participants already received the ramp-up/phase notices.
-    private void WarnIfEnteringContestZone(int index, int oldMap, int newMap)
-    {
-        int guild = _pm[index].Guild;
-        foreach (var z in _world.ContestZones)
-        {
-            if (!z.Maps.Contains(newMap) || z.Maps.Contains(oldMap)) continue;   // only when crossing IN from outside
-            if (z.Participants.Contains(guild)) return;                          // a participant — no warning
-            // Cooldown is the same zone but not the same situation: the contest is already settled, so
-            // there is nothing left to take part in and telling someone to clear the area for it is
-            // wrong. What still holds is that the ground has not gone back to normal yet.
-            bool settled = z.Phase == ContestPhase.Cooldown;
-            _dispatcher.SendLocalizedChatTo(index,
-                settled ? ServerStrings.GuildTerritory_ContestSettling : ServerStrings.GuildTerritory_NonParticipantWarning,
-                new ChatMetadata(GameColor.BrightRed, ChatChannel.System), ("Territory", z.Name));
-            return;
-        }
     }
 
     private void BroadcastMove(int index, MovementType movement)

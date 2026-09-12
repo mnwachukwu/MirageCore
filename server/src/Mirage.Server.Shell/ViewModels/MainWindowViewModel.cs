@@ -732,14 +732,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                     CommandParameter.Number("map", 1, RecordLimits.Default.Maps, 1)),
                 new ShellCommand("/mapreport", ShellStrings.Get(ShellStrings.Commands_MapReport), Send),
             ]),
-            new CommandGroup(ShellStrings.Get(ShellStrings.Commands_Guilds),
-            [
-                new ShellCommand("/startwar", ShellStrings.Get(ShellStrings.Commands_StartWar), Send),
-                new ShellCommand("/advancewar", ShellStrings.Get(ShellStrings.Commands_AdvanceWar), Send),
-                new ShellCommand("/endwar", ShellStrings.Get(ShellStrings.Commands_EndWar), Send),
-                new ShellCommand("/guildreset", ShellStrings.Get(ShellStrings.Commands_GuildReset), Send,
-                    CommandParameter.Choice("scope", Names<SettlementScope>())),
-            ]),
             // The tab doubles as the list of what the console accepts, so a command being reachable
             // another way is not a reason to leave it out. /shutdown is also available as the Stop
             // button on the Console tab; here it asks first, the same as the other destructive ones.

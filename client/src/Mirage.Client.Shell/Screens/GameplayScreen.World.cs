@@ -106,9 +106,6 @@ public sealed partial class GameplayScreen : IGameScreen
             if (cmd.Layer == group) DrawWorldName(sb, nameFont, cmd, nameCellW, nameLineH);
 
         // Territory-contest capture points: radius circle + triangular flag + name, in the world
-        // layer (walk-over-able) so entities draw over them. Participant-only (frame.ContestPoints empty else).
-        foreach (var cp in _renderFrame.ContestPoints)
-            if (cp.Layer == group) DrawContestPoint(sb, nameFont, cp, nameCellW, nameLineH);
 
         if (_items is not null)
         {

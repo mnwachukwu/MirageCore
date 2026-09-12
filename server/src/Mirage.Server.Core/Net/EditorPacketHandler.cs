@@ -1017,7 +1017,6 @@ public sealed partial class EditorPacketHandler
         GreetingSpeaker = g.GreetingSpeaker,
         JoinSay = g.JoinSay,
         LeaveSay = g.LeaveSay,
-        Territory = g.Territory,
     };
 
     private void HandleEditorRequestMapGroup(int editorIndex, EditorRequestMapGroupPacket p)
@@ -1072,7 +1071,6 @@ public sealed partial class EditorPacketHandler
 
         // Reuse the existing record, or create it on first save (groups are a sparse Dictionary, unlike the
         // pre-sized record arrays). Everything on a group is authored, so the whole of it is the editor's to
-        // overwrite — who holds the territory these maps make up is a TerritoryRecord and is not here.
         if (!_world.MapGroups.TryGetValue(n, out var group))
         {
             group = new MapGroupRecord { Index = n };
@@ -1091,7 +1089,6 @@ public sealed partial class EditorPacketHandler
         group.GreetingSpeaker = p.GreetingSpeaker;
         group.JoinSay = p.JoinSay;
         group.LeaveSay = p.LeaveSay;
-        group.Territory = p.Territory;
 
         _bg.Run(_persistence.SaveMapGroupAsync(n, group), nameof(IPersistenceService.SaveMapGroupAsync));
 

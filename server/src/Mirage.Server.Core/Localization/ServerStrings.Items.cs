@@ -36,9 +36,6 @@ public static partial class ServerStrings
     // ── ItemSystem ────────────────────────────────────────────────────────────
     public const string ItemSystem_TooManyOnGround = nameof(ItemSystem_TooManyOnGround);
     public const string ItemSystem_DropPartial = nameof(ItemSystem_DropPartial);
-    public const string ItemSystem_VitalFull = nameof(ItemSystem_VitalFull);
-    public const string ItemSystem_UsedPotion = nameof(ItemSystem_UsedPotion);
-    public const string ItemSystem_CantUsePotion = nameof(ItemSystem_CantUsePotion);
     public const string ItemSystem_LootClaimed = nameof(ItemSystem_LootClaimed);
     public const string ItemSystem_LootGone = nameof(ItemSystem_LootGone);
     public const string ItemSystem_LootTooFar = nameof(ItemSystem_LootTooFar);
@@ -52,15 +49,7 @@ public static partial class ServerStrings
     public const string ItemSystem_CurrencyLostOnDeath = nameof(ItemSystem_CurrencyLostOnDeath);
     public const string ItemSystem_ItemDestroyed = nameof(ItemSystem_ItemDestroyed);
     public const string ItemSystem_CurrencyDestroyed = nameof(ItemSystem_CurrencyDestroyed);
-    public const string ItemSystem_ScrollNoSpell = nameof(ItemSystem_ScrollNoSpell);
-    public const string ItemSystem_SpellWrongClass = nameof(ItemSystem_SpellWrongClass);
-    public const string ItemSystem_SpellIntReq = nameof(ItemSystem_SpellIntReq);
     public const string ItemSystem_LevelReq = nameof(ItemSystem_LevelReq);
-    public const string ItemSystem_SpellLevelReq = nameof(ItemSystem_SpellLevelReq);
-    public const string ItemSystem_SpellBookFull = nameof(ItemSystem_SpellBookFull);
-    public const string ItemSystem_SpellAlreadyKnown = nameof(ItemSystem_SpellAlreadyKnown);
-    public const string ItemSystem_StudyingSpell = nameof(ItemSystem_StudyingSpell);
-    public const string ItemSystem_LearnedSpell = nameof(ItemSystem_LearnedSpell);
     public const string ItemSystem_WeaponStrReq = nameof(ItemSystem_WeaponStrReq);
     public const string ItemSystem_ArmorDefReq = nameof(ItemSystem_ArmorDefReq);
     public const string ItemSystem_HelmetDefReq = nameof(ItemSystem_HelmetDefReq);
