@@ -35,7 +35,6 @@ public sealed class MirageServerService : IHostedService
     private readonly GuildScheduleSystem _guildSchedule;
     private readonly GuildTerritorySystem _territory;
     private readonly TradeSystem _trade;
-    private readonly CombatSystem _combat;
     private readonly QuestSystem _quests;
     private readonly TcpConnectionAcceptor _acceptor;
     private readonly ILogger<MirageServerService> _logger;
@@ -58,7 +57,6 @@ public sealed class MirageServerService : IHostedService
         GuildScheduleSystem guildSchedule,
         GuildTerritorySystem territory,
         TradeSystem trade,
-        CombatSystem combat,
         QuestSystem quests,
         TcpConnectionAcceptor acceptor,
         ServerConfig config,
@@ -79,7 +77,6 @@ public sealed class MirageServerService : IHostedService
         _guildSchedule = guildSchedule;
         _territory = territory;
         _trade = trade;
-        _combat = combat;
         _quests = quests;
         _acceptor = acceptor;
         _logger = logger;
@@ -104,7 +101,6 @@ public sealed class MirageServerService : IHostedService
         // Wire the level-up → quest-eligibility refresh now that every system exists (can't be done at
         // construction — the Combat↔Quest DI cycle is broken by a Lazy, so neither can reference the other in
         // its ctor). A gained level may newly satisfy a quest's accept requirements, relighting its giver "?".
-        _combat.PlayerLeveledUp = _quests.RefreshEligibility;
 
         // Spawn map items for every map that has item-spawn tiles
         _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_SpawningMapItems));
@@ -228,6 +224,7 @@ public sealed class MirageServerService : IHostedService
         // put it in its title bar.
         var manifest = await _persistence.LoadWorldManifestAsync();
         _world.WorldName = manifest.Name;
+        _world.Appearances = manifest.Appearances;
         if (manifest.IsNamed)
             LocalizedLog.Info(_logger, ServerStrings.Server_WorldName, ("WorldName", manifest.Name));
 

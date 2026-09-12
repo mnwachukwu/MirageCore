@@ -21,13 +21,15 @@ public class WorldSettingsRowTests
     private static WorldSettingsDialogViewModel Open(RecordLimits limits) =>
         new(new WorldManifest { Name = "w", Records = limits }, isOnline: false);
 
-    private static RecordLimits Confirmed(WorldSettingsDialogViewModel vm)
+    private static WorldManifest Confirmed(WorldSettingsDialogViewModel vm)
     {
         WorldManifest? result = null;
         vm.Confirmed += m => result = m;
         vm.ConfirmCommand.Execute(null);
-        return result!.Records;
+        return result!;
     }
+
+    private static RecordLimits ConfirmedLimits(WorldSettingsDialogViewModel vm) => Confirmed(vm).Records;
 
     /// <summary>Every configurable ceiling is given a different value, so a swapped pair cannot look
     /// correct by coincidence.</summary>
@@ -40,7 +42,7 @@ public class WorldSettingsRowTests
     [Test]
     public void EveryCeilingComesBackOnTheFamilyItWasTypedFor()
     {
-        var back = Confirmed(Open(Distinct));
+        var back = ConfirmedLimits(Open(Distinct));
 
         Assert.Multiple(() =>
         {
@@ -63,7 +65,7 @@ public class WorldSettingsRowTests
         var npcRow = vm.Rows.First(r => r.FamilyId == CoreRecordFamilies.Npcs);
 
         npcRow.Value = 555;
-        var back = Confirmed(vm);
+        var back = ConfirmedLimits(vm);
 
         Assert.Multiple(() =>
         {
@@ -94,7 +96,7 @@ public class WorldSettingsRowTests
         var vm = Open(Distinct);
 
         Assert.That(vm.Rows.Any(r => r.FamilyId == CoreRecordFamilies.Classes), Is.False);
-        Assert.That(Confirmed(vm).For(CoreRecordFamilies.Classes), Is.EqualTo(Constants.MaxClasses));
+        Assert.That(ConfirmedLimits(vm).For(CoreRecordFamilies.Classes), Is.EqualTo(Constants.MaxClasses));
     }
 
     [Test]
@@ -104,12 +106,43 @@ public class WorldSettingsRowTests
                     Is.EquivalentTo(CoreRecordFamilies.World.Where(f => !f.LimitIsFixed).Select(f => f.Id)));
     }
 
+    /// <summary>The dialog edits three things and must not touch the rest of the manifest. A world's
+    /// authored appearance roster is not something a settings dialog should be able to delete by not
+    /// mentioning it — and a manifest rebuilt from its parts does exactly that, silently.</summary>
+    [Test]
+    public void SavingKeepsThePartsOfTheWorldThisDialogDoesNotEdit()
+    {
+        var authored = new WorldManifest
+        {
+            Name = "w",
+            Records = Distinct,
+            Appearances =
+            [
+                new CharacterAppearance { Name = "Villager", Sprite = 3, SpriteSheet = 0 },
+                new CharacterAppearance { Name = "Knight", Sprite = 17, SpriteSheet = 2 },
+            ],
+        };
+
+        var vm = new WorldSettingsDialogViewModel(authored, isOnline: false);
+        vm.WorldName = "renamed";
+        var back = Confirmed(vm);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(back.Appearances, Has.Count.EqualTo(2));
+            Assert.That(back.Appearances[0].Name, Is.EqualTo("Villager"));
+            Assert.That(back.Appearances[1].Sprite, Is.EqualTo(17));
+            Assert.That(back.Appearances[1].SpriteSheet, Is.EqualTo(2));
+            Assert.That(back.Name, Is.EqualTo("renamed"), "the fields it DOES edit still change");
+        });
+    }
+
     [Test]
     public void ACeilingAboveWhatAWorldTakesIsBroughtBackDown()
     {
         var vm = Open(Distinct);
         vm.Rows.First(r => r.FamilyId == CoreRecordFamilies.Items).Value = RecordLimits.Ceiling + 5_000;
 
-        Assert.That(Confirmed(vm).Items, Is.LessThanOrEqualTo(RecordLimits.Ceiling));
+        Assert.That(ConfirmedLimits(vm).Items, Is.LessThanOrEqualTo(RecordLimits.Ceiling));
     }
 }

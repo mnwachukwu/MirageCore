@@ -1,3 +1,4 @@
+using Mirage.Shared.Records;
 using System.Text.Json.Serialization;
 
 namespace Mirage.Shared.Protocol.Packets;
@@ -77,8 +78,13 @@ public sealed record AddCharPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.AddChar;
     [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("sex")] public Sex Sex { get; init; }
-    [JsonPropertyName("class")] public int Class { get; init; }
+
+    /// <summary>Which of the world's offered appearances was chosen, as a 0-based position in the
+    /// list the server sent in its hello.
+    ///
+    /// <para>A position rather than a sprite number: the server holds the list, so it resolves the
+    /// choice itself and a client cannot ask to look like something the world never offered.</para></summary>
+    [JsonPropertyName("appearance")] public int Appearance { get; init; }
 }
 
 /// <summary>C→S: delete the character in <c>Slot</c>.</summary>
@@ -147,6 +153,12 @@ public sealed record ServerHelloPacket : IPacket
     /// every record number against these, rather than against anything it was compiled with — see
     /// <see cref="RecordLimits"/> for why a compiled-in ceiling is a bug rather than a default.</summary>
     [JsonPropertyName("records")] public RecordLimits Records { get; init; } = RecordLimits.Default;
+
+    /// <summary>The appearances this world offers at character creation. The creation screen shows
+    /// these and nothing else — a client never picks from the art it happens to have loaded, because
+    /// which looks a game offers is the author's decision rather than a property of the atlas.</summary>
+    [JsonPropertyName("appearances")]
+    public IReadOnlyList<CharacterAppearance> Appearances { get; init; } = CharacterAppearance.DefaultSet;
 }
 
 /// <summary>

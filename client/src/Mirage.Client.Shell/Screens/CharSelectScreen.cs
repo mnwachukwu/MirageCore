@@ -136,10 +136,8 @@ public sealed class CharSelectScreen : IGameScreen
 
         if (_newCharBtn.IsClicked(input))
         {
-            _ctx.Sender.SendGetClasses();
-            _ctx.Menu.GoToLoadingForNewChar(ClientStrings.Get(ClientStrings.CharSelectScreen_LoadingClasses));
             _pendingAction = true;
-            _ctx.Screens.Replace(new LoadingScreen(_ctx));
+            _ctx.Menu.GoToNewChar();
         }
 
         if (_deleteBtn.IsClicked(input) && hasChar)

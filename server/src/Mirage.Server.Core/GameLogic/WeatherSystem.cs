@@ -217,9 +217,6 @@ public sealed class WeatherSystem : GameSystem
             p.Mp = Math.Min(p.Mp, p.MaxMp);
             if (oldMaxSp > 0) p.Sp = (int)Math.Round(p.Sp * (double)p.MaxSp / oldMaxSp, MidpointRounding.AwayFromZero);
             p.Sp = Math.Min(p.Sp, p.MaxSp);
-            SendToMap(_world, p.Map, PacketBuilder.SendHp(i, p.Hp, p.MaxHp));
-            SendToMap(_world, p.Map, PacketBuilder.SendMp(i, p.Mp, p.MaxMp));
-            SendToMap(_world, p.Map, PacketBuilder.SendSp(i, p.Sp, p.MaxSp));
         }
     }
 

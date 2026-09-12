@@ -29,14 +29,8 @@ public interface IClientEvents
     /// <summary>Inventory contents changed (full sync or single slot update).</summary>
     event Action? InventoryChanged;
 
-    /// <summary>HP, MP, or SP changed for the given player index.</summary>
-    event Action<int>? VitalsChanged;
-
     /// <summary>Server sent the character list (switch to CharSelect screen).</summary>
     event Action? CharacterListReceived;
-
-    /// <summary>Class list received (used by NewChar screen to populate dropdown).</summary>
-    event Action? ClassListReceived;
 
     /// <summary>An item spawned or despawned in the given map-item slot.</summary>
     event Action<int>? MapItemChanged;
@@ -58,12 +52,6 @@ public interface IClientEvents
     /// (mapNum, npcSlot) on conversation (convNum). The client holds the cached tree and walks it locally.</summary>
     event Action<int, int, int>? OpenNpcConversation;
 
-    /// <summary>Stats updated — stat POINTS > 0, so the Training panel can be shown.</summary>
-    event Action? TrainingReady;
-
-    /// <summary>Player spells received from server; arg is the persisted prepared-spell slot (0 = none).</summary>
-    event Action<int>? PreparedSpellReceived;
-
     /// <summary>Another player sent a party request to us.</summary>
     event Action<string, int>? PartyRequest;
 
@@ -76,20 +64,7 @@ public interface IClientEvents
     /// <summary>Server broadcast an updated total players online count.</summary>
     event Action<int>? PlayersOnlineChanged;
 
-    /// <summary>Local player gained one or more levels.</summary>
-    event Action? LevelUp;
-
     /// <summary>Server assigned a new target to the local player (e.g. auto-target on melee hit).</summary>
     event Action<TargetRef>? TargetAssigned;
 
-    /// <summary>
-    /// Vital changed in a way that should produce a floating combat number.
-    /// delta > 0 = heal/gain, delta < 0 = damage/loss.
-    /// Args: entityIndex, delta, type, isNpc, isCrit, npcMap (the NPC's map for isNpc — so the number
-    /// floats on a neighbor map too; 0/ignored for players, which resolve by their own record).
-    /// </summary>
-    event Action<int, int, VitalType, bool, bool, int>? VitalDelta;
-
-    /// <summary>An entity blocked or dodged an attack — the client floats localized cyan text over it.</summary>
-    event Action<CombatTextPacket>? CombatText;
 }

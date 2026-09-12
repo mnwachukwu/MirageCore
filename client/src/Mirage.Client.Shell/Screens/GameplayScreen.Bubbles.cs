@@ -344,15 +344,7 @@ public sealed partial class GameplayScreen : IGameScreen
             return true;
         }
 
-        int book = HotkeyBarPanel.FindSpellSlot(state, hk.Num);
-        if (book <= 0)
-        {
-            string name = (hk.Num < state.SpellDefs.Length ? state.SpellDefs[hk.Num]?.TrimmedName : null) ?? "?";
-            AddChatLine(ClientStrings.Format(ClientStrings.HotkeyBar_SpellGone, ("Spell", name)), GameColor.BrightRed);
-            return false;
-        }
-        _ctx.Sender.SendCast(book, _lastInput.IsSelfTargetHeld());
-        return true;
+        return false;
     }
 
     /// <summary>Bind or clear an action-bar slot, then let the server echo the whole bar back.</summary>

@@ -91,51 +91,6 @@ public sealed record ShopContentsPacket : IPacket
 
 // ── Spell ────────────────────────────────────────────────────────────────────
 
-public sealed record SpellsRequestPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.Spells;
-}
-
-public sealed record SendSpellsPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.SendSpells;
-    [JsonPropertyName("spells")] public SpellData[] Spells { get; init; } = [];
-
-    public sealed record SpellData(
-        [property: JsonPropertyName("num")] int Num,
-        [property: JsonPropertyName("name")] string Name,
-        [property: JsonPropertyName("allowedClasses")] List<short>? AllowedClasses,
-        [property: JsonPropertyName("type")] SpellType Type,
-        // Type-specific fields; see SpellRecord for which apply to which SpellType.
-        [property: JsonPropertyName("vitalAmount")] short VitalAmount,
-        [property: JsonPropertyName("itemNum")] short ItemNum,
-        [property: JsonPropertyName("itemQuantity")] short ItemQuantity,
-        [property: JsonPropertyName("intReq")] short IntReq,
-        [property: JsonPropertyName("levelReq")] short LevelReq
-    );
-}
-
-public sealed record PlayerSpellsPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.PlayerSpells;
-    [JsonPropertyName("spells")] public int[] Spells { get; init; } = [];
-    [JsonPropertyName("preparedSpell")] public int PreparedSpell { get; init; }
-}
-
-/// <summary>C→S: player prepared or unprepared a spell slot.</summary>
-public sealed record SetPreparedSpellPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.SetPreparedSpell;
-    [JsonPropertyName("slot")] public int Slot { get; init; }
-}
-
-/// <summary>C→S: player chose to forget (unlearn) a spell, freeing the slot.</summary>
-public sealed record ForgetSpellPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.ForgetSpell;
-    [JsonPropertyName("slot")] public int Slot { get; init; }
-}
-
 /// <summary>S→C: the character's whole action bar, 1-based slots 1..MaxHotkeys flattened to a 0-based
 /// wire array (as PlayerSpells does with the spell book). Sent at join and echoed after every change, so
 /// the client never has to guess whether its own edit was accepted.</summary>

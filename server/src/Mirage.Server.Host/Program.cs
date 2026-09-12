@@ -186,9 +186,7 @@ var host = Host.CreateDefaultBuilder(args)
 
         // ── Game logic ────────────────────────────────────────────────────────
         services.AddSingleton<MovementSystem>();
-        services.AddSingleton<CombatSystem>();
         services.AddSingleton<ItemSystem>();
-        services.AddSingleton<SpellSystem>();
         services.AddSingleton<ShopSystem>();
         services.AddSingleton<BankSystem>();
         services.AddSingleton<PlayerSpawnSystem>();
@@ -203,19 +201,13 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<ObjectiveSystem>();
         services.AddSingleton<QuestSystem>();
         services.AddSingleton<ConversationSystem>();
-        // Lazy CombatSystem for QuestSystem — defers resolution to break the CombatSystem↔JoinLeaveSystem
-        // ↔QuestSystem construction cycle (QuestSystem only needs it for level-up at reward time).
-        services.AddSingleton(p => new Lazy<CombatSystem>(() => p.GetRequiredService<CombatSystem>()));
         services.AddSingleton<SocialSystem>();
         services.AddSingleton<SpawnSystem>();
         services.AddSingleton<ModerationSystem>();
         services.AddSingleton<JoinLeaveSystem>();
         services.AddSingleton<NpcAiSystem>();
-        services.AddSingleton<RegenerationSystem>();
-        services.AddSingleton<PkExpirySystem>();
         services.AddSingleton<TimeOfDaySystem>();
         services.AddSingleton<WeatherSystem>();
-        services.AddSingleton<BloodSystem>();
         services.AddSingleton<GameLoop>();
 
         // ── Packet handlers ───────────────────────────────────────────────────

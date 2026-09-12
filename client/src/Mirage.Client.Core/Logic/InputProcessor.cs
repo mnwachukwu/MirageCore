@@ -30,9 +30,34 @@ public static class InputProcessor
         if (!state.InGame || state.GettingMap) return;
 
         ProcessMovement(input, state, sender, nowMs);
+        ProcessInteract(input, state, sender);
         if (!onTick) return;
-        ProcessAttack(input, state, sender, nowMs);
         ProcessPickUp(input, sender);
+    }
+
+    // ── Interaction ───────────────────────────────────────────────
+
+    /// <summary>Reaching for whatever the player is facing.
+    ///
+    /// <para>Fired ONCE per press rather than while the key is held: an interaction opens something, and
+    /// a held key would reopen it every frame. The server re-validates range and slot, so a slightly
+    /// stale guess costs nothing.</para></summary>
+    private static void ProcessInteract(InputSnapshot input, ClientState state, ClientPacketSender sender)
+    {
+        if (!input.AttackPressed) return;
+        if (!TryFindFacingNpc(state, out int map, out int slot, out int num, out bool layerConnects)) return;
+
+        // Nothing to open.
+        if (state.NpcKeeperShop[num] == 0 && state.NpcQuestGlyph[num] == 0 && state.NpcConvGlyph[num] == 0)
+        {
+            return;
+        }
+
+        // Reaching only crosses to a plane the player's own connects to — somebody up on a bridge is
+        // reachable from the ramp foot and not from the ground beneath it. A refusal is flagged for the
+        // shell to voice rather than silently doing nothing.
+        if (layerConnects) sender.SendNpcInteract(map, slot);
+        else state.NpcInteractWrongLayer = true;
     }
 
     // ── Movement ──────────────────────────────────────────────────────────────
@@ -287,53 +312,6 @@ public static class InputProcessor
     }
 
     // ── Attack ────────────────────────────────────────────────────────────────
-
-    // Hold-to-attack: while the attack key is held,
-    // an attack fires each time the cooldown window elapses.
-    private static void ProcessAttack(InputSnapshot input, ClientState state, ClientPacketSender sender, long _)
-    {
-        if (!input.Attack) return;
-
-        // Melee aimed at an NPC never swings AT it:
-        //  • An interactable NPC (keeper / quest / conversation) opens its menu instead — talk-first, fired ONCE
-        //    per press (edge); the held key is swallowed so it neither respams the interact nor whiffs an anim.
-        //    Auto lets the server route it (conversation, else quest menu if actionable, else shop/inn); it
-        //    re-validates range + slot, so a slightly-off client guess is harmless. No AttackPacket → no swing.
-        //  • A non-combat NPC (Friendly / Stationary) can't be damaged — attacking it only triggers its AttackSay
-        //    rebuff. Still SEND the attack so the server issues that say, but SUPPRESS the swing (the server also
-        //    skips the whiff broadcast for a friendly rebuff, so no swing plays anywhere — see CombatSystem).
-        // Only a genuine combat target (or empty air) plays the swing.
-        bool suppressSwing = false;
-        if (TryFindFacingNpc(state, out int map, out int slot, out int num, out bool layerConnects))
-        {
-            if (state.NpcKeeperShop[num] != 0 || state.NpcQuestGlyph[num] != 0 || state.NpcConvGlyph[num] != 0)
-            {
-                // Interaction only reaches a plane the player's own connects to (the server's gate agrees), so a
-                // keeper on the bridge is reachable from the ramp foot but not from the ground below it. A refusal
-                // is flagged for the Shell to voice, once per press, and still no swing — a keeper is no target.
-                if (input.AttackPressed)
-                {
-                    if (layerConnects) sender.SendNpcInteract(map, slot);
-                    else state.NpcInteractWrongLayer = true;
-                }
-                return;   // no SendAttack, no Attacking — no swing animation
-            }
-            // Only an NPC the server would actually let us reach suppresses the swing. Across disconnected planes
-            // its melee gate rejects the NPC before it can rebuff, so there's no AttackSay to wait for and the
-            // swing should play into thin air (a whiff) rather than be swallowed — which read as a dropped key.
-            if (layerConnects && state.NpcDefs[num]?.Behavior is NpcBehavior.Friendly or NpcBehavior.Stationary)
-                suppressSwing = true;
-        }
-
-        long tickNow = Environment.TickCount64;
-        // Heavy Wind doubles the attack cooldown server-side; mirror it locally to stay in lockstep.
-        long windMult = state.Weather == WeatherType.HeavyWind ? Constants.WeatherHeavyWindCooldownMultiplier : 1L;
-        if (tickNow - state.Me.AttackTimer < Constants.PlayerAttackCooldownMs * windMult) return;
-
-        sender.SendAttack();
-        state.Me.AttackTimer = tickNow;
-        if (!suppressSwing) state.Me.Attacking = true;   // a friendly rebuff sends the attack but plays no swing
-    }
 
     // The native-slot NPC whose footprint covers the tile directly in FRONT of the local player, or false if
     // none. Cross-map aware: the front tile is resolved in world space so a seam-adjacent NPC on a neighbor map

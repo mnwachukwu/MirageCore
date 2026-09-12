@@ -16,24 +16,19 @@ public sealed partial class NpcAiSystem : GameSystem
 {
     private readonly GameWorld _world;
     private readonly PlayerManager _pm;
-    private readonly CombatSystem _combat;
     private readonly MovementSystem _movement;
     private readonly SpawnSystem _spawn;
     private readonly ItemSystem _items;
-    private readonly BloodSystem _blood;
 
     public NpcAiSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher,
-                       CombatSystem combat, MovementSystem movement, SpawnSystem spawn, ItemSystem items, BloodSystem blood,
-                       IClock? clock = null, IRandomSource? rng = null)
+                       MovementSystem movement, SpawnSystem spawn, ItemSystem items, IClock? clock = null, IRandomSource? rng = null)
         : base(dispatcher, clock: clock, rng: rng)
     {
         _world = world;
         _pm = pm;
-        _combat = combat;
         _movement = movement;
         _spawn = spawn;
         _items = items;
-        _blood = blood;
         _occupancyCache = new byte[_world.Limits.Maps + 1][];
         _occupancyCacheTicks = new long[_world.Limits.Maps + 1];
         _queries = new WorldQueries(world, pm);
@@ -46,13 +41,6 @@ public sealed partial class NpcAiSystem : GameSystem
     /// <summary>Keeps players' selections pointing at the right body as NPCs cross seams and
     /// despawn.</summary>
     private readonly SelectionTracking _selection;
-
-    // A badly wounded NPC/guest (<= BloodTrailHpThreshold of max HP) drips onto each fresh tile it moves to.
-    private void NpcBloodTrail(int mapNum, int x, int y, int hp, int npcNum, WorldLayer layer)
-    {
-        if (hp <= _world.EffectiveNpcMaxHp(_world.Npcs[npcNum]) * Constants.BloodTrailHpThreshold)
-            _blood.DepositTrail(mapNum, x, y, _world.Npcs[npcNum].EffectiveSize, layer);
-    }
 
     private const long DoorAutoCloseMs = 5_000;  // a door swings shut this long after it opens
     // NPC regen tick — every 5 s, matching the player HP cadence on a normal map (combat
@@ -242,7 +230,7 @@ public sealed partial class NpcAiSystem : GameSystem
             TryLegsKite(mapNum, slot, mn, vp.Map, vp.X, vp.Y, now);
             return;
         }  // caster retreat (run pace)
-        if (_combat.NpcInMeleeRangeOfPlayer(mapNum, mn, target) && !ChaserVacatesRampFor(mapNum, mn, vp.Layer))
+        if (_queries.IsWithinReach(mapNum, mn.X, mn.Y, _world.Npcs[mn.Num].EffectiveSize, mn.Layer, vp.Map, vp.X, vp.Y, vp.Layer) && !ChaserVacatesRampFor(mapNum, mn, vp.Layer))
         {
             mn.HasMadeContact = true;
             mn.ChaseSprinting = false;
@@ -282,7 +270,7 @@ public sealed partial class NpcAiSystem : GameSystem
             TryLegsKite(mapNum, slot, mn, victimMap, victimMn.X, victimMn.Y, now, _world.Npcs[victimMn.Num].EffectiveSize);
             return;
         }  // caster retreat
-        if (_combat.NpcInMeleeRangeOfNpc(mapNum, mn, victimMap, victimMn) && !ChaserVacatesRampFor(mapNum, mn, victimMn.Layer))
+        if (_queries.IsWithinReach(mapNum, mn.X, mn.Y, _world.Npcs[mn.Num].EffectiveSize, mn.Layer, victimMap, victimMn.X, victimMn.Y, victimMn.Layer) && !ChaserVacatesRampFor(mapNum, mn, victimMn.Layer))
         {
             mn.HasMadeContact = true;
             mn.ChaseSprinting = false;
@@ -326,7 +314,7 @@ public sealed partial class NpcAiSystem : GameSystem
                 TryLegsKite(mapNum, listIndex, t, vp.Map, vp.X, vp.Y, now);
                 return;
             }  // caster retreat
-            if (_combat.NpcInMeleeRangeOfPlayer(mapNum, t, t.Target) && !ChaserVacatesRampFor(mapNum, t, vp.Layer))
+            if (_queries.IsWithinReach(mapNum, t.X, t.Y, _world.Npcs[t.Num].EffectiveSize, t.Layer, vp.Map, vp.X, vp.Y, vp.Layer) && !ChaserVacatesRampFor(mapNum, t, vp.Layer))
             {
                 t.HasMadeContact = true;
                 t.ChaseSprinting = false;
@@ -348,7 +336,7 @@ public sealed partial class NpcAiSystem : GameSystem
                 TryLegsKite(mapNum, listIndex, t, victimMap, victimMn.X, victimMn.Y, now, _world.Npcs[victimMn.Num].EffectiveSize);
                 return;
             }  // caster retreat
-            if (_combat.NpcInMeleeRangeOfNpc(mapNum, t, victimMap, victimMn) && !ChaserVacatesRampFor(mapNum, t, victimMn.Layer))
+            if (_queries.IsWithinReach(mapNum, t.X, t.Y, _world.Npcs[t.Num].EffectiveSize, t.Layer, victimMap, victimMn.X, victimMn.Y, victimMn.Layer) && !ChaserVacatesRampFor(mapNum, t, victimMn.Layer))
             {
                 t.HasMadeContact = true;
                 t.ChaseSprinting = false;

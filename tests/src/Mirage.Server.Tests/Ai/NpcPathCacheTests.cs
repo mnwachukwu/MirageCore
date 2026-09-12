@@ -207,7 +207,7 @@ public class NpcPathCacheTests
         world.Maps[Map].EditTile(15, 6, t => t with { FringeAttr = new FringeAttr { Type = TileType.LayerRamp, RampGroundSide = Direction.Left } });
         world.Maps[2].EditTile(0, 6, t => t with { FringeAttr = new FringeAttr { Type = TileType.Walkable } });
 
-        var ai = new NpcAiSystem(world, pm, null!, null!, null!, null!, null!, null!);
+        var ai = new NpcAiSystem(world, pm, null!, null!, null!, null!);
         var npc = world.Npcs[1];
 
         // NPC at the ramp foot (14,6) on Map 1's ground; target = a player on Map 2's deck (0,6), Fringe.
@@ -385,7 +385,7 @@ public class NpcPathCacheTests
             blocker.Hp = 100;  // on the (8,3) ring
         }
 
-        var ai = new NpcAiSystem(world, pm, null!, null!, null!, null!, null!, null!);
+        var ai = new NpcAiSystem(world, pm, null!, null!, null!, null!);
         return (ai, world);
     }
 
@@ -405,7 +405,7 @@ public class NpcPathCacheTests
         world.Maps[Map].EditTile(4, 6, t => t with { FringeAttr = new FringeAttr { Type = TileType.LayerRamp, RampGroundSide = Direction.Left } });
         world.Maps[Map].EditTile(10, 6, t => t with { FringeAttr = new FringeAttr { Type = TileType.LayerRamp, RampGroundSide = Direction.Right } });
 
-        var ai = new NpcAiSystem(world, pm, null!, null!, null!, null!, null!, null!);
+        var ai = new NpcAiSystem(world, pm, null!, null!, null!, null!);
         return (ai, world);
     }
 }

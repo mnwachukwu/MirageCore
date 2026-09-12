@@ -56,7 +56,7 @@ public class MapTransitionMessageOrderTests
         var world = new GameWorld();
         var pm = new PlayerManager();
         var chat = new CapturingDispatcher();
-        var move = new MovementSystem(world, pm, chat, new BloodSystem(world, chat));
+        var move = new MovementSystem(world, pm, chat);
 
         Dress(world.Maps[From], from, "Gatekeeper", "Welcome to the first map.", "Farewell from the first map.");
         Dress(world.Maps[To], to, "Warden", "Welcome to the second map.", "Farewell from the second map.");

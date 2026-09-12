@@ -59,21 +59,48 @@ public class MenuLogicTests
         Assert.That(logic.CurrentState, Is.EqualTo(MenuState.InGame));
     }
 
-    // The class list arrives both on the new-char flow and as part of normal join data. It must advance to
-    // NewChar only when Loading was entered specifically for that purpose.
+    // Pressing Create opens the new-character screen with nothing fetched in between. This is the one
+    // transition into character creation, and it is on the login path: if it stops firing, the client
+    // sits on whatever screen it was on and the player cannot make a character at all.
     [Test]
-    public void ClassList_AdvancesToNewChar_OnlyWhenLoadingForNewChar()
+    public void Create_OpensTheNewCharScreenImmediately()
     {
         var ev = new TestClientEvents();
         var logic = new MenuLogic(ev);
 
-        logic.GoToLoading();   // generic loading (join data)
-        ev.RaiseClassList();
-        Assert.That(logic.CurrentState, Is.EqualTo(MenuState.Loading), "generic-loading class list does NOT open new-char");
+        logic.GoToNewChar();
 
-        logic.GoToLoadingForNewChar();
-        ev.RaiseClassList();
-        Assert.That(logic.CurrentState, Is.EqualTo(MenuState.NewChar), "loading-for-new-char class list opens new-char");
+        Assert.That(logic.CurrentState, Is.EqualTo(MenuState.NewChar));
+    }
+
+    [Test]
+    public void Create_AnnouncesTheChangeSoTheShellCanSwapScreens()
+    {
+        var ev = new TestClientEvents();
+        var logic = new MenuLogic(ev);
+        MenuState? announced = null;
+        logic.StateChanged += s => announced = s;
+
+        logic.GoToNewChar();
+
+        Assert.That(announced, Is.EqualTo(MenuState.NewChar),
+                    "the shell swaps screens off this event; unannounced means a screen that never appears");
+    }
+
+    // Loading is still reached on the way into the world, and nothing pulls it out of that state early.
+    [Test]
+    public void LoadingStaysLoadingUntilTheWorldIsReady()
+    {
+        var ev = new TestClientEvents();
+        var logic = new MenuLogic(ev);
+
+        logic.GoToLoading();
+
+        Assert.That(logic.CurrentState, Is.EqualTo(MenuState.Loading));
+
+        ev.RaiseInGame();
+
+        Assert.That(logic.CurrentState, Is.EqualTo(MenuState.InGame));
     }
 
     [Test]
@@ -100,7 +127,6 @@ sealed class TestClientEvents : IClientEvents
     public event Action? InventoryChanged;
     public event Action<int>? VitalsChanged;
     public event Action? CharacterListReceived;
-    public event Action? ClassListReceived;
     public event Action<int>? MapItemChanged;
     public event Action<int>? MapNpcChanged;
     public event Action<int>? ShopOpened;
@@ -113,14 +139,10 @@ sealed class TestClientEvents : IClientEvents
     public event Action<GuildOfferNotifyPacket>? GuildOffer;
     public event Action<string>? TradeInvite;
     public event Action<int>? PlayersOnlineChanged;
-    public event Action? LevelUp;
     public event Action<TargetRef>? TargetAssigned;
-    public event Action<int, int, VitalType, bool, bool, int>? VitalDelta;
-    public event Action<CombatTextPacket>? CombatText;
 
     public void RaiseAlert(string msg, AlertCode code) => AlertMessage?.Invoke(msg, code);
     public void RaiseInGame() => InGame?.Invoke();
     public void RaiseCharacterList() => CharacterListReceived?.Invoke();
-    public void RaiseClassList() => ClassListReceived?.Invoke();
 }
 #pragma warning restore CS0067

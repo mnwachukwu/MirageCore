@@ -53,4 +53,16 @@ public sealed record WorldManifest
         get;
         init => field = value.Clamped();
     } = MapSize.Default;
+
+    /// <summary>The appearances this world offers at character creation, in the order a player sees
+    /// them.
+    ///
+    /// <para>A world that names none offers <see cref="CharacterAppearance.DefaultSet"/> — one look —
+    /// so a brand-new world is playable before anybody has authored a roster. Naming even one replaces
+    /// that entirely: the list is what the author decided, never a floor the engine adds to.</para></summary>
+    public IReadOnlyList<CharacterAppearance> Appearances
+    {
+        get;
+        init => field = value is { Count: > 0 } given ? given : CharacterAppearance.DefaultSet;
+    } = CharacterAppearance.DefaultSet;
 }

@@ -28,11 +28,9 @@ public static class PacketNames
     public const string PlayerMove = "playermove";
     public const string PlayerDir = "playerdir";
     public const string UseItem = "useitem";
-    public const string Attack = "attack";
     public const string Search = "search";
     public const string NpcInteract = "npcinteract";   // C→S: interact with an NPC (attack-key at a roled NPC, or right-click within r=5)
     public const string DropTarget = "droptarget";
-    public const string TrainStats = "trainstats";
     public const string RequestNewMap = "requestnewmap";
     public const string MapData = "mapdata";
     public const string NeedMap = "needmap";
@@ -44,7 +42,6 @@ public static class PacketNames
     public const string MapDropItem = "mapdropitem";
     public const string MapDropBulk = "mapdropbulk";
     public const string SortInventory = "sortinventory";
-    public const string GetStats = "getstats";
     public const string ShopBarter = "shopbarter";                // C→S: take one row from a shop's BARTER table (item → item)
     public const string ShopBuy = "shopbuy";     // C→S: buy one entry from a shop's SALES list (gold → item)
     public const string ShopSell = "shopsell";   // C→S: sell an inventory slot to the open shop (item → gold)
@@ -52,10 +49,6 @@ public static class PacketNames
     public const string Party = "party";
     public const string JoinParty = "joinparty";
     public const string LeaveParty = "leaveparty";
-    public const string Spells = "spells";
-    public const string Cast = "cast";
-    public const string SetPreparedSpell = "setpreparedspell";
-    public const string ForgetSpell = "forgetspell";
     public const string SetHotkey = "sethotkey";
     public const string RequestLocation = "requestlocation";
     public const string WhoIsOnline = "whosonline";
@@ -261,10 +254,6 @@ public static class PacketNames
     public const string SendInventory = "sendinventory";
     public const string InventoryUpdate = "inventoryupdate";
     public const string EquippedGear = "equippedgear";
-    public const string SendHp = "sendhp";
-    public const string SendMp = "sendmp";
-    public const string SendSp = "sendsp";
-    public const string SendStats = "sendstats";
     public const string Welcome = "welcome";
     public const string SendClasses = "sendclasses";
     public const string NewCharClasses = "newcharclasses";
@@ -276,11 +265,9 @@ public static class PacketNames
     public const string UpdateShop = "updateshop";
     public const string UpdateQuest = "updatequest";
     public const string UpdateConversation = "updateconv";
-    public const string SendSpells = "sendspells";
     public const string UpdateSpell = "updatespell";
     public const string ShopContents = "shopcontents";             // S→C: an open shop's barter rows AND its sales list
     public const string OpenInn = "openinn";                       // S→C: raise the client-local Inn panel (from an NPC interact)
-    public const string PlayerSpells = "playerspells";
     public const string PlayerHotkeys = "playerhotkeys";
     public const string Weather = "weather";
     public const string TimeOfDay = "timeofday";
@@ -291,13 +278,6 @@ public static class PacketNames
     public const string TraversalNpc = "traversalnpc";
     public const string NpcDespawn = "npcdespawn";
     public const string NpcDir = "npcdir";
-    public const string NpcAttack = "npcattack";
-    public const string NpcCast = "npccast";
-    public const string PlayerAttack = "playerattack";
-    public const string PlayerCast = "playercast";
-    public const string PlayerDeath = "playerdeath";
-    public const string NpcDamage = "npcdamage";
-    public const string CombatText = "combattext";
     public const string ChatMsg = "chatmsg";
     public const string ChatBubble = "chatbubble";
     public const string NpcChatBubble = "npcchatbubble";
@@ -325,7 +305,6 @@ public static class PacketNames
     public const string CheckForMap = "checkformap";
     public const string SeamlessCross = "seamlesscross";
     public const string MapKey = "mapkey";
-    public const string BloodUpdate = "bloodupdate";
     public const string NpcDead = "npcdead";
     public const string NpcTarget = "npctarget";
     public const string SetTarget = "settarget";

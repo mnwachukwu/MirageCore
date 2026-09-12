@@ -25,9 +25,6 @@ public sealed class QuestSystem : GameSystem
     private readonly ItemSystem _items;
     private readonly MailSystem _mail;
     private readonly ObjectiveSystem _objectives;
-    // Lazy to break a DI cycle: CombatSystem → JoinLeaveSystem → QuestSystem → CombatSystem. We only need
-    // its level-up entry point at reward time (turn-in), by which point everything is constructed.
-    private readonly Lazy<CombatSystem> _combat;
     private readonly GuildScheduleSystem _guildSchedule;
 
     // Per online player: the kernel handles for each active quest's tracked objectives, so they can be Stopped
@@ -37,7 +34,7 @@ public sealed class QuestSystem : GameSystem
     private static string QuestSender => ServerStrings.Get(ServerStrings.Quest_Sender);
 
     public QuestSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher, ItemSystem items,
-        MailSystem mail, ObjectiveSystem objectives, Lazy<CombatSystem> combat, GuildScheduleSystem guildSchedule,
+        MailSystem mail, ObjectiveSystem objectives, GuildScheduleSystem guildSchedule,
                        IClock? clock = null)
         : base(dispatcher, clock: clock)
     {
@@ -46,7 +43,6 @@ public sealed class QuestSystem : GameSystem
         _items = items;
         _mail = mail;
         _objectives = objectives;
-        _combat = combat;
         _guildSchedule = guildSchedule;
         _tracked = new Dictionary<int, List<ObjectiveSystem.Handle>>[_pm.Slots + 1];
         for (int i = 0; i <= _pm.Slots; i++) _tracked[i] = new();
@@ -142,11 +138,6 @@ public sealed class QuestSystem : GameSystem
             // bar rather than a figure — and with two quests in progress there is nothing tying the amount a
             // board promised to the one that just paid out.
             SendMsg(index, ServerStrings.Quest_RewardExp, GameColor.BrightBlue, ChatChannel.Rewards, ("Exp", rewardExp));
-            // 🔴 And push the stats, or the reward is invisible: the client's exp comes from this packet alone,
-            // so without it the bar does not move and the overhead number never floats — the client raises both
-            // off an exp that arrived higher than the one it had. A kill syncs here; a turn-in did not.
-            _dispatcher.SendTo(index, PacketBuilder.SendStats(p));
-            _combat.Value.CheckPlayerLevelUp(index);
         }
     }
 

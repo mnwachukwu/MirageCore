@@ -220,12 +220,6 @@ public static class PacketBuilder
         int index, int x, int y, Direction dir, MovementType movement, WorldLayer layer = WorldLayer.Ground) =>
         new() { Index = index, X = x, Y = y, Dir = dir, Movement = movement, Layer = layer };
 
-    // ── Vitals ───────────────────────────────────────────────────────────────
-
-    public static SendHpPacket SendHp(int index, int hp, int maxHp,
-        bool showFloat = false, bool isCrit = false, int damage = 0, int msSinceCombat = int.MaxValue) =>
-        new() { Index = index, Hp = hp, MaxHp = maxHp, ShowFloat = showFloat, IsCrit = isCrit, Damage = damage, MsSinceCombat = msSinceCombat };
-
     /// <summary>
     /// Converts a server-side <paramref name="combatExpiresAt"/> to wire-format ms elapsed since the
     /// combat window opened.  Returns <see cref="int.MaxValue"/> when not in combat.  Used by every
@@ -237,26 +231,6 @@ public static class PacketBuilder
         (combatExpiresAt > 0 && nowMs < combatExpiresAt)
             ? (int)(combatDurationMs - (combatExpiresAt - nowMs))
             : int.MaxValue;
-
-    public static SendMpPacket SendMp(int index, int mp, int maxMp,
-        bool showFloat = false) =>
-        new() { Index = index, Mp = mp, MaxMp = maxMp, ShowFloat = showFloat };
-
-    public static SendSpPacket SendSp(int index, int sp, int maxSp,
-        bool showFloat = false) =>
-        new() { Index = index, Sp = sp, MaxSp = maxSp, ShowFloat = showFloat };
-
-    public static SendStatsPacket SendStats(PlayerRecord p) =>
-        new()
-        {
-            Str = p.Str,
-            Def = p.Def,
-            Spd = p.Spd,
-            Int = p.Int,
-            Points = p.Points,
-            Level = p.Level,
-            Exp = p.Exp,
-        };
 
     /// <summary>
     /// Snapshot of a partnered player pushed to the partner.  <paramref name="combatExpiresAt"/> = 0

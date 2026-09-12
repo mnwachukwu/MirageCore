@@ -15,16 +15,13 @@ public sealed class MovementSystem : GameSystem
 {
     private readonly GameWorld _world;
     private readonly PlayerManager _pm;
-    private readonly BloodSystem _blood;
     private readonly ILogger<MovementSystem> _logger;
 
-    public MovementSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher, BloodSystem blood,
-                          IClock? clock = null, ILogger<MovementSystem>? logger = null)
+    public MovementSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher, IClock? clock = null, ILogger<MovementSystem>? logger = null)
         : base(dispatcher, clock: clock)
     {
         _world = world;
         _pm = pm;
-        _blood = blood;
         _logger = logger ?? NullLogger<MovementSystem>.Instance;
     }
 
@@ -173,13 +170,11 @@ public sealed class MovementSystem : GameSystem
             // Stamped so RegenerationSystem can see the sprint is still running. Without it the rest
             // rate refunds a sprint about as fast as it is spent.
             _pm[index].LastRunAt = Environment.TickCount64;
-            SendToMap(_world, p.Map, PacketBuilder.SendSp(index, p.Sp, p.MaxSp));
         }
 
         // Blood trail: a badly wounded player (<= BloodTrailHpThreshold of max HP) drips onto each fresh tile it
         // moves to — an in-map step OR a walk across a map edge (both set `moved`; a teleport isn't a PlayerMove).
         if (moved && p.Hp <= p.MaxHp * Constants.BloodTrailHpThreshold)
-            _blood.DepositTrail(p.Map, p.X, p.Y, layer: p.Layer);
 
         if (!moved)
         {
@@ -643,10 +638,6 @@ public sealed class MovementSystem : GameSystem
             Layer = npc.Layer,
         });
 
-        // Blood trail: a badly wounded NPC (<= BloodTrailHpThreshold of max HP) drips onto each fresh tile it steps to.
-        var npcRec = _world.Npcs[npc.Num];
-        if (npc.Hp <= _world.EffectiveNpcMaxHp(npcRec) * Constants.BloodTrailHpThreshold)
-            _blood.DepositTrail(mapNum, npc.X, npc.Y, npcRec.EffectiveSize, npc.Layer);
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
@@ -683,7 +674,6 @@ public sealed class MovementSystem : GameSystem
         var attrType = LayerLogic.AttrFor(tile, newLayer).Type;
         if (attrType == TileType.Blocked) return false;
         if (attrType == TileType.Key && !_world.TempTiles[destMapNum].IsDoorOpen(x, y, newLayer)) return false;
-
 
         // Block on any live NPC on the SAME layer — native slot or visiting traversal NPC.
         if (_world.IsTileOccupiedByNpc(destMapNum, x, y, null, newLayer)) return false;

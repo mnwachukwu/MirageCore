@@ -26,8 +26,7 @@ public class MovementSystemTests
         var world = new GameWorld();
         var pm = new PlayerManager();
         dispatcher ??= new NoOpDispatcher();
-        var blood = new BloodSystem(world, dispatcher);
-        var move = new MovementSystem(world, pm, dispatcher, blood);
+        var move = new MovementSystem(world, pm, dispatcher);
         var sp = pm[Idx];
         sp.IsConnected = true;
         sp.InGame = true;

@@ -156,7 +156,7 @@ public class NonDefaultMapSizeTests
     {
         var pm = new PlayerManager();
         var dispatcher = new NoOpDispatcher();
-        var move = new MovementSystem(world, pm, dispatcher, new BloodSystem(world, dispatcher));
+        var move = new MovementSystem(world, pm, dispatcher);
         var sp = pm[Idx];
         sp.IsConnected = true;
         sp.InGame = true;

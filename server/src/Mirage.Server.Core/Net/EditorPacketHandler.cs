@@ -192,12 +192,6 @@ public sealed partial class EditorPacketHandler
                 case EditorTakeItemPacket p:
                     HandleEditorTakeItem(editorIndex, p);
                     break;
-                case EditorLearnSpellPacket p:
-                    HandleEditorLearnSpell(editorIndex, p);
-                    break;
-                case EditorForgetSpellPacket p:
-                    HandleEditorForgetSpell(editorIndex, p);
-                    break;
                 case EditorBankGivePacket p:
                     HandleEditorBankGive(editorIndex, p);
                     break;

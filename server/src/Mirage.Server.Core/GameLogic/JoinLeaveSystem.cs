@@ -26,7 +26,6 @@ public sealed class JoinLeaveSystem : GameSystem
     private readonly ConversationSystem _conversations;
     private readonly TimeOfDaySystem _tod;
     private readonly WeatherSystem _weather;
-    private readonly BloodSystem _blood;
     private readonly ILogger<JoinLeaveSystem> _logger;
     private readonly Configuration.ServerConfig _config;
 
@@ -34,8 +33,7 @@ public sealed class JoinLeaveSystem : GameSystem
                            PlayerSaver saver, MovementSystem movement,
                            PartySystem party, GuildSystem guilds, MailSystem mail, SocialSystem social, TradeSystem trade, QuestSystem quests,
                            ConversationSystem conversations,
-                           TimeOfDaySystem tod, WeatherSystem weather, BloodSystem blood,
-                           ILogger<JoinLeaveSystem> logger,
+                           TimeOfDaySystem tod, WeatherSystem weather, ILogger<JoinLeaveSystem> logger,
                            IClock? clock = null,
                            Configuration.ServerConfig? config = null)
         : base(dispatcher, clock: clock)
@@ -54,7 +52,6 @@ public sealed class JoinLeaveSystem : GameSystem
         _conversations = conversations;
         _tod = tod;
         _weather = weather;
-        _blood = blood;
         _logger = logger;
     }
 
@@ -131,9 +128,6 @@ public sealed class JoinLeaveSystem : GameSystem
         // Shops
         _dispatcher.SendTo(index, BuildSendShops());
 
-        // Spells
-        _dispatcher.SendTo(index, BuildSendSpells());
-
         // Quests (definitions — like items/npcs; the per-player quest LOG follows via _quests.OnPlayerJoin below)
         _dispatcher.SendTo(index, BuildSendQuests());
 
@@ -158,9 +152,6 @@ public sealed class JoinLeaveSystem : GameSystem
             Shield = p.ShieldSlot
         });
 
-        // Player spells (1-based array; send slots 1..MaxPlayerSpells)
-        _dispatcher.SendTo(index, new PlayerSpellsPacket { Spells = p.Spell[1..], PreparedSpell = p.PreparedSpell });
-
         // Action bar. Sent here rather than in SendJoinData, which also runs on every warp — the bar only
         // changes when the player edits it, and each edit is echoed by its own handler.
         _dispatcher.SendTo(index, PacketHandler.BuildHotkeysPacket(p));
@@ -176,14 +167,6 @@ public sealed class JoinLeaveSystem : GameSystem
         // changes.
         _mail.SyncTo(index);
         _social.SyncTo(index);
-
-        // Vitals
-        _dispatcher.SendTo(index, PacketBuilder.SendHp(index, p.Hp, p.MaxHp));
-        _dispatcher.SendTo(index, PacketBuilder.SendMp(index, p.Mp, p.MaxMp));
-        _dispatcher.SendTo(index, PacketBuilder.SendSp(index, p.Sp, p.MaxSp));
-
-        // Stats
-        _dispatcher.SendTo(index, PacketBuilder.SendStats(p));
 
         // World state
         _dispatcher.SendTo(index, PacketBuilder.Weather(_world.Weather));
@@ -256,25 +239,17 @@ public sealed class JoinLeaveSystem : GameSystem
         // Seamless world: sync players across the whole observable region, not just the same
         // map.  A player is mutually visible when one observes the other's map.  Each side uses
         // that player's OWN map number so neighbor players render at the right grid cell.
-        long now = Environment.TickCount64;
-        int joinerMsSinceCombat = PacketBuilder.MsSinceCombat(_pm[index].CombatExpiresAt, now, CombatSystem.CombatDurationMs);
-
         for (int i = 1; i <= _pm.Slots; i++)
         {
             if (i == index) continue;
             if (!_pm[i].IsPlaying) continue;
 
             var ep = _pm[i].Char;
-            int existingMsSinceCombat = PacketBuilder.MsSinceCombat(_pm[i].CombatExpiresAt, now, CombatSystem.CombatDurationMs);
-
             // Tell existing player i about this player, if i can see this player's map.
             if (_world.IsObserving(i, p.Map))
             {
                 _dispatcher.SendTo(i, PacketBuilder.JoinMap(index));
                 _dispatcher.SendTo(i, PacketBuilder.PlayerData(index, p, p.Map, _pm[index].PkGraceUntilUtc, _pm[index].AggressorUntilUtcNow, godMode: _pm[index].Char.GodMode));
-                _dispatcher.SendTo(i, PacketBuilder.SendHp(index, p.Hp, p.MaxHp, msSinceCombat: joinerMsSinceCombat));
-                _dispatcher.SendTo(i, PacketBuilder.SendMp(index, p.Mp, p.MaxMp));
-                _dispatcher.SendTo(i, PacketBuilder.SendSp(index, p.Sp, p.MaxSp));
             }
 
             // Tell this player about existing player i, if this player can see i's map.
@@ -282,9 +257,6 @@ public sealed class JoinLeaveSystem : GameSystem
             {
                 _dispatcher.SendTo(index, PacketBuilder.JoinMap(i));
                 _dispatcher.SendTo(index, PacketBuilder.PlayerData(i, ep, ep.Map, _pm[i].PkGraceUntilUtc, _pm[i].AggressorUntilUtcNow, godMode: _pm[i].Char.GodMode));
-                _dispatcher.SendTo(index, PacketBuilder.SendHp(i, ep.Hp, ep.MaxHp, msSinceCombat: existingMsSinceCombat));
-                _dispatcher.SendTo(index, PacketBuilder.SendMp(i, ep.Mp, ep.MaxMp));
-                _dispatcher.SendTo(index, PacketBuilder.SendSp(i, ep.Sp, ep.MaxSp));
             }
         }
 
@@ -295,7 +267,6 @@ public sealed class JoinLeaveSystem : GameSystem
         _guilds.SyncOnJoin(index);
 
         SendMapItemsSnapshot(index, p.Map);
-        _blood.SendSnapshot(index, p.Map);
         _dispatcher.SendTo(index, BuildMapNpcs(_world, p.Map));
         SendTraversalNpcs(index, p.Map);
         SendOpenDoors(index, p.Map);
@@ -390,7 +361,6 @@ public sealed class JoinLeaveSystem : GameSystem
                 // routes them to the right grid cell).  The CheckForMap above arrives first, so
                 // the client already knows which cell this map occupies.
                 SendMapItemsSnapshot(index, mapNum);
-                _blood.SendSnapshot(index, mapNum);
                 _dispatcher.SendTo(index, BuildMapNpcs(_world, mapNum));
                 SendTraversalNpcs(index, mapNum);
                 SendOpenDoors(index, mapNum);
@@ -421,7 +391,7 @@ public sealed class JoinLeaveSystem : GameSystem
                 Movement = MovementType.None,
                 Hp = Math.Max(t.Hp, 0),
                 MaxHp = _world.EffectiveNpcMaxHp(npc),
-                MsSinceCombat = PacketBuilder.MsSinceCombat(t.CombatExpiresAt, now, CombatSystem.CombatDurationMs),
+                MsSinceCombat = int.MaxValue,
                 HasTarget = t.Target > 0,
                 Attacking = false,
                 Layer = t.Layer,
@@ -825,24 +795,6 @@ public sealed class JoinLeaveSystem : GameSystem
         return new SendMapGroupsPacket { Groups = groups };
     }
 
-    private SendSpellsPacket BuildSendSpells()
-    {
-        var spells = Enumerable.Range(1, _world.Limits.Spells)
-            .Where(i => !string.IsNullOrEmpty(_world.Spells[i].Name))
-            .Select(i => new SendSpellsPacket.SpellData(
-                i,
-                _world.Spells[i].Name,
-                _world.Spells[i].AllowedClasses is null ? null : new List<short>(_world.Spells[i].AllowedClasses!),
-                _world.Spells[i].Type,
-                _world.Spells[i].VitalAmount,
-                _world.Spells[i].ItemNum,
-                _world.Spells[i].ItemQuantity,
-                _world.Spells[i].IntReq,
-                _world.Spells[i].LevelReq))
-            .ToArray();
-        return new SendSpellsPacket { Spells = spells };
-    }
-
     private static SendInventoryPacket BuildSendInventory(PlayerRecord p)
     {
         // 1-based inventory slots (1..MaxInv)
@@ -903,7 +855,7 @@ public sealed class JoinLeaveSystem : GameSystem
                     mn.Mp, world.EffectiveNpcMaxMp(npc),
                     mn.Sp, world.EffectiveNpcMaxSp(npc),
                     mn.X, mn.Y, mn.Dir,
-                    PacketBuilder.MsSinceCombat(mn.CombatExpiresAt, now, CombatSystem.CombatDurationMs),
+                    int.MaxValue,
                     mn.Target > 0, mn.Layer);
             })
             .ToArray();

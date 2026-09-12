@@ -109,7 +109,7 @@ public class NpcTargetAcquisitionTests
 
     // ── Harness helpers ───────────────────────────────────────────────────────
     // The Find* scanners dereference only _world and _pm, so the remaining constructor
-    // dependencies (dispatcher, combat, movement, spawn, items, blood) are safely null here.
+    // dependencies (dispatcher, combat, movement, spawn, items) are safely null here.
     static NpcAiSystem NewAi(GameWorld world, PlayerManager pm)
         => new(world, pm, null!, null!, null!, null!, null!, null!);
 

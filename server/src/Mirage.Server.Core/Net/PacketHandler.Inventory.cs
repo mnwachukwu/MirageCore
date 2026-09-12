@@ -107,54 +107,6 @@ public sealed partial class PacketHandler
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    //  Stats handler
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    private void HandleTrainStats(int index, TrainStatsPacket p)
-    {
-        if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Dead) return;  // a corpse can't train stats
-        if (p.Str < 0 || p.Def < 0 || p.Int < 0 || p.Spd < 0)
-        {
-            HackingAttempt(index, "Invalid Stat Train");
-            return;
-        }
-
-        int total = p.Str + p.Def + p.Int + p.Spd;
-        if (total <= 0) return;  // nothing staged
-
-        var chr = _pm[index].Char;
-        if (total > chr.Points)
-        {
-            _dispatcher.SendLocalizedChatTo(index, ServerStrings.PacketHandler_NoStatPoints, new ChatMetadata(GameColor.BrightRed, ChatChannel.System));
-            return;
-        }
-
-        chr.Str += p.Str;
-        chr.Def += p.Def;
-        chr.Int += p.Int;
-        chr.Spd += p.Spd;
-        chr.Points -= total;
-
-        // One flavor line per stat TYPE increased (not per point) — dumping 3 points into STR is a single
-        // "You feel stronger."; training STR+INT sends the STR line and the INT line.
-        if (p.Str > 0) _dispatcher.SendLocalizedChatTo(index, ServerStrings.PacketHandler_GainedStr, new ChatMetadata(GameColor.White, ChatChannel.System));
-        if (p.Def > 0) _dispatcher.SendLocalizedChatTo(index, ServerStrings.PacketHandler_GainedDef, new ChatMetadata(GameColor.White, ChatChannel.System));
-        if (p.Int > 0) _dispatcher.SendLocalizedChatTo(index, ServerStrings.PacketHandler_GainedInt, new ChatMetadata(GameColor.White, ChatChannel.System));
-        if (p.Spd > 0) _dispatcher.SendLocalizedChatTo(index, ServerStrings.PacketHandler_GainedSpd, new ChatMetadata(GameColor.White, ChatChannel.System));
-
-        StatFormulas.RefreshPlayerMaxVitals(chr, _world.Classes[chr.Class], _world.WeatherOn(chr.Map));
-        chr.Hp = Math.Min(chr.Hp, chr.MaxHp);
-        chr.Mp = Math.Min(chr.Mp, chr.MaxMp);
-        chr.Sp = Math.Min(chr.Sp, chr.MaxSp);
-        _dispatcher.SendTo(index, PacketBuilder.SendHp(index, chr.Hp, chr.MaxHp));
-        SendToMap(chr.Map, PacketBuilder.SendMp(index, chr.Mp, chr.MaxMp));
-        SendToMap(chr.Map, PacketBuilder.SendSp(index, chr.Sp, chr.MaxSp));
-        _dispatcher.SendTo(index, PacketBuilder.SendStats(chr));
-        _quests.RefreshEligibility(index);   // new stats may newly meet a quest's accept requirements → relight "?"
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════
     //  Bank handlers
     // ═══════════════════════════════════════════════════════════════════════════
 
@@ -309,8 +261,7 @@ public sealed partial class PacketHandler
                     _pm[index].SetActiveQuestNpc(p.MapNum, p.NpcSlot);
                     _dispatcher.SendTo(index, new OpenNpcQuestMenuPacket { MapNum = p.MapNum, NpcSlot = p.NpcSlot });
                 }
-                else if (!OpenNpcShop(index, npcNum, p.MapNum, p.NpcSlot))
-                    _combat.SpeakAttackSayTo(index, p.MapNum, p.NpcSlot, _world.Npcs[npcNum]);
+                else OpenNpcShop(index, npcNum, p.MapNum, p.NpcSlot);
                 return;
         }
     }

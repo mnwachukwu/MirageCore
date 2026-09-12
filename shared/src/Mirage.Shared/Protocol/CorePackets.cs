@@ -153,10 +153,8 @@ public static class CorePackets
         // Movement
 
         // Combat / spells
-        builder.Register(PacketNames.Attack, Read<AttackPacket>);
         builder.Register(PacketNames.Search, Read<SearchPacket>);
         builder.Register(PacketNames.DropTarget, Read<DropTargetPacket>);
-        builder.Register(PacketNames.Cast, Read<CastPacket>);
 
         // Inventory / items
         builder.Register(PacketNames.UseItem, Read<UseItemPacket>);
@@ -168,8 +166,6 @@ public static class CorePackets
         builder.Register(PacketNames.SortInventory, Read<SortInventoryPacket>);
 
         // Stats
-        builder.Register(PacketNames.TrainStats, Read<TrainStatsPacket>);
-        builder.Register(PacketNames.GetStats, Read<GetStatsPacket>);
         builder.Register(PacketNames.RequestLocation, Read<RequestLocationPacket>);
 
         // Map
@@ -206,9 +202,6 @@ public static class CorePackets
         builder.Register(PacketNames.LeaveParty, Read<LeavePartyPacket>);
 
         // Spells
-        builder.Register(PacketNames.Spells, Read<SpellsRequestPacket>);
-        builder.Register(PacketNames.SetPreparedSpell, Read<SetPreparedSpellPacket>);
-        builder.Register(PacketNames.ForgetSpell, Read<ForgetSpellPacket>);
         builder.Register(PacketNames.SetHotkey, Read<SetHotkeyPacket>);
 
         // Who is online
@@ -271,21 +264,9 @@ public static class CorePackets
         builder.Register(PacketNames.InventoryUpdate, Read<InventoryUpdatePacket>);
         builder.Register(PacketNames.EquippedGear, Read<EquippedGearPacket>);
         builder.Register(PacketNames.MapItems, Read<MapItemsPacket>);
-        builder.Register(PacketNames.SendHp, Read<SendHpPacket>);
-        builder.Register(PacketNames.SendMp, Read<SendMpPacket>);
-        builder.Register(PacketNames.SendSp, Read<SendSpPacket>);
-        builder.Register(PacketNames.SendStats, Read<SendStatsPacket>);
         builder.Register(PacketNames.Weather, Read<WeatherPacket>);
         builder.Register(PacketNames.TimeOfDay, Read<TimeOfDayPacket>);
         builder.Register(PacketNames.PlayersOnline, Read<PlayersOnlinePacket>);
-        builder.Register(PacketNames.PlayerAttack, Read<PlayerAttackPacket>);
-        builder.Register(PacketNames.PlayerCast, Read<PlayerCastPacket>);
-        builder.Register(PacketNames.PlayerDeath, Read<PlayerDeathPacket>);
-        builder.Register(PacketNames.NpcAttack, Read<NpcAttackPacket>);
-        builder.Register(PacketNames.NpcCast, Read<NpcCastPacket>);
-        builder.Register(PacketNames.NpcDamage, Read<NpcDamagePacket>);
-        builder.Register(PacketNames.CombatText, Read<CombatTextPacket>);
-        builder.Register(PacketNames.BloodUpdate, Read<BloodUpdatePacket>);
         builder.Register(PacketNames.NpcSpawn, Read<NpcSpawnPacket>);
         builder.Register(PacketNames.NpcMove, Read<NpcMovePacket>);
         builder.Register(PacketNames.TraversalNpc, Read<TraversalNpcPacket>);
@@ -297,9 +278,7 @@ public static class CorePackets
         builder.Register(PacketNames.UpdateShop, Read<UpdateShopPacket>);
         builder.Register(PacketNames.UpdateQuest, Read<UpdateQuestPacket>);
         builder.Register(PacketNames.UpdateConversation, Read<UpdateConversationPacket>);
-        builder.Register(PacketNames.SendSpells, Read<SendSpellsPacket>);
         builder.Register(PacketNames.UpdateSpell, Read<UpdateSpellPacket>);
-        builder.Register(PacketNames.PlayerSpells, Read<PlayerSpellsPacket>);
         builder.Register(PacketNames.PlayerHotkeys, Read<PlayerHotkeysPacket>);
         builder.Register(PacketNames.PartyRequest, Read<PartyRequestNotifyPacket>);
         builder.Register(PacketNames.PartyVitals, Read<PartyVitalsPacket>);

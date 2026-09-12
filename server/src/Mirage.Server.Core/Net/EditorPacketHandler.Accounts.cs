@@ -359,65 +359,6 @@ public sealed partial class EditorPacketHandler
 
     // ── The spell book ────────────────────────────────────────────────────────
 
-    private void HandleEditorLearnSpell(int editorIndex, EditorLearnSpellPacket p)
-    {
-        if (!RequireAccess(editorIndex, AdminLevel.Creator)) return;
-        string login = p.Login.Trim();
-        if (login.Length == 0 || p.Slot < 1 || p.Slot > Constants.MaxChars) return;
-        if (p.SpellNum <= 0 || p.SpellNum > _world.Limits.Spells) return;
-
-        var session = _editors.GetSession(editorIndex);
-        string locale = session?.Locale ?? "";
-        RunAsync(EditCharAsync(editorIndex, login, p.Slot, session?.Login ?? "", locale,
-            c => LearnSpell(c, p.SpellNum, locale), $"taught spell {p.SpellNum} to"), nameof(EditCharAsync));
-    }
-
-    private void HandleEditorForgetSpell(int editorIndex, EditorForgetSpellPacket p)
-    {
-        if (!RequireAccess(editorIndex, AdminLevel.Creator)) return;
-        string login = p.Login.Trim();
-        if (login.Length == 0 || p.Slot < 1 || p.Slot > Constants.MaxChars) return;
-        if (p.SpellSlot < 1 || p.SpellSlot > Constants.MaxPlayerSpells) return;
-
-        var session = _editors.GetSession(editorIndex);
-        string locale = session?.Locale ?? "";
-        RunAsync(EditCharAsync(editorIndex, login, p.Slot, session?.Login ?? "", locale,
-            c => ForgetSpell(c, p.SpellSlot, locale), $"cleared book slot {p.SpellSlot} of"), nameof(EditCharAsync));
-    }
-
-    /// <summary>
-    /// Teaching, through the SAME gates a scroll goes through — <see cref="SpellSystem.CanLearn"/>.
-    ///
-    /// <para>The editor hands over things; what can be done with them is the game's decision. It does not
-    /// choose what a character wears either — removing a worn piece merely takes it off. A spell that should
-    /// arrive early arrives as a scroll, exactly as gear does.</para>
-    /// </summary>
-    private string LearnSpell(PlayerRecord c, int spellNum, string locale)
-    {
-        var spell = _world.Spells[spellNum];
-        var cls = _world.Classes[c.Class];
-
-        switch (SpellSystem.CanLearn(c, spellNum, spell, cls))
-        {
-            case SpellSystem.LearnResult.WrongClass:
-                return ServerStrings.ForLocale(locale, ServerStrings.EditorAccounts_SpellWrongClass,
-                    ("Class", ClassGate.Describe(spell.AllowedClasses, _world.Classes)));
-            case SpellSystem.LearnResult.LevelTooLow:
-                return ServerStrings.ForLocale(locale, ServerStrings.EditorAccounts_SpellLevelReq,
-                    ("Level", spell.LevelReq));
-            case SpellSystem.LearnResult.IntTooLow:
-                return ServerStrings.ForLocale(locale, ServerStrings.EditorAccounts_SpellIntReq,
-                    ("Int", CombatFormulas.GetSpellIntRequirement(spell, cls.Int)));
-            case SpellSystem.LearnResult.AlreadyKnown:
-                return ServerStrings.ForLocale(locale, ServerStrings.EditorAccounts_SpellKnown);
-            case SpellSystem.LearnResult.BookFull:
-                return ServerStrings.ForLocale(locale, ServerStrings.EditorAccounts_BookFull);
-        }
-
-        c.Spell[SpellSystem.FindOpenSpellSlot(c)] = spellNum;
-        return "";
-    }
-
     private static string ForgetSpell(PlayerRecord c, int spellSlot, string locale)
     {
         if (c.Spell[spellSlot] <= 0)

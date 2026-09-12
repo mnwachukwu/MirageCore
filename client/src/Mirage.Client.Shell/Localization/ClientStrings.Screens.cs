@@ -55,7 +55,6 @@ public static partial class ClientStrings
     public const string CharSelectScreen_QuitButton = nameof(CharSelectScreen_QuitButton);
     public const string CharSelectScreen_EnteringWorld = nameof(CharSelectScreen_EnteringWorld);
     public const string CharSelectScreen_Returning = nameof(CharSelectScreen_Returning);
-    public const string CharSelectScreen_LoadingClasses = nameof(CharSelectScreen_LoadingClasses);
 
     // ── DeleteConfirmScreen ───────────────────────────────────────────────────
     public const string DeleteConfirmScreen_PromptFormat = nameof(DeleteConfirmScreen_PromptFormat);
@@ -64,19 +63,11 @@ public static partial class ClientStrings
 
     // ── NewCharScreen ─────────────────────────────────────────────────────────
     public const string NewCharScreen_Title = nameof(NewCharScreen_Title);
-    public const string NewCharScreen_SexLabel = nameof(NewCharScreen_SexLabel);
-    public const string NewCharScreen_ClassLabel = nameof(NewCharScreen_ClassLabel);
-    public const string NewCharScreen_MaleButton = nameof(NewCharScreen_MaleButton);
-    public const string NewCharScreen_FemaleButton = nameof(NewCharScreen_FemaleButton);
+    public const string NewCharScreen_AppearanceLabel = nameof(NewCharScreen_AppearanceLabel);
+    public const string NewCharScreen_SelectAppearance = nameof(NewCharScreen_SelectAppearance);
+    public const string NewCharScreen_UnnamedAppearance = nameof(NewCharScreen_UnnamedAppearance);
     public const string NewCharScreen_NameTooShort = nameof(NewCharScreen_NameTooShort);
-    public const string NewCharScreen_SelectClass = nameof(NewCharScreen_SelectClass);
-    public const string NewCharScreen_CritLabel = nameof(NewCharScreen_CritLabel);
-    public const string NewCharScreen_SpellCritLabel = nameof(NewCharScreen_SpellCritLabel);
     public const string NewCharScreen_CreatingCharacter = nameof(NewCharScreen_CreatingCharacter);
-    public const string NewCharScreen_WornLabel = nameof(NewCharScreen_WornLabel);
-    public const string NewCharScreen_CarriedLabel = nameof(NewCharScreen_CarriedLabel);
-    public const string NewCharScreen_SpellsLabel = nameof(NewCharScreen_SpellsLabel);
-    public const string NewCharScreen_LoadoutNone = nameof(NewCharScreen_LoadoutNone);
 
     // ── CreditsScreen ─────────────────────────────────────────────────────────
     public const string CreditsScreen_Title = nameof(CreditsScreen_Title);

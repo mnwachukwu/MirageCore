@@ -124,7 +124,7 @@ public class NpcChaseRoutingTests
             sitting.Hp = 100;
         }
 
-        var ai = new NpcAiSystem(world, pm, null!, null!, null!, null!, null!, null!);
+        var ai = new NpcAiSystem(world, pm, null!, null!, null!, null!);
         return (ai, world);
     }
 
@@ -222,7 +222,7 @@ public class NpcChaseRoutingTests
             blocker.NpcTargetSpawnMap = Map;
             blocker.NpcTargetSpawnSlot = 1;
         }  // its NpcTarget == the chaser
-        var ai = new NpcAiSystem(world, pm, null!, null!, null!, null!, null!, null!);
+        var ai = new NpcAiSystem(world, pm, null!, null!, null!, null!);
         return (ai, world);
     }
 
@@ -242,11 +242,9 @@ public class NpcChaseRoutingTests
     static NpcAiSystem BuildAi(GameWorld world, PlayerManager pm)
     {
         var dispatcher = new NoOpDispatcher();
-        var blood = new BloodSystem(world, dispatcher);
-        var movement = new MovementSystem(world, pm, dispatcher, blood);
-        var combat = new CombatSystem(world, pm, dispatcher, items: null!, movement, joinLeave: null!, blood, objectives: new ObjectiveSystem(), guilds: null!, guildWar: null!, territory: null!);
+        var movement = new MovementSystem(world, pm, dispatcher);
         var spawn = new SpawnSystem(world, pm, dispatcher);
-        return new NpcAiSystem(world, pm, dispatcher, combat, movement, spawn, items: null!, blood);
+        return new NpcAiSystem(world, pm, dispatcher, movement, spawn, items: null!);
     }
 
     sealed class NoOpDispatcher : IPacketDispatcher

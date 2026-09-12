@@ -71,6 +71,47 @@ public sealed class WorldQueries(GameWorld world, PlayerManager players)
         return LayerLogic.LayerConnects(view, aWX, aWY, actorLayer, aWX + dx, aWY + dy, targetLayer);
     }
 
+    /// <summary>Whether a body of <paramref name="size"/> standing at (<paramref name="ax"/>,
+    /// <paramref name="ay"/>) on <paramref name="actorMap"/> is close enough to touch
+    /// (<paramref name="tx"/>, <paramref name="ty"/>) on <paramref name="targetMap"/>.
+    ///
+    /// <para>A one-tile body reaches an orthogonal neighbor. A larger one reaches whatever sits just
+    /// past the leading edge of the face it would turn toward, so this agrees with the tiles a sweep
+    /// along that edge would cover — a body never reaches a corner it would then miss.</para>
+    ///
+    /// <para><b>Geometry and nothing else.</b> Whether either body is in a condition worth interacting
+    /// with is the caller's question. Folding a liveness test in here is what makes a chase stop
+    /// silently: the legs ask "am I close enough", get back "no" for a reason that has nothing to do
+    /// with distance, and keep walking.</para></summary>
+    public bool IsWithinReach(int actorMap, int ax, int ay, int size, WorldLayer actorLayer,
+                              int targetMap, int tx, int ty, WorldLayer targetLayer)
+    {
+        var grid = WorldCoordHelper.BuildMapGrid(_world.Maps, actorMap);
+        var tw = grid.ToWorldRelative(targetMap, tx, ty);
+        if (tw is null) return false;   // outside the actor's nine-map region
+
+        var (awx, awy) = grid.CenterToWorld(ax, ay);
+
+        if (size <= 1)
+        {
+            if (WorldCoordHelper.WorldManhattan(awx, awy, tw.Value.worldX, tw.Value.worldY) != 1) return false;
+        }
+        else
+        {
+            var face = WorldCoordHelper.FootprintFacingToward(awx, awy, size, tw.Value.worldX, tw.Value.worldY);
+            if (!WorldCoordHelper.LeadingEdgeTiles(awx, awy, size, face)
+                    .Contains(tw.Value.worldX, tw.Value.worldY))
+            {
+                return false;
+            }
+        }
+
+        // Adjacency is not reach: the ground and the walkable top of a bridge are neighbors that only
+        // connect where a ramp joins them.
+        return LayerLogic.LayerConnects(new ServerTileView(_world, grid), awx, awy, actorLayer,
+                                        tw.Value.worldX, tw.Value.worldY, targetLayer);
+    }
+
     // ── Area sweep ────────────────────────────────────────────────────────────
 
     /// <summary>One body found by a sweep: an NPC, with the map and native slot to address it by, or a

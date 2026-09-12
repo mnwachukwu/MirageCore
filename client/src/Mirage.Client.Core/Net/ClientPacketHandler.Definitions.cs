@@ -176,25 +176,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
         }
     }
 
-    private void HandleSendSpells(SendSpellsPacket p)
-    {
-        foreach (var s in p.Spells)
-        {
-            if (!SlotValidation.IsValidSpellNum(s.Num, _state.Limits.Spells)) continue;
-            _state.SpellDefs[s.Num] = new SpellRecord
-            {
-                Name = s.Name,
-                AllowedClasses = s.AllowedClasses,
-                Type = s.Type,
-                VitalAmount = s.VitalAmount,
-                ItemNum = s.ItemNum,
-                ItemQuantity = s.ItemQuantity,
-                IntReq = s.IntReq,
-                LevelReq = s.LevelReq,
-            };
-        }
-    }
-
     // ── Live edits from the editor (broadcast on every save) ──────────────────
     // Without these, edited names/stats only appear after a full client reconnect,
     // because the only other carriers are the bulk Send*Packets sent on join.
@@ -279,35 +260,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
             IntReq = p.IntReq,
             LevelReq = p.LevelReq,
         };
-    }
-
-    private void HandleUpdateClass(UpdateClassPacket p)
-    {
-        if (!SlotValidation.IsValidClassNum(p.ClassNum)) return;
-        // Classes are 1-based with index 0 as a placeholder; grow the array if a
-        // late-added class arrives past the size set by the initial SendClasses.
-        if (p.ClassNum >= _state.Classes.Length)
-        {
-            var grown = new ClassRecord[p.ClassNum + 1];
-            Array.Copy(_state.Classes, grown, _state.Classes.Length);
-            for (int i = _state.Classes.Length; i < grown.Length; i++)
-                grown[i] = new ClassRecord();
-            _state.Classes = grown;
-        }
-        _state.Classes[p.ClassNum] = new ClassRecord
-        {
-            Name = p.Name,
-            Description = p.Description,
-            SpriteMale = p.SpriteMale,
-            SpriteFemale = p.SpriteFemale,
-            SpriteSheetMale = p.SpriteSheetMale,
-            SpriteSheetFemale = p.SpriteSheetFemale,
-            Str = p.Str,
-            Def = p.Def,
-            Spd = p.Spd,
-            Int = p.Int,
-        };
-        ClassListReceived?.Invoke();
     }
 
     // MapGroup defs. Bulk at join, then live per-group on an editor save. The client caches these and

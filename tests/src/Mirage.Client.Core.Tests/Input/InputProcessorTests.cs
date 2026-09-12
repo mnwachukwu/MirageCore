@@ -136,16 +136,6 @@ public class InputProcessorTests
         });
     }
 
-    // Hold-to-attack fires exactly once per cooldown window.
-    [Test]
-    public void Process_Attack_RespectsCooldown()
-    {
-        var (s, t, sender) = Setup(5, 5);
-        InputProcessor.Process(new InputSnapshot { Attack = true }, s, sender, 0);
-        InputProcessor.Process(new InputSnapshot { Attack = true }, s, sender, 0);
-        Assert.That(t.Sent.OfType<AttackPacket>().Count(), Is.EqualTo(1));
-    }
-
     // Melee talk-first fires for a conversation-ONLY NPC (no shop, no quest). A guard that checks only
     // the keeper/quest glyphs lets a talk-only NPC fall through to a swing.
     [Test]
@@ -162,7 +152,6 @@ public class InputProcessorTests
         Assert.Multiple(() =>
         {
             Assert.That(t.Sent.OfType<NpcInteractPacket>().Count(), Is.EqualTo(1), "melee opens the conversation (talk-first)");
-            Assert.That(t.Sent.OfType<AttackPacket>(), Is.Empty, "no swing at a talk-only NPC");
         });
     }
 
@@ -192,7 +181,6 @@ public class InputProcessorTests
         {
             Assert.That(interact, Is.Not.Null, "melee interacts instead of swinging");
             Assert.That(interact!.NpcSlot, Is.EqualTo(2), "the keeper on the player's layer wins, not the wanderer beneath");
-            Assert.That(t.Sent.OfType<AttackPacket>(), Is.Empty, "no swing");
         });
     }
 
@@ -215,7 +203,6 @@ public class InputProcessorTests
         Assert.Multiple(() =>
         {
             Assert.That(t.Sent.OfType<NpcInteractPacket>(), Is.Empty, "no interact across disconnected planes");
-            Assert.That(t.Sent.OfType<AttackPacket>(), Is.Empty, "and still no swing at a keeper");
             Assert.That(s.NpcInteractWrongLayer, Is.True, "the Shell is told to voice the refusal");
         });
     }
@@ -262,49 +249,6 @@ public class InputProcessorTests
         InputProcessor.Process(new InputSnapshot { Attack = true }, s, sender, 0);   // key still held, no new edge
 
         Assert.That(s.NpcInteractWrongLayer, Is.False, "a held key repeats neither the interact nor the refusal");
-    }
-
-    // A cross-layer Friendly NPC must not swallow the swing: the server's melee gate rejects it before the rebuff,
-    // so there's no AttackSay coming and the whiff animation should play (a suppressed one looked like a lost key).
-    [Test]
-    public void Process_MeleeAtCrossLayerFriendlyNpc_StillSwings()
-    {
-        var (s, t, sender) = Setup(5, 5);                                 // facing Down → front tile (5,6)
-        s.Me.Layer = WorldLayer.Ground;
-        s.MapNpcs[1].Num = 12;
-        s.MapNpcs[1].X = 5;
-        s.MapNpcs[1].Y = 6;
-        s.MapNpcs[1].Layer = WorldLayer.Fringe;                           // up on the bridge, out of reach
-        s.NpcDefs[12] = new NpcRecord { Behavior = NpcBehavior.Friendly, AttackSay = "Leave me be." };
-
-        InputProcessor.Process(new InputSnapshot { Attack = true, AttackPressed = true }, s, sender, 0);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(t.Sent.OfType<AttackPacket>().Count(), Is.EqualTo(1), "the attack is still sent");
-            Assert.That(s.Me.Attacking, Is.True, "and the whiff swing plays -- nothing on this layer rebuffs it");
-        });
-    }
-
-    // Meleeing a non-combat NPC (Friendly/Stationary) sends the attack (so the server can issue its AttackSay
-    // rebuff) but plays NO local swing — the Attacking flag stays clear. The server likewise skips the whiff.
-    [Test]
-    public void Process_MeleeAtFriendlyNpc_SendsAttackButSuppressesSwing()
-    {
-        var (s, t, sender) = Setup(5, 5);                                 // facing Down → front tile (5,6)
-        s.MapNpcs[1].Num = 12;
-        s.MapNpcs[1].X = 5;
-        s.MapNpcs[1].Y = 6;  // same layer as the player
-        s.NpcDefs[12] = new NpcRecord { Behavior = NpcBehavior.Friendly, AttackSay = "Leave me be." };
-
-        InputProcessor.Process(new InputSnapshot { Attack = true, AttackPressed = true }, s, sender, 0);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(t.Sent.OfType<AttackPacket>().Count(), Is.EqualTo(1), "the attack is sent so the rebuff say can fire");
-            Assert.That(t.Sent.OfType<NpcInteractPacket>(), Is.Empty, "a friendly NPC is not an interact target");
-            Assert.That(s.Me.Attacking, Is.False, "but the local swing is suppressed");
-        });
     }
 
     [Test]

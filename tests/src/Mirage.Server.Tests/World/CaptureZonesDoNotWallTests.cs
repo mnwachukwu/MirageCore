@@ -30,7 +30,7 @@ public class CaptureZonesDoNotWallTests
         var world = new GameWorld();
         var pm = new PlayerManager();
         var chat = new NoOpDispatcher();
-        var move = new MovementSystem(world, pm, chat, new BloodSystem(world, chat));
+        var move = new MovementSystem(world, pm, chat);
 
         var sp = pm[Me];
         sp.IsConnected = true;

@@ -35,10 +35,8 @@ public class QuestSystemTests
         var saver = new PlayerSaver(persistence: null!, NullLogger<PlayerSaver>.Instance);
         var mail = new MailSystem(pm, dispatcher, saver, items);
         var objectives = new ObjectiveSystem();
-        var combat = new CombatSystem(world, pm, dispatcher, items: null!, movement: null!, joinLeave: null!,
-            blood: null!, objectives, guilds: null!, guildWar: null!, territory: null!);
         var quests = new QuestSystem(world, pm, dispatcher, items, mail, objectives,
-            new Lazy<CombatSystem>(() => combat), guildSchedule: null!);   // guildSchedule only used by Seasonally
+            guildSchedule: null!);   // guildSchedule only used by Seasonally
         return (world, pm, objectives, quests);
     }
 

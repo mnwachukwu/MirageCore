@@ -241,7 +241,6 @@ public sealed partial class GuildTerritorySystem : GameSystem
         return points;
     }
 
-
     private bool TryPickWalkable(int mapNum, out int x, out int y)
     {
         var map = _world.Maps[mapNum];

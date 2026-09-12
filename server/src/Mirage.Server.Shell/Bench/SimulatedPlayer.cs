@@ -112,7 +112,7 @@ public sealed class SimulatedPlayer : IDisposable
             if (!await Step(() => _charLists >= 1, ct).ConfigureAwait(false))
                 return Fail(_refusal ?? "login produced no character list");
 
-            Send(new AddCharPacket { Name = _login, Sex = Sex.Male, Class = 1 });
+            Send(new AddCharPacket { Name = _login, Appearance = 0 });
             if (!await Step(() => _charLists >= 2, ct).ConfigureAwait(false))
                 return Fail(_refusal ?? "the character was never created");
 

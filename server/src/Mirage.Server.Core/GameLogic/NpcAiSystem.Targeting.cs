@@ -240,10 +240,7 @@ public sealed partial class NpcAiSystem : GameSystem
         mn.NpcTargetSpawnSlot = spawnSlot;
         mn.MarkReachedTarget(now);
         if (mn.JanitorTarget > 0) mn.JanitorTarget = 0;
-        _combat.MarkNpcCombat(mapNum, slot, now);
         SendToMap(_world, mapNum, new NpcTargetPacket { MapNum = mapNum, NpcSlot = slot, HasTarget = true });
-        _combat.EmitNpcAttackSayBubbleToObservers(mapNum, slot, mn, spawnMap, spawnSlot);
-        _combat.PropagateGuardAggro(mapNum, mn, new CombatSystem.GuardTargetSpec(0, spawnMap, spawnSlot), overwrite: false);
     }
 
     /// <summary>Acquire a different-kind hostile NPC target for an idle AoS mob via
@@ -257,9 +254,7 @@ public sealed partial class NpcAiSystem : GameSystem
         mn.NpcTargetSpawnMap = spawnMap;
         mn.NpcTargetSpawnSlot = spawnSlot;
         mn.MarkReachedTarget(now);
-        _combat.MarkNpcCombat(mapNum, slot, now);
         SendToMap(_world, mapNum, new NpcTargetPacket { MapNum = mapNum, NpcSlot = slot, HasTarget = true });
-        _combat.EmitNpcAttackSayBubbleToObservers(mapNum, slot, mn, spawnMap, spawnSlot);
     }
 
     /// <summary>Per-tick brain step for a native NPC with an NpcTarget set.  Mirrors the player-target
@@ -308,41 +303,9 @@ public sealed partial class NpcAiSystem : GameSystem
             return;
         }
 
-        // Adjacent (incl. cross-seam) → strike.  Turn to face first (the legs pass does this on arrival; brain
-        // fallback here), but never mid-slide, and with no deliberate beat (see the player-target path).
-        if (_combat.CanNpcAttackNpc(mapNum, mn, victimMap, victimMn, now))
-        {
-            var faceDir = FaceTargetDir(mapNum, mn.X, mn.Y, _world.Npcs[mn.Num].EffectiveSize, victimMap, victimMn.X, victimMn.Y, mn.Dir);
-            if (mn.Dir != faceDir)
-            {
-                if (now < mn.NextMoveMs) return;                  // still sliding into place — finish the move first
-                BroadcastNpcDir(mapNum, slot, faceDir);
-                return;
-            }
-            _combat.NpcAttackNpc(mapNum, slot, mn, victimMap, victimSlot, victimMn, now);
-            mn.AttackTimer = now;
-            return;
-        }
-
-        // The target left the face, but a wide body is likely still pressed against by others. It is already
-        // facing them and its beat is ready, so it swings at what is standing there rather than turning away
-        // to chase — the cleave covers the whole edge, and the edge is what decides, not the one target.
-        if (_world.Npcs[mn.Num].EffectiveSize > 1 && _combat.FirstVictimOnFace(mapNum, mn, now) is { } onFace)
-        {
-            if (onFace.Npc is { } faceNpc)
-                _combat.NpcAttackNpc(mapNum, slot, mn, onFace.NpcMap, onFace.NpcSlot, faceNpc, now);
-            else
-                _combat.NpcAttackPlayer(mapNum, slot, onFace.PlayerIndex, now);
-            mn.AttackTimer = now;
-            return;
-        }
-
-        // Not adjacent — close the distance.  AoS and Guard refresh combat each step (relentless);
-        // AWA stays yield-able and lets combat lapse if it can't land hits.
-        if (npc.Behavior is NpcBehavior.AttackOnSight or NpcBehavior.Guard)
-            _combat.MarkNpcCombat(mapNum, slot, now);
-        // The chase-STEP — same-map AND cross-seam — runs entirely on the fast legs pass
-        // (AdvanceNativeNpcChaseStep) at run/walk pace; the brain does not step here.
+        // Not adjacent — close the distance. The chase-STEP — same-map AND cross-seam — runs
+        // entirely on the fast legs pass (AdvanceNativeNpcChaseStep) at run/walk pace; the brain does
+        // not step here.
     }
 
     /// <summary>Clear an NPC's NpcTarget (e.g. victim died or fled the observable area) and notify
@@ -400,7 +363,6 @@ public sealed partial class NpcAiSystem : GameSystem
         mn.NpcTargetSpawnMap = guardSpawnMap;
         mn.NpcTargetSpawnSlot = guardSpawnSlot;
         mn.MarkReachedTarget(now);
-        _combat.MarkNpcCombat(mn, now);  // initiate / refresh combat so AWA doesn't immediately yield
 
         if (mn is TraversalNpcRecord tg)
         {

@@ -86,9 +86,6 @@ public class DefinitionPacketFieldTests
     {
         Assert.Multiple(() =>
         {
-            Assert.That(SharedNames(typeof(SpellRecord), typeof(Mirage.Shared.Protocol.Packets.UpdateSpellPacket)),
-                Is.EquivalentTo(SharedNames(typeof(SpellRecord), typeof(Mirage.Shared.Protocol.Packets.SendSpellsPacket.SpellData))),
-                "spell: the update packet and the join packet carry different fields");
             Assert.That(SharedNames(typeof(ItemRecord), typeof(Mirage.Shared.Protocol.Packets.UpdateItemPacket)),
                 Is.EquivalentTo(SharedNames(typeof(ItemRecord), typeof(Mirage.Shared.Protocol.Packets.SendItemsPacket.ItemData))),
                 "item: the update packet and the join packet carry different fields");

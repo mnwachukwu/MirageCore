@@ -32,26 +32,11 @@ public sealed class MenuLogic
     /// </summary>
     public event Action<string, AlertCode>? AlertReceived;
 
-    // True only when we entered Loading specifically to fetch classes for the new-char screen.
-    private bool _loadingForNewChar;
-
     public MenuLogic(IClientEvents events)
     {
         events.AlertMessage += (msg, code) => AlertReceived?.Invoke(msg, code);
         events.CharacterListReceived += () => Transition(MenuState.CharSelect);
-        events.ClassListReceived += OnClassListReceived;
         events.InGame += () => Transition(MenuState.InGame);
-    }
-
-    // ── Server-driven transitions ─────────────────────────────────────────────
-
-    private void OnClassListReceived()
-    {
-        // Classes are sent both during the new-char flow (explicit GetClasses request)
-        // and as part of normal join data when entering the game.  Only advance to the
-        // new-char screen when we specifically requested them for that purpose.
-        if (CurrentState == MenuState.Loading && _loadingForNewChar)
-            Transition(MenuState.NewChar);
     }
 
     // ── Shell-driven transitions ──────────────────────────────────────────────
@@ -67,22 +52,16 @@ public sealed class MenuLogic
     /// </summary>
     public void GoToLoading(string message = "")
     {
-        _loadingForNewChar = false;
         LoadingMessageChanged?.Invoke(message);
         Transition(MenuState.Loading);
     }
 
-    /// <summary>
-    /// Transition to the Loading state in preparation for the new-character screen.
-    /// When the server responds with the class list, <see cref="MenuState.NewChar"/>
-    /// will be entered automatically.
-    /// </summary>
-    public void GoToLoadingForNewChar(string message = "")
-    {
-        _loadingForNewChar = true;
-        LoadingMessageChanged?.Invoke(message);
-        Transition(MenuState.Loading);
-    }
+    /// <summary>Open the new-character screen.
+    ///
+    /// <para>Immediate, with no loading state in between: nothing has to be fetched before the screen
+    /// can be drawn. A round trip here would be a loading screen waiting on a reply that never
+    /// comes.</para></summary>
+    public void GoToNewChar() => Transition(MenuState.NewChar);
 
     /// <summary>Fires when the loading screen message text should change.</summary>
     public event Action<string>? LoadingMessageChanged;

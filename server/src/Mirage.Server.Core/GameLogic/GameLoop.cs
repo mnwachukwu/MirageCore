@@ -22,8 +22,6 @@ public sealed class GameLoop : IDisposable
     private readonly GameWorld _world;
     private readonly PlayerManager _pm;
     private readonly NpcAiSystem _npcAi;
-    private readonly RegenerationSystem _regen;
-    private readonly PkExpirySystem _pkExpiry;
     private readonly PartySystem _party;
     private readonly ItemSystem _items;
     private readonly PlayerSaver _saver;
@@ -32,7 +30,6 @@ public sealed class GameLoop : IDisposable
     private readonly GuildScheduleSystem _guildSchedule;
     private readonly GuildWarSystem _guildWar;
     private readonly GuildTerritorySystem _territory;
-    private readonly BloodSystem _blood;
     private readonly MailSystem _mail;
     private readonly MarketSystem _market;
     private readonly TradeSystem _trade;
@@ -68,19 +65,16 @@ public sealed class GameLoop : IDisposable
     /// the server started in a special mode to be measurable.</summary>
     public GameLoopMetrics Metrics { get; } = new();
 
-    public GameLoop(GameWorld world, PlayerManager pm, NpcAiSystem npcAi,
-                    RegenerationSystem regen, PkExpirySystem pkExpiry, PartySystem party,
+    public GameLoop(GameWorld world, PlayerManager pm, NpcAiSystem npcAi, PartySystem party,
                     ItemSystem items, PlayerSaver saver, TimeOfDaySystem tod, WeatherSystem weather,
                     GuildScheduleSystem guildSchedule, GuildWarSystem guildWar, GuildTerritorySystem territory,
-                    BloodSystem blood, MailSystem mail, MarketSystem market, TradeSystem trade,
+                    MailSystem mail, MarketSystem market, TradeSystem trade,
                     IPersistenceService persistence, IBackgroundPersistence bg, ILogger<GameLoop> logger,
                     IClock? clock = null)
     {
         _world = world;
         _pm = pm;
         _npcAi = npcAi;
-        _regen = regen;
-        _pkExpiry = pkExpiry;
         _party = party;
         _items = items;
         _saver = saver;
@@ -89,7 +83,6 @@ public sealed class GameLoop : IDisposable
         _guildSchedule = guildSchedule;
         _guildWar = guildWar;
         _territory = territory;
-        _blood = blood;
         _mail = mail;
         _market = market;
         _trade = trade;
@@ -258,8 +251,6 @@ public sealed class GameLoop : IDisposable
     {
         long now = Environment.TickCount64;
         _npcAi.RunForAllMaps(now);
-        _regen.Tick(now);
-        _pkExpiry.Tick();
         _party.Tick(now);
         _trade.Tick();          // cancel trades whose parties drifted out of range + expire stale invites
         _tod.Tick();
@@ -280,7 +271,6 @@ public sealed class GameLoop : IDisposable
     // (dirty tiles) to observers.  Cheap: only maps that have seen recent combat carry a grid.
     private void BloodTick()
     {
-        _blood.Tick();
     }
 
     private void SpawnTick()

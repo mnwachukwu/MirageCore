@@ -35,32 +35,17 @@ public sealed partial class ClientPacketHandler : IClientEvents
     public event Action? MapReady;
     public event Action<ChatMsgPacket>? ChatMessage;
     public event Action? InventoryChanged;
-    public event Action<int>? VitalsChanged;
     public event Action? CharacterListReceived;
-    public event Action? ClassListReceived;
     public event Action<int>? MapItemChanged;
     public event Action<int>? MapNpcChanged;
     public event Action<int>? ShopOpened;
     public event Action? OpenInn;
     public event Action<int, int>? OpenNpcQuestMenu;
     public event Action<int, int, int>? OpenNpcConversation;   // map, slot, conversation number
-    public event Action? TrainingReady;
-    public event Action<int>? PreparedSpellReceived;
     public event Action<string, int>? PartyRequest;
     public event Action<GuildOfferNotifyPacket>? GuildOffer;
     public event Action<string>? TradeInvite;
-    // Floating vital change over a slotted entity.  Final arg is the NPC's map (isNpc only) so the
-    // number can be positioned on a neighbor map, not just the center; ignored for players (resolved by
-    // their own record) — pass 0 for them.
-    public event Action<int, int, VitalType, bool, bool, int>? VitalDelta;
-    // Floating combat number positioned by world tile (mapNum,x,y) rather than an entity slot — used for
-    // traversal (chasing) NPCs. delta < 0 is damage. Last two args are the (spawnMap, spawnSlot) identity so
-    // the shell can correlate the number to an in-flight spell bolt and defer it (hit-timing deferral).
-    public event Action<int, int, int, int, bool, int, int>? NpcWorldDamage;
-    // Block/dodge avoidance event — client floats localized cyan text over the entity.
-    public event Action<CombatTextPacket>? CombatText;
     public event Action<int>? PlayersOnlineChanged;
-    public event Action? LevelUp;
     public event Action<TargetRef>? TargetAssigned;
 
     // ── Fields ────────────────────────────────────────────────────────────────
@@ -102,12 +87,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
                 break;
             case QueueUpdatePacket p:
                 HandleQueueUpdate(p);
-                break;
-            case SendClassesPacket p:
-                HandleSendClasses(p);
-                break;
-            case NewCharClassesPacket p:
-                HandleNewCharClasses(p);
                 break;
             case SendCharsPacket p:
                 HandleSendChars(p);
@@ -157,9 +136,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
             case SendShopsPacket p:
                 HandleSendShops(p);
                 break;
-            case SendSpellsPacket p:
-                HandleSendSpells(p);
-                break;
             case SendMapGroupsPacket p:
                 HandleSendMapGroups(p);
                 break;
@@ -189,9 +165,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
             case UpdateSpellPacket p:
                 HandleUpdateSpell(p);
                 break;
-            case UpdateClassPacket p:
-                HandleUpdateClass(p);
-                break;
             case UpdateMapGroupPacket p:
                 HandleUpdateMapGroup(p);
                 break;
@@ -208,21 +181,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
                 break;
             case PlayerHotkeysPacket p:
                 HandlePlayerHotkeys(p);
-                break;
-            case PlayerSpellsPacket p:
-                HandlePlayerSpells(p);
-                break;
-            case SendStatsPacket p:
-                HandleSendStats(p);
-                break;
-            case SendHpPacket p:
-                HandleSendHp(p);
-                break;
-            case SendMpPacket p:
-                HandleSendMp(p);
-                break;
-            case SendSpPacket p:
-                HandleSendSp(p);
                 break;
 
             // Map entities
@@ -252,21 +210,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
             case NpcDirPacket p:
                 HandleNpcDir(p);
                 break;
-            case NpcAttackPacket p:
-                HandleNpcAttack(p);
-                break;
-            case NpcCastPacket p:
-                HandleNpcCast(p);
-                break;
-            case NpcDamagePacket p:
-                HandleNpcDamage(p);
-                break;
-            case CombatTextPacket p:
-                HandleCombatText(p);
-                break;
-            case BloodUpdatePacket p:
-                HandleBloodUpdate(p);
-                break;
             case NpcDeadPacket p:
                 HandleNpcDead(p);
                 break;
@@ -281,15 +224,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
                 break;
 
             // Combat
-            case PlayerAttackPacket p:
-                HandlePlayerAttack(p);
-                break;
-            case PlayerCastPacket p:
-                HandlePlayerCast(p);
-                break;
-            case PlayerDeathPacket p:
-                HandlePlayerDeath(p);
-                break;
             case SetTargetPacket p:
                 HandleSetTarget(p);
                 break;
@@ -421,6 +355,9 @@ public sealed partial class ClientPacketHandler : IClientEvents
         _state.GameName = p.GameName;
         // Before a single record arrives, so every table is already the right size to receive them.
         _state.ApplyServerLimits(p.Records);
+        // What character creation may offer. Held from the greeting because the screen is reached
+        // without asking the server anything.
+        _state.Appearances = p.Appearances;
         GameNameChanged?.Invoke(_state.GameName);
     }
 
@@ -435,43 +372,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
     {
         _state.QueuePosition = p.Position;
         _state.QueueTotal = p.Total;
-    }
-
-    private void HandleSendClasses(SendClassesPacket p) => ApplyClasses(p.Classes);
-
-    /// <summary>The character-create variant. Same class list, plus the starting loadout each class
-    /// grants and the definitions that describe it — see <see cref="ClientState.LoadoutFor"/>.</summary>
-    private void HandleNewCharClasses(NewCharClassesPacket p)
-    {
-        // Before ApplyClasses: it raises ClassListReceived, and a listener that redraws the create
-        // screen would otherwise paint one frame of classes whose loadouts had not landed yet.
-        _state.SetClassLoadouts(p);
-        ApplyClasses(p.Classes);
-    }
-
-    private void ApplyClasses(SendClassesPacket.ClassData[] classes)
-    {
-        // Server sends 0-based array; store 1-based (index 0 = unused dummy).
-        _state.Classes = new ClassRecord[classes.Length + 1];
-        _state.Classes[0] = new ClassRecord();
-        for (int i = 0; i < classes.Length; i++)
-        {
-            var c = classes[i];
-            _state.Classes[i + 1] = new ClassRecord
-            {
-                Name = c.Name,
-                Description = c.Description,
-                SpriteMale = c.SpriteMale,
-                SpriteFemale = c.SpriteFemale,
-                SpriteSheetMale = c.SpriteSheetMale,
-                SpriteSheetFemale = c.SpriteSheetFemale,
-                Str = c.Str,
-                Def = c.Def,
-                Spd = c.Spd,
-                Int = c.Int,
-            };
-        }
-        ClassListReceived?.Invoke();
     }
 
     private void HandleSendChars(SendCharsPacket p)

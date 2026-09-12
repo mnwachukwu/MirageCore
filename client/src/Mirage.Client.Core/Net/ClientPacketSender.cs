@@ -69,8 +69,11 @@ public sealed class ClientPacketSender
     public void SendSetLanguage(string locale)
         => _transport.Send(new SetLanguagePacket { Locale = locale });
 
-    public void SendAddChar(string name, Sex sex, int classId)
-        => _transport.Send(new AddCharPacket { Name = name, Sex = sex, Class = classId });
+    /// <summary>Create a character. <paramref name="appearance"/> is a position in the list the server
+    /// offered in its greeting, not a sprite number — the server resolves it against the list it
+    /// sent.</summary>
+    public void SendAddChar(string name, int appearance)
+        => _transport.Send(new AddCharPacket { Name = name, Appearance = appearance });
 
     public void SendDelChar(int slot)
         => _transport.Send(new DelCharPacket { Slot = slot });
@@ -105,9 +108,6 @@ public sealed class ClientPacketSender
 
     // ── Combat / spells ───────────────────────────────────────────────────────
 
-    public void SendAttack()
-        => _transport.Send(new AttackPacket());
-
     /// <summary>C→S: interact with the map NPC at (map, slot). Auto (the melee-key default) lets the server pick
     /// the NPC's best role — its quest/gossip menu if it has an actionable quest, else its keeper shop/inn; Shop
     /// forces the shop (the gossip-menu "Shop"/"Inn" item). The server range-gates (r=5).</summary>
@@ -140,15 +140,6 @@ public sealed class ClientPacketSender
 
     public void SendDropTarget()
         => _transport.Send(new DropTargetPacket());
-
-    public void SendCast(int spellSlot, bool self = false)
-        => _transport.Send(new CastPacket { Spell = spellSlot, Self = self });
-
-    public void SendSetPreparedSpell(int slot)
-        => _transport.Send(new SetPreparedSpellPacket { Slot = slot });
-
-    public void SendForgetSpell(int slot)
-        => _transport.Send(new ForgetSpellPacket { Slot = slot });
 
     /// <summary>Bind an action-bar slot to an item or spell NUMBER, or clear it with
     /// <see cref="HotkeyKind.None"/>. The server echoes the whole bar back either way.</summary>
@@ -229,9 +220,6 @@ public sealed class ClientPacketSender
         => _transport.Send(new FixItemPacket { InvSlot = invSlot });
 
     // ── Stats ─────────────────────────────────────────────────────────────────
-
-    public void SendTrainStats(int str, int def, int intPts, int spd)
-        => _transport.Send(new TrainStatsPacket { Str = str, Def = def, Int = intPts, Spd = spd });
 
     // ── Social ────────────────────────────────────────────────────────────────
 

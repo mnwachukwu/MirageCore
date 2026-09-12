@@ -37,6 +37,7 @@ public sealed class TcpConnectionAcceptor : IDisposable
     private readonly int _port;
     private readonly X509Certificate2 _cert;
     private readonly ServerConfig _config;
+    private readonly Mirage.Server.Core.World.GameWorld _world;
     private readonly LoginQueue _queue;
 
     public int Port => _port;
@@ -58,9 +59,11 @@ public sealed class TcpConnectionAcceptor : IDisposable
         Mirage.Server.Core.Persistence.IPersistenceService persistence,
         ILogger<TcpConnectionAcceptor> logger,
         ILoggerFactory loggerFactory,
-        ServerConfig config)
+        ServerConfig config,
+        Mirage.Server.Core.World.GameWorld world)
     {
         _dispatcher = dispatcher;
+        _world = world;
         _handler = handler;
         _editorHandler = editorHandler;
         _pm = pm;
@@ -255,6 +258,9 @@ public sealed class TcpConnectionAcceptor : IDisposable
         MaxPlayers = _pm.Slots,
         GameName = _config.GameName,
         Records = _config.Records,
+        // The one part of the greeting that is the WORLD's rather than the operator's: which looks a
+        // character may be made with is authored beside the records, not configured beside the port.
+        Appearances = _world.Appearances,
     };
 
     private async Task<int> ClaimEditorSlotAsync(CancellationToken ct)

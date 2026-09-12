@@ -33,7 +33,7 @@ public sealed class PartySystem : GameSystem
         var sp = _pm[playerIndex];
         _dispatcher.SendTo(partner, PacketBuilder.PartyVitals(
             playerIndex, sp.Char, sp.CombatExpiresAt, sp.PkGraceUntilUtc,
-            Environment.TickCount64, CombatSystem.CombatDurationMs));
+            Environment.TickCount64, 0));
     }
 
     private void ClearPartnerOverlay(int partnerIndex)

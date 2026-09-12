@@ -114,7 +114,7 @@ public class NpcPursuitRetentionTests
     static bool IsRelentless(GameWorld world, PlayerManager pm, NpcBehavior behavior)
     {
         var npc = new NpcRecord { Behavior = behavior };
-        var ai = new NpcAiSystem(world, pm, null!, null!, null!, null!, null!, null!);
+        var ai = new NpcAiSystem(world, pm, null!, null!, null!, null!);
         return (bool)typeof(NpcAiSystem)
             .GetMethod("IsRelentlessPursuit", BindingFlags.NonPublic | BindingFlags.Instance)!
             .Invoke(ai, [npc, Target, 0L])!;

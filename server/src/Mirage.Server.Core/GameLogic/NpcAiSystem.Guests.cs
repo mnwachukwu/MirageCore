@@ -61,27 +61,9 @@ public sealed partial class NpcAiSystem : GameSystem
             return;
         }
 
-        if (_combat.CanNpcAttackNpc(mapNum, t, victimMap, victimMn, now))
-        {
-            // Turn to face BEFORE the swing (so the client applies the new Dir before the swoosh spawns) — the
-            // legs pass does this on arrival; brain fallback here, never mid-slide, no deliberate beat.
-            var faceDir = FaceTargetDir(mapNum, t.X, t.Y, _world.Npcs[t.Num].EffectiveSize, victimMap, victimMn.X, victimMn.Y, t.Dir);
-            if (t.Dir != faceDir)
-            {
-                if (now < t.NextMoveMs) return;                   // still sliding into place — finish the move first
-                FaceNpcToward(mapNum, 0, t, victimMap, victimMn.X, victimMn.Y);
-                return;
-            }
-            _combat.NpcAttackNpc(mapNum, 0, t, victimMap, victimSlot, victimMn, now);
-            t.AttackTimer = now;
-            BroadcastTraversalState(t);
-            return;
-        }
-
         // Refresh combat each chase step for relentless behaviors (AoS, Guard) — AWA guests stay
         // yield-able so the combat-expire gate at the top of RunTraversalAi can eventually fire.
         if (npc.Behavior is NpcBehavior.AttackOnSight or NpcBehavior.Guard)
-            _combat.MarkNpcCombat(t, now);
         // On an OBSERVED map the fast legs pass (AdvanceGuestChaseStep) runs the WHOLE chase-STEP — same-map
         // AND cross-seam — at run/walk pace.  The legs skip UNWATCHED maps (RunMovement bails on observers==0)
         // and guests (unlike natives) are ticked everywhere, so on an unwatched map the brain still steps here

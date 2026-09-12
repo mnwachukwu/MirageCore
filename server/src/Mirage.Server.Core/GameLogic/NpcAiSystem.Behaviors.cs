@@ -199,7 +199,6 @@ public sealed partial class NpcAiSystem : GameSystem
                             mn.NpcTargetSpawnSlot = 0;
                             mn.Target = pkTarget;
                             mn.MarkReachedTarget(now);
-                            _combat.MarkNpcCombat(mapNum, slot, now);
                             SendToMap(_world, mapNum, new NpcTargetPacket { MapNum = mapNum, NpcSlot = slot, HasTarget = true });
                             if (mn.LastAttackSayTarget != pkTarget && !string.IsNullOrWhiteSpace(npc.AttackSay))
                             {
@@ -240,7 +239,6 @@ public sealed partial class NpcAiSystem : GameSystem
         // (logout, out-of-area) without a damage event.  No-op when the ledger is empty (an idle-
         // acquired target hasn't been hit yet) so a fresh acquisition doesn't immediately drop.
         if (mn.Target > 0 || mn.NpcTargetSpawnSlot > 0)
-            _combat.ReEvaluateAggro(mapNum, slot, mn);
 
         // If no target, find one (attack-on-sight searches all players; guards search whole-map PK-only; attack-when-attacked waits to be hit)
         if (mn.Target == 0 && !onlyWhenAttacked)
@@ -254,7 +252,6 @@ public sealed partial class NpcAiSystem : GameSystem
             if (mn.Target > 0)
             {
                 mn.MarkReachedTarget(now);
-                _combat.MarkNpcCombat(mapNum, slot, now);
                 SendToMap(_world, mapNum, new NpcTargetPacket { MapNum = mapNum, NpcSlot = slot, HasTarget = true });
                 if (mn.LastAttackSayTarget != mn.Target && !string.IsNullOrWhiteSpace(npc.AttackSay))
                 {
@@ -370,40 +367,6 @@ public sealed partial class NpcAiSystem : GameSystem
                 return;
             }
 
-            // Strike first if the target is adjacent — including one tile across a map seam, where
-            // the NPC can't step onto the player's occupied tile to "come to it", so only a cross-
-            // seam swing can connect (otherwise a player standing just over the border is unhittable).
-            if (_combat.CanNpcAttackPlayer(mapNum, slot, target, _pathNow))
-            {
-                var faceDir = FaceTargetDir(mapNum, mn.X, mn.Y, _world.Npcs[mn.Num].EffectiveSize, vp.Map, vp.X, vp.Y, mn.Dir);
-                if (mn.Dir != faceDir)
-                {
-                    // The legs pass turns a freshly-arrived mob to face its target (post-slide, promptly); this
-                    // is the fallback for the rare tick the brain beats it there or the target just sidestepped.
-                    // Turn now — never mid-slide — and swing next tick.  No deliberate beat: the turn just
-                    // precedes the strike.
-                    if (now < mn.NextMoveMs) return;              // still sliding into place — finish the move first
-                    BroadcastNpcDir(mapNum, slot, faceDir);
-                    return;
-                }
-                _combat.NpcAttackPlayer(mapNum, slot, target, _pathNow);
-                mn.AttackTimer = now;
-                return;
-            }
-
-            // The target left the face, but a wide body is likely still pressed against by others. It is
-            // already facing them and its beat is ready, so it swings at what is standing there rather than
-            // turning away to chase — the cleave covers the whole edge, and the edge is what decides.
-            if (_world.Npcs[mn.Num].EffectiveSize > 1 && _combat.FirstVictimOnFace(mapNum, mn, _pathNow) is { } onFace)
-            {
-                if (onFace.Npc is { } faceNpc)
-                    _combat.NpcAttackNpc(mapNum, slot, mn, onFace.NpcMap, onFace.NpcSlot, faceNpc, _pathNow);
-                else
-                    _combat.NpcAttackPlayer(mapNum, slot, onFace.PlayerIndex, _pathNow);
-                mn.AttackTimer = now;
-                return;
-            }
-
             // Not adjacent and on another observable map → chase across the border (the NPC becomes
             // a traversal guest), or drop the target if its map is no longer reachable.
             if (vp.Map != mapNum)
@@ -416,8 +379,6 @@ public sealed partial class NpcAiSystem : GameSystem
             // chase itself refreshes combat, so they don't time out mid-pursuit just because they
             // haven't landed a hit recently.  AWA (and any other yield-able behavior) skips this
             // refresh, so combat lapses naturally and they disengage.
-            if (IsRelentlessPursuit(npc, target, now))
-                _combat.MarkNpcCombat(mapNum, slot, now);
             // The chase-STEP — same-map AND cross-seam — runs on the fast legs pass (RunMovement →
             // AdvanceNativeChaseStep) at the NPC's SPD-scaled run pace, not on this 500ms brain tick.
             // Everything else for a chasing NPC (acquire, magic, give-up, attack, cross-border warp-follow +

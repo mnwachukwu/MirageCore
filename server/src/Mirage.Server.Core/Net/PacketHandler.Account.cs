@@ -325,10 +325,10 @@ public sealed partial class PacketHandler
         var sp = _pm[index];
         if (sp.IsPlaying || sp.Login == "") return;
 
-        RunAsync(HandleAddCharAsync(index, p.Name.Trim(), p.Sex, p.Class), nameof(HandleAddCharAsync));
+        RunAsync(HandleAddCharAsync(index, p.Name.Trim(), p.Appearance), nameof(HandleAddCharAsync));
     }
 
-    private async Task HandleAddCharAsync(int index, string name, Sex sex, int classNum)
+    private async Task HandleAddCharAsync(int index, string name, int appearance)
     {
         // Max counts the whole string; min counts alphanumerics only (rejects "A__" / all-underscore).
         switch (NameRules.CheckLength(name, Constants.MinFieldLength, Constants.NameLength))
@@ -347,15 +347,13 @@ public sealed partial class PacketHandler
             return;
         }
 
-        if (sex > Sex.Female)
+        // Resolved against the world's own roster rather than range-checked: the server holds the
+        // list it offered, so a position outside it is a client asking to look like something this
+        // world never offered.
+        var offered = _world.Appearances;
+        if (appearance < 0 || appearance >= offered.Count)
         {
-            HackingAttempt(index, "Invalid Sex");
-            return;
-        }
-
-        if (!SlotValidation.IsValidClassNum(classNum) || string.IsNullOrEmpty(_world.Classes[classNum].Name))
-        {
-            HackingAttempt(index, "Invalid Class");
+            HackingAttempt(index, "Invalid Appearance");
             return;
         }
 
@@ -389,27 +387,16 @@ public sealed partial class PacketHandler
             return;
         }
 
-        var cls = _world.Classes[classNum];
         var chr = sp.Chars[slot];
         chr.Name = name;
-        chr.Sex = sex;
-        chr.Class = classNum;
-        // Copied onto the character, not looked up through the class later: re-arting a class must not
-        // silently restyle everyone who already plays one.
-        chr.Sprite = cls.SpriteFor(sex);
-        chr.SpriteSheet = cls.SpriteSheetFor(sex);
+        // Copied onto the character rather than kept as a reference into the roster: re-arting or
+        // reordering what a world offers must not restyle the characters already made from it.
+        chr.Sprite = offered[appearance].Sprite;
+        chr.SpriteSheet = offered[appearance].SpriteSheet;
         chr.Level = 1;
-        chr.Str = cls.Str;
-        chr.Def = cls.Def;
-        chr.Spd = cls.Spd;
-        chr.Int = cls.Int;
         chr.Map = (short)_config.Spawn.Map;
         chr.X = _config.Spawn.X;
         chr.Y = _config.Spawn.Y;
-        chr.Hp = StatFormulas.GetPlayerMaxHp(chr, cls);
-        chr.Mp = StatFormulas.GetPlayerMaxMp(chr, cls);
-        chr.Sp = StatFormulas.GetPlayerMaxSp(chr, cls);
-        GrantStartingLoadout(chr, cls);
 
         // Persist the new character through the per-login chain (a load-merge): it can't race a
         // concurrent write, and the account's other chars, bank, penalty timers, and guild fields are
@@ -421,37 +408,6 @@ public sealed partial class PacketHandler
         _dispatcher.SendTo(index, PacketBuilder.SendChars(
             Enumerable.Range(1, Constants.MaxChars).Select(i => (PlayerRecord?)sp.Chars[i]),
             _world.Classes));
-    }
-
-    /// <summary>Fill a brand-new character's bag and spellbook from its class's authored loadout.
-    ///
-    /// <para>Which lines survive the gates is <see cref="StartingLoadout"/>'s call, not this method's —
-    /// the character-create screen previews the same answer, and the two must not be able to disagree.
-    /// This half is only the application: put the granted items in the bag, wear the wearable ones, and
-    /// write the spells into the book.</para></summary>
-    private void GrantStartingLoadout(PlayerRecord chr, ClassRecord cls)
-    {
-        foreach (var g in StartingLoadout.ResolveItems(cls, chr.Class, _world.Items))
-        {
-            chr.Inv[g.Slot].Num = g.Num;
-            chr.Inv[g.Slot].Quantity = g.Value;
-            chr.Inv[g.Slot].Dur = g.Durability;   // starts pristine
-
-            if (!g.Worn) continue;
-            switch (g.Type)
-            {
-                case ItemType.Weapon: chr.WeaponSlot = g.Slot; break;
-                case ItemType.Armor: chr.ArmorSlot = g.Slot; break;
-                case ItemType.Helmet: chr.HelmetSlot = g.Slot; break;
-                case ItemType.Shield: chr.ShieldSlot = g.Slot; break;
-            }
-        }
-
-        int spellSlot = 1;
-        var startSpells = StartingLoadout.ResolveSpells(cls, chr.Class, _world.Spells);
-        foreach (int spellNum in startSpells)
-            chr.Spell[spellSlot++] = spellNum;
-        chr.PreparedSpell = StartingLoadout.ResolvePreparedSlot(startSpells, _world.Spells);
     }
 
     private void HandleDelChar(int index, DelCharPacket p)

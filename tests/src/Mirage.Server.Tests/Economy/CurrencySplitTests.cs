@@ -1,7 +1,8 @@
+using Mirage.Shared;
 using Mirage.Server.Core.GameLogic;
 using NUnit.Framework;
 
-namespace Mirage.Server.Tests.Combat;
+namespace Mirage.Server.Tests.Economy;
 
 /// <summary>
 /// The one place in the engine that divides currency.
@@ -27,13 +28,13 @@ public class CurrencySplitTests
     [TestCase(1_000_000, 9)]
     public void ConservesTheTotalExactly(int total, int recipients)
     {
-        Assert.That(CombatSystem.SplitCurrency(total, recipients).Sum(), Is.EqualTo(total));
+        Assert.That(CurrencySplit.Divide(total, recipients).Sum(), Is.EqualTo(total));
     }
 
     [Test]
     public void SplitsEvenlyWhenItDivides()
     {
-        Assert.That(CombatSystem.SplitCurrency(100, 4), Is.EqualTo(new[] { 25, 25, 25, 25 }));
+        Assert.That(CurrencySplit.Divide(100, 4), Is.EqualTo(new[] { 25, 25, 25, 25 }));
     }
 
     [Test]
@@ -44,10 +45,10 @@ public class CurrencySplitTests
         Assert.Multiple(() =>
         {
             // 3 apiece leaves ONE coin over, so exactly one player gets the 4.
-            Assert.That(CombatSystem.SplitCurrency(10, 3), Is.EqualTo(new[] { 4, 3, 3 }));
+            Assert.That(CurrencySplit.Divide(10, 3), Is.EqualTo(new[] { 4, 3, 3 }));
             // 3 apiece leaves TWO over, so TWO players get a 4 — the spare coins go to different
             // people rather than both to one winner.
-            Assert.That(CombatSystem.SplitCurrency(11, 3), Is.EqualTo(new[] { 4, 4, 3 }));
+            Assert.That(CurrencySplit.Divide(11, 3), Is.EqualTo(new[] { 4, 4, 3 }));
         });
     }
 
@@ -56,13 +57,13 @@ public class CurrencySplitTests
     {
         // The whole point of the remainder rule: 3 gold among 4 is not "nothing for anyone". Which
         // three of the four is a roll, not an ordering property of this function.
-        Assert.That(CombatSystem.SplitCurrency(3, 4), Is.EqualTo(new[] { 1, 1, 1, 0 }));
+        Assert.That(CurrencySplit.Divide(3, 4), Is.EqualTo(new[] { 1, 1, 1, 0 }));
     }
 
     [Test]
     public void OneRecipientTakesItAll()
     {
-        Assert.That(CombatSystem.SplitCurrency(57, 1), Is.EqualTo(new[] { 57 }));
+        Assert.That(CurrencySplit.Divide(57, 1), Is.EqualTo(new[] { 57 }));
     }
 
     [TestCase(0)]
@@ -71,13 +72,13 @@ public class CurrencySplitTests
     {
         // Not a reachable state — a currency line is floored at 1 before it gets here — so this is
         // defensive. It must still never hand out negative gold.
-        Assert.That(CombatSystem.SplitCurrency(total, 3), Is.EqualTo(new[] { 0, 0, 0 }));
+        Assert.That(CurrencySplit.Divide(total, 3), Is.EqualTo(new[] { 0, 0, 0 }));
     }
 
     [Test]
     public void NoRecipientsIsEmptyRatherThanACrash()
     {
-        Assert.That(CombatSystem.SplitCurrency(100, 0), Is.Empty);
+        Assert.That(CurrencySplit.Divide(100, 0), Is.Empty);
     }
 
     [Test]
@@ -88,7 +89,7 @@ public class CurrencySplitTests
         for (int total = 0; total < 200; total++)
             for (int recipients = 1; recipients <= 8; recipients++)
             {
-                int[] shares = CombatSystem.SplitCurrency(total, recipients);
+                int[] shares = CurrencySplit.Divide(total, recipients);
                 Assert.That(shares.Max() - shares.Min(), Is.LessThanOrEqualTo(1),
                     $"{total} among {recipients} spread by more than one coin: [{string.Join(", ", shares)}]");
             }

@@ -35,7 +35,7 @@ public class SessionLifetimeOnWarpTests
         var world = new GameWorld();
         var pm = new PlayerManager();
         var chat = new NoOpDispatcher();
-        var move = new MovementSystem(world, pm, chat, new BloodSystem(world, chat));
+        var move = new MovementSystem(world, pm, chat);
 
         world.Shops[ShopNum].ShopType = ShopType.Store;
         world.Shops[ShopNum].Keeper = KeeperNpc;

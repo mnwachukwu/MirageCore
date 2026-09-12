@@ -31,9 +31,7 @@ public sealed partial class PacketHandler
     private readonly PlayerSaver _saver;
     private readonly JoinLeaveSystem _joinLeave;
     private readonly MovementSystem _movement;
-    private readonly CombatSystem _combat;
     private readonly ItemSystem _items;
-    private readonly SpellSystem _spells;
     private readonly ShopSystem _shop;
     private readonly BankSystem _bank;
     private readonly PlayerSpawnSystem _playerSpawn;
@@ -91,8 +89,7 @@ public sealed partial class PacketHandler
     public PacketHandler(
         GameWorld world, PlayerManager pm,
         IPacketDispatcher dispatcher, IPersistenceService persistence, IBackgroundPersistence bg, PlayerSaver saver,
-        JoinLeaveSystem joinLeave, MovementSystem movement, CombatSystem combat,
-        ItemSystem items, SpellSystem spells, ShopSystem shop, BankSystem bank, PlayerSpawnSystem playerSpawn,
+        JoinLeaveSystem joinLeave, MovementSystem movement, ItemSystem items, ShopSystem shop, BankSystem bank, PlayerSpawnSystem playerSpawn,
         PartySystem party, GuildSystem guilds, GuildWarSystem guildWar, GuildTerritorySystem territory, GuildScheduleSystem guildSchedule, MailSystem mail, MarketSystem market, TradeSystem trade, QuestSystem quests, ConversationSystem conversations, SocialSystem social, SpawnSystem spawn, TimeOfDaySystem tod, WeatherSystem weather, GameLoop gameLoop,
         ILogger<PacketHandler> logger,
         IClock? clock = null, IRandomSource? rng = null, ServerConfig? config = null)
@@ -105,9 +102,7 @@ public sealed partial class PacketHandler
         _saver = saver;
         _joinLeave = joinLeave;
         _movement = movement;
-        _combat = combat;
         _items = items;
-        _spells = spells;
         _shop = shop;
         _bank = bank;
         _playerSpawn = playerSpawn;
@@ -182,8 +177,8 @@ public sealed partial class PacketHandler
         or NoticeMsgPacket or AdminMsgPacket or PlayerMsgPacket or GuildChatPacket
 
         // Asking, never changing.
-        or WhoIsOnlinePacket or PlayerInfoRequestPacket or GetStatsPacket or PlayedRequestPacket
-        or RequestLocationPacket or MapReportPacket or HomeCooldownRequestPacket or SpellsRequestPacket
+        or WhoIsOnlinePacket or PlayerInfoRequestPacket or PlayedRequestPacket
+        or RequestLocationPacket or MapReportPacket or HomeCooldownRequestPacket
         or GuildInfoRequestPacket or GuildBrowseRequestPacket or GuildLeaderboardRequestPacket
         or SeasonArchiveRequestPacket or RequestModerationPacket
 
@@ -540,9 +535,6 @@ public sealed partial class PacketHandler
                 case HomeCooldownRequestPacket:
                     HandleHomeCooldownRequest(index);
                     break;
-                case GetStatsPacket:
-                    HandleGetStats(index);
-                    break;
 
                 // ── Movement ─────────────────────────────────────────────────
                 case PlayerMovePacket p:
@@ -552,10 +544,7 @@ public sealed partial class PacketHandler
                     HandlePlayerDir(index, p);
                     break;
 
-                // ── Combat ───────────────────────────────────────────────────
-                case AttackPacket:
-                    HandleAttack(index);
-                    break;
+                // ── Selection ────────────────────────────────────────────────
                 case SearchPacket p:
                     HandleSearch(index, p);
                     break;
@@ -586,11 +575,6 @@ public sealed partial class PacketHandler
                     HandleSortInventory(index);
                     break;
 
-                // ── Stats ────────────────────────────────────────────────────
-                case TrainStatsPacket p:
-                    HandleTrainStats(index, p);
-                    break;
-
                 // ── Bank ─────────────────────────────────────────────────────
                 case BankOpenPacket:
                     HandleBankOpen(index);
@@ -614,9 +598,6 @@ public sealed partial class PacketHandler
                 // ── Inn ──────────────────────────────────────────────────────
                 case ConfirmSetSpawnPacket:
                     _playerSpawn.ConfirmSetSpawn(index);
-                    break;
-                case RespawnRequestPacket:
-                    _combat.RespawnPlayer(index);
                     break;
 
                 // ── Shop ─────────────────────────────────────────────────────
@@ -645,20 +626,6 @@ public sealed partial class PacketHandler
                     break;
                 case LeavePartyPacket:
                     HandleLeaveParty(index);
-                    break;
-
-                // ── Spells ───────────────────────────────────────────────────
-                case SpellsRequestPacket:
-                    HandleSpellsRequest(index);
-                    break;
-                case CastPacket p:
-                    HandleCast(index, p);
-                    break;
-                case SetPreparedSpellPacket p:
-                    HandleSetPreparedSpell(index, p);
-                    break;
-                case ForgetSpellPacket p:
-                    HandleForgetSpell(index, p);
                     break;
 
                 // ── Info requests ────────────────────────────────────────────

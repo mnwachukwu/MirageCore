@@ -19,6 +19,12 @@ public sealed class GameWorld
     /// set of records it has opened.</summary>
     public string WorldName { get; set; } = "";
 
+    /// <summary>The appearances this world offers at character creation, from `world.json`. Sent in the
+    /// pre-login hello and used to resolve what a create request chose, so the list a player picked from
+    /// and the list the server checks against are the same one.</summary>
+    public IReadOnlyList<CharacterAppearance> Appearances { get; set; } =
+        CharacterAppearance.DefaultSet;
+
     public MapRecord[] Maps { get; }
     public TempTileState[] TempTiles { get; }
     public ItemRecord[] Items { get; }

@@ -127,6 +127,13 @@ public sealed partial class ClientState
         set => field = Math.Clamp(value, 1, Constants.MaxPlayers);
     } = Constants.MaxPlayers;
 
+    /// <summary>The appearances this server offers at character creation, as its greeting stated them.
+    ///
+    /// <para>Never derived from the art this client happens to have loaded: which looks a game offers is
+    /// authored beside its records, so a client shows the list it was given and nothing else.</para></summary>
+    public IReadOnlyList<Mirage.Shared.Records.CharacterAppearance> Appearances { get; set; } =
+        Mirage.Shared.Records.CharacterAppearance.DefaultSet;
+
     /// <summary>
     /// What to call the game we are connected to — the window title, the menu, the HUD.
     ///

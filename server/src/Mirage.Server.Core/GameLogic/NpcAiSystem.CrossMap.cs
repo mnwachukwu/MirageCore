@@ -100,7 +100,6 @@ public sealed partial class NpcAiSystem : GameSystem
         // Relentless pursuers refresh combat to keep hounding across borders.  Same-map refresh
         // is the caller's responsibility — preserves the existing AoS/AWA yield-on-chase rule.
         if (IsRelentlessPursuit(npc, target, now))
-            _combat.MarkNpcCombat(mapNum, slot, now);
 
         // On an OBSERVED map the fast legs pass (AdvanceNativeChaseStep) runs the cross-seam STEP at run/walk
         // pace — parity with the same-map chase, so an NPC keeps its sprint through a boundary.  The light-AI
@@ -118,7 +117,6 @@ public sealed partial class NpcAiSystem : GameSystem
     /// </summary>
     private void NativeNpcCrossBorder(int fromMap, int slot, MapNpcRecord mn, int toMap, int destX, int destY, Direction dir, bool stepped, WorldLayer crossLayer)
     {
-        NpcBloodTrail(toMap, destX, destY, mn.Hp, mn.Num, crossLayer);   // wounded mob drips as it walks across the seam
         var t = new TraversalNpcRecord
         {
             SpawnMapNum = fromMap,
@@ -227,8 +225,6 @@ public sealed partial class NpcAiSystem : GameSystem
         // ResetNativeNpc for why that is safe (the drag-to-town exploit is closed by the reset, not by
         // refusing entry).
 
-        if (IsRelentlessPursuit(npc, target, now))
-            _combat.MarkNpcCombat(mapNum, slot, now);  // refresh only while we'd keep hounding this target
         Direction toward = DirectionToward(new MapPos(mn.X, mn.Y), new MapPos(sp.WarpFromX, sp.WarpFromY));
 
         // Warp tiles aren't NPC-walkable, so step through once adjacent (like walking into a doorway).
@@ -305,7 +301,7 @@ public sealed partial class NpcAiSystem : GameSystem
             Stepped = stepped,
             Hp = t.Hp,
             MaxHp = _world.EffectiveNpcMaxHp(npc),
-            MsSinceCombat = PacketBuilder.MsSinceCombat(t.CombatExpiresAt, now, CombatSystem.CombatDurationMs),
+            MsSinceCombat = int.MaxValue,
             HasTarget = t.Target > 0,
             Attacking = t.Attacking,
             Layer = t.Layer,
@@ -356,7 +352,6 @@ public sealed partial class NpcAiSystem : GameSystem
             // contributor before the chase logic below reads the target. No-op on an empty ledger, so a freshly
             // scan-acquired target isn't dropped next tick. ReEvaluateAggro handles the guest case internally.
             if (t.Target > 0 || t.NpcTargetSpawnSlot > 0)
-                _combat.ReEvaluateAggro(mapNum, i, t);
 
             // NPC-target path: a guest carrying an NpcTarget (no player target) pursues to the death
             // OR until combat expires (handled above).  Mirrors RunNpcVsNpcStep for the native case,
@@ -417,27 +412,10 @@ public sealed partial class NpcAiSystem : GameSystem
 
             // Strike when adjacent — same map or one tile across a seam (world-space adjacency).  The
             // attack itself refreshes combat for any behavior, so an AWA mob in melee stays engaged.
-            if (_combat.CanNpcAttackPlayer(mapNum, t, target, _pathNow))
-            {
-                // Turn to face BEFORE the swing (so the client applies the new Dir before the swoosh spawns) —
-                // the legs pass does this on arrival; brain fallback here, never mid-slide, no deliberate beat.
-                var faceDir = FaceTargetDir(mapNum, t.X, t.Y, _world.Npcs[t.Num].EffectiveSize, vp.Map, vp.X, vp.Y, t.Dir);
-                if (t.Dir != faceDir)
-                {
-                    if (now < t.NextMoveMs) continue;             // still sliding into place — finish the move first
-                    FaceNpcToward(mapNum, 0, t, vp.Map, vp.X, vp.Y);
-                    continue;
-                }
-                _combat.NpcAttackPlayer(mapNum, t, 0, target, _pathNow);
-                t.AttackTimer = now;
-                BroadcastTraversalState(t);
-                continue;
-            }
 
             // Not adjacent: a relentless pursuer refreshes combat to keep hounding the target; a
             // yield-able one lets combat tick down (eventually trips the unified expire gate above).
             if (IsRelentlessPursuit(npc, target, now))
-                _combat.MarkNpcCombat(t, now);
 
             TraversalChaseStep(mapNum, i, t, vp, now);
         }
@@ -462,7 +440,6 @@ public sealed partial class NpcAiSystem : GameSystem
         {
             t.Target = playerTarget;
             t.MarkReachedTarget(now);
-            _combat.MarkNpcCombat(t, now);
             BroadcastTraversalState(t);
             return;
         }
@@ -479,7 +456,6 @@ public sealed partial class NpcAiSystem : GameSystem
             t.NpcTargetSpawnMap = npcPick.npcSpawnMap;
             t.NpcTargetSpawnSlot = npcPick.npcSpawnSlot;
             t.MarkReachedTarget(now);
-            _combat.MarkNpcCombat(t, now);
             BroadcastTraversalState(t);
             return;
         }
@@ -536,7 +512,6 @@ public sealed partial class NpcAiSystem : GameSystem
         }
         t.Moving = t.MoveType;
         BroadcastTraversalState(t);
-        NpcBloodTrail(mapNum, t.X, t.Y, t.Hp, t.Num, t.Layer);   // wounded guest drips as it walks
         return true;
     }
 
@@ -561,7 +536,6 @@ public sealed partial class NpcAiSystem : GameSystem
         t.Layer = crossLayer ?? t.Layer;
         t.Moving = MovementType.Walking;
         _world.MapTraversalNpcs[toMap].Add(t);
-        NpcBloodTrail(toMap, destX, destY, t.Hp, t.Num, t.Layer);   // wounded guest drips as it hops across the seam
 
         var toObs = _world.MapObservers[toMap];
         _dispatcher.SendToObservers(toObs, BuildTraversalPacket(t, stepped));
@@ -586,8 +560,6 @@ public sealed partial class NpcAiSystem : GameSystem
         var vp = sp.Char;
         if (sp.WarpFromMap != mapNum || sp.WarpToMap != vp.Map) return false;
 
-        if (IsRelentlessPursuit(npc, target, now))
-            _combat.MarkNpcCombat(t, now);  // refresh only while we'd keep hounding this target
         Direction toward = DirectionToward(new MapPos(t.X, t.Y), new MapPos(sp.WarpFromX, sp.WarpFromY));
 
         // Warp tiles aren't NPC-walkable, so step through once adjacent (like walking into a doorway).
@@ -629,7 +601,6 @@ public sealed partial class NpcAiSystem : GameSystem
         _selection.ClearSelectionsOfVisitor(t.SpawnMapNum, t.SpawnSlot);
         // Other NPCs that targeted this guest mid-fight would otherwise resolve through to the freshly
         // respawned native at the same identity and silently keep fighting it; clear them too.
-        _combat.ClearNpcTargetsForNpc(mapNum, t.SpawnMapNum, t.SpawnSlot);
 
         var home = _world.MapNpcs[t.SpawnMapNum, t.SpawnSlot];
         home.IsReservedSlot = false;

@@ -98,6 +98,7 @@ public sealed partial class WorldSettingsDialogViewModel : ObservableObject
         DefaultMapHeight = manifest.DefaultMapSize.Height;
         var limits = manifest.Records;
         _limits = limits;
+        _opened = manifest;
         // One row per family whose ceiling an operator may set. A family with a fixed ceiling is left
         // out: its count is baked into the save format, so offering it as a setting would offer a
         // change the world cannot take.
@@ -107,8 +108,10 @@ public sealed partial class WorldSettingsDialogViewModel : ObservableObject
         }
     }
 
-    // What the dialog opened on. Read back for any family it does not offer a row for.
+    // What the dialog opened on. Read back for any family it does not offer a row for, and for
+    // every part of the manifest this dialog does not edit.
     private readonly RecordLimits _limits = RecordLimits.Default;
+    private readonly WorldManifest _opened = new();
 
     /// <summary>The ceiling typed for one family, or its current value when the dialog has no row for it
     /// — a family with a fixed ceiling is never offered, and must come back unchanged rather than
@@ -116,8 +119,12 @@ public sealed partial class WorldSettingsDialogViewModel : ObservableObject
     private int Of(string familyId, int current) =>
         Rows.FirstOrDefault(r => r.FamilyId == familyId)?.Value ?? current;
 
+    /// <summary>What the world becomes. Built from <see cref="_opened"/> with only the fields this
+    /// dialog edits replaced, because a manifest assembled from scratch drops whatever the dialog does
+    /// not know about — and a world's authored appearance roster is not something a settings dialog
+    /// should be able to delete by not mentioning it.</summary>
     [RelayCommand]
-    private void Confirm() => Confirmed?.Invoke(new WorldManifest
+    private void Confirm() => Confirmed?.Invoke(_opened with
     {
         Name = WorldName.Trim(),
         DefaultMapSize = new MapSize(DefaultMapWidth, DefaultMapHeight),

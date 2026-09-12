@@ -241,12 +241,9 @@ public sealed partial class ClientPacketHandler : IClientEvents
         // Death-blow number floats on any observed map; invoked before the slot is cleared so the
         // handler can still read the NPC's position (the VitalDelta handler runs synchronously).
         if (n.Num > 0 && p.Damage > 0)
-            VitalDelta?.Invoke(p.NpcSlot, -p.Damage, VitalType.Hp, true, p.IsCrit, p.MapNum);
         // Hand the shell the pre-clear render state so it can hold a delayed-death sprite until a killing bolt lands.
         if (n.Num > 0 && _state.NpcDefs[n.Num] is { } deadDef)
         {
-            EntityDied?.Invoke(new EntityDeathFx(new TargetRef(TargetKind.Npc, p.NpcSlot, p.MapNum),
-                deadDef.Sprite, p.MapNum, n.X, n.Y, n.XOffset, n.YOffset, n.Dir, deadDef.EffectiveSize));
         }
 
         // Preserve any active chat bubble across the death so "last words" still drift away rather
@@ -292,7 +289,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
     {
         // Floating combat number (works for both a non-lethal hit and the kill blow).
         if (p.Damage != 0)
-            NpcWorldDamage?.Invoke(p.CurrentMapNum, p.X, p.Y, -p.Damage, p.IsCrit, p.SpawnMapNum, p.SpawnSlot);
 
         // Kill blow: drop the guest after its number floats; the native NPC respawns at home later.
         if (p.Dead)
@@ -301,8 +297,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
             if (_state.TraversalNpcs.TryGetValue((p.SpawnMapNum, p.SpawnSlot), out var dyingTn)
                 && _state.NpcDefs[dyingTn.Num] is { } tnDef)
             {
-                EntityDied?.Invoke(new EntityDeathFx(new TargetRef(TargetKind.Traversal, p.SpawnMapNum, p.SpawnSlot),
-                    tnDef.Sprite, p.CurrentMapNum, p.X, p.Y, 0f, 0f, dyingTn.Dir, tnDef.EffectiveSize));
             }
 
             _state.TraversalNpcs.Remove((p.SpawnMapNum, p.SpawnSlot));
