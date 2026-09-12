@@ -9,25 +9,18 @@
       "progress": 0
     }
   ],
-  "reqLevel": 5,
-  "reqStr": 0,
-  "reqDef": 0,
-  "reqSpd": 0,
-  "reqInt": 0,
   "allowedClasses": [
     4,
     5,
     8
   ],
   "prereqQuest": 0,
-  "rewardExp": 673,
   "rewardItems": [
     {
       "itemNum": 1,
       "quantity": 16
     }
   ],
-  "repeatRewardExp": 359,
   "repeatRewardItems": [
     {
       "itemNum": 1,

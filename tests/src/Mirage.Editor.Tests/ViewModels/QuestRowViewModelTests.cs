@@ -83,7 +83,7 @@ public class QuestRowViewModelTests
         var q = Quest(new QuestRecord
         {
             Objectives = { new Objective { Kind = ObjectiveKind.Kill, Count = 1 } },
-            RewardItems = { new QuestReward { ItemNum = 1, Quantity = 10 } },
+            RewardItems = { new QuestReward { ItemNum = 1, Quantity = 10 } }
         });
         q.Name = "Rat Problem";
         q.Objectives[0].Count = 5;
@@ -136,7 +136,7 @@ public class QuestRowViewModelTests
             Cadence = QuestCadence.Daily,
             Objectives = new List<Objective> { new() { Kind = ObjectiveKind.Kill, Target = 20, Count = 2 } },
             RewardExp = 100,
-            RewardItems = new List<QuestReward> { new() { ItemNum = 1, Quantity = 250 } },
+            RewardItems = new List<QuestReward> { new() { ItemNum = 1, Quantity = 250 } }
         });
 
         Assert.Multiple(() =>
@@ -144,7 +144,6 @@ public class QuestRowViewModelTests
             Assert.That(q.Name, Is.EqualTo("Deliver the Letter"));
             Assert.That(q.GiverNpc, Is.EqualTo(7));
             Assert.That(q.TurnInNpc, Is.EqualTo(9));
-            Assert.That(q.ReqLevel, Is.EqualTo(3));
             Assert.That(q.Repeatable, Is.True);
             Assert.That(q.Cadence, Is.EqualTo(QuestCadence.Daily));
             Assert.That(q.Objectives, Has.Count.EqualTo(1), "loads exactly the wire objectives — no padding");
@@ -160,8 +159,8 @@ public class QuestRowViewModelTests
     {
         var rec = new QuestRecord
         {
-            Name = "Q", ReqLevel = 5, GiverNpc = 4, TurnInNpc = 4,
-            RewardExp = 500, Repeatable = true, Cadence = QuestCadence.Weekly,
+            Name = "Q", GiverNpc = 4, TurnInNpc = 4,
+ Repeatable = true, Cadence = QuestCadence.Weekly
         };
 
         var back = Quest(rec).ToRecord();
@@ -169,9 +168,7 @@ public class QuestRowViewModelTests
         Assert.Multiple(() =>
         {
             Assert.That(back.Name, Is.EqualTo("Q"));
-            Assert.That(back.ReqLevel, Is.EqualTo(5));
             Assert.That(back.GiverNpc, Is.EqualTo(4));
-            Assert.That(back.RewardExp, Is.EqualTo(500));
             Assert.That(back.Repeatable, Is.True);
             Assert.That(back.Cadence, Is.EqualTo(QuestCadence.Weekly));
         });

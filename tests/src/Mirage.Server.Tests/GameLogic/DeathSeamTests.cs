@@ -43,7 +43,6 @@ public class DeathSeamTests
         p.Map = Map;
         p.X = 3;
         p.Y = 4;
-        p.Level = 1;
         p.SpawnMap = Map;
         p.SpawnX = 9;
         p.SpawnY = 9;

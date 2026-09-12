@@ -47,15 +47,8 @@ public sealed record SendQuestsPacket : IPacket
         [JsonPropertyName("name")] public string Name { get; init; } = "";
         [JsonPropertyName("desc")] public string Description { get; init; } = "";
         [JsonPropertyName("obj")] public List<Objective> Objectives { get; init; } = new();
-        [JsonPropertyName("reqLvl")] public int ReqLevel { get; init; }
-        [JsonPropertyName("reqStr")] public int ReqStr { get; init; }
-        [JsonPropertyName("reqDef")] public int ReqDef { get; init; }
-        [JsonPropertyName("reqSpd")] public int ReqSpd { get; init; }
-        [JsonPropertyName("reqInt")] public int ReqInt { get; init; }
         [JsonPropertyName("prereq")] public int PrereqQuest { get; init; }
-        [JsonPropertyName("rewExp")] public long RewardExp { get; init; }
         [JsonPropertyName("rewItems")] public List<QuestReward> RewardItems { get; init; } = new();
-        [JsonPropertyName("repExp")] public long RepeatRewardExp { get; init; }
         [JsonPropertyName("repItems")] public List<QuestReward> RepeatRewardItems { get; init; } = new();
         [JsonPropertyName("giver")] public int GiverNpc { get; init; }
         [JsonPropertyName("turnIn")] public int TurnInNpc { get; init; }

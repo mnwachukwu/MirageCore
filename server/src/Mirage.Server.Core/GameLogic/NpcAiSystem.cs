@@ -45,15 +45,12 @@ public sealed partial class NpcAiSystem : GameSystem
     private const long DoorAutoCloseMs = 5_000;  // a door swings shut this long after it opens
     // NPC regen tick, matched to the player cadence so NPC recovery stays close to the player's
     // per-second rate.
-    private const long NpcHpRegenMs = 5_000;
 
     // How long an NPC holds a lock it cannot make progress on before letting go, and how long a
     // traversal guest with nobody at all wanders abroad before walking home.  One window for both:
     // each is "this NPC has had nothing to do for long enough", measured off the same
     // MapNpcRecord.LastReachedTargetMs stamp.
     private const long NpcUnreachedGiveUpMs = 10_000;
-
-    private long _giveNpcHpTimer;
 
     // Timestamp of the current RunForAllMaps pass, so a guest CREATED mid-pass (a native crossing a
     // border) can stamp its LastAiTick and the destination map's RunTraversalAi won't act on it a
@@ -131,7 +128,6 @@ public sealed partial class NpcAiSystem : GameSystem
     {
         _aiNow = now;
         _pathNow = now;
-        bool regenTick = now > _giveNpcHpTimer + NpcHpRegenMs;
 
         for (int mapNum = 1; mapNum <= _world.Limits.Maps; mapNum++)
         {
@@ -140,24 +136,21 @@ public sealed partial class NpcAiSystem : GameSystem
             // native NPCs have nobody to notice and nothing to broadcast.
             if (_world.MapObservers[mapNum].Count > 0)
             {
-                RunAiForMap(mapNum, now, regenTick);
+                RunAiForMap(mapNum, now);
                 _spawn.CheckNpcRespawn(mapNum, now);
                 CheckDoorAutoClose(mapNum, now);
             }
             else
             {
                 RunUnobservedPursuit(mapNum, now);
-                RunUnobservedUpkeep(mapNum);
             }
 
             // Visiting guests are ticked on EVERY map, observed or not, so a player can't "stick" a
             // pursuer by luring it into space nobody is currently watching — it keeps pursuing (incl.
             // through warps) or returns home.  Free where there are no guests (empty list, no scan).
-            RunTraversalAi(mapNum, now, regenTick);
+            RunTraversalAi(mapNum, now);
         }
 
-        if (regenTick)
-            _giveNpcHpTimer = now;
     }
 
     /// <summary>Fast per-NPC MOVEMENT pass (GameLoop.NpcMoveTick, Constants.NpcMoveIntervalMs — finer than the 500ms brain).
@@ -236,12 +229,11 @@ public sealed partial class NpcAiSystem : GameSystem
         var npc = _world.Npcs[mn.Num];
         int gap = WorldDistanceTo(mapNum, mn.X, mn.Y, npc.EffectiveSize, vp.Map, vp.X, vp.Y, 1);
         if (gap == int.MaxValue) return;                            // target left the 3×3 observable area — the brain warp-follows, not the legs
-        bool running = NpcCanRun(mapNum, mn) && NpcWantsChaseRun(mn, npc, gap);
-        int beforeX = mn.X, beforeY = mn.Y, spBefore = mn.Sp;
+        bool running = NpcWantsChaseRun(mn, npc, gap);
+        int beforeX = mn.X, beforeY = mn.Y;
         mn.MoveType = running ? MovementType.Running : MovementType.Walking;
-        if (running) mn.Sp = Math.Max(mn.Sp - NpcRunSpDrain(mapNum), 0);   // drain BEFORE the step so a seam cross carries the cost onto the new guest (parity with the guest stepper + kite path); FinishChaseStep refunds if blocked
         StepNpcTowardObservableArea(mapNum, slot, mn, vp.Map, vp.X, vp.Y, vp.Layer);
-        FinishChaseStep(mn, npc.Spd, running, beforeX, beforeY, spBefore, now);
+        FinishChaseStep(mn, npc.MoveSpeed, running, beforeX, beforeY, now);
     }
 
     /// <summary>Legs-pass step for a native NPC holding another NPC in its observable area.  Same run/walk-by-
@@ -269,13 +261,12 @@ public sealed partial class NpcAiSystem : GameSystem
         var npc = _world.Npcs[mn.Num];
         int gap = WorldDistanceTo(mapNum, mn.X, mn.Y, npc.EffectiveSize, victimMap, victimMn.X, victimMn.Y, _world.Npcs[victimMn.Num].EffectiveSize);
         if (gap == int.MaxValue) return;                            // victim left the 3×3 observable area — the brain drops it (NPC targets don't warp-follow)
-        bool running = NpcCanRun(mapNum, mn) && NpcWantsChaseRun(mn, npc, gap);
-        int beforeX = mn.X, beforeY = mn.Y, spBefore = mn.Sp;
+        bool running = NpcWantsChaseRun(mn, npc, gap);
+        int beforeX = mn.X, beforeY = mn.Y;
         mn.MoveType = running ? MovementType.Running : MovementType.Walking;
-        if (running) mn.Sp = Math.Max(mn.Sp - NpcRunSpDrain(mapNum), 0);   // drain BEFORE the step (seam-cross parity, see AdvanceNativeChaseStep); FinishChaseStep refunds if blocked
         StepNpcTowardObservableArea(mapNum, slot, mn, victimMap, victimMn.X, victimMn.Y, victimMn.Layer,
                                     targetSize: _world.Npcs[victimMn.Num].EffectiveSize);
-        FinishChaseStep(mn, npc.Spd, running, beforeX, beforeY, spBefore, now);
+        FinishChaseStep(mn, npc.MoveSpeed, running, beforeX, beforeY, now);
     }
 
     /// <summary>Legs-pass step for a traversal GUEST (player or NPC lock).  Steps toward or away at run/walk
@@ -334,56 +325,24 @@ public sealed partial class NpcAiSystem : GameSystem
         var npc = _world.Npcs[t.Num];
         int gap = WorldDistanceTo(mapNum, t.X, t.Y, npc.EffectiveSize, targetMap, targetX, targetY, targetSize);
         if (gap == int.MaxValue) return;                            // target left the 3×3 observable area — the brain warp-follows/drops, not the legs
-        bool running = NpcCanRun(mapNum, t) && NpcWantsChaseRun(t, npc, gap);
-        int beforeX = t.X, beforeY = t.Y, spBefore = t.Sp;
+        bool running = NpcWantsChaseRun(t, npc, gap);
+        int beforeX = t.X, beforeY = t.Y;
         t.MoveType = running ? MovementType.Running : MovementType.Walking;
-        if (running) t.Sp = Math.Max(t.Sp - NpcRunSpDrain(mapNum), 0);      // drain BEFORE the step (seam-cross parity, see AdvanceNativeChaseStep); FinishChaseStep refunds if blocked
         StepGuestTowardObservableArea(mapNum, listIndex, t, targetMap, targetX, targetY, targetLayer, targetSize: targetSize);
-        FinishChaseStep(t, npc.Spd, running, beforeX, beforeY, spBefore, now);
+        FinishChaseStep(t, npc.MoveSpeed, running, beforeX, beforeY, now);
     }
 
-    /// <summary>Shared tail for a legs chase-step.  The run-SP drain is applied by the CALLER *before* the step
-    /// (so a seam cross carries the cost onto the new guest, matching the guest stepper and the retreat path); this
-    /// REFUNDS it when the step didn't actually move (a blocked/facing tick — a stuck NPC must not bleed run SP),
-    /// resets the one-shot run MoveType, and advances the per-NPC step-clock by the pace just used.  A cross
-    /// (<c>mn.Num == 0</c> — the native converted to a guest, which owns the drained SP AND the new position)
-    /// counts as MOVED.  Advances even on a blocked tick so the legs don't re-BFS every 100ms.</summary>
-    private static void FinishChaseStep(MapNpcRecord mn, int spd, bool running, int beforeX, int beforeY, int spBefore, long now)
+    /// <summary>Shared tail for a legs chase-step: resets the one-shot run MoveType and advances the
+    /// per-NPC step-clock by the pace just used. Advances even on a blocked tick so the legs don't re-BFS
+    /// every 100ms.</summary>
+    private static void FinishChaseStep(MapNpcRecord mn, int moveSpeed, bool running, int beforeX, int beforeY, long now)
     {
-        bool moved = mn.Num == 0 || mn.X != beforeX || mn.Y != beforeY;
-        if (running && !moved) mn.Sp = spBefore;                    // blocked, no move → refund the speculative pre-step drain
         mn.MoveType = MovementType.Walking;                         // reset — everything else steps at walk
-        mn.NextMoveMs = now + (long)MathF.Round(running ? MovementFormulas.NpcRunMsPerTile(spd) : MovementFormulas.NpcWalkMsPerTile);
+        mn.NextMoveMs = now + (long)MathF.Round(running ? MovementFormulas.NpcRunMsPerTile(moveSpeed) : MovementFormulas.NpcWalkMsPerTile);
     }
 
-    // Per-run-tile SP drain, DOUBLED under Heat Wave — the NPC mirror of the player's Heat-Wave run-stamina tax
-    // (MovementSystem) and of the ×2 block/crit/dodge SP cost NPCs already pay (CombatSystem.WeatherSpCostMult).
-    private int NpcRunSpDrain(int map) =>
-        Constants.NpcRunSpDrainPerTile * (_world.WeatherOn(map) == WeatherType.HeatWave ? Constants.WeatherHeatWaveSpCostMultiplier : 1);
-
-    /// <summary>Whether an NPC may RUN right now: it needs stamina (SP > 0).  Every chase/kite run-vs-walk
-    /// decision routes through this, so the reservoir rule is applied uniformly.</summary>
-    private bool NpcCanRun(int mapNum, MapNpcRecord mn)
-    {
-        if (mn.Sp <= 0)
-        {
-            mn.RunReservoirLow = true;   // just drained — must rebuild a reservoir before sprinting again
-            return false;
-        }
-        if (mn.RunReservoirLow)
-        {
-            // Rebuilding: keep walking until SP climbs back to the reservoir fraction, so the NPC commits to
-            // one sustained run per reservoir instead of burning each regen trickle the instant it lands
-            // (which flickered run/walk every regen tick and snapped the slide).
-            int reservoir = Math.Max((int)(_world.EffectiveNpcMaxSp(_world.Npcs[mn.Num]) * Constants.NpcRunReservoirFraction), 1);
-            if (mn.Sp < reservoir) return false;
-            mn.RunReservoirLow = false;  // reservoir refilled — free to sprint again
-        }
-        return true;
-    }
-
-    /// <summary>Run-vs-walk decision for a step that CLOSES a gap. SP gating is separate, in
-    /// <see cref="NpcCanRun"/>, and a retreat does not consult this at all.
+    /// <summary>Run-vs-walk decision for a step that CLOSES a gap. A retreat does not consult this at
+    /// all.
     ///
     /// <para>OPENING approach, before first contact: the NPC strolls in ONLY while stalking within
     /// <see cref="Constants.NpcApproachWalkMaxGap"/> tiles having lost the per-engagement charge roll
@@ -408,25 +367,6 @@ public sealed partial class NpcAiSystem : GameSystem
         }
         if (gap >= Constants.NpcChaseSprintGapTiles) mn.ChaseSprinting = true;
         return mn.ChaseSprinting;
-    }
-
-    /// <summary>Regen one NPC's HP/MP/SP for a regen tick (weather-scaled).  Shared by native slot NPCs and
-    /// traversal guests so both recover identically — a guest that spent SP sprinting refills it exactly like a
-    /// native would at home.</summary>
-    private void RegenNpcVitals(int mapNum, MapNpcRecord mn, NpcRecord npc, long now)
-    {
-        // Heat Wave / Snow halve regen magnitude; Snow also shrinks the max pools (Effective*).
-        double regenMult = WeatherEffects.RegenMultiplier(_world.WeatherOn(mapNum));
-        int maxHp = _world.EffectiveNpcMaxHp(npc);
-        if (mn.Hp < maxHp && mn.Hp > 0)
-            mn.Hp = Math.Min(mn.Hp + StatFormulas.GetNpcHpRegen(npc, regenMult), maxHp);
-
-        int maxMp = _world.EffectiveNpcMaxMp(npc);
-        if (mn.Mp < maxMp && mn.Hp > 0)
-            mn.Mp = Math.Min(mn.Mp + StatFormulas.GetNpcMpRegen(npc, regenMult), maxMp);
-        int maxSp = _world.EffectiveNpcMaxSp(npc);
-        if (mn.Sp < maxSp && mn.Hp > 0)
-            mn.Sp = Math.Min(mn.Sp + StatFormulas.GetNpcSpRegen(npc, regenMult), maxSp);
     }
 
     // Scratch list for the sweep below: the due doors are collected before any is shut, because closing

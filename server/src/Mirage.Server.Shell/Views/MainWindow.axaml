@@ -143,9 +143,9 @@
                 <TextBlock Grid.Column="0" Classes="t2" Text="{Binding UptimeLabel}" VerticalAlignment="Center"/>
                 <TextBlock Grid.Column="1" Classes="t1" Text="{Binding UptimeText}" VerticalAlignment="Center" Margin="0,0,20,0"/>
                 <TextBlock Grid.Column="2" Classes="t2" Text="{Binding GamePortLabel}" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="3" Classes="t1" Text="{Binding PortText}" VerticalAlignment="Center" Margin="0,0,20,0"/>
-                <TextBlock Grid.Column="4" Classes="t2" Text="{Binding OperatorsLabel}" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="5" Classes="t1" Text="{Binding OperatorsText}" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="2" Classes="t1" Text="{Binding PortText}" VerticalAlignment="Center" Margin="0,0,20,0"/>
+                <TextBlock Grid.Column="3" Classes="t2" Text="{Binding OperatorsLabel}" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="4" Classes="t1" Text="{Binding OperatorsText}" VerticalAlignment="Center"/>
               </Grid>
             </Border>
 
@@ -154,25 +154,23 @@
             <TextBlock Classes="hint" Text="{Binding PlayersEmpty}" IsVisible="{Binding !HasPlayers}"/>
 
             <StackPanel IsVisible="{Binding HasPlayers}">
-              <Grid ColumnDefinitions="150,140,44,60,90,*" Margin="14,0,14,4">
+              <Grid ColumnDefinitions="150,140,60,90,*" Margin="14,0,14,4">
                 <TextBlock Grid.Column="0" Classes="hint" Text="{Binding ColName}"/>
                 <TextBlock Grid.Column="1" Classes="hint" Text="{Binding ColAccount}"/>
-                <TextBlock Grid.Column="2" Classes="hint" Text="{Binding ColLevel}"/>
-                <TextBlock Grid.Column="3" Classes="hint" Text="{Binding ColMap}"/>
-                <TextBlock Grid.Column="4" Classes="hint" Text="{Binding ColAccess}"/>
+                <TextBlock Grid.Column="2" Classes="hint" Text="{Binding ColMap}"/>
+                <TextBlock Grid.Column="3" Classes="hint" Text="{Binding ColAccess}"/>
               </Grid>
 
               <ItemsControl ItemsSource="{Binding Players}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="proto:PlayerSummary">
                     <Border Classes="card">
-                      <Grid ColumnDefinitions="150,140,44,60,90,*">
+                      <Grid ColumnDefinitions="150,140,60,90,*">
                         <TextBlock Grid.Column="0" Classes="t1" Text="{Binding Name}" VerticalAlignment="Center"/>
                         <TextBlock Grid.Column="1" Classes="t2" Text="{Binding Login}" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="2" Classes="t2" Text="{Binding Level}" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="3" Classes="t2" Text="{Binding Map}" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="4" Classes="t2" Text="{Binding Access}" VerticalAlignment="Center"/>
-                        <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right">
+                        <TextBlock Grid.Column="2" Classes="t2" Text="{Binding Map}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="3" Classes="t2" Text="{Binding Access}" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right">
                           <Button Content="{Binding $parent[TabItem].((vm:MainWindowViewModel)DataContext).KickLabel}"
                                   Command="{Binding $parent[TabItem].((vm:MainWindowViewModel)DataContext).KickPlayerCommand}"
                                   CommandParameter="{Binding}"/>
@@ -208,7 +206,7 @@
                 <TextBlock Grid.Column="0" Classes="hint" Text="{Binding ColSlot}"/>
                 <TextBlock Grid.Column="1" Classes="hint" Text="{Binding ColAccount}"/>
                 <TextBlock Grid.Column="2" Classes="hint" Text="{Binding ColAccess}"/>
-                <TextBlock Grid.Column="3" Classes="hint" Text="{Binding ColHolding}"/>
+                <TextBlock Grid.Column="2" Classes="hint" Text="{Binding ColHolding}"/>
               </Grid>
 
               <ItemsControl ItemsSource="{Binding Editors}">
@@ -220,7 +218,7 @@
                         <TextBlock Grid.Column="1" Classes="t1" Text="{Binding Login}" VerticalAlignment="Center"/>
                         <TextBlock Grid.Column="2" Classes="t2" Text="{Binding Access}" VerticalAlignment="Center"/>
                         <!-- Unsaved work goes with the connection, so what it holds is the warning. -->
-                        <ItemsControl Grid.Column="3" ItemsSource="{Binding Holding}" VerticalAlignment="Center">
+                        <ItemsControl Grid.Column="2" ItemsSource="{Binding Holding}" VerticalAlignment="Center">
                           <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
                           </ItemsControl.ItemsPanel>
@@ -230,7 +228,7 @@
                             </DataTemplate>
                           </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <Button Grid.Column="4" HorizontalAlignment="Right"
+                        <Button Grid.Column="3" HorizontalAlignment="Right"
                                 Content="{Binding $parent[TabItem].((vm:MainWindowViewModel)DataContext).DisconnectEditorLabel}"
                                 Command="{Binding $parent[TabItem].((vm:MainWindowViewModel)DataContext).DisconnectEditorCommand}"
                                 CommandParameter="{Binding}"/>
@@ -293,7 +291,7 @@
                                    TextWrapping="Wrap"/>
                         <TextBlock Grid.Column="2" Classes="t2" VerticalAlignment="Center"
                                    Text="{Binding BannedAtUtc, Converter={StaticResource UnixDate}}"/>
-                        <Button Grid.Column="3" HorizontalAlignment="Right"
+                        <Button Grid.Column="2" HorizontalAlignment="Right"
                                 Content="{Binding $parent[TabItem].((vm:MainWindowViewModel)DataContext).LiftLabel}"
                                 Command="{Binding $parent[TabItem].((vm:MainWindowViewModel)DataContext).UnbanCommand}"
                                 CommandParameter="{Binding}"/>
@@ -328,7 +326,7 @@
                                    TextWrapping="Wrap"/>
                         <TextBlock Grid.Column="2" Classes="t2" VerticalAlignment="Center"
                                    Text="{Binding BannedAtUtc, Converter={StaticResource UnixDate}}"/>
-                        <Button Grid.Column="3" HorizontalAlignment="Right"
+                        <Button Grid.Column="2" HorizontalAlignment="Right"
                                 Content="{Binding $parent[TabItem].((vm:MainWindowViewModel)DataContext).LiftLabel}"
                                 Command="{Binding $parent[TabItem].((vm:MainWindowViewModel)DataContext).HardwareUnbanCommand}"
                                 CommandParameter="{Binding}"/>
@@ -348,7 +346,7 @@
                 <TextBlock Grid.Column="0" Classes="hint" Text="{Binding ModColAccount}"/>
                 <TextBlock Grid.Column="1" Classes="hint" Text="{Binding ModColKind}"/>
                 <TextBlock Grid.Column="2" Classes="hint" Text="{Binding ModColRemaining}"/>
-                <TextBlock Grid.Column="3" Classes="hint" Text="{Binding ModColWhere}"/>
+                <TextBlock Grid.Column="2" Classes="hint" Text="{Binding ModColWhere}"/>
               </Grid>
               <ItemsControl ItemsSource="{Binding Penalties}">
                 <ItemsControl.ItemTemplate>
@@ -362,8 +360,8 @@
                         <!-- Which character they are on, when they are on one. It matters for a MUTE:
                              the live player holds its own copy of the expiry, so an online row is the
                              one where lifting has to reach two places. -->
-                        <TextBlock Grid.Column="3" Classes="t2" Text="{Binding CharName}" VerticalAlignment="Center"/>
-                        <Button Grid.Column="4" HorizontalAlignment="Right"
+                        <TextBlock Grid.Column="2" Classes="t2" Text="{Binding CharName}" VerticalAlignment="Center"/>
+                        <Button Grid.Column="3" HorizontalAlignment="Right"
                                 Content="{Binding $parent[TabItem].((vm:MainWindowViewModel)DataContext).LiftLabel}"
                                 Command="{Binding $parent[TabItem].((vm:MainWindowViewModel)DataContext).LiftPenaltyCommand}"
                                 CommandParameter="{Binding}"/>
@@ -501,7 +499,7 @@
               <TextBox Grid.Column="1" Text="{Binding RemoteHost}" IsEnabled="{Binding CanEditConnection}"
                        MinWidth="180"/>
               <TextBlock Grid.Column="2" Text="{Binding PortLabel}" VerticalAlignment="Center" Margin="12,0,8,0"/>
-              <NumericUpDown Grid.Column="3" Value="{Binding RemotePort}" Minimum="1" Maximum="65535"
+              <NumericUpDown Grid.Column="2" Value="{Binding RemotePort}" Minimum="1" Maximum="65535"
                              FormatString="0" Increment="1" ParsingNumberStyle="Integer"
                              IsEnabled="{Binding CanEditConnection}" MinWidth="120"/>
             </Grid>
@@ -523,7 +521,7 @@
               <TextBlock Grid.Column="0" Text="{Binding ServerNameLabel}" VerticalAlignment="Center" Margin="0,0,8,0"/>
               <TextBox Grid.Column="1" Text="{Binding RemoteName}" IsEnabled="{Binding CanEditConnection}"/>
               <TextBlock Grid.Column="2" Text="{Binding KnownServersLabel}" VerticalAlignment="Center" Margin="12,0,8,0"/>
-              <ComboBox Grid.Column="3" MinWidth="200"
+              <ComboBox Grid.Column="2" MinWidth="200"
                         IsEnabled="{Binding CanEditConnection}"
                         ItemsSource="{Binding KnownServers}"
                         SelectedItem="{Binding SelectedServer}">
@@ -634,29 +632,29 @@
               <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding RecordItemsLabel}" VerticalAlignment="Center" MinWidth="130"/>
               <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding RecordItems}" Minimum="1" Maximum="{Binding RecordCeiling}"
                              FormatString="0" Increment="100" ParsingNumberStyle="Integer"/>
-              <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding RecordNpcsLabel}" VerticalAlignment="Center" MinWidth="130"/>
-              <NumericUpDown Grid.Row="0" Grid.Column="4" Value="{Binding RecordNpcs}" Minimum="1" Maximum="{Binding RecordCeiling}"
+              <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding RecordNpcsLabel}" VerticalAlignment="Center" MinWidth="130"/>
+              <NumericUpDown Grid.Row="0" Grid.Column="3" Value="{Binding RecordNpcs}" Minimum="1" Maximum="{Binding RecordCeiling}"
                              FormatString="0" Increment="100" ParsingNumberStyle="Integer"/>
 
               <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding RecordShopsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
               <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding RecordShops}" Minimum="1" Maximum="{Binding RecordCeiling}"
                              FormatString="0" Increment="100" ParsingNumberStyle="Integer" Margin="0,6,0,0"/>
-              <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding RecordSpellsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
-              <NumericUpDown Grid.Row="1" Grid.Column="4" Value="{Binding RecordSpells}" Minimum="1" Maximum="{Binding RecordCeiling}"
+              <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding RecordSpellsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
+              <NumericUpDown Grid.Row="1" Grid.Column="3" Value="{Binding RecordSpells}" Minimum="1" Maximum="{Binding RecordCeiling}"
                              FormatString="0" Increment="100" ParsingNumberStyle="Integer" Margin="0,6,0,0"/>
 
               <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding RecordQuestsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
               <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding RecordQuests}" Minimum="1" Maximum="{Binding RecordCeiling}"
                              FormatString="0" Increment="100" ParsingNumberStyle="Integer" Margin="0,6,0,0"/>
-              <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding RecordConversationsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
-              <NumericUpDown Grid.Row="2" Grid.Column="4" Value="{Binding RecordConversations}" Minimum="1" Maximum="{Binding RecordCeiling}"
+              <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding RecordConversationsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
+              <NumericUpDown Grid.Row="2" Grid.Column="3" Value="{Binding RecordConversations}" Minimum="1" Maximum="{Binding RecordCeiling}"
                              FormatString="0" Increment="100" ParsingNumberStyle="Integer" Margin="0,6,0,0"/>
 
               <TextBlock Grid.Row="3" Grid.Column="0" Text="{Binding RecordMapsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
               <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding RecordMaps}" Minimum="1" Maximum="{Binding RecordCeiling}"
                              FormatString="0" Increment="100" ParsingNumberStyle="Integer" Margin="0,6,0,0"/>
-              <TextBlock Grid.Row="3" Grid.Column="3" Text="{Binding RecordMapGroupsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
-              <NumericUpDown Grid.Row="3" Grid.Column="4" Value="{Binding RecordMapGroups}" Minimum="1" Maximum="{Binding RecordCeiling}"
+              <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding RecordMapGroupsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
+              <NumericUpDown Grid.Row="3" Grid.Column="3" Value="{Binding RecordMapGroups}" Minimum="1" Maximum="{Binding RecordCeiling}"
                              FormatString="0" Increment="100" ParsingNumberStyle="Integer" Margin="0,6,0,0"/>
             </Grid>
           </StackPanel>
@@ -704,10 +702,10 @@
               <NumericUpDown Grid.Column="1" Value="{Binding SpawnMap}" Minimum="1" Maximum="1000"
                              FormatString="0" Increment="1" ParsingNumberStyle="Integer" MinWidth="110"/>
               <TextBlock Grid.Column="2" Text="{Binding SpawnXLabel}" VerticalAlignment="Center" Margin="16,0,8,0"/>
-              <NumericUpDown Grid.Column="3" Value="{Binding SpawnX}" Minimum="0" Maximum="255"
+              <NumericUpDown Grid.Column="2" Value="{Binding SpawnX}" Minimum="0" Maximum="255"
                              FormatString="0" Increment="1" ParsingNumberStyle="Integer" MinWidth="100"/>
-              <TextBlock Grid.Column="4" Text="{Binding SpawnYLabel}" VerticalAlignment="Center" Margin="16,0,8,0"/>
-              <NumericUpDown Grid.Column="5" Value="{Binding SpawnY}" Minimum="0" Maximum="255"
+              <TextBlock Grid.Column="3" Text="{Binding SpawnYLabel}" VerticalAlignment="Center" Margin="16,0,8,0"/>
+              <NumericUpDown Grid.Column="4" Value="{Binding SpawnY}" Minimum="0" Maximum="255"
                              FormatString="0" Increment="1" ParsingNumberStyle="Integer" MinWidth="100"/>
             </Grid>
           </StackPanel>
@@ -726,7 +724,7 @@
                 </ComboBox.ItemTemplate>
               </ComboBox>
               <TextBlock Grid.Column="2" Text="{Binding WarNightHourLabel}" VerticalAlignment="Center" Margin="16,0,8,0"/>
-              <NumericUpDown Grid.Column="3" Value="{Binding WarNightHour}" Minimum="0" Maximum="23"
+              <NumericUpDown Grid.Column="2" Value="{Binding WarNightHour}" Minimum="0" Maximum="23"
                              FormatString="00" Increment="1" ParsingNumberStyle="Integer" MinWidth="100"/>
             </Grid>
             <TextBlock Classes="hint" Text="{Binding WeekResetNote}"/>

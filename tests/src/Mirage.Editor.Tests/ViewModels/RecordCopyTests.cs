@@ -43,7 +43,7 @@ public class RecordCopyTests
         Type = ItemType.Weapon,
         Power = 12,
         Durability = 40,
-        Price = 250,
+        Price = 250
     };
 
     [Test]
@@ -107,41 +107,6 @@ public class RecordCopyTests
             Assert.That(copy.Power, Is.EqualTo(12));
             Assert.That(copy.Durability, Is.EqualTo(40));
             Assert.That(copy.Price, Is.EqualTo(250));
-        });
-    }
-
-    /// <summary>A shallow copy would share the drop table, so editing the duplicate's drops would silently
-    /// edit the original's too — and the original is not even dirty, so the change would never be saved and
-    /// would vanish on reload.</summary>
-    [Test]
-    public void Copy_IsDeep_SoEditingItCannotReachTheOriginal()
-    {
-        var data = new EditorDataService();
-        var npcs = new NpcRecord[4];
-        for (int i = 0; i < npcs.Length; i++) npcs[i] = new NpcRecord();
-        npcs[1] = new NpcRecord
-        {
-            Name = "Cave Troll",
-            Str = 20,
-            Drops = [new NpcDrop { ItemNum = 4, Quantity = 1, Chance = 50 }],
-        };
-        typeof(EditorDataService).GetProperty(nameof(EditorDataService.OfflineNpcs))!.SetValue(data, npcs);
-        var vm = new NpcEditorViewModel(data, new EditorConnection());
-        vm.LoadOffline();
-        var source = vm.Npcs.First(n => n.Index == 1);
-        vm.SelectedNpc = source;
-
-        vm.CopyCommand.Execute(null);
-
-        var copy = vm.Npcs.First(n => n.Index == 2);
-        copy.Drops[0].ItemNum = 99;
-        copy.Str = 99;
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(source.Drops[0].ItemNum, Is.EqualTo(4));
-            Assert.That(source.Str, Is.EqualTo(20));
-            Assert.That(source.IsDirty, Is.False, "copying reads the original, it does not edit it");
         });
     }
 

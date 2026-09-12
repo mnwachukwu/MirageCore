@@ -43,7 +43,6 @@ public sealed partial class GameplayScreen : IGameScreen
         int tsize = TargetFootprintSize(target);   // center the number/blood on an oversize NPC's body, not its anchor
         if (release > 0 && onScreen)
         {
-            HoldBarFor(target, release); // hold the HP bar too, so it drops in sync with the bolt
             float cx = sx + tsize * Constants.PicX / 2f;
             float cy = sy - FloatTextGapAbove;
             // Defer BOTH the number and the blood burst to the bolt's arrival, so they land with the impact.
@@ -58,28 +57,6 @@ public sealed partial class GameplayScreen : IGameScreen
         if (text is not null) SpawnFloatingTextAtEntity(mapNum, lx, ly, xoff, yoff, text, color, tsize);
         if (bloodIntensity > 0f && _showBlood && onScreen)
             _particles.EmitBloodSplatter(sx + tsize * Constants.PicX / 2f + _camera.CameraX, sy - FloatTextGapAbove + _camera.CameraY, bloodIntensity, LayerAtTile(mapNum, lx, ly));
-    }
-
-    // Hold the target's HP bar (display) until the bolt lands, matching the deferred number. NPC + traversal
-    // route through their ClientMapNpc; players are handled with the player-death work (server death signal).
-    private void HoldBarFor(TargetRef target, long until)
-    {
-        switch (target.Kind)
-        {
-            case TargetKind.Npc:
-                var npcs = _ctx.State.NpcsForMap(target.B);
-                if (npcs is not null && target.A >= 1 && target.A <= Constants.MaxMapNpcs)
-                    npcs[target.A].BarHoldUntilMs = Math.Max(npcs[target.A].BarHoldUntilMs, until);
-                break;
-            case TargetKind.Traversal:
-                if (_ctx.State.TraversalNpcs.TryGetValue((target.A, target.B), out var tn))
-                    tn.BarHoldUntilMs = Math.Max(tn.BarHoldUntilMs, until);
-                break;
-            case TargetKind.Player:
-                if (target.A >= 1 && target.A <= Constants.MaxPlayers)
-                    _ctx.State.Players[target.A].BarHoldUntilMs = Math.Max(_ctx.State.Players[target.A].BarHoldUntilMs, until);
-                break;
-        }
     }
 
     /// <summary>Delayed death: hold a killed entity's sprite in place until its killing spell bolt lands, so the

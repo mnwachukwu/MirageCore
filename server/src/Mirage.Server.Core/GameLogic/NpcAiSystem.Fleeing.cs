@@ -46,21 +46,16 @@ public sealed partial class NpcAiSystem : GameSystem
         var grid = WorldCoordHelper.BuildMapGrid(_world.Maps, mapNum);
         var (npcWX, npcWY) = grid.CenterToWorld(mn.X, mn.Y);
         var tw = grid.ToWorldRelative(targetMap, targetX, targetY);
-        int spd = _world.Npcs[mn.Num].Spd;                       // capture before the step — a native-to-guest cross zeroes mn.Num
-        bool running = NpcCanRun(mapNum, mn);
+        int moveSpeed = _world.Npcs[mn.Num].MoveSpeed;                       // capture before the step — a native-to-guest cross zeroes mn.Num
+        const bool running = true;
         mn.MoveType = running ? MovementType.Running : MovementType.Walking;
-        // Spend BEFORE the step so a native-to-guest seam cross carries the cost onto the new guest via
-        // NativeNpcCrossBorder; a cornered NPC gets it back.
-        int spBefore = mn.Sp;
-        if (running) mn.Sp = Math.Max(mn.Sp - NpcRunSpDrain(mapNum), 0);
         if (!TryFleeStepAwayFrom(mapNum, slot, mn, npcWX, npcWY, tw))
         {
-            mn.Sp = spBefore;
             mn.MoveType = MovementType.Walking;
             return;
         }
         mn.MoveType = MovementType.Walking;
-        mn.NextMoveMs = now + (long)MathF.Round(running ? MovementFormulas.NpcRunMsPerTile(spd) : MovementFormulas.NpcWalkMsPerTile);
+        mn.NextMoveMs = now + (long)MathF.Round(running ? MovementFormulas.NpcRunMsPerTile(moveSpeed) : MovementFormulas.NpcWalkMsPerTile);
     }
 
     private static Direction OppositeDir(Direction d) => d switch

@@ -69,9 +69,6 @@ public class MapTransitionMessageOrderTests
         p.Map = From;
         p.X = 5;
         p.Y = 5;
-        p.Level = level;
-        p.MaxHp = 100;
-        p.Hp = 100;                                        // full HP => no blood trail during the move
         p.PkExpiryUtc = isPk ? long.MaxValue : 0;
         world.MapObservers[From].Add(Idx);
         return (move, chat);
@@ -99,7 +96,7 @@ public class MapTransitionMessageOrderTests
             ServerStrings.MovementSystem_LeaveArena,
             ServerStrings.MapGreeting_JoinSay,
             ServerStrings.MovementSystem_EnterSafeBase,
-            ServerStrings.MovementSystem_EnterSafeNonPk,
+            ServerStrings.MovementSystem_EnterSafeNonPk
         }));
     }
 
@@ -116,7 +113,7 @@ public class MapTransitionMessageOrderTests
             ServerStrings.MovementSystem_LeaveSafeNonPk,
             ServerStrings.MapGreeting_JoinSay,
             ServerStrings.MovementSystem_EnterArenaBase,
-            ServerStrings.MovementSystem_EnterArenaPvp,
+            ServerStrings.MovementSystem_EnterArenaPvp
         }));
     }
 
@@ -151,24 +148,7 @@ public class MapTransitionMessageOrderTests
         Assert.That(chat.Keys, Is.EqualTo(new[]
         {
             ServerStrings.MapGreeting_LeaveSay,
-            ServerStrings.MapGreeting_JoinSay,
-        }));
-    }
-
-    /// <summary>Under level 10 a player is outside PvP entirely, so only the base lines are spoken — and
-    /// the order still holds with the follow-up lines absent.</summary>
-    [Test]
-    public void BelowLevelTen_SkipsThePvpNotesAndKeepsTheOrder()
-    {
-        var (move, chat) = Setup(MapMoral.Arena, MapMoral.Safe, isPk: false, level: 9);
-        move.PlayerWarp(Idx, To, 5, 5);
-
-        Assert.That(chat.Keys, Is.EqualTo(new[]
-        {
-            ServerStrings.MapGreeting_LeaveSay,
-            ServerStrings.MovementSystem_LeaveArena,
-            ServerStrings.MapGreeting_JoinSay,
-            ServerStrings.MovementSystem_EnterSafeBase,
+            ServerStrings.MapGreeting_JoinSay
         }));
     }
 

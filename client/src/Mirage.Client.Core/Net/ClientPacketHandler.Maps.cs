@@ -285,8 +285,8 @@ public sealed partial class ClientPacketHandler : IClientEvents
             foreach (var n in p.Npcs)
             {
                 if (!SlotValidation.IsValidNpcSlot(n.Slot)) continue;
-                npcs[n.Slot].ApplySnapshot(n.Num, n.Hp, n.MaxHp, n.Mp, n.MaxMp, n.Sp, n.MaxSp,
-                                            n.X, n.Y, n.Dir, n.Layer, n.MsSinceCombat, n.HasTarget, nowMs);
+                npcs[n.Slot].ApplySnapshot(n.Num, n.X, n.Y, n.Dir, n.Layer,
+                                            n.MsSinceCombat, n.HasTarget, nowMs);
             }
         }
         // The center map's snapshot is the final packet of the join sequence — it ends the

@@ -60,21 +60,6 @@ public class NpcTargetAcquisitionTests
         Assert.That(winner, Is.EqualTo(6));
     }
 
-    [Test]
-    public void FindNoticeablePlayer_KeepsLowestLevelOverCloserHigherLevel()
-    {
-        var world = new GameWorld();
-        var pm = new PlayerManager();
-        var mob = PlaceNpc(world, ActorSlot, num: 1, ActorX, ActorY);
-        RegisterPlayer(world, pm, index: 5, ActorX, ActorY + 4, level: 2);   // FAR,  LOWER level
-        RegisterPlayer(world, pm, index: 6, ActorX, ActorY + 2, level: 9);   // NEAR, higher level
-
-        int winner = (int)InvokePrivate(NewAi(world, pm), "FindNoticeablePlayer", Map, mob, AggroRange);
-
-        // Distance is only a tie-break: the intentional lowest-level "prey on the weak" rule still wins.
-        Assert.That(winner, Is.EqualTo(5));
-    }
-
     // ── Harness helpers ───────────────────────────────────────────────────────
     // The Find* scanners dereference only _world and _pm, so the remaining constructor
     // dependencies (dispatcher, combat, movement, spawn, items) are safely null here.
@@ -87,7 +72,6 @@ public class NpcTargetAcquisitionTests
         mn.Num = num;
         mn.X = x;
         mn.Y = y;
-        mn.Hp = 100;
         mn.Target = target;
         return mn;
     }
@@ -102,7 +86,6 @@ public class NpcTargetAcquisitionTests
         pc.Map = Map;
         pc.X = x;
         pc.Y = y;
-        pc.Level = level;
         if (pk) pc.PkExpiryUtc = long.MaxValue;
         world.MapObservers[Map].Add(index);   // acquisition scans MapObservers; unobserved players are invisible
     }

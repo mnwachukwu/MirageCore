@@ -310,27 +310,6 @@ public class InputProcessorTests
         });
     }
 
-    // Sprinting costs SP and the CLIENT picks the movement type it asks for, so an empty bar downgrades the
-    // request to a walk unless the server's cost exemption is mirrored here.
-    [Test]
-    public void GodMode_SprintsOnAnEmptyStaminaBar()
-    {
-        static MovementType? Sprint(bool godMode)
-        {
-            var (s, t, sender) = Setup(5, 5);
-            s.Me.GodMode = godMode;
-            s.Me.Sp = 0;
-            InputProcessor.Process(new InputSnapshot { Move = Direction.Down, Running = true }, s, sender, 0);
-            return t.Sent.OfType<PlayerMovePacket>().SingleOrDefault()?.Movement;
-        }
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(Sprint(godMode: false), Is.EqualTo(MovementType.Walking), "an empty bar downgrades an ordinary sprint");
-            Assert.That(Sprint(godMode: true), Is.EqualTo(MovementType.Running), "god mode keeps running on nothing");
-        });
-    }
-
     // One step south into a freshly placed obstacle. True only when the client both predicted the step AND
     // sent it — a prediction that moves the sprite without telling the server would rubber-band.
     private static bool StepsSouth(Action<ClientState> placeObstacle, bool godMode)

@@ -385,7 +385,6 @@ public sealed partial class PacketHandler
         // reordering what a world offers must not restyle the characters already made from it.
         chr.Sprite = offered[appearance].Sprite;
         chr.SpriteSheet = offered[appearance].SpriteSheet;
-        chr.Level = 1;
         StartingLoadout.Grant(chr, _world.StartingItems, _world.Items);
         chr.Map = (short)_config.Spawn.Map;
         chr.X = _config.Spawn.X;

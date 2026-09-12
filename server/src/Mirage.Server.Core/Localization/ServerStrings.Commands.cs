@@ -23,11 +23,6 @@ public static partial class ServerStrings
 
     // ── Admin commands ────────────────────────────────────────────────────────
     public const string AdminCommand_PlayerInfo = nameof(AdminCommand_PlayerInfo);
-    public const string AdminCommand_StatsHeader = nameof(AdminCommand_StatsHeader);
-    public const string AdminCommand_StatsLevel = nameof(AdminCommand_StatsLevel);
-    public const string AdminCommand_StatsVitals = nameof(AdminCommand_StatsVitals);
-    public const string AdminCommand_StatsAttributes = nameof(AdminCommand_StatsAttributes);
-    public const string AdminCommand_StatsChances = nameof(AdminCommand_StatsChances);
     public const string AdminCommand_Location = nameof(AdminCommand_Location);
     public const string AdminCommand_GodModeOn = nameof(AdminCommand_GodModeOn);
     public const string AdminCommand_GodModeOff = nameof(AdminCommand_GodModeOff);

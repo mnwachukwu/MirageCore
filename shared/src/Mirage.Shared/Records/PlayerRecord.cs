@@ -1,3 +1,4 @@
+using Mirage.Shared.Extensibility;
 using System.Text.Json.Serialization;
 
 namespace Mirage.Shared.Records;
@@ -26,15 +27,12 @@ public sealed class PlayerRecord
     /// Saves ~100 string allocations across the server's hot paths.</summary>
     [JsonIgnore]
     public string TrimmedName => _trimmedName ??= _name.TrimEnd();
-    public int Class { get; set; }
     public int Sprite { get; set; }
     /// <summary>Which sprite sheet <see cref="Sprite"/> is a row of. Copied from the class at creation
     /// alongside the row, so re-arting a class never restyles a character already made.
     ///
     /// <para>Always written, including when it is 0.</para></summary>
     public int SpriteSheet { get; set; }
-    public int Level { get; set; }
-    public long Exp { get; set; }
     /// <summary>Cumulative seconds this character has been online (across all sessions), persisted. The active
     /// session's not-yet-saved time is added live at readout (see <c>ServerPlayer</c>); the account total is
     /// the sum across the account's characters. Surfaced by <c>/played</c> and <c>/info</c>.</summary>
@@ -56,17 +54,27 @@ public sealed class PlayerRecord
     /// <see cref="Dead"/>.</summary>
     public long RespawnReadyUtc { get; set; }
 
-    // Vitals (persistent)
-    public int Hp { get; set; }
-    public int Mp { get; set; }
-    public int Sp { get; set; }
+    /// <summary>Everything a game hangs on this character: its stats, its currencies, its flags, its
+    /// standing with whoever cares. Persisted whole, so a game adds a concept without touching the save
+    /// format or this record.
+    ///
+    /// <para><b>Core never reads a key out of it.</b> The one exception is deliberate and lives beside
+    /// this: <see cref="MoveSpeed"/> is a real property rather than a bag key, because movement is the
+    /// one rule the engine performs itself and it cannot be performed against a name only the game
+    /// knows.</para></summary>
+    public AttributeBag Attributes { get; set; } = new();
 
-    // Stats
-    public int Str { get; set; }
-    public int Def { get; set; }
-    public int Spd { get; set; }
-    public int Int { get; set; }
-    public int Points { get; set; }
+    /// <summary>How fast this body moves, as a pure additive bonus over the speed everything starts
+    /// with. 0 is the baseline, which is what a world that never sets it gets.
+    ///
+    /// <para><b>Core's only speed number, and it is not a stat.</b> Movement is the one thing the engine
+    /// itself performs on every body, so the pace has to live somewhere Core can read without knowing
+    /// what a game calls its attributes. A game that derives speed from agility, a mount, a road, or a
+    /// status effect writes the result here; Core never asks where the number came from.</para>
+    ///
+    /// <para>It is also what the server bills a move against, so it is authoritative rather than
+    /// cosmetic: a client claiming a faster pace than this allows is refused a step.</para></summary>
+    public int MoveSpeed { get; set; }
 
     // Equipment slots: 1-based inventory index of equipped item; 0 = not equipped
     public int ArmorSlot { get; set; }
@@ -125,9 +133,6 @@ public sealed class PlayerRecord
     public long HomeUsedAtUtc { get; set; }
 
     // Runtime fields (not persisted — populated by server/client during play)
-    [JsonIgnore] public int MaxHp { get; set; }
-    [JsonIgnore] public int MaxMp { get; set; }
-    [JsonIgnore] public int MaxSp { get; set; }
     [JsonIgnore] public float XOffset { get; set; }
     [JsonIgnore] public float YOffset { get; set; }
     /// <summary>Slide time left over when a tile finished part-way through a frame, carried into the next
@@ -176,16 +181,6 @@ public sealed class PlayerRecord
     /// <summary>Client-only: the guild's 1-based seasonal standing (leaderboard position; 0 = unranked), shown
     /// Wire-fed; never persisted.</summary>
 
-    // Animated display values for world-space bars (-1f = uninitialized → snap on first Tick)
-    [JsonIgnore] public float DispHp { get; set; }
-    [JsonIgnore] public float DispMp { get; set; }
-    [JsonIgnore] public float DispSp { get; set; }
-    // Snap flag: set on death (Hp=0) so bar resets on respawn, same rule as HudPanel
-    [JsonIgnore] public bool SnapVitals { get; set; }
-    // Client-only: while TickCount64 < this, the HP bar holds instead of animating, to stay in sync with an
-    // in-flight spell bolt (hit-timing deferral). 0 = not holding.
-    [JsonIgnore] public long BarHoldUntilMs { get; set; }
-
     // Chat bubble (client-side render state). Head is anchored above the speaker at full alpha
     // until ChatBubbleEndMs; the tick pass then demotes it to a drifter (rise + fade over BubbleFloatMs).
     [JsonIgnore] public string? ChatBubbleText { get; set; }
@@ -196,7 +191,6 @@ public sealed class PlayerRecord
 
     public PlayerRecord()
     {
-        DispHp = DispMp = DispSp = -1f;
         for (int i = 1; i <= Constants.MaxInv; i++)
             Inv[i] = new PlayerInvSlot();
     }
@@ -211,6 +205,7 @@ public sealed class PlayerRecord
     public PlayerRecord Clone()
     {
         var c = (PlayerRecord)MemberwiseClone();   // all scalars; array/list fields still shared after this
+        c.Attributes = Attributes.Clone();
         c.Spell = (int[])Spell.Clone();
         c.Inv = new PlayerInvSlot[Inv.Length];
         for (int i = 0; i < Inv.Length; i++)

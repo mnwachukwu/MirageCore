@@ -166,7 +166,6 @@ public class NpcPathCacheTests
         var (ai, world) = NewWorldWithBridge();
         var mn = world.MapNpcs[Map, 1];
         mn.Num = 1;
-        mn.Hp = 100;
 
         Assert.Multiple(() =>
         {
@@ -375,7 +374,6 @@ public class NpcPathCacheTests
             blocker.Num = 2;
             blocker.X = 8;
             blocker.Y = 4;
-            blocker.Hp = 100;  // on the (8,3) ring
         }
 
         var ai = new NpcAiSystem(world, pm, null!, null!, null!, null!);

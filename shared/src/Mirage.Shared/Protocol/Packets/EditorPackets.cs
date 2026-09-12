@@ -166,7 +166,6 @@ public sealed record EditorSaveNpcPacket : IPacket
     [JsonPropertyName("def")] public int Def { get; init; }
     [JsonPropertyName("spd")] public int Spd { get; init; }
     [JsonPropertyName("int")] public int Int { get; init; }
-    [JsonPropertyName("extraHp")] public int ExtraHp { get; init; }
     [JsonPropertyName("isBoss")] public bool IsBoss { get; init; }
     [JsonPropertyName("emitsLight")] public bool EmitsLight { get; init; }
     [JsonPropertyName("light")] public LightSpec Light { get; init; }

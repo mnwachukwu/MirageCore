@@ -78,8 +78,6 @@ public sealed class SocialSystem : GameSystem
             Login = login,
             Online = true,
             CharName = sp.Char.TrimmedName,
-            CharClass = sp.Char.Class,
-            CharLevel = sp.Char.Level,
         };
     }
 

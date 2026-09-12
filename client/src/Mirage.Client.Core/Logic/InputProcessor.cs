@@ -227,7 +227,7 @@ public static class InputProcessor
             // confirms it, while a self move-correction (rejection) reverts us via a reload.
             int fromMap = state.CenterMapNum;
             int fromRev = state.Map.Revision;
-            var crossMovement = (input.Running && (me.Sp > 0 || me.GodMode)) ? MovementType.Running : MovementType.Walking;
+            var crossMovement = input.Running ? MovementType.Running : MovementType.Walking;
             me.Dir = dir.Value;
             sender.SendPlayerMove(dir.Value, crossMovement);
 
@@ -251,7 +251,7 @@ public static class InputProcessor
             return;
         }
 
-        var movement = (input.Running && (me.Sp > 0 || me.GodMode)) ? MovementType.Running : MovementType.Walking;
+        var movement = input.Running ? MovementType.Running : MovementType.Walking;
         sender.SendPlayerMove(dir.Value, movement);
         me.PredictMove(dir.Value, nx, ny, movement, newLayer);
     }

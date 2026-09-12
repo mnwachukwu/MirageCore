@@ -250,6 +250,10 @@ public static class EconomyFormulas
     }
 
     // ── Sinks ────────────────────────────────────────────────────────────────
+
+    /// <summary>Gold to set your spawn point at an inn. Flat, like every other price here.</summary>
+    public static long InnSpawnCost() => Constants.SpawnCostMinimum;
+
     // Every one of these was a flat constant sized for the early game: 1,000 to found a guild, 1,000 to
     // declare a war, 1,000 to challenge a territory, 10 to send mail. Measured against income they are a
     // meaningful commitment at level 20 (a guild cost a fifth of the whole low band) and free by level
@@ -262,10 +266,7 @@ public static class EconomyFormulas
     // wealthy the members are, so a level-5 guild of level-20 players and one of level-255 players would
     // otherwise pay the same for a war.
 
-    /// <summary>Setting your spawn point at an inn.  A convenience bought repeatedly, so it stays small.</summary>
-    private const double InnSpawnShare = 0.02;
-
-    // ── Why the guild and mail costs are NOT scaled ──────────────────────────
+    // ── Why these costs are flat ────────────────────────────────────────
     // They were, briefly, and it was a hole. Every one of them is paid by whoever CLICKS: a guild has its
     // level-1 alt declare the war, or mails the goods through a mule, and BandScale floors at 1.0 — so a
     // 906,226-gold declaration costs 1,000 and a 230,026-gold parcel costs 10. Scaling a cost by the actor's
@@ -276,16 +277,6 @@ public static class EconomyFormulas
     // its price to one member's level is arbitrary even without the exploit. They stay flat, and the guild
     // economy stays an unscaled sub-economy — which is why the vault INCOME side is flat too, rather than
     // one half of it scaling away from the other.
-    //
-    // The inn's set-spawn cost DOES still scale, and that is not an inconsistency: you can only set your
-    // own spawn point, so there is no one else to route it through.
-
-    private static long Sink(int level, double share, long floor) =>
-        Math.Max(floor, (long)Math.Round(ExpectedGoldPerLevel(level) * share, MidpointRounding.AwayFromZero));
-
-    /// <summary>Gold to set your spawn point at an inn, for a player of <paramref name="level"/>.  The one
-    /// sink still keyed on level, because it is the one nobody else can pay on your behalf.</summary>
-    public static long InnSpawnCost(int level) => Sink(level, InnSpawnShare, Constants.SpawnCostMinimum);
 
     // ── Postage ──────────────────────────────────────────────────────────────
     // Two flat parts plus a share of what is in the parcel.

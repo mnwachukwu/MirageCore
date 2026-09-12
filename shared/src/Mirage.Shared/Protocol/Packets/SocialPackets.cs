@@ -18,8 +18,6 @@ public sealed record SocialEntry
     [JsonPropertyName("lastSeenUtc")] public long LastSeenUtc { get; init; }
     /// <summary>The account's active character when online, else its last-active character snapshot.</summary>
     [JsonPropertyName("charName")] public string CharName { get; init; } = "";
-    [JsonPropertyName("charClass")] public int CharClass { get; init; }
-    [JsonPropertyName("charLevel")] public int CharLevel { get; init; }
     /// <summary>Guild rank — set only on guild-roster rows; always <see cref="GuildRank.None"/> on a
     /// friends/ignore row (those lists are guild-agnostic).</summary>
     [JsonPropertyName("rank")] public GuildRank Rank { get; init; }

@@ -31,8 +31,7 @@ public sealed class WorldIssueRowViewModel(WorldIssue issue, string ownerName, A
         WorldRecordKind.Shop => EditorStrings.WorldCheck_KindShop,
         WorldRecordKind.Spell => EditorStrings.WorldCheck_KindSpell,
         WorldRecordKind.Quest => EditorStrings.WorldCheck_KindQuest,
-        WorldRecordKind.Conversation => EditorStrings.WorldCheck_KindConversation,
-        _ => EditorStrings.WorldCheck_KindClass,
+        _ => EditorStrings.WorldCheck_KindConversation,
     });
 
     private static string KeyFor(WorldIssueKind kind) => kind switch

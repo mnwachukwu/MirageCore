@@ -1,4 +1,5 @@
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Records;
 
 namespace Mirage.Server.Core.World;
@@ -28,6 +29,11 @@ public sealed class GameWorld
     /// <summary>What a brand-new character is created holding, from `world.json`. Empty in a world that
     /// authored none, which is a world where everyone starts with nothing.</summary>
     public IReadOnlyList<StartingItem> StartingItems { get; set; } = [];
+
+    /// <summary>The attribute keys the loaded game declared, and their wire numbering. Empty when no
+    /// game module is loaded, which means no attribute ever reaches a client — the fail-closed answer,
+    /// and the one Core alone gives.</summary>
+    public AttributeSchema Attributes { get; set; } = AttributeSchema.Empty;
 
     public MapRecord[] Maps { get; }
     public TempTileState[] TempTiles { get; }
@@ -394,38 +400,6 @@ public sealed class GameWorld
     /// so interiors can be sheltered without touching every effect site.</summary>
     public WeatherType WeatherOn(int map) => Weather;
 
-    /// <summary>NPC max HP for the CURRENT conditions: the pure formula, composed with the Night boost
-    /// (<see cref="Constants.NpcNightHpMultiplier"/>) and the Snow max-HP reduction
-    /// (<see cref="Constants.WeatherSnowMaxHpMultiplier"/>). ALL server-side max-HP derivations route
-    /// through here so the boost/reduction is consistent everywhere (spawn, packets, regen clamp, resets,
-    /// the EXP damage-share denominator, heal clamps). The editor keeps calling the pure
-    /// <see cref="StatFormulas.GetNpcMaxHp(NpcRecord)"/> (it has no time/weather concept).</summary>
-    public int EffectiveNpcMaxHp(NpcRecord npc)
-    {
-        double m = 1.0;
-        if (this.TimePhase == TimePhase.Night) m *= Constants.NpcNightHpMultiplier;
-        if (this.Weather == WeatherType.Snow) m *= Constants.WeatherSnowMaxHpMultiplier;
-        return (int)Math.Round(StatFormulas.GetNpcMaxHp(npc) * m, MidpointRounding.AwayFromZero);
-    }
-
-    /// <summary>NPC max MP for current conditions. Only Snow affects MP (-20%); Night does not.</summary>
-    public int EffectiveNpcMaxMp(NpcRecord npc)
-    {
-        int baseMax = StatFormulas.GetNpcMaxMp(npc);
-        return this.Weather == WeatherType.Snow
-            ? (int)Math.Round(baseMax * Constants.WeatherSnowMaxMpMultiplier, MidpointRounding.AwayFromZero)
-            : baseMax;
-    }
-
-    /// <summary>NPC max SP for current conditions. Only Snow affects SP (-20%); Night does not.</summary>
-    public int EffectiveNpcMaxSp(NpcRecord npc)
-    {
-        int baseMax = StatFormulas.GetNpcMaxSp(npc);
-        return this.Weather == WeatherType.Snow
-            ? (int)Math.Round(baseMax * Constants.WeatherSnowMaxSpMultiplier, MidpointRounding.AwayFromZero)
-            : baseMax;
-    }
-
     // PlayersOnMap[mapNum] — true when at least one player is on the map (skip NPC AI for empty maps)
     public bool[] PlayersOnMap { get; }
 
@@ -467,7 +441,6 @@ public sealed class GameWorld
         MapObservers = Fill<HashSet<int>>(Limits.Maps);
         PlayersOnMap = new bool[Limits.Maps + 1];
         _nextItemSlotId = new int[Limits.Maps + 1];
-
 
         // NPC slot dimension is 1-based: index 0 left as null (never accessed), 1..MaxMapNpcs initialized.
         MapNpcs = new MapNpcRecord[Limits.Maps + 1, Constants.MaxMapNpcs + 1];
@@ -601,13 +574,13 @@ public sealed class GameWorld
         for (int s = 1; s <= Constants.MaxMapNpcs; s++)
         {
             var n = MapNpcs[mapNum, s];
-            if (n.Num > 0 && n.Hp > 0 && LayerMatches(n, layer) && NpcFootprintCoversLocal(n, x, y)) return (n, s);
+            if (n.Num > 0 && LayerMatches(n, layer) && NpcFootprintCoversLocal(n, x, y)) return (n, s);
         }
         var guests = MapTraversalNpcs[mapNum];
         for (int i = 0; i < guests.Count; i++)
         {
             var t = guests[i];
-            if (t.Num > 0 && t.Hp > 0 && LayerMatches(t, layer) && NpcFootprintCoversLocal(t, x, y)) return (t, 0);
+            if (t.Num > 0 && LayerMatches(t, layer) && NpcFootprintCoversLocal(t, x, y)) return (t, 0);
         }
         return null;
     }

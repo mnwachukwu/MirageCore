@@ -31,8 +31,8 @@ public sealed record PartyRequestNotifyPacket : IPacket
 }
 
 /// <summary>
-/// Snapshot of the local player's partner — pushed to the partner whenever vitals, level, map
-/// position, or combat state changes.  Empty <see cref="Name"/> means "you have no partner; tear
+/// Snapshot of the local player's partner — pushed to the partner whenever their map position or
+/// combat state changes.  Empty <see cref="Name"/> means "you have no partner; tear
 /// down the overlay" and is sent on /join → /leave/disband.
 /// </summary>
 public sealed record PartyVitalsPacket : IPacket
@@ -40,13 +40,6 @@ public sealed record PartyVitalsPacket : IPacket
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.PartyVitals;
     [JsonPropertyName("index")] public int Index { get; init; }
     [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("level")] public int Level { get; init; }
-    [JsonPropertyName("hp")] public int Hp { get; init; }
-    [JsonPropertyName("maxHp")] public int MaxHp { get; init; }
-    [JsonPropertyName("mp")] public int Mp { get; init; }
-    [JsonPropertyName("maxMp")] public int MaxMp { get; init; }
-    [JsonPropertyName("sp")] public int Sp { get; init; }
-    [JsonPropertyName("maxSp")] public int MaxSp { get; init; }
     [JsonPropertyName("mapNum")] public int MapNum { get; init; }
     [JsonPropertyName("x")] public int X { get; init; }
     [JsonPropertyName("y")] public int Y { get; init; }

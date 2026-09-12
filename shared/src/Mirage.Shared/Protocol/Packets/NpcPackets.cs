@@ -13,13 +13,10 @@ public sealed record SendNpcsPacket : IPacket
         [property: JsonPropertyName("name")] string Name,
         [property: JsonPropertyName("sprite")] int Sprite,
         // Footprint size class (1/2/3); the client renders the NPC at Size*32 px and treats it as an
-        // SxS-tile body. Ships with the static template like Sprite/Spd.
+        // SxS-tile body. Ships with the static template, like Sprite.
         [property: JsonPropertyName("size")] int Size,
         [property: JsonPropertyName("behavior")] NpcBehavior Behavior,
         [property: JsonPropertyName("spawnSecs")] int SpawnSecs,
-        // SPD is sent with the static template (not the per-tick snapshot) so the client can scale a running
-        // NPC's move-slide to match the server's SPD-paced step cadence (MovementFormulas.NpcRunMsPerTile).
-        [property: JsonPropertyName("spd")] int Spd,
         [property: JsonPropertyName("emitsLight")] bool EmitsLight,
         [property: JsonPropertyName("light")] LightSpec Light,
         // Keeper-shop KIND assigned to this NPC number (recomputed from ShopRecord.Keeper on shop edits):
@@ -55,9 +52,6 @@ public sealed record NpcSpawnPacket : IPacket
     [JsonPropertyName("x")] public int X { get; init; }
     [JsonPropertyName("y")] public int Y { get; init; }
     [JsonPropertyName("dir")] public Direction Dir { get; init; }
-    [JsonPropertyName("maxHp")] public int MaxHp { get; init; }
-    [JsonPropertyName("maxMp")] public int MaxMp { get; init; }
-    [JsonPropertyName("maxSp")] public int MaxSp { get; init; }
     // Two-layer world: the logical layer the NPC spawned on (Ground default; a bridge-top spawn pin or a guest
     // returning home onto a fringe tile can spawn on Fringe). Omitted on the wire when Ground.
     [JsonPropertyName("layer")]
@@ -74,12 +68,6 @@ public sealed record MapNpcsPacket : IPacket
     public sealed record MapNpcData(
         [property: JsonPropertyName("slot")] int Slot,
         [property: JsonPropertyName("num")] int Num,
-        [property: JsonPropertyName("hp")] int Hp,
-        [property: JsonPropertyName("maxHp")] int MaxHp,
-        [property: JsonPropertyName("mp")] int Mp,
-        [property: JsonPropertyName("maxMp")] int MaxMp,
-        [property: JsonPropertyName("sp")] int Sp,
-        [property: JsonPropertyName("maxSp")] int MaxSp,
         [property: JsonPropertyName("x")] int X,
         [property: JsonPropertyName("y")] int Y,
         [property: JsonPropertyName("dir")] Direction Dir,
@@ -114,18 +102,11 @@ public sealed record TraversalNpcPacket : IPacket
     // True when CurrentMapNum changed via a contiguous one-tile BORDER step (not a warp/teleport or a
     // fresh appearance): the client slides the sprite across the seam in Dir instead of popping it.
     [JsonPropertyName("stepped")] public bool Stepped { get; init; }
-    [JsonPropertyName("hp")] public int Hp { get; init; }
-    [JsonPropertyName("maxHp")] public int MaxHp { get; init; }
     // int.MaxValue = not in combat.  Otherwise ms elapsed since the NPC entered combat — see
     // SendHpPacket.MsSinceCombat for the rationale.
     [JsonPropertyName("combatMs")] public int MsSinceCombat { get; init; } = int.MaxValue;
     [JsonPropertyName("hasTarget")] public bool HasTarget { get; init; }
     [JsonPropertyName("attacking")] public bool Attacking { get; init; }
-    // Combat extras: when Damage != 0 the client floats a damage number at (X,Y) on CurrentMapNum;
-    // Dead = true means the player landed the kill blow — the client removes the guest after the number.
-    [JsonPropertyName("damage")] public int Damage { get; init; }
-    [JsonPropertyName("isCrit")] public bool IsCrit { get; init; }
-    [JsonPropertyName("dead")] public bool Dead { get; init; }
     // Two-layer world: the guest's logical layer, carried across the seam so an observer renders it on the
     // correct layer; omitted on the wire when Ground.
     [JsonPropertyName("layer")]
@@ -155,11 +136,6 @@ public sealed record UpdateNpcPacket : IPacket
     [JsonPropertyName("spawnSecs")] public int SpawnSecs { get; init; }
     [JsonPropertyName("range")] public int Range { get; init; }
     [JsonPropertyName("drops")] public List<NpcDrop>? Drops { get; init; }
-    [JsonPropertyName("str")] public int Str { get; init; }
-    [JsonPropertyName("def")] public int Def { get; init; }
-    [JsonPropertyName("spd")] public int Spd { get; init; }
-    [JsonPropertyName("int")] public int Int { get; init; }
-    [JsonPropertyName("extraHp")] public int ExtraHp { get; init; }
     [JsonPropertyName("isBoss")] public bool IsBoss { get; init; }
     [JsonPropertyName("emitsLight")] public bool EmitsLight { get; init; }
     [JsonPropertyName("light")] public LightSpec Light { get; init; }

@@ -47,10 +47,6 @@ public sealed class WeatherSystem : GameSystem
         _timerFiresAtMs = (weather == WeatherType.Clear && remainingMs <= 0)
             ? now + RollIdleGapMs()                 // fresh install: start a fresh idle gap
             : now + Math.Max(0, remainingMs);       // resume the paused countdown
-        // If we booted into Snow, reduce any already-live entities. (None are spawned this early, but this
-        // keeps the invariant correct and is safe against future reordering.)
-        if (weather == WeatherType.Snow)
-            ApplySnowVitalTransition(WeatherType.Clear, WeatherType.Snow);
     }
 
     /// <summary>Called every AI tick (500 ms).  Fires the live timer when its deadline passes.</summary>
@@ -99,7 +95,6 @@ public sealed class WeatherSystem : GameSystem
         var old = _world.Weather;
         _world.Weather = type;
         _timerFiresAtMs = Environment.TickCount64 + durationMs;
-        ApplySnowVitalTransition(old, type);
         _dispatcher.SendToAll(PacketBuilder.Weather(type));
         // Admin-forced: announce the unnatural shift BEFORE the weather's arrival line.
         if (adminName != null) AnnounceUnnaturalShift(adminName);
@@ -110,7 +105,6 @@ public sealed class WeatherSystem : GameSystem
     {
         var old = _world.Weather;
         _world.Weather = WeatherType.Clear;
-        ApplySnowVitalTransition(old, WeatherType.Clear);
         _dispatcher.SendToAll(PacketBuilder.Weather(WeatherType.Clear));
         // Admin-forced: announce the unnatural shift BEFORE the "skies clear" line.
         if (adminName != null) AnnounceUnnaturalShift(adminName);
@@ -163,84 +157,6 @@ public sealed class WeatherSystem : GameSystem
             new ChatMetadata(GameColor.Yellow, ChatChannel.Notice));
         _dispatcher.SendLocalizedChatToAdmins(ServerStrings.Weather_UnnaturalShiftBy,
             new ChatMetadata(GameColor.Yellow, ChatChannel.Notice), ("Admin", adminName));
-    }
-
-    // ── Snow max-vital transition ───────────────────────────────────────────────
-
-    /// <summary>When Snow-ness flips, rescale every live NPC's and player's current vitals by the Snow
-    /// factor's ratio so HP%/MP%/SP% stay constant (no overfill, no gap), then re-sync clients. Night and
-    /// Snow compose independently: the Night HP factor is common to both endpoints of a Snow flip and
-    /// cancels, so the ratio here is purely the Snow factor. Mirrors
-    /// <see cref="TimeOfDaySystem"/>'s ApplyNightHpTransition, generalized to MP/SP and players.</summary>
-    private void ApplySnowVitalTransition(WeatherType oldW, WeatherType newW)
-    {
-        bool wasSnow = oldW == WeatherType.Snow;
-        bool isSnow = newW == WeatherType.Snow;
-        if (wasSnow == isSnow) return;
-
-        double hpRatio = SnowFactor(isSnow, Constants.WeatherSnowMaxHpMultiplier) / SnowFactor(wasSnow, Constants.WeatherSnowMaxHpMultiplier);
-        double mpRatio = SnowFactor(isSnow, Constants.WeatherSnowMaxMpMultiplier) / SnowFactor(wasSnow, Constants.WeatherSnowMaxMpMultiplier);
-        double spRatio = SnowFactor(isSnow, Constants.WeatherSnowMaxSpMultiplier) / SnowFactor(wasSnow, Constants.WeatherSnowMaxSpMultiplier);
-
-        // NPCs: native slots + traversal guests on every map; re-sync each observed map's snapshot.
-        for (int m = 1; m <= _world.Limits.Maps; m++)
-        {
-            bool anyNative = false;
-            for (int s = 1; s <= Constants.MaxMapNpcs; s++)
-            {
-                var mn = _world.MapNpcs[m, s];
-                if (mn.Num > 0)
-                {
-                    ScaleNpcVitalsForSnow(mn, hpRatio, mpRatio, spRatio);
-                    anyNative = true;
-                }
-            }
-            var guests = _world.MapTraversalNpcs[m];
-            for (int i = 0; i < guests.Count; i++)
-                if (guests[i].Num > 0) ScaleNpcVitalsForSnow(guests[i], hpRatio, mpRatio, spRatio);
-            if (anyNative && _world.MapObservers[m].Count > 0)
-                SendToMap(_world, m, JoinLeaveSystem.BuildMapNpcs(_world, m));
-        }
-
-        // Players: recompute the weather-adjusted max, scale current to the new max, re-sync bars.
-        for (int i = 1; i <= _pm.Slots; i++)
-        {
-            if (!_pm[i].IsPlaying) continue;
-            var p = _pm[i].Char;
-            int oldMaxHp = p.MaxHp, oldMaxMp = p.MaxMp, oldMaxSp = p.MaxSp;
-            StatFormulas.RefreshPlayerMaxVitals(p, newW);
-            // HP keeps a >=1 floor (never scale a live player to 0); MP/SP may legitimately sit at 0.
-            if (oldMaxHp > 0) p.Hp = Math.Max(1, (int)Math.Round(p.Hp * (double)p.MaxHp / oldMaxHp, MidpointRounding.AwayFromZero));
-            p.Hp = Math.Min(p.Hp, p.MaxHp);
-            if (oldMaxMp > 0) p.Mp = (int)Math.Round(p.Mp * (double)p.MaxMp / oldMaxMp, MidpointRounding.AwayFromZero);
-            p.Mp = Math.Min(p.Mp, p.MaxMp);
-            if (oldMaxSp > 0) p.Sp = (int)Math.Round(p.Sp * (double)p.MaxSp / oldMaxSp, MidpointRounding.AwayFromZero);
-            p.Sp = Math.Min(p.Sp, p.MaxSp);
-        }
-    }
-
-    private static double SnowFactor(bool snowing, double snowMultiplier) => snowing ? snowMultiplier : 1.0;
-
-    /// <summary>Scale a live NPC's current HP/MP/SP and its damage-contribution ledgers by the Snow ratios.
-    /// Ledger scaling (by hpRatio) preserves aggro ordering and EXP damage-share fractions.
-    ///
-    /// <para>Current vitals are held to both ends: capped at the NPC's effective max for the weather in
-    /// force (<c>_world.Weather</c> already holds it by the time this runs), with a >= 1 floor on HP only —
-    /// MP and SP may sit at 0. Rounding away from zero overfills without the cap.</para></summary>
-    private void ScaleNpcVitalsForSnow(MapNpcRecord mn, double hpRatio, double mpRatio, double spRatio)
-    {
-        var npc = _world.Npcs[mn.Num];
-        mn.Hp = Math.Min(Math.Max(1, (int)Math.Round(mn.Hp * hpRatio, MidpointRounding.AwayFromZero)), _world.EffectiveNpcMaxHp(npc));
-        mn.Mp = Math.Min((int)Math.Round(mn.Mp * mpRatio, MidpointRounding.AwayFromZero), _world.EffectiveNpcMaxMp(npc));
-        mn.Sp = Math.Min((int)Math.Round(mn.Sp * spRatio, MidpointRounding.AwayFromZero), _world.EffectiveNpcMaxSp(npc));
-        var dmg = mn.DamageByPlayer;
-        for (int i = 0; i < dmg.Length; i++)
-            if (dmg[i] != 0) dmg[i] = (int)Math.Round(dmg[i] * hpRatio, MidpointRounding.AwayFromZero);
-        if (mn.DamageByNpc is { } list)
-        {
-            for (int i = 0; i < list.Count; i++)
-                list[i] = list[i] with { Damage = (int)Math.Round(list[i].Damage * hpRatio, MidpointRounding.AwayFromZero) };
-        }
     }
 
     // ── Rolls ────────────────────────────────────────────────────────────────────

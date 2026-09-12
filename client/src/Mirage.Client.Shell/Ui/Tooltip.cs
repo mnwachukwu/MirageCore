@@ -315,9 +315,7 @@ public static class Tooltip
     private static void BuildItemLines(ItemRecord item, PlayerInvSlot? slot, PlayerRecord? me,
         SpellRecord?[] spellDefs, ItemRecord?[] itemDefs, WeatherType weather)
     {
-        bool isEquip = ItemRecord.IsEquipment(item.Type);
-
-        if (isEquip && item.Durability > 0)
+        if (ItemRecord.IsEquipment(item.Type) && item.Durability > 0)
         {
             // A real inventory slot carries the item's actual wear; the cur/max readout is color-coded
             // by condition (white/yellow/red) exactly like the equipment panel and repair panel, so a
@@ -327,92 +325,12 @@ public static class Tooltip
             _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_Durability), $"{dur}/{item.Durability}", UiHelper.DurabilityColor(dur, item.Durability)));
         }
 
-        int meStr = me?.Str ?? 0;
-        int meDef = me?.Def ?? 0;
-        const int classStr = 0;
-        const int classDef = 0;
-        string hp = ClientStrings.Get(ClientStrings.Stats_Hp);
-        string mp = ClientStrings.Get(ClientStrings.Stats_Mp);
-        string sp = ClientStrings.Get(ClientStrings.Stats_Sp);
+        if (item.Type == ItemType.Currency && slot is not null)
+            _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_Quantity), slot.Quantity.ToString("N0"), ValueColor));
 
-        // What the item DOES prints here; what it COSTS you to qualify prints after. The stat gate is
-        // captured rather than added, so it can join the level and class gates in the block below.
-        string? statReqLabel = null;
-        string statReqValue = "";
-        bool meetsStatReq = false;
-
-        switch (item.Type)
-        {
-            case ItemType.Weapon when item.Power > 0:
-                int weaponStrReq = CombatFormulas.GearStatRequirement(item.Power, classStr);
-                statReqLabel = ClientStrings.Get(ClientStrings.Tooltip_StrReq);
-                statReqValue = UiHelper.FormatRequirement(item.Power, weaponStrReq);
-                meetsStatReq = meStr >= weaponStrReq;
-                _lines.Add(new Line(ClientStrings.Get(ClientStrings.Stats_PDmg), $"+{CombatFormulas.WeaponContribution(item.Power, meStr)}", ValueColor));
-                break;
-            case ItemType.Armor when item.Power > 0:
-                int armorDefReq = CombatFormulas.GearStatRequirement(item.Power, classDef);
-                statReqLabel = ClientStrings.Get(ClientStrings.Tooltip_DefReq);
-                statReqValue = UiHelper.FormatRequirement(item.Power, armorDefReq);
-                meetsStatReq = meDef >= armorDefReq;
-                _lines.Add(new Line(ClientStrings.Get(ClientStrings.Stats_Mit), $"+{CombatFormulas.GearMitigation(item.Power, meDef)}", ValueColor));
-                break;
-            case ItemType.Helmet when item.Power > 0:
-                int helmetDefReq = CombatFormulas.GearStatRequirement(item.Power, classDef);
-                statReqLabel = ClientStrings.Get(ClientStrings.Tooltip_DefReq);
-                statReqValue = UiHelper.FormatRequirement(item.Power, helmetDefReq);
-                meetsStatReq = meDef >= helmetDefReq;
-                _lines.Add(new Line(ClientStrings.Get(ClientStrings.Stats_Mit), $"+{CombatFormulas.GearMitigation(item.Power, meDef)}", ValueColor));
-                break;
-            case ItemType.Shield when item.Power > 0:
-                int shieldDefReq = CombatFormulas.GearStatRequirement(item.Power, classDef);
-                statReqLabel = ClientStrings.Get(ClientStrings.Tooltip_DefReq);
-                statReqValue = UiHelper.FormatRequirement(item.Power, shieldDefReq);
-                meetsStatReq = meDef >= shieldDefReq;
-                _lines.Add(new Line(ClientStrings.Get(ClientStrings.Stats_Mit), $"+{CombatFormulas.ShieldMitigation(item.Power, meDef)}", ValueColor));
-                break;
-            case ItemType.PotionAddHp when item.VitalAmount > 0:
-                _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_Restores), $"+{item.VitalAmount} {hp}", GoodColor));
-                break;
-            case ItemType.PotionAddMp when item.VitalAmount > 0:
-                _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_Restores), $"+{item.VitalAmount} {mp}", GoodColor));
-                break;
-            case ItemType.PotionAddSp when item.VitalAmount > 0:
-                _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_Restores), $"+{item.VitalAmount} {sp}", GoodColor));
-                break;
-            case ItemType.PotionSubHp when item.VitalAmount > 0:
-                AddSubPotionLines(item, me?.MaxHp ?? 0, hp, isHp: true, (me?.MaxMp ?? 0, mp), (me?.MaxSp ?? 0, sp));
-                break;
-            case ItemType.PotionSubMp when item.VitalAmount > 0:
-                AddSubPotionLines(item, me?.MaxMp ?? 0, mp, isHp: false, (me?.MaxHp ?? 0, hp), (me?.MaxSp ?? 0, sp));
-                break;
-            case ItemType.PotionSubSp when item.VitalAmount > 0:
-                AddSubPotionLines(item, me?.MaxSp ?? 0, sp, isHp: false, (me?.MaxHp ?? 0, hp), (me?.MaxMp ?? 0, mp));
-                break;
-            case ItemType.Currency when slot is not null:
-                _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_Quantity), slot.Quantity.ToString("N0"), ValueColor));
-                break;
-        }
-
-        // The gates, in one order everywhere they are shown: level, then stat, then class. A class gate may
-        // name several classes and renders as one comma-joined line.
-        if (item.LevelReq > 0)
-        {
-            bool meetsLevel = me is not null && me.Level >= item.LevelReq;
-            _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_LevelReq),
-                item.LevelReq.ToString(), meetsLevel ? GoodColor : WarnColor));
-        }
-
-        if (statReqLabel is not null)
-            _lines.Add(new Line(statReqLabel, statReqValue, meetsStatReq ? GoodColor : WarnColor));
-
-        // ── The spell half of a scroll ────────────────────────────────────────
-        // A scroll is a delivery mechanism and almost nothing about it is a property of the ITEM: what
-        // it teaches, what a cast costs, who may learn it and at what level all live on the spell. Its
-        // own LevelReq is deliberately zero (ItemRecord.UsesLevelReq excludes Spell), so reading only
-        // the item leaves the reader with a price and nothing to weigh it against.
-        //
-        // Appended below rather than replacing the item lines: a scroll is still a thing with a price
+        // ── The spell half of a scroll ───────────────────────────────────
+        // A scroll is a delivery mechanism: what it teaches lives on the spell, not on the paper.
+        // Appended below rather than replacing the item lines — a scroll is still a thing with a price
         // that occupies a bag slot, and the buy confirm shows both halves the same way.
         if (item.Type == ItemType.Spell && item.SpellNum > 0 && item.SpellNum < spellDefs.Length
             && spellDefs[item.SpellNum] is { } taught)
@@ -424,74 +342,10 @@ public static class Tooltip
         }
     }
 
-    /// <summary>The two lines a Sub* potion shows. What it PAYS depends on the reader's own pools, not on
-    /// the item — <see cref="StatFormulas.SubPotionGain"/> converts through pool fractions — so this is
-    /// computed against the viewing player rather than printed off <c>VitalAmount</c>.
-    ///
-    /// <para>With no player context (the character-create preview has no live vitals) only the drain is
-    /// shown: that half IS a property of the item, while the payout genuinely is not knowable yet.</para></summary>
-    private static void AddSubPotionLines(ItemRecord item, int drainMax, string drainName, bool isHp,
-        (int Max, string Name) first, (int Max, string Name) second)
-    {
-        // Quoted from a FULL bar, which is the most the potion can ever take: a short pour is allowed but
-        // pays less, and HP reserves its last point so a potion is never lethal. Showing the item's raw
-        // VitalAmount would promise 3,169 HP of exchange to a player whose whole bar is 900.
-        int drained = drainMax > 0 ? StatFormulas.SubPotionDrain(item.VitalAmount, drainMax, isHp) : item.VitalAmount;
-        _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_Drains), $"-{drained} {drainName}", WarnColor));
-        if (drainMax <= 0 || first.Max <= 0 || second.Max <= 0) return;
-
-        int gainFirst = StatFormulas.SubPotionGain(drained, drainMax, first.Max);
-        int gainSecond = StatFormulas.SubPotionGain(drained, drainMax, second.Max);
-        _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_Restores),
-            $"+{gainFirst} {first.Name} / +{gainSecond} {second.Name}", GoodColor));
-    }
-
     private static void BuildSpellLines(SpellRecord spell, PlayerRecord? me, ItemRecord?[] itemDefs, WeatherType weather)
     {
-        const int classInt = 0;
-        // SubHp pays the trivial pool-fraction (per the caster resource model); everything else the utility cost.
-        // AddMp prices off what it will restore for THIS caster, so it reads me.Int — the player's own Int, as
-        // the server does — not the class base used for the INT requirement below.
-        int mpCost = spell.Type == SpellType.SubHp
-            ? CombatFormulas.GetSubHpSpellMpCost(me?.MaxMp ?? 0)
-            : CombatFormulas.GetSpellMpCost(spell, me?.Int ?? 0);
-        int intReq = CombatFormulas.GetSpellIntRequirement(spell, classInt);
-
-        _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_MpCost), mpCost.ToString(), ValueColor));
-
-        // SubHp also burns casting reagents. TWO lines, both whole numbers: what a cast takes, then how often
-        // it takes the larger of the two. A cast usually costs nothing at low tiers, so one averaged figure
-        // ("0.1") reads as a strange fraction of an item the player never sees leave the bag.
-        // Rain is folded into both numbers rather than tagged onto one, and still carries its "(x2)" hint.
-        if (spell.Type == SpellType.SubHp)
-        {
-            string reagentName = (Constants.CastingReagentItemIndex < itemDefs.Length
-                ? itemDefs[Constants.CastingReagentItemIndex]?.Name?.Trim() : null) ?? "?";
-            bool raining = weather == WeatherType.Rain;
-            double exact = CombatFormulas.SubHpReagentCostExact(spell.LevelReq)
-                         * (raining ? Constants.WeatherRainReagentMultiplier : 1);
-            int perCast = CombatFormulas.ReagentCostPerCast(exact);
-            double chance = CombatFormulas.ReagentDepleteChancePercent(exact);
-
-            string costText = perCast.ToString();
-            if (raining) costText = ClientStrings.Format(ClientStrings.Tooltip_ReagentCostRained, ("Count", costText));
-            _lines.Add(new Line(ClientStrings.Format(ClientStrings.Tooltip_ReagentCost, ("Reagent", reagentName)),
-                costText, ValueColor));
-
-            // Omitted at 100%, where every cast pays and there are no odds worth stating.
-            if (chance is > 0 and < 100)
-            {
-                _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_ReagentDepletes),
-                    ClientStrings.Format(ClientStrings.Tooltip_ReagentChancePercent, ("Percent", chance.ToString("0.#"))),
-                    ValueColor));
-            }
-        }
-
-        // Effectiveness: M-DMG for damaging spells (any Sub* drains a vital), and a per-vital restore
-        // label for Add* spells. Shows ONLY the spell's own contribution paired with playerInt,
-        // not base + contribution — matches how the weapon tooltip shows just WeaponContribution
-        // rather than UnarmedDamage + WeaponContribution. GiveItem is suppressed because it carries an
-        // item id rather than a magnitude.
+        // What a spell IS, from the record: the vital it moves and by how much. What that costs, who may
+        // cast it, and what it actually lands for are a game's rules, and none of them is in here.
         string? effectLabel = spell.Type switch
         {
             SpellType.SubHp => ClientStrings.Get(ClientStrings.Stats_MDmg),
@@ -502,24 +356,7 @@ public static class Tooltip
             SpellType.AddSp => ClientStrings.Get(ClientStrings.Stats_SpRestore),
             _ => null,
         };
-        if (effectLabel is not null)
-        {
-            int amount = CombatFormulas.SpellContribution(spell.VitalAmount, me?.Int ?? 0);
-            _lines.Add(new Line(effectLabel, $"+{amount}", ValueColor));
-        }
-
-        // Level, stat, class — the same order the item tooltip reads in, after the effect above. Level is
-        // checked on learn AND on every cast, so it belongs here rather than only in the shop: a delevel can
-        // put a spell you already know out of reach.
-        if (spell.LevelReq > 0)
-        {
-            bool meetsLevel = me is not null && me.Level >= spell.LevelReq;
-            _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_LevelReq),
-                spell.LevelReq.ToString(), meetsLevel ? GoodColor : WarnColor));
-        }
-
-        bool meetsInt = me?.Int >= intReq;
-        _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_IntReq), UiHelper.FormatRequirement(CombatFormulas.RawSpellRequirement(spell), intReq), meetsInt ? GoodColor : WarnColor));
-
+        if (effectLabel is not null && spell.VitalAmount > 0)
+            _lines.Add(new Line(effectLabel, $"+{spell.VitalAmount}", ValueColor));
     }
 }

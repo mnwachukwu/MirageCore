@@ -82,7 +82,6 @@ public sealed record EditorCharRow
 {
     [JsonPropertyName("slot")] public int Slot { get; init; }
     [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("class")] public int Class { get; init; }
     [JsonPropertyName("level")] public int Level { get; init; }
     /// <summary>long, matching <c>PlayerRecord.Exp</c> — an int would silently clip a high-level total.</summary>
     [JsonPropertyName("exp")] public long Exp { get; init; }

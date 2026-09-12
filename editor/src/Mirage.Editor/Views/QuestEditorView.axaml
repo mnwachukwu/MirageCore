@@ -113,22 +113,6 @@
           <!-- ── Requirements ── -->
           <TextBlock x:Name="_requirementsHeader" Margin="0,8,0,2" FontWeight="SemiBold"/>
           <mui:FormRow LabelWidth="110">
-            <TextBlock x:Name="_reqLevelLabel" Grid.Column="0" VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Column="1" Value="{Binding SelectedQuest.ReqLevel}" Minimum="0" Maximum="255" FormatString="0"/>
-          </mui:FormRow>
-          <Grid ColumnDefinitions="110,*,110,*">
-            <TextBlock x:Name="_reqStrLabel" Grid.Column="0" VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Column="1" Value="{Binding SelectedQuest.ReqStr}" Minimum="0" Maximum="255" FormatString="0"/>
-            <TextBlock x:Name="_reqDefLabel" Grid.Column="2" VerticalAlignment="Center" Margin="8,0,0,0"/>
-            <NumericUpDown Grid.Column="3" Value="{Binding SelectedQuest.ReqDef}" Minimum="0" Maximum="255" FormatString="0"/>
-          </Grid>
-          <Grid ColumnDefinitions="110,*,110,*">
-            <TextBlock x:Name="_reqSpdLabel" Grid.Column="0" VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Column="1" Value="{Binding SelectedQuest.ReqSpd}" Minimum="0" Maximum="255" FormatString="0"/>
-            <TextBlock x:Name="_reqIntLabel" Grid.Column="2" VerticalAlignment="Center" Margin="8,0,0,0"/>
-            <NumericUpDown Grid.Column="3" Value="{Binding SelectedQuest.ReqInt}" Minimum="0" Maximum="255" FormatString="0"/>
-          </Grid>
-          <mui:FormRow LabelWidth="110">
             <TextBlock x:Name="_prereqLabel" Grid.Column="0" VerticalAlignment="Center"/>
             <controls:DropdownAutoCompleteBox Grid.Column="1"
                              ItemsSource="{Binding SelectedQuest.QuestEntries}"
@@ -182,10 +166,6 @@
 
           <!-- ── Rewards ── -->
           <TextBlock x:Name="_rewardsHeader" Margin="0,8,0,2" FontWeight="SemiBold"/>
-          <mui:FormRow LabelWidth="110">
-            <TextBlock x:Name="_rewardExpLabel" Grid.Column="0" VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Column="1" Value="{Binding SelectedQuest.RewardExp}" Minimum="0" Maximum="1000000000" FormatString="0"/>
-          </mui:FormRow>
           <Border BorderBrush="{DynamicResource MirageLineBrush}" BorderThickness="1" CornerRadius="4">
             <StackPanel>
               <Grid ColumnDefinitions="2*,*,34" Background="#2A2A2A">
@@ -228,10 +208,6 @@
           <!-- ── Repeat rewards (only meaningful for a repeatable quest) ── -->
           <TextBlock x:Name="_repeatRewardsHeader" Margin="0,8,0,2" FontWeight="SemiBold"
                      IsVisible="{Binding SelectedQuest.Repeatable}"/>
-          <mui:FormRow LabelWidth="110" IsVisible="{Binding SelectedQuest.Repeatable}">
-            <TextBlock x:Name="_repeatRewardExpLabel" Grid.Column="0" VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Column="1" Value="{Binding SelectedQuest.RepeatRewardExp}" Minimum="0" Maximum="1000000000" FormatString="0"/>
-          </mui:FormRow>
           <Border BorderBrush="{DynamicResource MirageLineBrush}" BorderThickness="1" CornerRadius="4"
                   IsVisible="{Binding SelectedQuest.Repeatable}">
             <StackPanel>

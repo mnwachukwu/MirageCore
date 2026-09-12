@@ -31,16 +31,9 @@ public sealed partial class QuestRowViewModel : ObservableObject, ILockableRow
 
     [ObservableProperty] private string _name = "";
     [ObservableProperty] private string _description = "";
-    [ObservableProperty] private int _reqLevel;
-    [ObservableProperty] private int _reqStr;
-    [ObservableProperty] private int _reqDef;
-    [ObservableProperty] private int _reqSpd;
-    [ObservableProperty] private int _reqInt;
     /// <summary>Classes allowed to accept it; null or empty = every class.</summary>
     [ObservableProperty] private List<short>? _allowedClasses;
     [ObservableProperty] private int _prereqQuest;
-    [ObservableProperty] private long _rewardExp;
-    [ObservableProperty] private long _repeatRewardExp;
     [ObservableProperty] private int _giverNpc;
     [ObservableProperty] private int _turnInNpc;
     [ObservableProperty] private bool _repeatable;
@@ -120,14 +113,7 @@ public sealed partial class QuestRowViewModel : ObservableObject, ILockableRow
 
         _name = r.Name;
         _description = r.Description;
-        _reqLevel = r.ReqLevel;
-        _reqStr = r.ReqStr;
-        _reqDef = r.ReqDef;
-        _reqSpd = r.ReqSpd;
-        _reqInt = r.ReqInt;
         _prereqQuest = r.PrereqQuest;
-        _rewardExp = r.RewardExp;
-        _repeatRewardExp = r.RepeatRewardExp;
         _giverNpc = r.GiverNpc;
         _turnInNpc = r.TurnInNpc;
         _repeatable = r.Repeatable;
@@ -214,18 +200,11 @@ public sealed partial class QuestRowViewModel : ObservableObject, ILockableRow
         MarkDirty();
     }
     partial void OnDescriptionChanged(string value) => MarkDirty();
-    partial void OnReqLevelChanged(int value) => MarkDirty();
-    partial void OnReqStrChanged(int value) => MarkDirty();
-    partial void OnReqDefChanged(int value) => MarkDirty();
-    partial void OnReqSpdChanged(int value) => MarkDirty();
-    partial void OnReqIntChanged(int value) => MarkDirty();
     partial void OnPrereqQuestChanged(int value)
     {
         OnPropertyChanged(nameof(SelectedPrereq));
         MarkDirty();
     }
-    partial void OnRewardExpChanged(long value) => MarkDirty();
-    partial void OnRepeatRewardExpChanged(long value) => MarkDirty();
     partial void OnGiverNpcChanged(int value)
     {
         OnPropertyChanged(nameof(SelectedGiver));
@@ -280,14 +259,7 @@ public sealed partial class QuestRowViewModel : ObservableObject, ILockableRow
         {
             Name = r.Name;
             Description = r.Description;
-            ReqLevel = r.ReqLevel;
-            ReqStr = r.ReqStr;
-            ReqDef = r.ReqDef;
-            ReqSpd = r.ReqSpd;
-            ReqInt = r.ReqInt;
             PrereqQuest = r.PrereqQuest;
-            RewardExp = r.RewardExp;
-            RepeatRewardExp = r.RepeatRewardExp;
             GiverNpc = r.GiverNpc;
             TurnInNpc = r.TurnInNpc;
             Repeatable = r.Repeatable;
@@ -307,14 +279,7 @@ public sealed partial class QuestRowViewModel : ObservableObject, ILockableRow
         {
             Name = pkt.Name;
             Description = pkt.Description;
-            ReqLevel = pkt.ReqLevel;
-            ReqStr = pkt.ReqStr;
-            ReqDef = pkt.ReqDef;
-            ReqSpd = pkt.ReqSpd;
-            ReqInt = pkt.ReqInt;
             PrereqQuest = pkt.PrereqQuest;
-            RewardExp = pkt.RewardExp;
-            RepeatRewardExp = pkt.RepeatRewardExp;
             GiverNpc = pkt.GiverNpc;
             TurnInNpc = pkt.TurnInNpc;
             Repeatable = pkt.Repeatable;
@@ -335,8 +300,6 @@ public sealed partial class QuestRowViewModel : ObservableObject, ILockableRow
         {
             Name = Name,
             Description = Description,
-            ReqLevel = ReqLevel, ReqStr = ReqStr, ReqDef = ReqDef, ReqSpd = ReqSpd, ReqInt = ReqInt,
-            RewardExp = RewardExp, RepeatRewardExp = RepeatRewardExp,
             GiverNpc = GiverNpc, TurnInNpc = TurnInNpc,
             Repeatable = Repeatable, Cadence = Cadence,
         };
@@ -352,10 +315,7 @@ public sealed partial class QuestRowViewModel : ObservableObject, ILockableRow
         Name = Name,
         Description = Description,
         Objectives = Objectives.Where(o => !o.IsEmpty).Select(o => o.ToRecord()).ToList(),
-        ReqLevel = ReqLevel, ReqStr = ReqStr, ReqDef = ReqDef, ReqSpd = ReqSpd, ReqInt = ReqInt,
-        RewardExp = RewardExp,
         RewardItems = RewardItems.Where(r => !r.IsEmpty).Select(r => r.ToRecord()).ToList(),
-        RepeatRewardExp = RepeatRewardExp,
         RepeatRewardItems = RepeatRewardItems.Where(r => !r.IsEmpty).Select(r => r.ToRecord()).ToList(),
         GiverNpc = GiverNpc, TurnInNpc = TurnInNpc,
         Repeatable = Repeatable, Cadence = Cadence,

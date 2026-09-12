@@ -28,15 +28,9 @@ public partial class SpellEditorView : LocalizedUserControl
         _sectionTitle.Text = EditorStrings.Get(EditorStrings.SpellEditor_SectionTitle);
         _nameLabel.Text = EditorStrings.Get(EditorStrings.Common_NameLabel);
         _typeLabel.Text = EditorStrings.Get(EditorStrings.Common_TypeLabel);
-        _levelReqLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_LevelReq);
-        _maxMpCostLabel.Text = EditorStrings.Get(EditorStrings.SpellEditor_MaxMpCostLabel);
-        _reagentCostLabel.Text = EditorStrings.Get(EditorStrings.SpellEditor_ReagentCostLabel);
-        _reagentChanceLabel.Text = EditorStrings.Get(EditorStrings.SpellEditor_ReagentChanceLabel);
-        _mpCostNote.Text = EditorStrings.Get(EditorStrings.SpellEditor_MpCostNote);
         _notesExpander.Header = EditorStrings.Get(EditorStrings.Common_Notes);
         _giveItemLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_ItemNumber);
         _itemQuantityLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_Quantity);
-        _intReqLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_IntReq);
         _fmtMagnitudeIntro.Text = EditorStrings.Get(EditorStrings.SpellEditor_Formula_MagnitudeIntro);
         _fmtMagnitudeBullet1.Text = EditorStrings.Get(EditorStrings.SpellEditor_Formula_MagnitudeBullet1);
         _fmtMagnitudeBullet2.Text = EditorStrings.Get(EditorStrings.SpellEditor_Formula_MagnitudeBullet2);

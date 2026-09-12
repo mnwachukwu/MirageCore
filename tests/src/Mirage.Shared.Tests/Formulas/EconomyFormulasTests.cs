@@ -18,6 +18,14 @@ public class EconomyFormulasTests
 
     // ── The backbone ─────────────────────────────────────────────────────────
 
+    /// <summary>Setting a spawn point is a flat price, like every other sink here. It was the one keyed
+    /// on a level, and there are no levels.</summary>
+    [Test]
+    public void InnSpawnCost_IsFlat()
+    {
+        Assert.That(EconomyFormulas.InnSpawnCost(), Is.EqualTo(Constants.SpawnCostMinimum));
+    }
+
     [Test]
     public void ExpectedGoldPerLevel_RisesMonotonically()
     {
@@ -228,16 +236,6 @@ public class EconomyFormulasTests
     // ── Sinks ────────────────────────────────────────────────────────────────
 
     [Test]
-    public void InnSpawnCost_ScalesWithLevel_AndHoldsItsFloor()
-    {
-        // The ONE sink still keyed on level, because you can only set your own spawn — there is nobody else
-        // to route it through. Everything else a third party can pay is flat for exactly that reason.
-        Assert.That(EconomyFormulas.InnSpawnCost(1), Is.EqualTo(Constants.SpawnCostMinimum));
-        Assert.That(EconomyFormulas.InnSpawnCost(Constants.MaxLevel),
-            Is.GreaterThan(EconomyFormulas.InnSpawnCost(20) * 100));
-    }
-
-    [Test]
     public void MailSendCost_HasFlatPartsPlusAShareOfTheParcel()
     {
         // The flat parts are flat on purpose: a level-scaled fee is defeated by handing the parcel to a
@@ -276,24 +274,6 @@ public class EconomyFormulasTests
         Assert.That(EconomyFormulas.MailAttachmentValue(itemNum: 42, quantity: 3, unitPrice: 100),
             Is.EqualTo(300));
         Assert.That(EconomyFormulas.MailAttachmentValue(itemNum: 42, quantity: 0, unitPrice: 100), Is.Zero);
-    }
-
-    [Test]
-    public void CasterAndWarriorUpkeepStayInStep()
-    {
-        // Reagents are 1 gold each, so a cast's reagent cost must equal the gold a warrior burns per swing.
-        // The parity has to be DERIVED from the live repair rule: priced off a copy of it, the two drift to
-        // ~87x apart at max level in the caster's favor and nothing fails.
-        //
-        // EXACT, and the whole ladder. A +/-1 gold tolerance is wider than the entire quantity below level 40,
-        // so it admitted a level-1 cast costing ten times a level-1 swing; and starting at 20 never looked.
-        foreach (int level in new[] { 1, 2, 5, 10, 20, 40, 100, 120, 235, 255 })
-        {
-            double warriorPerSwing = EconomyFormulas.RepairGoldPerDurabilityPoint(level) * 0.48;   // avg chip per hit
-            double casterPerCast = CombatFormulas.SubHpReagentCostExact(level);
-            Assert.That(casterPerCast, Is.EqualTo(warriorPerSwing).Within(0.0001),
-                $"level {level}: a cast must cost what a swing costs, in gold");
-        }
     }
 
     [Test]

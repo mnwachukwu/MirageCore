@@ -153,9 +153,6 @@ public sealed partial class SocialPanel : IGamePanel
             .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColRank), e => (int)e.Rank, e => RankName(e.Rank), 46, 40)
             .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColAccount), e => e.Login, width: 86, minWidth: 60)
             .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColCharacter), e => e.Online ? e.CharName : "-", width: 86, minWidth: 60)
-            .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColLevel),
-                    e => e.Online ? e.CharLevel : -1,                        // offline sorts below any real level
-                    e => e.Online ? e.CharLevel.ToString() : "-", 42, 30)
             .Column(() => ClientStrings.Get(ClientStrings.SocialPanel_ColLastSeen),
                     e => e.Online ? long.MaxValue : e.LastSeenUtc,           // online sorts as most-recent
                     e => ClientStrings.Get(e.Online ? ClientStrings.SocialPanel_Online : ClientStrings.SocialPanel_Offline), 66, 50)

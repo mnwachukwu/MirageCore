@@ -22,9 +22,7 @@ public static class RenderCommandBuilder
     // Overhead guild-name color when a guild hasn't picked one yet (packed 0xRRGGBB, a neutral light gray).
     private const int GuildNameDefaultRgb = 0xC0C0C0;
     // Set to true to also render MP/SP bars on NPCs.
-    private const bool NpcShowMpSp = false;
     // Set to true to also render MP/SP bars on players (overhead world bars only; HUD is unaffected).
-    private const bool PlayerShowMpSp = false;
     // Cooldown-row visibility, a player option set once per frame by Build (safe as static: Build is the single
     // per-frame entry point and rendering is single-threaded). _showCooldownBar gates the LOCAL player's own
     // cooldown row; _showOtherCooldownBars gates every other player + every NPC.
@@ -788,9 +786,8 @@ public static class RenderCommandBuilder
             || hoveredHere
             || targetHere);
 
-        float npcHpFrac = n.DispHp;
-        float npcMpFrac = NpcShowMpSp ? n.DispMp : -1f;
-        float npcSpFrac = NpcShowMpSp ? n.DispSp : -1f;
+        // -1 omits the row. A game that wants a bar over a head feeds one from its own attributes.
+        const float npcHpFrac = -1f, npcMpFrac = -1f, npcSpFrac = -1f;
 
         // Cooldown bar, folded into the vital group as its bottom row (shares the group outline): NPCs get the
         // same swing/cast cooldown bar as players. npcCdFrac < 0 omits the row.
@@ -1048,12 +1045,7 @@ public static class RenderCommandBuilder
         bool plrTargetHere = target.Kind == TargetKind.Player && target.A == i;
         bool showBars = alwaysShowBars || IsInCombat(p.LastCombatMs, tickNow) || hoveredHere || plrTargetHere;
 
-        bool showFullVitals = PlayerShowMpSp
-            || i == state.MyIndex
-            || (state.Party.Active && i == state.Party.Index);
-        float plrHpFrac = p.DispHp;
-        float plrMpFrac = showFullVitals ? p.DispMp : -1f;
-        float plrSpFrac = showFullVitals ? p.DispSp : -1f;
+        const float plrHpFrac = -1f, plrMpFrac = -1f, plrSpFrac = -1f;
 
         // Cooldown bar, folded into the vital group as its bottom row (shares the group's one outline): spans the
         // swing/cast cooldown (doubled by Heavy Wind) so the downtime cadence is readable.

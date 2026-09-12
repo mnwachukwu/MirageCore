@@ -114,7 +114,6 @@ public sealed class QuestSystem : GameSystem
     {
         // The same rule the journal and the giver's offer quote, so the amount promised is the amount paid.
         bool useRepeat = q.PaysRepeatRewards(pq.Status);
-        long rewardExp = useRepeat ? q.RepeatRewardExp : q.RewardExp;
         var rewardItems = useRepeat ? q.RepeatRewardItems : q.RewardItems;
 
         foreach (var r in rewardItems)   // gold is just item #1 here; currency stacks, so it never mails
@@ -127,15 +126,6 @@ public sealed class QuestSystem : GameSystem
                     ServerStrings.Get(ServerStrings.Quest_RewardMailBody),
                     new List<MailAttachment> { new() { ItemNum = r.ItemNum, Quantity = r.Quantity } });
             }
-        }
-        if (rewardExp > 0)
-        {
-            var p = _pm[index].Char;
-            p.Exp = Math.Min(p.Exp + rewardExp, ExpFormulas.MaxTotalExp);
-            // Name the number. The exp bar reads WITHIN the current level, so a reward lands as a nudge to a
-            // bar rather than a figure — and with two quests in progress there is nothing tying the amount a
-            // board promised to the one that just paid out.
-            SendMsg(index, ServerStrings.Quest_RewardExp, GameColor.BrightBlue, ChatChannel.Rewards, ("Exp", rewardExp));
         }
     }
 
@@ -290,8 +280,6 @@ public sealed class QuestSystem : GameSystem
     public enum HoldResult
     {
         Ok = 0,
-        LevelTooLow,
-        StatTooLow,
         PrereqNotDone,
     }
 
@@ -305,8 +293,6 @@ public sealed class QuestSystem : GameSystem
     /// </summary>
     public static HoldResult CanHold(PlayerRecord p, QuestRecord q)
     {
-        if (p.Level < q.ReqLevel) return HoldResult.LevelTooLow;
-        if (p.Str < q.ReqStr || p.Def < q.ReqDef || p.Spd < q.ReqSpd || p.Int < q.ReqInt) return HoldResult.StatTooLow;
         if (q.PrereqQuest > 0 && FindQuest(p, q.PrereqQuest) is not { Status: QuestStatus.Done })
             return HoldResult.PrereqNotDone;
         return HoldResult.Ok;

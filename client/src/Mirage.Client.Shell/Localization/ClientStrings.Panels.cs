@@ -71,7 +71,6 @@ public static partial class ClientStrings
     public const string BankPanel_AmountPrompt = nameof(BankPanel_AmountPrompt);
 
     // ── ShopPanel ─────────────────────────────────────────────────────────────
-    public const string ShopPanel_LevelReq = nameof(ShopPanel_LevelReq);
     public const string ShopPanel_TradeButton = nameof(ShopPanel_TradeButton);
     public const string ShopPanel_FixItemButton = nameof(ShopPanel_FixItemButton);
     public const string ShopPanel_BuyTab = nameof(ShopPanel_BuyTab);
@@ -98,16 +97,9 @@ public static partial class ClientStrings
     public const string ShopPanel_DurabilityGain = nameof(ShopPanel_DurabilityGain);
     public const string ShopPanel_InsufficientGold = nameof(ShopPanel_InsufficientGold);
     public const string ShopPanel_TeachesSpell = nameof(ShopPanel_TeachesSpell);
-    public const string ShopPanel_MpCost = nameof(ShopPanel_MpCost);
-    public const string ShopPanel_ReagentCost = nameof(ShopPanel_ReagentCost);
-    public const string ShopPanel_ReagentDepletes = nameof(ShopPanel_ReagentDepletes);
     public const string ShopPanel_PotionEffect = nameof(ShopPanel_PotionEffect);
     public const string ShopPanel_TradeCost = nameof(ShopPanel_TradeCost);
-    public const string ShopPanel_StatRequirement = nameof(ShopPanel_StatRequirement);
-    public const string ShopPanel_IntRequirement = nameof(ShopPanel_IntRequirement);
     public const string ShopPanel_AlreadyKnowSpell = nameof(ShopPanel_AlreadyKnowSpell);
-    public const string ShopPanel_RequirementsNotMet = nameof(ShopPanel_RequirementsNotMet);
-    public const string ShopPanel_CannotLearnSpell = nameof(ShopPanel_CannotLearnSpell);
 
     // ── InventoryPanel ────────────────────────────────────────────────────────
     public const string InventoryPanel_Title = nameof(InventoryPanel_Title);

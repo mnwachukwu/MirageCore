@@ -30,6 +30,7 @@ public enum AttributeKind : byte
 /// back as Integer 5 — invisible through the coercing accessors, and visible through
 /// <see cref="Kind"/>.</para>
 /// </summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(AttributeValueConverter))]
 public readonly record struct AttributeValue
 {
     private AttributeValue(AttributeKind kind, long integer, double real, string? text)

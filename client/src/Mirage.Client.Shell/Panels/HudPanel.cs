@@ -127,13 +127,6 @@ public sealed class HudPanel
             LabelKey = labelKey;
         }
     }
-    private BarSlot _hpSlot = new(UiHelper.VitalHpColor, ClientStrings.Stats_Hp);
-    private BarSlot _mpSlot = new(UiHelper.VitalMpColor, ClientStrings.Stats_Mp);
-    private BarSlot _spSlot = new(UiHelper.VitalSpColor, ClientStrings.Stats_Sp);
-    private BarSlot _expSlot = new(UiHelper.ExpBarColor, ClientStrings.Stats_Exp);
-    private int _cachedLevel = -1;
-    private string _cachedClassName = "";
-    private string _cachedLevelStr = "";
     private string _cachedPlayerNameRaw = "";
     private string _cachedPlayerName = "";
     private string _cachedMapNameRaw = "";
@@ -145,13 +138,6 @@ public sealed class HudPanel
     private string _cachedMapName = "";
 
     // ── Animated bar ratios ───────────────────────────────────────────────────
-    private bool _initialized;
-    private float _dispHp, _dispMp, _dispSp, _dispExp;
-    private long _nextLevel;
-    public float DispHp => _dispHp;
-    public float DispMp => _dispMp;
-    public float DispSp => _dispSp;
-    public float DispExp => _dispExp;
 
     // Exponential lerp spd — ~95% of gap closed in ~0.6 s
     private const float LerpSpeed = 5f;
@@ -186,43 +172,6 @@ public sealed class HudPanel
 
     // ── Tick — animation only, called every frame regardless of mouse position ──
 
-    public void Tick(ClientState state, float deltaSeconds)
-    {
-        var me = state.Me;
-        if (me is null) return;
-
-        // Defer until valid data arrives; snapping at MaxHp=0 would animate to full later.
-        if (me.MaxHp <= 0) return;
-
-        _nextLevel = ExpFormulas.TnlForLevel(me.Level);
-        long expFloor = ExpFormulas.ExpFloorForLevel(me.Level);
-        long withinLevel = me.Exp - expFloor;
-
-        float targetHp = me.MaxHp > 0 ? Math.Clamp((float)me.Hp / me.MaxHp, 0f, 1f) : 0f;
-        float targetMp = me.MaxMp > 0 ? Math.Clamp((float)me.Mp / me.MaxMp, 0f, 1f) : 0f;
-        float targetSp = me.MaxSp > 0 ? Math.Clamp((float)me.Sp / me.MaxSp, 0f, 1f) : 0f;
-        float targetExp = _nextLevel > 0 ? Math.Clamp((float)withinLevel / _nextLevel, 0f, 1f) : 0f;
-
-        bool snap = !_initialized || state.SnapVitals;
-        state.SnapVitals = false;
-        _initialized = true;
-
-        if (snap)
-        {
-            _dispHp = targetHp;
-            _dispMp = targetMp;
-            _dispSp = targetSp;
-            _dispExp = targetExp;
-            return;
-        }
-
-        float t = Math.Min(1f, LerpSpeed * deltaSeconds);
-        _dispHp += (targetHp - _dispHp) * t;
-        _dispMp += (targetMp - _dispMp) * t;
-        _dispSp += (targetSp - _dispSp) * t;
-        _dispExp += (targetExp - _dispExp) * t;
-    }
-
     // ── Update — button clicks only, skipped when mouse is over a floating panel
 
     public HudAction Update(InputState input)
@@ -247,13 +196,9 @@ public sealed class HudPanel
             _questLogBtn.Label = ClientStrings.Get(ClientStrings.HudPanel_QuestLogButton);
             _socialBtn.Label = ClientStrings.Get(ClientStrings.HudPanel_SocialButton);
             _quitBtn.Label = ClientStrings.Get(ClientStrings.HudPanel_LogoutButton);
-            // The caches below bake a localized string into a value keyed on the DATA that produced
-            // it — the vital bars on current/max, the level line on level+class, the map name on the
-            // map. None of those keys move when the language does, so the text would hold the old
-            // language until the underlying number happened to change. Clearing the keys lets each
-            // one rebuild through its normal path rather than duplicating the formatting here.
-            _hpSlot.Current = _mpSlot.Current = _spSlot.Current = _expSlot.Current = -1;
-            _cachedLevel = -1;
+            // The map-name cache bakes a localized string into a value keyed on the map, which does
+            // not move when the language does — so the text would hold the old language until the map
+            // happened to change. Clearing the key lets it rebuild through its normal path.
             _cachedMapNum = -1;
         }
 
@@ -280,18 +225,6 @@ public sealed class HudPanel
             var nameColor = TextArea.GetColor(PlayerNameColor.For(showAsPk, me.Access));
             UiHelper.DrawLabelCentered(sb, font, _cachedPlayerName, SidebarLeft, y, SidebarWidth, nameColor);
         }
-        y += NameRowH;
-
-        const string className = "";
-        if (me.Level != _cachedLevel || className != _cachedClassName)
-        {
-            _cachedLevel = me.Level;
-            _cachedClassName = className;
-            _cachedLevelStr = className.Length > 0
-                ? ClientStrings.Format(ClientStrings.Common_LevelWithClassFormat, ("Level", me.Level), ("Class", className))
-                : ClientStrings.Format(ClientStrings.Common_LevelFormat, ("Level", me.Level));
-        }
-        UiHelper.DrawLabelCentered(sb, font, _cachedLevelStr, SidebarLeft, y, SidebarWidth, Color.Gold);
         y += NameRowH;
 
         string groupDisplayName = state.GroupOf(state.Map)?.DisplayName ?? "";
@@ -343,12 +276,6 @@ public sealed class HudPanel
         UiHelper.DrawLabelCentered(sb, font, todText, SidebarLeft, y, SidebarWidth, UiHelper.WeatherStatusColor);
         y += NameRowH;
 
-        DrawBar(sb, font, new Rectangle(x, y, barW, BarH), _dispHp, me.Hp, me.MaxHp, ref _hpSlot, input);
-        DrawBar(sb, font, new Rectangle(x, y + 18, barW, BarH), _dispMp, me.Mp, me.MaxMp, ref _mpSlot, input);
-        DrawBar(sb, font, new Rectangle(x, y + 36, barW, BarH), _dispSp, me.Sp, me.MaxSp, ref _spSlot, input);
-        long expFloor = ExpFormulas.ExpFloorForLevel(me.Level);
-        DrawBar(sb, font, new Rectangle(x, y + 54, barW, BarH), _dispExp, me.Exp - expFloor, _nextLevel, ref _expSlot, input);
-
         // Panel buttons: row0=Inventory/Spells, row1=Stats/Train, row2=QuestLog/Social, row3=Logout (centered)
         _invBtn.Draw(sb, font, input);
         _questLogBtn.Draw(sb, font, input);
@@ -387,21 +314,4 @@ public sealed class HudPanel
         return ClientStrings.Format(key, ("Time", timeStr));
     }
 
-    private static void DrawBar(SpriteBatch sb, SpriteFont font, Rectangle bounds,
-        float fillRatio, long current, long max, ref BarSlot slot, InputState input)
-    {
-        if (slot.Current != current || slot.Max != max)
-        {
-            slot.Current = current;
-            slot.Max = max;
-            slot.Text = UiHelper.VitalBarText(ClientStrings.Get(slot.LabelKey), current, max);
-        }
-        string text = slot.Text;
-        if (input.IsHoverIn(bounds))
-        {
-            int pct = max > 0 ? (int)Math.Round((double)current * 100.0 / max) : 0;
-            text = $"{pct}%";
-        }
-        UiHelper.DrawVitalBar(sb, font, bounds, fillRatio, slot.Fill, Color.DimGray, text, Color.White);
-    }
 }

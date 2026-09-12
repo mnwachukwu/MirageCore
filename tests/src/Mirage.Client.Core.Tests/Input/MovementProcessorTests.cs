@@ -30,28 +30,6 @@ public class MovementProcessorTests
         Assert.That(me.Moving, Is.EqualTo(MovementType.None), "a settled step demotes Moving to None");
     }
 
-    // Same elapsed time (140ms): a max-SPD local player finishes the run-step; a 0-SPD one does not. Locks the
-    // SPD → run-speed gap-control mechanic on the client's own interpolation.
-    [Test]
-    public void Process_LocalRunSpeed_ScalesWithSpd()
-    {
-        var fast = new ClientState { MyIndex = 1 };
-        fast.Players[1].Name = "Fast";
-        fast.Players[1].Spd = 150;
-        fast.Players[1].XOffset = -Constants.PicX;
-        fast.Players[1].Moving = MovementType.Running;
-        MovementProcessor.Process(fast, 140f);
-        Assert.That(fast.Players[1].XOffset, Is.EqualTo(0f), "max-SPD run closes the tile within 140ms");
-
-        var slow = new ClientState { MyIndex = 1 };
-        slow.Players[1].Name = "Slow";
-        slow.Players[1].Spd = 0;
-        slow.Players[1].XOffset = -Constants.PicX;
-        slow.Players[1].Moving = MovementType.Running;
-        MovementProcessor.Process(slow, 140f);
-        Assert.That(slow.Players[1].XOffset, Is.LessThan(0f), "0-SPD run has NOT closed the tile in 140ms");
-    }
-
     // An empty player slot (blank name) is skipped entirely — no phantom interpolation.
     [Test]
     public void Process_EmptyNameSlot_Untouched()

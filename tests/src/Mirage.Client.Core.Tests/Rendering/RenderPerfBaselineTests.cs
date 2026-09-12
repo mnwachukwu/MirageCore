@@ -68,8 +68,6 @@ public class RenderPerfBaselineTests
             n.Num = 1 + (slot % 20);
             n.X = slot % (Constants.MaxMapX + 1);
             n.Y = slot % (Constants.MaxMapY + 1);
-            n.Hp = 50;
-            n.MaxHp = 100;
         }
 
         // Players spread over the center map.
@@ -80,12 +78,6 @@ public class RenderPerfBaselineTests
             p.Map = CenterMap;
             p.X = i % (Constants.MaxMapX + 1);
             p.Y = i % (Constants.MaxMapY + 1);
-            p.Hp = 60;
-            p.MaxHp = 100;
-            p.Mp = 30;
-            p.MaxMp = 100;
-            p.Sp = 80;
-            p.MaxSp = 100;
         }
 
         // Ground items.
@@ -95,7 +87,7 @@ public class RenderPerfBaselineTests
         {
             state.MapItems[i] = new MapItemRecord
             {
-                Num = 1 + (i % 10), X = i % (Constants.MaxMapX + 1), Y = i % (Constants.MaxMapY + 1),
+                Num = 1 + (i % 10), X = i % (Constants.MaxMapX + 1), Y = i % (Constants.MaxMapY + 1)
             };
         }
 
@@ -139,7 +131,7 @@ public class RenderPerfBaselineTests
         {
             ("quiet   (5 npc,  1 player,  5 items)", 5, 1, 5),
             ("busy    (30 npc, 10 players, 25 items)", 30, 10, 25),
-            ("crowded (60 npc, 30 players, 60 items)", 60, 30, 60),
+            ("crowded (60 npc, 30 players, 60 items)", 60, 30, 60)
         })
         {
             var r = MeasureFrames(3_000, BusyState(npcs, players, items));

@@ -175,69 +175,23 @@
                                 CommandParameter="{Binding}"/>
                       </Grid>
                       <!--  EVERY field states its Maximum. Avalonia's NumericUpDown defaults Maximum to
-                           100, so a field without one silently clamps — which for Exp, Points, Map and
-                           the stats would have quietly rewritten a character on save.
-
-                           Exp gets its own wide row: it reaches six and seven digits on a 255-level
-                           curve, and a column sized for a stat would hide most of it behind the spinner
-                           buttons. The rest are three or four digits and share the narrower columns. -->
-                      <Grid ColumnDefinitions="56,148,56,148,56,148" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Level" VerticalAlignment="Center" FontSize="11"/>
-                        <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding Level}" Minimum="1"
-                                       Maximum="255" FormatString="0" ParsingNumberStyle="Integer" Margin="0,0,10,0"/>
-                        <TextBlock Grid.Row="0" Grid.Column="2" Text="Points" VerticalAlignment="Center" FontSize="11"/>
-                        <NumericUpDown Grid.Row="0" Grid.Column="3" Value="{Binding Points}" Minimum="0"
-                                       Maximum="999999" FormatString="0" ParsingNumberStyle="Integer" Margin="0,0,10,0"/>
-
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Exp" VerticalAlignment="Center"
+                           100, so a field without one silently clamps — which for Map and the
+                           coordinates would have quietly moved a character on save. -->
+                      <Grid ColumnDefinitions="56,148,56,148,56,148" RowDefinitions="Auto">
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Map" VerticalAlignment="Center"
                                    Margin="0,8,0,0" FontSize="11"/>
-                        <NumericUpDown Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="5" Value="{Binding Exp}"
-                                       Minimum="0" Maximum="9999999999" FormatString="0"
-                                       ParsingNumberStyle="Integer" Margin="0,8,0,0"/>
-
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Map" VerticalAlignment="Center"
-                                   Margin="0,8,0,0" FontSize="11"/>
-                        <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding Map}" Minimum="1"
+                        <NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding Map}" Minimum="1"
                                        Maximum="100000" FormatString="0" ParsingNumberStyle="Integer" Margin="0,8,10,0"/>
-                        <TextBlock Grid.Row="2" Grid.Column="2" Text="X" VerticalAlignment="Center"
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="X" VerticalAlignment="Center"
                                    Margin="0,8,0,0" FontSize="11"/>
-                        <NumericUpDown Grid.Row="2" Grid.Column="3" Value="{Binding X}" Minimum="0"
+                        <NumericUpDown Grid.Row="0" Grid.Column="3" Value="{Binding X}" Minimum="0"
                                        Maximum="15" FormatString="0" ParsingNumberStyle="Integer" Margin="0,8,10,0"/>
-                        <TextBlock Grid.Row="2" Grid.Column="4" Text="Y" VerticalAlignment="Center"
+                        <TextBlock Grid.Row="0" Grid.Column="4" Text="Y" VerticalAlignment="Center"
                                    Margin="0,8,0,0" FontSize="11"/>
-                        <NumericUpDown Grid.Row="2" Grid.Column="5" Value="{Binding Y}" Minimum="0"
+                        <NumericUpDown Grid.Row="0" Grid.Column="5" Value="{Binding Y}" Minimum="0"
                                        Maximum="11" FormatString="0" ParsingNumberStyle="Integer" Margin="0,8,0,0"/>
 
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="STR" VerticalAlignment="Center"
-                                   Margin="0,8,0,0" FontSize="11"/>
-                        <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding Str}" Minimum="0"
-                                       Maximum="999999" FormatString="0" ParsingNumberStyle="Integer" Margin="0,8,10,0"/>
-                        <TextBlock Grid.Row="3" Grid.Column="2" Text="DEF" VerticalAlignment="Center"
-                                   Margin="0,8,0,0" FontSize="11"/>
-                        <NumericUpDown Grid.Row="3" Grid.Column="3" Value="{Binding Def}" Minimum="0"
-                                       Maximum="999999" FormatString="0" ParsingNumberStyle="Integer" Margin="0,8,10,0"/>
-                        <TextBlock Grid.Row="3" Grid.Column="4" Text="SPD" VerticalAlignment="Center"
-                                   Margin="0,8,0,0" FontSize="11"/>
-                        <NumericUpDown Grid.Row="3" Grid.Column="5" Value="{Binding Spd}" Minimum="0"
-                                       Maximum="999999" FormatString="0" ParsingNumberStyle="Integer" Margin="0,8,0,0"/>
-
-                        <TextBlock Grid.Row="4" Grid.Column="0" Text="INT" VerticalAlignment="Center"
-                                   Margin="0,8,0,0" FontSize="11"/>
-                        <NumericUpDown Grid.Row="4" Grid.Column="1" Value="{Binding Int}" Minimum="0"
-                                       Maximum="999999" FormatString="0" ParsingNumberStyle="Integer" Margin="0,8,10,0"/>
                       </Grid>
-
-                      <!-- What the sheet holds against what the level allows. Two TextBlocks rather than
-                           one with a switched brush: the bindings here resolve by reflection, so a
-                           visibility flag is the shape that cannot silently fall back to a wrong color.
-                           Red blocks the save — the server refuses the row too. -->
-                      <TextBlock Text="{Binding BudgetText}" FontSize="11"
-                                 IsVisible="{Binding IsWithinBudget}"
-                                 Foreground="{DynamicResource MirageMutedBrush}"/>
-                      <TextBlock Text="{Binding OverBudgetText}" FontSize="11" FontWeight="SemiBold"
-                                 TextWrapping="Wrap"
-                                 IsVisible="{Binding IsOverBudget}"
-                                 Foreground="{DynamicResource MirageBadBrush}"/>
 
                       <!-- The bag. Read-only rows; giving and taking are each one round trip naming one
                            slot, so nothing here rides on the account Save. -->
@@ -404,11 +358,6 @@
                       IsEnabled="{Binding CanSave}"
                       HotKey="Ctrl+S" ToolTip.Tip="Ctrl+S"/>
             </StackPanel>
-            <!-- Says WHY the greyed-out Save is greyed out; the red line on the offending character says
-                 which one. -->
-            <TextBlock x:Name="_blockedHint" Foreground="{DynamicResource MirageBadBrush}"
-                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                       IsVisible="{Binding HasOverBudgetChar}"/>
             <TextBlock Text="{Binding StatusMessage}"
                        Foreground="{DynamicResource MirageOkBrush}"
                        VerticalAlignment="Center" TextTrimming="CharacterEllipsis"

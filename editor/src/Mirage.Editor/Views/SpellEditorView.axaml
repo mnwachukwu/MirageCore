@@ -124,53 +124,6 @@
                            Minimum="0" Maximum="9999" FormatString="0"/>
           </mui:FormRow>
 
-          <mui:FormRow LabelWidth="165" IsVisible="{Binding SelectedSpell.IsGiveItem}">
-            <TextBlock x:Name="_intReqLabel" Grid.Column="0" VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Column="1"
-                           Value="{Binding SelectedSpell.IntReq}"
-                           Minimum="0" Maximum="9999" FormatString="0"/>
-          </mui:FormRow>
-
-          <!-- Level requirement: every spell type, unlike the fields above. INT decides who may learn a
-               spell; this decides when, and it is the only one of the two that can pace a tier ladder. -->
-          <mui:FormRow LabelWidth="165">
-            <TextBlock x:Name="_levelReqLabel" Grid.Column="0" VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Column="1"
-                           Value="{Binding SelectedSpell.LevelReq}"
-                           Minimum="0" Maximum="255" FormatString="0"/>
-          </mui:FormRow>
-
-          <Separator Margin="0,4,0,2" Background="{DynamicResource MirageLineSoftBrush}"/>
-
-          <!-- Calculated MP cost preview -->
-          <mui:FormRow LabelWidth="165">
-            <TextBlock x:Name="_maxMpCostLabel" Grid.Column="0" VerticalAlignment="Center"
-                       Foreground="#8B84AE" FontStyle="Italic"/>
-            <TextBlock Grid.Column="1"
-                       Text="{Binding SelectedSpell.MpCostDisplay}"
-                       VerticalAlignment="Center"
-                       Foreground="#88AAFF" FontWeight="SemiBold"/>
-          </mui:FormRow>
-          <!-- Reagent-per-cast preview (SubHp only): what a cast takes, then how often it takes the larger. -->
-          <mui:FormRow LabelWidth="165" IsVisible="{Binding SelectedSpell.ShowReagentCost}">
-            <TextBlock x:Name="_reagentCostLabel" Grid.Column="0" VerticalAlignment="Center"
-                       Foreground="#8B84AE" FontStyle="Italic"/>
-            <TextBlock Grid.Column="1"
-                       Text="{Binding SelectedSpell.ReagentCost}"
-                       VerticalAlignment="Center"
-                       Foreground="#88AAFF" FontWeight="SemiBold"/>
-          </mui:FormRow>
-          <mui:FormRow LabelWidth="165" IsVisible="{Binding SelectedSpell.ShowReagentCost}">
-            <TextBlock x:Name="_reagentChanceLabel" Grid.Column="0" VerticalAlignment="Center"
-                       Foreground="#8B84AE" FontStyle="Italic"/>
-            <TextBlock Grid.Column="1"
-                       Text="{Binding SelectedSpell.ReagentChance}"
-                       VerticalAlignment="Center"
-                       Foreground="#88AAFF" FontWeight="SemiBold"/>
-          </mui:FormRow>
-          <TextBlock x:Name="_mpCostNote"
-                     FontSize="11" Foreground="#6B6491" Margin="165,0,0,8"/>
-
           <!-- Formula notes panel -->
           <Expander x:Name="_notesExpander" IsExpanded="False" Margin="0,4,0,0"
                     HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">

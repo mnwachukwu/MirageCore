@@ -38,8 +38,13 @@ public sealed record SendPlayerDataPacket : IPacket
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public WorldLayer Layer { get; init; }
     [JsonPropertyName("map")] public int Map { get; init; }
+    // The pace the server bills this body's steps at. The client predicts its OWN steps through the same
+    // formula, so without this the two disagree the moment a game sets a speed. Omitted when 0, which is
+    // the baseline and what a world that sets no speed sends.
+    [JsonPropertyName("moveSpeed")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int MoveSpeed { get; init; }
     [JsonPropertyName("level")] public int Level { get; init; }
-    [JsonPropertyName("class")] public int Class { get; init; }
     [JsonPropertyName("access")] public AdminLevel Access { get; init; }
     [JsonPropertyName("pkExpiryUtc")] public long PkExpiryUtc { get; init; }
     [JsonPropertyName("graceUntilUtc")] public long GraceUntilUtc { get; init; }

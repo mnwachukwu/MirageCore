@@ -16,13 +16,13 @@ namespace Mirage.Shared.Tests.Records;
 [TestFixture]
 public class QuestRewardSetTests
 {
+    // Repeat ITEMS are what define the set now: a quest repeats for loot, and nothing else.
     private static QuestRecord WithRepeatSet() => new()
     {
-        RewardExp = 1705,
-        RepeatRewardExp = 909,
+        RepeatRewardItems = { new QuestReward { ItemNum = 4, Quantity = 1 } },
     };
 
-    private static QuestRecord WithoutRepeatSet() => new() { RewardExp = 1705 };
+    private static QuestRecord WithoutRepeatSet() => new();
 
     [Test]
     public void AFirstRun_PaysTheMainSet()
@@ -69,7 +69,7 @@ public class QuestRewardSetTests
     [Test]
     public void RepeatItemsAlone_DefineTheSet()
     {
-        var q = new QuestRecord { RewardExp = 1705 };
+        var q = new QuestRecord {};
         q.RepeatRewardItems.Add(new QuestReward { ItemNum = 4, Quantity = 1 });
 
         Assert.That(q.PaysRepeatRewards(QuestStatus.InProgressRepeat), Is.True);

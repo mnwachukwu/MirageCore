@@ -27,8 +27,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
         player.Dir = p.Dir;
         player.Layer = p.Layer;
         player.Map = p.Map;
-        player.Level = p.Level;
-        player.Class = p.Class;
+        player.MoveSpeed = p.MoveSpeed;
         player.Access = p.Access;
         player.PkExpiryUtc = p.PkExpiryUtc;
         player.PkGraceUntilUtc = p.GraceUntilUtc;
@@ -162,9 +161,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
         if (npcs is null) return;
         var n = npcs[p.NpcSlot];
         n.Num = p.Num;
-        n.Hp = n.MaxHp = p.MaxHp;
-        n.Mp = n.MaxMp = p.MaxMp;
-        n.Sp = n.MaxSp = p.MaxSp;
         n.X = p.X;
         n.Y = p.Y;
         n.Dir = p.Dir;
@@ -285,22 +281,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
     // home-slot native NPC so the same sprite isn't drawn twice on the home map.
     private void HandleTraversalNpc(TraversalNpcPacket p)
     {
-        // Floating combat number (works for both a non-lethal hit and the kill blow).
-        if (p.Damage != 0)
-
-        // Kill blow: drop the guest after its number floats; the native NPC respawns at home later.
-        if (p.Dead)
-        {
-            // Hand the shell the guest's render state first so it can hold a delayed-death sprite until a bolt lands.
-            if (_state.TraversalNpcs.TryGetValue((p.SpawnMapNum, p.SpawnSlot), out var dyingTn)
-                && _state.NpcDefs[dyingTn.Num] is { } tnDef)
-            {
-            }
-
-            _state.TraversalNpcs.Remove((p.SpawnMapNum, p.SpawnSlot));
-            return;
-        }
-
         var key = (p.SpawnMapNum, p.SpawnSlot);
         bool isNew = !_state.TraversalNpcs.TryGetValue(key, out var t);
         // For a native→guest FIRST cross, remember where the native last stood on its (loaded) home map.
@@ -311,17 +291,13 @@ public sealed partial class ClientPacketHandler : IClientEvents
         {
             t = new ClientTraversalNpc { SpawnMapNum = p.SpawnMapNum, SpawnSlot = p.SpawnSlot };
             // First sight = a native NPC converting to a guest at the border.  Carry over its render
-            // state (animated HP/MP/SP bars, combat-bar timer, in-flight attack) so the guest CONTINUES
-            // the same sprite seamlessly instead of resetting — otherwise the bar snaps and the attack
-            // frame drops for a frame on the native→guest handoff.  (A guest→guest cross reuses one
-            // object and never flickers; this makes the FIRST hop match it.)
+            // state (combat-bar timer, in-flight attack) so the guest CONTINUES the same sprite
+            // seamlessly instead of resetting.  (A guest→guest cross reuses one object and never
+            // flickers; this makes the FIRST hop match it.)
             if (p.SpawnSlot >= 1 && p.SpawnSlot <= Constants.MaxMapNpcs
                 && _state.NpcsForMap(p.SpawnMapNum) is { } home && home[p.SpawnSlot].Num > 0)
             {
                 var native = home[p.SpawnSlot];
-                t.DispHp = native.DispHp;
-                t.DispMp = native.DispMp;
-                t.DispSp = native.DispSp;
                 t.LastCombatMs = native.LastCombatMs;
                 t.Attacking = native.Attacking;
                 t.AttackTimer = native.AttackTimer;
@@ -339,62 +315,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
             _state.TraversalNpcs[key] = t;
         }
 
-        // Slide the sprite for a one-tile step instead of popping it:
-        //  • same-map step        → local tile delta (only on an actual tile change — see below);
-        //  • seam step, both maps loaded → WORLD-tile delta.  This is the robust path: it reads the two
-        //    positions directly, so it animates correctly even when the carrier packet had no Stepped
-        //    flag (e.g. a region re-sync snapshot that wins the race against the individual cross packet);
-        //  • seam step, old map NOT loaded (entered view from off-screen) → fall back to the Stepped flag
-        //    + Dir, the only info available then;
-        //  • otherwise (warp/teleport, fresh spawn, re-appearance) → snap, and re-snap the bar.
-        if (!isNew && t!.CurrentMapNum == p.CurrentMapNum)
-        {
-            // Only (re)start a slide on an ACTUAL tile change.  A traversal NPC re-broadcasts its full
-            // state on every action (attack, facing, idle), and a same-tile update here would reset the
-            // offset to 0 — cutting off an in-flight slide.  Leaving it alone lets MovementProcessor finish.
-            if (p.X != t.X || p.Y != t.Y)
-            {
-                t.XOffset = -(p.X - t.X) * Constants.PicX;
-                t.YOffset = -(p.Y - t.Y) * Constants.PicY;
-            }
-        }
-        else if (!isNew && TryWorldStepOffset(t!.CurrentMapNum, t.X, t.Y, p.CurrentMapNum, p.X, p.Y, out float wx, out float wy))
-        {
-            t.XOffset = wx;
-            t.YOffset = wy;
-        }
-        else if (isNew && fromMap != 0 && TryWorldStepOffset(fromMap, fromX, fromY, p.CurrentMapNum, p.X, p.Y, out float nwx, out float nwy))
-        {
-            // First sight via an in-view seam STEP: derive the slide from the native's last home tile.
-            // This is the robust path for the native→guest handoff: it animates correctly even when the
-            // packet that CREATED the guest was a Stepped=false region snapshot that won the race against
-            // the Stepped=true cross packet (happens when the player crosses the same seam in the same
-            // frame as the NPC — i.e. while baiting a hub NPC out onto an arm).  When there's no loaded
-            // native to anchor to (fromMap==0 — the guest merely scrolled into view), we fall through to
-            // snap below, which is the correct behavior there.
-            t!.XOffset = nwx;
-            t.YOffset = nwy;
-        }
-        else if (p.Stepped)
-        {
-            // Trailing offset = the tile we came from, one step opposite Dir (matches the same-map formula).
-            (t!.XOffset, t.YOffset) = p.Dir switch
-            {
-                Direction.Up => (0f, (float)Constants.PicY),
-                Direction.Down => (0f, -(float)Constants.PicY),
-                Direction.Left => ((float)Constants.PicX, 0f),
-                Direction.Right => (-(float)Constants.PicX, 0f),
-                _ => (0f, 0f),
-            };
-        }
-        else
-        {
-            t!.XOffset = 0;
-            t.YOffset = 0;
-            t.DispHp = -1f;
-        }
-
-        t.CurrentMapNum = p.CurrentMapNum;
+        t!.CurrentMapNum = p.CurrentMapNum;
         t.Num = p.Num;
         t.X = p.X;
         t.Y = p.Y;
@@ -402,8 +323,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
         t.PrevLayer = t.Layer;   // pre-step layer for the cross-layer slide-occlusion fix
         t.Layer = p.Layer;
         t.Moving = p.Movement;
-        t.Hp = p.Hp;
-        t.MaxHp = p.MaxHp;
         t.HasTarget = p.HasTarget;
         // Server-authoritative combat stamp converted to our clock — see TraversalNpcPacket.MsSinceCombat.
         if (p.MsSinceCombat != int.MaxValue) t.LastCombatMs = Environment.TickCount64 - p.MsSinceCombat;

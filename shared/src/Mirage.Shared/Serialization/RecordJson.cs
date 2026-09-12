@@ -1,6 +1,8 @@
+using Mirage.Shared.Extensibility;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Mirage.Shared.Serialization;
 
@@ -20,5 +22,24 @@ public static class RecordJson
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         Converters = { new JsonStringEnumConverter() },
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver { Modifiers = { SkipEmptyAttributeBags } },
     };
+
+    /// <summary>Leaves an empty <see cref="AttributeBag"/> out of the file entirely.
+    ///
+    /// <para>Every body and most records carry a bag and almost none of them hold anything, so without
+    /// this every file in a world gains an <c>"attributes": {}</c> line stating that nothing was
+    /// authored. A world folder is read and hand-edited by people, and a key that is always there and
+    /// always empty is the kind of noise that teaches a reader to skip a section.</para>
+    ///
+    /// <para>Done as a type-info modifier rather than an attribute on each property so it holds for every
+    /// bag there will ever be, including one on a record a game adds.</para></summary>
+    private static void SkipEmptyAttributeBags(JsonTypeInfo info)
+    {
+        foreach (var property in info.Properties)
+        {
+            if (property.PropertyType != typeof(AttributeBag)) continue;
+            property.ShouldSerialize = static (_, value) => value is AttributeBag bag && !bag.IsEmpty;
+        }
+    }
 }

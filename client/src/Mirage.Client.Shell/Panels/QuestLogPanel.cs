@@ -164,20 +164,13 @@ public sealed class QuestLogPanel : IGamePanel
 
             // What this run pays, off the same rule the server grants by.
             bool useRepeat = def.PaysRepeatRewards(pq?.Status ?? QuestStatus.NotStarted);
-            long rewardExp = useRepeat ? def.RepeatRewardExp : def.RewardExp;
             var rewardItems = useRepeat ? def.RepeatRewardItems : def.RewardItems;
-            if (rewardExp > 0 || rewardItems.Count > 0)
+            if (rewardItems.Count > 0)
             {
                 detailY += 4;
                 UiHelper.DrawLabel(sb, font, ClientStrings.Get(ClientStrings.QuestDialog_RewardsHeader),
                     new Vector2(c.X + 6, detailY), UiHelper.DlgLabelColor, c.Width - 12);
                 detailY += LineH;
-                if (rewardExp > 0)
-                {
-                    UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.QuestDialog_RewardExp, ("Exp", rewardExp)),
-                        new Vector2(c.X + 12, detailY), Color.White, c.Width - 18);
-                    detailY += LineH;
-                }
 
                 foreach (var reward in rewardItems)
                 {
@@ -213,7 +206,6 @@ public sealed class QuestLogPanel : IGamePanel
     {
         if (_lastVersion == state.QuestVersion) return;
         _lastVersion = state.QuestVersion;
-        int myClass = state.Me.Class;
         var rows = new List<Row>();
         for (int q = 1; q < state.QuestDefs.Length; q++)
         {
@@ -224,7 +216,7 @@ public sealed class QuestLogPanel : IGamePanel
                 pq is { Status: QuestStatus.InProgress or QuestStatus.InProgressRepeat } ? RowKind.InProgress
               : pq is { Status: QuestStatus.Done } ? (def.Repeatable ? RowKind.Repeatable : RowKind.Complete)
               : state.IsQuestEligible(q) ? RowKind.Available
-              : RowKind.Ineligible;                        // right class, but unmet level/stat/prereq
+              : RowKind.Ineligible;                        // offered, but a requirement is unmet
             rows.Add(new Row(q, kind));
         }
         _rowCount = rows.Count;

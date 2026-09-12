@@ -77,32 +77,14 @@ public class SpellRowViewModelTests
         });
     }
 
-    // The reagent-per-cast line is the SubHp spell's real cost; other spell types pay MP only.
-    [Test]
-    public void ShowReagentCost_OnlyForSubHp()
-    {
-        Assert.Multiple(() =>
-        {
-            Assert.That(Row(SpellType.SubHp).ShowReagentCost, Is.True);
-            // A whole count and a percent: reagents are items so the count must be whole, while the odds
-            // are stated outright. A low-tier cast usually takes nothing, which is what the percent says.
-            var subHp = Row(SpellType.SubHp, vitalAmount: 40);
-            Assert.That(subHp.ReagentCost, Is.Not.Empty, "a SubHp spell costs reagents");
-            Assert.That(subHp.ReagentChance, Does.Contain("%"), "and states how often it takes them");
-            Assert.That(Row(SpellType.AddHp).ShowReagentCost, Is.False);
-            Assert.That(Row(SpellType.AddMp).ReagentCost, Is.Empty);
-            Assert.That(Row(SpellType.AddMp).ReagentChance, Is.Empty);
-        });
-    }
-
-    // Retyping away from GiveItem must drop its IntReq: RawSpellRequirement reads IntReq for GiveItem and
-    // VitalAmount for everything else, so a leftover would silently re-gate the spell if it ever went back.
+    // Retyping away from GiveItem must drop the item it handed over, or the record keeps a reference
+    // the spell no longer has any way to use.
     [Test]
     public void ToRecord_ZeroesFieldsTheTypeDoesNotUse()
     {
         var give = new SpellRowViewModel(4, new SpellRecord
         {
-            Name = "Conjure", Type = SpellType.GiveItem, ItemNum = 9, ItemQuantity = 3, IntReq = 20,
+            Name = "Conjure", Type = SpellType.GiveItem, ItemNum = 9, ItemQuantity = 3,
         });
 
         var asGiven = give.ToRecord();
@@ -110,7 +92,6 @@ public class SpellRowViewModelTests
         {
             Assert.That(asGiven.ItemNum, Is.EqualTo((short)9));
             Assert.That(asGiven.ItemQuantity, Is.EqualTo((short)3));
-            Assert.That(asGiven.IntReq, Is.EqualTo((short)20));
             Assert.That(asGiven.VitalAmount, Is.EqualTo((short)0));
         });
 
@@ -123,7 +104,6 @@ public class SpellRowViewModelTests
             Assert.That(retyped.VitalAmount, Is.EqualTo((short)30));
             Assert.That(retyped.ItemNum, Is.EqualTo((short)0), "no longer hands over an item");
             Assert.That(retyped.ItemQuantity, Is.EqualTo((short)0));
-            Assert.That(retyped.IntReq, Is.EqualTo((short)0), "gates off VitalAmount now, not IntReq");
         });
     }
 
@@ -132,7 +112,7 @@ public class SpellRowViewModelTests
     {
         var vm = new SpellRowViewModel(4, new SpellRecord
         {
-            Name = "Conjure", Type = SpellType.GiveItem, ItemNum = 9, IntReq = 20,
+            Name = "Conjure", Type = SpellType.GiveItem, ItemNum = 9,
         });
         vm.Type = SpellType.SubMp;
         vm.VitalAmount = 15;
@@ -144,7 +124,6 @@ public class SpellRowViewModelTests
             Assert.That(pkt.SpellNum, Is.EqualTo(4));
             Assert.That(pkt.VitalAmount, Is.EqualTo((short)15));
             Assert.That(pkt.ItemNum, Is.EqualTo((short)0));
-            Assert.That(pkt.IntReq, Is.EqualTo((short)0));
         });
     }
 

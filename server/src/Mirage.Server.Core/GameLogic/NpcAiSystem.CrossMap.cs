@@ -91,9 +91,6 @@ public sealed partial class NpcAiSystem : GameSystem
             CurrentMapNum = toMap,
             Num = mn.Num,
             Target = mn.Target,
-            Hp = mn.Hp,
-            Mp = mn.Mp,
-            Sp = mn.Sp,
             X = destX,
             Y = destY,
             Dir = dir,
@@ -128,7 +125,6 @@ public sealed partial class NpcAiSystem : GameSystem
             RushCommitted = mn.RushCommitted,
             HasMadeContact = mn.HasMadeContact,
             ChaseSprinting = mn.ChaseSprinting,
-            RunReservoirLow = mn.RunReservoirLow,
             // Count this cross as the guest's action for THIS pass.  Maps tick in ascending order, so a
             // native crossing UP into a higher-numbered map (e.g. 1→2) lands in the destination's
             // traversal list before that map ticks; without this stamp RunTraversalAi would give it a
@@ -254,8 +250,6 @@ public sealed partial class NpcAiSystem : GameSystem
             Dir = t.Dir,
             Movement = t.Moving,
             Stepped = stepped,
-            Hp = t.Hp,
-            MaxHp = _world.EffectiveNpcMaxHp(npc),
             MsSinceCombat = int.MaxValue,
             HasTarget = t.Target > 0,
             Attacking = t.Attacking,
@@ -267,7 +261,7 @@ public sealed partial class NpcAiSystem : GameSystem
         => SendToMap(_world, t.CurrentMapNum, BuildTraversalPacket(t));
 
     /// <summary>Per-tick AI for visiting (chasing) NPCs on a map. Iterated backward for safe removal.</summary>
-    private void RunTraversalAi(int mapNum, long now, bool regenTick)
+    private void RunTraversalAi(int mapNum, long now)
     {
         var list = _world.MapTraversalNpcs[mapNum];
         for (int i = list.Count - 1; i >= 0; i--)
@@ -284,7 +278,6 @@ public sealed partial class NpcAiSystem : GameSystem
             if (t.LastAiTick == now) continue;
             t.LastAiTick = now;
             var npc = _world.Npcs[t.Num];
-            if (regenTick) RegenNpcVitals(mapNum, t, npc, now);  // parity with native regen (esp. MP for casting)
             t.Attacking = false;  // cleared each tick; the attack path re-sets it for one swing
 
             // A guest that has had nobody for the give-up window goes home (fresh respawn on the home

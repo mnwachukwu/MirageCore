@@ -9,20 +9,13 @@
       "progress": 0
     }
   ],
-  "reqLevel": 235,
-  "reqStr": 0,
-  "reqDef": 0,
-  "reqSpd": 0,
-  "reqInt": 0,
   "prereqQuest": 0,
-  "rewardExp": 1918605,
   "rewardItems": [
     {
       "itemNum": 1,
       "quantity": 611711
     }
   ],
-  "repeatRewardExp": 1023256,
   "repeatRewardItems": [
     {
       "itemNum": 1,

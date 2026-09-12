@@ -89,9 +89,9 @@ public sealed partial class GuildSystem : GameSystem
         }
     }
 
-    // Roster rows ordered by rank (Leader first) then character level, both descending. An online
-    // member's character fields come from their LIVE character (the cached snapshot can lag a level-up
-    // or a character switch); an offline member falls back to the cache StampMemberLastSeen froze.
+    // Roster rows ordered by rank, Leader first. An online member's character fields come from their
+    // LIVE character (the cached snapshot can lag a character switch); an offline member falls back to
+    // the cache StampMemberLastSeen froze.
     private List<SocialEntry> BuildRoster(GuildRecord guild) =>
         guild.Members
             .Select(m =>
@@ -105,12 +105,9 @@ public sealed partial class GuildSystem : GameSystem
                     Online = live is not null,
                     LastSeenUtc = m.LastSeenUtc,
                     CharName = live?.TrimmedName ?? m.CharName,
-                    CharClass = live?.Class ?? m.CharClass,
-                    CharLevel = live?.Level ?? m.CharLevel,
                 };
             })
             .OrderByDescending(r => (int)r.Rank)
-            .ThenByDescending(r => r.CharLevel)
             .ToList();
 
     // ── Roster snapshot maintenance ──────────────────────────────────────────────
@@ -127,8 +124,6 @@ public sealed partial class GuildSystem : GameSystem
         var sp = _pm[index];
         if (GuildOf(sp) is not { } guild || FindMember(guild, sp.Login) is not { } member) return;
         member.CharName = sp.Char.TrimmedName;
-        member.CharClass = sp.Char.Class;
-        member.CharLevel = sp.Char.Level;
         SaveGuild(guild);
     }
 
@@ -147,8 +142,6 @@ public sealed partial class GuildSystem : GameSystem
         member.ActiveSeconds = (gapBeforeSession > Constants.GuildActiveMemberWindowSeconds ? 0 : member.ActiveSeconds) + sessionSecs;
         member.LastSeenUtc = now;
         member.CharName = sp.Char.TrimmedName;
-        member.CharClass = sp.Char.Class;
-        member.CharLevel = sp.Char.Level;
         SaveGuild(guild);
     }
 

@@ -41,7 +41,6 @@ public class PlayerSpawnSystemTests
         p.Map = Map;
         p.X = 7;
         p.Y = 8;
-        p.Level = level;
         if (gold > 0)
         {
             p.Inv[1].Num = Gold;
@@ -103,21 +102,6 @@ public class PlayerSpawnSystemTests
             Assert.That(ItemSystem.CountItem(p, world.Items, Gold), Is.EqualTo(100 - Constants.SpawnCostMinimum),
                 "charged the level-1 floor cost");
         });
-    }
-
-    // The cost climbs with level, so a level-20 respawn set costs more than a level-1 one.
-    [Test]
-    public void ConfirmSetSpawn_CostScalesWithLevel()
-    {
-        var (w1, s1, p1) = Setup(level: 1, gold: 100_000, ShopType.Inn);
-        s1.ConfirmSetSpawn(Idx);
-        long chargedL1 = 100_000 - ItemSystem.CountItem(p1, w1.Items, Gold);
-
-        var (w20, s20, p20) = Setup(level: 20, gold: 100_000, ShopType.Inn);
-        s20.ConfirmSetSpawn(Idx);
-        long chargedL20 = 100_000 - ItemSystem.CountItem(p20, w20.Items, Gold);
-
-        Assert.That(chargedL20, Is.GreaterThan(chargedL1), "the set-spawn cost scales up with level");
     }
 
     // ── Harness ──────────────────────────────────────────────────────────────────

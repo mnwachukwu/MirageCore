@@ -1,3 +1,5 @@
+using Mirage.Shared.Extensibility;
+
 namespace Mirage.Shared.Records;
 
 // Not sealed: TraversalNpcRecord inherits this so the AI can operate on a chasing NPC's
@@ -5,10 +7,13 @@ namespace Mirage.Shared.Records;
 public class MapNpcRecord
 {
     public int Num { get; set; }
+
+    /// <summary>This copy's own game values, seeded from its template at spawn and free to diverge.
+    /// Not persisted: a spawned NPC is rebuilt from its template on restart, and a wolf's remaining
+    /// health is not something a world folder should carry.</summary>
+    public AttributeBag Attributes { get; set; } = new();
+
     public int Target { get; set; }        // player index; 0 = no target
-    public int Hp { get; set; }
-    public int Mp { get; set; }
-    public int Sp { get; set; }
     public int X { get; set; }
     public int Y { get; set; }
     public Direction Dir { get; set; }
@@ -48,12 +53,6 @@ public class MapNpcRecord
     // Per-NPC step-clock: earliest tick (Environment.TickCount64) this NPC may take its next chase-step
     // (the SPD-scaled run cadence).  The fast movement pass gates on this; 0 = ready.
     public long NextMoveMs { get; set; }
-    // Run-stamina hysteresis latch (runtime; not persisted).  Set when a run drains SP to 0; while set the
-    // NPC walks until SP rebuilds to Constants.NpcRunReservoirFraction of its max, then it clears and the NPC
-    // may sprint again.  Stops the run/walk flicker (and slide-snap) of burning each SP-regen trickle the
-    // instant it lands.  Applies to both chase and kite runs — see NpcAiSystem.NpcCanRun.
-    public bool RunReservoirLow { get; set; }
-
     // Per-engagement approach commitment (runtime; not persisted).  Rolled once per fresh chase target in
     // BeginEngagement: RushCommitted (won the NpcApproachRushChancePct "charge" roll) lets an AoS mob RUN the
     // opening approach; otherwise the AoS mob walks in until HasMadeContact turns true (it reached the target
@@ -159,7 +158,6 @@ public class MapNpcRecord
                 DamageByNpc.RemoveAt(i);
         }
     }
-
 
     /// <summary>Universal NPC identity — (SpawnMap, SpawnSlot) so a native at home and a guest abroad
     /// resolve to the same key.  Native default uses its current (mapNum, slot); TraversalNpcRecord

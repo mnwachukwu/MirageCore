@@ -19,9 +19,6 @@ public static partial class ClientStrings
     public const string Common_SortHeader = nameof(Common_SortHeader);
     public const string Common_EquipmentHeader = nameof(Common_EquipmentHeader);
     public const string Common_Back = nameof(Common_Back);
-    public const string Common_TotalBonuses = nameof(Common_TotalBonuses);
-    public const string Common_LevelFormat = nameof(Common_LevelFormat);
-    public const string Common_LevelWithClassFormat = nameof(Common_LevelWithClassFormat);
     public const string Common_GoldLabel = nameof(Common_GoldLabel);
     public const string Common_NameLabel = nameof(Common_NameLabel);
     public const string Common_PasswordLabel = nameof(Common_PasswordLabel);
@@ -48,18 +45,12 @@ public static partial class ClientStrings
     public const string Stats_Mp = nameof(Stats_Mp);
     public const string Stats_Sp = nameof(Stats_Sp);
     public const string Stats_Exp = nameof(Stats_Exp);
-    public const string Stats_Str = nameof(Stats_Str);
-    public const string Stats_Def = nameof(Stats_Def);
-    public const string Stats_Int = nameof(Stats_Int);
-    public const string Stats_Spd = nameof(Stats_Spd);
-    public const string Stats_PDmg = nameof(Stats_PDmg);
     public const string Stats_MDmg = nameof(Stats_MDmg);
     public const string Stats_MpDmg = nameof(Stats_MpDmg);
     public const string Stats_SpDmg = nameof(Stats_SpDmg);
     public const string Stats_HpRestore = nameof(Stats_HpRestore);
     public const string Stats_MpRestore = nameof(Stats_MpRestore);
     public const string Stats_SpRestore = nameof(Stats_SpRestore);
-    public const string Stats_Mit = nameof(Stats_Mit);
 
     // Floating combat text (Block/Dodge over an entity; vital labels reuse Stats_*).
     public const string Combat_EnterCombat = nameof(Combat_EnterCombat);
@@ -67,15 +58,9 @@ public static partial class ClientStrings
 
     // ── Tooltip (item/spell hover labels) ───────────────────────────────────────
     public const string Tooltip_Durability = nameof(Tooltip_Durability);
-    public const string Tooltip_StrReq = nameof(Tooltip_StrReq);
-    public const string Tooltip_DefReq = nameof(Tooltip_DefReq);
-    public const string Tooltip_Restores = nameof(Tooltip_Restores);
-    public const string Tooltip_Drains = nameof(Tooltip_Drains);
     public const string Tooltip_Quantity = nameof(Tooltip_Quantity);
     public const string NumberPrompt_OverMax = nameof(NumberPrompt_OverMax);
-    public const string Tooltip_LevelReq = nameof(Tooltip_LevelReq);
     public const string Tooltip_Teaches = nameof(Tooltip_Teaches);
-    public const string Tooltip_MpCost = nameof(Tooltip_MpCost);
     // Action bar
     public const string HotkeyBar_EmptyHint = nameof(HotkeyBar_EmptyHint);
     public const string HotkeyBar_GamepadModifier = nameof(HotkeyBar_GamepadModifier);
@@ -85,9 +70,4 @@ public static partial class ClientStrings
     public const string HotkeyBar_Clear = nameof(HotkeyBar_Clear);
     public const string HotkeyBar_NothingBound = nameof(HotkeyBar_NothingBound);
     public const string HotkeyBar_ItemGone = nameof(HotkeyBar_ItemGone);
-    public const string Tooltip_ReagentCost = nameof(Tooltip_ReagentCost);
-    public const string Tooltip_ReagentCostRained = nameof(Tooltip_ReagentCostRained);   // rain-doubled value: "{Count} (x2)"
-    public const string Tooltip_ReagentDepletes = nameof(Tooltip_ReagentDepletes);
-    public const string Tooltip_ReagentChancePercent = nameof(Tooltip_ReagentChancePercent);   // how often: "{Percent}%"
-    public const string Tooltip_IntReq = nameof(Tooltip_IntReq);
 }

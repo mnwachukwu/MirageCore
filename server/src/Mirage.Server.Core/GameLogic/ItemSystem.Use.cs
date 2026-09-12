@@ -53,18 +53,6 @@ public sealed partial class ItemSystem : GameSystem
             return;
         }
 
-        // Level gate. Sits here, ahead of the type switch, because it is the one requirement that reads
-        // the same on a sword, a potion and a scroll — and because it is what actually paces the tier
-        // ladder. The stat requirements below cannot: a class's BASE stat is high enough at level 1 that
-        // a specialist already meets a mid-ladder piece on the day it is rolled, so those gate WHO may
-        // wear a thing while this gates WHEN. Unequipping is never blocked — only reaching for it is.
-        if (ItemRecord.UsesLevelReq(item.Type) && item.LevelReq > p.Level
-            && !(isEquipment && EquippedSlotForType(p, item.Type) == invSlot))
-        {
-            SendMsg(index, ServerStrings.ItemSystem_LevelReq, GameColor.BrightRed, ("Level", item.LevelReq));
-            return;
-        }
-
         // ── The drinking cooldown ────────────────────────────────────────────────────────────────
         // Potions run on their own 2s clock, apart from the 1s action beat that attacking and casting
         // share, so a potion never costs a swing and a swing never delays a potion. Heavy Wind doubles
@@ -74,8 +62,7 @@ public sealed partial class ItemSystem : GameSystem
         // scrolls are blocked outright in combat, and a KEY is deliberately free — opening a door
         // mid-fight is a legitimate move and must not cost the swing that follows it.
         //
-        // Placed after every guard that rejects a use outright — class, broken, level — so a refused
-        // use never burns the cooldown.
+        // Placed after every guard that rejects a use outright, so a refused use never burns the cooldown.
         bool isPotion = item.Type is ItemType.PotionAddHp or ItemType.PotionAddMp or ItemType.PotionAddSp
                                   or ItemType.PotionSubHp or ItemType.PotionSubMp or ItemType.PotionSubSp;
         long useWindMult = _world.WeatherOn(p.Map) == WeatherType.HeavyWind
@@ -90,45 +77,21 @@ public sealed partial class ItemSystem : GameSystem
         switch (item.Type)
         {
             case ItemType.Weapon:
-                int weaponStrReq = CombatFormulas.GearStatRequirement(item.Power, 0);
-                if (p.WeaponSlot != invSlot && p.Str < weaponStrReq)
-                {
-                    SendMsg(index, ServerStrings.ItemSystem_WeaponStrReq, GameColor.BrightRed, ("Required", weaponStrReq));
-                    break;
-                }
                 p.WeaponSlot = (p.WeaponSlot == invSlot) ? 0 : invSlot;
                 SendEquippedGear(index);
                 break;
 
             case ItemType.Armor:
-                int armorDefReq = CombatFormulas.GearStatRequirement(item.Power, 0);
-                if (p.ArmorSlot != invSlot && p.Def < armorDefReq)
-                {
-                    SendMsg(index, ServerStrings.ItemSystem_ArmorDefReq, GameColor.BrightRed, ("Required", armorDefReq));
-                    break;
-                }
                 p.ArmorSlot = (p.ArmorSlot == invSlot) ? 0 : invSlot;
                 SendEquippedGear(index);
                 break;
 
             case ItemType.Helmet:
-                int helmetDefReq = CombatFormulas.GearStatRequirement(item.Power, 0);
-                if (p.HelmetSlot != invSlot && p.Def < helmetDefReq)
-                {
-                    SendMsg(index, ServerStrings.ItemSystem_HelmetDefReq, GameColor.BrightRed, ("Required", helmetDefReq));
-                    break;
-                }
                 p.HelmetSlot = (p.HelmetSlot == invSlot) ? 0 : invSlot;
                 SendEquippedGear(index);
                 break;
 
             case ItemType.Shield:
-                int shieldDefReq = CombatFormulas.GearStatRequirement(item.Power, 0);
-                if (p.ShieldSlot != invSlot && p.Def < shieldDefReq)
-                {
-                    SendMsg(index, ServerStrings.ItemSystem_ShieldDefReq, GameColor.BrightRed, ("Required", shieldDefReq));
-                    break;
-                }
                 p.ShieldSlot = (p.ShieldSlot == invSlot) ? 0 : invSlot;
                 SendEquippedGear(index);
                 break;

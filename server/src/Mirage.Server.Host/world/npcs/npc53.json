@@ -25,11 +25,5 @@
       "chance": 10
     }
   ],
-  "str": 143,
-  "def": 122,
-  "spd": 29,
-  "int": 24,
-  "extraHp": 0,
-  "isBoss": false,
   "emitsLight": true
 }

@@ -569,9 +569,6 @@ public class SeedIntegrityTests
                     $"quest{num} requires quest {quest.PrereqQuest}, which does not exist");
                 if (!_quests.TryGetValue(quest.PrereqQuest, out var prereq)) continue;
 
-                Assert.That(prereq.ReqLevel, Is.LessThanOrEqualTo(quest.ReqLevel),
-                    $"quest{num} ({quest.TrimmedName}) unlocks at level {quest.ReqLevel} but its "
-                    + $"prerequisite \"{prereq.TrimmedName}\" needs {prereq.ReqLevel}");
                 Assert.That(prereq.GiverNpc, Is.EqualTo(quest.GiverNpc),
                     $"quest{num} chains off a quest given by a different NPC — the seed's three bands "
                     + "have no content between them, so a cross-hub chain cannot be walked");
@@ -828,36 +825,6 @@ public class SeedIntegrityTests
                     + "peace already covers");
             }
         });
-    }
-
-    /// <summary>Each of the two upper bands holds exactly two sides — a cult and the fauna it shares its water
-    /// or its ash with. Two is what makes a band worth walking through: one side and nothing in it ever fights
-    /// anything but the player, three and a number has gone astray. Nothing up there is ungrouped, either,
-    /// since a loner among a whole band of one faction is a mob that fights every neighbour it has.</summary>
-    [Test]
-    public void EachUpperBand_HoldsTwoSides()
-    {
-        RequireSeed();
-        foreach (var (lo, hi, band) in new[] { (100, 120, "the Sunken Reach"), (235, 255, "the Ashen Throne") })
-        {
-            // A side is a bestiary matter, and the drop table is what says an NPC IS bestiary: something
-            // that pays nothing for killing it is a wall or a warden, put there to be walked around.
-            var inBand = _npcs.Values
-                .Where(n => n.Behavior is NpcBehavior.Pursue && (n.Drops?.Count ?? 0) > 0)
-                .Where(n => StatFormulas.NpcLevel(n) >= lo && StatFormulas.NpcLevel(n) <= hi)
-                .ToList();
-            Assume.That(inBand, Is.Not.Empty);
-
-            Assert.Multiple(() =>
-            {
-                Assert.That(inBand.Where(n => n.Group == 0).Select(n => n.TrimmedName).ToList(), Is.Empty,
-                    $"{band} ({lo}-{hi}) holds a mob on no side at all");
-                Assert.That(inBand.Select(n => n.Group).Distinct().ToList(), Has.Count.EqualTo(2),
-                    $"{band} ({lo}-{hi}) is split across "
-                    + string.Join(", ", inBand.GroupBy(n => n.Group).OrderBy(g => g.Key)
-                        .Select(g => $"{g.Key}x{g.Count()}")));
-            });
-        }
     }
 
     /// <summary>A side means nothing on an NPC the notice scan never looks at, and one wearing a number it

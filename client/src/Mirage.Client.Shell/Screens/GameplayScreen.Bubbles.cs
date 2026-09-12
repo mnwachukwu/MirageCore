@@ -285,17 +285,7 @@ public sealed partial class GameplayScreen : IGameScreen
         var me = _ctx.State.Me;
         if (me?.Hotkeys is null || slot < 1 || slot >= me.Hotkeys.Length) return;
         int itemNum = me.Hotkeys[slot].Num;
-        if (IsPotion(itemNum) && PotionWouldDoSomething(itemNum)) me.PotionTimer = nowMs;
-    }
-
-    /// <summary>Whether drinking this would change anything, read through the same shared rule the server
-    /// applies — see <see cref="StatFormulas.PotionWouldDoSomething"/>.</summary>
-    private bool PotionWouldDoSomething(int itemNum)
-    {
-        if (_ctx.State.Me is not { } me) return false;
-        var item = itemNum > 0 && itemNum < _ctx.State.Items.Length ? _ctx.State.Items[itemNum] : null;
-        return item is not null && StatFormulas.PotionWouldDoSomething(
-            item.Type, item.VitalAmount, me.Hp, me.MaxHp, me.Mp, me.MaxMp, me.Sp, me.MaxSp);
+        if (IsPotion(itemNum)) me.PotionTimer = nowMs;
     }
 
     /// <summary>How much of the clock a bound slot answers to is still to run, 1→0. A potion reads the

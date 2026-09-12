@@ -48,16 +48,12 @@ public class GuestNativeNpcParityTests
     // Every AI state field the player can perceive is declared on the BASE — inherited by the guest, never
     // shadowed — so a guest and a native carry it identically (action timers, chase latches, vitals,
     // and all three aggro-ledger arrays that must cross a seam together).
-    [TestCase("Hp")]
-    [TestCase("Mp")]
-    [TestCase("Sp")]
     [TestCase("Target")]
     [TestCase("Dir")]
     [TestCase("AttackTimer")]
     [TestCase("HasMadeContact")]
     [TestCase("ChaseSprinting")]
     [TestCase("RushCommitted")]
-    [TestCase("RunReservoirLow")]
     [TestCase("LastReachedTargetMs")]
     [TestCase("DamageByPlayer")]
     [TestCase("WarnHitsByPlayer")]
@@ -109,9 +105,9 @@ public class GuestNativeNpcParityTests
                     {
                         foreach (int gap in new[] { 1, 3, 6, 9 })
                         {
-                            var npc = new NpcRecord { Behavior = beh, Str = str, Int = intel };
-                            var native = new MapNpcRecord { HasMadeContact = contact, ChaseSprinting = sprinting, Mp = 10 };
-                            var guest = new TraversalNpcRecord { HasMadeContact = contact, ChaseSprinting = sprinting, Mp = 10 };
+                            var npc = new NpcRecord { Behavior = beh};
+                            var native = new MapNpcRecord { HasMadeContact = contact, ChaseSprinting = sprinting};
+                            var guest = new TraversalNpcRecord { HasMadeContact = contact, ChaseSprinting = sprinting};
 
                             bool nativeRun = (bool)decide!.Invoke(null, new object[] { native, npc, gap })!;
                             bool guestRun = (bool)decide.Invoke(null, new object[] { guest, npc, gap })!;

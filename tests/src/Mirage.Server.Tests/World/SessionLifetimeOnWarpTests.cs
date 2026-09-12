@@ -51,8 +51,6 @@ public class SessionLifetimeOnWarpTests
         sp.Char.Map = Here;
         sp.Char.X = 5;
         sp.Char.Y = 5;
-        sp.Char.MaxHp = 100;
-        sp.Char.Hp = 100;                       // full HP => no blood trail during the move
         world.MapObservers[Here].Add(Idx);
 
         sp.SetActiveShop(ShopNum, Here, KeeperSlot);

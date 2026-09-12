@@ -8,11 +8,5 @@
   "behavior": "Pursue",
   "group": 1,
   "range": 3,
-  "str": 20,
-  "def": 15,
-  "spd": 2,
-  "int": 1,
-  "extraHp": 0,
-  "isBoss": false,
   "emitsLight": false
 }

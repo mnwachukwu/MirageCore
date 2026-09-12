@@ -9,20 +9,13 @@
       "progress": 0
     }
   ],
-  "reqLevel": 13,
-  "reqStr": 0,
-  "reqDef": 0,
-  "reqSpd": 0,
-  "reqInt": 20,
   "prereqQuest": 0,
-  "rewardExp": 10140,
   "rewardItems": [
     {
       "itemNum": 1,
       "quantity": 458
     }
   ],
-  "repeatRewardExp": 0,
   "repeatRewardItems": [],
   "giverNpc": 126,
   "turnInNpc": 0,

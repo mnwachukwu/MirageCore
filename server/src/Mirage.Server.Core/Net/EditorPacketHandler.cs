@@ -522,12 +522,6 @@ public sealed partial class EditorPacketHandler
                 Quantity = isCurrency ? (d.Quantity < 1 ? (short)1 : d.Quantity) : (short)0,
             };
         })];
-        npc.Str = p.Str;
-        npc.Def = p.Def;
-        npc.Spd = p.Spd;
-        npc.Int = p.Int;
-        npc.ExtraHp = p.ExtraHp;
-        npc.IsBoss = p.IsBoss;
         npc.EmitsLight = p.EmitsLight;
         npc.Light = p.Light;
         // Canonicalize before persisting: drops inert lines, caps the table, and collapses an empty list
@@ -639,17 +633,8 @@ public sealed partial class EditorPacketHandler
         // Drop degenerate/empty authored rows + cap to the shared limits so a bad state never persists (mirrors
         // the shop barter-quantity normalization). The editor sends fixed-slot lists that include empties.
         quest.Objectives = NormalizeQuestObjectives(p.Objectives);
-        quest.ReqLevel = p.ReqLevel;
-        quest.ReqStr = p.ReqStr;
-        quest.ReqDef = p.ReqDef;
-        quest.ReqSpd = p.ReqSpd;
-        quest.ReqInt = p.ReqInt;
-        // Same authoritative-normalize rule as items and spells: the server drops ids outside the class
-        // table, dedupes and sorts, whatever a client sent.
         quest.PrereqQuest = p.PrereqQuest;
-        quest.RewardExp = p.RewardExp;
         quest.RewardItems = NormalizeQuestRewards(p.RewardItems, _world.Limits.Items);
-        quest.RepeatRewardExp = p.RepeatRewardExp;
         quest.RepeatRewardItems = NormalizeQuestRewards(p.RepeatRewardItems, _world.Limits.Items);
         quest.GiverNpc = p.GiverNpc;
         quest.TurnInNpc = p.TurnInNpc;
@@ -678,10 +663,9 @@ public sealed partial class EditorPacketHandler
             Name = q.Name,
             Description = q.Description,
             Objectives = q.Objectives.Select(o => o.Clone()).ToList(),
-            ReqLevel = q.ReqLevel, ReqStr = q.ReqStr, ReqDef = q.ReqDef, ReqSpd = q.ReqSpd, ReqInt = q.ReqInt,
             PrereqQuest = q.PrereqQuest,
-            RewardExp = q.RewardExp, RewardItems = q.RewardItems.Select(r => r.Clone()).ToList(),
-            RepeatRewardExp = q.RepeatRewardExp, RepeatRewardItems = q.RepeatRewardItems.Select(r => r.Clone()).ToList(),
+            RewardItems = q.RewardItems.Select(r => r.Clone()).ToList(),
+            RepeatRewardItems = q.RepeatRewardItems.Select(r => r.Clone()).ToList(),
             GiverNpc = q.GiverNpc, TurnInNpc = q.TurnInNpc, Repeatable = q.Repeatable, Cadence = q.Cadence,
         };
     }

@@ -173,18 +173,8 @@ public sealed partial class ClientPacketHandler : IClientEvents
             return;
         }
 
-        // Snap on death so the bar lerps from full on respawn rather than rising from 0.
-        if (p.Hp == 0 && party.Hp > 0) party.SnapVitals = true;
-
         party.Index = p.Index;
         party.Name = p.Name;
-        party.Level = p.Level;
-        party.Hp = p.Hp;
-        party.MaxHp = p.MaxHp;
-        party.Mp = p.Mp;
-        party.MaxMp = p.MaxMp;
-        party.Sp = p.Sp;
-        party.MaxSp = p.MaxSp;
         party.MapNum = p.MapNum;
         party.X = p.X;
         party.Y = p.Y;

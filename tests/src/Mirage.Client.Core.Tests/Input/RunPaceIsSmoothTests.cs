@@ -36,12 +36,12 @@ public class RunPaceIsSmoothTests
     /// <summary>Runs <paramref name="tiles"/> tiles and reports how long each one took, in ms of simulated
     /// frames. Mirrors the shell: advance the slide every frame, start the next tile as soon as the last
     /// one clears.</summary>
-    private static List<float> TileTimes(int spd, int tiles)
+    private static List<float> TileTimes(int moveSpeed, int tiles)
     {
         var state = new ClientState { MyIndex = 1, InGame = true, CenterMapNum = 1 };
         var p = state.Me;
         p.Name = "Me";
-        p.Spd = spd;
+        p.MoveSpeed = moveSpeed;
         var times = new List<float>();
         int frameIndex = 0;
 
@@ -67,10 +67,10 @@ public class RunPaceIsSmoothTests
     /// <summary>The whole point of SPD: a faster run has to actually be faster. Measured over many tiles so
     /// per-tile rounding cannot carry the result.</summary>
     [Test]
-    public void InvestingSpd_ActuallyMovesYouFaster()
+    public void InvestingInSpeed_ActuallyMovesYouFaster()
     {
-        float slow = TileTimes(spd: 0, tiles: 40).Sum();
-        float fast = TileTimes(spd: 150, tiles: 40).Sum();
+        float slow = TileTimes(moveSpeed: 0, tiles: 40).Sum();
+        float fast = TileTimes(moveSpeed: 150, tiles: 40).Sum();
 
         Assert.That(fast, Is.LessThan(slow * 0.85f),
             $"40 tiles at the SPD cap took {fast}ms against {slow}ms at zero SPD — the speed went nowhere");
@@ -86,14 +86,14 @@ public class RunPaceIsSmoothTests
     [TestCase(75)]
     [TestCase(135)]
     [TestCase(150)]
-    public void ARunLosesNoTimeOverItsLength(int spd)
+    public void ARunLosesNoTimeOverItsLength(int moveSpeed)
     {
         const int Tiles = 40;
-        float want = MovementFormulas.RunMsPerTile(spd) * Tiles;
-        float got = TileTimes(spd, Tiles).Sum();
+        float want = MovementFormulas.RunMsPerTile(moveSpeed) * Tiles;
+        float got = TileTimes(moveSpeed, Tiles).Sum();
 
         Assert.That(got, Is.EqualTo(want).Within(LongestFrame),
-            $"SPD {spd}: {Tiles} tiles should take ~{want:0}ms, took {got:0}ms "
+            $"move speed {moveSpeed}: {Tiles} tiles should take ~{want:0}ms, took {got:0}ms "
             + $"— {(got - want) / Tiles:0.0}ms lost per tile, which compounds into the stutter");
     }
 
@@ -104,7 +104,6 @@ public class RunPaceIsSmoothTests
         var state = new ClientState { MyIndex = 1, InGame = true, CenterMapNum = 1 };
         var p = state.Me;
         p.Name = "Me";
-        p.Spd = 150;
         p.Moving = MovementType.Running;
         p.XOffset = -1f;
 

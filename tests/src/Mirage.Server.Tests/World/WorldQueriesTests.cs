@@ -29,7 +29,6 @@ public class WorldQueriesTests
         mn.Num = 1;
         mn.X = x;
         mn.Y = y;
-        mn.Hp = 100;
     }
 
     // ── Resolving an identity ─────────────────────────────────────────────────
@@ -95,11 +94,10 @@ public class WorldQueriesTests
     /// <summary>Condition is the caller's question. A resolver that filtered on it would stop finding
     /// bodies that are still standing in the world.</summary>
     [Test]
-    public void ABodyInAnyConditionStillResolves()
+    public void ASpawnedBodyResolves()
     {
         var (queries, world) = New();
         Spawn(world, slot: 3, x: 6, y: 6);
-        world.MapNpcs[Map, 3].Hp = 0;
 
         Assert.That(queries.ResolveNpc(Map, 3), Is.Not.Null);
     }
@@ -124,11 +122,10 @@ public class WorldQueriesTests
     }
 
     [Test]
-    public void ABodyInAnyConditionIsStillSeen()
+    public void ASpawnedBodyIsSeen()
     {
         var (queries, world) = New();
         Spawn(world, slot: 1, x: 6, y: 5);
-        world.MapNpcs[Map, 1].Hp = 0;
 
         Assert.That(queries.NpcsInViewport(Map, 5, 5), Is.Not.Empty);
     }

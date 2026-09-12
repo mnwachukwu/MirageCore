@@ -32,8 +32,7 @@ public class PushChangesPacketCoverageTests
         Behavior = NpcBehavior.Pursue, Group = 7, Range = 5,
         Drops = [new NpcDrop { ItemNum = 12, Quantity = 250, Chance = 35 },
                  new NpcDrop { ItemNum = 7, Chance = 3 }],
-        Str = 61, Def = 62, Spd = 63, Int = 64,
-        ExtraHp = 1500, IsBoss = true, EmitsLight = true, Light = Lantern,
+        EmitsLight = true, Light = Lantern,
     };
 
     [Test]
@@ -61,18 +60,11 @@ public class PushChangesPacketCoverageTests
             Assert.That(pkt.Drops![0].Chance, Is.EqualTo((short)35));
             Assert.That(pkt.Drops![1].ItemNum, Is.EqualTo(7));
             Assert.That(pkt.Drops![1].Chance, Is.EqualTo((short)3));
-            Assert.That(pkt.Str, Is.EqualTo(61));
-            Assert.That(pkt.Def, Is.EqualTo(62));
-            Assert.That(pkt.Spd, Is.EqualTo(63));
-            Assert.That(pkt.Int, Is.EqualTo(64));
 
-            // The six a thinner projection drops: pushing a dirty NPC would reset its footprint to 1x1,
-            // clear its comrade group, drop its boss HP padding and boss flag, and switch its light
-            // emitter off.
+            // The four a thinner projection drops: pushing a dirty NPC would reset its footprint to
+            // 1x1, clear its comrade group, and switch its light emitter off.
             Assert.That(pkt.Size, Is.EqualTo(3), "a pushed NPC must keep its footprint size");
             Assert.That(pkt.Group, Is.EqualTo(7), "a pushed NPC must keep its comrade group");
-            Assert.That(pkt.ExtraHp, Is.EqualTo(1500), "a pushed NPC must keep its extra HP");
-            Assert.That(pkt.IsBoss, Is.True, "a pushed NPC must keep its boss flag");
             Assert.That(pkt.EmitsLight, Is.True, "a pushed NPC must keep emitting light");
             Assert.That(pkt.Light, Is.EqualTo(Lantern), "a pushed NPC must keep its light attributes");
             Assert.That(pkt.SpriteSheet, Is.EqualTo(2), "a pushed NPC must keep the sheet its sprite is on");
@@ -85,7 +77,7 @@ public class PushChangesPacketCoverageTests
         var vm = new ItemRowViewModel(4, new ItemRecord
         {
             Name = "Bound Blade", Pic = 21, ItemSheet = 3, Type = ItemType.Weapon, Durability = 120, Power = 14,
-            NonTradeable = true, NonListable = true, NonMailable = true, DestroyOnDrop = true,
+            NonTradeable = true, NonListable = true, NonMailable = true, DestroyOnDrop = true
         });
 
         var pkt = vm.BuildSavePacket();
@@ -134,7 +126,6 @@ public class PushChangesPacketCoverageTests
     public void Push_SendsDirtyNpc()
     {
         var row = new NpcRowViewModel(5, FullNpc());
-        row.Str = 71;
         Assume.That(row.IsDirty, "precondition: the row is dirty, so the dialog would list it");
 
         Assert.That(Pushed(row), Is.True);

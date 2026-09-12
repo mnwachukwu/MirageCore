@@ -104,8 +104,6 @@ public class ArrivalOwesAStepBeatTests
     {
         var (walkState, walkTransport, walkSender) = Standing();
         var (runState, runTransport, runSender) = Standing();
-        runState.Me.Spd = 120;   // a pace whose own step is far quicker than a walk's
-        runState.Me.Sp = 50;
         walkState.ArrivedAtMs = runState.ArrivedAtMs = 1_000;
 
         // Just inside the beat: neither moves.

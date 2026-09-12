@@ -107,13 +107,11 @@ public class NpcChaseRoutingTests
         chaser.Num = 1;
         chaser.X = 12;
         chaser.Y = 4;
-        chaser.Hp = 100;
 
         var victim = world.MapNpcs[Map, 2];
         victim.Num = 2;
         victim.X = 8;
         victim.Y = 3;
-        victim.Hp = 100;
 
         if (slotTaken)
         {
@@ -121,7 +119,6 @@ public class NpcChaseRoutingTests
             sitting.Num = 3;
             sitting.X = 11;
             sitting.Y = 4;
-            sitting.Hp = 100;
         }
 
         var ai = new NpcAiSystem(world, pm, null!, null!, null!, null!);
@@ -137,10 +134,6 @@ public class NpcChaseRoutingTests
         var ai = BuildAi(world, pm);
 
         world.Npcs[1].Behavior = NpcBehavior.Pursue;   // chaser template
-        world.Npcs[1].Str = 20;
-        world.Npcs[1].Def = 10;
-        world.Npcs[1].Int = 0;
-        world.Npcs[1].Spd = 20;
         world.Npcs[1].Range = 5;
         world.Npcs[2].Behavior = NpcBehavior.Stationary;      // static: never moves, never targets anyone
 
@@ -149,8 +142,6 @@ public class NpcChaseRoutingTests
         chaser.Num = 1;
         chaser.X = 8;
         chaser.Y = 7;
-        chaser.Hp = 9999;
-        chaser.Sp = 20;
         chaser.NpcTargetSpawnMap = Map;
         chaser.NpcTargetSpawnSlot = 3;
         chaser.HasMadeContact = true;
@@ -158,12 +149,10 @@ public class NpcChaseRoutingTests
         blocker.Num = 2;
         blocker.X = 8;
         blocker.Y = 5;
-        blocker.Hp = 9999;
         var victim = world.MapNpcs[Map, 3];
         victim.Num = 2;
         victim.X = 8;
         victim.Y = 3;
-        victim.Hp = 9999;
 
         // A lone observer, far outside the chaser's aggro Range, so the map is processed but no player is acquired.
         var sp = pm[5];
@@ -174,7 +163,6 @@ public class NpcChaseRoutingTests
         pc.Map = Map;
         pc.X = 0;
         pc.Y = 0;
-        pc.Level = 1;
         world.MapObservers[Map].Add(5);
 
         long tick = 1_000_000;
@@ -210,12 +198,10 @@ public class NpcChaseRoutingTests
         chaser.Num = 1;
         chaser.X = 8;
         chaser.Y = 6;
-        chaser.Hp = 100;
         var blocker = world.MapNpcs[Map, 2];
         blocker.Num = 2;
         blocker.X = 8;
         blocker.Y = 5;
-        blocker.Hp = 100;
         if (blockerChasesChaser)
         {
             blocker.NpcTargetSpawnMap = Map;

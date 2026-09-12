@@ -55,7 +55,7 @@ public sealed class CharSelectScreen : IGameScreen
             var slot = i < slots.Length ? slots[i] : null;
             if (slot is not null && slot.Name.Length > 0)
             {
-                _charList.Items.Add(ClientStrings.Format(ClientStrings.CharSelectScreen_CharFormat, ("Name", slot.Name), ("Level", slot.Level)));
+                _charList.Items.Add(ClientStrings.Format(ClientStrings.CharSelectScreen_CharFormat, ("Name", slot.Name)));
             }
             else
             {

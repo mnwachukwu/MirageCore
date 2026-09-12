@@ -55,8 +55,6 @@ public static class ShellStrings
     public const string Server_DisconnectEditor = nameof(Server_DisconnectEditor);
     public const string Server_ColName = nameof(Server_ColName);
     public const string Server_ColAccount = nameof(Server_ColAccount);
-    public const string Server_ColLevel = nameof(Server_ColLevel);
-    public const string Server_ColClass = nameof(Server_ColClass);
     public const string Server_ColMap = nameof(Server_ColMap);
     public const string Server_ColAccess = nameof(Server_ColAccess);
     public const string Server_Kick = nameof(Server_Kick);
@@ -89,7 +87,6 @@ public static class ShellStrings
     public const string Mod_Lift = nameof(Mod_Lift);
     public const string Mod_MinutesLeft = nameof(Mod_MinutesLeft);
     public const string Mod_Unknown = nameof(Mod_Unknown);
-    public const string Mod_Offline = nameof(Mod_Offline);
     public const string Mod_Scanned = nameof(Mod_Scanned);
     public const string Mod_NotLoaded = nameof(Mod_NotLoaded);
 
@@ -191,7 +188,6 @@ public static class ShellStrings
     public const string Console_IdentityChanged = nameof(Console_IdentityChanged); // "{Host}" "{Port}"
     // "{Host}" "{Port}" "{Expected}" "{Actual}"
     public const string Console_IdentityChangedDetail = nameof(Console_IdentityChangedDetail);
-    public const string Console_ConnectionLost = nameof(Console_ConnectionLost);
     public const string Console_ShutdownBlocked = nameof(Console_ShutdownBlocked);
 
     // ── The two halves of the Configuration tab ───────────────────────────────

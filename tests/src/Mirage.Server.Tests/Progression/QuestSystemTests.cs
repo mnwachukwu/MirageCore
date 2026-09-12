@@ -48,7 +48,6 @@ public class QuestSystemTests
         sp.Login = "acc" + idx;
         sp.Char.Name = "P" + idx;
         sp.Char.Map = 1;
-        sp.Char.Level = level;
         return sp;
     }
 
@@ -83,19 +82,6 @@ public class QuestSystemTests
             Assert.That(sp.Char.Quests[0].Status, Is.EqualTo(QuestStatus.InProgress));
             Assert.That(sp.Char.Quests[0].Progress, Has.Count.EqualTo(1).And.All.Zero, "one objective, no progress yet");
         });
-    }
-
-    [Test]
-    public void Accept_LevelRequirementNotMet_Refused()
-    {
-        var (world, pm, _, quests) = Setup();
-        KillQuest(world, 1).ReqLevel = 20;
-        var sp = AddPlayer(pm, 1, level: 5);
-
-        quests.Accept(1, 1);
-
-        Assert.That(sp.Char.Quests, Is.Empty, "a below-level player can't accept the quest");
-        Assert.That(quests.IsEligible(1, 1), Is.False);
     }
 
     // ── Kill progress through the kernel ──────────────────────────────────────────
@@ -148,14 +134,11 @@ public class QuestSystemTests
         world.Items[Constants.GoldItemIndex].Type = ItemType.Currency;
         world.Items[Sword].Type = ItemType.Weapon;
         var q = KillQuest(world, 1, count: 1);
-        q.RewardExp = 10;   // small: below the level-2 floor, so no level-up broadcast path is hit
         q.RewardItems.Add(new QuestReward { ItemNum = Constants.GoldItemIndex, Quantity = 250 });   // gold is item #1
         q.RewardItems.Add(new QuestReward { ItemNum = Sword, Quantity = 1 });
         var sp = AddPlayer(pm, 1);
         quests.Accept(1, 1);
         Kill(objectives, Rat, 1);   // complete the objective
-
-        long expBefore = sp.Char.Exp;
         quests.TurnIn(1, 1);
 
         Assert.Multiple(() =>
@@ -163,7 +146,6 @@ public class QuestSystemTests
             Assert.That(sp.Char.Quests[0].Status, Is.EqualTo(QuestStatus.Done));
             Assert.That(ItemSystem.CountItem(sp.Char, world.Items, Constants.GoldItemIndex), Is.EqualTo(250), "gold rewarded");
             Assert.That(Enumerable.Range(1, Constants.MaxInv).Any(i => sp.Char.Inv[i].Num == Sword), Is.True, "item rewarded into the bag");
-            Assert.That(sp.Char.Exp, Is.EqualTo(expBefore + 10), "exp rewarded");
         });
     }
 
@@ -257,25 +239,6 @@ public class QuestSystemTests
 
         sp.Char.Quests[0].PeriodKey = "1999-01-01";   // the period rolls over
         Assert.That(quests.IsOnRepeatCooldown(1, 1), Is.False, "re-lit, so nothing left to explain");
-    }
-
-    // An unmet requirement is NOT a cooldown — the two reasons stay distinct so the panel doesn't claim a quest
-    // was already done when the player simply isn't strong enough yet.
-    [Test]
-    public void NeverCompleted_UnmetRequirement_IsNotCooldown()
-    {
-        var (world, pm, _, quests) = Setup();
-        var q = KillQuest(world, 1, count: 1);
-        q.Repeatable = true;
-        q.Cadence = QuestCadence.Daily;
-        q.ReqLevel = 50;
-        AddPlayer(pm, 1);
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(quests.IsEligible(1, 1), Is.False, "under-leveled");
-            Assert.That(quests.IsOnRepeatCooldown(1, 1), Is.False, "never completed -> no period consumed");
-        });
     }
 
     [Test]
@@ -403,18 +366,6 @@ public class QuestSystemTests
             Assert.That(quests.HasActionableQuestAt(1, 8), Is.False, "a different NPC offers nothing");
             Assert.That(quests.HasActionableQuestAt(1, 0), Is.False, "npc 0 is never a role");
         });
-    }
-
-    [Test]
-    public void HasActionableQuestAt_GiverButNotEligible_False()
-    {
-        var (world, pm, _, quests) = Setup();
-        var q = KillQuest(world, 1);
-        q.GiverNpc = 7;
-        q.ReqLevel = 20;
-        AddPlayer(pm, 1, level: 5);   // below the requirement
-
-        Assert.That(quests.HasActionableQuestAt(1, 7), Is.False, "a giver you can't yet accept from isn't actionable");
     }
 
     [Test]

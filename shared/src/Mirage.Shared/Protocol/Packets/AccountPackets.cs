@@ -187,7 +187,6 @@ public sealed record SendCharsPacket : IPacket
     /// <summary>One character slot, as the selection screen shows it.</summary>
     public sealed record CharSlot(
         [property: JsonPropertyName("name")] string Name,
-        [property: JsonPropertyName("level")] int Level,
         [property: JsonPropertyName("sprite")] int Sprite,
         [property: JsonPropertyName("spriteSheet")] int SpriteSheet = 0
     );

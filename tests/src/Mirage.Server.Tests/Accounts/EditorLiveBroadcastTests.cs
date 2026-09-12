@@ -72,7 +72,6 @@ public class EditorLiveBroadcastTests
             Assert.That(u.Size, Is.EqualTo(1));
             Assert.That(u.Behavior, Is.EqualTo(NpcBehavior.Stationary));
             Assert.That(u.SpawnSecs, Is.EqualTo(30));
-            Assert.That(u.Spd, Is.EqualTo(17), "Spd must reach the client or the NPC move-slide zeroes out");
             Assert.That(u.EmitsLight, Is.True);
         });
     }

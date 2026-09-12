@@ -149,7 +149,6 @@ public sealed class StatusBroadcaster : IHostedService, IDisposable
                 Slot = i,
                 Name = c.Name.Trim(),
                 Login = sp.Login,
-                Level = c.Level,
                 Map = c.Map,
                 Access = c.Access.ToString(),
             });

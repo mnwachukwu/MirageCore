@@ -75,16 +75,9 @@ public class FleeDirectionBiasTests
         var npc = world.Npcs[NpcNum];
         npc.Name = "doe";
         npc.Behavior = NpcBehavior.Flee;
-        npc.Str = 1;
-        npc.Int = 20;
-        npc.Def = 10;
-        npc.Spd = 10;
 
         var mn = world.MapNpcs[Map, Slot];
         mn.Num = NpcNum;
-        mn.Hp = 9999;
-        mn.Mp = 9999;
-        mn.Sp = 9999;
 
         var method = typeof(NpcAiSystem).GetMethod("TryFleeStepAwayFrom",
             BindingFlags.NonPublic | BindingFlags.Instance)!;

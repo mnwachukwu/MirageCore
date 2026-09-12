@@ -42,6 +42,9 @@ public sealed class SpawnSystem : GameSystem
         var npcRec = _world.Npcs[npcNum];
 
         mn.Num = npcNum;
+        // A fresh copy of the template's game values, not a reference to them: one wolf taking damage
+        // must not wound the species, and a respawn must not inherit the last copy's bookkeeping.
+        mn.Attributes = npcRec.Attributes.Clone();
         mn.Target = 0;
         mn.JanitorTarget = 0;
         mn.NpcTargetSpawnMap = 0;
@@ -52,9 +55,6 @@ public sealed class SpawnSystem : GameSystem
         mn.ChaseTargetKey = 0;       // fresh slot — drop any stale chase-stall tracking from the prior occupant
         mn.ResetChaseStall();
         mn.ClearDamageCredit();
-        mn.Hp = _world.EffectiveNpcMaxHp(npcRec);
-        mn.Mp = _world.EffectiveNpcMaxMp(npcRec);
-        mn.Sp = _world.EffectiveNpcMaxSp(npcRec);
         mn.Dir = (Direction)Rng.Next(Constants.NumDirections);
         // Two-layer world: a PINNED entry spawns on its own authored plane (entry.PinLayer) — see the pin
         // branch below. A random one starts on the ground and may be moved up by the search. A guest
@@ -130,9 +130,6 @@ public sealed class SpawnSystem : GameSystem
                 X = mn.X,
                 Y = mn.Y,
                 Dir = mn.Dir,
-                MaxHp = _world.EffectiveNpcMaxHp(npcRec),
-                MaxMp = _world.EffectiveNpcMaxMp(npcRec),
-                MaxSp = _world.EffectiveNpcMaxSp(npcRec),
                 Layer = mn.Layer,
             });
         }
@@ -232,7 +229,6 @@ public sealed class SpawnSystem : GameSystem
             var mn = _world.MapNpcs[mapNum, i];
             if (mn.Num <= 0) continue;   // already dead/empty (or a reserved guest home)
             mn.Num = 0;
-            mn.Hp = 0;
             mn.SpawnWait = Environment.TickCount64;
             SendToMap(_world, mapNum,
                 new NpcDeadPacket { MapNum = mapNum, NpcSlot = i, Damage = 0, IsCrit = false });

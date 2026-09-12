@@ -1,3 +1,4 @@
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Records;
 using NUnit.Framework;
 

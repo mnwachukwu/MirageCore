@@ -12,24 +12,6 @@ namespace Mirage.Server.Core.GameLogic;
 /// depending on what it is and whether anything is in reach.</summary>
 public sealed partial class NpcAiSystem : GameSystem
 {
-    // Light AI for a map with no observers: a vacated town's scavengers still tidy player-dropped
-    // litter so it's clean when someone returns.  No observers means no players in range, so there is
-    // nothing to notice and nothing to broadcast — we skip the whole notice/wander path and run only
-    // the scavenge sweep.  A single litter check up front skips the per-NPC item scan entirely on an
-    // already-clean map (the common steady state), so an idle vacated town costs one MaxMapItems scan
-    // per tick, not N.
-    private void RunUnobservedUpkeep(int mapNum)
-    {
-        if (!HasDroppedItems(mapNum)) return;
-        for (int slot = 1; slot <= Constants.MaxMapNpcs; slot++)
-        {
-            var mn = _world.MapNpcs[mapNum, slot];
-            if (mn.Num <= 0 || mn.IsReservedSlot) continue;
-            if (_world.Npcs[mn.Num].Behavior != NpcBehavior.Scavenge) continue;
-            RunScavengeAi(mapNum, slot, mn);
-        }
-    }
-
     // True if the map holds any voluntary-player-dropped item — a scavenger's only concern.  Death
     // drops (PlayerDeathDropped) and NPC loot (NpcDropped) are deliberately excluded so what a body
     // left behind stays recoverable.  One list scan, used to skip the per-NPC litter search on a
@@ -63,7 +45,7 @@ public sealed partial class NpcAiSystem : GameSystem
     }
 
     // Brain pass for one observed map: regen, then a per-behavior branch.
-    private void RunAiForMap(int mapNum, long now, bool regenTick)
+    private void RunAiForMap(int mapNum, long now)
     {
         for (int slot = 1; slot <= Constants.MaxMapNpcs; slot++)
         {
@@ -71,9 +53,6 @@ public sealed partial class NpcAiSystem : GameSystem
             if (mn.Num <= 0) continue;
 
             var npc = _world.Npcs[mn.Num];
-
-            if (regenTick)
-                RegenNpcVitals(mapNum, mn, npc, now);
 
             switch (npc.Behavior)
             {

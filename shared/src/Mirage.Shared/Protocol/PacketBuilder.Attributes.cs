@@ -1,0 +1,59 @@
+using Mirage.Shared.Extensibility;
+using Mirage.Shared.Protocol.Packets;
+
+namespace Mirage.Shared.Protocol;
+
+/// <summary>
+/// Turning an <see cref="AttributeBag"/> into what one viewer is allowed to be told about it.
+///
+/// <para><b>The filter is here, on the sending side, and nowhere else.</b> A client that received
+/// everything and hid some of it would be handing a determined player the hidden half; there is no
+/// version of "the client filters it" that is not a leak. So a value a viewer may not see is never
+/// written to their socket, and the client has no filtering code at all.</para>
+/// </summary>
+public static partial class PacketBuilder
+{
+    /// <summary>The key numbering a client needs before it can read a single sync. Sent once.</summary>
+    public static AttributeSchemaPacket AttributeSchema(AttributeSchema schema) =>
+        new()
+        {
+            Keys = [.. schema.Declarations.Select(d =>
+                new AttributeSchemaPacket.Row(d.Ordinal, d.Key, d.Visibility, d.LabelKey))],
+        };
+
+    /// <summary>What <paramref name="viewer"/> is told about <paramref name="bag"/>, or null when that
+    /// is nothing.
+    ///
+    /// <para>Null rather than an empty packet on purpose: "no visible attributes" is the ordinary case
+    /// — every body in a world whose game declared nothing — and a caller that has to check anyway is
+    /// better served by a check that also skips the send.</para></summary>
+    /// <param name="who">Whose attributes these are.</param>
+    /// <param name="bag">The body's values.</param>
+    /// <param name="schema">The loaded game's declarations. <see cref="Extensibility.AttributeSchema.Empty"/>
+    /// yields null for every body, which is what Core alone does.</param>
+    /// <param name="viewer">How close the receiver stands: <see cref="AttributeVisibility.Owner"/> for
+    /// the body's own player, <see cref="AttributeVisibility.Viewport"/> for anyone who can see it.</param>
+    /// <param name="keys">Which keys changed, or null for all of them. A changed key the viewer may not
+    /// see is dropped here, so a caller never has to ask.</param>
+    public static AttributeSyncPacket? AttributeSync(
+        EntityHandle who, AttributeBag bag, AttributeSchema schema, AttributeVisibility viewer,
+        IReadOnlyCollection<string>? keys = null)
+    {
+        if (!who.IsSet || bag.IsEmpty || schema.Declarations.Count == 0) return null;
+
+        List<AttributeSyncPacket.Entry>? set = null;
+        foreach (string key in keys ?? bag.Keys)
+        {
+            if (!schema.IsVisibleTo(key, viewer)) continue;
+            if (!bag.TryGet(key, out var value)) continue;
+            if (!schema.TryGet(key, out var declaration)) continue;
+            (set ??= []).Add(new AttributeSyncPacket.Entry(declaration.Ordinal, value));
+        }
+
+        if (set is null) return null;
+        // Ordinal order, so the same change produces the same bytes whichever order the keys were set in
+        // — the property the bag's own writer keeps for a world file, kept here for a captured line.
+        set.Sort(static (a, b) => a.Ordinal.CompareTo(b.Ordinal));
+        return new AttributeSyncPacket { Who = who, Set = set };
+    }
+}

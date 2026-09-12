@@ -35,8 +35,6 @@ public class MovementSystemTests
         p.Map = Map;
         p.X = x;
         p.Y = y;
-        p.MaxHp = 100;
-        p.Hp = 100;  // full HP => no blood trail deposits during a step
         world.MapObservers[Map].Add(Idx);
         return (world, pm, move, p);
     }
@@ -111,41 +109,10 @@ public class MovementSystemTests
     public void PlayerMove_Running_DrainsOneSp()
     {
         var (_, _, move, p) = Setup(5, 5);
-        p.MaxSp = 20;
-        p.Sp = 20;
         move.PlayerMove(Idx, Direction.Down, MovementType.Running);
         Assert.Multiple(() =>
         {
             Assert.That(p.Y, Is.EqualTo(6));
-            Assert.That(p.Sp, Is.EqualTo(19), "a run step drains 1 SP");
-        });
-    }
-
-    /// <summary>A shield costs nothing extra to carry. It is already paid for in the fight — the only
-    /// slot whose defense is rolled for rather than applied, and every block it wins spends stamina — so
-    /// charging for the walk as well taxed the same choice twice.</summary>
-    [Test]
-    public void PlayerMove_Running_WithShield_DrainsTheSame()
-    {
-        var (_, _, move, p) = Setup(5, 5);
-        p.MaxSp = 20;
-        p.Sp = 20;
-        p.ShieldSlot = 1;
-        move.PlayerMove(Idx, Direction.Down, MovementType.Running);
-        Assert.That(p.Sp, Is.EqualTo(19), "a shield does not add to run-stamina drain");
-    }
-
-    [Test]
-    public void PlayerMove_RunWithNoSp_DowngradesToWalk()
-    {
-        var (_, _, move, p) = Setup(5, 5);
-        p.MaxSp = 20;
-        p.Sp = 0;
-        move.PlayerMove(Idx, Direction.Down, MovementType.Running);
-        Assert.Multiple(() =>
-        {
-            Assert.That(p.Y, Is.EqualTo(6), "still moves, at walking pace");
-            Assert.That(p.Sp, Is.EqualTo(0), "no SP to drain");
         });
     }
 
@@ -423,21 +390,6 @@ public class MovementSystemTests
     }
 
     [Test]
-    public void MoveCredit_RunningIsBilledAtTheWalkPaceWhenTheServerDowngradedIt()
-    {
-        var (_, pm, move, p) = Setup(5, 0);
-        p.Spd = 150;
-        p.Sp = 0;   // no stamina — PlayerMove forces walking, so the run pace must not be what is charged
-
-        for (int i = 0; i < 20; i++)
-            move.PlayerMove(Idx, Direction.Down, MovementType.Running);
-
-        Assert.That(p.Y, Is.EqualTo(BurstSteps(MovementFormulas.BaseWalkMsPerTile)),
-            "claiming Running on an empty SP bar must not buy the cheaper run rate");
-        Assert.That(pm[Idx].Char.Sp, Is.Zero);
-    }
-
-    [Test]
     public void PlayerMove_RefusesTheStepPastTheBank_AndCorrectsTheClient()
     {
         var capture = new CapturingDispatcher();
@@ -468,7 +420,6 @@ public class MovementSystemTests
         npc.Num = 1;
         npc.X = 5;
         npc.Y = 5;
-        npc.Hp = 100;
 
         Assert.That(move.CanNpcMoveFrom(Map, npc, Direction.Down), Is.True, "an open tile is movable");
 
@@ -490,7 +441,6 @@ public class MovementSystemTests
         map.EditTile(6, 5, t => t with { FringeAttr = new FringeAttr { Type = TileType.LayerRamp, RampGroundSide = Direction.Down } });
         var npc = world.MapNpcs[Map, 1];
         npc.Num = 1;
-        npc.Hp = 100;
 
         Assert.Multiple(() =>
         {
@@ -535,7 +485,6 @@ public class MovementSystemTests
         world.Maps[2].Left = Map;
         var npc = world.MapNpcs[Map, 1];
         npc.Num = 1;
-        npc.Hp = 100;
         npc.X = Constants.MaxMapX;
         npc.Y = 5;
         npc.Layer = WorldLayer.Ground;
@@ -564,7 +513,6 @@ public class MovementSystemTests
         npc.Num = 1;
         npc.X = 7;
         npc.Y = 7;
-        npc.Hp = 100;  // an NPC occupies (7,7)
 
         Assert.Multiple(() =>
         {

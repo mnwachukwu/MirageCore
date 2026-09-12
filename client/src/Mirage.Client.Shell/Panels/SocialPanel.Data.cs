@@ -95,7 +95,7 @@ public sealed partial class SocialPanel : IGamePanel
     // A row's character columns only mean anything while the account is online — these lists key on
     // accounts, and only the guild roster keeps a snapshot of an offline member's last character.
     private static string Who(SocialEntry r) => r.Online
-        ? ClientStrings.Format(ClientStrings.SocialPanel_OnlineFormat, ("Char", r.CharName), ("Level", r.CharLevel))
+        ? ClientStrings.Format(ClientStrings.SocialPanel_OnlineFormat, ("Char", r.CharName))
         : ClientStrings.Get(ClientStrings.SocialPanel_Offline);
 
     private static string RankName(GuildRank rank) => ClientStrings.Get(rank switch

@@ -4,7 +4,7 @@ namespace Mirage.Client.Core.State;
 
 /// <summary>
 /// Client-side NPC slot on the current map.
-/// Mirrors MapNpcRecord but adds MaxHp (sent by server in MapNpcsPacket) and
+/// Mirrors MapNpcRecord but adds
 /// keeps all the client rendering state (offsets, animation flags).
 ///
 /// Not sealed: <see cref="ClientTraversalNpc"/> inherits it so a chasing NPC visiting a
@@ -13,12 +13,6 @@ namespace Mirage.Client.Core.State;
 public class ClientMapNpc
 {
     public int Num { get; set; }
-    public int Hp { get; set; }
-    public int MaxHp { get; set; }
-    public int Mp { get; set; }
-    public int MaxMp { get; set; }
-    public int Sp { get; set; }
-    public int MaxSp { get; set; }
     public int X { get; set; }
     public int Y { get; set; }
     public Direction Dir { get; set; }
@@ -37,12 +31,8 @@ public class ClientMapNpc
     public bool HasTarget { get; set; }
 
     // Animated display values for world-space bars (-1f = uninitialized → snap on first Tick)
-    public float DispHp { get; set; } = -1f;
-    public float DispMp { get; set; } = -1f;
-    public float DispSp { get; set; } = -1f;
     // While Environment.TickCount64 < this, the HP bar holds instead of animating — used to keep the bar
     // in sync with an in-flight spell bolt (hit-timing deferral). 0 = not holding.
-    public long BarHoldUntilMs { get; set; }
 
     // Chat bubble — AttackSay from this NPC, anchored above its head. Same head+drifter model as
     // PlayerRecord; Color is GameColor.BrightRed (hostile) or .BrightGreen (friendly/shopkeeper).
@@ -57,17 +47,11 @@ public class ClientMapNpc
     /// interpolation, so the in-flight slide doesn't snap. Returns false on a real state change
     /// (new NPC in the slot, or a position update); the interp fields are cleared here in that
     /// branch. Combat-stamp conversion uses <paramref name="nowMs"/> as the local clock.</summary>
-    public bool ApplySnapshot(int num, int hp, int maxHp, int mp, int maxMp, int sp, int maxSp,
-                              int x, int y, Direction dir, WorldLayer layer, int msSinceCombat, bool hasTarget, long nowMs)
+    public bool ApplySnapshot(int num, int x, int y, Direction dir, WorldLayer layer,
+                              int msSinceCombat, bool hasTarget, long nowMs)
     {
         bool sameInPlace = Num == num && X == x && Y == y;
         Num = num;
-        Hp = hp;
-        MaxHp = maxHp;
-        Mp = mp;
-        MaxMp = maxMp;
-        Sp = sp;
-        MaxSp = maxSp;
         X = x;
         Y = y;
         Dir = dir;

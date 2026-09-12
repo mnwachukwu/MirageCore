@@ -1,3 +1,4 @@
+using Mirage.Shared.Extensibility;
 using System.Text.Json.Serialization;
 
 namespace Mirage.Shared.Records;
@@ -50,17 +51,25 @@ public sealed class NpcRecord
     /// several — see <see cref="NpcDrop"/> for why that beats a weighted single pick.</summary>
     public List<NpcDrop>? Drops { get; set; }
 
-    public int Str { get; set; }
-    public int Def { get; set; }
-    public int Spd { get; set; }
-    public int Int { get; set; }
-    /// <summary>Flat bonus max-HP added 1:1 on top of the stat-derived HP pool (0 = none, the default).  A
-    /// designer lever for authoring bosses / walls or buffing significant NPCs beyond what their combat stats
-    /// imply: the HP formula derives HP from total stat investment, so this is how you make something
-    /// exceptionally tanky without inflating its other stats.  Grants PREMIUM kill-EXP — more EXP per point than
-    /// natural stat HP earns — because grinding through boss HP is an epic slog (epic HP → epic EXP).  It's also
-    /// the intended way to restore an old-style extreme-DEF wall under the unified vital formula.</summary>
-    public int ExtraHp { get; set; }
+    /// <summary>Everything a game hangs on this NPC TEMPLATE — what every copy of it starts with.
+    /// Authored, so it is what the editor edits and what a world file carries.
+    ///
+    /// <para>A running copy's own values live on <see cref="MapNpcRecord.Attributes"/> instead: one
+    /// wolf taking damage must not wound the species.</para></summary>
+    public AttributeBag Attributes { get; set; } = new();
+
+    /// <summary>How fast this body moves, as a pure additive bonus over the speed everything starts
+    /// with. 0 is the baseline, which is what a world that never sets it gets.
+    ///
+    /// <para><b>Core's only speed number, and it is not a stat.</b> Movement is the one thing the engine
+    /// itself performs on every body, so the pace has to live somewhere Core can read without knowing
+    /// what a game calls its attributes. A game that derives speed from agility, a mount, a road, or a
+    /// status effect writes the result here; Core never asks where the number came from.</para>
+    ///
+    /// <para>It is also what the server bills a move against, so it is authoritative rather than
+    /// cosmetic: a client claiming a faster pace than this allows is refused a step.</para></summary>
+    public int MoveSpeed { get; set; }
+
     /// <summary>Author flag marking this NPC as a BOSS — a deliberate designer classification, NOT inferred from
     /// HP/Size/stats (a tanky or large mob is not automatically a boss, and <see cref="ExtraHp"/> is a separate
     /// tankiness lever). Its only effect today: a guild quest that rolls a boss uses a COMPRESSED kill-count

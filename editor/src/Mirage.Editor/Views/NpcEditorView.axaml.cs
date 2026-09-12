@@ -34,7 +34,6 @@ public partial class NpcEditorView : LocalizedUserControl
         _sizeLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_SizeLabel);
         _spawnSecsLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_SpawnSecsLabel);
         _behaviorLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_BehaviorLabel);
-        _isBossCheck.Content = EditorStrings.Get(EditorStrings.NpcEditor_IsBossLabel);
         _lightingHeader.Text = EditorStrings.Get(EditorStrings.NpcEditor_LightingHeader);
         _emitsLightCheck.Content = EditorStrings.Get(EditorStrings.NpcEditor_EmitsLightLabel);
         _lightColorLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_LightColorLabel);
@@ -50,86 +49,8 @@ public partial class NpcEditorView : LocalizedUserControl
         _dropChanceHeader.Text = EditorStrings.Get(EditorStrings.NpcEditor_DropChanceHeader);
         _addDropButton.Content = EditorStrings.Get(EditorStrings.NpcEditor_AddDrop);
 
-        _strLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_StrLabel);
-        _defLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_DefLabel);
-        _spdLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_SpdLabel);
-        _intLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_IntLabel);
-        _extraHpLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_ExtraHpLabel);
-        _extraHpNote.Text = EditorStrings.Get(EditorStrings.NpcEditor_ExtraHpNote);
-
-        _totalStatsLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_TotalStatsLabel);
-        _equivLevelLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_EquivLevelLabel);
-        _levelNote.Text = EditorStrings.Get(EditorStrings.NpcEditor_LevelNote);
-
-        _vitalsHeader.Text = EditorStrings.Get(EditorStrings.NpcEditor_VitalsHeader);
-        _maxHpLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_MaxHpLabel);
-        _maxMpLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_MaxMpLabel);
-        _maxSpLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_MaxSpLabel);
-
-        _regenHeader.Text = EditorStrings.Get(EditorStrings.NpcEditor_RegenHeader);
-        _hpRegenLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_HpRegenLabel);
-        _mpRegenLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_MpRegenLabel);
-        _spRegenLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_SpRegenLabel);
-
-        _effHeader.Text = EditorStrings.Get(EditorStrings.NpcEditor_EffectivenessHeader);
-        _pdmgLabel.Text = EditorStrings.Get(EditorStrings.Common_PhysDmgAbbrev);
-        _mdmgLabel.Text = EditorStrings.Get(EditorStrings.Common_MagDmgAbbrev);
-        _mitLabel.Text = EditorStrings.Get(EditorStrings.Common_MitAbbrev);
-
-        _chanceHeader.Text = EditorStrings.Get(EditorStrings.NpcEditor_ChanceHeader);
-        _critLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_PCritLabel);
-        _spellCritLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_MCritLabel);
-        _blockLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_BlockLabel);
-        _dodgeLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_DodgeLabel);
-
-        _rewardsHeader.Text = EditorStrings.Get(EditorStrings.NpcEditor_RewardsHeader);
-        _expLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_ExpLabel);
-        _previewLevelLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_PreviewLevelLabel);
-        _notesExpander.Header = EditorStrings.Get(EditorStrings.Common_Notes);
-
         // The drop-item picker is per-ROW now, so its placeholder is bound through
         // NpcDropRowViewModel.ItemPlaceholder rather than set once on a single control here.
-
-        _fmtVitalsHeader.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_VitalsHeader);
-        _fmtVitalsBaseHp.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_VitalsBaseHp);
-        _fmtVitalsFavorPct.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_VitalsFavorPct);
-        _fmtVitalsMaxHp.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_VitalsMaxHp);
-        _fmtVitalsMaxMp.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_VitalsMaxMp);
-        _fmtVitalsMaxSp.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_VitalsMaxSp);
-        _fmtVitalsNote.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_VitalsNote);
-
-        _fmtRegenHeader.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_RegenHeader);
-        _fmtRegenHp.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_RegenHp);
-        _fmtRegenMp.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_RegenMp);
-        _fmtRegenSp.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_RegenSp);
-        _fmtRegenNote.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_RegenNote);
-
-        _fmtCombatHeader.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_CombatHeader);
-        _fmtCombatPDmg.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_CombatPDmg);
-        _fmtCombatMDmg.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_CombatMDmg);
-        _fmtCombatMit.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_CombatMit);
-        _fmtCombatFloor.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_CombatFloor);
-        _fmtCombatNote.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_CombatNote);
-
-        _fmtExpHeader.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_ExpHeader);
-        _fmtExpLine1.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_ExpLine1);
-        _fmtExpLine2.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_ExpLine2);
-        _fmtExpNote.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_ExpNote);
-
-        _fmtDropChanceHeader.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_DropChanceHeader);
-        _fmtDropChance1.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_DropChanceLine1);
-        _fmtDropChance2.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_DropChanceLine2);
-        _fmtDropChance3.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_DropChanceLine3);
-        _fmtDropChance4.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_DropChanceLine4);
-        _fmtDropChance5.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_DropChanceLine5);
-        _fmtDropChanceNote.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_DropChanceNote);
-
-        _fmtChancesHeader.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_ChancesHeader);
-        _fmtChancesCrit.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_ChancesCrit);
-        _fmtChancesSpellCrit.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_ChancesSpellCrit);
-        _fmtChancesBlock.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_ChancesBlock);
-        _fmtChancesDodge.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_ChancesDodge);
-        _fmtChancesNote.Text = EditorStrings.Get(EditorStrings.NpcEditor_Formula_ChancesNote);
 
         _copyBtn.Content = EditorStrings.Get(EditorStrings.Common_Copy);
         _discardBtn.Content = EditorStrings.Get(EditorStrings.Common_Discard);

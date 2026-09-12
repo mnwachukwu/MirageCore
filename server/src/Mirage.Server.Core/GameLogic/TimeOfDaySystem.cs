@@ -110,33 +110,12 @@ public sealed class TimeOfDaySystem : GameSystem
                 var mn = _world.MapNpcs[m, s];
                 if (mn.Num > 0)
                 {
-                    ScaleNpcVitals(mn, ratio);
                     anyNative = true;
                 }
             }
-            var guests = _world.MapTraversalNpcs[m];
-            for (int i = 0; i < guests.Count; i++)
-                if (guests[i].Num > 0) ScaleNpcVitals(guests[i], ratio);
-
-            // Re-sync native NPC bars for observers (traversal guests self-correct on their next resend).
-            // BuildMapNpcs is night-aware via EffectiveNpcMaxHp, so it emits the correct denominator.
+            // Re-sync native NPC snapshots for observers (traversal guests self-correct on their next resend).
             if (anyNative && _world.MapObservers[m].Count > 0)
                 SendToMap(_world, m, JoinLeaveSystem.BuildMapNpcs(_world, m));
-        }
-    }
-
-    /// <summary>Scale a live NPC's current HP and its damage-contribution ledgers by <paramref name="ratio"/>
-    /// (HP kept ≥ 1). Uniform scaling preserves aggro ordering and the EXP damage-share fractions.</summary>
-    private static void ScaleNpcVitals(MapNpcRecord mn, double ratio)
-    {
-        mn.Hp = Math.Max(1, (int)Math.Round(mn.Hp * ratio, MidpointRounding.AwayFromZero));
-        var dmg = mn.DamageByPlayer;
-        for (int i = 0; i < dmg.Length; i++)
-            if (dmg[i] != 0) dmg[i] = (int)Math.Round(dmg[i] * ratio, MidpointRounding.AwayFromZero);
-        if (mn.DamageByNpc is { } list)
-        {
-            for (int i = 0; i < list.Count; i++)
-                list[i] = list[i] with { Damage = (int)Math.Round(list[i].Damage * ratio, MidpointRounding.AwayFromZero) };
         }
     }
 

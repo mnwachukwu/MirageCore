@@ -536,13 +536,11 @@ public sealed class InventoryPanel : IGamePanel
     // The four equipped pieces (Helmet top-center, then Weapon / Chest / Shield beneath), each showing the
     // combat bonus it grants, plus a footer summing the gear bonus to each derived stat. Pure layout + draw;
     // this panel owns the hover tooltip + the right-click Unequip menu and calls EquipmentHitTest to find the
-    // piece under the mouse. All bonus math routes through the shared CombatFormulas so it matches the server.
     private const int EqIconSize = 32;
     private const int EqTopPad = 8;
     private const int EqRowGap = 6;        // gap between the helmet label and the Weapon/Chest/Shield row
     private const int EqSectionGap = 12;   // gap between the paper-doll and the totals footer
     private const int EqMaxColSpacing = 84;
-    private const int EqTotalRowH = 20;
     private const int EqSlotLabelLines = 2;  // per icon: MIT line, then the durability line beneath
 
     private static readonly Color EqSlotBg = new(20, 20, 40, 235);
@@ -609,43 +607,15 @@ public sealed class InventoryPanel : IGamePanel
         var me = state.Me;
         if (me is null) return;
         var d = EquipLayout(content, font);
-        int str = me.Str, def = me.Def;
-
-        var helmet = EquippedItem(state, me.HelmetSlot);
-        var weapon = EquippedItem(state, me.WeaponSlot);
-        var chest = EquippedItem(state, me.ArmorSlot);
-        var shield = EquippedItem(state, me.ShieldSlot);
-
-        // Gear contributions — same formulas the item tooltip and StatsPanel use. Every defensive piece
-        // contributes to the single universal MIT (armor/helmet: full; shield: 1/4).
-        int weaponBonus = weapon is null ? 0 : CombatFormulas.WeaponContribution(weapon.Power, str);
-        int helmetMit = helmet is null ? 0 : CombatFormulas.GearMitigation(helmet.Power, def);
-        int armorMit = chest is null ? 0 : CombatFormulas.GearMitigation(chest.Power, def);
-        int shieldMit = shield is null ? 0 : CombatFormulas.ShieldMitigation(shield.Power, def);
 
         int SlotDur(int invSlot) => invSlot > 0 && me.Inv is not null ? me.Inv[invSlot].Dur : 0;
 
-        string mitL = ClientStrings.Get(ClientStrings.Stats_Mit);
-        EqDrawSlot(sb, font, itemsTex, d.Helmet, helmet, mitL, helmetMit, SlotDur(me.HelmetSlot));
-        EqDrawSlot(sb, font, itemsTex, d.Weapon, weapon, ClientStrings.Get(ClientStrings.Stats_PDmg), weaponBonus, SlotDur(me.WeaponSlot));
-        EqDrawSlot(sb, font, itemsTex, d.Chest, chest, mitL, armorMit, SlotDur(me.ArmorSlot));
-        EqDrawSlot(sb, font, itemsTex, d.Shield, shield, mitL, shieldMit, SlotDur(me.ShieldSlot));
-
-        // ── Totals footer: gear bonus to each derived stat. No equippable feeds M-Dmg (it comes from
-        //    Int + the prepared spell), so its gear total is always +0 — an honest signal, by design.
-        int y = d.TotalsY;
-        UiHelper.DrawLabelCentered(sb, font, ClientStrings.Get(ClientStrings.Common_TotalBonuses), content.X, y, content.Width, UiHelper.DlgLabelColor);
-        y += font.LineSpacing + 4;
-
-        int blockX = content.X + 8;
-        int blockW = content.Width - 16;
-        int halfW = (blockW - 4) / 2;
-        int col2X = blockX + halfW + 4;
-
-        EqDrawTotal(sb, font, ClientStrings.Get(ClientStrings.Stats_PDmg), weaponBonus, blockX, y, halfW);
-        EqDrawTotal(sb, font, ClientStrings.Get(ClientStrings.Stats_Mit), armorMit + helmetMit + shieldMit, col2X, y, halfW);
-        y += EqTotalRowH;
-        EqDrawTotal(sb, font, ClientStrings.Get(ClientStrings.Stats_MDmg), 0, blockX, y, halfW);
+        // What is worn, and how worn it is. What a piece CONTRIBUTES was a formula a game now owns, so
+        // the bonus column is left empty rather than filled with a number nothing computes.
+        EqDrawSlot(sb, font, itemsTex, d.Helmet, EquippedItem(state, me.HelmetSlot), "", 0, SlotDur(me.HelmetSlot));
+        EqDrawSlot(sb, font, itemsTex, d.Weapon, EquippedItem(state, me.WeaponSlot), "", 0, SlotDur(me.WeaponSlot));
+        EqDrawSlot(sb, font, itemsTex, d.Chest, EquippedItem(state, me.ArmorSlot), "", 0, SlotDur(me.ArmorSlot));
+        EqDrawSlot(sb, font, itemsTex, d.Shield, EquippedItem(state, me.ShieldSlot), "", 0, SlotDur(me.ShieldSlot));
     }
 
     private static void EqDrawSlot(SpriteBatch sb, SpriteFont font, IReadOnlyList<Texture2D?> itemsTex,
@@ -673,15 +643,6 @@ public sealed class InventoryPanel : IGamePanel
         int maxDur = item.Durability;
         if (maxDur > 0)
             EqDrawCentered(sb, font, $"{dur}/{maxDur}", centerX, nextY, UiHelper.DurabilityColor(dur, maxDur));
-    }
-
-    private static void EqDrawTotal(SpriteBatch sb, SpriteFont font, string label, int value, int x, int y, int w)
-    {
-        UiHelper.DrawFilledRect(sb, new Rectangle(x, y, w, EqTotalRowH - 2), UiHelper.StatRowBg);
-        string val = $"+{value}";
-        float vw = font.MeasureString(val).X;
-        sb.DrawString(font, UiHelper.FitText(font, label, Math.Max(10f, w - vw - 6)), new Vector2(x + 3, y + 2), Color.DimGray);
-        sb.DrawString(font, val, new Vector2(x + w - vw - 3, y + 2), Color.White);
     }
 
     private static void EqDrawCentered(SpriteBatch sb, SpriteFont font, string text, int centerX, int y, Color color)

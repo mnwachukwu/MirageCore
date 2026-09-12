@@ -57,8 +57,6 @@ public class RecordShapeChangeTests
         Assert.Multiple(() =>
         {
             Assert.That(p!.Name, Is.EqualTo("Reedwyn"));
-            Assert.That(p.Level, Is.EqualTo(30));
-            Assert.That(p.Exp, Is.EqualTo(91234));
             Assert.That(p.Map, Is.EqualTo(15));
             Assert.That(p.X, Is.EqualTo(9));
             Assert.That(p.Y, Is.EqualTo(4));
@@ -174,10 +172,10 @@ public class RecordShapeChangeTests
     [Test]
     public void AnEnumNameInANumericSlot_Throws()
     {
-        const string json = """{ "name": "Reedwyn", "level": "Thirty" }""";
+        const string json = """{ "name": "Reedwyn", "map": "Fifteen" }""";
 
         Assert.That(() => JsonSerializer.Deserialize<PlayerRecord>(json, Options),
             Throws.InstanceOf<JsonException>(),
-            "this is what widening a persisted enum to an int does to every file already on disk");
+            "a word where a number belongs is a file this build cannot read, and it says so");
     }
 }

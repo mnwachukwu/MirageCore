@@ -20,12 +20,16 @@ namespace Mirage.Client.Core.Logic;
 /// </summary>
 public static class MovementProcessor
 {
+    /// <summary>The pace the local player's own run is drawn at — the same pace the server bills the step
+    /// at, read from the speed it sent. Everyone else slides at the baseline, which is interpolation
+    /// rather than prediction and does not have to be exact.</summary>
+    public static float MyRunMsPerTile(ClientState state) => state.MyIndex > 0
+        ? MovementFormulas.RunMsPerTile(state.Players[state.MyIndex].MoveSpeed)
+        : MovementFormulas.BaseRunMsPerTile;
+
     public static void Process(ClientState state, float deltaMs)
     {
-        // The local player's SPD-scaled run speed (base for everyone else — visual-only interpolation).
-        float myRunMs = state.MyIndex > 0
-            ? MovementFormulas.RunMsPerTile(state.Players[state.MyIndex].Spd)
-            : MovementFormulas.BaseRunMsPerTile;
+        float myRunMs = MyRunMsPerTile(state);
 
         // Players
         for (int i = 1; i <= state.PlayerSlots; i++)

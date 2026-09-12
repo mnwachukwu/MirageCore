@@ -117,9 +117,6 @@ public sealed class GuildMember
 
     // Snapshot of the account's most-recently-active character, for the roster row when offline.
     public string CharName { get; set; } = "";
-    public int CharClass { get; set; }
-    public int CharLevel { get; set; }
-
     /// <summary>A shallow copy is a full copy — every field is a value type or an immutable string.</summary>
     public GuildMember Clone() => (GuildMember)MemberwiseClone();
 }

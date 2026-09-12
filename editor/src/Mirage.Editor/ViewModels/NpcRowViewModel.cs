@@ -58,25 +58,6 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
     // constructed without them still round-trips its drops, it just cannot offer a picker.
     private Func<NamedEntry[]> _itemEntriesProvider = static () => [];
     private Func<int, bool> _isCurrency = static _ => false;
-    [ObservableProperty] private int _str;
-    [ObservableProperty] private int _def;
-    [ObservableProperty] private int _spd;
-    [ObservableProperty] private int _int;
-    /// <summary>Flat HP added on top of the stat-derived pool — the boss/wall lever.</summary>
-    [ObservableProperty] private int _extraHp;
-    // Boss classification (author flag) — drives the compressed guild-quest kill count; see NpcRecord.IsBoss.
-    // Not inferred from HP/Size; a tanky mob isn't automatically a boss.
-    [ObservableProperty] private bool _isBoss;
-    // Editor-only EXP preview level: shows the reward for a typical player of this level (defaults to the mob's own
-    // level on load; scrub it up/down to see the mob's EXP across the band you'll place it in).  Never touches live EXP.
-    // Nullable so clearing the spinner (empty text) binds cleanly instead of throwing a conversion error;
-    // a blank box is treated as level 0 by ExpDrop.
-    [ObservableProperty] private int? _previewLevel = 1;
-    partial void OnPreviewLevelChanged(int? value) => OnPropertyChanged(nameof(ExpDrop));
-    // The mob's own player-equivalent level (StatFormulas.NpcLevel) as of the last load or stat edit — the anchor
-    // for auto-following the preview spinner.  While PreviewLevel sits on this value, a stat edit that moves the
-    // mob's level drags the spinner along; once the designer scrubs it off, it detaches (see NotifyLevelDerived).
-    private int _ownLevel;
     [ObservableProperty] private bool _emitsLight;
     // Light attributes (used only when EmitsLight is true), authored via the conditional block in the form.
     [ObservableProperty] private Color _lightColor = ColorHex.ToColor(LightSpec.Torch.Rgb);
@@ -115,27 +96,6 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
     /// <summary>List caption: "index: name", with a placeholder when the slot is unnamed.</summary>
     public string DisplayName => $"{Index}: {(string.IsNullOrEmpty(Name) ? EditorStrings.Get(EditorStrings.Common_EmptyName) : Name)}";
 
-    // ── Calculated stats ──────────────────────────────────────────────────────
-    // All read through the shared formula classes so editor preview stays in lockstep
-    // with the live game.  Change a formula in Mirage.Shared and the editor follows.
-    // ONE player-faithful LEVEL, straight from the shared StatFormulas.NpcLevel: all four stats (SPD included)
-    // count as investment, so level = (statSum - 20)/3 + 1 -- exactly what level a player with this point spread
-    // would be (an authored class starts at 20 total; each level adds Constants.PointsPerLevel = 3).  SPD buys
-    // DURABILITY (its level floor lifts HP + mit) like a SPD-heavy player, so it belongs in the ONE level that
-    // drives vitals, mit, EXP, and the on-target strength readout alike -- there is no separate "combat" level.
-    /// <summary>Sum of the four stats — the point spread the virtual level is inferred from.</summary>
-    public int StatTotal => Str + Def + Int + Spd;
-    /// <summary>The mob's player-equivalent level, as text for the readout.</summary>
-    public string Level => $"{StatFormulas.NpcLevel(Str, Def, Int, Spd)}";
-
-    public int MaxHp => StatFormulas.GetNpcMaxHp(Str, Def, Int, Spd, ExtraHp);
-    public int MaxMp => StatFormulas.GetNpcMaxMp(Str, Def, Int, Spd);
-    public int MaxSp => StatFormulas.GetNpcMaxSp(Spd);
-    public int HpRegen => StatFormulas.GetNpcHpRegen(Def);
-    public int MpRegen => StatFormulas.GetNpcMpRegen(Int);
-    public int SpRegen => StatFormulas.GetNpcSpRegen(Spd);
-    /// <summary>EXP a player of <see cref="PreviewLevel"/> would earn for the kill.</summary>
-    public int ExpDrop => ExpFormulas.EstimatedExpVsLevel(Str, Def, Int, Spd, ExtraHp, PreviewLevel ?? 0);
     /// <summary>Expected drops per kill — the SUM of the live chances, because the lines roll
     /// independently rather than competing. Shown because that sum is the one number a table can get
     /// quietly wrong: four 50% lines read as "all uncommon" but average two drops a kill.</summary>
@@ -243,19 +203,6 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
         if (Drops.Remove(row)) MarkDirty();
         NotifyDropDerived();
     }
-    // Combat chances — require SP > 0 at runtime; show stat-derived maximum here
-    public string CritChancePct => CombatFormulas.FormatPerMilleAsPercent(CombatFormulas.NpcCriticalChancePerMille(Str));
-    public string SpellCritChancePct => CombatFormulas.FormatPerMilleAsPercent(CombatFormulas.NpcSpellCriticalChancePerMille(Int));
-    public string BlockChancePct => CombatFormulas.FormatPerMilleAsPercent(CombatFormulas.NpcBlockChancePerMille(Def));
-    public string DodgeChancePct => CombatFormulas.FormatPerMilleAsPercent(CombatFormulas.NpcDodgeChancePerMille(Def));
-    // Combat output / mitigation — same formulas the live combat uses (NPCs roll matched implicit gear).
-    // Both P-DMG and M-DMG are the CENTER of a symmetric +-10% Vary (shown as the base number, mirroring the
-    // player readout).  P-DMG = NpcMeleeBaseDamage(Str); M-DMG = NpcSpellBaseMagnitude(Int) — the same curve
-    // off Int.  MIT = NpcProtection = PlayerProtection(NpcLevel, Def) + a fully-kitted defender's gear (armor +
-    // helmet full + shield 1/4, all at matched Def) — one axis that resists P-DMG and M-DMG alike.
-    public int PhysDamage => CombatFormulas.NpcMeleeBaseDamage(Str);
-    public int MagicDamage => CombatFormulas.NpcSpellBaseMagnitude(Int);
-    public int Mit => CombatFormulas.NpcProtection(Str, Def, Int, Spd);
 
     // Set while filling from a record or packet, so those writes don't count as author edits.
     private bool _loading;
@@ -278,13 +225,6 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
         _loading = true;
         try { LoadDrops(r.Drops); }
         finally { _loading = false; }
-        _str = r.Str;
-        _def = r.Def;
-        _spd = r.Spd;
-        _int = r.Int;
-        _extraHp = r.ExtraHp;
-        _isBoss = r.IsBoss;
-        SyncPreviewLevelToOwn();   // default the EXP preview to the mob's own level (and anchor auto-follow there)
         _emitsLight = r.EmitsLight;
         _lightColor = ColorHex.ToColor(r.Light.Rgb);
         _lightRadius = r.Light.Radius;
@@ -294,7 +234,6 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
     }
 
     partial void OnNameChanged(string value) => MarkDirty();
-    partial void OnIsBossChanged(bool value) => MarkDirty();
     partial void OnEmitsLightChanged(bool value)
     {
         MarkDirty();
@@ -308,78 +247,6 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
     partial void OnBehaviorChanged(NpcBehavior value) => MarkDirty();
     partial void OnGroupChanged(int value) => MarkDirty();
     partial void OnRangeChanged(int value) => MarkDirty();
-    // Drop changes arrive through OnDropRowChanged (subscribed per row) rather than generated partials,
-    // since the table is a collection rather than three scalar properties.
-    // Every stat feeds NpcLevel (SPD included), which drives the HP/MP pools, mitigation, EXP, and the Level
-    // readout — so a change to ANY stat refreshes this shared set (each handler adds its own stat-specific extras).
-    private void NotifyLevelDerived()
-    {
-        // Auto-follow: while the EXP-preview spinner is parked on the mob's own level, keep it pinned there as this
-        // stat edit shifts that level, so the designer keeps seeing the reward at the mob's level.  Once they scrub
-        // the spinner to a custom level it detaches and stays put.  Skipped during a load — the load paths seed the
-        // spinner + anchor explicitly via SyncPreviewLevelToOwn (and one-stat-at-a-time loading would thrash it).
-        if (!_loading)
-        {
-            int newOwnLevel = StatFormulas.NpcLevel(Str, Def, Int, Spd);
-            if (newOwnLevel != _ownLevel)
-            {
-                if (PreviewLevel == _ownLevel) PreviewLevel = newOwnLevel;
-                _ownLevel = newOwnLevel;
-            }
-        }
-        OnPropertyChanged(nameof(StatTotal));
-        OnPropertyChanged(nameof(Level));
-        OnPropertyChanged(nameof(MaxHp));
-        OnPropertyChanged(nameof(MaxMp));
-        OnPropertyChanged(nameof(ExpDrop));
-        OnPropertyChanged(nameof(Mit));
-    }
-
-    // Seed the EXP-preview spinner to the mob's OWN player-equivalent level and anchor auto-follow there.
-    // INVARIANT: EVERY load path (ctor, offline reload, online packet) must call this, or the spinner opens on
-    // the placeholder 1 instead of the mob's level. Add the call when adding a load path.
-    private void SyncPreviewLevelToOwn()
-    {
-        _ownLevel = StatFormulas.NpcLevel(Str, Def, Int, Spd);
-        PreviewLevel = _ownLevel;
-    }
-
-    partial void OnStrChanged(int value)
-    {
-        MarkDirty();
-        OnPropertyChanged(nameof(CritChancePct));
-        OnPropertyChanged(nameof(PhysDamage));
-        NotifyLevelDerived();
-    }
-    partial void OnDefChanged(int value)
-    {
-        MarkDirty();
-        OnPropertyChanged(nameof(HpRegen));
-        OnPropertyChanged(nameof(BlockChancePct));
-        OnPropertyChanged(nameof(DodgeChancePct));
-        NotifyLevelDerived();
-    }
-    partial void OnSpdChanged(int value)
-    {
-        MarkDirty();
-        OnPropertyChanged(nameof(MaxSp));
-        OnPropertyChanged(nameof(SpRegen));
-        NotifyLevelDerived();   // SPD feeds NpcLevel too, so it lifts HP/MP/mit/EXP and the Level readout
-    }
-    partial void OnIntChanged(int value)
-    {
-        MarkDirty();
-        OnPropertyChanged(nameof(MpRegen));
-        OnPropertyChanged(nameof(MagicDamage));
-        OnPropertyChanged(nameof(SpellCritChancePct));
-        NotifyLevelDerived();
-    }
-    partial void OnExtraHpChanged(int value)
-    {
-        MarkDirty();
-        OnPropertyChanged(nameof(MaxHp));    // flat 1:1 add to the HP pool...
-        OnPropertyChanged(nameof(ExpDrop));  // ...and counts toward kill-EXP
-    }
 
     private void MarkDirty()
     {
@@ -428,13 +295,6 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
             Group = r.Group;
             Range = r.Range;
             LoadDrops(r.Drops);
-            Str = r.Str;
-            Def = r.Def;
-            Spd = r.Spd;
-            Int = r.Int;
-            ExtraHp = r.ExtraHp;
-            IsBoss = r.IsBoss;
-            SyncPreviewLevelToOwn();   // re-default the EXP preview to this mob's own level on open (re-anchor auto-follow)
             EmitsLight = r.EmitsLight;
             LightColor = ColorHex.ToColor(r.Light.Rgb);
             LightRadius = r.Light.Radius;
@@ -465,13 +325,6 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
             Group = pkt.Group;
             Range = pkt.Range;
             LoadDrops(pkt.Drops);
-            Str = pkt.Str;
-            Def = pkt.Def;
-            Spd = pkt.Spd;
-            Int = pkt.Int;
-            ExtraHp = pkt.ExtraHp;
-            IsBoss = pkt.IsBoss;
-            SyncPreviewLevelToOwn();   // online load: default the EXP preview to the mob's own level
             EmitsLight = pkt.EmitsLight;
             LightColor = ColorHex.ToColor(pkt.Light.Rgb);
             LightRadius = pkt.Light.Radius;
@@ -502,12 +355,6 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
         // Empty rows are dropped here as well as server-side, so an offline save and an online save
         // produce the same file.
         Drops = Drops.Count == 0 ? null : [.. Drops.Where(d => !d.IsEmpty).Select(d => d.ToRecord())],
-        Str = Str,
-        Def = Def,
-        Spd = Spd,
-        Int = this.Int,
-        ExtraHp = ExtraHp,
-        IsBoss = IsBoss,
         EmitsLight = EmitsLight,
         Light = Light,
     };
@@ -527,12 +374,6 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
         Group = Group,
         Range = Range,
         Drops = Drops.Count == 0 ? null : [.. Drops.Where(d => !d.IsEmpty).Select(d => d.ToRecord())],
-        Str = Str,
-        Def = Def,
-        Spd = Spd,
-        Int = this.Int,
-        ExtraHp = ExtraHp,
-        IsBoss = IsBoss,
         EmitsLight = EmitsLight,
         Light = Light,
     };

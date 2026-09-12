@@ -165,8 +165,6 @@ public class NonDefaultMapSizeTests
         p.Map = Center;
         p.X = x;
         p.Y = y;
-        p.MaxHp = 100;
-        p.Hp = 100;
         world.MapObservers[Center].Add(Idx);
         return (world, move, p);
     }

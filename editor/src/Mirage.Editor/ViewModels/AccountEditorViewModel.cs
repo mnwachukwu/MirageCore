@@ -168,9 +168,7 @@ public sealed partial class AccountEditorViewModel : ObservableObject
 
     private void ClearChars()
     {
-        foreach (var c in Chars) c.PropertyChanged -= OnCharRowChanged;
         Chars.Clear();
-        NotifyBudget();
     }
 
     public void LoadOnline() => _ = RefreshAsync();
@@ -273,13 +271,11 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         {
             var row = new AccountCharRowViewModel(c, () => _data.LiveItemEntries, () => _data.LiveSpellEntries,
                 () => _data.LiveQuestEntries);
-            row.PropertyChanged += OnCharRowChanged;
             Chars.Add(row);
         }
         OnPropertyChanged(nameof(GuildText));
         OnPropertyChanged(nameof(IsSelf));
         OnPropertyChanged(nameof(CanEditAccess));
-        NotifyBudget();
     }
 
     /// <summary>Take back only what the SERVER owns — the vault, the online flag, the guild line, and each
@@ -311,17 +307,7 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         OnPropertyChanged(nameof(GuildText));
     }
 
-    private void OnCharRowChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(AccountCharRowViewModel.IsOverBudget)) NotifyBudget();
-    }
-
-    /// <summary>True while any character on the account holds more stat value than its level allows.
-    /// Saving is refused until it is fixed: the server would reject the row anyway, and a save that
-    /// silently dropped one character's edits is worse than one that never ran.</summary>
-    public bool HasOverBudgetChar => Chars.Any(c => c.IsOverBudget);
-
-    public bool CanSave => HasSelection && !HasOverBudgetChar;
+    public bool CanSave => HasSelection;
 
     /// <summary>Caption for the worn marker on a bag row. On the editor rather than the row because a bag
     /// slot is a wire record with no captions of its own.</summary>
@@ -329,20 +315,12 @@ public sealed partial class AccountEditorViewModel : ObservableObject
     public string VaultHeader => EditorStrings.Get(EditorStrings.AccountEditor_VaultHeader);
     public string VaultEmpty => EditorStrings.Get(EditorStrings.AccountEditor_VaultEmpty);
 
-    private void NotifyBudget()
-    {
-        OnPropertyChanged(nameof(HasOverBudgetChar));
-        OnPropertyChanged(nameof(CanSave));
-    }
-
     // ── Saving ────────────────────────────────────────────────────────────────
 
     [RelayCommand]
     private async Task SaveAsync()
     {
         if (!_conn.IsConnected || Login.Length == 0) return;
-        // The footer already carries this refusal in red whenever it holds, so the command stays silent.
-        if (HasOverBudgetChar) return;
 
         IsBusy = true;
         try
@@ -538,15 +516,6 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
 {
     private readonly int _slot;
     private string _name;
-    private readonly int _class;
-
-    // What a level change measures from. Recomputing against a baseline rather than nudging the pool by a
-    // delta makes the coupling idempotent: a NumericUpDown fires a value per keystroke, so "5" typed over
-    // "12" passes through 1 and 15 on its way, and an incremental adjustment would clamp at zero somewhere
-    // in the middle and never come back.
-    private int _baseLevel;
-    private int _basePoints;
-    private bool _syncing;
 
     public AccountCharRowViewModel(EditorCharRow row, Func<NamedEntry[]> itemEntriesProvider,
         Func<NamedEntry[]> spellEntriesProvider, Func<NamedEntry[]> questEntriesProvider)
@@ -559,25 +528,14 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
         foreach (var q in row.Quests) Quests.Add(q);
         _slot = row.Slot;
         _name = row.Name;
-        _class = row.Class;
-        _level = row.Level;
-        _exp = row.Exp;
         _map = row.Map;
         _x = row.X;
         _y = row.Y;
-        _str = row.Str;
-        _def = row.Def;
-        _spd = row.Spd;
-        _int = row.Int;
-        _points = row.Points;
-        _baseLevel = row.Level;
-        _basePoints = row.Points;
         _renameTo = row.Name;
     }
 
     public int Slot => _slot;
     public string Name => _name;
-    public int Class => _class;
 
     /// <summary>What the rename box holds. Separate from <see cref="Name"/>, which stays what the server
     /// last said: a rename is its own operation, not a field the account Save carries, so the two only agree
@@ -588,56 +546,9 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
 
     public bool CanRename => RenameTo.Trim().Length > 0 && RenameTo.Trim() != _name;
 
-    [ObservableProperty] private int _level;
-    [ObservableProperty] private long _exp;
     [ObservableProperty] private int _map;
     [ObservableProperty] private int _x;
     [ObservableProperty] private int _y;
-    [ObservableProperty] private int _str;
-    [ObservableProperty] private int _def;
-    [ObservableProperty] private int _spd;
-    [ObservableProperty] private int _int;
-    [ObservableProperty] private int _points;
-
-    partial void OnLevelChanged(int value)
-    {
-        _syncing = true;
-        try
-        {
-            Exp = ExpFormulas.ExpFloorForLevel(value);
-            Points = Math.Max(0, _basePoints + Constants.PointsPerLevel * (value - _baseLevel));
-        }
-        finally { _syncing = false; }
-        NotifyBudget();
-    }
-
-    // A hand-typed point pool becomes the new baseline, so a later level change adjusts from what the
-    // operator entered rather than from what the server sent.
-    partial void OnPointsChanged(int value)
-    {
-        if (!_syncing)
-        {
-            _baseLevel = Level;
-            _basePoints = value;
-        }
-        NotifyBudget();
-    }
-
-    partial void OnStrChanged(int value) => NotifyBudget();
-    partial void OnDefChanged(int value) => NotifyBudget();
-    partial void OnSpdChanged(int value) => NotifyBudget();
-    partial void OnIntChanged(int value) => NotifyBudget();
-
-    /// <summary>Stat value this character holds — the four stats plus the unspent pool.</summary>
-    public int PointsHeld => StatFormulas.PointsHeld(Str, Def, Spd, Int, Points);
-
-    /// <summary>The most a character of this level may hold.</summary>
-    public int PointBudget => StatFormulas.PointBudgetForLevel(Level);
-
-    /// <summary>True when the row describes a character the game could not have produced. The server
-    /// refuses such a row too; this is what stops the editor sending one.</summary>
-    public bool IsOverBudget => PointsHeld > PointBudget;
-    public bool IsWithinBudget => !IsOverBudget;
 
     // ── The bag ───────────────────────────────────────────────────────────────
 
@@ -722,16 +633,8 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
         OnPropertyChanged(nameof(QuestEntries));
     }
 
-    public string BudgetText => EditorStrings.Format(EditorStrings.AccountEditor_StatBudget,
-        ("Held", PointsHeld), ("Max", PointBudget));
-
-    public string OverBudgetText => EditorStrings.Format(EditorStrings.AccountEditor_StatBudgetOver,
-        ("Held", PointsHeld), ("Max", PointBudget), ("Level", Level));
-
     internal void NotifyLanguageChanged()
     {
-        OnPropertyChanged(nameof(BudgetText));
-        OnPropertyChanged(nameof(OverBudgetText));
         OnPropertyChanged(nameof(RenameLabel));
         OnPropertyChanged(nameof(RenamePlaceholder));
         OnPropertyChanged(nameof(BagHeader));
@@ -748,16 +651,6 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
         OnPropertyChanged(nameof(SetLabel));
         OnPropertyChanged(nameof(QuestPlaceholder));
         OnPropertyChanged(nameof(IneligibleLabel));
-    }
-
-    private void NotifyBudget()
-    {
-        OnPropertyChanged(nameof(PointsHeld));
-        OnPropertyChanged(nameof(PointBudget));
-        OnPropertyChanged(nameof(IsOverBudget));
-        OnPropertyChanged(nameof(IsWithinBudget));
-        OnPropertyChanged(nameof(BudgetText));
-        OnPropertyChanged(nameof(OverBudgetText));
     }
 
     /// <summary>Take back the parts of this character the SERVER owns — its name and the three collections
@@ -794,16 +687,8 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
     {
         Slot = _slot,
         Name = _name,
-        Class = _class,
-        Level = Level,
-        Exp = Exp,
         Map = Map,
         X = X,
         Y = Y,
-        Str = Str,
-        Def = Def,
-        Spd = Spd,
-        Int = Int,
-        Points = Points,
     };
 }

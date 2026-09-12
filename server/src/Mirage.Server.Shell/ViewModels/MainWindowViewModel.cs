@@ -409,8 +409,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     }
     public string ColName => ShellStrings.Get(ShellStrings.Server_ColName);
     public string ColAccount => ShellStrings.Get(ShellStrings.Server_ColAccount);
-    public string ColLevel => ShellStrings.Get(ShellStrings.Server_ColLevel);
-    public string ColClass => ShellStrings.Get(ShellStrings.Server_ColClass);
     public string ColMap => ShellStrings.Get(ShellStrings.Server_ColMap);
     public string ColAccess => ShellStrings.Get(ShellStrings.Server_ColAccess);
     public string KickLabel => ShellStrings.Get(ShellStrings.Server_Kick);

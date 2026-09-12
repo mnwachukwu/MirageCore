@@ -8,12 +8,6 @@
   "behavior": "Wander",
   "group": 0,
   "range": 4,
-  "str": 18,
-  "def": 143,
-  "spd": 18,
-  "int": 18,
-  "extraHp": 0,
-  "isBoss": false,
   "emitsLight": true,
   "light": {
     "rgb": 11834985,

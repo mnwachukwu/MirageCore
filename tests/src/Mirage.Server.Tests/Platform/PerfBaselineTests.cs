@@ -112,13 +112,13 @@ public class PerfBaselineTests
         TestContext.WriteLine("PlayerManager indexer — five reads per call, repeated vs hoisted:");
         Report("five repeated pm[i] reads", Measure(2_000_000, () =>
         {
-            sink += pm[1].Char.Hp + pm[1].Char.MaxHp + pm[1].Char.Mp
-                  + pm[1].Char.MaxMp + pm[1].Char.Sp;
+            sink += pm[1].Char.X + pm[1].Char.Y + pm[1].Char.Map
+                  + pm[1].Char.MoveSpeed + pm[1].Char.SpawnMap;
         }));
         Report("one hoisted local", Measure(2_000_000, () =>
         {
             var p = pm[1].Char;
-            sink += p.Hp + p.MaxHp + p.Mp + p.MaxMp + p.Sp;
+            sink += p.X + p.Y + p.Map + p.MoveSpeed + p.SpawnMap;
         }));
         TestContext.WriteLine($"  (sink {sink} — keeps the loops from being optimized away)");
     }

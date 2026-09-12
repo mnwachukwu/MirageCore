@@ -38,7 +38,7 @@ public class WorldTransferTests
     // Small enough to write in a test, wide enough to cover every family the transfer walks.
     private static readonly RecordLimits Small = new()
     {
-        Items = 8, Npcs = 8, Shops = 8, Spells = 8, Quests = 8, Conversations = 8, Maps = 8, MapGroups = 8,
+        Items = 8, Npcs = 8, Shops = 8, Spells = 8, Quests = 8, Conversations = 8, Maps = 8, MapGroups = 8
     };
 
     private static WorldSnapshot Blank(RecordLimits? limits = null)
@@ -54,7 +54,7 @@ public class WorldTransferTests
             Quests = Fill<QuestRecord>(l.Quests),
             Conversations = Fill<ConversationRecord>(l.Conversations),
             Maps = Fill<MapRecord>(l.Maps),
-            MapGroups = [.. Enumerable.Range(0, l.MapGroups + 1).Select(i => new MapGroupRecord { Index = i })],
+            MapGroups = [.. Enumerable.Range(0, l.MapGroups + 1).Select(i => new MapGroupRecord { Index = i })]
         };
     }
 
@@ -66,7 +66,7 @@ public class WorldTransferTests
         var w = Blank();
         w.Items[1] = new ItemRecord { Name = "Bronze Sword", Type = ItemType.Weapon, Power = 12, Pic = 3 };
         w.Items[2] = new ItemRecord { Name = "Gold", Type = ItemType.Currency, Pic = 9 };
-        w.Npcs[1] = new NpcRecord { Name = "Cave Troll", Sprite = 42, Str = 20, Behavior = NpcBehavior.Pursue };
+        w.Npcs[1] = new NpcRecord { Name = "Cave Troll", Sprite = 42, Behavior = NpcBehavior.Pursue };
         w.Shops[1] = new ShopRecord { Name = "Smithy", Keeper = 1 };
         w.Spells[1] = new SpellRecord { Name = "Ember", Type = SpellType.SubHp, VitalAmount = 15 };
         w.Quests[1] = new QuestRecord { Name = "The Missing Cart" };
@@ -76,7 +76,7 @@ public class WorldTransferTests
         var map = new MapRecord
         {
             Name = "harbour-1", DisplayName = "Drowned Port", Music = 2, MapGroup = 1,
-            Up = 2, Down = 3, Left = 4, Right = 5, AlwaysLit = true, Indoors = false,
+            Up = 2, Down = 3, Left = 4, Right = 5, AlwaysLit = true, Indoors = false
         };
         map.Tile[1, 1] = new TileRecord { Type = TileType.Blocked }.WithArt(LayerType.Ground, [163]);
         map.Tile[2, 2] = new TileRecord { Type = TileType.Warp, WarpMap = 6, WarpX = 3, WarpY = 4 }.WithArt(LayerType.Ground, [2]);

@@ -187,6 +187,12 @@ public sealed partial class ClientPacketHandler : IClientEvents
             case SendPlayerDataPacket p:
                 HandleSendPlayerData(p);
                 break;
+            case AttributeSchemaPacket p:
+                HandleAttributeSchema(p);
+                break;
+            case AttributeSyncPacket p:
+                HandleAttributeSync(p);
+                break;
             case AggressorRefreshPacket p:
                 HandleAggressorRefresh(p);
                 break;

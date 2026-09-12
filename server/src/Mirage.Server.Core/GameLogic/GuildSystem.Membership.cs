@@ -372,8 +372,6 @@ public sealed partial class GuildSystem : GameSystem
             Rank = GuildRank.Member,
             LastSeenUtc = 0,   // no logout recorded yet; online-ness is derived live
             CharName = sp.Char.TrimmedName,
-            CharClass = sp.Char.Class,
-            CharLevel = sp.Char.Level,
         });
         SaveGuild(guild);
         BroadcastPlayerGuild(index);

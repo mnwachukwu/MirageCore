@@ -41,14 +41,14 @@ public sealed class MovementSystem : GameSystem
     /// counter: it may sit up to <see cref="MoveCreditWindowMs"/> BEHIND <paramref name="now"/>, and that
     /// gap is the bank. Clamping it forward on every call is what refills it, which is also why an idle
     /// player is restored to exactly one window and never more.</para></summary>
-    public static bool TryConsumeMoveCredit(ServerPlayer sp, MovementType movement, int spd, long now)
+    public static bool TryConsumeMoveCredit(ServerPlayer sp, MovementType movement, int moveSpeed, long now)
     {
         long floor = now - MoveCreditWindowMs;
         if (sp.MoveAllowedAt < floor) sp.MoveAllowedAt = floor;
         if (now < sp.MoveAllowedAt) return false;
 
         sp.MoveAllowedAt += (long)(movement == MovementType.Running
-            ? MovementFormulas.RunMsPerTile(spd)
+            ? MovementFormulas.RunMsPerTile(moveSpeed)
             : MovementFormulas.BaseWalkMsPerTile);
         return true;
     }
@@ -61,17 +61,13 @@ public sealed class MovementSystem : GameSystem
         var p = _pm[index].Char;
         p.Dir = dir;
 
-        // No SP left — force walking pace. An observer has no stamina clock, so it never downgrades.
-        if (movement == MovementType.Running && p.Sp <= 0 && !_pm[index].Char.GodMode)
-            movement = MovementType.Walking;
         // WHEN, not only where. Everything below decides whether the destination is legal; this decides
-        // whether it is legal YET. Charged AFTER both downgrades above, so a client that keeps claiming
-        // Running on an empty SP bar is billed the walking pace the server is actually moving it at.
+        // whether it is legal YET.
         //
         // A step refused further down for a WALL still costs its credit, which is deliberate: charging on
         // attempt keeps the budget one atomic operation, and an honest client cannot spend that way — it
         // predicts with the same collision rules and simply does not send a move it expects to fail.
-        if (!TryConsumeMoveCredit(_pm[index], movement, p.Spd, Environment.TickCount64))
+        if (!TryConsumeMoveCredit(_pm[index], movement, p.MoveSpeed, Environment.TickCount64))
         {
             // The same correction a wall refusal sends below — the client predicted this step locally.
             _dispatcher.SendTo(index, PacketBuilder.PlayerMove(index, p.X, p.Y, p.Dir, MovementType.Walking, p.Layer));
@@ -79,7 +75,6 @@ public sealed class MovementSystem : GameSystem
         }
 
         bool moved = false;
-        bool stepped = false;   // true only for normal tile steps (not edge-of-map warps)
         WorldLayer newLayer;    // the logical layer the in-map step lands on (committed to p.Layer)
 
         // The map's own edges. Every step is either inside them or a crossing, and a neighbour's opposite
@@ -97,7 +92,6 @@ public sealed class MovementSystem : GameSystem
                     p.Layer = newLayer;
                     BroadcastMove(index, movement);
                     moved = true;
-                    stepped = true;
                 }
                 else if (p.Y == 0 && here.Up > 0
                     && CanPlayerWalkOnTile(index, here.Up, p.X, _world.Maps[here.Up].Height - 1, dir, out newLayer))
@@ -113,7 +107,6 @@ public sealed class MovementSystem : GameSystem
                     p.Layer = newLayer;
                     BroadcastMove(index, movement);
                     moved = true;
-                    stepped = true;
                 }
                 else if (p.Y == lastY && here.Down > 0
                     && CanPlayerWalkOnTile(index, here.Down, p.X, 0, dir, out newLayer))
@@ -129,7 +122,6 @@ public sealed class MovementSystem : GameSystem
                     p.Layer = newLayer;
                     BroadcastMove(index, movement);
                     moved = true;
-                    stepped = true;
                 }
                 else if (p.X == 0 && here.Left > 0
                     && CanPlayerWalkOnTile(index, here.Left, _world.Maps[here.Left].Width - 1, p.Y, dir, out newLayer))
@@ -145,7 +137,6 @@ public sealed class MovementSystem : GameSystem
                     p.Layer = newLayer;
                     BroadcastMove(index, movement);
                     moved = true;
-                    stepped = true;
                 }
                 else if (p.X == lastX && here.Right > 0
                     && CanPlayerWalkOnTile(index, here.Right, 0, p.Y, dir, out newLayer))
@@ -154,27 +145,6 @@ public sealed class MovementSystem : GameSystem
                 }
                 break;
         }
-
-        if (stepped && movement == MovementType.Running && !_pm[index].Char.GodMode)
-        {
-            // One stamina a step, whatever is worn. A shield already pays for itself in the fight: it is
-            // the only slot whose defense is rolled for rather than applied, and every block it wins
-            // costs stamina the moment it lands. Charging for the walk as well taxed the same choice
-            // twice, and it fell hardest in the low band, where a walk between two mobs cost most of a
-            // pool before the fight had started.
-            int drain = 1;
-            // Heat Wave doubles all stamina costs, including run drain.
-            if (_world.WeatherOn(p.Map) == WeatherType.HeatWave)
-                drain *= Constants.WeatherHeatWaveSpCostMultiplier;
-            p.Sp = Math.Max(p.Sp - drain, 0);
-            // Stamped so RegenerationSystem can see the sprint is still running. Without it the rest
-            // rate refunds a sprint about as fast as it is spent.
-            _pm[index].LastRunAt = Environment.TickCount64;
-        }
-
-        // Blood trail: a badly wounded player (<= BloodTrailHpThreshold of max HP) drips onto each fresh tile it
-        // moves to — an in-map step OR a walk across a map edge (both set `moved`; a teleport isn't a PlayerMove).
-        if (moved && p.Hp <= p.MaxHp * Constants.BloodTrailHpThreshold)
 
         if (!moved)
         {
@@ -262,12 +232,12 @@ public sealed class MovementSystem : GameSystem
     // map holds exactly one moral, so within a half the branches are mutually exclusive.
 
     /// <summary>Tell the player which zone rules stop applying. Silent unless a moral ends.</summary>
-    private void AnnounceLeavingZone(int index, MapMoral oldMoral, MapMoral newMoral, bool isPk, int level)
+    private void AnnounceLeavingZone(int index, MapMoral oldMoral, MapMoral newMoral, bool isPk)
     {
         if (oldMoral == MapMoral.Safe && newMoral != MapMoral.Safe)
         {
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.MovementSystem_LeaveSafeBase, new ChatMetadata(GameColor.BrightRed, ChatChannel.System));
-            if (!isPk && level >= 10)
+            if (!isPk)
                 _dispatcher.SendLocalizedChatTo(index, ServerStrings.MovementSystem_LeaveSafeNonPk, new ChatMetadata(GameColor.Gray, ChatChannel.System));
         }
         else if (oldMoral == MapMoral.Arena && newMoral != MapMoral.Arena)
@@ -277,22 +247,20 @@ public sealed class MovementSystem : GameSystem
     }
 
     /// <summary>Tell the player which zone rules now apply. Silent unless a moral begins.</summary>
-    private void AnnounceEnteringZone(int index, MapMoral oldMoral, MapMoral newMoral, bool isPk, int level)
+    private void AnnounceEnteringZone(int index, MapMoral oldMoral, MapMoral newMoral, bool isPk)
     {
         if (newMoral == MapMoral.Safe && oldMoral != MapMoral.Safe)
         {
-            // Base line first (green), then the PvP-implications note on its own gray line for level 10+.
-            // PvP is asymmetric in safe zones: non-PKers can strike PKers without retaliation, PKers can
-            // only attack other PKers, and sub-level-10 players are outside PvP entirely.
+            // Base line first (green), then the PvP-implications note on its own gray line. PvP is
+            // asymmetric in safe zones: non-PKers can strike PKers without retaliation, and PKers can
+            // only attack other PKers.
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.MovementSystem_EnterSafeBase, new ChatMetadata(GameColor.BrightGreen, ChatChannel.System));
-            if (level >= 10)
-                _dispatcher.SendLocalizedChatTo(index, isPk ? ServerStrings.MovementSystem_EnterSafePk : ServerStrings.MovementSystem_EnterSafeNonPk, new ChatMetadata(GameColor.Gray, ChatChannel.System));
+            _dispatcher.SendLocalizedChatTo(index, isPk ? ServerStrings.MovementSystem_EnterSafePk : ServerStrings.MovementSystem_EnterSafeNonPk, new ChatMetadata(GameColor.Gray, ChatChannel.System));
         }
         else if (newMoral == MapMoral.Arena && oldMoral != MapMoral.Arena)
         {
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.MovementSystem_EnterArenaBase, new ChatMetadata(GameColor.Yellow, ChatChannel.System));
-            if (level >= 10)
-                _dispatcher.SendLocalizedChatTo(index, ServerStrings.MovementSystem_EnterArenaPvp, new ChatMetadata(GameColor.Gray, ChatChannel.System));
+            _dispatcher.SendLocalizedChatTo(index, ServerStrings.MovementSystem_EnterArenaPvp, new ChatMetadata(GameColor.Gray, ChatChannel.System));
         }
     }
 
@@ -365,7 +333,7 @@ public sealed class MovementSystem : GameSystem
         if (greetingChanged)
             OnLeaveMap(index);
         if (moralChanged)
-            AnnounceLeavingZone(index, oldMoral, newMoral, isPk, p.Level);
+            AnnounceLeavingZone(index, oldMoral, newMoral, isPk);
 
         p.Map = mapNum;
         p.X = x;
@@ -386,7 +354,7 @@ public sealed class MovementSystem : GameSystem
 
         if (moralChanged)
         {
-            AnnounceEnteringZone(index, oldMoral, newMoral, isPk, p.Level);
+            AnnounceEnteringZone(index, oldMoral, newMoral, isPk);
         }
 
         if (_pm.GetTotalMapPlayers(oldMap) == 0)

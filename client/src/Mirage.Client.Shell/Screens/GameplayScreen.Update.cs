@@ -158,11 +158,7 @@ public sealed partial class GameplayScreen : IGameScreen
 
         // Hover is intentionally not consumed here so buttons/checkboxes inside panels
         // can still highlight. HUD buttons already blocked from clicks via mouseOwned.
-
-        _hud.Tick(_ctx.State, deltaMs / 1000f);
-        _partyOverlay.Tick(_ctx.State, deltaMs / 1000f);
         _partyOverlay.Update(input, _ctx.State, _ctx.Sender);
-        WorldBarAnimator.Tick(_ctx.State, deltaMs / 1000f);
         TickChatBubbles(_ctx.State);
         // While dead, keep the HUD live ONLY for the Logout (Quit) button so a corpse can still log out; every
         // other HUD button stays inert. Preserve the mouseOverFloating guard in both cases.

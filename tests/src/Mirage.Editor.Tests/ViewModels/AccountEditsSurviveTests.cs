@@ -29,11 +29,11 @@ public class AccountEditsSurviveTests
 
     private static EditorCharRow Tavin() => new()
     {
-        Slot = 1, Name = "Tavin", Class = 1, Level = 10, Exp = 500, Map = 3, X = 4, Y = 5,
+        Slot = 1, Name = "Tavin", Map = 3, X = 4, Y = 5,
         Str = 20, Def = 15, Spd = 6, Int = 6, Points = 0,
         Inv = [new EditorInvSlot { Slot = 1, Num = 7, Quantity = 1 }],
         Spells = [new EditorSpellSlot { Slot = 1, Num = 2 }],
-        Quests = [new EditorQuestRow { QuestNum = 4, Status = QuestStatus.InProgress }],
+        Quests = [new EditorQuestRow { QuestNum = 4, Status = QuestStatus.InProgress }]
     };
 
     private static EditorAccountPacket Account(params EditorCharRow[] chars) => new()
@@ -42,7 +42,7 @@ public class AccountEditsSurviveTests
         Access = AdminLevel.Creator,
         Guild = 2,
         Chars = [.. chars.Length > 0 ? chars : [Tavin()]],
-        Bank = [new EditorInvSlot { Slot = 1, Num = 9, Quantity = 3 }],
+        Bank = [new EditorInvSlot { Slot = 1, Num = 9, Quantity = 3 }]
     };
 
     private static AccountEditorViewModel Open()
@@ -59,10 +59,7 @@ public class AccountEditsSurviveTests
     {
         vm.Access = AdminLevel.Mapper;
         var c = vm.Chars[0];
-        c.Level = 12;      // grants PointsPerLevel x 2 into the pool
         c.Map = 99;
-        c.Str = 26;        // ...spent here
-        c.Points = 0;
     }
 
     private static void AssertStillTyped(AccountEditorViewModel vm)
@@ -70,10 +67,7 @@ public class AccountEditsSurviveTests
         Assert.Multiple(() =>
         {
             Assert.That(vm.Access, Is.EqualTo(AdminLevel.Mapper), "access");
-            Assert.That(vm.Chars[0].Level, Is.EqualTo(12), "level");
             Assert.That(vm.Chars[0].Map, Is.EqualTo(99), "map");
-            Assert.That(vm.Chars[0].Str, Is.EqualTo(26), "strength");
-            Assert.That(vm.Chars[0].Points, Is.Zero, "unspent points");
         });
     }
 
@@ -101,7 +95,7 @@ public class AccountEditsSurviveTests
             Inv = [new EditorInvSlot { Slot = 1, Num = 7, Quantity = 1 },
                    new EditorInvSlot { Slot = 2, Num = 42, Quantity = 1 }],
             Spells = [],
-            Quests = [],
+            Quests = []
         };
         vm.AdoptServerOwned(Account(afterGiving));
 
@@ -161,7 +155,6 @@ public class AccountEditsSurviveTests
         {
             Assert.That(vm.Chars, Has.Count.EqualTo(2));
             Assert.That(vm.Access, Is.EqualTo(AdminLevel.Creator), "a changed roster is a full re-read");
-            Assert.That(vm.Chars[0].Level, Is.EqualTo(10));
         });
     }
 
@@ -251,7 +244,6 @@ public class AccountEditsSurviveTests
         Assert.Multiple(() =>
         {
             Assert.That(vm.Access, Is.EqualTo(AdminLevel.Creator));
-            Assert.That(vm.Chars[0].Level, Is.EqualTo(11));
         });
     }
 }

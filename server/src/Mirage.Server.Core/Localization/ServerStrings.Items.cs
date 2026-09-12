@@ -49,12 +49,6 @@ public static partial class ServerStrings
     public const string ItemSystem_CurrencyLostOnDeath = nameof(ItemSystem_CurrencyLostOnDeath);
     public const string ItemSystem_ItemDestroyed = nameof(ItemSystem_ItemDestroyed);
     public const string ItemSystem_CurrencyDestroyed = nameof(ItemSystem_CurrencyDestroyed);
-    public const string ItemSystem_LevelReq = nameof(ItemSystem_LevelReq);
-    public const string ItemSystem_WeaponStrReq = nameof(ItemSystem_WeaponStrReq);
-    public const string ItemSystem_ArmorDefReq = nameof(ItemSystem_ArmorDefReq);
-    public const string ItemSystem_HelmetDefReq = nameof(ItemSystem_HelmetDefReq);
-    public const string ItemSystem_ShieldDefReq = nameof(ItemSystem_ShieldDefReq);
-    public const string ItemSystem_GearUnequippedDelevel = nameof(ItemSystem_GearUnequippedDelevel);
     public const string ItemSystem_ItemBroken = nameof(ItemSystem_ItemBroken);
     public const string ItemSystem_GearSwapCombat = nameof(ItemSystem_GearSwapCombat);
     public const string ItemSystem_KeyDissolves = nameof(ItemSystem_KeyDissolves);

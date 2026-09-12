@@ -8,12 +8,6 @@
   "behavior": "Pursue",
   "group": 0,
   "range": 6,
-  "str": 352,
-  "def": 274,
-  "spd": 156,
-  "int": 0,
-  "extraHp": 500000,
-  "isBoss": false,
   "emitsLight": true,
   "light": {
     "rgb": 11834985,

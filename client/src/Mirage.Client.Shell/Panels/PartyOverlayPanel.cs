@@ -54,16 +54,6 @@ public sealed class PartyOverlayPanel
         public string Text = "";
         public BarSlot(string labelKey) { LabelKey = labelKey; }
     }
-    private BarSlot _hpSlot = new(ClientStrings.Stats_Hp);
-    private BarSlot _mpSlot = new(ClientStrings.Stats_Mp);
-    private BarSlot _spSlot = new(ClientStrings.Stats_Sp);
-
-    private int _cachedLevel = -1;
-    private string _cachedLevelStr = "";
-
-    // Trails ClientStrings.Generation so a language switch invalidates the two caches above, both of
-    // which hold a resolved string keyed on a number. See the block at the top of Draw.
-    private int _labelsGeneration = -1;
 
     // ── Leave-party close button + inline confirmation ───────────────────────
     // Showing the × glyph and the "Leave the party?" Yes/No dialog when toggled. The
@@ -109,32 +99,6 @@ public sealed class PartyOverlayPanel
         }
     }
 
-    public void Tick(ClientState state, float deltaSeconds)
-    {
-        var party = state.Party;
-        if (!party.Active || party.MaxHp <= 0) return;
-
-        float targetHp = party.MaxHp > 0 ? Math.Clamp((float)party.Hp / party.MaxHp, 0f, 1f) : 0f;
-        float targetMp = party.MaxMp > 0 ? Math.Clamp((float)party.Mp / party.MaxMp, 0f, 1f) : 0f;
-        float targetSp = party.MaxSp > 0 ? Math.Clamp((float)party.Sp / party.MaxSp, 0f, 1f) : 0f;
-
-        bool snap = party.DispHp < 0f || party.SnapVitals;
-        party.SnapVitals = false;
-
-        if (snap)
-        {
-            party.DispHp = targetHp;
-            party.DispMp = targetMp;
-            party.DispSp = targetSp;
-            return;
-        }
-
-        float t = Math.Min(1f, LerpSpeed * deltaSeconds);
-        party.DispHp += (targetHp - party.DispHp) * t;
-        party.DispMp += (targetMp - party.DispMp) * t;
-        party.DispSp += (targetSp - party.DispSp) * t;
-    }
-
     public void Draw(SpriteBatch sb, SpriteFont font, ClientState state, InputState input,
         TargetRef tabTarget, long nowMs)
     {
@@ -143,15 +107,6 @@ public sealed class PartyOverlayPanel
         {
             _confirmingLeave = false;
             return;
-        }
-
-        // The bar text and the level line cache a localized string against the number that produced
-        // it, so neither moves when the language does. Clear the keys and let the normal rebuilds run.
-        if (_labelsGeneration != ClientStrings.Generation)
-        {
-            _labelsGeneration = ClientStrings.Generation;
-            _hpSlot.Current = _mpSlot.Current = _spSlot.Current = -1;
-            _cachedLevel = -1;
         }
 
         if (_confirmingLeave)
@@ -182,37 +137,18 @@ public sealed class PartyOverlayPanel
         UiHelper.DrawFilledRect(sb, panelRect, PanelBg * alpha);
         UiHelper.DrawBorder(sb, panelRect, PanelBorder * alpha);
 
-        // 2) Header row — name left, "Lv. N" right-aligned.  White for contrast against the dark
-        //    panel backing, but the PK red still wins so the partner's status reads at a glance;
-        //    access-level coloring is intentionally dropped (rarely matters here).  Grayed when not
-        //    nearby.
-        if (party.Level != _cachedLevel)
-        {
-            _cachedLevel = party.Level;
-            _cachedLevelStr = ClientStrings.Format(ClientStrings.Common_LevelFormat, ("Level", party.Level));
-        }
+        // 2) Header row — the partner's name. White for contrast against the dark panel backing, but
+        //    the PK red still wins so the partner's status reads at a glance; access-level coloring is
+        //    intentionally dropped (rarely matters here). Grayed when not nearby.
         Color headerColor = !nearby ? Color.DimGray
             : party.ShowAsPk ? ChatPanel.GetColor(GameColor.BrightRed)
             : Color.White;
-        // Close (×) rect is computed up-front so the right-aligned level can stop short of it — a
-        // wide "Lv. 255" would otherwise slide under the glyph in the top-right corner.
+        // The name stops short of the close glyph so a long one cannot slide under it.
         _closeBtnRect = new Rectangle(X + PanelW - CloseSize - 2, Y + 2, CloseSize, CloseSize);
         int innerX = X + Pad;
         int headerY = Y + Pad;
-        float levelW = font.MeasureString(_cachedLevelStr).X;
-        float levelX = _closeBtnRect.Left - CloseGap - levelW;
-        string fittedName = UiHelper.FitText(font, party.Name, levelX - innerX - 6);
+        string fittedName = UiHelper.FitText(font, party.Name, _closeBtnRect.Left - CloseGap - innerX - 6);
         sb.DrawString(font, fittedName, new Vector2(innerX, headerY), headerColor * alpha);
-        sb.DrawString(font, _cachedLevelStr, new Vector2(levelX, headerY), headerColor * alpha);
-
-        // 3) Three flush vital bars (no per-bar outline; group outline drawn after).
-        int barY = Y + Pad + HeaderH + HeaderBarGap;
-        DrawBar(sb, font, new Rectangle(innerX, barY, InnerW, BarH), party.DispHp, party.Hp, party.MaxHp, UiHelper.VitalHpColor, alpha, ref _hpSlot, input);
-        DrawBar(sb, font, new Rectangle(innerX, barY + BarH, InnerW, BarH), party.DispMp, party.Mp, party.MaxMp, UiHelper.VitalMpColor, alpha, ref _mpSlot, input);
-        DrawBar(sb, font, new Rectangle(innerX, barY + BarH * 2, InnerW, BarH), party.DispSp, party.Sp, party.MaxSp, UiHelper.VitalSpColor, alpha, ref _spSlot, input);
-
-        // 4) One outline around the whole three-bar block.
-        UiHelper.DrawBorder(sb, new Rectangle(innerX, barY, InnerW, BarsH), outline * alpha);
 
         // 5) Close (×) glyph in the panel's top-right (rect computed in the header step above).
         //    Click opens the leave-party confirmation.
@@ -253,23 +189,4 @@ public sealed class PartyOverlayPanel
             UiHelper.CenterText(font, ClientStrings.Get(ClientStrings.Common_No), _noBtnRect), Color.White);
     }
 
-    private static void DrawBar(SpriteBatch sb, SpriteFont font, Rectangle bounds,
-        float fillRatio, int current, int max, Color fill, float alpha, ref BarSlot slot, InputState input)
-    {
-        if (slot.Current != current || slot.Max != max)
-        {
-            slot.Current = current;
-            slot.Max = max;
-            slot.Text = UiHelper.VitalBarText(ClientStrings.Get(slot.LabelKey), current, max);
-        }
-        string text = slot.Text;
-        if (input.IsHoverIn(bounds))
-        {
-            int pct = max > 0 ? (int)Math.Round((double)current * 100.0 / max) : 0;
-            text = $"{pct}%";
-        }
-        // outlineThickness=0 so the group outline (drawn later, around all three bars) is the only border.
-        UiHelper.DrawVitalBar(sb, font, bounds, fillRatio, fill * alpha, Color.Transparent,
-            text, Color.White * alpha, outlineThickness: 0, bgColor: UiHelper.BarBg * alpha);
-    }
 }

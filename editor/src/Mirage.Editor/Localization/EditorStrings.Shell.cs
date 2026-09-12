@@ -37,9 +37,6 @@ public static partial class EditorStrings
     public const string Common_FillConnectedRunTooltip = nameof(Common_FillConnectedRunTooltip);   // "Retain values for Alt+Click"
     public const string Common_FilterByName = nameof(Common_FilterByName);       // "Filter by name…"
     public const string Common_Filter = nameof(Common_Filter);             // "Filter…"
-    public const string Common_PhysDmgAbbrev = nameof(Common_PhysDmgAbbrev);      // "P-DMG"
-    public const string Common_MagDmgAbbrev = nameof(Common_MagDmgAbbrev);       // "M-DMG"
-    public const string Common_MitAbbrev = nameof(Common_MitAbbrev);          // "MIT" (one universal axis)
     public const string Common_EmptyName = nameof(Common_EmptyName);          // "(empty)"
     public const string Common_Inherit = nameof(Common_Inherit);            // "(Inherit)"
     public const string Common_AddRow = nameof(Common_AddRow);             // "+ Add row" (dynamic table add button)
@@ -190,9 +187,6 @@ public static partial class EditorStrings
     public const string AccountEditor_Saved = nameof(AccountEditor_Saved);
     public const string AccountEditor_SelfAccessHint = nameof(AccountEditor_SelfAccessHint);
     public const string AccountEditor_AnyAccess = nameof(AccountEditor_AnyAccess);
-    public const string AccountEditor_StatBudget = nameof(AccountEditor_StatBudget);
-    public const string AccountEditor_StatBudgetOver = nameof(AccountEditor_StatBudgetOver);
-    public const string AccountEditor_SaveBlockedBudget = nameof(AccountEditor_SaveBlockedBudget);
     public const string AccountEditor_Rename = nameof(AccountEditor_Rename);
     public const string AccountEditor_RenamePlaceholder = nameof(AccountEditor_RenamePlaceholder);
     public const string AccountEditor_BagHeader = nameof(AccountEditor_BagHeader);
@@ -268,7 +262,6 @@ public static partial class EditorStrings
     public const string DataLabel_MpDrain = nameof(DataLabel_MpDrain);
     public const string DataLabel_SpDrain = nameof(DataLabel_SpDrain);
     public const string DataLabel_Quantity = nameof(DataLabel_Quantity);
-    public const string DataLabel_IntReq = nameof(DataLabel_IntReq);
     // The class multi-select shared by the item, spell and quest editors.
     // Fallback captions for the two fields whose caption varies by type, shown if a type ever falls
     // outside the switch. Not "Data 1/2/3" any more — there is no numbered slot left to name.
@@ -517,7 +510,6 @@ public static partial class EditorStrings
     public const string WorldCheck_KindSpell = nameof(WorldCheck_KindSpell);
     public const string WorldCheck_KindQuest = nameof(WorldCheck_KindQuest);
     public const string WorldCheck_KindConversation = nameof(WorldCheck_KindConversation);
-    public const string WorldCheck_KindClass = nameof(WorldCheck_KindClass);
     public const string WorldCheck_WarpMapMissing = nameof(WorldCheck_WarpMapMissing);
     public const string WorldCheck_BootMapMissing = nameof(WorldCheck_BootMapMissing);
     public const string WorldCheck_NpcMissing = nameof(WorldCheck_NpcMissing);

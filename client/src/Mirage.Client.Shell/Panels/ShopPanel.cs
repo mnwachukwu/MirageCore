@@ -859,43 +859,10 @@ public sealed class ShopPanel : IGamePanel
         UiHelper.DrawLabel(sb, font, nameLine, new Vector2(c.X + 8, textY), Color.White, c.Width - 16);
         textY += 18;
         textY = DrawItemPreview(sb, c, itemsTex, get?.Pic ?? -1, get?.ItemSheet ?? 0, textY);
-        // Player's own Int (me.Int) is what drives M-DMG via RawSpellPower.
-        const int classInt = 0;
-
         if (spell is not null)
         {
             UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_TeachesSpell, ("SpellName", spell.Name?.Trim() ?? "?")), new Vector2(c.X + 8, textY), Color.Cyan, c.Width - 16);
             textY += 18;
-            // AddMp prices off what it will restore for THIS caster, so it reads me.Int like the server does.
-            int mpCost = spell.Type == SpellType.SubHp
-                ? CombatFormulas.GetSubHpSpellMpCost(me?.MaxMp ?? 0)
-                : CombatFormulas.GetSpellMpCost(spell, me?.Int ?? 0);
-            UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_MpCost, ("Cost", mpCost)), new Vector2(c.X + 8, textY), Color.Cyan, c.Width - 16);
-            textY += 18;
-            // SubHp also costs casting reagents per cast — "<Reagent> Cost: N" using the reagent item's own name.
-            if (spell.Type == SpellType.SubHp)
-            {
-                string reagentName = (Constants.CastingReagentItemIndex < state.Items.Length
-                    ? state.Items[Constants.CastingReagentItemIndex]?.Name?.Trim() : null) ?? "?";
-                // Two lines, matching the spell tooltip: what a cast takes, then how often it takes the
-                // larger of the two. No rain factor here — the counter does not know the caster's weather.
-                double exact = CombatFormulas.SubHpReagentCostExact(spell.LevelReq);
-                double chance = CombatFormulas.ReagentDepleteChancePercent(exact);
-                UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_ReagentCost,
-                    ("Reagent", reagentName), ("Count", CombatFormulas.ReagentCostPerCast(exact))),
-                    new Vector2(c.X + 8, textY), Color.Cyan, c.Width - 16);
-                textY += 18;
-                if (chance is > 0 and < 100)
-                {
-                    UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_ReagentDepletes,
-                        ("Percent", chance.ToString("0.#"))), new Vector2(c.X + 8, textY), Color.Cyan, c.Width - 16);
-                    textY += 18;
-                }
-            }
-            // Effectiveness preview: M-DMG for any Sub* (vital-draining) spell, and a per-vital
-            // restore label for any Add* spell. Shows ONLY the spell's contribution paired with the
-            // player's Int — matches the weapon line's "P-DMG: +N" semantics (gear contribution
-            // only, not base + gear). GiveItem is suppressed since it carries an item id, not a magnitude.
             string? effectLabel = spell.Type switch
             {
                 SpellType.SubHp => ClientStrings.Get(ClientStrings.Stats_MDmg),
@@ -906,10 +873,9 @@ public sealed class ShopPanel : IGamePanel
                 SpellType.AddSp => ClientStrings.Get(ClientStrings.Stats_SpRestore),
                 _ => null,
             };
-            if (effectLabel is not null)
+            if (effectLabel is not null && spell.VitalAmount > 0)
             {
-                int amount = CombatFormulas.SpellContribution(spell.VitalAmount, me?.Int ?? 0);
-                UiHelper.DrawLabel(sb, font, $"{effectLabel}: +{amount}", new Vector2(c.X + 8, textY), Color.Cyan, c.Width - 16);
+                UiHelper.DrawLabel(sb, font, $"{effectLabel}: +{spell.VitalAmount}", new Vector2(c.X + 8, textY), Color.Cyan, c.Width - 16);
                 textY += 18;
             }
         }
@@ -929,70 +895,9 @@ public sealed class ShopPanel : IGamePanel
             textY += 18;
         }
 
-        // Contribution preview — DMG for weapons, MIT for armor/helmet/shield (one universal axis).
-        // Computed against the local player's CURRENT stats, so the same item shows different numbers as
-        // Str/Def grow — matches the inventory/equip-card readout. Its own pass, ahead of every gate:
-        // what the piece gives you is what the screen is for.
-        if (isEquip && get!.Power > 0)
-        {
-            int meStr = me?.Str ?? 0;
-            int meDef = me?.Def ?? 0;
-            string mit = ClientStrings.Get(ClientStrings.Stats_Mit);
-            string contribText = get.Type switch
-            {
-                ItemType.Weapon => $"{ClientStrings.Get(ClientStrings.Stats_PDmg)}: +{CombatFormulas.WeaponContribution(get.Power, meStr)}",
-                ItemType.Armor or ItemType.Helmet => $"{mit}: +{CombatFormulas.GearMitigation(get.Power, meDef)}",
-                ItemType.Shield => $"{mit}: +{CombatFormulas.ShieldMitigation(get.Power, meDef)}",
-                _ => "",
-            };
-            if (contribText.Length > 0)
-            {
-                UiHelper.DrawLabel(sb, font, contribText, new Vector2(c.X + 8, textY), Color.Cyan, c.Width - 16);
-                textY += 18;
-            }
-        }
-
-        // The gates, in the order every surface shows them: level, then stat, then class. Level is stated
-        // whether or not it is met — this is the last screen before gold changes hands, and a piece you
-        // cannot wear for another eighty levels is the mistake the confirm exists to catch. A scroll's gate
-        // lives on the spell it teaches, see ItemRecord.EffectiveLevelReq.
-        int levelReq = ItemRecord.EffectiveLevelReq(get, spell);
-        if (levelReq > 0)
-        {
-            bool meetsLevel = me is not null && me.Level >= levelReq;
-            UiHelper.DrawLabel(sb, font,
-                ClientStrings.Format(ClientStrings.ShopPanel_LevelReq, ("Level", levelReq)),
-                new Vector2(c.X + 8, textY), meetsLevel ? Color.LightGreen : Color.OrangeRed, c.Width - 16);
-            textY += 18;
-        }
-
-        bool meetsStat = true;
-        if (isEquip && get!.Power > 0)
-        {
-            (string label, int playerStat) = get.Type switch
-            {
-                ItemType.Weapon => (ClientStrings.Get(ClientStrings.Stats_Str), me?.Str ?? 0),
-                ItemType.Armor => (ClientStrings.Get(ClientStrings.Stats_Def), me?.Def ?? 0),
-                ItemType.Helmet => (ClientStrings.Get(ClientStrings.Stats_Def), me?.Def ?? 0),
-                ItemType.Shield => (ClientStrings.Get(ClientStrings.Stats_Def), me?.Def ?? 0),
-                _ => ("", 0),
-            };
-            int statReq = CombatFormulas.GearStatRequirement(get.Power, 0);
-            meetsStat = playerStat >= statReq;
-            var color = meetsStat ? Color.LightGreen : Color.OrangeRed;
-            UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_StatRequirement, ("Stat", label), ("Value", UiHelper.FormatRequirement(get.Power, statReq))), new Vector2(c.X + 8, textY), color, c.Width - 16);
-            textY += 18;
-        }
-
-        const bool meetsEquipClass = true;
-
-        bool meetsInt = true;
-        const bool meetsClass = true;
         bool alreadyKnown = false;
         if (spell is not null && me is not null)
         {
-            int intReq = CombatFormulas.GetSpellIntRequirement(spell, classInt);
-            meetsInt = me.Int >= intReq;
             if (me.Spell is not null)
             {
                 for (int i = 1; i <= Constants.MaxPlayerSpells; i++)
@@ -1004,20 +909,11 @@ public sealed class ShopPanel : IGamePanel
                     }
                 }
             }
-
-            var reqColor = meetsInt ? Color.LightGreen : Color.OrangeRed;
-            UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_IntRequirement, ("Int", UiHelper.FormatRequirement(CombatFormulas.RawSpellRequirement(spell), intReq))), new Vector2(c.X + 8, textY), reqColor, c.Width - 16);
-            textY += 18;
-
         }
 
         textY += 4;
         if (isSpell && alreadyKnown)
             UiHelper.DrawLabel(sb, font, ClientStrings.Get(ClientStrings.ShopPanel_AlreadyKnowSpell), new Vector2(c.X + 8, textY), Color.OrangeRed, c.Width - 16);
-        else if (isEquip && (!meetsStat || !meetsEquipClass))
-            UiHelper.DrawLabel(sb, font, ClientStrings.Get(ClientStrings.ShopPanel_RequirementsNotMet), new Vector2(c.X + 8, textY), Color.OrangeRed, c.Width - 16);
-        else if (isSpell && (!meetsInt || !meetsClass))
-            UiHelper.DrawLabel(sb, font, ClientStrings.Get(ClientStrings.ShopPanel_CannotLearnSpell), new Vector2(c.X + 8, textY), Color.OrangeRed, c.Width - 16);
 
         confirmBtn.Draw(sb, font, _input);
         cancelBtn.Draw(sb, font, _input);

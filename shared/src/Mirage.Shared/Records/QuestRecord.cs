@@ -35,28 +35,21 @@ public sealed class QuestRecord
     public List<Objective> Objectives { get; set; } = new();
 
     // ── Requirements to accept (0 = no requirement) ─────────────────────────────
-    public int ReqLevel { get; set; }
-    public int ReqStr { get; set; }
-    public int ReqDef { get; set; }
-    public int ReqSpd { get; set; }
-    public int ReqInt { get; set; }
     /// <summary>A quest number that must be Done before this one can be accepted (0 = none) — enables chains.</summary>
     public int PrereqQuest { get; set; }
 
     // ── Rewards (granted on turn-in) ────────────────────────────────────────────
     // Gold is NOT a separate field — it's just item #1 (Constants.GoldItemIndex) in RewardItems, like anywhere
     // else in the engine. Currency stacks, so a gold reward never hits the bag-full mail fallback.
-    public long RewardExp { get; set; }
     public List<QuestReward> RewardItems { get; set; } = new();
     // Repeat rewards for a Repeatable quest: the FIRST completion pays the main rewards above; SUBSEQUENT
     // completions pay these instead — UNLESS this set is empty (no repeat exp AND no repeat items), in which
     // case every completion keeps paying the main rewards.
-    public long RepeatRewardExp { get; set; }
     public List<QuestReward> RepeatRewardItems { get; set; } = new();
 
     /// <summary>Whether a distinct repeat-reward set is defined (else subsequent completions pay the main set).</summary>
     [JsonIgnore]
-    public bool HasRepeatRewards => RepeatRewardExp > 0 || RepeatRewardItems.Count > 0;
+    public bool HasRepeatRewards => RepeatRewardItems.Count > 0;
 
     /// <summary>Whether a run held at <paramref name="status"/> pays the repeat set rather than the main one.
     ///

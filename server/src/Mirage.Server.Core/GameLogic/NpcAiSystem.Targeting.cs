@@ -28,30 +28,25 @@ public sealed partial class NpcAiSystem : GameSystem
         var grid = WorldCoordHelper.BuildMapGrid(_world.Maps, mapNum);
         var (npcWX, npcWY) = grid.CenterToWorld(mn.X, mn.Y);
         var los = new WorldLosPredicate(_world, grid, mn.Layer);
-        int best = 0, bestLevel = int.MaxValue, bestDist = int.MaxValue;
+        int best = 0, bestDist = int.MaxValue;
         foreach (int i in _world.MapObservers[mapNum])
         {
             if (!_pm[i].IsPlaying) continue;
             if (_pm[i].Char.Dead) continue;  // never notice a corpse: it would re-lock every idle beat
             if (_pm[i].Char.GodMode) continue;    // nor an observer, which nothing can see and nothing can reach
             var p = _pm[i].Char;
-            // Beneath its notice: a body far enough under the player does not start anything.
-            if (p.Level - StatFormulas.NpcLevel(npc) > Constants.NpcAggroIgnoreLevelGap) continue;
             var gp = grid.PositionOf(p.Map);
             if (gp is null) continue;  // defensive: observer that left the area mid-tick
             var (pwx, pwy) = grid.ToWorld(gp.Value.col, gp.Value.row, p.X, p.Y);
             // Range is measured from the BODY, so a big NPC notices you at the same distance on every side.
             if (!WorldCoordHelper.AreFootprintsWithin(npcWX, npcWY, npc.EffectiveSize, pwx, pwy, 1, range)) continue;
             int d = WorldCoordHelper.FootprintManhattan(npcWX, npcWY, npc.EffectiveSize, pwx, pwy, 1);
-            // Lowest level wins; nearest breaks equal-level ties.  Cheap cutoff before LoS/BFS work:
-            // skip anyone who can't beat the current (level, distance) best.
-            if (p.Level > bestLevel) continue;
-            if (p.Level == bestLevel && d >= bestDist) continue;
+            // Nearest wins. A cheap cutoff before the LoS and BFS work below.
+            if (d >= bestDist) continue;
             if (!WorldCoordHelper.HasClearSpellLineOfSight(npcWX, npcWY, pwx, pwy, los)) continue;
             if (FindStepTowardObservableArea(mapNum, mn.X, mn.Y, mn.Layer, p.Map, p.X, p.Y, p.Layer, npc) is null)
                 continue;
             best = i;
-            bestLevel = p.Level;
             bestDist = d;
         }
         return best;
@@ -83,7 +78,7 @@ public sealed partial class NpcAiSystem : GameSystem
                 {
                     if (m == mapNum && s == selfSlot) continue;
                     var other = _world.MapNpcs[m, s];
-                    if (other.Num <= 0 || other.Hp <= 0) continue;
+                    if (other.Num <= 0) continue;
                     if (_world.AreNpcsKin(self.Num, other.Num)) continue;  // same-kind or same-group indifference
                     var (oWX, oWY) = grid.ToWorld(col, row, other.X, other.Y);
                     // Both sides can be oversize here, so range and nearness are measured edge to edge.
@@ -102,7 +97,7 @@ public sealed partial class NpcAiSystem : GameSystem
                 for (int g = 0; g < guests.Count; g++)
                 {
                     var gt = guests[g];
-                    if (gt.Num <= 0 || gt.Hp <= 0) continue;
+                    if (gt.Num <= 0) continue;
                     if (_world.AreNpcsKin(self.Num, gt.Num)) continue;  // same-kind or same-group indifference
                     var (oWX, oWY) = grid.ToWorld(col, row, gt.X, gt.Y);
                     if (Math.Abs(oWX - aWX) > range || Math.Abs(oWY - aWY) > range) continue;
@@ -188,15 +183,12 @@ public sealed partial class NpcAiSystem : GameSystem
            && mn.LastReachedTargetMs > 0
            && now - mn.LastReachedTargetMs > NpcUnreachedGiveUpMs;
 
-    /// <summary>Full reset for a native NPC that just let go: restore vitals, clear the damage ledger,
-    /// and broadcast a spawn-packet refresh so observers see the HP bar refill. Position stays put —
-    /// the native is already on its home map. Guests use <see cref="ReturnTraversalHome"/> instead,
-    /// which also relocates them back to spawn.</summary>
+    /// <summary>Full reset for a native NPC that just let go: clears the damage ledger and broadcasts a
+    /// spawn-packet refresh so observers re-read it. Position stays put — the native is already on its
+    /// home map. Guests use <see cref="ReturnTraversalHome"/> instead, which also relocates them back to
+    /// spawn.</summary>
     private void ResetNativeNpc(MapNpcRecord mn, int mapNum, int slot, NpcRecord npc)
     {
-        mn.Hp = _world.EffectiveNpcMaxHp(npc);
-        mn.Mp = _world.EffectiveNpcMaxMp(npc);
-        mn.Sp = _world.EffectiveNpcMaxSp(npc);
         mn.ClearDamageCredit();
         SendToMap(_world, mapNum, new NpcSpawnPacket
         {
@@ -206,9 +198,6 @@ public sealed partial class NpcAiSystem : GameSystem
             X = mn.X,
             Y = mn.Y,
             Dir = mn.Dir,
-            MaxHp = _world.EffectiveNpcMaxHp(npc),
-            MaxMp = _world.EffectiveNpcMaxMp(npc),
-            MaxSp = _world.EffectiveNpcMaxSp(npc),
             Layer = mn.Layer,
         });
     }

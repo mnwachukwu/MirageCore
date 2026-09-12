@@ -54,7 +54,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
                 Size = n.Size,   // footprint size class 1/2/3; drives the sprite/bar/hit-test scale
                 Behavior = n.Behavior,
                 SpawnSecs = n.SpawnSecs,
-                Spd = n.Spd,   // used to scale a running NPC's move-slide (MovementProcessor)
                 EmitsLight = n.EmitsLight,
                 Light = n.Light,
             };
@@ -90,9 +89,8 @@ public sealed partial class ClientPacketHandler : IClientEvents
         Name = q.Name,
         Description = q.Description,
         Objectives = q.Objectives,   // fresh off the wire — no sharing to guard against
-        ReqLevel = q.ReqLevel, ReqStr = q.ReqStr, ReqDef = q.ReqDef, ReqSpd = q.ReqSpd, ReqInt = q.ReqInt,
-        RewardExp = q.RewardExp, RewardItems = q.RewardItems,
-        RepeatRewardExp = q.RepeatRewardExp, RepeatRewardItems = q.RepeatRewardItems,
+        RewardItems = q.RewardItems,
+        RepeatRewardItems = q.RepeatRewardItems,
         GiverNpc = q.GiverNpc, TurnInNpc = q.TurnInNpc, Repeatable = q.Repeatable, Cadence = q.Cadence,
     };
 
@@ -119,9 +117,8 @@ public sealed partial class ClientPacketHandler : IClientEvents
         Name = q.Name,
         Description = q.Description,
         Objectives = q.Objectives,   // fresh off the wire — no sharing to guard against
-        ReqLevel = q.ReqLevel, ReqStr = q.ReqStr, ReqDef = q.ReqDef, ReqSpd = q.ReqSpd, ReqInt = q.ReqInt,
-        RewardExp = q.RewardExp, RewardItems = q.RewardItems,
-        RepeatRewardExp = q.RepeatRewardExp, RepeatRewardItems = q.RepeatRewardItems,
+        RewardItems = q.RewardItems,
+        RepeatRewardItems = q.RepeatRewardItems,
         GiverNpc = q.GiverNpc, TurnInNpc = q.TurnInNpc, Repeatable = q.Repeatable, Cadence = q.Cadence,
     };
 
@@ -211,9 +208,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
             Size = p.Size,   // footprint size class 1/2/3; drives the sprite/bar/hit-test scale
             Behavior = p.Behavior,
             SpawnSecs = p.SpawnSecs,
-            // Spd was dropped here (bug): a live editor save rebuilt the client NpcDef without it, zeroing the
-            // running NPC's move-slide scaling (MovementProcessor) until the next reconnect re-sent SendNpcs.
-            Spd = p.Spd,
             EmitsLight = p.EmitsLight,
             Light = p.Light,
         };

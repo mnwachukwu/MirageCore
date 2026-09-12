@@ -106,13 +106,6 @@ public sealed partial class EditorPacketHandler
         var edits = p.Chars.Where(c => c.Slot >= 1 && c.Slot <= Constants.MaxChars).ToList();
         var access = p.Access;
 
-        int refused = edits.RemoveAll(c => !IsAcceptableCharEdit(c));
-        if (refused > 0)
-        {
-            _logger.LogWarning("Editor {By} sent {Count} character edit(s) for {Login} holding more stats "
-                + "than their level allows; those rows were not applied.", byLogin, refused, login);
-        }
-
         // Nobody edits their OWN access. A Creator who demotes themselves by mistake locks themselves
         // out of the section that could put it back, and the only repair is a hand-edited JSON file. The
         // editor greys the picker too, but this is the check that counts.
@@ -410,10 +403,6 @@ public sealed partial class EditorPacketHandler
 
         switch (QuestSystem.CanHold(c, q))
         {
-            case QuestSystem.HoldResult.LevelTooLow:
-                return ServerStrings.ForLocale(locale, ServerStrings.EditorAccounts_QuestLevelReq, ("Level", q.ReqLevel));
-            case QuestSystem.HoldResult.StatTooLow:
-                return ServerStrings.ForLocale(locale, ServerStrings.EditorAccounts_QuestStatReq);
             case QuestSystem.HoldResult.PrereqNotDone:
                 return ServerStrings.ForLocale(locale, ServerStrings.EditorAccounts_QuestPrereq,
                     ("Name", _world.Quests[q.PrereqQuest].TrimmedName));
@@ -515,26 +504,10 @@ public sealed partial class EditorPacketHandler
         await SendAccountAsync(editorIndex, login);
     }
 
-    /// <summary>Whether a row describes a character the game itself could have produced: no more stat
-    /// value — spent or unspent — than its level has granted. The editor blocks such a row before it is
-    /// sent and says which character is at fault; this is the check that holds against a packet the
-    /// editor did not write. Refused rather than clamped: which of six numbers to cut is the operator's
-    /// call, and a silent trim would leave the form asserting an edit that did not land.</summary>
-    private static bool IsAcceptableCharEdit(EditorCharRow e) =>
-        StatFormulas.IsWithinPointBudget(Math.Clamp(e.Level, 1, Constants.MaxLevel),
-            e.Str, e.Def, e.Spd, e.Int, e.Points);
-
     // The fields a Creator may change, in one place so the file write and the live player cannot disagree
     // about what an edit means.
     private void ApplyCharEdit(PlayerRecord c, EditorCharRow e)
     {
-        c.Level = Math.Clamp(e.Level, 1, Constants.MaxLevel);
-        c.Exp = Math.Max(0, e.Exp);
-        c.Str = Math.Max(0, e.Str);
-        c.Def = Math.Max(0, e.Def);
-        c.Spd = Math.Max(0, e.Spd);
-        c.Int = Math.Max(0, e.Int);
-        c.Points = Math.Max(0, e.Points);
         if (SlotValidation.IsValidMapNum(e.Map, _world.Limits.Maps))
         {
             c.Map = e.Map;
@@ -554,17 +527,9 @@ public sealed partial class EditorPacketHandler
             {
                 Slot = i,
                 Name = c.Name.Trim(),
-                Class = c.Class,
-                Level = c.Level,
-                Exp = c.Exp,
                 Map = c.Map,
                 X = c.X,
                 Y = c.Y,
-                Str = c.Str,
-                Def = c.Def,
-                Spd = c.Spd,
-                Int = c.Int,
-                Points = c.Points,
                 Inv = BagOf(c),
                 Spells = BookOf(c),
                 Quests = LogOf(c),

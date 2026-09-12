@@ -7,7 +7,7 @@ namespace Mirage.Shared.Protocol;
 /// Factory methods that construct typed packet POCOs from game state values.
 /// Pass the returned packet to PacketSerializer.Serialize() for sending.
 /// </summary>
-public static class PacketBuilder
+public static partial class PacketBuilder
 {
     // ── Account ──────────────────────────────────────────────────────────────
 
@@ -22,8 +22,8 @@ public static class PacketBuilder
         {
             Chars = chars.Select(p =>
                 p is null || string.IsNullOrWhiteSpace(p.Name)
-                    ? new SendCharsPacket.CharSlot("", 0, 0)
-                    : new SendCharsPacket.CharSlot(p.Name, p.Level, p.Sprite, p.SpriteSheet)).ToArray()
+                    ? new SendCharsPacket.CharSlot("", 0)
+                    : new SendCharsPacket.CharSlot(p.Name, p.Sprite, p.SpriteSheet)).ToArray()
         };
 
     // ── Game state ───────────────────────────────────────────────────────────
@@ -48,8 +48,7 @@ public static class PacketBuilder
             Dir = p.Dir,
             Layer = p.Layer,
             Map = mapNum,
-            Level = p.Level,
-            Class = p.Class,
+            MoveSpeed = p.MoveSpeed,
             Access = p.Access,
             PkExpiryUtc = p.PkExpiryUtc,
             GraceUntilUtc = graceUntilUtc,
@@ -165,10 +164,6 @@ public static class PacketBuilder
         {
             Index = index,
             Name = p.TrimmedName,
-            Level = p.Level,
-            Hp = p.Hp, MaxHp = p.MaxHp,
-            Mp = p.Mp, MaxMp = p.MaxMp,
-            Sp = p.Sp, MaxSp = p.MaxSp,
             MapNum = p.Map, X = p.X, Y = p.Y,
             ShowAsPk = showAsPk,
             Access = p.Access,
@@ -250,11 +245,6 @@ public static class PacketBuilder
             Range = npc.Range,
             // Copied, not aliased: a packet outlives this call and the record stays editable.
             Drops = npc.Drops is null ? null : new List<NpcDrop>(npc.Drops),
-            Str = npc.Str,
-            Def = npc.Def,
-            Spd = npc.Spd,
-            Int = npc.Int,
-            ExtraHp = npc.ExtraHp,
             IsBoss = npc.IsBoss,
             EmitsLight = npc.EmitsLight,
             Light = npc.Light,

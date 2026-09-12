@@ -5,6 +5,7 @@ using Mirage.Server.Core.Persistence;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -81,13 +82,6 @@ public sealed class JoinLeaveSystem : GameSystem
         // sent below, so the player logs in with the returned items already in the bag.
         _trade.RecoverEscrowOnLogin(index);
 
-        StatFormulas.RefreshPlayerMaxVitals(p, _world.WeatherOn(p.Map));
-
-        // Clamp vitals to max
-        p.Hp = Math.Min(p.Hp, p.MaxHp);
-        p.Mp = Math.Min(p.Mp, p.MaxMp);
-        p.Sp = Math.Min(p.Sp, p.MaxSp);
-
         // Clear an expired PK timer on login. The broadcast — like every other chat message
         // emitted during JoinGame — is deferred until after SendWelcome so the joining player
         // reads the welcome/MOTD/who's-online block first, then sees the world chatter.
@@ -104,6 +98,12 @@ public sealed class JoinLeaveSystem : GameSystem
         int joinColor = p.Access <= AdminLevel.Monitor ? GameColor.JoinLeft : GameColor.White;
 
         _dispatcher.SendTo(index, PacketBuilder.Welcome(index));
+
+        // The attribute numbering, before anything that could carry an attribute. A sync naming an
+        // ordinal the client has no declaration for is dropped, so ordering this after any of the
+        // sends below would lose the first change silently rather than loudly.
+        _dispatcher.SendTo(index, PacketBuilder.AttributeSchema(_world.Attributes));
+
         CheckEquippedItems(index);
 
         // ── Send all game data ────────────────────────────────────────────────
@@ -217,7 +217,19 @@ public sealed class JoinLeaveSystem : GameSystem
         // A seamless crossing already knows its own position client-side, so its re-sync omits this
         // to avoid overwriting the client's predicted move (which would rubber-band under latency).
         _dispatcher.SendTo(index, PacketBuilder.PlayerData(index, p, p.Map, _pm[index].PkGraceUntilUtc, _pm[index].AggressorUntilUtcNow, godMode: _pm[index].Char.GodMode));
+        SendAttributes(index, EntityHandle.ForPlayer(index), p.Attributes, AttributeVisibility.Owner);
         SendRegionSync(index);
+    }
+
+    /// <summary>Sends what one viewer may see of one body's attributes, or nothing at all.
+    ///
+    /// <para>Nothing is the ordinary case — a world whose game declared no keys — and it costs a null
+    /// check rather than a packet, so Core alone puts nothing extra on the wire per body per join.</para>
+    /// </summary>
+    private void SendAttributes(int toIndex, EntityHandle who, AttributeBag bag, AttributeVisibility viewer)
+    {
+        var packet = PacketBuilder.AttributeSync(who, bag, _world.Attributes, viewer);
+        if (packet is not null) _dispatcher.SendTo(toIndex, packet);
     }
 
     /// <summary>
@@ -245,6 +257,7 @@ public sealed class JoinLeaveSystem : GameSystem
             {
                 _dispatcher.SendTo(i, PacketBuilder.JoinMap(index));
                 _dispatcher.SendTo(i, PacketBuilder.PlayerData(index, p, p.Map, _pm[index].PkGraceUntilUtc, _pm[index].AggressorUntilUtcNow, godMode: _pm[index].Char.GodMode));
+                SendAttributes(i, EntityHandle.ForPlayer(index), p.Attributes, AttributeVisibility.Viewport);
             }
 
             // Tell this player about existing player i, if this player can see i's map.
@@ -252,6 +265,7 @@ public sealed class JoinLeaveSystem : GameSystem
             {
                 _dispatcher.SendTo(index, PacketBuilder.JoinMap(i));
                 _dispatcher.SendTo(index, PacketBuilder.PlayerData(i, ep, ep.Map, _pm[i].PkGraceUntilUtc, _pm[i].AggressorUntilUtcNow, godMode: _pm[i].Char.GodMode));
+                SendAttributes(index, EntityHandle.ForPlayer(i), ep.Attributes, AttributeVisibility.Viewport);
             }
         }
 
@@ -384,8 +398,6 @@ public sealed class JoinLeaveSystem : GameSystem
                 Y = t.Y,
                 Dir = t.Dir,
                 Movement = MovementType.None,
-                Hp = Math.Max(t.Hp, 0),
-                MaxHp = _world.EffectiveNpcMaxHp(npc),
                 MsSinceCombat = int.MaxValue,
                 HasTarget = t.Target > 0,
                 Attacking = false,
@@ -686,7 +698,6 @@ public sealed class JoinLeaveSystem : GameSystem
                 _world.Npcs[i].EffectiveSize,
                 _world.Npcs[i].Behavior,
                 _world.Npcs[i].SpawnSecs,
-                _world.Npcs[i].Spd,
                 _world.Npcs[i].EmitsLight,
                 _world.Npcs[i].Light,
                 _world.KeeperShopKind(i),
@@ -725,15 +736,8 @@ public sealed class JoinLeaveSystem : GameSystem
                     Name = q.Name,
                     Description = q.Description,
                     Objectives = q.Objectives.Select(o => o.Clone()).ToList(),
-                    ReqLevel = q.ReqLevel,
-                    ReqStr = q.ReqStr,
-                    ReqDef = q.ReqDef,
-                    ReqSpd = q.ReqSpd,
-                    ReqInt = q.ReqInt,
                     PrereqQuest = q.PrereqQuest,
-                    RewardExp = q.RewardExp,
                     RewardItems = q.RewardItems.Select(r => r.Clone()).ToList(),
-                    RepeatRewardExp = q.RepeatRewardExp,
                     RepeatRewardItems = q.RepeatRewardItems.Select(r => r.Clone()).ToList(),
                     GiverNpc = q.GiverNpc,
                     TurnInNpc = q.TurnInNpc,
@@ -842,12 +846,8 @@ public sealed class JoinLeaveSystem : GameSystem
             .Select(i =>
             {
                 var mn = world.MapNpcs[mapNum, i];
-                var npc = world.Npcs[mn.Num];
                 return new MapNpcsPacket.MapNpcData(
                     i, mn.Num,
-                    mn.Hp, world.EffectiveNpcMaxHp(npc),
-                    mn.Mp, world.EffectiveNpcMaxMp(npc),
-                    mn.Sp, world.EffectiveNpcMaxSp(npc),
                     mn.X, mn.Y, mn.Dir,
                     int.MaxValue,
                     mn.Target > 0, mn.Layer);

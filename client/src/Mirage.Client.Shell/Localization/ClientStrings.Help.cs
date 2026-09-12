@@ -113,7 +113,6 @@ public static partial class ClientStrings
     public const string QuestDialog_ObjectiveNone = nameof(QuestDialog_ObjectiveNone);
     public const string QuestDialog_ObjectiveKill = nameof(QuestDialog_ObjectiveKill);
     public const string QuestDialog_RewardsHeader = nameof(QuestDialog_RewardsHeader);
-    public const string QuestDialog_RewardExp = nameof(QuestDialog_RewardExp);
     public const string QuestDialog_RewardItem = nameof(QuestDialog_RewardItem);
     public const string QuestPanel_Title = nameof(QuestPanel_Title);
     public const string QuestPanel_Empty = nameof(QuestPanel_Empty);
