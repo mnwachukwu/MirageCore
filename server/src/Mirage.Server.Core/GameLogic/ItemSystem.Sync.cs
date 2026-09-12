@@ -32,14 +32,7 @@ public sealed partial class ItemSystem : GameSystem
     private void SendEquippedGear(int index)
     {
         var p = _pm[index].Char;
-        SendToMap(_world, p.Map, new EquippedGearPacket
-        {
-            Index = index,
-            Armor = p.ArmorSlot,
-            Weapon = p.WeaponSlot,
-            Helmet = p.HelmetSlot,
-            Shield = p.ShieldSlot
-        });
+        SendToMap(_world, p.Map, PacketBuilder.EquippedGear(index, p));
     }
 
     /// <summary>Push the player's entire inventory (all <see cref="Constants.MaxInv"/> slots) in one

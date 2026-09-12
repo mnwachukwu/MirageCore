@@ -240,6 +240,7 @@ public sealed partial class EditorPacketHandler
             AccessLevel = access,
             SessionId = session.SessionId,
             Schema = _registry.Schema,
+            EquipSlots = _registry.EquipSlots.Slots,
         });
 
         _dispatcher.SendToEditor(editorIndex, BuildEditorDataPacket());
@@ -435,6 +436,7 @@ public sealed partial class EditorPacketHandler
         item.VitalAmount = p.VitalAmount;
         item.Power = p.Power;
         item.Tier = p.Tier;
+        item.EquipSlot = p.EquipSlot;
         item.NonTradeable = p.NonTradeable;
         item.NonListable = p.NonListable;
         item.NonMailable = p.NonMailable;

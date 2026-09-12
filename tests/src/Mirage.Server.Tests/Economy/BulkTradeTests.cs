@@ -362,7 +362,7 @@ public class BulkTradeTests
     public void Sell_LeavesCopiesAtADifferentDurability_Alone()
     {
         var (world, shop, _, p) = Setup();
-        world.Items[Hat].Type = ItemType.Helmet;
+        world.Items[Hat].Type = ItemType.Equipment;
         world.Items[Hat].Price = 100;
         world.Items[Hat].Durability = 40;
         GiveSlots(p, Hat, 3, dur: 40);
@@ -388,7 +388,7 @@ public class BulkTradeTests
     /// So these use one.</summary>
     static void MakeSellable(GameWorld world)
     {
-        world.Items[Blade].Type = ItemType.Weapon;
+        world.Items[Blade].Type = ItemType.Equipment;
         world.Items[Blade].Power = 10;
         world.Items[Blade].Durability = 40;
     }

@@ -39,9 +39,7 @@ public static class InventoryListBuilder
                 list.Items.Add($"{i}: {name} ({slot.Quantity:N0})");
                 continue;
             }
-            bool equipped = state.Me != null &&
-                (state.Me.WeaponSlot == i || state.Me.ArmorSlot == i ||
-                 state.Me.HelmetSlot == i || state.Me.ShieldSlot == i);
+            bool equipped = state.Me?.IsEquipped(i) == true;
             // A worn item at 0 durability sits in the bag, auto-unequipped and unusable until repaired; surface
             // that inline like the equipped flag. Broken and equipped are mutually exclusive so the tags don't collide.
             bool broken = !equipped && item is { Durability: > 0 } && slot.Dur <= 0
@@ -71,7 +69,7 @@ public static class InventoryListBuilder
             {
                 var slot = me.Inv[i];
                 if (slot is null || slot.Num <= 0 || slot.Num > state.Limits.Items) continue;
-                if (me.WeaponSlot == i || me.ArmorSlot == i || me.HelmetSlot == i || me.ShieldSlot == i) continue;
+                if (me.IsEquipped(i)) continue;
                 var item = state.Items[slot.Num];
                 if (exclude(i, item)) continue;
                 string name = item?.Name?.TrimEnd() ?? $"Item {slot.Num}";

@@ -132,7 +132,7 @@ public class QuestSystemTests
     {
         var (world, pm, objectives, quests) = Setup();
         world.Items[Constants.GoldItemIndex].Type = ItemType.Currency;
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         var q = KillQuest(world, 1, count: 1);
         q.RewardItems.Add(new QuestReward { ItemNum = Constants.GoldItemIndex, Quantity = 250 });   // gold is item #1
         q.RewardItems.Add(new QuestReward { ItemNum = Sword, Quantity = 1 });

@@ -18,7 +18,7 @@ public class ItemPriceTests
         // and nothing would report it. Asserted against the real formula so it tracks any retune.
         var top = new ItemRecord
         {
-            Name = "top", Type = ItemType.Weapon, Tier = Constants.MaxItemTier,
+            Name = "top", Type = ItemType.Equipment, Tier = Constants.MaxItemTier,
             Power = (short)EconomyFormulas.ReferencePower(Constants.MaxItemTier), Durability = 50,
         };
         Assert.That(EconomyFormulas.ItemValue(top), Is.GreaterThan(short.MaxValue),
@@ -57,7 +57,7 @@ public class ItemPriceTests
         // next time anyone touched the item in the editor — silently, and only for the items that matter.
         var weapon = new ItemRecord
         {
-            Name = "Oddly Cheap Sword", Type = ItemType.Weapon, Tier = 100, Power = 127, Durability = 50,
+            Name = "Oddly Cheap Sword", Type = ItemType.Equipment, Tier = 100, Power = 127, Durability = 50,
             Price = 1,
         };
         weapon.Normalize();
@@ -139,7 +139,7 @@ public class ItemPriceTests
         // offering more than a quarter wins the sale. Raising it quietly kills the player economy.
         var item = new ItemRecord
         {
-            Name = "kit piece", Type = ItemType.Armor, Tier = 120,
+            Name = "kit piece", Type = ItemType.Equipment, Tier = 120,
             Power = (short)EconomyFormulas.ReferencePower(120), Durability = 50,
         };
         int price = EconomyFormulas.ItemValue(item);

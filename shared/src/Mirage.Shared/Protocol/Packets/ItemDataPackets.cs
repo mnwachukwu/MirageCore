@@ -30,7 +30,9 @@ public sealed record SendItemsPacket : IPacket
         [property: JsonPropertyName("price")] int Price = 0,
         // Which item sheet Pic is a row of. Appended with a default: a positional record re-reads every
         // argument after an inserted field, at every construction site, without a compile error.
-        [property: JsonPropertyName("itemSheet")] short ItemSheet = 0
+        [property: JsonPropertyName("itemSheet")] short ItemSheet = 0,
+        // Which equipment slot a piece is worn in; blank on anything not worn.
+        [property: JsonPropertyName("equipSlot")] string EquipSlot = ""
     );
 }
 
@@ -48,6 +50,9 @@ public sealed record UpdateItemPacket : IPacket
     [JsonPropertyName("vitalAmount")] public short VitalAmount { get; init; }
     [JsonPropertyName("power")] public short Power { get; init; }
     [JsonPropertyName("tier")] public short Tier { get; init; }
+    /// <summary>Which equipment slot this is worn in; blank on anything not worn. A key, not a label:
+    /// what it is called is the game's, and the editor is told the list separately.</summary>
+    [JsonPropertyName("equipSlot")] public string EquipSlot { get; init; } = "";
     // Item restriction flags. See ItemRecord for behavior.
     [JsonPropertyName("nonTradeable")] public bool NonTradeable { get; init; }
     [JsonPropertyName("nonListable")] public bool NonListable { get; init; }

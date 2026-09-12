@@ -125,6 +125,9 @@ public sealed record EditorSaveItemPacket : IPacket
     [JsonPropertyName("vitalAmount")] public short VitalAmount { get; init; }
     [JsonPropertyName("power")] public short Power { get; init; }
     [JsonPropertyName("tier")] public short Tier { get; init; }
+    /// <summary>Which equipment slot this is worn in; blank on anything not worn. A key, not a label:
+    /// what it is called is the game's, and the editor is told the list separately.</summary>
+    [JsonPropertyName("equipSlot")] public string EquipSlot { get; init; } = "";
     // Item restriction flags. See ItemRecord for behavior.
     [JsonPropertyName("nonTradeable")] public bool NonTradeable { get; init; }
     [JsonPropertyName("nonListable")] public bool NonListable { get; init; }
@@ -236,6 +239,11 @@ public sealed record EditorLoginResponsePacket : IPacket
     ///
     /// <para>Empty on a refused login.</para></summary>
     [JsonPropertyName("schema")] public RecordSchema Schema { get; init; } = RecordSchema.Empty;
+
+    /// <summary>Where a character may wear something in this server's game, in display order. Sent for the
+    /// same reason as <see cref="Schema"/>: a slot the editor was not told about is one no item can be
+    /// assigned to. Empty on a refused login, and in a game where nothing is worn.</summary>
+    [JsonPropertyName("equipSlots")] public IReadOnlyList<EquipSlot> EquipSlots { get; init; } = [];
 }
 
 public sealed record EditorDataPacket : IPacket

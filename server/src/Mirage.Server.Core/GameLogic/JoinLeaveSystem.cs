@@ -107,6 +107,9 @@ public sealed class JoinLeaveSystem : GameSystem
         // sends below would lose the first change silently rather than loudly.
         _dispatcher.SendTo(index, PacketBuilder.AttributeSchema(_world.Attributes));
 
+        // Likewise the slot list, before the worn set that names those slots.
+        _dispatcher.SendTo(index, PacketBuilder.EquipSlots(_world.EquipSlots));
+
         CheckEquippedItems(index);
 
         // ── Send all game data ────────────────────────────────────────────────
@@ -141,14 +144,7 @@ public sealed class JoinLeaveSystem : GameSystem
         _dispatcher.SendTo(index, BuildSendInventory(p));
 
         // Equipped gear
-        _dispatcher.SendTo(index, new EquippedGearPacket
-        {
-            Index = index,
-            Armor = p.ArmorSlot,
-            Weapon = p.WeaponSlot,
-            Helmet = p.HelmetSlot,
-            Shield = p.ShieldSlot
-        });
+        _dispatcher.SendTo(index, PacketBuilder.EquippedGear(index, p));
 
         // Action bar. Sent here rather than in SendJoinData, which also runs on every warp — the bar only
         // changes when the player edits it, and each edit is echoed by its own handler.
@@ -608,32 +604,31 @@ public sealed class JoinLeaveSystem : GameSystem
         _logger.LogInformation("{Login} ghost cleared from map {Map}.", login, mapNum);
     }
 
+    /// <summary>Drop every worn entry that no longer makes sense — an empty bag slot, an item that is
+    /// not equipment, an item that names a different slot, or a slot this world no longer declares.
+    ///
+    /// <para>This is what lets a character survive a change of game. Nothing is reassigned and nothing
+    /// throws: what still fits stays worn, and the rest is simply carried.</para></summary>
     private void CheckEquippedItems(int index)
     {
         var p = _pm[index].Char;
 
-        void ValidateSlot(ref int slot, ItemType expectedType)
+        foreach (var (key, invSlot) in p.Equipped.ToList())
         {
-            if (slot == 0) return;
-            int itemNum = p.Inv[slot].Num;
-            if (itemNum <= 0 || _world.Items[itemNum].Type != expectedType)
-                slot = 0;
+            if (!SlotValidation.IsValidInvSlot(invSlot) || !_world.EquipSlots.Has(key))
+            {
+                p.Equipped.Remove(key);
+                continue;
+            }
+
+            int itemNum = p.Inv[invSlot].Num;
+            var item = itemNum > 0 && itemNum <= _world.Limits.Items ? _world.Items[itemNum] : null;
+            if (item is null || !ItemRecord.IsEquipment(item.Type)
+                || !string.Equals(item.EquipSlot, key, StringComparison.Ordinal))
+            {
+                p.Equipped.Remove(key);
+            }
         }
-
-        int slot;
-
-        slot = p.WeaponSlot;
-        ValidateSlot(ref slot, ItemType.Weapon);
-        p.WeaponSlot = slot;
-        slot = p.ArmorSlot;
-        ValidateSlot(ref slot, ItemType.Armor);
-        p.ArmorSlot = slot;
-        slot = p.HelmetSlot;
-        ValidateSlot(ref slot, ItemType.Helmet);
-        p.HelmetSlot = slot;
-        slot = p.ShieldSlot;
-        ValidateSlot(ref slot, ItemType.Shield);
-        p.ShieldSlot = slot;
     }
 
     // The welcome batch (welcome line, /help hint, MOTD, who's-online) is tagged Always so it bypasses

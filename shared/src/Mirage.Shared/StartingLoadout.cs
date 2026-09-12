@@ -18,10 +18,13 @@ public static class StartingLoadout
 {
     /// <summary>One granted item: the bag slot it lands in, what it is, and — via <see cref="GrantedItem.Worn"/>
     /// — whether it arrives equipped rather than carried.</summary>
-    public readonly record struct GrantedItem(int Slot, int Num, short Value, ItemType Type, short Durability)
+    public readonly record struct GrantedItem(int Slot, int Num, short Value, ItemType Type, short Durability,
+                                             string EquipSlot = "")
     {
         /// <summary>Equipment is worn on arrival; everything else is carried.</summary>
-        public bool Worn => ItemRecord.IsEquipment(Type);
+        /// <summary>Whether this arrives worn. Equipment that names no slot is carried instead: a game
+        /// that has not said where a piece goes has not said it can be worn.</summary>
+        public bool Worn => ItemRecord.IsEquipment(Type) && EquipSlot.Length > 0;
     }
 
     /// <summary>Resolve the world's authored starting items into the bag slots a new character gets.
@@ -41,7 +44,7 @@ public static class StartingLoadout
             // Currency stacks; everything else is exactly one (the engine reads Value only for currency),
             // so it is normalized here rather than trusted from the record.
             short value = item.Type == ItemType.Currency ? Math.Max((short)1, start.Quantity) : (short)0;
-            granted.Add(new GrantedItem(slot, start.ItemNum, value, item.Type, item.Durability));
+            granted.Add(new GrantedItem(slot, start.ItemNum, value, item.Type, item.Durability, item.EquipSlot));
             slot++;
         }
         return granted;
@@ -58,14 +61,7 @@ public static class StartingLoadout
         foreach (var g in ResolveItems(authored, items))
         {
             chr.Inv[g.Slot] = new PlayerInvSlot { Num = g.Num, Quantity = g.Value, Dur = g.Durability };
-            if (!g.Worn) continue;
-            switch (g.Type)
-            {
-                case ItemType.Weapon: chr.WeaponSlot = g.Slot; break;
-                case ItemType.Armor: chr.ArmorSlot = g.Slot; break;
-                case ItemType.Helmet: chr.HelmetSlot = g.Slot; break;
-                case ItemType.Shield: chr.ShieldSlot = g.Slot; break;
-            }
+            if (g.Worn) chr.SetEquipped(g.EquipSlot, g.Slot);
         }
     }
 

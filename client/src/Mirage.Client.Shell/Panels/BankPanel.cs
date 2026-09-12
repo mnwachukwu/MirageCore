@@ -371,10 +371,11 @@ public sealed class BankPanel : IGamePanel
         var me = state.Me;
         if (me is null) return 0;
         var h = new HashCode();
-        h.Add(me.WeaponSlot);
-        h.Add(me.ArmorSlot);
-        h.Add(me.HelmetSlot);
-        h.Add(me.ShieldSlot);
+        foreach (var (key, invSlot) in me.Equipped.OrderBy(kv => kv.Key, StringComparer.Ordinal))
+        {
+            h.Add(key);
+            h.Add(invSlot);
+        }
         for (int i = 1; i <= Constants.MaxInv; i++)
         {
             var slot = me.Inv?[i];

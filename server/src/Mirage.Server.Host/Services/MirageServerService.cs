@@ -99,6 +99,10 @@ public sealed class MirageServerService : IHostedService
         // visible on the line an operator already reads.
         _logger.LogInformation("Modules: {Modules}", string.Join(", ", _registry.ModuleNames));
 
+        // The compiled modules are the authority on what can be worn; a world manifest only records what
+        // it was authored against, for an editor opening the folder without them.
+        _world.EquipSlots = _registry.EquipSlots;
+
         await LoadWorldDataAsync(ct);
 
         // Wire the level-up → quest-eligibility refresh now that every system exists (can't be done at

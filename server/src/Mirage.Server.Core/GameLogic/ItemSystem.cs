@@ -247,7 +247,7 @@ public sealed partial class ItemSystem : GameSystem
         p.Inv[slot].Num = itemNum;
         p.Inv[slot].AddQuantity(value);
 
-        if (item.Type is ItemType.Armor or ItemType.Weapon or ItemType.Helmet or ItemType.Shield)
+        if (ItemRecord.IsEquipment(item.Type))
             p.Inv[slot].Dur = dur > 0 ? dur : item.Durability;
 
         return slot;
@@ -277,7 +277,7 @@ public sealed partial class ItemSystem : GameSystem
             return (itemNum, take);
         }
 
-        if (EquippedSlotForType(p, item.Type) == invSlot) Unequip(p, item.Type);
+        p.ClearEquipped(invSlot);
         p.Inv[invSlot].Num = 0;
         p.Inv[invSlot].Quantity = 0;
         p.Inv[invSlot].Dur = 0;
@@ -315,7 +315,7 @@ public sealed partial class ItemSystem : GameSystem
             return (itemNum, take, 0);
         }
 
-        if (EquippedSlotForType(p, item.Type) == invSlot)
+        if (p.IsEquipped(invSlot))
         {
             SendMsg(index, ServerStrings.BankSystem_UnequipFirst, GameColor.BrightRed);
             return (0, 0, 0);
@@ -369,11 +369,10 @@ public sealed partial class ItemSystem : GameSystem
             }
             else
             {
-                // When the target item is the one currently
-                // equipped in its gear slot, remove that exact equipped copy. Skip unequipped
-                // duplicates sitting in earlier slots so the loop lands on the equipped slot instead
-                // of deleting a spare and leaving the equipped (e.g. just-broken) copy behind.
-                int equippedSlot = EquippedSlotForType(p, item.Type);
+                // When a copy of the target item is being worn, remove that exact copy. Skip unworn
+                // duplicates sitting in earlier slots so the loop lands on the worn slot instead of
+                // deleting a spare and leaving the worn (e.g. just-broken) copy behind.
+                int equippedSlot = WornInvSlotOf(p, itemNum);
                 if (equippedSlot > 0 && i != equippedSlot && p.Inv[equippedSlot].Num == itemNum) continue;
                 TryUnequipIfEquipped(index, p, i, item.Type);  // 0 = not equipped after the call
                 take = true;
@@ -387,66 +386,29 @@ public sealed partial class ItemSystem : GameSystem
         }
     }
 
-    /// <summary>If the inventory slot is currently equipped in the matching gear slot, zero
-    /// the gear slot (the convention for "not equipped") and broadcast the new equipped set.
-    /// Returns the slot's durability — used by the drop path to carry the equipped copy's wear
-    /// onto the dropped ground item; <see cref="TakeItem"/> ignores the value. Returns 0
-    /// for non-equipment item types.</summary>
+    /// <summary>If the inventory slot is being worn, take it off and broadcast the new worn set.
+    /// Returns the slot's durability — used by the drop path to carry the worn copy's wear onto the
+    /// dropped ground item; <see cref="TakeItem"/> ignores the value. Returns 0 for anything that is
+    /// not equipment.</summary>
     private int TryUnequipIfEquipped(int index, PlayerRecord p, int invSlot, ItemType type)
     {
-        bool wasEquipped = false;
-        switch (type)
+        if (p.IsEquipped(invSlot))
         {
-            case ItemType.Weapon when p.WeaponSlot == invSlot:
-                p.WeaponSlot = 0;
-                wasEquipped = true;
-                break;
-            case ItemType.Armor when p.ArmorSlot == invSlot:
-                p.ArmorSlot = 0;
-                wasEquipped = true;
-                break;
-            case ItemType.Helmet when p.HelmetSlot == invSlot:
-                p.HelmetSlot = 0;
-                wasEquipped = true;
-                break;
-            case ItemType.Shield when p.ShieldSlot == invSlot:
-                p.ShieldSlot = 0;
-                wasEquipped = true;
-                break;
+            p.ClearEquipped(invSlot);
+            SendEquippedGear(index);
         }
-        if (wasEquipped) SendEquippedGear(index);
-        return type is ItemType.Weapon or ItemType.Armor or ItemType.Helmet or ItemType.Shield
-            ? p.Inv[invSlot].Dur : 0;
+        return ItemRecord.IsEquipment(type) ? p.Inv[invSlot].Dur : 0;
     }
 
-    /// <summary>Unequip the inventory slot from whichever gear slot currently holds it (no-op if it
-    /// isn't equipped anywhere), broadcasting the new equipped set. Used when a worn item breaks at
-    /// 0 durability so the now-unusable piece comes off but stays in the bag, to be repaired.</summary>
+    /// <summary>Take the inventory slot off, wherever it is worn (no-op if it is not worn), broadcasting
+    /// the new worn set. Used when a worn item breaks at 0 durability so the now-unusable piece comes
+    /// off but stays in the bag, to be repaired.</summary>
     public void UnequipSlot(int index, int invSlot)
     {
         var p = _pm[index].Char;
-        bool wasEquipped = false;
-        if (p.WeaponSlot == invSlot)
-        {
-            p.WeaponSlot = 0;
-            wasEquipped = true;
-        }
-        else if (p.ArmorSlot == invSlot)
-        {
-            p.ArmorSlot = 0;
-            wasEquipped = true;
-        }
-        else if (p.HelmetSlot == invSlot)
-        {
-            p.HelmetSlot = 0;
-            wasEquipped = true;
-        }
-        else if (p.ShieldSlot == invSlot)
-        {
-            p.ShieldSlot = 0;
-            wasEquipped = true;
-        }
-        if (wasEquipped) SendEquippedGear(index);
+        if (!p.IsEquipped(invSlot)) return;
+        p.ClearEquipped(invSlot);
+        SendEquippedGear(index);
     }
 
 }

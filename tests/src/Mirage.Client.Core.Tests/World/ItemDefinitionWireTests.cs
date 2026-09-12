@@ -34,7 +34,7 @@ public class ItemDefinitionWireTests
     }
 
     private static SendItemsPacket.ItemData Sword(short tier = 40) => new(
-        Num: 7, Name: "Iron Sword", Pic: 3, Type: ItemType.Weapon, Durability: 50, VitalAmount: 0,
+        Num: 7, Name: "Iron Sword", Pic: 3, Type: ItemType.Equipment, Durability: 50, VitalAmount: 0,
         Power: 12, Tier: tier, NonTradeable: false,
         NonListable: false, NonMailable: false, DestroyOnDrop: false, NonJunkable: false, Price: 250);
 
@@ -53,7 +53,7 @@ public class ItemDefinitionWireTests
     {
         var state = Apply(HandleUpdateItem, new UpdateItemPacket
         {
-            ItemNum = 7, Name = "Iron Sword", Pic = 3, Type = ItemType.Weapon,
+            ItemNum = 7, Name = "Iron Sword", Pic = 3, Type = ItemType.Equipment,
             Durability = 50, Power = 12, Tier = 40, Price = 250,
         });
 
@@ -69,7 +69,7 @@ public class ItemDefinitionWireTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(it.Type, Is.EqualTo(ItemType.Weapon));
+            Assert.That(it.Type, Is.EqualTo(ItemType.Equipment));
             Assert.That(it.Power, Is.EqualTo(12), "drives the STR requirement line");
             Assert.That(it.Tier, Is.EqualTo(40));
             Assert.That(it.Durability, Is.EqualTo(50));

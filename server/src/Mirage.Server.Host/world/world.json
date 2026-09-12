@@ -1,3 +1,9 @@
 {
-  "name": "Core Demo"
+  "name": "Core Demo",
+  "equipSlots": [
+    { "key": "head", "labelKey": "", "ordinal": 0 },
+    { "key": "body", "labelKey": "", "ordinal": 1 },
+    { "key": "hand", "labelKey": "", "ordinal": 2 },
+    { "key": "offhand", "labelKey": "", "ordinal": 3 }
+  ]
 }

@@ -4,6 +4,7 @@ using Mirage.Server.Core.Persistence;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -14,31 +15,26 @@ namespace Mirage.Server.Core.GameLogic;
 /// to, and the in-place reorder that keeps the equipped-slot indices pointing at the same gear.</summary>
 public sealed partial class ItemSystem : GameSystem
 {
-    /// <summary>Tidy the player's bag into the canonical order and resync. Order: Gold, other
-    /// currencies (alpha), equipped gear (Weapon/Armor/Helmet/Shield), then unequipped gear (same type
-    /// order, strongest bonus first, then alpha), keys (alpha), spell scrolls (alpha), Add potions then
-    /// Sub potions (each grouped by vital HP/MP/SP, magnitude desc). Empty slots fall to the tail.
-    /// Reorders the slot objects in place, re-points the four equipped-slot indices, then sends the
-    /// full inventory + equipped gear and marks the player dirty so the tidy persists this tick.</summary>
+    /// <summary>Tidy the player's bag into the canonical order and resync. Order: gold, other currencies
+    /// (alpha), worn equipment, then unworn equipment (both in the game's declared slot order, strongest
+    /// first, then alpha), keys (alpha), then consumables (magnitude desc). Empty slots fall to the tail.
+    /// Reorders the slot objects in place, re-points every worn slot, then sends the full inventory and
+    /// worn set and marks the player dirty so the tidy persists this tick.</summary>
     public void SortInventory(int index)
     {
         if (!_pm[index].IsPlaying) return;
         var p = _pm[index].Char;
 
-        // Capture the equipped slot OBJECTS before the move — slots are reference types, so each one's
-        // new index can be found by identity after reordering.
-        PlayerInvSlot? weapon = p.WeaponSlot > 0 ? p.Inv[p.WeaponSlot] : null;
-        PlayerInvSlot? armor = p.ArmorSlot > 0 ? p.Inv[p.ArmorSlot] : null;
-        PlayerInvSlot? helmet = p.HelmetSlot > 0 ? p.Inv[p.HelmetSlot] : null;
-        PlayerInvSlot? shield = p.ShieldSlot > 0 ? p.Inv[p.ShieldSlot] : null;
+        // Capture the worn slot OBJECTS before the move — slots are reference types, so each one's new
+        // index can be found by identity after reordering.
+        var worn = p.Equipped
+            .Where(kv => SlotValidation.IsValidInvSlot(kv.Value))
+            .ToDictionary(kv => kv.Key, kv => p.Inv[kv.Value], StringComparer.Ordinal);
 
-        SortSlots(p.Inv, Constants.MaxInv, _world.Items,
-            i => i == p.WeaponSlot || i == p.ArmorSlot || i == p.HelmetSlot || i == p.ShieldSlot);
+        SortSlots(p.Inv, Constants.MaxInv, _world.Items, _world.EquipSlots, p.IsEquipped);
 
-        p.WeaponSlot = weapon is null ? 0 : IndexOfSlot(p, weapon);
-        p.ArmorSlot = armor is null ? 0 : IndexOfSlot(p, armor);
-        p.HelmetSlot = helmet is null ? 0 : IndexOfSlot(p, helmet);
-        p.ShieldSlot = shield is null ? 0 : IndexOfSlot(p, shield);
+        p.Equipped.Clear();
+        foreach (var (key, slot) in worn) p.SetEquipped(key, IndexOfSlot(p, slot));
 
         SendFullInventory(index);
         SendEquippedGear(index);
@@ -56,7 +52,8 @@ public sealed partial class ItemSystem : GameSystem
     /// four-key <c>OrderBy</c> chain — a change to the ordering had to be made twice to take effect in
     /// both bags. <paramref name="isEquipped"/> is asked about each slot INDEX; a bank never holds worn
     /// gear and passes a constant false.</summary>
-    internal static void SortSlots(PlayerInvSlot[] slots, int count, ItemRecord[] items, Func<int, bool> isEquipped)
+    internal static void SortSlots(PlayerInvSlot[] slots, int count, ItemRecord[] items,
+                                  EquipSlotSet equipSlots, Func<int, bool> isEquipped)
     {
         var occupied = new List<SortEntry>();
         for (int i = 1; i <= count; i++)
@@ -64,7 +61,7 @@ public sealed partial class ItemSystem : GameSystem
             var s = slots[i];
             if (s.Num <= 0 || s.Num >= items.Length) continue;
             var item = items[s.Num];
-            var (cat, sub, mag) = SortKey(s.Num, item, isEquipped(i));
+            var (cat, sub, mag) = SortKey(s.Num, item, equipSlots, isEquipped(i));
             occupied.Add(new SortEntry(s, cat, sub, mag, item.TrimmedName));
         }
 
@@ -86,32 +83,25 @@ public sealed partial class ItemSystem : GameSystem
     // pieces (category 3, strongest bonus first), both above keys/scrolls/potions. Shared verbatim with
     // the bank sort (BankSystem.SortBank); a bank never holds equipped gear, so its gear all lands in
     // category 3.
-    internal static (int Cat, int Sub, int Mag) SortKey(int itemNum, ItemRecord item, bool equipped)
+    internal static (int Cat, int Sub, int Mag) SortKey(int itemNum, ItemRecord item,
+                                                       EquipSlotSet equipSlots, bool equipped)
     {
         if (itemNum == Constants.GoldItemIndex) return (0, 0, 0);
-        if (equipped) return (2, TypeOrder(item.Type), 0);
+        if (equipped) return (2, SlotOrder(item, equipSlots), 0);
         return item.Type switch
         {
             ItemType.Currency => (1, 0, 0),
-            ItemType.Weapon => (3, 0, item.Power),
-            ItemType.Armor => (3, 1, item.Power),
-            ItemType.Helmet => (3, 2, item.Power),
-            ItemType.Shield => (3, 3, item.Power),
+            ItemType.Equipment => (3, SlotOrder(item, equipSlots), item.Power),
             ItemType.Key => (4, 0, 0),
             ItemType.Consumable => (5, 0, item.VitalAmount),
             _ => (6, 0, 0),
         };
     }
 
-    // Equipped and unequipped gear both order Weapon, Armor, Helmet, Shield.
-    private static int TypeOrder(ItemType type) => type switch
-    {
-        ItemType.Weapon => 0,
-        ItemType.Armor => 1,
-        ItemType.Helmet => 2,
-        ItemType.Shield => 3,
-        _ => 4,
-    };
+    // Equipment sorts into the order the game declared its slots in. A piece naming a slot this world
+    // does not have sorts last among equipment rather than falling into another category.
+    private static int SlotOrder(ItemRecord item, EquipSlotSet equipSlots) =>
+        equipSlots.Find(item.EquipSlot)?.Ordinal ?? int.MaxValue;
 
     private static int IndexOfSlot(PlayerRecord p, PlayerInvSlot target)
     {

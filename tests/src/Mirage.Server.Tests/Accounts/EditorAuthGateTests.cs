@@ -100,7 +100,7 @@ public class EditorAuthGateTests
         var h = new Harness();
         h.World.Items[2] = new ItemRecord { Name = "" };
 
-        h.Dispatch(new EditorSaveItemPacket { ItemNum = 2, Name = "smuggled", Type = ItemType.Weapon });
+        h.Dispatch(new EditorSaveItemPacket { ItemNum = 2, Name = "smuggled", Type = ItemType.Equipment });
 
         Assert.Multiple(() =>
         {

@@ -76,11 +76,42 @@ public sealed class PlayerRecord
     /// cosmetic: a client claiming a faster pace than this allows is refused a step.</para></summary>
     public int MoveSpeed { get; set; }
 
-    // Equipment slots: 1-based inventory index of equipped item; 0 = not equipped
-    public int ArmorSlot { get; set; }
-    public int WeaponSlot { get; set; }
-    public int HelmetSlot { get; set; }
-    public int ShieldSlot { get; set; }
+    /// <summary>What this character is wearing: equipment-slot key to the 1-based INVENTORY index holding
+    /// the item. A key that is absent is a slot with nothing in it.
+    ///
+    /// <para><b>Keyed rather than four fields, because the slots are the game's.</b> A character saved
+    /// under one set of slots and loaded under another keeps what still fits and silently ignores the
+    /// rest, instead of carrying a field for a slot nobody declares.</para>
+    ///
+    /// <para>The item itself stays in the bag. Wearing it records WHERE it is worn, so nothing has to be
+    /// moved back when it comes off, and a dropped or sold item only has to clear this.</para></summary>
+    public Dictionary<string, int> Equipped { get; set; } = new(StringComparer.Ordinal);
+
+    /// <summary>The inventory slot worn in <paramref name="slotKey"/>, or 0 for an empty slot.</summary>
+    public int EquippedIn(string slotKey)
+        => Equipped.TryGetValue(slotKey, out int inv) ? inv : 0;
+
+    /// <summary>Wears the item in <paramref name="invSlot"/> in <paramref name="slotKey"/>, or takes that
+    /// slot off when the inventory slot is 0.</summary>
+    public void SetEquipped(string slotKey, int invSlot)
+    {
+        if (invSlot <= 0) Equipped.Remove(slotKey);
+        else Equipped[slotKey] = invSlot;
+    }
+
+    /// <summary>Whether the item in this inventory slot is being worn anywhere.</summary>
+    public bool IsEquipped(int invSlot)
+        => invSlot > 0 && Equipped.ContainsValue(invSlot);
+
+    /// <summary>Takes off whatever is worn out of <paramref name="invSlot"/>, wherever it is worn. Called
+    /// on every path that empties a bag slot — dropping, selling, banking, mailing — so a slot cannot go
+    /// on pointing at an item that has left.</summary>
+    public void ClearEquipped(int invSlot)
+    {
+        if (invSlot <= 0) return;
+        foreach (var key in Equipped.Where(kv => kv.Value == invSlot).Select(kv => kv.Key).ToList())
+            Equipped.Remove(key);
+    }
 
     // Inventory: 1-based, indices 1..MaxInv; index 0 unused
     public PlayerInvSlot[] Inv { get; set; } = new PlayerInvSlot[Constants.MaxInv + 1];
@@ -202,6 +233,7 @@ public sealed class PlayerRecord
     {
         var c = (PlayerRecord)MemberwiseClone();   // all scalars; array/list fields still shared after this
         c.Attributes = Attributes.Clone();
+        c.Equipped = new Dictionary<string, int>(Equipped, StringComparer.Ordinal);
         c.Inv = new PlayerInvSlot[Inv.Length];
         for (int i = 0; i < Inv.Length; i++)
         {

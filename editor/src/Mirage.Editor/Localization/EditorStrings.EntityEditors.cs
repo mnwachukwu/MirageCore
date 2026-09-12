@@ -24,12 +24,7 @@ public static partial class EditorStrings
     public const string ItemEditor_Notes_EquipmentHeader = nameof(ItemEditor_Notes_EquipmentHeader);
     public const string ItemEditor_Notes_EquipmentDurability = nameof(ItemEditor_Notes_EquipmentDurability);
     public const string ItemEditor_Notes_EquipmentPower = nameof(ItemEditor_Notes_EquipmentPower);
-    public const string ItemEditor_Notes_EquipmentWeapon = nameof(ItemEditor_Notes_EquipmentWeapon);
-    public const string ItemEditor_Notes_EquipmentArmor = nameof(ItemEditor_Notes_EquipmentArmor);
-    public const string ItemEditor_Notes_EquipmentHelmet = nameof(ItemEditor_Notes_EquipmentHelmet);
-    public const string ItemEditor_Notes_EquipmentShield = nameof(ItemEditor_Notes_EquipmentShield);
-    public const string ItemEditor_Notes_EquipmentClassReq = nameof(ItemEditor_Notes_EquipmentClassReq);
-    public const string ItemEditor_Notes_EquipmentShieldSide = nameof(ItemEditor_Notes_EquipmentShieldSide);
+    public const string ItemEditor_Notes_EquipmentSlot = nameof(ItemEditor_Notes_EquipmentSlot);
     public const string ItemEditor_Notes_PotionsHeader = nameof(ItemEditor_Notes_PotionsHeader);
     public const string ItemEditor_Notes_PotionsAmount = nameof(ItemEditor_Notes_PotionsAmount);
     public const string ItemEditor_Notes_KeyHeader = nameof(ItemEditor_Notes_KeyHeader);

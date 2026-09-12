@@ -249,13 +249,11 @@ public static partial class EditorStrings
 
     // ── Data field labels (shared by Item/Spell row editors) ──────────────────
     public const string DataLabel_Durability = nameof(DataLabel_Durability);
-    public const string DataLabel_Damage = nameof(DataLabel_Damage);
-    public const string DataLabel_Defense = nameof(DataLabel_Defense);
     // The class multi-select shared by the item, spell and quest editors.
-    // Fallback captions for the two fields whose caption varies by type, shown if a type ever falls
-    // outside the switch. Not "Data 1/2/3" any more — there is no numbered slot left to name.
     public const string DataLabel_VitalAmount = nameof(DataLabel_VitalAmount);
     public const string DataLabel_Power = nameof(DataLabel_Power);
+    public const string DataLabel_EquipSlot = nameof(DataLabel_EquipSlot);
+    public const string DataLabel_EquipSlotNone = nameof(DataLabel_EquipSlotNone);
     public const string DataLabel_Tier = nameof(DataLabel_Tier);
 
     // ── EditorConnection (service-layer errors shown to the user) ─────────────

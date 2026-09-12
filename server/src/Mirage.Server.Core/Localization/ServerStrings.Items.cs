@@ -50,6 +50,7 @@ public static partial class ServerStrings
     public const string ItemSystem_ItemDestroyed = nameof(ItemSystem_ItemDestroyed);
     public const string ItemSystem_CurrencyDestroyed = nameof(ItemSystem_CurrencyDestroyed);
     public const string ItemSystem_ItemBroken = nameof(ItemSystem_ItemBroken);
+    public const string ItemSystem_CannotWear = nameof(ItemSystem_CannotWear);
     public const string ItemSystem_GearSwapCombat = nameof(ItemSystem_GearSwapCombat);
     public const string ItemSystem_KeyDissolves = nameof(ItemSystem_KeyDissolves);
 }

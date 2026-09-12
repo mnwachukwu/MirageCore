@@ -84,12 +84,7 @@ public sealed class BankSystem : GameSystem
         }
         else
         {
-            bool isEquipped =
-                (item.Type == ItemType.Weapon && p.WeaponSlot == invSlot) ||
-                (item.Type == ItemType.Armor && p.ArmorSlot == invSlot) ||
-                (item.Type == ItemType.Helmet && p.HelmetSlot == invSlot) ||
-                (item.Type == ItemType.Shield && p.ShieldSlot == invSlot);
-            if (isEquipped)
+            if (p.IsEquipped(invSlot))
             {
                 SendMsg(index, ServerStrings.BankSystem_UnequipFirst, GameColor.BrightRed);
                 return;
@@ -303,7 +298,7 @@ public sealed class BankSystem : GameSystem
 
         // Same tidy as the inventory, minus the equipped category: depositing worn gear is refused, so a
         // bank never holds any.
-        ItemSystem.SortSlots(bank, Constants.MaxBankSlots, _world.Items, _ => false);
+        ItemSystem.SortSlots(bank, Constants.MaxBankSlots, _world.Items, _world.EquipSlots, _ => false);
 
         SendFullBank(index);
     }
@@ -327,7 +322,7 @@ public sealed class BankSystem : GameSystem
 
         bank[slot].Num = itemNum;
         bank[slot].AddQuantity(value);
-        if (item.Type is ItemType.Armor or ItemType.Weapon or ItemType.Helmet or ItemType.Shield)
+        if (ItemRecord.IsEquipment(item.Type))
             bank[slot].Dur = dur > 0 ? dur : item.Durability;
         return slot;
     }
@@ -376,7 +371,7 @@ public sealed class BankSystem : GameSystem
         for (int i = 1; i <= Constants.MaxInv; i++)
         {
             if (p.Inv[i].Num != itemNum) continue;
-            if (skipEquipped && (p.WeaponSlot == i || p.ArmorSlot == i || p.HelmetSlot == i || p.ShieldSlot == i)) continue;
+            if (skipEquipped && p.IsEquipped(i)) continue;
             count++;
         }
         return count;
@@ -390,14 +385,7 @@ public sealed class BankSystem : GameSystem
         return count;
     }
 
-    private static bool IsInvSlotEquipped(PlayerRecord p, int invSlot, ItemType type) => type switch
-    {
-        ItemType.Weapon => p.WeaponSlot == invSlot,
-        ItemType.Armor => p.ArmorSlot == invSlot,
-        ItemType.Helmet => p.HelmetSlot == invSlot,
-        ItemType.Shield => p.ShieldSlot == invSlot,
-        _ => false,
-    };
+    private static bool IsInvSlotEquipped(PlayerRecord p, int invSlot, ItemType type) => p.IsEquipped(invSlot);
 
     private void SendFullBank(int index)
     {

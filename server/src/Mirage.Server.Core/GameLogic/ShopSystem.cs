@@ -194,7 +194,7 @@ public sealed class ShopSystem : GameSystem
         for (int i = 1; i <= Constants.MaxInv; i++)
         {
             if (i == invSlot || p.Inv[i].Num != itemNum || p.Inv[i].Dur != dur) continue;
-            if (p.WeaponSlot == i || p.ArmorSlot == i || p.HelmetSlot == i || p.ShieldSlot == i) continue;
+            if (p.IsEquipped(i)) continue;
             slots.Add(i);
         }
         return slots;
@@ -247,7 +247,7 @@ public sealed class ShopSystem : GameSystem
 
         // Selling gear off your own back would silently unequip it; make the player take it off first,
         // the same rule the bank deposit uses.
-        if (p.WeaponSlot == invSlot || p.ArmorSlot == invSlot || p.HelmetSlot == invSlot || p.ShieldSlot == invSlot)
+        if (p.IsEquipped(invSlot))
         {
             SendMsg(index, ServerStrings.ShopSystem_UnequipFirst, GameColor.BrightRed, ("ItemName", item.TrimmedName));
             return;
@@ -321,7 +321,7 @@ public sealed class ShopSystem : GameSystem
         }
 
         var item = _world.Items[itemNum];
-        if (item.Type is not (ItemType.Weapon or ItemType.Armor or ItemType.Helmet or ItemType.Shield))
+        if (!ItemRecord.IsEquipment(item.Type))
         {
             SendMsg(index, ServerStrings.ShopSystem_CannotRepair, GameColor.BrightRed);
             return;

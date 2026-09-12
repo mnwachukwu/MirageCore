@@ -2,6 +2,7 @@ using Mirage.Client.Core.Cache;
 using Mirage.Client.Core.Logic;
 using Mirage.Client.Core.State;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -178,6 +179,11 @@ public sealed partial class ClientPacketHandler : IClientEvents
             case SendPlayerDataPacket p:
                 HandleSendPlayerData(p);
                 break;
+            case EquipSlotsPacket p:
+                _state.EquipSlots = new EquipSlotSet(
+                    [.. p.Slots.Select(s => new EquipSlot { Key = s.Key, LabelKey = s.LabelKey, Ordinal = s.Ordinal })]);
+                break;
+
             case AttributeSchemaPacket p:
                 HandleAttributeSchema(p);
                 break;

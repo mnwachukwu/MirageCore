@@ -31,8 +31,6 @@ public sealed partial class QuestRowViewModel : ObservableObject, ILockableRow
 
     [ObservableProperty] private string _name = "";
     [ObservableProperty] private string _description = "";
-    /// <summary>Classes allowed to accept it; null or empty = every class.</summary>
-    [ObservableProperty] private List<short>? _allowedClasses;
     [ObservableProperty] private int _prereqQuest;
     [ObservableProperty] private int _giverNpc;
     [ObservableProperty] private int _turnInNpc;

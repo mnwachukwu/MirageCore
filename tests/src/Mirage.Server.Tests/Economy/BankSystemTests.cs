@@ -60,7 +60,7 @@ public class BankSystemTests
     public void Deposit_UnequippedGear_MovesToBank_CarryingDurability()
     {
         var (world, _, bank, p, sp) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         p.Inv[3].Num = Sword;
         p.Inv[3].Dur = 55;
 
@@ -79,16 +79,16 @@ public class BankSystemTests
     public void Deposit_EquippedGear_Refused()
     {
         var (world, _, bank, p, sp) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         p.Inv[3].Num = Sword;
-        p.WeaponSlot = 3;  // equipped
+        p.SetEquipped("hand", 3);  // equipped
 
         bank.Deposit(Idx, invSlot: 3, amount: 0);
 
         Assert.Multiple(() =>
         {
             Assert.That(p.Inv[3].Num, Is.EqualTo(Sword), "equipped gear stays in the bag");
-            Assert.That(p.WeaponSlot, Is.EqualTo(3), "and stays equipped");
+            Assert.That(p.EquippedIn("hand"), Is.EqualTo(3), "and stays equipped");
             Assert.That(sp.Bank[1].Num, Is.EqualTo(0), "nothing was deposited");
         });
     }
@@ -135,7 +135,7 @@ public class BankSystemTests
     {
         var (world, _, bank, p, sp) = Setup();
         world.Shops[ShopNum].AllowBanking = false;   // the Inn no longer offers banking
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         p.Inv[3].Num = Sword;
 
         bank.Deposit(Idx, invSlot: 3, amount: 0);
@@ -153,7 +153,7 @@ public class BankSystemTests
     {
         var (world, _, bank, _, sp) = Setup();
         world.Items[Gold].Type = ItemType.Currency;
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         world.Items[Sword].Power = 5;
         world.Items[Potion].Type = ItemType.Consumable;
         world.Items[Potion].VitalAmount = 50;

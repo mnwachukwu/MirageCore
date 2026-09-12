@@ -18,7 +18,7 @@ public class StartingLoadoutTests
     [
         new(),
         new() { Name = "Gold", Type = ItemType.Currency },
-        new() { Name = "Light Sword", Type = ItemType.Weapon, Power = 6, Durability = 40 },
+        new() { Name = "Light Sword", Type = ItemType.Equipment, EquipSlot = "hand", Power = 6, Durability = 40 },
         new() { Name = "Elixir", Type = ItemType.Consumable, VitalAmount = 20 },
     ];
 
@@ -126,7 +126,7 @@ public class StartingLoadoutTests
     // ── The grant ────────────────────────────────────────────────────────────
 
     [Test]
-    public void Grant_FillsTheBagAndEquipsWhatIsWorn()
+    public void Grant_FillsTheBagAndWearsWhatNamesASlot()
     {
         var chr = new PlayerRecord();
 
@@ -137,8 +137,8 @@ public class StartingLoadoutTests
             Assert.That(chr.Inv[1].Num, Is.EqualTo(3), "the potion was authored first, so it takes slot 1");
             Assert.That(chr.Inv[2].Num, Is.EqualTo(2));
             Assert.That(chr.Inv[2].Dur, Is.EqualTo(40));
-            Assert.That(chr.WeaponSlot, Is.EqualTo(2), "the sword arrives worn, pointing at its bag slot");
-            Assert.That(chr.ArmorSlot, Is.Zero, "and nothing else is equipped by accident");
+            Assert.That(chr.EquippedIn("hand"), Is.EqualTo(2), "the sword arrives worn, pointing at its bag slot");
+            Assert.That(chr.Equipped, Has.Count.EqualTo(1), "and nothing else is worn by accident");
         });
     }
 
@@ -152,7 +152,7 @@ public class StartingLoadoutTests
         Assert.Multiple(() =>
         {
             Assert.That(chr.Inv[1].Num, Is.Zero);
-            Assert.That(chr.WeaponSlot, Is.Zero);
+            Assert.That(chr.Equipped, Is.Empty);
         });
     }
 }

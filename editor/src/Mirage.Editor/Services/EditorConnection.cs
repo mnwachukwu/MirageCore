@@ -127,6 +127,7 @@ public sealed class EditorConnection : IDisposable
         // What families this server has. Adopted before the data packet is read, so anything that follows
         // can refer to a family this build was not compiled with.
         WorldFamilies.Adopt(response.Schema);
+        WorldEquipSlots.Adopt(response.EquipSlots);
 
         var (dataPacketRead, closedBeforeData) = await ReadHandshakeAsync(ct);
         if (closedBeforeData)
@@ -390,6 +391,7 @@ public sealed class EditorConnection : IDisposable
         // Back to the families this build ships with: the next thing edited may be a folder on disk,
         // which carries no schema of its own.
         WorldFamilies.Reset();
+        WorldEquipSlots.Reset();
         _cts?.Cancel();
         _cts = null;
         FailAllPending();

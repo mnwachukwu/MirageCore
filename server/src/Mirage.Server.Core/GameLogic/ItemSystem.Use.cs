@@ -33,7 +33,7 @@ public sealed partial class ItemSystem : GameSystem
 
         var item = _world.Items[itemNum];
 
-        bool isEquipment = item.Type is ItemType.Weapon or ItemType.Armor or ItemType.Helmet or ItemType.Shield;
+        bool isEquipment = ItemRecord.IsEquipment(item.Type);
         if (isEquipment)
         {
             long now = Environment.TickCount64;
@@ -48,8 +48,7 @@ public sealed partial class ItemSystem : GameSystem
         // and unusable, until a repair shop restores it. Only the equip direction is blocked here — taking
         // off an already-worn piece is always allowed. A 0-Durability item carries no durability budget, so
         // it is never "broken" (mirrors CombatSystem.WarnDurability).
-        if (isEquipment && item.Durability > 0 && p.Inv[invSlot].Dur <= 0
-            && EquippedSlotForType(p, item.Type) != invSlot)
+        if (isEquipment && item.Durability > 0 && p.Inv[invSlot].Dur <= 0 && !p.IsEquipped(invSlot))
         {
             SendMsg(index, ServerStrings.ItemSystem_ItemBroken, GameColor.BrightRed, ("Item", item.TrimmedName));
             return;
@@ -74,24 +73,8 @@ public sealed partial class ItemSystem : GameSystem
 
         switch (item.Type)
         {
-            case ItemType.Weapon:
-                p.WeaponSlot = (p.WeaponSlot == invSlot) ? 0 : invSlot;
-                SendEquippedGear(index);
-                break;
-
-            case ItemType.Armor:
-                p.ArmorSlot = (p.ArmorSlot == invSlot) ? 0 : invSlot;
-                SendEquippedGear(index);
-                break;
-
-            case ItemType.Helmet:
-                p.HelmetSlot = (p.HelmetSlot == invSlot) ? 0 : invSlot;
-                SendEquippedGear(index);
-                break;
-
-            case ItemType.Shield:
-                p.ShieldSlot = (p.ShieldSlot == invSlot) ? 0 : invSlot;
-                SendEquippedGear(index);
+            case ItemType.Equipment:
+                ToggleWorn(index, p, invSlot, item);
                 break;
 
             case ItemType.Key:
@@ -133,4 +116,22 @@ public sealed partial class ItemSystem : GameSystem
         if (consumed) sp.ConsumableTimer = useNow;
     }
 
+    /// <summary>Put the item in this bag slot on, or take it off when it is already worn there.
+    ///
+    /// <para>One item per slot: whatever was worn in that slot comes off, staying in the bag where it
+    /// already is. A piece naming a slot this world does not declare cannot be worn at all — the honest
+    /// answer for an item authored against another game, and the only rule Core has about wearing that
+    /// a game did not write.</para></summary>
+    private void ToggleWorn(int index, PlayerRecord p, int invSlot, ItemRecord item)
+    {
+        if (!_world.EquipSlots.Has(item.EquipSlot))
+        {
+            SendMsg(index, ServerStrings.ItemSystem_CannotWear, GameColor.BrightRed,
+                ("Item", item.TrimmedName));
+            return;
+        }
+
+        p.SetEquipped(item.EquipSlot, p.EquippedIn(item.EquipSlot) == invSlot ? 0 : invSlot);
+        SendEquippedGear(index);
+    }
 }

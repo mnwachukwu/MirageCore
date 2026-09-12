@@ -42,17 +42,13 @@ public partial class ItemEditorView : LocalizedUserControl
         // their captions instead, since those two vary by item type.
         _durabilityLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_Durability);
         _tierLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_Tier);
+        _equipSlotLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_EquipSlot);
 
 
         _notesEquipmentHeader.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentHeader);
         _notesEquipmentDurability.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentDurability);
         _notesEquipmentPower.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentPower);
-        _notesEquipmentWeapon.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentWeapon);
-        _notesEquipmentArmor.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentArmor);
-        _notesEquipmentHelmet.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentHelmet);
-        _notesEquipmentShield.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentShield);
-        _notesEquipmentClassReq.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentClassReq);
-        _notesEquipmentShieldSide.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentShieldSide);
+        _notesEquipmentSlot.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentSlot);
 
         _notesPotionsHeader.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_PotionsHeader);
         _notesPotionsAmount.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_PotionsAmount);

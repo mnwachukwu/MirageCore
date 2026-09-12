@@ -74,7 +74,7 @@ public sealed partial class ItemSystem : GameSystem
             for (int invSlot = 1; invSlot <= Constants.MaxInv && destroyedCount < requested; invSlot++)
             {
                 if (p.Inv[invSlot].Num != itemNum) continue;
-                if (IsInvSlotEquipped(p, invSlot, item.Type)) continue;
+                if (p.IsEquipped(invSlot)) continue;
                 DestroyInventorySlot(index, invSlot, 0, ServerStrings.ItemSystem_CurrencyDestroyed, ServerStrings.ItemSystem_ItemDestroyed);
                 destroyedCount++;
             }
@@ -98,7 +98,7 @@ public sealed partial class ItemSystem : GameSystem
         for (int invSlot = 1; invSlot <= Constants.MaxInv && dropped < target; invSlot++)
         {
             if (p.Inv[invSlot].Num != itemNum) continue;
-            if (IsInvSlotEquipped(p, invSlot, item.Type)) continue;
+            if (p.IsEquipped(invSlot)) continue;
             DropInventorySlotToMap(index, invSlot, amount: 0);
             dropped++;
         }
@@ -113,43 +113,21 @@ public sealed partial class ItemSystem : GameSystem
         for (int i = 1; i <= Constants.MaxInv; i++)
         {
             if (p.Inv[i].Num != itemNum) continue;
-            if (p.WeaponSlot == i || p.ArmorSlot == i || p.HelmetSlot == i || p.ShieldSlot == i) continue;
+            if (p.IsEquipped(i)) continue;
             count++;
         }
         return count;
     }
 
-    private static bool IsInvSlotEquipped(PlayerRecord p, int invSlot, ItemType type) => type switch
+    /// <summary>The inventory slot holding the worn copy of <paramref name="itemNum"/>, or 0 when no
+    /// copy of it is being worn.</summary>
+    public static int WornInvSlotOf(PlayerRecord p, int itemNum)
     {
-        ItemType.Weapon => p.WeaponSlot == invSlot,
-        ItemType.Armor => p.ArmorSlot == invSlot,
-        ItemType.Helmet => p.HelmetSlot == invSlot,
-        ItemType.Shield => p.ShieldSlot == invSlot,
-        _ => false,
-    };
-
-    /// <summary>The inventory slot currently equipped in <paramref name="type"/>'s gear slot,
-    /// or 0 if nothing of that type is equipped (also 0 for non-equipment types).</summary>
-    public static int EquippedSlotForType(PlayerRecord p, ItemType type) => type switch
-    {
-        ItemType.Weapon => p.WeaponSlot,
-        ItemType.Armor => p.ArmorSlot,
-        ItemType.Helmet => p.HelmetSlot,
-        ItemType.Shield => p.ShieldSlot,
-        _ => 0,
-    };
-
-    /// <summary>Clear the gear pointer for <paramref name="type"/>. Used where the worn piece is leaving the
-    /// bag entirely, so the pointer would otherwise name an emptied slot.</summary>
-    public static void Unequip(PlayerRecord p, ItemType type)
-    {
-        switch (type)
+        foreach (int invSlot in p.Equipped.Values)
         {
-            case ItemType.Weapon: p.WeaponSlot = 0; break;
-            case ItemType.Armor: p.ArmorSlot = 0; break;
-            case ItemType.Helmet: p.HelmetSlot = 0; break;
-            case ItemType.Shield: p.ShieldSlot = 0; break;
+            if (SlotValidation.IsValidInvSlot(invSlot) && p.Inv[invSlot].Num == itemNum) return invSlot;
         }
+        return 0;
     }
 
     /// <summary>
@@ -238,7 +216,7 @@ public sealed partial class ItemSystem : GameSystem
         else
         {
             dropValue = 0;
-            if (item.Type is ItemType.Weapon or ItemType.Armor or ItemType.Helmet or ItemType.Shield)
+            if (ItemRecord.IsEquipment(item.Type))
             {
                 ViewportMsg(index, ServerStrings.ItemSystem_DropWithDurability, GameColor.Yellow,
                     ("Player", p.TrimmedName), ("Item", item.TrimmedName), ("Current", p.Inv[invSlot].Dur), ("Max", item.Durability));

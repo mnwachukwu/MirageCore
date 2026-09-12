@@ -8,6 +8,7 @@ using Mirage.Client.Shell.Logic;
 using Mirage.Client.Shell.Rendering;
 using Mirage.Client.Shell.Ui;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Records;
 
 namespace Mirage.Client.Shell.Panels;
@@ -283,10 +284,11 @@ public sealed class InventoryPanel : IGamePanel
         var me = state.Me;
         if (me is null) return 0;
         var h = new HashCode();
-        h.Add(me.WeaponSlot);
-        h.Add(me.ArmorSlot);
-        h.Add(me.HelmetSlot);
-        h.Add(me.ShieldSlot);
+        foreach (var (key, invSlot) in me.Equipped.OrderBy(kv => kv.Key, StringComparer.Ordinal))
+        {
+            h.Add(key);
+            h.Add(invSlot);
+        }
         for (int i = 1; i <= Constants.MaxInv; i++)
         {
             var slot = me.Inv?[i];
@@ -440,42 +442,42 @@ public sealed class InventoryPanel : IGamePanel
     private static Rectangle ListBoundsOf(Rectangle c) =>
         new(c.X + 4, c.Y + 2 + LinkStripH, c.Width - 8, Math.Max(0, c.Height - LinkStripH - 66));
 
-    // ── Equipment paper-doll sub-view (folded in from the former EquipmentView) ──────────────────────
-    // The four equipped pieces (Helmet top-center, then Weapon / Chest / Shield beneath), each showing the
-    // combat bonus it grants, plus a footer summing the gear bonus to each derived stat. Pure layout + draw;
-    // this panel owns the hover tooltip + the right-click Unequip menu and calls EquipmentHitTest to find the
+    // ── Equipment paper-doll sub-view ────────────────────────────────────────────────────────────────────
+    // One icon per slot the game declared, in its own order, wrapping to the panel width. Pure layout +
+    // draw; this panel owns the hover tooltip + the right-click Unequip menu and calls EquipmentHitTest.
     private const int EqIconSize = 32;
     private const int EqTopPad = 8;
-    private const int EqRowGap = 6;        // gap between the helmet label and the Weapon/Chest/Shield row
-    private const int EqSectionGap = 12;   // gap between the paper-doll and the totals footer
-    private const int EqMaxColSpacing = 84;
-    private const int EqSlotLabelLines = 2;  // per icon: MIT line, then the durability line beneath
+    private const int EqRowGap = 6;          // vertical gap between one row of icons and the next
+    private const int EqColGap = 16;         // horizontal gap between icons in a row
+    private const int EqSlotLabelLines = 2;  // per icon: the slot's own name, then the durability line
 
     private static readonly Color EqSlotBg = new(20, 20, 40, 235);
     private static readonly Color EqEmptyTextColor = new(110, 110, 130);
 
-    // Icon rects for the four slots + the Y where the totals footer starts. Computed identically for
-    // DrawEquipment and EquipmentHitTest so the hover/click targets line up with what's drawn.
-    private readonly record struct EquipDoll(Rectangle Helmet, Rectangle Weapon, Rectangle Chest, Rectangle Shield, int TotalsY);
+    // One declared slot and the icon rect it occupies. Computed identically for DrawEquipment and
+    // EquipmentHitTest so the hover/click targets line up with what's drawn.
+    private readonly record struct EquipCell(EquipSlot Slot, Rectangle Rect);
 
-    private static EquipDoll EquipLayout(Rectangle c, SpriteFont font)
+    // Rows are centered on the panel, so two slots read as a pair rather than hugging the left edge.
+    private static List<EquipCell> EquipLayout(Rectangle c, SpriteFont font, IReadOnlyList<EquipSlot> slots)
     {
-        int lineH = font.LineSpacing;
-        int cx = c.X + c.Width / 2;
-        int colSpacing = Math.Min(EqMaxColSpacing, (c.Width - EqIconSize) / 2 - 6);
-        if (colSpacing < EqIconSize) colSpacing = EqIconSize;   // keep columns from overlapping on a narrow panel
+        int cellW = EqIconSize + EqColGap;
+        int cellH = EqIconSize + EqSlotLabelLines * font.LineSpacing + EqRowGap;
+        int perRow = Math.Max(1, (c.Width - 8 + EqColGap) / cellW);
 
-        int topY = c.Y + EqTopPad;
-        int rowY = topY + EqIconSize + EqSlotLabelLines * lineH + EqRowGap;
-        int totalsY = rowY + EqIconSize + EqSlotLabelLines * lineH + EqSectionGap;
-
-        static Rectangle Cell(int mx, int my) => new(mx - EqIconSize / 2, my, EqIconSize, EqIconSize);
-        return new EquipDoll(
-            Cell(cx, topY),               // Helmet, top-center
-            Cell(cx - colSpacing, rowY),  // Weapon, left of Chest
-            Cell(cx, rowY),               // Chest (Armor), center
-            Cell(cx + colSpacing, rowY),  // Shield, right of Chest
-            totalsY);
+        var cells = new List<EquipCell>(slots.Count);
+        for (int i = 0; i < slots.Count; i++)
+        {
+            int row = i / perRow;
+            int col = i % perRow;
+            int inThisRow = Math.Min(perRow, slots.Count - row * perRow);
+            int rowWidth = inThisRow * cellW - EqColGap;
+            cells.Add(new EquipCell(slots[i], new Rectangle(
+                c.X + (c.Width - rowWidth) / 2 + col * cellW,
+                c.Y + EqTopPad + row * cellH,
+                EqIconSize, EqIconSize)));
+        }
+        return cells;
     }
 
     private static ItemRecord? EquippedItem(ClientState state, int invSlot)
@@ -487,25 +489,19 @@ public sealed class InventoryPanel : IGamePanel
         return state.Items[num];
     }
 
-    // Returns the equipped piece (its inventory slot + item) whose icon contains `mouse`, or null. Empty
+    // Returns the worn piece (its inventory slot + item) whose icon contains `mouse`, or null. Empty
     // slots return null — no tooltip, no right-click.
     private (int InvSlot, ItemRecord Item)? EquipmentHitTest(ClientState state, Rectangle content, SpriteFont font, Point mouse)
     {
         var me = state.Me;
         if (me is null) return null;
-        var d = EquipLayout(content, font);
-        var slots = new[]
+
+        foreach (var cell in EquipLayout(content, font, state.EquipSlots.Slots))
         {
-            (Slot: me.HelmetSlot, Rect: d.Helmet),
-            (Slot: me.WeaponSlot, Rect: d.Weapon),
-            (Slot: me.ArmorSlot,  Rect: d.Chest),
-            (Slot: me.ShieldSlot, Rect: d.Shield),
-        };
-        foreach (var (slot, rect) in slots)
-        {
-            if (slot <= 0 || !rect.Contains(mouse)) continue;
-            var item = EquippedItem(state, slot);
-            if (item is not null) return (slot, item);
+            if (!cell.Rect.Contains(mouse)) continue;
+            int invSlot = me.EquippedIn(cell.Slot.Key);
+            var item = EquippedItem(state, invSlot);
+            if (item is not null) return (invSlot, item);
         }
         return null;
     }
@@ -514,20 +510,20 @@ public sealed class InventoryPanel : IGamePanel
     {
         var me = state.Me;
         if (me is null) return;
-        var d = EquipLayout(content, font);
 
-        int SlotDur(int invSlot) => invSlot > 0 && me.Inv is not null ? me.Inv[invSlot].Dur : 0;
-
-        // What is worn, and how worn it is. What a piece CONTRIBUTES was a formula a game now owns, so
-        // the bonus column is left empty rather than filled with a number nothing computes.
-        EqDrawSlot(sb, font, itemsTex, d.Helmet, EquippedItem(state, me.HelmetSlot), "", 0, SlotDur(me.HelmetSlot));
-        EqDrawSlot(sb, font, itemsTex, d.Weapon, EquippedItem(state, me.WeaponSlot), "", 0, SlotDur(me.WeaponSlot));
-        EqDrawSlot(sb, font, itemsTex, d.Chest, EquippedItem(state, me.ArmorSlot), "", 0, SlotDur(me.ArmorSlot));
-        EqDrawSlot(sb, font, itemsTex, d.Shield, EquippedItem(state, me.ShieldSlot), "", 0, SlotDur(me.ShieldSlot));
+        // What is worn, and how worn it is. What a piece CONTRIBUTES is a formula a game owns, so there is
+        // no bonus line — the caption is the slot's own name, which is the only thing Core can say about it.
+        foreach (var cell in EquipLayout(content, font, state.EquipSlots.Slots))
+        {
+            int invSlot = me.EquippedIn(cell.Slot.Key);
+            int dur = invSlot > 0 && me.Inv is not null ? me.Inv[invSlot].Dur : 0;
+            EqDrawSlot(sb, font, itemsTex, cell.Rect, EquippedItem(state, invSlot),
+                ClientStrings.GetOrFallback(cell.Slot.LabelKey, cell.Slot.Key), dur);
+        }
     }
 
     private static void EqDrawSlot(SpriteBatch sb, SpriteFont font, IReadOnlyList<Texture2D?> itemsTex,
-        Rectangle iconRect, ItemRecord? item, string statLabel, int bonus, int dur)
+        Rectangle iconRect, ItemRecord? item, string caption, int dur)
     {
         UiHelper.DrawFilledRect(sb, iconRect, EqSlotBg);
         int centerX = iconRect.X + iconRect.Width / 2;
@@ -542,8 +538,7 @@ public sealed class InventoryPanel : IGamePanel
             sb.DrawItemIcon(itemsTex, item, iconRect, Color.White);
         UiHelper.DrawBorder(sb, iconRect, UiHelper.UiControlBorder);
 
-        // Bonus line (MIT / P-DMG) — one universal MIT axis, so a defensive piece shows a single line.
-        EqDrawCentered(sb, font, $"{statLabel} +{bonus}", centerX, labelY, Color.White);
+        EqDrawCentered(sb, font, caption, centerX, labelY, Color.White);
         int nextY = labelY + font.LineSpacing;
 
         // Condition line beneath the bonus line — cur/max wear, color-coded (white/yellow/red) exactly like

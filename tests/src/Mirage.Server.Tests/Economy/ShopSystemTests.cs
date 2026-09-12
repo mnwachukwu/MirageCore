@@ -72,7 +72,7 @@ public class ShopSystemTests
     public void Buy_ChargesThePriceAndHandsOverTheItem()
     {
         var (world, shop, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         world.Items[Sword].Price = 250;
         SetSales(world, Sword);
         p.Inv[1].Num = Gold;
@@ -91,7 +91,7 @@ public class ShopSystemTests
     public void Buy_WithoutEnoughGold_Refused()
     {
         var (world, shop, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         world.Items[Sword].Price = 250;
         SetSales(world, Sword);
         p.Inv[1].Num = Gold;
@@ -192,7 +192,7 @@ public class ShopSystemTests
     public void Buy_AnAmountOfSomethingThatDoesNotStack_BuysThatMany()
     {
         var (world, shop, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         world.Items[Sword].Price = 100;
         SetSales(world, Sword);
         p.Inv[1].Num = Gold;
@@ -229,7 +229,7 @@ public class ShopSystemTests
     public void Buy_UnpricedEntry_IsRefusedRatherThanFree()
     {
         var (world, shop, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         world.Items[Sword].Price = 0;
         SetSales(world, Sword);
         p.Inv[1].Num = Gold;
@@ -244,7 +244,7 @@ public class ShopSystemTests
     public void Buy_AtAnInn_Refused()
     {
         var (world, shop, p) = Setup(ShopType.Inn);
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         world.Items[Sword].Price = 10;
         SetSales(world, Sword);
         p.Inv[1].Num = Gold;
@@ -262,7 +262,7 @@ public class ShopSystemTests
     {
         var (world, shop, p) = Setup();
         var sword = world.Items[Sword];
-        sword.Type = ItemType.Weapon;
+        sword.Type = ItemType.Equipment;
         sword.Power = 40;
         sword.Tier = 10;
         sword.Durability = 100;
@@ -288,7 +288,7 @@ public class ShopSystemTests
     {
         var (world, shop, p) = Setup();
         var sword = world.Items[Sword];
-        sword.Type = ItemType.Weapon;
+        sword.Type = ItemType.Equipment;
         sword.Power = 40;
         sword.Tier = 10;
         sword.Durability = 100;
@@ -311,7 +311,7 @@ public class ShopSystemTests
     {
         var (world, shop, p) = Setup();
         var sword = world.Items[Sword];
-        sword.Type = ItemType.Weapon;
+        sword.Type = ItemType.Equipment;
         sword.Power = 40;
         sword.Durability = 100;
         p.Inv[1].Num = Sword;
@@ -355,12 +355,12 @@ public class ShopSystemTests
     {
         var (world, shop, p) = Setup();
         var sword = world.Items[Sword];
-        sword.Type = ItemType.Weapon;
+        sword.Type = ItemType.Equipment;
         sword.Power = 40;
         sword.Durability = 100;
         p.Inv[1].Num = Sword;
         p.Inv[1].Dur = 100;
-        p.WeaponSlot = 1;
+        p.SetEquipped("hand", 1);
 
         shop.Sell(Idx, 1, 0);
 
@@ -372,7 +372,7 @@ public class ShopSystemTests
     {
         var (world, shop, p) = Setup(ShopType.Inn);
         var sword = world.Items[Sword];
-        sword.Type = ItemType.Weapon;
+        sword.Type = ItemType.Equipment;
         sword.Power = 40;
         sword.Durability = 100;
         p.Inv[1].Num = Sword;
@@ -397,7 +397,7 @@ public class ShopSystemTests
     public void Trade_Success_SwapsGiveForGet()
     {
         var (world, shop, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         SetTrade(world, Gold, 100, Sword, 1);
         p.Inv[1].Num = Gold;
         p.Inv[1].Quantity = 100;
@@ -415,7 +415,7 @@ public class ShopSystemTests
     public void Trade_NotEnoughToGive_Refused()
     {
         var (world, shop, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         SetTrade(world, Gold, 100, Sword, 1);
         p.Inv[1].Num = Gold;
         p.Inv[1].Quantity = 50;  // only 50 of the 100 needed
@@ -433,7 +433,7 @@ public class ShopSystemTests
     public void Trade_AtAnInn_Refused()
     {
         var (world, shop, p) = Setup(ShopType.Inn);   // not a Store
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         SetTrade(world, Gold, 100, Sword, 1);
         p.Inv[1].Num = Gold;
         p.Inv[1].Quantity = 100;
@@ -448,7 +448,7 @@ public class ShopSystemTests
     public void Trade_ZeroQuantitySlot_Refused()
     {
         var (world, shop, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         SetTrade(world, Gold, 0, Sword, 1);   // GiveQuantity 0
         p.Inv[1].Num = Gold;
         p.Inv[1].Quantity = 100;
@@ -473,7 +473,7 @@ public class ShopSystemTests
     static void PlaceRepairableSword(GameWorld world, PlayerRecord p, int currentDur, int gold)
     {
         world.Shops[ShopNum].FixesItems = true;
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         world.Items[Sword].Durability = 100;
         world.Items[Sword].Tier = RepairTier;
         world.Items[Sword].Power = (short)EconomyFormulas.ReferencePower(RepairTier);

@@ -232,6 +232,8 @@ public static class PacketNames
     public const string SendInventory = "sendinventory";
     public const string InventoryUpdate = "inventoryupdate";
     public const string EquippedGear = "equippedgear";
+    // Where a character may wear something in this game, sent once before the first worn set.
+    public const string EquipSlots = "equipslots";
     public const string Welcome = "welcome";
     public const string LeftGame = "leftgame";
     public const string PlayerXY = "playerxy";

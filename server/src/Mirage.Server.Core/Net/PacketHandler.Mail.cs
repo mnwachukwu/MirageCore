@@ -138,11 +138,10 @@ public sealed partial class PacketHandler
                 if (!SlotValidation.IsValidInvSlot(spec.InvSlot)) continue;
                 var slot = ch.Inv[spec.InvSlot];
                 if (slot.Num <= 0 || slot.Num > _world.Limits.Items) continue;
-                // An EQUIPPED slot is refused by RemoveFromSlot, so it never actually ships — charging a
+                // A WORN slot is refused by RemoveFromSlot, so it never actually ships — charging a
                 // percentage of it would bill for a parcel that does not leave. (The flat per-attachment
                 // fee still counts it, as it always has; that is a 50-gold quirk rather than a real one.)
-                if (spec.InvSlot == ch.WeaponSlot || spec.InvSlot == ch.ArmorSlot
-                    || spec.InvSlot == ch.HelmetSlot || spec.InvSlot == ch.ShieldSlot) continue;
+                if (ch.IsEquipped(spec.InvSlot)) continue;
                 // Mirrors RemoveFromSlot exactly: currency sends the requested amount, where 0 or an
                 // oversized request means the WHOLE stack; everything else always goes as a whole slot.
                 var def = _world.Items[slot.Num];

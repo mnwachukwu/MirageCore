@@ -64,7 +64,7 @@ public class MarketSystemTests
     public void List_EscrowsItem_CreatesListing()
     {
         var (world, pm, market) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         var sp = AtInn(world, pm, 1, "seller");
         sp.Char.Inv[3].Num = Sword;
         sp.Char.Inv[3].Dur = 40;
@@ -87,7 +87,7 @@ public class MarketSystemTests
     public void List_NonListable_IsRefused()
     {
         var (world, pm, market) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         world.Items[Sword].NonListable = true;   // stands in for gold / reagent / valor / a soulbound item
         var sp = AtInn(world, pm, 1, "seller");
         sp.Char.Inv[3].Num = Sword;
@@ -108,7 +108,7 @@ public class MarketSystemTests
     public void List_WithNoOpenInnSession_IsRefused()
     {
         var (world, pm, market) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         var sp = AtInn(world, pm, 1, "seller");
         sp.ClearActiveShop();   // what leaving the map does
         sp.Char.Inv[3].Num = Sword;
@@ -126,7 +126,7 @@ public class MarketSystemTests
     public void List_FromAShopThatIsNotAnInn_IsRefused()
     {
         var (world, pm, market) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         var sp = AtInn(world, pm, 1, "seller");
         world.Shops[1].ShopType = ShopType.Store;   // an open session, but not to an innkeeper
         sp.Char.Inv[3].Num = Sword;
@@ -140,7 +140,7 @@ public class MarketSystemTests
     public void List_AfterTheInnkeeperWalksAway_StillWorks()
     {
         var (world, pm, market) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         var sp = AtInn(world, pm, 1, "seller");
         sp.Char.X = 15;   // the pair are now nowhere near each other
         sp.Char.Y = 11;
@@ -156,7 +156,7 @@ public class MarketSystemTests
     public void List_RespectsPerSellerCap()
     {
         var (world, pm, market) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         var sp = AtInn(world, pm, 1, "seller");
         for (int i = 0; i < Constants.MaxMarketListingsPerSeller + 2; i++)
         {
@@ -174,7 +174,7 @@ public class MarketSystemTests
     {
         var (world, pm, market) = Setup();
         world.Items[Gold].Type = ItemType.Currency;
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         var seller = AtInn(world, pm, 1, "seller");
         var buyer = AtInn(world, pm, 2, "buyer");
         seller.Char.Inv[3].Num = Sword;
@@ -204,7 +204,7 @@ public class MarketSystemTests
     public void Buy_OwnListing_IsRefused()
     {
         var (world, pm, market) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         var sp = AtInn(world, pm, 1, "seller");
         sp.Char.Inv[3].Num = Sword;
         market.List(1, 3, 0, 500);
@@ -220,7 +220,7 @@ public class MarketSystemTests
     {
         var (world, pm, market) = Setup();
         world.Items[Gold].Type = ItemType.Currency;
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         var seller = AtInn(world, pm, 1, "seller");
         var buyer = AtInn(world, pm, 2, "buyer");
         seller.Char.Inv[3].Num = Sword;
@@ -242,7 +242,7 @@ public class MarketSystemTests
     public void Cancel_ReturnsItem_RemovesListing()
     {
         var (world, pm, market) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         var sp = AtInn(world, pm, 1, "seller");
         sp.Char.Inv[3].Num = Sword;
         sp.Char.Inv[3].Dur = 40;
@@ -303,7 +303,7 @@ public class MarketSystemTests
     public void Expiry_ReturnsListingToSeller()
     {
         var (world, pm, market) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         var sp = AtInn(world, pm, 1, "seller");
         sp.Char.Inv[3].Num = Sword;
         sp.Char.Inv[3].Dur = 40;
@@ -327,7 +327,7 @@ public class MarketSystemTests
     {
         var (world, pm, market) = Setup();
         world.Items[Gold].Type = ItemType.Currency;
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         var seller = AtInn(world, pm, 1, "seller");
         var buyer = AtInn(world, pm, 2, "buyer");
         seller.Char.Inv[3].Num = Sword;
@@ -390,7 +390,7 @@ public class MarketSystemTests
         world.Shops[1].ShopType = ShopType.Inn;
         world.Shops[1].Keeper = KeeperNpc;
         world.MapNpcs[1, KeeperSlot].Num = KeeperNpc;
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
 
         var lister = AtInn(world, pm, 1, "lister");
         _ = AtInn(world, pm, 2, "browser");

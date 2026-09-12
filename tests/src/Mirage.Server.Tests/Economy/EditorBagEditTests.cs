@@ -23,7 +23,7 @@ public class EditorBagEditTests
         var items = new ItemRecord[64];
         for (int i = 0; i < items.Length; i++) items[i] = new ItemRecord();
         items[Gold].Type = ItemType.Currency;
-        items[Sword].Type = ItemType.Weapon;
+        items[Sword].Type = ItemType.Equipment;
         items[Sword].Durability = 60;
         items[Potion].Type = ItemType.Consumable;
 
@@ -164,7 +164,7 @@ public class EditorBagEditTests
         var (items, p) = Setup();
         p.Inv[4].Num = Sword;
         p.Inv[4].Quantity = 1;
-        p.WeaponSlot = 4;
+        p.SetEquipped("hand", 4);
 
         var taken = ItemSystem.TakeFromInventory(p, items, 4, 0);
 
@@ -172,7 +172,7 @@ public class EditorBagEditTests
         {
             Assert.That(taken.ItemNum, Is.EqualTo(Sword));
             Assert.That(p.Inv[4].Num, Is.Zero);
-            Assert.That(p.WeaponSlot, Is.Zero, "the pointer would otherwise name an empty slot");
+            Assert.That(p.EquippedIn("hand"), Is.Zero, "the pointer would otherwise name an empty slot");
         });
     }
 
@@ -182,11 +182,11 @@ public class EditorBagEditTests
         var (items, p) = Setup();
         p.Inv[1].Num = Sword; p.Inv[1].Quantity = 1;
         p.Inv[2].Num = Sword; p.Inv[2].Quantity = 1;
-        p.WeaponSlot = 1;
+        p.SetEquipped("hand", 1);
 
         ItemSystem.TakeFromInventory(p, items, 2, 0);
 
-        Assert.That(p.WeaponSlot, Is.EqualTo(1));
+        Assert.That(p.EquippedIn("hand"), Is.EqualTo(1));
     }
 
     [Test]

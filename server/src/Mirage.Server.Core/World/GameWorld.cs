@@ -35,6 +35,10 @@ public sealed class GameWorld
     /// and the one Core alone gives.</summary>
     public AttributeSchema Attributes { get; set; } = AttributeSchema.Empty;
 
+    /// <summary>Where a character may wear something, from the compiled modules. Empty when no game
+    /// module is loaded, and a world with no slots is a world where nothing can be worn.</summary>
+    public EquipSlotSet EquipSlots { get; set; } = EquipSlotSet.Empty;
+
     public MapRecord[] Maps { get; }
     public TempTileState[] TempTiles { get; }
     public ItemRecord[] Items { get; }

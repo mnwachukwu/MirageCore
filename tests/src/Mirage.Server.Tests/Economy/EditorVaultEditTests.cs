@@ -24,7 +24,7 @@ public class EditorVaultEditTests
         var items = new ItemRecord[64];
         for (int i = 0; i < items.Length; i++) items[i] = new ItemRecord();
         items[Gold].Type = ItemType.Currency;
-        items[Sword].Type = ItemType.Weapon;
+        items[Sword].Type = ItemType.Equipment;
         items[Sword].Durability = 60;
         items[Potion].Type = ItemType.Consumable;
 

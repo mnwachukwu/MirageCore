@@ -63,12 +63,15 @@ public static class EconomyFormulas
     // that does not name one needs the number DERIVED, or a few hundred authored items become a thousand
     // hand-typed figures with nothing keeping them consistent with each other or with income.
     //
-    // GEAR IS CHEAP; UPKEEP BITES. A full four-piece rung upgrade costs about a tenth of the gold earned
-    // across the rung it covers, so buying up is never the thing a player saves for. What actually consumes
-    // income is repair and consumables.
+    // GEAR IS CHEAP; UPKEEP BITES. One piece costs a fortieth of the gold earned across the rung it covers,
+    // so buying up is never the thing a player saves for. What actually consumes income is repair and
+    // consumables.
 
-    /// <summary>Share of a rung's income that one piece of equipment costs.  Four slots at
-    /// <c>0.025</c> puts a full kit at a tenth of the rung.</summary>
+    /// <summary>Share of a rung's income that ONE piece of equipment costs.
+    ///
+    /// <para>How many pieces a full kit is depends on how many slots the game declared, so the total is a
+    /// game's to check rather than a number in here: at four slots this puts a kit at a tenth of the rung,
+    /// which is the shape this figure was chosen against.</para></summary>
     private const double EquipmentTierShare = 0.025;
 
     /// <summary>Share of ONE tier's income that a potion costs.  Consumables are priced per tier rather
@@ -156,18 +159,14 @@ public static class EconomyFormulas
     // value grows as L^2.675 (it is a share of a rung's income) while the gold a fight earns grows as
     // about T^1.3, so a value-priced repair is wrong by an exponent — 22% of a tier's income at tier 20
     // against 5,433% at tier 235, which no choice of percentage fixes. Power grows about linearly in
-    // tier. At 40 a full kit costs 36-51% of a tier's income in the mid and top bands and 19-26% in
-    // the low band, so upkeep climbs as the game gets harder and always leaves at least half the take.
+    // tier. At 40, upkeep climbs as the game gets harder and still leaves most of the take.
     //
-    // TUNING: raise the divisor to make repair cheaper. Re-measure with .Tools/Simulations/FightSim, whose
-    // last section prices a full kit against income at a sweep of candidate divisors.
-    //
-    // TWO TRAPS when re-measuring, both of which have already produced a wrong answer:
+    // TUNING: raise the divisor to make repair cheaper. Two traps when re-measuring, both of which have
+    // already produced a wrong answer:
     //   Compare like for like. Repair per POINT against income per TIER makes Power look hopelessly
     //   behind, but durability lost per tier and income both scale with the same play and cancel.
-    //   Enumerate SLOTS, not events. GetPlayerProtection calls DegradeArmor once per equipped defensive
-    //   slot on every incoming blow, so armor, helmet and shield all chip on the same event and a
-    //   successful block wears the shield again on top.
+    //   Count SLOTS, not events. Whatever a game spends durability on may spend it on several worn
+    //   pieces at once, so a per-event figure understates the bill by however many slots it touches.
     private const double RepairPowerDivisor = 40.0;
 
     /// <summary>A full repair may never cost more than this percent of a new piece.  Repairing something

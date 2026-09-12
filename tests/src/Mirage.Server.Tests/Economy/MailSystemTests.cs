@@ -137,7 +137,7 @@ public class MailSystemTests
     public void Claim_Item_FreeSlot_GivesItem_CarriesDurability()
     {
         var (world, _, mail, sp) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         world.Items[Sword].Durability =80;  // max durability
         sp.Mail.Add(new MailMessage { Id = 1, Attachments = { new MailAttachment { ItemNum = Sword, Quantity = 1, Dur = 55 } } });
 
@@ -156,8 +156,8 @@ public class MailSystemTests
     public void Claim_Item_FullBag_LeavesAttachmentUnclaimed()
     {
         var (world, _, mail, sp) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
-        world.Items[Armor].Type = ItemType.Armor;
+        world.Items[Sword].Type = ItemType.Equipment;
+        world.Items[Armor].Type = ItemType.Equipment;
         for (int i = 1; i <= Constants.MaxInv; i++) sp.Char.Inv[i].Num = Sword;   // no free slot
         sp.Mail.Add(new MailMessage { Id = 1, Attachments = { new MailAttachment { ItemNum = Armor, Quantity = 1 } } });
 
@@ -177,8 +177,8 @@ public class MailSystemTests
     {
         var (world, _, mail, sp) = Setup();
         world.Items[Gold].Type = ItemType.Currency;
-        world.Items[Sword].Type = ItemType.Weapon;
-        world.Items[Armor].Type = ItemType.Armor;
+        world.Items[Sword].Type = ItemType.Equipment;
+        world.Items[Armor].Type = ItemType.Equipment;
         sp.Char.Inv[1].Num = Gold;
         sp.Char.Inv[1].Quantity = 200;  // an existing gold pile
         for (int i = 2; i <= Constants.MaxInv; i++) sp.Char.Inv[i].Num = Sword;   // every other slot full
@@ -208,7 +208,7 @@ public class MailSystemTests
     public void Claim_GearValueZero_StillClaims()
     {
         var (world, _, mail, sp) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         world.Items[Sword].Durability =100;
         sp.Mail.Add(new MailMessage { Id = 1, Attachments = { new MailAttachment { ItemNum = Sword, Quantity = 0, Dur = 30 } } });
 
@@ -447,7 +447,7 @@ public class MailSystemTests
     public void SendPlayerMail_Cod_InboxHas3DayReturnClock_OutboxKeepsRetention()
     {
         var (world, pm, _, mail) = SetupWorld();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         var sender = Online(pm, 1, "sender");
         var recipient = Online(pm, 2, "recipient");
         long deliverAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + 600;
@@ -475,7 +475,7 @@ public class MailSystemTests
     {
         var (world, pm, _, mail) = SetupWorld();
         world.Items[Gold].Type = ItemType.Currency;
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         world.Items[Sword].Durability =50;
         var sender = Online(pm, 1, "sender");
         var receiver = Online(pm, 2, "receiver");
@@ -507,7 +507,7 @@ public class MailSystemTests
     public void TickExpiry_UnpaidCod_ReturnsItemsToSender()
     {
         var (world, pm, _, mail) = SetupWorld();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         var sender = Online(pm, 1, "sender");
         var receiver = Online(pm, 2, "receiver");
         long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -536,8 +536,8 @@ public class MailSystemTests
     {
         var (world, _, _, sp) = Setup();
         world.Items[Gold].Type = ItemType.Currency;
-        world.Items[Sword].Type = ItemType.Weapon;
-        world.Items[Armor].Type = ItemType.Armor;
+        world.Items[Sword].Type = ItemType.Equipment;
+        world.Items[Armor].Type = ItemType.Equipment;
         var twoItems = new List<MailAttachment>
         {
             new() { ItemNum = Sword, Quantity = 1 },

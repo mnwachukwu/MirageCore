@@ -35,7 +35,7 @@ public class EditorLiveBroadcastTests
         var h = new Harness();
         h.Save(new EditorSaveItemPacket
         {
-            ItemNum = 3, Name = "Short Sword", Pic = 4, Type = ItemType.Weapon,
+            ItemNum = 3, Name = "Short Sword", Pic = 4, Type = ItemType.Equipment,
             Durability = 100, Power = 10,
         });
 
@@ -45,7 +45,7 @@ public class EditorLiveBroadcastTests
             Assert.That(u.ItemNum, Is.EqualTo(3));
             Assert.That(u.Name, Is.EqualTo("Short Sword"));
             Assert.That(u.Pic, Is.EqualTo(4));
-            Assert.That(u.Type, Is.EqualTo(ItemType.Weapon));
+            Assert.That(u.Type, Is.EqualTo(ItemType.Equipment));
             Assert.That(u.Durability, Is.EqualTo(100));
             Assert.That(u.Power, Is.EqualTo(10));
         });

@@ -94,14 +94,39 @@ public sealed record InventoryUpdatePacket : IPacket
     [JsonPropertyName("dur")] public int Dur { get; init; }
 }
 
+/// <summary>What a character is wearing: one entry per occupied slot.
+///
+/// <para>Sent whole rather than as a delta, and only the OCCUPIED slots travel — a slot with nothing in
+/// it is simply absent, so the wire says nothing about how many slots a game has.</para></summary>
+/// <summary>
+/// S→C, once per session before the first worn set: where a character may wear something in this game.
+///
+/// <para><b>The client renders the slots it is told about.</b> Which ones exist is the loaded game's
+/// decision, so a client compiled against a fixed set could only ever show one game's character sheet.
+/// A world whose game declares none sends an empty list, and nothing is worn there.</para>
+/// </summary>
+public sealed record EquipSlotsPacket : IPacket
+{
+    [JsonPropertyName("cmd")] public string Cmd => PacketNames.EquipSlots;
+
+    /// <summary>One row per declared slot, already in display order.</summary>
+    [JsonPropertyName("slots")] public Row[] Slots { get; init; } = [];
+
+    public readonly record struct Row(
+        [property: JsonPropertyName("key")] string Key,
+        [property: JsonPropertyName("label")] string LabelKey,
+        [property: JsonPropertyName("ord")] int Ordinal);
+}
+
 public sealed record EquippedGearPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.EquippedGear;
     [JsonPropertyName("index")] public int Index { get; init; }
-    [JsonPropertyName("armor")] public int Armor { get; init; }
-    [JsonPropertyName("weapon")] public int Weapon { get; init; }
-    [JsonPropertyName("helmet")] public int Helmet { get; init; }
-    [JsonPropertyName("shield")] public int Shield { get; init; }
+    [JsonPropertyName("worn")] public Entry[] Worn { get; init; } = [];
+
+    public readonly record struct Entry(
+        [property: JsonPropertyName("slot")] string Slot,
+        [property: JsonPropertyName("inv")] int InvSlot);
 }
 
 public sealed record MapItemsPacket : IPacket

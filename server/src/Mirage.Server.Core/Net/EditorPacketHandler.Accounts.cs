@@ -544,7 +544,7 @@ public sealed partial class EditorPacketHandler
                 Name = item.TrimmedName,
                 Quantity = inv.Quantity,
                 Dur = inv.Dur,
-                Worn = ItemSystem.EquippedSlotForType(c, item.Type) == i,
+                Worn = c.IsEquipped(i),
             });
         }
         return bag;

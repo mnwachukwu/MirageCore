@@ -52,7 +52,7 @@ public class ItemSystemStateTests
     public void GiveItem_Gear_StampsMaxDurability()
     {
         var (world, _, items, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         world.Items[Sword].Durability = 80;
         items.GiveItem(Idx, Sword, 0);
         Assert.That(p.Inv[1].Dur, Is.EqualTo(80), "gear is stamped with its max durability");
@@ -62,8 +62,8 @@ public class ItemSystemStateTests
     public void GiveItem_FullBag_Rejected()
     {
         var (world, _, items, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
-        world.Items[Armor].Type = ItemType.Armor;
+        world.Items[Sword].Type = ItemType.Equipment;
+        world.Items[Armor].Type = ItemType.Equipment;
         for (int i = 1; i <= Constants.MaxInv; i++) p.Inv[i].Num = Sword;
         items.GiveItem(Idx, Armor, 0);
         Assert.That(ItemSystem.CountItem(p, world.Items, Armor), Is.EqualTo(0), "a full bag rejects the item");
@@ -73,8 +73,8 @@ public class ItemSystemStateTests
     public void TryGiveItem_FullBag_ReturnsFalse()
     {
         var (world, _, items, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
-        world.Items[Armor].Type = ItemType.Armor;
+        world.Items[Sword].Type = ItemType.Equipment;
+        world.Items[Armor].Type = ItemType.Equipment;
         for (int i = 1; i <= Constants.MaxInv; i++) p.Inv[i].Num = Sword;
         bool ok = items.TryGiveItem(Idx, Armor, 1);
         Assert.Multiple(() =>
@@ -88,7 +88,7 @@ public class ItemSystemStateTests
     public void TryGiveItem_Gear_DurOverride_CarriesWear()
     {
         var (world, _, items, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         world.Items[Sword].Durability = 80;
         bool ok = items.TryGiveItem(Idx, Sword, 1, dur: 55);
         Assert.Multiple(() =>
@@ -117,7 +117,7 @@ public class ItemSystemStateTests
     public void RemoveFromSlot_Gear_TakesWholeSlot_CarriesDurability()
     {
         var (world, _, items, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         p.Inv[2].Num = Sword;
         p.Inv[2].Dur = 42;
         var (num, _, dur) = items.RemoveFromSlot(Idx, invSlot: 2, amount: 0);
@@ -133,9 +133,9 @@ public class ItemSystemStateTests
     public void RemoveFromSlot_EquippedGear_Refused()
     {
         var (world, _, items, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         p.Inv[2].Num = Sword;
-        p.WeaponSlot = 2;  // equipped
+        p.SetEquipped("hand", 2);  // equipped
         var (num, _, _) = items.RemoveFromSlot(Idx, invSlot: 2, amount: 0);
         Assert.Multiple(() =>
         {
@@ -168,8 +168,8 @@ public class ItemSystemStateTests
     public void PlayerMapGetItem_IsLifoByDropSeq()
     {
         var (world, _, items, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
-        world.Items[Armor].Type = ItemType.Armor;
+        world.Items[Sword].Type = ItemType.Equipment;
+        world.Items[Armor].Type = ItemType.Equipment;
         p.X = 4;
         p.Y = 5;
 
@@ -193,8 +193,8 @@ public class ItemSystemStateTests
     public void PlayerMapGetItem_OnlyPicksUpItemsOnThePlayersLayer()
     {
         var (world, _, items, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
-        world.Items[Armor].Type = ItemType.Armor;
+        world.Items[Sword].Type = ItemType.Equipment;
+        world.Items[Armor].Type = ItemType.Equipment;
         p.X = 4;
         p.Y = 5;
 
@@ -223,8 +223,8 @@ public class ItemSystemStateTests
     public void SpawnMapItems_SpawnsTileItemsOnTheirAuthoredLayer()
     {
         var (world, _, items, _) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
-        world.Items[Armor].Type = ItemType.Armor;
+        world.Items[Sword].Type = ItemType.Equipment;
+        world.Items[Armor].Type = ItemType.Equipment;
 
         world.Maps[Map].EditTile(4, 5, t => t with { Type = TileType.Item, ItemNum = Armor, ItemQuantity = 1, FringeAttr = new FringeAttr { Type = TileType.Item, ItemNum = Sword, ItemQuantity = 1 } });
 
@@ -247,8 +247,8 @@ public class ItemSystemStateTests
     public void CheckItemRespawn_RespawnsOnlyTheLayerWhoseTimerIsArmed()
     {
         var (world, _, items, _) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
-        world.Items[Armor].Type = ItemType.Armor;
+        world.Items[Sword].Type = ItemType.Equipment;
+        world.Items[Armor].Type = ItemType.Equipment;
         world.Maps[Map].EditTile(4, 5, t => t with { Type = TileType.Item, ItemNum = Armor, ItemQuantity = 1, FringeAttr = new FringeAttr { Type = TileType.Item, ItemNum = Sword, ItemQuantity = 1 } });
 
         items.SpawnMapItems(Map);
@@ -272,7 +272,7 @@ public class ItemSystemStateTests
     public void PlayerMapDropItem_AtCap_Refused()
     {
         var (world, _, items, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;   // tradeable (NonTradeable defaults false)
+        world.Items[Sword].Type = ItemType.Equipment;   // tradeable (NonTradeable defaults false)
         p.Inv[1].Num = Sword;
 
         var list = world.MapItems[Map];
@@ -331,7 +331,7 @@ public class ItemSystemStateTests
     public void PlayerMapDropItem_DestroyOnDrop_NonCurrency_DestroysSlot_NoGroundDrop()
     {
         var (world, _, items, p) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         world.Items[Sword].DestroyOnDrop = true;
         p.Inv[1].Num = Sword;
         p.Inv[1].Dur = 50;

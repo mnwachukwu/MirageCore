@@ -41,10 +41,8 @@ public sealed partial class ClientPacketHandler : IClientEvents
     {
         if (!SlotValidation.IsValidPlayerSlot(p.Index)) return;
         var player = _state.Players[p.Index];
-        player.ArmorSlot = p.Armor;
-        player.WeaponSlot = p.Weapon;
-        player.HelmetSlot = p.Helmet;
-        player.ShieldSlot = p.Shield;
+        player.Equipped.Clear();
+        foreach (var entry in p.Worn) player.SetEquipped(entry.Slot, entry.InvSlot);
     }
 
     // The action bar, wholesale — sent at join and re-sent after every accepted edit, so the client never

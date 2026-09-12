@@ -356,10 +356,11 @@ public sealed class ShopPanel : IGamePanel
         var me = state.Me;
         if (me is null) return 0;
         var h = new HashCode();
-        h.Add(me.WeaponSlot);
-        h.Add(me.ArmorSlot);
-        h.Add(me.HelmetSlot);
-        h.Add(me.ShieldSlot);
+        foreach (var (key, invSlot) in me.Equipped.OrderBy(kv => kv.Key, StringComparer.Ordinal))
+        {
+            h.Add(key);
+            h.Add(invSlot);
+        }
         for (int i = 1; i <= Constants.MaxInv; i++)
         {
             var slot = me.Inv?[i];
@@ -414,8 +415,7 @@ public sealed class ShopPanel : IGamePanel
             if (slot is null || slot.Num <= 0 || slot.Num > state.Limits.Items) continue;
             var item = state.Items[slot.Num];
             if (item is null || item.NonJunkable) continue;
-            if (me is not null && (me.WeaponSlot == i || me.ArmorSlot == i || me.HelmetSlot == i || me.ShieldSlot == i))
-                continue;
+            if (me?.IsEquipped(i) == true) continue;
 
             int offer = EconomyFormulas.ItemSellValue(item, slot.Dur);
             if (item.Type == ItemType.Currency) offer *= Math.Max(slot.Quantity, 1);
@@ -445,11 +445,8 @@ public sealed class ShopPanel : IGamePanel
             if (slot is null || slot.Num <= 0 || slot.Num > state.Limits.Items) continue;
             var item = state.Items[slot.Num];
             if (item is null) continue;
-            if (item.Type is not (ItemType.Weapon or ItemType.Armor or ItemType.Helmet or ItemType.Shield))
-                continue;
-            bool equipped = state.Me != null &&
-                (state.Me.WeaponSlot == i || state.Me.ArmorSlot == i ||
-                 state.Me.HelmetSlot == i || state.Me.ShieldSlot == i);
+            if (!ItemRecord.IsEquipment(item.Type)) continue;
+            bool equipped = state.Me?.IsEquipped(i) == true;
             bool broken = !equipped && item.Durability > 0 && slot.Dur <= 0;
             string name = item.Name?.Trim() ?? "?";
             // No slot index prefix here — the inventory position is irrelevant when picking an item to repair

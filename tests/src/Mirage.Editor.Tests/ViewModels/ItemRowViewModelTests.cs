@@ -15,7 +15,7 @@ public class ItemRowViewModelTests
 {
     static ItemRecord Sword() => new()
     {
-        Name = "Rusty Sword", Pic = 12, Type = ItemType.Weapon, Durability = 100, Power = 8,
+        Name = "Rusty Sword", Pic = 12, Type = ItemType.Equipment, Durability = 100, Power = 8,
     };
 
     static ItemRowViewModel Row(ItemType type) => new(1, new ItemRecord { Type = type });
@@ -29,7 +29,7 @@ public class ItemRowViewModelTests
         {
             Assert.That(r.Name, Is.EqualTo("Rusty Sword"));
             Assert.That(r.Pic, Is.EqualTo((short)12));
-            Assert.That(r.Type, Is.EqualTo(ItemType.Weapon));
+            Assert.That(r.Type, Is.EqualTo(ItemType.Equipment));
             Assert.That(r.Durability, Is.EqualTo((short)100));
             Assert.That(r.Power, Is.EqualTo((short)8));
             Assert.That(vm.IsDirty, Is.False, "a freshly loaded row is not dirty");
@@ -61,12 +61,12 @@ public class ItemRowViewModelTests
         var vm = new ItemRowViewModel(3, Sword());
         vm.Name = "Edited";   // now dirty
 
-        vm.LoadFromRecord(new ItemRecord { Name = "Shield", Type = ItemType.Shield, Durability = 50 });
+        vm.LoadFromRecord(new ItemRecord { Name = "Shield", Type = ItemType.Equipment, Durability = 50 });
 
         Assert.Multiple(() =>
         {
             Assert.That(vm.IsDirty, Is.False, "a load is not an edit");
-            Assert.That(vm.ToRecord().Type, Is.EqualTo(ItemType.Shield));
+            Assert.That(vm.ToRecord().Type, Is.EqualTo(ItemType.Equipment));
             Assert.That(vm.ToRecord().Durability, Is.EqualTo((short)50));
         });
     }
@@ -97,7 +97,7 @@ public class ItemRowViewModelTests
     {
         Assert.Multiple(() =>
         {
-            var weapon = Row(ItemType.Weapon);
+            var weapon = Row(ItemType.Equipment);
             Assert.That(weapon.DurabilityVisible, Is.True);
             Assert.That(weapon.PowerVisible, Is.True);
             Assert.That(weapon.VitalAmountVisible, Is.False);
@@ -145,7 +145,7 @@ public class ItemRowViewModelTests
         vm.Type = ItemType.Consumable;
 
         vm.ToRecord();
-        vm.Type = ItemType.Weapon;
+        vm.Type = ItemType.Equipment;
 
         Assert.Multiple(() =>
         {

@@ -23,12 +23,13 @@ public sealed class CoreRegistry
     public static CoreRegistry CoreOnly { get; } = Build();
 
     internal CoreRegistry(RecordSchema schema, AttributeSchema attributes, PacketRegistry packets,
-                         TickSchedule tick, IReadOnlyList<string> moduleNames)
+                         TickSchedule tick, EquipSlotSet equipSlots, IReadOnlyList<string> moduleNames)
     {
         Schema = schema;
         Attributes = attributes;
         Packets = packets;
         Tick = tick;
+        EquipSlots = equipSlots;
         ModuleNames = moduleNames;
     }
 
@@ -44,6 +45,9 @@ public sealed class CoreRegistry
 
     /// <summary>The ordered work the game loop drives.</summary>
     public TickSchedule Tick { get; }
+
+    /// <summary>Where a character may wear something. Empty until a game says otherwise.</summary>
+    public EquipSlotSet EquipSlots { get; }
 
     /// <summary>The modules that were loaded, in the order they were configured, Core first.</summary>
     public IReadOnlyList<string> ModuleNames { get; }
@@ -134,6 +138,7 @@ internal sealed class CoreBuilder : ICoreBuilder
     private readonly List<RecordFamily> _families = [];
     private readonly List<ChoiceSet> _choices = [];
     private readonly TickSchedule.Builder _tick = new();
+    private readonly List<EquipSlot> _equipSlots = [];
     private string _module = "(none)";
     private bool _frozen;
 
@@ -181,6 +186,23 @@ internal sealed class CoreBuilder : ICoreBuilder
         _choices.Add(choices);
     }
 
+    public void AddEquipSlot(EquipSlot slot)
+    {
+        ArgumentNullException.ThrowIfNull(slot);
+        Refuse();
+
+        if (string.IsNullOrWhiteSpace(slot.Key))
+            throw new CoreModuleException($"Module '{_module}' declared an equipment slot with no key.", _module);
+
+        if (_equipSlots.Any(s => string.Equals(s.Key, slot.Key, StringComparison.Ordinal)))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared equipment slot '{slot.Key}', which is already declared.", _module);
+        }
+
+        _equipSlots.Add(slot);
+    }
+
     public void AddTickWork(ITickWork work)
     {
         ArgumentNullException.ThrowIfNull(work);
@@ -194,7 +216,8 @@ internal sealed class CoreBuilder : ICoreBuilder
         _frozen = true;
 
         var schema = new RecordSchema { Families = [.. _families], ChoiceSets = [.. _choices] };
-        return new CoreRegistry(schema, Attributes.Build(), Packets.Build(), _tick.Build(), moduleNames);
+        return new CoreRegistry(schema, Attributes.Build(), Packets.Build(), _tick.Build(),
+                                new EquipSlotSet(_equipSlots), moduleNames);
     }
 
     private void Refuse()

@@ -92,7 +92,7 @@ public class TradeSystemTests
     {
         var (world, pm, trade) = Setup();
         var (a, b) = ActiveTrade(pm, trade);
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         a.Char.Inv[3].Num = Sword;
         a.Char.Inv[3].Dur = 40;
         a.TradeConfirmed = b.TradeConfirmed = true;   // pretend both had confirmed
@@ -116,7 +116,7 @@ public class TradeSystemTests
         // Server backstop for the client's trade filter: a NonTradeable item can't be staged.
         var (world, pm, trade) = Setup();
         var (a, _) = ActiveTrade(pm, trade);
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         world.Items[Sword].NonTradeable = true;   // e.g. valor / a soulbound item
         a.Char.Inv[3].Num = Sword;
 
@@ -134,8 +134,8 @@ public class TradeSystemTests
     {
         var (world, pm, trade) = Setup();
         var (a, b) = ActiveTrade(pm, trade);
-        world.Items[Sword].Type = ItemType.Weapon;
-        world.Items[Shield].Type = ItemType.Armor;
+        world.Items[Sword].Type = ItemType.Equipment;
+        world.Items[Shield].Type = ItemType.Equipment;
         a.Char.Inv[3].Num = Sword;
         b.Char.Inv[3].Num = Shield;
         trade.OfferAdd(1, 3, 0);   // Alice offers her Sword
@@ -160,7 +160,7 @@ public class TradeSystemTests
     {
         var (world, pm, trade) = Setup();
         var (a, b) = ActiveTrade(pm, trade);
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         a.Char.Inv[3].Num = Sword;
         trade.OfferAdd(1, 3, 0);
 
@@ -181,8 +181,8 @@ public class TradeSystemTests
     {
         var (world, pm, trade) = Setup();
         var (a, b) = ActiveTrade(pm, trade);
-        world.Items[Sword].Type = ItemType.Weapon;
-        world.Items[Shield].Type = ItemType.Armor;
+        world.Items[Sword].Type = ItemType.Equipment;
+        world.Items[Shield].Type = ItemType.Equipment;
         b.Char.Inv[3].Num = Shield;
         trade.OfferAdd(2, 3, 0);                                         // Bob offers his Shield (frees slot 3)
         for (int i = 1; i <= Constants.MaxInv; i++) b.Char.Inv[i].Num = Sword;   // then fill Bob's bag solid
@@ -207,7 +207,7 @@ public class TradeSystemTests
     {
         var (world, pm, trade) = Setup();
         var (a, b) = ActiveTrade(pm, trade);
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         a.Char.Inv[3].Num = Sword;
         trade.OfferAdd(1, 3, 0);
 
@@ -230,7 +230,7 @@ public class TradeSystemTests
     {
         var (world, pm, trade) = Setup();
         var (a, _) = ActiveTrade(pm, trade);
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         a.Char.Inv[3].Num = Sword;
         a.Char.Inv[3].Dur = 30;
         trade.OfferAdd(1, invSlot: 3, amount: 0);   // escrowed off the bag into Char.TradeOffer
@@ -255,7 +255,7 @@ public class TradeSystemTests
     public void RecoverEscrowOnLogin_ReturnsPersistedEscrow_ToBag()
     {
         var (world, pm, trade) = Setup();
-        world.Items[Sword].Type = ItemType.Weapon;
+        world.Items[Sword].Type = ItemType.Equipment;
         var a = AtPos(pm, 1, "Alice", 5, 5);
         a.Char.TradeOffer.Add(new PlayerInvSlot { Num = Sword, Quantity = 1, Dur = 25 });   // as loaded from disk post-crash
 
@@ -283,8 +283,8 @@ public class TradeSystemTests
         {
             var persistence = new JsonPersistenceService(dir, dir, NullLogger<JsonPersistenceService>.Instance, new NoOpChatLog());
             var world = new GameWorld();
-            world.Items[Sword].Type = ItemType.Weapon;
-            world.Items[Shield].Type = ItemType.Armor;
+            world.Items[Sword].Type = ItemType.Equipment;
+            world.Items[Shield].Type = ItemType.Equipment;
             var pm = new PlayerManager();
             var dispatcher = new NoOpDispatcher();
             var items = new ItemSystem(world, pm, dispatcher, persistence: null!, bg: null!);

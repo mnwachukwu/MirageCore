@@ -71,6 +71,15 @@ public sealed class ItemRecord
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public short Tier { get; set; }
 
+    /// <summary>Which equipment slot this is worn in, by the key a game declared.
+    ///
+    /// <para>Blank on anything that is not <see cref="ItemType.Equipment"/>, and blank is also what an
+    /// equippable item looks like before an author has said where it goes — it simply cannot be worn
+    /// until they do. A key the loaded game does not declare behaves the same way, which is what stops a
+    /// world authored against another game's slots from being unopenable.</para></summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string EquipSlot { get; set; } = string.Empty;
+
     /// <summary>Item restriction flags. Each blocks exactly one action; banking is always allowed.
     /// Absent = false, so existing item data is unaffected. All five are enforced server-side:
     /// <see cref="NonTradeable"/> in TradeSystem, <see cref="NonListable"/> in MarketSystem,
@@ -124,8 +133,7 @@ public sealed class ItemRecord
     // values — invisible in the editor (which hides them) but live in the file and in every packet.
 
     /// <summary>The four wearable types, which alone carry durability, power and a class requirement.</summary>
-    public static bool IsEquipment(ItemType type) =>
-        type is ItemType.Weapon or ItemType.Armor or ItemType.Helmet or ItemType.Shield;
+    public static bool IsEquipment(ItemType type) => type is ItemType.Equipment;
 
     /// <summary>Whether this type is used up rather than worn or carried.</summary>
     public static bool IsConsumable(ItemType type) => type is ItemType.Consumable;
@@ -134,12 +142,9 @@ public sealed class ItemRecord
     public static bool UsesPower(ItemType type) => IsEquipment(type);
     public static bool UsesVitalAmount(ItemType type) => IsConsumable(type);
 
-    /// <summary>What a character wears or drinks carries a tier: the wearables and the potions.
-    /// <para>A SCROLL does not. Its tier lives on the SPELL it teaches, so one on the paper would be a
-    /// second number nothing reads. Currency and keys carry none either: gold is not something you qualify
-    /// for, and a key that refuses its own door is a puzzle nobody asked for.</para></summary>
+    /// <summary>What a character wears or consumes carries a tier; currency and keys carry none. Gold is
+    /// not something you qualify for, and a key that refuses its own door is a puzzle nobody asked for.</summary>
     public static bool UsesTier(ItemType type) => IsEquipment(type) || IsConsumable(type);
-
 
     /// <summary>Zero every field that does not apply to the current <see cref="Type"/>, so the record
     /// carries only properties it actually has. Call on any path that writes an item — the editor's save
@@ -151,6 +156,7 @@ public sealed class ItemRecord
     {
         if (!UsesDurability(Type)) Durability = 0;
         if (!UsesVitalAmount(Type)) VitalAmount = 0;
+        if (!IsEquipment(Type)) EquipSlot = string.Empty;
         if (!UsesPower(Type)) Power = 0;
         if (!UsesTier(Type)) Tier = 0;
     }

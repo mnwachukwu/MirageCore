@@ -8,7 +8,7 @@ namespace Mirage.Client.Shell.Logic;
 public static class InventoryQuery
 {
     /// <summary>How many inventory slots hold item <paramref name="itemNum"/> — the max for a bulk drop/deposit
-    /// prompt. When <paramref name="skipEquipped"/> is set, the four equipped slots don't count.</summary>
+    /// prompt. When <paramref name="skipEquipped"/> is set, worn slots don't count.</summary>
     public static int CountInvSlotsMatching(ClientState state, int itemNum, bool skipEquipped)
     {
         var me = state.Me;
@@ -18,7 +18,7 @@ public static class InventoryQuery
         {
             var s = me.Inv[i];
             if (s is null || s.Num != itemNum) continue;
-            if (skipEquipped && (me.WeaponSlot == i || me.ArmorSlot == i || me.HelmetSlot == i || me.ShieldSlot == i)) continue;
+            if (skipEquipped && me.IsEquipped(i)) continue;
             count++;
         }
         return count;
@@ -56,7 +56,7 @@ public static class InventoryQuery
         {
             var s = me.Inv[i];
             if (s is null || s.Num != from.Num || s.Dur != from.Dur) continue;
-            if (i != invSlot && (me.WeaponSlot == i || me.ArmorSlot == i || me.HelmetSlot == i || me.ShieldSlot == i)) continue;
+            if (i != invSlot && me.IsEquipped(i)) continue;
             count++;
         }
         return count;

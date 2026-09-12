@@ -11,6 +11,22 @@ public static partial class PacketBuilder
 {
     // ── Account ──────────────────────────────────────────────────────────────
 
+    /// <summary>Where a character may wear something in this game, in display order.</summary>
+    public static EquipSlotsPacket EquipSlots(Extensibility.EquipSlotSet slots) =>
+        new()
+        {
+            Slots = [.. slots.Slots.Select(s => new EquipSlotsPacket.Row(s.Key, s.LabelKey, s.Ordinal))],
+        };
+
+    /// <summary>What a character is wearing. Only the occupied slots travel — a slot missing from the
+    /// list is a slot with nothing in it, so a game with twenty slots and one worn item sends one entry.</summary>
+    public static EquippedGearPacket EquippedGear(int index, PlayerRecord p) =>
+        new()
+        {
+            Index = index,
+            Worn = [.. p.Equipped.Select(kv => new EquippedGearPacket.Entry(kv.Key, kv.Value))],
+        };
+
     public static AlertMsgPacket Alert(string message) =>
         new() { Message = message };
 
@@ -183,7 +199,7 @@ public static partial class PacketBuilder
                 x.num, x.item.Name, x.item.Pic, x.item.Type,
                 x.item.Durability, x.item.VitalAmount, x.item.Power, x.item.Tier,
                 x.item.NonTradeable, x.item.NonListable, x.item.NonMailable, x.item.DestroyOnDrop,
-                x.item.NonJunkable, x.item.Price, x.item.ItemSheet)).ToArray()
+                x.item.NonJunkable, x.item.Price, x.item.ItemSheet, x.item.EquipSlot)).ToArray()
         };
 
     public static UpdateItemPacket UpdateItem(int itemNum, ItemRecord item) =>
@@ -198,6 +214,7 @@ public static partial class PacketBuilder
             VitalAmount = item.VitalAmount,
             Power = item.Power,
             Tier = item.Tier,
+            EquipSlot = item.EquipSlot,
             NonTradeable = item.NonTradeable,
             NonListable = item.NonListable,
             NonMailable = item.NonMailable,

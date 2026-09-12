@@ -60,6 +60,11 @@ public sealed class WorldManifestConverter : JsonConverter<WorldManifest>
                 var sets = p.Value.Deserialize<List<ChoiceSet>>(options);
                 if (sets is not null) result = result with { ChoiceSets = sets };
             }
+            else if (p.NameEquals("equipSlots"))
+            {
+                var slots = p.Value.Deserialize<List<EquipSlot>>(options);
+                if (slots is not null) result = result with { EquipSlots = slots };
+            }
             else if (p.NameEquals("appearances"))
             {
                 var offered = p.Value.Deserialize<List<CharacterAppearance>>(options);
@@ -117,6 +122,12 @@ public sealed class WorldManifestConverter : JsonConverter<WorldManifest>
         {
             writer.WritePropertyName("choiceSets");
             JsonSerializer.Serialize(writer, value.ChoiceSets, options);
+        }
+
+        if (value.EquipSlots.Count > 0)
+        {
+            writer.WritePropertyName("equipSlots");
+            JsonSerializer.Serialize(writer, value.EquipSlots, options);
         }
 
         if (value.StartingItems.Count > 0)

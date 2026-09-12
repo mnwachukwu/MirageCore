@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Mirage.Editor.Localization;
+using Mirage.Editor.Services;
 using Mirage.Shared;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -33,6 +34,10 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
     /// <summary>Which item sheet <see cref="Pic"/> is a row of.</summary>
     [ObservableProperty] private short _itemSheet;
     [ObservableProperty] private ItemType _type;
+    /// <summary>Which equipment slot this is worn in, by the key the loaded game declared. Blank means it
+    /// cannot be worn — the right answer for anything that is not equipment, and for a piece nobody has
+    /// said where to put yet.</summary>
+    [ObservableProperty] private string _equipSlot = "";
 
     // Type-specific fields — see ItemRecord for which apply to which type.
     [ObservableProperty] private short _durability;
@@ -41,10 +46,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
     /// <summary>Where this item sits on the progression the game defines; 0 = ungated. The engine reads it
     /// only to price the item, so what a tier means is the game's to decide.</summary>
     [ObservableProperty] private short _tier;
-    /// <summary>Classes allowed to equip it; null or empty = every class. Replaced wholesale by the
-    /// class multi-select rather than mutated, so the change notification actually fires.</summary>
-    [ObservableProperty] private List<short>? _allowedClasses;
-
     // Item restriction flags; each blocks exactly one action, enforced server-side.
     [ObservableProperty] private bool _nonTradeable;
     [ObservableProperty] private bool _nonListable;
@@ -80,6 +81,7 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
         _vitalAmount = r.VitalAmount;
         _power = r.Power;
         _tier = r.Tier;
+        _equipSlot = r.EquipSlot;
         _nonTradeable = r.NonTradeable;
         _nonListable = r.NonListable;
         _nonMailable = r.NonMailable;
@@ -122,6 +124,14 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
         OnPropertyChanged(nameof(VitalAmountVisible));
         OnPropertyChanged(nameof(PowerVisible));
         OnPropertyChanged(nameof(TierVisible));
+        OnPropertyChanged(nameof(EquipSlotVisible));
+        OnPropertyChanged(nameof(SelectedEquipSlot));
+    }
+
+    partial void OnEquipSlotChanged(string value)
+    {
+        MarkDirty();
+        OnPropertyChanged(nameof(SelectedEquipSlot));
     }
 
     private void MarkDirty()
@@ -166,6 +176,7 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             VitalAmount = r.VitalAmount;
             Power = r.Power;
             Tier = r.Tier;
+            EquipSlot = r.EquipSlot;
             NonTradeable = r.NonTradeable;
             NonListable = r.NonListable;
             NonMailable = r.NonMailable;
@@ -197,6 +208,7 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             VitalAmount = pkt.VitalAmount;
             Power = pkt.Power;
             Tier = pkt.Tier;
+            EquipSlot = pkt.EquipSlot;
             NonTradeable = pkt.NonTradeable;
             NonListable = pkt.NonListable;
             NonMailable = pkt.NonMailable;
@@ -230,6 +242,7 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             VitalAmount = VitalAmount,
             Power = Power,
             Tier = Tier,
+            EquipSlot = EquipSlot,
             NonTradeable = NonTradeable,
             NonListable = NonListable,
             NonMailable = NonMailable,
@@ -258,6 +271,7 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             VitalAmount = r.VitalAmount,
             Power = r.Power,
             Tier = r.Tier,
+            EquipSlot = r.EquipSlot,
             NonTradeable = r.NonTradeable,
             NonListable = r.NonListable,
             NonMailable = r.NonMailable,
@@ -277,12 +291,36 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
     /// <summary>Form caption for <see cref="Power"/> — the one field whose name understates it. It is
     /// damage on a weapon and defense on the three defensive pieces, so the form says which, even though
     /// the same number also gates equipping and prices repairs in every case.</summary>
-    public string PowerLabel => Type switch
+    public string PowerLabel => EditorStrings.Get(EditorStrings.DataLabel_Power);
+
+    /// <summary>The slots this world offers, as the picker shows them. Read from the world rather than a
+    /// compile-time list, so an editor opened against another game offers that game's slots. The blank
+    /// first entry is how an author says a piece is not worn anywhere.</summary>
+    public IReadOnlyList<EquipSlotOption> EquipSlotOptions =>
+        [new EquipSlotOption("", EditorStrings.Get(EditorStrings.DataLabel_EquipSlotNone)),
+         .. WorldEquipSlots.All.Select(s => new EquipSlotOption(s.Key, EditorStrings.GetOrFallback(s.LabelKey, s.Key)))];
+
+    /// <summary>One row of <see cref="EquipSlotOptions"/>: the key that is saved, and the caption shown.</summary>
+    public readonly record struct EquipSlotOption(string Key, string Label);
+
+    /// <summary>The picker's selection, as the option object rather than the key.
+    ///
+    /// <para><b>Bound by item, not by value.</b> A ComboBox handed a value before its list has resolved
+    /// finds no match, shows blank, and writes that blank back — which would quietly clear the slot of
+    /// every piece an author merely looked at.</para></summary>
+    public EquipSlotOption SelectedEquipSlot
     {
-        ItemType.Weapon => EditorStrings.Get(EditorStrings.DataLabel_Damage),
-        ItemType.Armor or ItemType.Helmet or ItemType.Shield => EditorStrings.Get(EditorStrings.DataLabel_Defense),
-        _ => EditorStrings.Get(EditorStrings.DataLabel_Power),
-    };
+        get
+        {
+            var options = EquipSlotOptions;
+            foreach (var option in options)
+            {
+                if (string.Equals(option.Key, EquipSlot, StringComparison.Ordinal)) return option;
+            }
+            return options[0];
+        }
+        set => EquipSlot = value.Key;
+    }
 
     // ── Visibility ────────────────────────────────────────────────────────────
     // All five defer to ItemRecord, the same rules Normalize clears by — so a field the form hides is
@@ -295,4 +333,5 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
     public bool VitalAmountVisible => ItemRecord.UsesVitalAmount(Type);
     public bool PowerVisible => ItemRecord.UsesPower(Type);
     public bool TierVisible => ItemRecord.UsesTier(Type);
+    public bool EquipSlotVisible => ItemRecord.IsEquipment(Type);
 }

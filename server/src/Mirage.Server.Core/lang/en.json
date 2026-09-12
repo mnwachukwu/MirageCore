@@ -244,6 +244,7 @@
   "ItemSystem_ItemDestroyed": "Your {Item} was destroyed.",
   "ItemSystem_CurrencyDestroyed": "You destroyed {Amount} {Item}.",
   "ItemSystem_ItemBroken": "Your {Item} is broken and must be repaired before you can equip it.",
+  "ItemSystem_CannotWear": "Your {Item} cannot be worn.",
   "ItemSystem_GearSwapCombat": "You cannot swap gear in the heat of battle!",
   "ItemSystem_KeyDissolves": "The key dissolves.",
   "MovementSystem_EnterSafeBase": "You are entering a safe zone.",

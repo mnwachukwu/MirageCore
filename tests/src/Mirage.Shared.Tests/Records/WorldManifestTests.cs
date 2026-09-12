@@ -83,6 +83,8 @@ public class WorldManifestTests
             Assert.That(back.Families.Single().Id, Is.EqualTo("Species"));
             Assert.That(back.Families.Single().DefaultLimit, Is.EqualTo(386));
             Assert.That(back.ChoiceSets.Single().Find("fire"), Is.Not.Null);
+            Assert.That(back.EquipSlots.Single().Key, Is.EqualTo("paw"));
+            Assert.That(back.EquipSlots.Single().Ordinal, Is.EqualTo(2));
         });
     }
 
@@ -129,6 +131,7 @@ public class WorldManifestTests
         DecalColor = 0x1A3C0B,
         Families = [new RecordFamily { Id = "Species", Directory = "species", DefaultLimit = 386 }],
         ChoiceSets = [new ChoiceSet { Id = "types", Members = [new KindDescriptor { Id = "fire" }] }],
+        EquipSlots = [new EquipSlot { Key = "paw", LabelKey = "Demo_Slot_Paw", Ordinal = 2 }],
     };
 
     /// <summary>An absent key has to mean what an absent FILE means, or a partial manifest would answer

@@ -68,20 +68,19 @@ public enum ItemType : byte
     /// rather than derived.</summary>
     None = 0,
 
-    Weapon = 1,
-    Armor = 2,
-    Helmet = 3,
-    Shield = 4,
+    /// <summary>Something worn, in the slot named by <see cref="Records.ItemRecord.EquipSlot"/>. WHICH
+    /// slots exist is a game's decision; the engine only knows one thing goes in each.</summary>
+    Equipment = 1,
 
     /// <summary>Something used up. Core paces it on its own clock and knows nothing else about it — what
     /// using one DOES is a game's rule, supplied by the module that declares the effect.</summary>
-    Consumable = 5,
+    Consumable = 2,
 
     /// <summary>Opens a Door tile that names this item.</summary>
-    Key = 6,
+    Key = 3,
 
     /// <summary>Counted rather than carried one per slot; gold is the stock example.</summary>
-    Currency = 7,
+    Currency = 4,
 }
 
 /// <summary>What an NPC does with its time. Each member drives one distinct part of the AI, and none

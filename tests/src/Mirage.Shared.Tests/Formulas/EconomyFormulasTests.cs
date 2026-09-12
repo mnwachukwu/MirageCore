@@ -71,19 +71,17 @@ public class EconomyFormulasTests
     // ── Item pricing ─────────────────────────────────────────────────────────
 
     [Test]
-    public void ItemValue_AFullKitIsAboutATenthOfItsRung()
+    public void ItemValue_OnePieceIsAboutAFortiethOfItsRung()
     {
-        // "Gear is cheap; sinks bite" — four slots at 2.5% of the rung each. Checked at every gear tier so
-        // the share cannot hold at one band and drift at another.
+        // "Gear is cheap; sinks bite" — 2.5% of the rung per piece, which at the four slots this figure was
+        // chosen against puts a full kit at a tenth. How many slots a game has is the game's, so the share
+        // checked here is the per-piece one. Every gear tier, so it cannot hold at one band and drift at another.
         foreach (short tier in new short[] { 1, 5, 10, 15, 20, 100, 110, 120, 235, 245, 255 })
         {
             long rung = EconomyFormulas.ExpectedGoldForRung(tier);
             short power = (short)EconomyFormulas.ReferencePower(tier);
-            long kit = EconomyFormulas.ItemValue(Gear(ItemType.Weapon, power, tier))
-                     + EconomyFormulas.ItemValue(Gear(ItemType.Armor, power, tier))
-                     + EconomyFormulas.ItemValue(Gear(ItemType.Helmet, power, tier))
-                     + EconomyFormulas.ItemValue(Gear(ItemType.Shield, power, tier));
-            Assert.That(100.0 * kit / rung, Is.EqualTo(10.0).Within(1.0), $"tier {tier}");
+            long piece = EconomyFormulas.ItemValue(Gear(ItemType.Equipment, power, tier));
+            Assert.That(100.0 * piece / rung, Is.EqualTo(2.5).Within(0.25), $"tier {tier}");
         }
     }
 
@@ -94,9 +92,9 @@ public class EconomyFormulasTests
         const short tier = 100;
         short medium = (short)EconomyFormulas.ReferencePower(tier);
         short light = (short)(medium * 0.75), heavy = (short)(medium * 1.25);
-        int lightValue = EconomyFormulas.ItemValue(Gear(ItemType.Armor, light, tier));
-        int mediumValue = EconomyFormulas.ItemValue(Gear(ItemType.Armor, medium, tier));
-        int heavyValue = EconomyFormulas.ItemValue(Gear(ItemType.Armor, heavy, tier));
+        int lightValue = EconomyFormulas.ItemValue(Gear(ItemType.Equipment, light, tier));
+        int mediumValue = EconomyFormulas.ItemValue(Gear(ItemType.Equipment, medium, tier));
+        int heavyValue = EconomyFormulas.ItemValue(Gear(ItemType.Equipment, heavy, tier));
         Assert.That(lightValue, Is.LessThan(mediumValue));
         Assert.That(heavyValue, Is.GreaterThan(mediumValue));
         Assert.That((double)heavyValue / mediumValue, Is.EqualTo(1.25).Within(0.02));
@@ -114,7 +112,7 @@ public class EconomyFormulasTests
     [Test]
     public void ItemSellValue_IsTheConfiguredFractionOfValue()
     {
-        var item = Gear(ItemType.Weapon, 200, 120);
+        var item = Gear(ItemType.Equipment, 200, 120);
         Assert.That(EconomyFormulas.ItemSellValue(item, item.Durability),
             Is.EqualTo(EconomyFormulas.ItemValue(item) * EconomyFormulas.SellBackPercent / 100).Within(1));
         Assert.That(EconomyFormulas.ItemSellValue(new ItemRecord { Type = ItemType.Currency }, 0), Is.Zero);
@@ -125,7 +123,7 @@ public class EconomyFormulasTests
     {
         // A shop pays for what it actually receives. Without this, a player wears a piece to nothing and
         // still vendors it at the pristine rate, handing the shop a repair bill it never charged for.
-        var item = Gear(ItemType.Weapon, 200, 120, durability: 100);
+        var item = Gear(ItemType.Equipment, 200, 120, durability: 100);
         int pristine = EconomyFormulas.ItemSellValue(item, 100);
 
         Assert.Multiple(() =>
@@ -155,7 +153,7 @@ public class EconomyFormulasTests
         // Quoted against RepairGoldPerPoint rather than a literal: the divisor is a tuning knob, and this
         // test is about the SHAPE — linear in points, floored, clamped at a full repair. Pinning the
         // literal would only prove the knob had not moved.
-        var item = Gear(ItemType.Weapon, power: 200, tier: 120, durability: 100);
+        var item = Gear(ItemType.Equipment, power: 200, tier: 120, durability: 100);
         int full = (int)Math.Round(100 * EconomyFormulas.RepairGoldPerPoint(200), MidpointRounding.AwayFromZero);
         Assert.That(EconomyFormulas.RepairCost(100, item), Is.EqualTo(full), "100 points at the Power rate");
         Assert.That(EconomyFormulas.RepairCost(50, item), Is.EqualTo(full / 2), "pro-rata");
@@ -168,7 +166,7 @@ public class EconomyFormulasTests
     {
         // A tier-1 shield carries 100 durability and costs about 11 gold. The raw Power rate would charge
         // 60 to restore something replaceable for 11 — so the cap has to engage here, and only here.
-        var cheap = Gear(ItemType.Shield, (short)EconomyFormulas.ReferencePower(1), tier: 1, durability: 100);
+        var cheap = Gear(ItemType.Equipment, (short)EconomyFormulas.ReferencePower(1), tier: 1, durability: 100);
         int price = EconomyFormulas.ItemValue(cheap);
         int full = EconomyFormulas.RepairCost(100, cheap);
         Assert.That(full, Is.LessThan(price), "the cap must bite before repair beats replacement");
@@ -184,7 +182,7 @@ public class EconomyFormulasTests
         // guard on doing the division exactly instead.
         foreach (short tier in new short[] { 1, 20, 100, 120, 235, 255 })
         {
-            var item = Gear(ItemType.Weapon, (short)EconomyFormulas.ReferencePower(tier), tier, durability: 100);
+            var item = Gear(ItemType.Equipment, (short)EconomyFormulas.ReferencePower(tier), tier, durability: 100);
             int full = EconomyFormulas.RepairCost(100, item);
             foreach (long purse in new[] { 0L, 1L, full / 3, full / 2, full - 1, full, full * 2 })
             {
@@ -214,7 +212,7 @@ public class EconomyFormulasTests
         foreach (short tier in new short[] { 1, 5, 10, 15, 20, 100, 120, 235, 255 })
             foreach (short dur in new short[] { 20, 50, 100, 200, 500, 1_000, 2_000 })
             {
-                var item = Gear(ItemType.Weapon, (short)EconomyFormulas.ReferencePower(tier), tier, dur);
+                var item = Gear(ItemType.Equipment, (short)EconomyFormulas.ReferencePower(tier), tier, dur);
                 int price = EconomyFormulas.ItemValue(item);
                 int fullRepair = EconomyFormulas.RepairCost(item.Durability, item);
                 Assert.That(fullRepair, Is.LessThan(price),

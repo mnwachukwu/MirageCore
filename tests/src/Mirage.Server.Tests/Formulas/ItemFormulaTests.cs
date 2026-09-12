@@ -1,5 +1,6 @@
 using Mirage.Server.Core.GameLogic;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Records;
 using NUnit.Framework;
 using System.Reflection;
@@ -9,8 +10,8 @@ namespace Mirage.Server.Tests.Formulas;
 /// <summary>Pure inventory helpers on <see cref="ItemSystem"/> — no world/dispatcher needed. Locks the two
 /// rules everything else builds on: currency STACKS onto an existing slot while gear takes the first empty
 /// slot (<see cref="ItemSystem.FindOpenInvSlot"/>), and the canonical item ordering shared by the inventory
-/// and bank sorts (<c>SortKey</c>): Gold, other currency, equipped gear, unequipped gear (strongest first),
-/// keys, scrolls, Add then Sub potions.</summary>
+/// and bank sorts (<c>SortKey</c>): gold, other currency, worn equipment, unworn equipment (strongest
+/// first), keys, then consumables.</summary>
 [TestFixture]
 public class ItemFormulaTests
 {
@@ -26,10 +27,14 @@ public class ItemFormulaTests
         for (int i = 0; i <= RecordLimits.Default.Items; i++) items[i] = new ItemRecord();
         items[Gold].Type = ItemType.Currency;
         items[Cur].Type = ItemType.Currency;
-        items[Wep].Type = ItemType.Weapon;
-        items[Arm].Type = ItemType.Armor;
-        items[Hlm].Type = ItemType.Helmet;
-        items[Shd].Type = ItemType.Shield;
+        items[Wep].Type = ItemType.Equipment;
+        items[Wep].EquipSlot = "hand";
+        items[Arm].Type = ItemType.Equipment;
+        items[Arm].EquipSlot = "body";
+        items[Hlm].Type = ItemType.Equipment;
+        items[Hlm].EquipSlot = "head";
+        items[Shd].Type = ItemType.Equipment;
+        items[Shd].EquipSlot = "offhand";
         items[Key].Type = ItemType.Key;
         items[PAdHp].Type = ItemType.Consumable;
         items[PAdMp].Type = ItemType.Consumable;
@@ -133,8 +138,18 @@ public class ItemFormulaTests
     static readonly MethodInfo SortKeyMethod =
         typeof(ItemSystem).GetMethod("SortKey", BindingFlags.NonPublic | BindingFlags.Static)!;
 
+    // The declared slots the fixture's equipment names, in the order a game put them in. The sub-order
+    // inside both equipment categories is read from THIS, not from the item's type.
+    static readonly EquipSlotSet Slots = new(
+    [
+        new EquipSlot { Key = "hand", Ordinal = 0 },
+        new EquipSlot { Key = "body", Ordinal = 1 },
+        new EquipSlot { Key = "head", Ordinal = 2 },
+        new EquipSlot { Key = "offhand", Ordinal = 3 },
+    ]);
+
     static (int Cat, int Sub, int Mag) SortKey(int itemNum, ItemRecord item, bool equipped)
-        => ((int, int, int))SortKeyMethod.Invoke(null, new object[] { itemNum, item, equipped })!;
+        => ((int, int, int))SortKeyMethod.Invoke(null, new object[] { itemNum, item, Slots, equipped })!;
 
     [Test]
     public void SortKey_Gold_PinsAboveEverything()
@@ -150,9 +165,9 @@ public class ItemFormulaTests
         Assert.That(SortKey(Cur, items[Cur], equipped: false), Is.EqualTo((1, 0, 0)));
     }
 
-    // Equipped gear is category 2 (leads the bag below currency), ordered Weapon/Armor/Helmet/Shield.
+    // Worn equipment is category 2 (leads the bag below currency), in the game's declared slot order.
     [Test]
-    public void SortKey_EquippedGear_Category2_InTypeOrder()
+    public void SortKey_WornEquipment_Category2_InDeclaredSlotOrder()
     {
         var items = BuildItems();
         Assert.Multiple(() =>
@@ -164,10 +179,10 @@ public class ItemFormulaTests
         });
     }
 
-    // Unequipped gear is category 3; magnitude carries the item's Power so the OrderByDescending
+    // Unworn equipment is category 3; magnitude carries the item's Power so the OrderByDescending
     // in the sort surfaces the strongest piece first.
     [Test]
-    public void SortKey_UnequippedGear_Category3_CarriesPowerMagnitude()
+    public void SortKey_UnwornEquipment_Category3_CarriesPowerMagnitude()
     {
         var items = BuildItems();
         items[Wep].Power =50;
@@ -181,6 +196,17 @@ public class ItemFormulaTests
             Assert.That(SortKey(Hlm, items[Hlm], equipped: false), Is.EqualTo((3, 2, 20)));
             Assert.That(SortKey(Shd, items[Shd], equipped: false), Is.EqualTo((3, 3, 10)));
         });
+    }
+
+    // A piece naming a slot this world does not declare is still equipment; it sorts after every piece
+    // that names a real one rather than falling into another category.
+    [Test]
+    public void SortKey_EquipmentNamingAnUndeclaredSlot_SortsLastAmongEquipment()
+    {
+        var items = BuildItems();
+        items[Wep].EquipSlot = "saddle";
+
+        Assert.That(SortKey(Wep, items[Wep], equipped: false).Sub, Is.EqualTo(int.MaxValue));
     }
 
     [Test]
@@ -210,7 +236,7 @@ public class ItemFormulaTests
     }
 
     // The whole point of the key: category order is strictly increasing across the tiers, so a sort by
-    // (Cat, Sub, -Mag) yields Gold < currency < equipped < unequipped gear < keys < scrolls < add < sub.
+    // (Cat, Sub, -Mag) yields gold < currency < worn < unworn equipment < keys < consumables.
     [Test]
     public void SortKey_CategoriesAreStrictlyOrdered()
     {
@@ -228,3 +254,4 @@ public class ItemFormulaTests
         Assert.That(key, Is.LessThan(consumable));
     }
 }
+

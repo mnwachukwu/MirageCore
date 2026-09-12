@@ -142,7 +142,19 @@
                            Minimum="0" Maximum="9999" FormatString="0"/>
           </mui:FormRow>
 
-          <!-- Power (damage / defense): equipment only -->
+          <!-- Which slot a piece is worn in. The list is the loaded game's, so an editor opened against
+               another game offers that game's slots and nothing here names one. -->
+          <mui:FormRow LabelWidth="120"
+                IsVisible="{Binding SelectedItem.EquipSlotVisible}">
+            <TextBlock x:Name="_equipSlotLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox  Grid.Column="1"
+                       ItemsSource="{Binding SelectedItem.EquipSlotOptions}"
+                       SelectedItem="{Binding SelectedItem.SelectedEquipSlot}"
+                       DisplayMemberBinding="{Binding Label}"
+                       HorizontalAlignment="Stretch" />
+          </mui:FormRow>
+
+          <!-- Power: equipment only -->
           <mui:FormRow LabelWidth="120"
                 IsVisible="{Binding SelectedItem.PowerVisible}">
             <TextBlock Grid.Column="0"
@@ -206,14 +218,7 @@
               <StackPanel Margin="8,0,0,0" Spacing="3">
                 <TextBlock x:Name="_notesEquipmentDurability" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
                 <TextBlock x:Name="_notesEquipmentPower"  TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
-                <StackPanel Margin="12,0,0,0" Spacing="2">
-                  <TextBlock x:Name="_notesEquipmentWeapon" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
-                  <TextBlock x:Name="_notesEquipmentArmor"  TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
-                  <TextBlock x:Name="_notesEquipmentHelmet" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
-                  <TextBlock x:Name="_notesEquipmentShield" TextWrapping="Wrap" Foreground="{DynamicResource MirageFaintBrush}" FontSize="11" FontFamily="Cascadia Code,Consolas,monospace"/>
-                </StackPanel>
-                <TextBlock x:Name="_notesEquipmentClassReq"   TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
-                <TextBlock x:Name="_notesEquipmentShieldSide" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
+                <TextBlock x:Name="_notesEquipmentSlot" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
               </StackPanel>
 
               <!-- Potions -->

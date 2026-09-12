@@ -97,6 +97,13 @@ public sealed record WorldManifest
     /// <summary>The choice sets <see cref="Families"/> draw on. Empty when none of them do.</summary>
     public IReadOnlyList<Extensibility.ChoiceSet> ChoiceSets { get; init; } = [];
 
+    /// <summary>Where a character may wear something in this world.
+    ///
+    /// <para>A record of what the world was authored against, like <see cref="Families"/>: a compiled
+    /// module is what makes a slot exist, and this is what lets an editor open the folder without having
+    /// that module. Empty for a world where nothing is worn.</para></summary>
+    public IReadOnlyList<Extensibility.EquipSlot> EquipSlots { get; init; } = [];
+
     /// <summary>This world's families as a schema, Core's first and then its own — the same shape a
     /// server reports, so a folder opened offline and a server connected to answer alike.</summary>
     [System.Text.Json.Serialization.JsonIgnore]

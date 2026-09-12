@@ -77,6 +77,15 @@ public static partial class ClientStrings
     /// <summary>Returns the localized string for <paramref name="key"/>.
     /// In DEBUG, throws on missing key so gaps are caught immediately during testing.
     /// In Release, returns a bracketed placeholder so gaps are visible in QA builds.</summary>
+    /// <summary>Looks up <paramref name="key"/>, or returns <paramref name="fallback"/> when this build
+    /// has never heard of it.
+    ///
+    /// <para>For text whose key comes from OUTSIDE the client — an equipment slot named by a module the
+    /// client was not compiled against. <see cref="Get"/> throws on an unknown key on purpose, because a
+    /// missing key for the client's OWN text is a bug; a module's key being absent is ordinary.</para></summary>
+    public static string GetOrFallback(string key, string fallback)
+        => !string.IsNullOrEmpty(key) && _current.TryGetValue(key, out var v) ? v : fallback;
+
     public static string Get(string key)
     {
         if (_current.TryGetValue(key, out var v)) return v;

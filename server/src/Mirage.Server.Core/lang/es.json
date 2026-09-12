@@ -244,6 +244,7 @@
   "ItemSystem_ItemDestroyed": "Tu {Item} fue destruido.",
   "ItemSystem_CurrencyDestroyed": "Destruiste {Amount} {Item}.",
   "ItemSystem_ItemBroken": "Tu {Item} está roto y debe repararse antes de equiparlo.",
+  "ItemSystem_CannotWear": "Tu {Item} no se puede llevar puesto.",
   "ItemSystem_GearSwapCombat": "¡No puedes cambiar de equipo en pleno fragor de la batalla!",
   "ItemSystem_KeyDissolves": "La llave se deshace.",
   "MovementSystem_EnterSafeBase": "Estás entrando en una zona segura.",

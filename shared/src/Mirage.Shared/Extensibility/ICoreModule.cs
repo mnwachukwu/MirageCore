@@ -38,6 +38,10 @@ public interface ICoreBuilder
     /// <inheritdoc cref="AddFamily"/>
     void AddChoiceSet(ChoiceSet choices);
 
+    /// <summary>A place on a character where something can be worn. Declare none and nothing in this
+    /// game is equippable, which is a perfectly ordinary thing for a game to be.</summary>
+    void AddEquipSlot(EquipSlot slot);
+
     /// <summary>Work this module wants done on the tick.</summary>
     void AddTickWork(ITickWork work);
 }
