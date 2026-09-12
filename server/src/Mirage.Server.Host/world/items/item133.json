@@ -5,7 +5,7 @@
   "type": "Shield",
   "durability": 1150,
   "power": 217,
-  "levelReq": 235,
+  "tier": 235,
   "allowedClasses": [
     2,
     3,

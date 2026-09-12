@@ -143,7 +143,7 @@ public static class InputProcessor
                 // the server's CanPlayerWalkOnTile, so it never rubber-bands.
                 var attrType = LayerLogic.AttrFor(state.Map.Tile[nx, ny], newLayer).Type;
                 blocked = attrType == TileType.Blocked ||
-                          (attrType == TileType.Key && !state.TempTile[nx, ny, (int)newLayer]);
+                          (attrType == TileType.Door && !state.TempTile[nx, ny, (int)newLayer]);
             }
 
             // Another player standing on the target tile AND SAME LAYER also blocks movement — except in safe
@@ -287,7 +287,7 @@ public static class InputProcessor
         if (me.GodMode) return false;
         var attrType = LayerLogic.AttrFor(map.Tile[dx, dy], newLayer).Type;
         if (attrType == TileType.Blocked) return true;
-        if (attrType == TileType.Key && !state.NeighborTempTiles[col, row][dx, dy, (int)newLayer]) return true; // locked door on the resolved layer
+        if (attrType == TileType.Door && !state.NeighborTempTiles[col, row][dx, dy, (int)newLayer]) return true; // locked door on the resolved layer
         // Footprint- and seam-aware NPC block on the neighbor tile at the resulting layer, mirroring the
         // center-map check (natives + chasing guests + a large body spilling across the seam).
         if (state.IsTileNpcBlocked(state.NeighborMapNums[col, row], dx, dy, newLayer)) return true;

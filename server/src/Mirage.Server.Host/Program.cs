@@ -192,6 +192,7 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<PlayerSpawnSystem>();
         services.AddSingleton<DeathSystem>();
         services.AddSingleton<AttributeSystem>();
+        services.AddSingleton<DecalSystem>();
         services.AddSingleton<PartySystem>();
         services.AddSingleton<GuildSystem>();
         services.AddSingleton<MailSystem>();

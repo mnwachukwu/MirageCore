@@ -112,7 +112,7 @@ public sealed record NpcSpawnChoice(int RowIndex, string Display);
 /// <para>LayerRamp is the sole connector between the two planes. Stored on
 /// <c>FringeAttr.Type = LayerRamp</c>, but it LOGICALLY OCCUPIES BOTH: no other attribute may share its
 /// tile on either layer, and it can only be placed on a fully-clear tile. See LayerLogic.</para></summary>
-public enum AttributeTool { Blocked, Warp, Item, NpcAvoid, Key, KeyOpen, NpcSpawn, LayerRamp }
+public enum AttributeTool { Blocked, Warp, Item, NpcAvoid, Door, Plate, NpcSpawn, LayerRamp }
 
 public enum EditorMode { Tile, Attribute, Light }
 // Place = paint/stamp; Select = marquee for copy/cut/paste; Delete = brush-erase the mode-dependent content

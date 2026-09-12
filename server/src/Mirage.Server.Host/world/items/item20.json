@@ -5,7 +5,7 @@
   "type": "Armor",
   "durability": 220,
   "power": 13,
-  "levelReq": 5,
+  "tier": 5,
   "allowedClasses": [
     1,
     2,

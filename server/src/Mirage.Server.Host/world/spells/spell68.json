@@ -7,5 +7,5 @@
   ],
   "type": "AddMp",
   "vitalAmount": 25,
-  "levelReq": 15
+  "tier": 15
 }

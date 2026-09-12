@@ -13,8 +13,8 @@ namespace Mirage.Shared.Tests.Formulas;
 [TestFixture]
 public class EconomyFormulasTests
 {
-    private static ItemRecord Gear(ItemType type, short power, short levelReq, short durability = 50) =>
-        new() { Name = "test", Type = type, Power = power, LevelReq = levelReq, Durability = durability };
+    private static ItemRecord Gear(ItemType type, short power, short tier, short durability = 50) =>
+        new() { Name = "test", Type = type, Power = power, Tier = tier, Durability = durability };
 
     // ── The backbone ─────────────────────────────────────────────────────────
 
@@ -29,9 +29,9 @@ public class EconomyFormulasTests
     [Test]
     public void ExpectedGoldPerLevel_RisesMonotonically()
     {
-        for (int L = 1; L < Constants.MaxLevel; L++)
-            Assert.That(EconomyFormulas.ExpectedGoldPerLevel(L + 1),
-                Is.GreaterThan(EconomyFormulas.ExpectedGoldPerLevel(L)), $"level {L} -> {L + 1}");
+        for (int L = 1; L < Constants.MaxItemTier; L++)
+            Assert.That(EconomyFormulas.ExpectedGoldPerTier(L + 1),
+                Is.GreaterThan(EconomyFormulas.ExpectedGoldPerTier(L)), $"level {L} -> {L + 1}");
     }
 
     [Test]
@@ -41,9 +41,9 @@ public class EconomyFormulasTests
         // level, while income is superlinear. Anything priced off Power alone therefore decays to nothing.
         // Pinning the gap keeps that reasoning honest if either curve is ever retuned.
         const int Ref = 20;   // the level the pre-rework flat constants were sized against
-        double incomeRatio = (double)EconomyFormulas.ExpectedGoldPerLevel(Constants.MaxLevel)
-                           / EconomyFormulas.ExpectedGoldPerLevel(Ref);
-        double powerRatio = (double)EconomyFormulas.ReferencePower(Constants.MaxLevel)
+        double incomeRatio = (double)EconomyFormulas.ExpectedGoldPerTier(Constants.MaxItemTier)
+                           / EconomyFormulas.ExpectedGoldPerTier(Ref);
+        double powerRatio = (double)EconomyFormulas.ReferencePower(Constants.MaxItemTier)
                           / EconomyFormulas.ReferencePower(Ref);
         Assert.That(incomeRatio, Is.GreaterThan(powerRatio * 50),
             "income must outrun Power by enough that a Power-based price cannot keep up");
@@ -52,8 +52,8 @@ public class EconomyFormulasTests
     [Test]
     public void ExpectedGoldPerLevel_ClampsBelowLevelOne()
     {
-        Assert.That(EconomyFormulas.ExpectedGoldPerLevel(0), Is.EqualTo(EconomyFormulas.ExpectedGoldPerLevel(1)));
-        Assert.That(EconomyFormulas.ExpectedGoldPerLevel(-5), Is.EqualTo(EconomyFormulas.ExpectedGoldPerLevel(1)));
+        Assert.That(EconomyFormulas.ExpectedGoldPerTier(0), Is.EqualTo(EconomyFormulas.ExpectedGoldPerTier(1)));
+        Assert.That(EconomyFormulas.ExpectedGoldPerTier(-5), Is.EqualTo(EconomyFormulas.ExpectedGoldPerTier(1)));
     }
 
     [Test]
@@ -62,10 +62,10 @@ public class EconomyFormulasTests
         // The curve bends steeply at the bottom, so approximating the rung as 5x its first level would
         // understate tier 1 badly. Summing is the whole reason the method exists.
         long summed = 0;
-        for (int L = 1; L <= Constants.GearTierLevels; L++) summed += EconomyFormulas.ExpectedGoldPerLevel(L);
-        Assert.That(EconomyFormulas.ExpectedGoldForTier(1), Is.EqualTo(summed));
-        Assert.That(EconomyFormulas.ExpectedGoldForTier(1),
-            Is.GreaterThan(EconomyFormulas.ExpectedGoldPerLevel(1) * Constants.GearTierLevels * 2));
+        for (int L = 1; L <= Constants.GearTierSpan; L++) summed += EconomyFormulas.ExpectedGoldPerTier(L);
+        Assert.That(EconomyFormulas.ExpectedGoldForRung(1), Is.EqualTo(summed));
+        Assert.That(EconomyFormulas.ExpectedGoldForRung(1),
+            Is.GreaterThan(EconomyFormulas.ExpectedGoldPerTier(1) * Constants.GearTierSpan * 2));
     }
 
     // ── Item pricing ─────────────────────────────────────────────────────────
@@ -77,7 +77,7 @@ public class EconomyFormulasTests
         // the share cannot hold at one band and drift at another.
         foreach (short tier in new short[] { 1, 5, 10, 15, 20, 100, 110, 120, 235, 245, 255 })
         {
-            long rung = EconomyFormulas.ExpectedGoldForTier(tier);
+            long rung = EconomyFormulas.ExpectedGoldForRung(tier);
             short power = (short)EconomyFormulas.ReferencePower(tier);
             long kit = EconomyFormulas.ItemValue(Gear(ItemType.Weapon, power, tier))
                      + EconomyFormulas.ItemValue(Gear(ItemType.Armor, power, tier))
@@ -113,11 +113,11 @@ public class EconomyFormulasTests
     [Test]
     public void ItemValue_ScrollPricesOffItsSpellNotItself()
     {
-        // A scroll carries no LevelReq of its own — the gate lives on the spell it teaches — so passing the
+        // A scroll carries no Tier of its own — the gate lives on the spell it teaches — so passing the
         // spell is what gives it a tier. Without one it must not price at zero.
         var scroll = new ItemRecord { Name = "scroll", Type = ItemType.Spell, SpellNum = 1 };
-        int low = EconomyFormulas.ItemValue(scroll, new SpellRecord { LevelReq = 1 });
-        int high = EconomyFormulas.ItemValue(scroll, new SpellRecord { LevelReq = 235 });
+        int low = EconomyFormulas.ItemValue(scroll, new SpellRecord { Tier = 1 });
+        int high = EconomyFormulas.ItemValue(scroll, new SpellRecord { Tier = 235 });
         Assert.That(high, Is.GreaterThan(low * 1000), "a max-band scroll must cost orders more than a starter one");
         Assert.That(EconomyFormulas.ItemValue(scroll), Is.GreaterThan(0), "a scroll with no spell still prices at the floor");
     }
@@ -150,7 +150,7 @@ public class EconomyFormulasTests
         });
 
         // Condition is meaningless for anything with no durability budget.
-        var potion = new ItemRecord { Type = ItemType.PotionAddHp, LevelReq = 120, VitalAmount = 10 };
+        var potion = new ItemRecord { Type = ItemType.PotionAddHp, Tier = 120, VitalAmount = 10 };
         Assert.That(EconomyFormulas.ItemSellValue(potion, 0),
             Is.EqualTo(EconomyFormulas.ItemSellValue(potion, 999)), "a potion has no wear to price");
     }
@@ -166,7 +166,7 @@ public class EconomyFormulasTests
         // Quoted against RepairGoldPerPoint rather than a literal: the divisor is a tuning knob, and this
         // test is about the SHAPE — linear in points, floored, clamped at a full repair. Pinning the
         // literal would only prove the knob had not moved.
-        var item = Gear(ItemType.Weapon, power: 200, levelReq: 120, durability: 100);
+        var item = Gear(ItemType.Weapon, power: 200, tier: 120, durability: 100);
         int full = (int)Math.Round(100 * EconomyFormulas.RepairGoldPerPoint(200), MidpointRounding.AwayFromZero);
         Assert.That(EconomyFormulas.RepairCost(100, item), Is.EqualTo(full), "100 points at the Power rate");
         Assert.That(EconomyFormulas.RepairCost(50, item), Is.EqualTo(full / 2), "pro-rata");
@@ -179,7 +179,7 @@ public class EconomyFormulasTests
     {
         // A tier-1 shield carries 100 durability and costs about 11 gold. The raw Power rate would charge
         // 60 to restore something replaceable for 11 — so the cap has to engage here, and only here.
-        var cheap = Gear(ItemType.Shield, (short)EconomyFormulas.ReferencePower(1), levelReq: 1, durability: 100);
+        var cheap = Gear(ItemType.Shield, (short)EconomyFormulas.ReferencePower(1), tier: 1, durability: 100);
         int price = EconomyFormulas.ItemValue(cheap);
         int full = EconomyFormulas.RepairCost(100, cheap);
         Assert.That(full, Is.LessThan(price), "the cap must bite before repair beats replacement");
@@ -279,7 +279,7 @@ public class EconomyFormulasTests
     [Test]
     public void RepairGoldPerDurabilityPoint_RisesWithTier()
     {
-        Assert.That(EconomyFormulas.RepairGoldPerDurabilityPoint(Constants.MaxLevel),
+        Assert.That(EconomyFormulas.RepairGoldPerDurabilityPoint(Constants.MaxItemTier),
             Is.GreaterThan(EconomyFormulas.RepairGoldPerDurabilityPoint(20) * 10),
             "upkeep has to track the gear it maintains, or it decays into a rounding error");
     }

@@ -181,7 +181,7 @@ public static partial class PacketBuilder
         {
             Items = items.Select(x => new SendItemsPacket.ItemData(
                 x.num, x.item.Name, x.item.Pic, x.item.Type,
-                x.item.Durability, x.item.VitalAmount, x.item.SpellNum, x.item.Power, x.item.LevelReq,
+                x.item.Durability, x.item.VitalAmount, x.item.SpellNum, x.item.Power, x.item.Tier,
                 x.item.NonTradeable, x.item.NonListable, x.item.NonMailable, x.item.DestroyOnDrop,
                 x.item.NonJunkable, x.item.Price, x.item.ItemSheet)).ToArray()
         };
@@ -198,7 +198,7 @@ public static partial class PacketBuilder
             VitalAmount = item.VitalAmount,
             SpellNum = item.SpellNum,
             Power = item.Power,
-            LevelReq = item.LevelReq,
+            Tier = item.Tier,
             NonTradeable = item.NonTradeable,
             NonListable = item.NonListable,
             NonMailable = item.NonMailable,
@@ -222,7 +222,7 @@ public static partial class PacketBuilder
             ItemNum = spell.ItemNum,
             ItemQuantity = spell.ItemQuantity,
             IntReq = spell.IntReq,
-            LevelReq = spell.LevelReq,
+            Tier = spell.Tier,
         };
 
     // ── Npc / Shop / Class ───────────────────────────────────────────────────

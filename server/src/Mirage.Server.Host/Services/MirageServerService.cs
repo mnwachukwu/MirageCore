@@ -216,6 +216,7 @@ public sealed class MirageServerService : IHostedService
         _world.WorldName = manifest.Name;
         _world.Appearances = manifest.Appearances;
         _world.StartingItems = manifest.StartingItems;
+        _world.DecalColor = manifest.DecalColor;
         if (manifest.IsNamed)
             LocalizedLog.Info(_logger, ServerStrings.Server_WorldName, ("WorldName", manifest.Name));
 

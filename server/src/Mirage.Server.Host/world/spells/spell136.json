@@ -7,5 +7,5 @@
   ],
   "type": "AddHp",
   "vitalAmount": 104,
-  "levelReq": 110
+  "tier": 110
 }

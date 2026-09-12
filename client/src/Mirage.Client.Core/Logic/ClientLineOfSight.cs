@@ -85,7 +85,7 @@ public static class ClientLineOfSight
             // Center cell's authoritative door state is in state.TempTile; NeighborTempTiles[1,1]
             // is reset to empty on every seam shift and would falsely report doors closed.
             var doors = (col == 1 && row == 1) ? _state.TempTile : _state.NeighborTempTiles[col, row];
-            if (type == TileType.Key && !doors[lx, ly, (int)_layer]) return true;   // door read on the shooter's layer
+            if (type == TileType.Door && !doors[lx, ly, (int)_layer]) return true;   // door read on the shooter's layer
             return false;
         }
     }

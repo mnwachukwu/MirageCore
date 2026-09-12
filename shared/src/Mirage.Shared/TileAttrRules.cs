@@ -8,7 +8,7 @@ namespace Mirage.Shared;
 /// hidden in the form is exactly a field absent from the file.
 ///
 /// <para>This is the half that makes named fields honest rather than merely readable. Repaint a Warp
-/// tile as a Key and its destination map would otherwise sit on the record forever: invisible in the
+/// tile as a Door and its destination map would otherwise sit on the record forever: invisible in the
 /// editor, still in the file, and live again the moment anything set it back to Warp. Items and spells
 /// carry the same rule for the same reason.</para>
 /// </summary>
@@ -16,8 +16,8 @@ public static class TileAttrRules
 {
     public static bool UsesWarp(TileType type) => type is TileType.Warp;
     public static bool UsesItem(TileType type) => type is TileType.Item;
-    public static bool UsesKey(TileType type) => type is TileType.Key;
-    public static bool UsesDoor(TileType type) => type is TileType.KeyOpen;
+    public static bool UsesKey(TileType type) => type is TileType.Door;
+    public static bool UsesDoor(TileType type) => type is TileType.Plate;
     public static bool UsesRamp(TileType type) => type is TileType.LayerRamp;
     /// <summary>Blocked carries what the wall stops. Every other kind of tile stops nothing, so the two
     /// fields are only meaningful here.</summary>

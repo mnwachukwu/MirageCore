@@ -222,6 +222,7 @@ public static class CorePackets
         builder.Register(PacketNames.Welcome, Read<WelcomePacket>);
         builder.Register(PacketNames.PlayerInGame, Read<PlayerInGamePacket>);
         builder.Register(PacketNames.SendPlayerData, Read<SendPlayerDataPacket>);
+        builder.Register(PacketNames.DecalUpdate, Read<DecalUpdatePacket>);
         builder.Register(PacketNames.AttributeSchema, Read<AttributeSchemaPacket>);
         builder.Register(PacketNames.AttributeSync, Read<AttributeSyncPacket>);
         builder.Register(PacketNames.AggressorRefresh, Read<AggressorRefreshPacket>);

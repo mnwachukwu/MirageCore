@@ -222,7 +222,7 @@ public class NpcChaseRoutingTests
         return (Direction?)m.Invoke(ai, new object[] { Map, fromX, fromY, WorldLayer.Ground, Map, toX, toY, WorldLayer.Ground, npc, planAroundActors, Map, selfSlot, targetSize });
     }
 
-    // A real NpcAiSystem (real Combat/Movement/Blood/Spawn, no-op dispatcher) for the end-to-end drive; the
+    // A real NpcAiSystem (real movement, decal, and spawn systems, no-op dispatcher) for the end-to-end drive; the
     // kill-only subsystems the chase never reaches are null.  Mirrors GuestNativeScenarioParityTests.BuildAi.
     static NpcAiSystem BuildAi(GameWorld world, PlayerManager pm)
     {

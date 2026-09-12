@@ -4,7 +4,7 @@
   "itemSheet": 0,
   "type": "PotionSubHp",
   "vitalAmount": 778,
-  "levelReq": 120,
+  "tier": 120,
   "nonTradeable": false,
   "nonListable": false,
   "nonMailable": false,

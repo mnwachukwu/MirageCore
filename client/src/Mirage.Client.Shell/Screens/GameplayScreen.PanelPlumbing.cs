@@ -89,9 +89,9 @@ public sealed partial class GameplayScreen : IGameScreen
             _showNpcNames = _ctx.OptionsPanel.ShowNpcNames;
             SaveCharPrefs();
         }
-        if (ch.ShowBloodChanged)
+        if (ch.ShowDecalsChanged)
         {
-            _showBlood = _ctx.OptionsPanel.ShowBlood;
+            _showDecals = _ctx.OptionsPanel.ShowDecals;
             SaveCharPrefs();
         }
         if (ch.ShowOtherNamesChanged)

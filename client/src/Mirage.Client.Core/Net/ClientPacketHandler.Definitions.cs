@@ -30,7 +30,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
                 VitalAmount = item.VitalAmount,
                 SpellNum = item.SpellNum,
                 Power = item.Power,
-                LevelReq = item.LevelReq,
+                Tier = item.Tier,
                 NonTradeable = item.NonTradeable,
                 NonListable = item.NonListable,
                 NonMailable = item.NonMailable,
@@ -187,7 +187,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
             VitalAmount = p.VitalAmount,
             SpellNum = p.SpellNum,
             Power = p.Power,
-            LevelReq = p.LevelReq,
+            Tier = p.Tier,
             NonTradeable = p.NonTradeable,
             NonListable = p.NonListable,
             NonMailable = p.NonMailable,
@@ -247,7 +247,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
             ItemNum = p.ItemNum,
             ItemQuantity = p.ItemQuantity,
             IntReq = p.IntReq,
-            LevelReq = p.LevelReq,
+            Tier = p.Tier,
         };
     }
 

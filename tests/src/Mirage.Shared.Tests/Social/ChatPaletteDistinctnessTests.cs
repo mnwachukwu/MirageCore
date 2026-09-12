@@ -15,16 +15,15 @@ public class ChatPaletteDistinctnessTests
         ("Say/Emote", GameColor.Say), ("Yell", GameColor.Yellow), ("Broadcast", GameColor.Pink),
         ("Tell", GameColor.Tell), ("AdminChat", GameColor.AdminChat), ("Notice", GameColor.Notice),
         ("Roll", GameColor.Roll), ("Guild", GameColor.Guild), ("GuildOfficer", GameColor.GuildOfficer),
-        ("War", GameColor.War), ("Warning", GameColor.Warning),
+        ("Warning", GameColor.Warning),
         // Name ranks (as PlayerNameColor assigns them) + NPC dialogue
         ("Player", GameColor.Tan), ("Monitor", GameColor.Orange), ("Mapper", GameColor.Turquoise),
         ("Developer", GameColor.RoyalBlue), ("Creator", GameColor.Amethyst), ("PK/Combat", GameColor.BrightRed),
         ("NpcSpeech", GameColor.Npc),
     };
 
-    // Squared-RGB Euclidean distance. The closest intended pairs (Dev royal-blue vs Roll cornflower,
-    // War crimson vs GuildWar brick, Monitor orange vs NPC olive-gold) all sit ~53-60 apart, so a floor
-    // of 40 passes them while catching an accidental near-duplicate.
+    // Squared-RGB Euclidean distance. The closest intended pair (Monitor orange vs NPC olive-gold) sits
+    // ~53-60 apart, so a floor of 40 passes it while catching an accidental near-duplicate.
     const int MinDistanceSq = 40 * 40;
 
     [Test]

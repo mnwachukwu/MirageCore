@@ -113,7 +113,7 @@ public sealed partial class ItemSystem : GameSystem
                 // The faced door is read + opened on the player's own layer (a fringe door on the bridge, a ground
                 // one beneath). KeyItemNum names the item that opens it; compare against the item being used.
                 var key = LayerLogic.AttrFor(tile, p.Layer);
-                if (key.Type != TileType.Key || key.KeyItemNum != itemNum) break;
+                if (key.Type != TileType.Door || key.KeyItemNum != itemNum) break;
                 var temp = _world.TempTiles[mapNum];
                 // An already-open door must not re-trigger or consume the key (matches the KeyOpen trigger guard).
                 if (temp.IsDoorOpen(tx, ty, p.Layer)) break;

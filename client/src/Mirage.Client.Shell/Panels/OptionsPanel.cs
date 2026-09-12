@@ -54,7 +54,7 @@ public sealed class OptionsPanel : IGamePanel
     private readonly Checkbox _showChatTimestampsChk = new() { Checked = false };
     private readonly Checkbox _use24HourClockChk = new() { Checked = false };
     private readonly Checkbox _showChannelLabelsChk = new() { Checked = false };
-    private readonly Checkbox _showBloodChk = new() { Checked = true };
+    private readonly Checkbox _showDecalsChk = new() { Checked = true };
     private readonly Button _restoreBtn = new();
     private readonly Button _resetPanelsBtn = new();
     private readonly DropDown _languageDropDown = new();
@@ -163,10 +163,10 @@ public sealed class OptionsPanel : IGamePanel
         get => _showChannelLabelsChk.Checked;
         set => _showChannelLabelsChk.Checked = value;
     }
-    public bool ShowBlood
+    public bool ShowDecals
     {
-        get => _showBloodChk.Checked;
-        set => _showBloodChk.Checked = value;
+        get => _showDecalsChk.Checked;
+        set => _showDecalsChk.Checked = value;
     }
 
     /// <summary>Push a set of per-character display preferences into the widgets. The one place the twelve
@@ -179,7 +179,7 @@ public sealed class OptionsPanel : IGamePanel
         ShowCombatNumbers = prefs.ShowCombatNumbers;
         SkipPlayersWithTabTarget = prefs.SkipPlayersWithTabTarget;
         ShowNpcNames = prefs.ShowNpcNames;
-        ShowBlood = prefs.ShowBlood;
+        ShowDecals = prefs.ShowDecals;
         ShowOtherPlayerNames = prefs.ShowOtherPlayerNames;
         ShowPlayerName = prefs.ShowPlayerName;
         ShowCooldownBar = prefs.ShowCooldownBar;
@@ -222,7 +222,7 @@ public sealed class OptionsPanel : IGamePanel
         bool use24HourClock = _showChatTimestampsChk.Checked && _use24HourClockChk.Update(input);
         // Channel labels are an independent toggle (not gated on timestamps).
         bool showChannelLabels = _showChannelLabelsChk.Update(input);
-        bool showBlood = _showBloodChk.Update(input);
+        bool showDecals = _showDecalsChk.Update(input);
         string? prevLocale = SelectedLocale;
         _languageDropDown.Update(input, langDropRect);
         string? nowLocale = SelectedLocale;
@@ -244,7 +244,7 @@ public sealed class OptionsPanel : IGamePanel
             CombatNumbersChanged = combat,
             SkipTabChanged = skipTab,
             ShowNpcNamesChanged = showNpcNames,
-            ShowBloodChanged = showBlood,
+            ShowDecalsChanged = showDecals,
             ShowOtherNamesChanged = showOtherNames,
             ShowPlayerNameChanged = showPlayerName,
             ShowCooldownBarChanged = showCooldownBar,
@@ -281,7 +281,7 @@ public sealed class OptionsPanel : IGamePanel
             _showChatTimestampsChk.Label = ClientStrings.Get(ClientStrings.OptionsPanel_ShowChatTimestamps);
             _use24HourClockChk.Label = ClientStrings.Get(ClientStrings.OptionsPanel_Use24HourClock);
             _showChannelLabelsChk.Label = ClientStrings.Get(ClientStrings.OptionsPanel_ShowChannelLabels);
-            _showBloodChk.Label = ClientStrings.Get(ClientStrings.OptionsPanel_ShowBlood);
+            _showDecalsChk.Label = ClientStrings.Get(ClientStrings.OptionsPanel_ShowDecals);
             _restoreBtn.Label = ClientStrings.Get(ClientStrings.OptionsPanel_RestoreDefaults);
             _resetPanelsBtn.Label = ClientStrings.Get(ClientStrings.OptionsPanel_ResetPanels);
         }
@@ -302,7 +302,7 @@ public sealed class OptionsPanel : IGamePanel
         _showChatTimestampsChk.Draw(sb, font, input);
         _use24HourClockChk.Draw(sb, font, input, disabled: !_showChatTimestampsChk.Checked);
         _showChannelLabelsChk.Draw(sb, font, input);
-        _showBloodChk.Draw(sb, font, input);
+        _showDecalsChk.Draw(sb, font, input);
         sb.DrawString(font, ClientStrings.Get(ClientStrings.OptionsPanel_Language) + ":",
             new Vector2(langLabelRect.X, langLabelRect.Y), UiHelper.DlgLabelColor);
         _languageDropDown.DrawHeader(sb, font, langDropRect, input);
@@ -344,7 +344,7 @@ public sealed class OptionsPanel : IGamePanel
         _showPlayerNameChk.Bounds = new Rectangle(rx, c.Y + ColPad + RowH * 3, colW, ChkH);
         _showCooldownBarChk.Bounds = new Rectangle(rx, c.Y + ColPad + RowH * 4, colW, ChkH);
         _showOtherCooldownBarsChk.Bounds = new Rectangle(rx, c.Y + ColPad + RowH * 5, colW, ChkH);
-        _showBloodChk.Bounds = new Rectangle(rx, c.Y + ColPad + RowH * 6, colW, ChkH);
+        _showDecalsChk.Bounds = new Rectangle(rx, c.Y + ColPad + RowH * 6, colW, ChkH);
 
         int langY = c.Y + ColPad + RowH * 7 + 4;
         langLabelRect = new Rectangle(rx, langY, colW, ChkH);

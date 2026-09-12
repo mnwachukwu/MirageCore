@@ -389,8 +389,8 @@ public sealed partial class NpcAiSystem : GameSystem
 
             // A tile the editor has since retyped away from Key keeps its stale stamp rather than
             // broadcasting a close for a door the client no longer draws.  Inert either way: every
-            // door check is gated on TileType.Key first.
-            if (!map.Contains(x, y) || LayerLogic.AttrFor(map.Tile[x, y], layer).Type != TileType.Key) continue;
+            // door check is gated on TileType.Door first.
+            if (!map.Contains(x, y) || LayerLogic.AttrFor(map.Tile[x, y], layer).Type != TileType.Door) continue;
 
             _dueDoors.Add((x, y, layer));
         }

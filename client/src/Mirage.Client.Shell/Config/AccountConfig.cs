@@ -43,7 +43,7 @@ public sealed class AccountConfig
         public bool SkipPlayersWithTabTarget { get; set; } = true;
         [JsonPropertyName("showNpcNames")]
         public bool ShowNpcNames { get; set; } = true;
-        public bool ShowBlood { get; set; } = true;
+        public bool ShowDecals { get; set; } = true;
         [JsonPropertyName("showOtherPlayerNames")]
         public bool ShowOtherPlayerNames { get; set; } = true;
         [JsonPropertyName("showPlayerName")]

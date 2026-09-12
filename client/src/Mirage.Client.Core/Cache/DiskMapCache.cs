@@ -8,9 +8,21 @@ namespace Mirage.Client.Core.Cache;
 /// Keeps an in-memory revision index so revision checks don't require disk I/O.
 /// The directory is supplied by the caller (a per-user writable location) rather than resolved
 /// here, so this cache makes no assumption about the process's working directory.
+///
+/// <para>Entries are stamped with <see cref="FormatVersion"/> and the whole cache is dropped when it
+/// changes. A map's <c>revision</c> tracks what an AUTHOR changed, so it cannot catch a change to what the
+/// file MEANS — and the record converters fall back rather than throw, so a renamed tile type would turn
+/// every door in the cache into open floor with nothing to report it.</para>
 /// </summary>
 public sealed class DiskMapCache : IMapCache
 {
+    /// <summary>Bump whenever a record's on-disk SHAPE changes in a way an old cached file would be
+    /// misread under: a renamed or removed enum member, a retyped field, a changed default. Adding a field
+    /// needs no bump — an absent one already reads as its default.</summary>
+    public const int FormatVersion = 2;
+
+    private const string VersionFileName = "format.txt";
+
     private readonly string _directory;
     private readonly Dictionary<int, int> _revisions = new();
 
@@ -24,6 +36,7 @@ public sealed class DiskMapCache : IMapCache
     {
         _directory = directory;
         Directory.CreateDirectory(_directory);
+        DropCacheIfStale();
         IndexExistingRevisions();
     }
 
@@ -52,6 +65,27 @@ public sealed class DiskMapCache : IMapCache
 
     private string MapPath(int mapNum) =>
         Path.Combine(_directory, $"map{mapNum}.json");
+
+    // A cache written under a different format is not repaired, it is discarded: every entry is re-fetched
+    // on demand, so the cost of being wrong here is one refill and the cost of being clever is a subtly
+    // wrong map.
+    private void DropCacheIfStale()
+    {
+        string marker = Path.Combine(_directory, VersionFileName);
+        try
+        {
+            if (File.Exists(marker) &&
+                int.TryParse(File.ReadAllText(marker).Trim(), out int found) &&
+                found == FormatVersion)
+                return;
+
+            foreach (string file in Directory.GetFiles(_directory, "map*.json"))
+                File.Delete(file);
+
+            File.WriteAllText(marker, FormatVersion.ToString());
+        }
+        catch { /* an unreadable cache directory is a cache miss, not a failure to start */ }
+    }
 
     private void IndexExistingRevisions()
     {

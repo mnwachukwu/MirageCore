@@ -85,7 +85,7 @@ public static class LightOcclusion
         var attr = LayerLogic.AttrFor(tile, layer);
 
         // A closed door stops light exactly as a wall does; a ramp is a slope, not a wall, so it casts nothing.
-        if (attr.Type == TileType.Key)
+        if (attr.Type == TileType.Door)
         {
             var doors = col == 1 && row == 1 ? state.TempTile : state.NeighborTempTiles[col, row];
             return doors[lx, ly, (int)layer] ? TileOpacity.Open : TileOpacity.ShadowOf(tile, layer);

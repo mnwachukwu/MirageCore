@@ -90,7 +90,7 @@ public class DoorAutoCloseTests
         var (world, ai, _) = Setup();
         var temp = world.TempTiles[Map];
         GroundDoor(world, 6, 6);
-        world.Maps[Map].EditTile(6, 6, t => t with { FringeAttr = new FringeAttr { Type = TileType.Key } });   // deck door over it
+        world.Maps[Map].EditTile(6, 6, t => t with { FringeAttr = new FringeAttr { Type = TileType.Door } });   // deck door over it
 
         temp.OpenDoor(6, 6, WorldLayer.Ground, 1_000);
         temp.OpenDoor(6, 6, WorldLayer.Fringe, 4_000);
@@ -158,7 +158,7 @@ public class DoorAutoCloseTests
 
     // ── Harness ──────────────────────────────────────────────────────────────────
 
-    // CheckDoorAutoClose reads only _world and _dispatcher, so the combat/movement/spawn/item/blood
+    // CheckDoorAutoClose reads only _world and _dispatcher, so the movement/spawn/item/decal
     // dependencies can be null (same shape as NpcChaseRoutingTests.NewWorldWithBlocker).
     static (GameWorld world, NpcAiSystem ai, CapturingDispatcher dispatcher) Setup()
     {
@@ -169,7 +169,7 @@ public class DoorAutoCloseTests
         return (world, ai, dispatcher);
     }
 
-    static void GroundDoor(GameWorld world, int x, int y) => world.Maps[Map].EditTile(x, y, t => t with { Type = TileType.Key });
+    static void GroundDoor(GameWorld world, int x, int y) => world.Maps[Map].EditTile(x, y, t => t with { Type = TileType.Door });
 
     static void Sweep(NpcAiSystem ai, long now)
     {

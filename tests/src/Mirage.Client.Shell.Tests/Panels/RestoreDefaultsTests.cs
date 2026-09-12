@@ -32,7 +32,7 @@ public class RestoreDefaultsTests
         yield return Case("ShowCombatNumbers", panel.ShowCombatNumbers, config.ShowCombatNumbers);
         yield return Case("SkipPlayersWithTabTarget", panel.SkipPlayersWithTabTarget, config.SkipPlayersWithTabTarget);
         yield return Case("ShowNpcNames", panel.ShowNpcNames, config.ShowNpcNames);
-        yield return Case("ShowBlood", panel.ShowBlood, config.ShowBlood);
+        yield return Case("ShowDecals", panel.ShowDecals, config.ShowDecals);
         yield return Case("ShowOtherPlayerNames", panel.ShowOtherPlayerNames, config.ShowOtherPlayerNames);
         yield return Case("ShowPlayerName", panel.ShowPlayerName, config.ShowPlayerName);
         yield return Case("ShowCooldownBar", panel.ShowCooldownBar, config.ShowCooldownBar);
@@ -70,7 +70,7 @@ public class RestoreDefaultsTests
         panel.ShowCombatNumbers = !defaults.ShowCombatNumbers;
         panel.SkipPlayersWithTabTarget = !defaults.SkipPlayersWithTabTarget;
         panel.ShowNpcNames = !defaults.ShowNpcNames;
-        panel.ShowBlood = !defaults.ShowBlood;
+        panel.ShowDecals = !defaults.ShowDecals;
         panel.ShowOtherPlayerNames = !defaults.ShowOtherPlayerNames;
         panel.ShowPlayerName = !defaults.ShowPlayerName;
         panel.ShowCooldownBar = !defaults.ShowCooldownBar;
@@ -87,7 +87,7 @@ public class RestoreDefaultsTests
             Assert.That(panel.ShowCombatNumbers, Is.EqualTo(defaults.ShowCombatNumbers), nameof(panel.ShowCombatNumbers));
             Assert.That(panel.SkipPlayersWithTabTarget, Is.EqualTo(defaults.SkipPlayersWithTabTarget), nameof(panel.SkipPlayersWithTabTarget));
             Assert.That(panel.ShowNpcNames, Is.EqualTo(defaults.ShowNpcNames), nameof(panel.ShowNpcNames));
-            Assert.That(panel.ShowBlood, Is.EqualTo(defaults.ShowBlood), nameof(panel.ShowBlood));
+            Assert.That(panel.ShowDecals, Is.EqualTo(defaults.ShowDecals), nameof(panel.ShowDecals));
             Assert.That(panel.ShowOtherPlayerNames, Is.EqualTo(defaults.ShowOtherPlayerNames), nameof(panel.ShowOtherPlayerNames));
             Assert.That(panel.ShowPlayerName, Is.EqualTo(defaults.ShowPlayerName), nameof(panel.ShowPlayerName));
             Assert.That(panel.ShowCooldownBar, Is.EqualTo(defaults.ShowCooldownBar), nameof(panel.ShowCooldownBar));
@@ -109,7 +109,7 @@ public class RestoreDefaultsTests
         {
             AlwaysShowBars = false,
             ShowCombatNumbers = false,
-            ShowBlood = false,
+            ShowDecals = false,
             ShowChatTimestamps = true,
             Use24HourClock = true,
         };
@@ -120,7 +120,7 @@ public class RestoreDefaultsTests
         {
             Assert.That(panel.AlwaysShowBars, Is.False);
             Assert.That(panel.ShowCombatNumbers, Is.False);
-            Assert.That(panel.ShowBlood, Is.False);
+            Assert.That(panel.ShowDecals, Is.False);
             Assert.That(panel.ShowChatTimestamps, Is.True);
             Assert.That(panel.Use24HourClock, Is.True);
             Assert.That(panel.ShowNpcNames, Is.True, "untouched options keep the config's own default");

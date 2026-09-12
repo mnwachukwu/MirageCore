@@ -299,11 +299,11 @@ public sealed partial class ClientState
         return null;
     }
 
-    /// <summary>One blood pool: a size×size tile RECTANGLE (top-left X,Y in map-local coords) with a shared
-    /// stain <see cref="Amount"/> (drives the decal's blob SIZE + droplet COUNT) and <see cref="Freshness"/>
-    /// (0..1 OPACITY: a hit redarkens to 1, then it fades with the amount).  Mirrors the server's BloodPool;
-    /// pools overlap freely.</summary>
-    public sealed class BloodPool
+    /// <summary>One stain: a size×size tile RECTANGLE (top-left X,Y in map-local coords) carrying a color,
+    /// a shared <see cref="Amount"/> that drives the blob SIZE and droplet COUNT, and a
+    /// <see cref="Freshness"/> in 0..1 that is its OPACITY — a fresh deposit redarkens it to 1, then it fades
+    /// with the amount. Mirrors the server's <c>Decal</c>; stains overlap freely.</summary>
+    public sealed class Decal
     {
         public int X;
         public int Y;
@@ -313,17 +313,21 @@ public sealed partial class ClientState
         public WorldLayer Layer;
     }
 
-    /// <summary>Blood pools keyed by MAP NUMBER (not by observable-cell).  A deposit makes the server replace a
-    /// map's WHOLE list (<c>BloodUpdatePacket</c>); <c>BloodProcessor</c> replays the shared linear decay locally
-    /// each frame and drops dried pools.  Keyed by map num, so a seamless crossing needs no grid shuffle — it
-    /// just prunes maps that scrolled out of view (<see cref="PruneBloodToObserved"/>).</summary>
-    public Dictionary<int, List<BloodPool>> BloodByMap { get; } = new();
+    /// <summary>Stains keyed by MAP NUMBER, not by observable cell. A deposit makes the server replace a map's
+    /// WHOLE list (<c>DecalUpdatePacket</c>); <c>DecalProcessor</c> replays the shared linear fade locally each
+    /// frame and drops the dry ones. Keyed by map number, so a seamless crossing needs no grid shuffle — it
+    /// just prunes maps that scrolled out of view (<see cref="PruneDecalsToObserved"/>).</summary>
+    public Dictionary<int, List<Decal>> DecalsByMap { get; } = new();
 
-    /// <summary>The pool list for a map, created empty on first use.</summary>
-    public List<BloodPool> BloodPoolsForMap(int mapNum)
+    /// <summary>What a stain looks like in this world, packed 0xRRGGBB, from the server hello. The whole
+    /// stain field is tinted with it at composite.</summary>
+    public uint DecalColor { get; set; } = 0x520808;
+
+    /// <summary>The stain list for a map, created empty on first use.</summary>
+    public List<Decal> DecalsForMap(int mapNum)
     {
-        if (!BloodByMap.TryGetValue(mapNum, out var list))
-            BloodByMap[mapNum] = list = new List<BloodPool>();
+        if (!DecalsByMap.TryGetValue(mapNum, out var list))
+            DecalsByMap[mapNum] = list = new List<Decal>();
         return list;
     }
 
@@ -341,16 +345,17 @@ public sealed partial class ClientState
         return false;
     }
 
-    /// <summary>Drop blood for maps that scrolled out of the observable 3×3 (called after a seam re-frame); the
-    /// server re-snapshots any map that comes back into view, so this can't lose live blood we still need.</summary>
-    public void PruneBloodToObserved()
+    /// <summary>Drop stains for maps that scrolled out of the observable 3×3, after a seam re-frame. The
+    /// server re-sends any map that comes back into view, so this cannot lose a stain still worth
+    /// drawing.</summary>
+    public void PruneDecalsToObserved()
     {
-        if (BloodByMap.Count == 0) return;
+        if (DecalsByMap.Count == 0) return;
         List<int>? drop = null;
-        foreach (int m in BloodByMap.Keys)
+        foreach (int m in DecalsByMap.Keys)
             if (!IsObservedMap(m)) (drop ??= new()).Add(m);
         if (drop is not null)
-            foreach (int m in drop) BloodByMap.Remove(m);
+            foreach (int m in drop) DecalsByMap.Remove(m);
     }
 
     /// <summary>How much gold the character is carrying, or 0 when the stack is absent.</summary>

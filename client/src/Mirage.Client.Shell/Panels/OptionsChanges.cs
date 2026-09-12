@@ -27,7 +27,7 @@ public readonly record struct OptionsChanges
     public bool CombatNumbersChanged { get; init; }
     public bool SkipTabChanged { get; init; }
     public bool ShowNpcNamesChanged { get; init; }
-    public bool ShowBloodChanged { get; init; }
+    public bool ShowDecalsChanged { get; init; }
     public bool ShowOtherNamesChanged { get; init; }
     public bool ShowPlayerNameChanged { get; init; }
     public bool ShowCooldownBarChanged { get; init; }

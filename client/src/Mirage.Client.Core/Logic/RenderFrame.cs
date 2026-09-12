@@ -17,13 +17,14 @@ public readonly record struct TileDrawCmd(float ScreenX, float ScreenY, int Tile
 public readonly record struct ItemDrawCmd(
     float ScreenX, float ScreenY, short Pic, WorldLayer Layer = WorldLayer.Ground, short Sheet = 0);
 
-/// <summary>Draw a blood ground decal at the given screen position (tile origin).  <paramref name="Amount"/>
-/// (raw, 0..BloodMaxTileAmount) drives the pool-blob SIZE and droplet COUNT.  <paramref name="Freshness"/> (0..1)
+/// <summary>Draw a ground stain at the given screen position (tile origin).  <paramref name="Amount"/>
+/// (raw, 0..DecalMaxAmount) drives the blob SIZE and droplet COUNT.  <paramref name="Freshness"/> (0..1)
 /// drives OPACITY — any hit redarkens it to full, then it fades with age.  <paramref name="Seed"/> is a stable
 /// per-(map,tile) hash picking the blob variant, rotation, and jitter so the tile's look never shimmers.
 /// <paramref name="Size"/> is the footprint size class (1/2/3) of the NPC that bled here, so a large NPC's stain
 /// draws as ONE decal scaled to its whole body (Size*32 px, centered on the footprint), not separate tile pools.</summary>
-public readonly record struct BloodDrawCmd(float ScreenX, float ScreenY, float Amount, float Freshness, int Seed, int Size = 1, WorldLayer Layer = WorldLayer.Ground);
+public readonly record struct DecalDrawCmd(float ScreenX, float ScreenY, float Amount, float Freshness,
+                                          int Seed, int Size = 1, WorldLayer Layer = WorldLayer.Ground);
 
 /// <summary>Draw one character sprite (player or NPC) at the given screen position.
 /// <paramref name="AnimFrame"/> is 0 = idle/stand, 1 = walk, 2 = attack.  <paramref name="Size"/> is the
@@ -172,8 +173,8 @@ public sealed class RenderFrame
     /// roofs / foliage above both logical layers. <c>Canopy[k]</c> = canopy layer index k.</summary>
     public List<TileDrawCmd>[] Canopy { get; }
     public List<ItemDrawCmd> Items { get; } = new();
-    /// <summary>Blood-pool ground decals, drawn below entities and above the base ground tiles.</summary>
-    public List<BloodDrawCmd> Blood { get; } = new();
+    /// <summary>Ground stains, drawn below entities and above the base ground tiles.</summary>
+    public List<DecalDrawCmd> Decals { get; } = new();
     public List<SpriteDrawCmd> Npcs { get; } = new();
     public List<SpriteDrawCmd> Players { get; } = new();
     /// <summary>Dead-player corpse markers (red X), drawn in the entity layer in place of their sprites.</summary>
@@ -216,7 +217,7 @@ public sealed class RenderFrame
         foreach (var layer in Above) layer.Clear();
         foreach (var layer in Canopy) layer.Clear();
         Items.Clear();
-        Blood.Clear();
+        Decals.Clear();
         Npcs.Clear();
         Players.Clear();
         Corpses.Clear();

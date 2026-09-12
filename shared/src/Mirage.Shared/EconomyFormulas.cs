@@ -6,13 +6,16 @@ namespace Mirage.Shared;
 /// Gold: what the world pays, what things cost, and what wear costs to undo.  Drop-chance percentages
 /// live in <see cref="Constants"/> since they're standalone game rules, not formula coefficients.
 ///
-/// <para>EVERYTHING HERE IS QUOTED AGAINST ONE CURVE — <see cref="ExpectedGoldPerLevel"/>.  That is the
-/// whole point of the file.  Prices, repair, inn rest and the guild sinks were each a standalone constant
-/// or a rule of their own before, and they drifted apart the moment the drop tables were authored: income
-/// across the level range spans about 137,000x, while item <c>Power</c> spans 65x and a flat constant
-/// spans 1x.  Anything priced off Power or off nothing is therefore meaningful at level 1 and free by
-/// level 100, which is exactly what measurement found.  Quoting every sink as a share of the same curve
-/// is what keeps them in step when any one of them is retuned.</para>
+/// <para>EVERYTHING HERE IS QUOTED AGAINST ONE CURVE — <see cref="ExpectedGoldPerTier"/>.  That is the
+/// whole point of the file.  A price fixed as a constant, or derived from item <c>Power</c>, cannot stay
+/// meaningful across a progression: income over the tier range spans about 137,000x where <c>Power</c>
+/// spans 65x and a constant spans 1x, so anything priced off either is significant at the bottom and free
+/// by the middle.  Quoting every sink as a share of the same curve is what keeps them in step when any one
+/// of them is retuned.</para>
+///
+/// <para><b>The curve's shape is a default, not a law.</b>  Its two coefficients were fitted to one set of
+/// authored drop tables; a game that writes its own content should refit them, and one whose shops name
+/// every price outright never calls this file at all.</para>
 /// </summary>
 public static class EconomyFormulas
 {
@@ -20,87 +23,87 @@ public static class EconomyFormulas
     private const int EquipmentDamageFloor = 1;
 
     // ── The backbone ─────────────────────────────────────────────────────────
-    // Gold earned crossing one level, fitted to the AUTHORED drop tables rather than chosen.
+    // Gold a player is expected to earn crossing one tier, fitted to a set of AUTHORED drop tables rather
+    // than chosen.
     //
-    //     goldPerLevel = GoldCurveConstant x level^GoldCurveExponent
+    //     goldPerTier = GoldCurveConstant x tier^GoldCurveExponent
     //
-    // Log-log least squares over the three content bands gives 4.112 x L^2.675 at R2 = 0.9886 — the shape
-    // is a clean power law even though no one designed it to be. The constant is rounded to 4.0 (3% under
-    // the fit, far inside the noise) because the curve is a DESIGN TARGET, not a prediction: actual income
-    // wobbles roughly 0.5x-2.7x around it inside a band as the mob mix changes, and nothing should chase
-    // that. Re-derive both numbers with .Tools/Simulations/GoldEconomy/gold-income.cs after any change to
-    // the drop tables, the bestiary levels, or the EXP curve — all three feed it.
+    // Log-log least squares over three content bands gave 4.112 x T^2.675 at R2 = 0.9886 — a clean power
+    // law even though nobody designed it to be. The constant is rounded to 4.0, 3% under the fit and far
+    // inside the noise, because the curve is a DESIGN TARGET rather than a prediction: actual income wobbles
+    // roughly 0.5x-2.7x around it inside a band as the mix of what is killed changes, and nothing should
+    // chase that.
     //
-    // WHY IT IS STEEPER THAN THE EXP CURVE. TnlForLevel is 500 x L^2, so kills/level grows about linearly;
-    // gold per kill then grows about L^1.3 on top of that, and the product is L^2.675. This is why nothing
-    // can be priced off item Power: Power tracks the stat budget, which is LINEAR in level (~1.2L), so a
-    // Power-based price falls behind income by L^1.675 — a factor of ~11,000 across the range.
+    // WHY IT IS STEEPER THAN A POWER-BASED PRICE. Item Power tracks a stat budget, which grows about
+    // linearly, so a Power-based price falls behind income by T^1.675 — a factor of ~11,000 across the
+    // range. That is the whole reason a curve exists here instead of a multiplier on Power.
     private const double GoldCurveConstant = 4.0;
     private const double GoldCurveExponent = 2.675;
 
-    /// <summary>Gold a player is expected to earn crossing <paramref name="level"/> — the reference every
-    /// price and sink in the game is quoted against.  Level 1 pays 4; level 255 pays ~11.3M.</summary>
-    public static long ExpectedGoldPerLevel(int level) =>
-        (long)Math.Round(Math.Pow(Math.Max(level, 1), GoldCurveExponent) * GoldCurveConstant,
+    /// <summary>Gold a player is expected to earn crossing <paramref name="tier"/> — the reference every
+    /// price and sink here is quoted against.  Tier 1 pays 4; tier 255 pays ~11.3M.</summary>
+    public static long ExpectedGoldPerTier(int tier) =>
+        (long)Math.Round(Math.Pow(Math.Max(tier, 1), GoldCurveExponent) * GoldCurveConstant,
             MidpointRounding.AwayFromZero);
 
-    /// <summary>Gold earned across the whole <see cref="Constants.GearTierLevels"/>-level rung a gear tier
-    /// covers — the natural unit for pricing equipment, since a tier is bought once and worn for the whole
-    /// rung.  Summed rather than approximated as 5x because the curve bends steeply at low levels, where
-    /// 5 x goldPerLevel(1) would understate the rung by a third.</summary>
-    public static long ExpectedGoldForTier(int level)
+    /// <summary>Gold earned across the whole <see cref="Constants.GearTierSpan"/>-tier rung a piece of gear
+    /// covers — the natural unit for pricing equipment, since a piece is bought once and worn for the whole
+    /// rung.  Summed rather than approximated as 5x because the curve bends steeply at the bottom, where
+    /// 5 x the tier-1 figure would understate the rung by a third.</summary>
+    public static long ExpectedGoldForRung(int tier)
     {
         long total = 0;
-        for (int L = Math.Max(level, 1); L < Math.Max(level, 1) + Constants.GearTierLevels; L++)
-            total += ExpectedGoldPerLevel(Math.Min(L, Constants.MaxLevel));
+        for (int t = Math.Max(tier, 1); t < Math.Max(tier, 1) + Constants.GearTierSpan; t++)
+            total += ExpectedGoldPerTier(Math.Min(t, Constants.MaxItemTier));
         return total;
     }
 
     // ── Item pricing ─────────────────────────────────────────────────────────
-    // The engine stores no price anywhere: ItemRecord carries Name/Pic/Type/Durability/VitalAmount/
-    // SpellNum/Power/LevelReq and nothing else, and every price in the game is a BarterItemRecord line on a
-    // shop. So a price has to be DERIVED, or the armory's 471 items become ~900 hand-typed numbers with
-    // nothing keeping them consistent with each other or with income.
+    // The engine stores no price on an item: every price is a BarterItemRecord line on a shop. So a shop
+    // that does not name one needs the number DERIVED, or a few hundred authored items become a thousand
+    // hand-typed figures with nothing keeping them consistent with each other or with income.
     //
-    // GEAR IS CHEAP; SINKS BITE. A full four-piece tier upgrade costs about a tenth of the gold earned
-    // across the rung it covers, so buying up is never the thing a player is saving for. The drains that
-    // actually consume income are repair, consumables and the guild-scale sinks below.
+    // GEAR IS CHEAP; UPKEEP BITES. A full four-piece rung upgrade costs about a tenth of the gold earned
+    // across the rung it covers, so buying up is never the thing a player saves for. What actually consumes
+    // income is repair and consumables.
 
-    /// <summary>Share of a tier's rung income that one piece of equipment costs.  Four slots at
+    /// <summary>Share of a rung's income that one piece of equipment costs.  Four slots at
     /// <c>0.025</c> puts a full kit at a tenth of the rung.</summary>
     private const double EquipmentTierShare = 0.025;
 
-    /// <summary>Share of a tier's rung income that a spell scroll costs.  Dearer than a single piece of
+    /// <summary>Share of a rung's income that a spell scroll costs.  Dearer than a single piece of
     /// gear because a scroll is permanent — it teaches the spell and is consumed, where armor wears out
     /// and is replaced every rung anyway.</summary>
     private const double ScrollTierShare = 0.05;
 
-    /// <summary>Share of ONE level's income that a potion costs.  Consumables are priced per level rather
-    /// than per rung because they are bought continuously rather than once a tier.</summary>
-    private const double PotionLevelShare = 0.002;
+    /// <summary>Share of ONE tier's income that a potion costs.  Consumables are priced per tier rather
+    /// than per rung because they are bought continuously rather than once a rung.</summary>
+    private const double PotionTierShare = 0.002;
 
     /// <summary>What a shop pays for an item a player brings in, as a percent of its
     /// <see cref="ItemValue"/>.  Well under half, so vendoring drops supplements income without becoming
     /// the main way to earn — the drop tables already pay ~22,000 items across the max band.</summary>
     public const int SellBackPercent = 25;
 
-    // The medium-bulk Power an on-level piece carries, from the armory generator's own rule:
-    // Power = round(0.40 x statBudget(level) x bulkMul), bulk 0.75 / 1.00 / 1.25. Restated here so pricing
-    // can ask "how strong is this piece FOR its tier" without loading the generator — a heavy piece costs
-    // 1.25x a medium one at the same tier, a light piece 0.75x, which falls out of the ratio directly.
+    // The Power a medium-bulk piece carries at its own tier, so pricing can ask "how strong is this piece
+    // FOR its tier" — a heavy piece costs 1.25x a medium one at the same tier and a light piece 0.75x, which
+    // falls out of the ratio directly. The ramp below is the budget a tier is worth (Base at tier 1, PerTier
+    // added each rung after) and the share of it a medium piece carries.
     private const double ReferencePowerShare = 0.40;
+    private const int ReferencePowerBase = 20;
+    private const int ReferencePowerPerTier = 3;
 
-    /// <summary>Power a medium-bulk piece carries at <paramref name="level"/> — the divisor that turns an
+    /// <summary>Power a medium-bulk piece carries at <paramref name="tier"/> — the divisor that turns an
     /// item's Power into "how strong for its tier", so bulk prices itself.</summary>
-    public static int ReferencePower(int level) =>
+    public static int ReferencePower(int tier) =>
         Math.Max(1, (int)Math.Round(
-            (Constants.PlayerBaseStatTotal + Constants.PointsPerLevel * (Math.Max(level, 1) - 1)) * ReferencePowerShare,
+            (ReferencePowerBase + ReferencePowerPerTier * (Math.Max(tier, 1) - 1)) * ReferencePowerShare,
             MidpointRounding.AwayFromZero));
 
     /// <summary>What a shop charges for <paramref name="item"/>, in gold.
     ///
     /// <para><paramref name="spell"/> is required only for a <see cref="ItemType.Spell"/> scroll and is
-    /// ignored otherwise: a scroll carries no <c>LevelReq</c> of its own — the gate lives on the spell it
+    /// ignored otherwise: a scroll carries no <c>Tier</c> of its own — the gate lives on the spell it
     /// teaches — so its tier has to come from there.  A scroll passed without its spell falls back to the
     /// floor rather than pricing at zero.</para>
     ///
@@ -116,16 +119,16 @@ public static class EconomyFormulas
 
         if (ItemRecord.IsEquipment(item.Type))
         {
-            double forTier = ExpectedGoldForTier(item.LevelReq) * EquipmentTierShare;
-            double bulk = (double)Math.Max((int)item.Power, 1) / ReferencePower(item.LevelReq);
+            double forTier = ExpectedGoldForRung(item.Tier) * EquipmentTierShare;
+            double bulk = (double)Math.Max((int)item.Power, 1) / ReferencePower(item.Tier);
             return Clamp(forTier * bulk);
         }
 
         if (item.Type == ItemType.Spell)
-            return Clamp(ExpectedGoldForTier(spell?.LevelReq ?? 0) * ScrollTierShare);
+            return Clamp(ExpectedGoldForRung(spell?.Tier ?? 0) * ScrollTierShare);
 
         // The six potion types.
-        return Clamp(ExpectedGoldPerLevel(item.LevelReq) * PotionLevelShare);
+        return Clamp(ExpectedGoldPerTier(item.Tier) * PotionTierShare);
     }
 
     /// <summary>What a shop pays for an item a player sells, in gold — <see cref="SellBackPercent"/>% of
@@ -165,17 +168,17 @@ public static class EconomyFormulas
     // ── The repair rate, and why it is keyed on Power ────────────────────────
     // Gold per durability point is Power / RepairPowerDivisor. Keyed on POWER, not the item's value:
     // value grows as L^2.675 (it is a share of a rung's income) while the gold a fight earns grows as
-    // about L^1.3, so a value-priced repair is wrong by an exponent — 22% of a level's income at tier 20
+    // about T^1.3, so a value-priced repair is wrong by an exponent — 22% of a tier's income at tier 20
     // against 5,433% at tier 235, which no choice of percentage fixes. Power grows about linearly in
-    // level. At 40 a full kit costs 36-51% of a level's income in the mid and max bands and 19-26% in
+    // tier. At 40 a full kit costs 36-51% of a tier's income in the mid and top bands and 19-26% in
     // the low band, so upkeep climbs as the game gets harder and always leaves at least half the take.
     //
     // TUNING: raise the divisor to make repair cheaper. Re-measure with .Tools/Simulations/FightSim, whose
     // last section prices a full kit against income at a sweep of candidate divisors.
     //
     // TWO TRAPS when re-measuring, both of which have already produced a wrong answer:
-    //   Compare like for like. Repair per POINT against income per LEVEL makes Power look hopelessly
-    //   behind, but durability lost per level and income both scale with kills per level and cancel.
+    //   Compare like for like. Repair per POINT against income per TIER makes Power look hopelessly
+    //   behind, but durability lost per tier and income both scale with the same play and cancel.
     //   Enumerate SLOTS, not events. GetPlayerProtection calls DegradeArmor once per equipped defensive
     //   slot on every incoming blow, so armor, helmet and shield all chip on the same event and a
     //   successful block wears the shield again on top.
@@ -254,38 +257,12 @@ public static class EconomyFormulas
     /// <summary>Gold to set your spawn point at an inn. Flat, like every other price here.</summary>
     public static long InnSpawnCost() => Constants.SpawnCostMinimum;
 
-    // Every one of these was a flat constant sized for the early game: 1,000 to found a guild, 1,000 to
-    // declare a war, 1,000 to challenge a territory, 10 to send mail. Measured against income they are a
-    // meaningful commitment at level 20 (a guild cost a fifth of the whole low band) and free by level
-    // 100 — a guild at level 255 cost 0.0001 of a single level's earnings. Quoting each as a share of
-    // ExpectedGoldPerLevel keeps its INTENT — "a guild is a real commitment" — true at every level, which
-    // a constant cannot do against a curve that spans 137,000x.
-    //
-    // Each share below is a fraction of ONE level's income at the acting player's level. The player's
-    // level is the right axis even for guild-scale costs: guild level is 0-5 and says nothing about how
-    // wealthy the members are, so a level-5 guild of level-20 players and one of level-255 players would
-    // otherwise pay the same for a war.
-
-    // ── Why these costs are flat ────────────────────────────────────────
-    // They were, briefly, and it was a hole. Every one of them is paid by whoever CLICKS: a guild has its
-    // level-1 alt declare the war, or mails the goods through a mule, and BandScale floors at 1.0 — so a
-    // 906,226-gold declaration costs 1,000 and a 230,026-gold parcel costs 10. Scaling a cost by the actor's
-    // level only works when the actor cannot be chosen, and for anything paid from a shared vault, or on
-    // behalf of someone else, it always can be.
-    //
-    // Guild costs are also collective in a second sense: the vault is filled by the whole roster, so pinning
-    // its price to one member's level is arbitrary even without the exploit. They stay flat, and the guild
-    // economy stays an unscaled sub-economy — which is why the vault INCOME side is flat too, rather than
-    // one half of it scaling away from the other.
-
     // ── Postage ──────────────────────────────────────────────────────────────
     // Two flat parts plus a share of what is in the parcel.
     //
-    // The flat parts stay flat for the mule reason above, and stay SMALL because mail is a level-1
-    // feature: any flat fee big enough to matter at level 255 (income ~10.9M a level) would be
-    // unaffordable at level 5 (income 296). That tension is unresolvable with a constant, which is why
-    // the scaling part is keyed on the PARCEL instead of the payer — a shipment's worth cannot be
-    // minimized by handing it to an alt, so the exploit that killed level-scaling does not apply.
+    // The scaling part is keyed on the PARCEL rather than on the payer, because every flat fee here is paid
+    // by whoever CLICKS: a cost scaled to the actor is minimized by handing the job to an alt, and a
+    // shipment's worth cannot be.
     //
     // Sits deliberately below the 5% that MarketSystem.SaleTax and MailSystem.CodTax both charge: those
     // two buy escrow (and, for the market, discovery), and plain mail buys neither. The 3-point spread is
@@ -316,13 +293,13 @@ public static class EconomyFormulas
     // stale the moment repair is retuned, and it fails silently — the two sides can drift from 1.3x apart
     // at tier 20 to 87x apart at 255, all in the caster's favor, with nothing throwing.
 
-    /// <summary>Gold a warrior burns repairing one point of durability on on-level gear at
-    /// <paramref name="level"/> — the reference a caster's per-cast reagent bill is matched to.
+    /// <summary>Gold burned repairing one point of durability on on-tier gear at
+    /// <paramref name="tier"/> — the reference an upkeep cost elsewhere can be matched to.
     ///
     /// <para>Priced against a synthetic reference piece (the tier's medium bulk at
     /// <see cref="ReferencePower"/>) rather than whatever the player happens to be holding, so the two
     /// classes are compared on the same footing and a caster's costs do not move when a warrior swaps
     /// weapons.</para></summary>
-    public static double RepairGoldPerDurabilityPoint(int level) =>
-        RepairGoldPerPoint(ReferencePower(level));
+    public static double RepairGoldPerDurabilityPoint(int tier) =>
+        RepairGoldPerPoint(ReferencePower(tier));
 }

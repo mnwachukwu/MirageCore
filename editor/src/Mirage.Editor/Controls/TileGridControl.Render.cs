@@ -314,8 +314,8 @@ public sealed partial class TileGridControl : Control
                             TileType.Blocked => BlockedBrush,
                             TileType.Warp => WarpBrush,
                             TileType.Item => ItemBrush,
-                            TileType.Key => KeyBrush,
-                            TileType.KeyOpen => KeyOpenBrush,
+                            TileType.Door => DoorBrush,
+                            TileType.Plate => PlateBrush,
                             TileType.NpcAvoid => NpcAvoidBrush,
                             _ => (IBrush?)null,
                         };
@@ -483,8 +483,8 @@ public sealed partial class TileGridControl : Control
         TileType.Blocked => BlockedBorderPen,
         TileType.Warp => WarpBorderPen,
         TileType.Item => ItemBorderPen,
-        TileType.Key => KeyBorderPen,
-        TileType.KeyOpen => KeyOpenBorderPen,
+        TileType.Door => DoorBorderPen,
+        TileType.Plate => PlateBorderPen,
         TileType.NpcAvoid => NpcAvoidBorderPen,
         TileType.LayerRamp => LayerRampBorderPen,
         _ => null,
@@ -725,7 +725,7 @@ public sealed partial class TileGridControl : Control
         // Door-open preview (toggle): a Key tile hides its topmost populated Ground layer (the door
         // graphic), matching the client's runtime reveal.  Off → the door renders closed for authoring.
         // Anim-flagged layers hide on the editor's anim-preview off phase.
-        int hideGround = doorPreview && tile.Type == TileType.Key
+        int hideGround = doorPreview && tile.Type == TileType.Door
             ? LayerCell.TopmostNonEmptyIndex(tile.Ground) : -1;
         // On the center cell (focusStack != null) every stack but the active one dims, so the layer being
         // authored stands out; neighbors pass null and render at full strength (they dim as a whole cell).
@@ -746,8 +746,8 @@ public sealed partial class TileGridControl : Control
                 TileType.Blocked => BlockedBrush,
                 TileType.Warp => WarpBrush,
                 TileType.Item => ItemBrush,
-                TileType.Key => KeyBrush,
-                TileType.KeyOpen => KeyOpenBrush,
+                TileType.Door => DoorBrush,
+                TileType.Plate => PlateBrush,
                 TileType.NpcAvoid => NpcAvoidBrush,
                 TileType.LayerRamp => RampOverlay.IsMixedBlock(map, x, y) ? LayerRampMixedBrush : LayerRampBrush,
                 _ => null,

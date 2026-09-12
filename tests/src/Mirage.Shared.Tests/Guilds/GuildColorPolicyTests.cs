@@ -72,7 +72,6 @@ public class GuildColorPolicyTests
         Assert.That(GameColor.AdminChat, Is.EqualTo(GameColor.Rose));
         Assert.That(GameColor.Notice, Is.EqualTo(GameColor.Periwinkle));
         Assert.That(GameColor.Guild, Is.EqualTo(GameColor.Emerald));
-        Assert.That(GameColor.War, Is.EqualTo(GameColor.Crimson));
         Assert.That(GameColor.Warning, Is.EqualTo(GameColor.Coral));
         Assert.That(GameColor.Npc, Is.EqualTo(GameColor.OliveGold));
         Assert.That(GameColor.Rgb.Length, Is.EqualTo(30));

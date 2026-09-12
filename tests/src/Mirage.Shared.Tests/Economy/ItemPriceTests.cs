@@ -18,8 +18,8 @@ public class ItemPriceTests
         // and nothing would report it. Asserted against the real formula so it tracks any retune.
         var top = new ItemRecord
         {
-            Name = "top", Type = ItemType.Weapon, LevelReq = Constants.MaxLevel,
-            Power = (short)EconomyFormulas.ReferencePower(Constants.MaxLevel), Durability = 50,
+            Name = "top", Type = ItemType.Weapon, Tier = Constants.MaxItemTier,
+            Power = (short)EconomyFormulas.ReferencePower(Constants.MaxItemTier), Durability = 50,
         };
         Assert.That(EconomyFormulas.ItemValue(top), Is.GreaterThan(short.MaxValue),
             "the top of the ladder must exceed a short, or the int is unjustified");
@@ -57,7 +57,7 @@ public class ItemPriceTests
         // next time anyone touched the item in the editor — silently, and only for the items that matter.
         var weapon = new ItemRecord
         {
-            Name = "Oddly Cheap Sword", Type = ItemType.Weapon, LevelReq = 100, Power = 127, Durability = 50,
+            Name = "Oddly Cheap Sword", Type = ItemType.Weapon, Tier = 100, Power = 127, Durability = 50,
             Price = 1,
         };
         weapon.Normalize();
@@ -92,7 +92,7 @@ public class ItemPriceTests
         {
             Name = "Jade Seal", Type = ItemType.None, Price = 461, NonJunkable = true,
             // Junk left over from whatever this row used to be — Normalize should strip all of it.
-            Durability = 100, Power = 40, LevelReq = 15, VitalAmount = 9, SpellNum = 3,
+            Durability = 100, Power = 40, Tier = 15, VitalAmount = 9, SpellNum = 3,
         };
 
         gem.Normalize();
@@ -104,7 +104,7 @@ public class ItemPriceTests
             Assert.That(EconomyFormulas.ItemValue(gem), Is.Zero, "the formula declines to price it");
             Assert.That(gem.Durability, Is.Zero);
             Assert.That(gem.Power, Is.Zero);
-            Assert.That(gem.LevelReq, Is.Zero, "treasure is not gated — a gem is worth what it is worth");
+            Assert.That(gem.Tier, Is.Zero, "treasure is not gated — a gem is worth what it is worth");
             Assert.That(gem.VitalAmount, Is.Zero);
             Assert.That(gem.SpellNum, Is.Zero);
         });
@@ -140,7 +140,7 @@ public class ItemPriceTests
         // offering more than a quarter wins the sale. Raising it quietly kills the player economy.
         var item = new ItemRecord
         {
-            Name = "kit piece", Type = ItemType.Armor, LevelReq = 120,
+            Name = "kit piece", Type = ItemType.Armor, Tier = 120,
             Power = (short)EconomyFormulas.ReferencePower(120), Durability = 50,
         };
         int price = EconomyFormulas.ItemValue(item);

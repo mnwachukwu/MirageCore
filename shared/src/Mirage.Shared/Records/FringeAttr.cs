@@ -34,11 +34,11 @@ public sealed record FringeAttr
     public short ItemQuantity { get; init; }
     public short ItemRespawnSecs { get; init; }
 
-    // Key (a locked door)
+    // Door (blocked until opened with the right item)
     public short KeyItemNum { get; init; }
     public bool KeyIsConsumed { get; init; }
 
-    // KeyOpen (a plate that opens a door elsewhere)
+    // Plate (opens a door elsewhere)
     public ushort DoorX { get; init; }
     public ushort DoorY { get; init; }
     public WorldLayer DoorLayer { get; init; }

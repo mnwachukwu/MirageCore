@@ -186,7 +186,7 @@ public sealed partial class SpellRowViewModel : ObservableObject, ILockableRow
             ItemNum = r.ItemNum,
             ItemQuantity = r.ItemQuantity,
             IntReq = r.IntReq,
-            LevelReq = r.LevelReq,
+            Tier = r.Tier,
         };
     }
 

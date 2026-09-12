@@ -214,22 +214,22 @@ public class FringeAuthoringTests
     }
 
     [Test]
-    public void FringeKey_AuthorsADoorOnTheFringePlane()
+    public void FringeDoor_AuthorsADoorOnTheFringePlane()
     {
         var (vm, map) = Build();
-        vm.SelectedAttributeTool = AttributeTool.Key;
+        vm.SelectedAttributeTool = AttributeTool.Door;
         vm.SelectedAttributeLayer = WorldLayer.Fringe;
 
         vm.TileClicked(new TileClick(6, 6, false, false));   // opens the key dialog
-        Assume.That(vm.ShowKeyDialog, Is.True);
+        Assume.That(vm.ShowDoorDialog, Is.True);
         vm.KeyItemNum = 3;
         vm.KeyTake = true;
-        vm.ConfirmKeyCommand.Execute(null);
+        vm.ConfirmDoorCommand.Execute(null);
 
         Assert.Multiple(() =>
         {
             Assert.That(map.Tile[6, 6].FringeAttr, Is.Not.Null, "a fringe door lands on the FringeAttr sub-record");
-            Assert.That(map.Tile[6, 6].FringeAttr!.Type, Is.EqualTo(TileType.Key));
+            Assert.That(map.Tile[6, 6].FringeAttr!.Type, Is.EqualTo(TileType.Door));
             Assert.That(map.Tile[6, 6].FringeAttr!.KeyItemNum, Is.EqualTo((short)3), "required key item");
             Assert.That(map.Tile[6, 6].FringeAttr!.KeyIsConsumed, Is.True, "the take flag");
             Assert.That(map.Tile[6, 6].Type, Is.EqualTo(TileType.Walkable), "the GROUND plane is untouched");
@@ -237,22 +237,22 @@ public class FringeAuthoringTests
     }
 
     [Test]
-    public void FringeKeyOpen_AuthorsOnTheFringePlane()
+    public void FringePlate_AuthorsOnTheFringePlane()
     {
         var (vm, map) = Build();
-        vm.SelectedAttributeTool = AttributeTool.KeyOpen;
+        vm.SelectedAttributeTool = AttributeTool.Plate;
         vm.SelectedAttributeLayer = WorldLayer.Fringe;
 
         vm.TileClicked(new TileClick(6, 6, false, false));   // opens the key-open dialog
-        Assume.That(vm.ShowKeyOpenDialog, Is.True);
-        vm.KeyOpenDoorX = 2;
-        vm.KeyOpenDoorY = 4;
-        vm.ConfirmKeyOpenCommand.Execute(null);
+        Assume.That(vm.ShowPlateDialog, Is.True);
+        vm.PlateDoorX = 2;
+        vm.PlateDoorY = 4;
+        vm.ConfirmPlateCommand.Execute(null);
 
         Assert.Multiple(() =>
         {
             Assert.That(map.Tile[6, 6].FringeAttr, Is.Not.Null);
-            Assert.That(map.Tile[6, 6].FringeAttr!.Type, Is.EqualTo(TileType.KeyOpen));
+            Assert.That(map.Tile[6, 6].FringeAttr!.Type, Is.EqualTo(TileType.Plate));
             Assert.That(map.Tile[6, 6].FringeAttr!.DoorX, Is.EqualTo((short)2), "door x");
             Assert.That(map.Tile[6, 6].FringeAttr!.DoorY, Is.EqualTo((short)4), "door y");
             Assert.That(map.Tile[6, 6].Type, Is.EqualTo(TileType.Walkable), "the GROUND plane is untouched");
@@ -262,24 +262,24 @@ public class FringeAuthoringTests
     // A KeyOpen's target-door layer is its own field and round-trips through the dialog, so a plate can open a
     // Key door on a DIFFERENT plane than the plate itself.
     [Test]
-    public void KeyOpenDoorLayer_Fringe_RoundTrips()
+    public void PlateDoorLayer_Fringe_RoundTrips()
     {
         var (vm, map) = Build();
-        vm.SelectedAttributeTool = AttributeTool.KeyOpen;
+        vm.SelectedAttributeTool = AttributeTool.Plate;
         vm.SelectedAttributeLayer = WorldLayer.Ground;   // the plate itself is on the ground
 
         vm.TileClicked(new TileClick(6, 6, false, false));
-        Assume.That(vm.ShowKeyOpenDialog, Is.True);
-        vm.KeyOpenDoorX = 2;
-        vm.KeyOpenDoorY = 4;
-        vm.KeyOpenDoorLayer = WorldLayer.Fringe;  // opens a FRINGE door
-        vm.ConfirmKeyOpenCommand.Execute(null);
+        Assume.That(vm.ShowPlateDialog, Is.True);
+        vm.PlateDoorX = 2;
+        vm.PlateDoorY = 4;
+        vm.PlateDoorLayer = WorldLayer.Fringe;  // opens a FRINGE door
+        vm.ConfirmPlateCommand.Execute(null);
 
         Assert.That(map.Tile[6, 6].DoorLayer, Is.EqualTo(WorldLayer.Fringe), "DoorLayer carries the target-door layer");
 
-        vm.KeyOpenDoorLayer = WorldLayer.Ground;   // clobber, then re-open on the same tile
+        vm.PlateDoorLayer = WorldLayer.Ground;   // clobber, then re-open on the same tile
         vm.TileClicked(new TileClick(6, 6, false, false));
-        Assert.That(vm.KeyOpenDoorLayer, Is.EqualTo(WorldLayer.Fringe), "door layer re-reads");
+        Assert.That(vm.PlateDoorLayer, Is.EqualTo(WorldLayer.Fringe), "door layer re-reads");
     }
 
     // ── Delete action (brush erase) ──────────────────────────────────────────────

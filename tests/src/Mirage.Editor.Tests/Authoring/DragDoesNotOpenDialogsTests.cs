@@ -84,8 +84,8 @@ public class DragDoesNotOpenDialogsTests
     /// the worst of them, since the dialog it opens is asking where the tile leads.</summary>
     [TestCase(AttributeTool.Warp)]
     [TestCase(AttributeTool.Item)]
-    [TestCase(AttributeTool.Key)]
-    [TestCase(AttributeTool.KeyOpen)]
+    [TestCase(AttributeTool.Door)]
+    [TestCase(AttributeTool.Plate)]
     public void DraggingWithADialogAttribute_OpensNothing(AttributeTool tool)
     {
         var (vm, _) = Build();
@@ -97,8 +97,8 @@ public class DragDoesNotOpenDialogsTests
         {
             Assert.That(vm.ShowWarpDialog, Is.False);
             Assert.That(vm.ShowItemDialog, Is.False);
-            Assert.That(vm.ShowKeyDialog, Is.False);
-            Assert.That(vm.ShowKeyOpenDialog, Is.False);
+            Assert.That(vm.ShowDoorDialog, Is.False);
+            Assert.That(vm.ShowPlateDialog, Is.False);
         });
     }
 

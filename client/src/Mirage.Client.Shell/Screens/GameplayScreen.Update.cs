@@ -98,7 +98,7 @@ public sealed partial class GameplayScreen : IGameScreen
         if (!indoors)
             _particles.EmitWeather(_ctx.State.Weather, _camera, _camVelY, dtSec);
         _particles.Update(dtSec);
-        BloodProcessor.Process(_ctx.State, dtSec);
+        DecalProcessor.Process(_ctx.State, dtSec);
         ReleaseDeferredHits();
 
         // Tick gate — all action sends are capped at TickMs intervals so rapid taps

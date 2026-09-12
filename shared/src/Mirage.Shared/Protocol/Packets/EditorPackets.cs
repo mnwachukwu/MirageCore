@@ -135,7 +135,7 @@ public sealed record EditorSaveItemPacket : IPacket
     [JsonPropertyName("vitalAmount")] public short VitalAmount { get; init; }
     [JsonPropertyName("spellNum")] public short SpellNum { get; init; }
     [JsonPropertyName("power")] public short Power { get; init; }
-    [JsonPropertyName("levelReq")] public short LevelReq { get; init; }
+    [JsonPropertyName("tier")] public short Tier { get; init; }
     // Item restriction flags. See ItemRecord for behavior.
     [JsonPropertyName("nonTradeable")] public bool NonTradeable { get; init; }
     [JsonPropertyName("nonListable")] public bool NonListable { get; init; }
@@ -206,7 +206,7 @@ public sealed record EditorSaveSpellPacket : IPacket
     [JsonPropertyName("itemNum")] public short ItemNum { get; init; }
     [JsonPropertyName("itemQuantity")] public short ItemQuantity { get; init; }
     [JsonPropertyName("intReq")] public short IntReq { get; init; }
-    [JsonPropertyName("levelReq")] public short LevelReq { get; init; }
+    [JsonPropertyName("tier")] public short Tier { get; init; }
 }
 
 public sealed record EditorSaveMapPacket : IPacket
@@ -269,7 +269,7 @@ public sealed record EditorDataPacket : IPacket
     [JsonPropertyName("currencyItems")] public int[] CurrencyItems { get; init; } = [];
     /// <summary>Just enough of every item and spell to answer "could this class start with it?" — the
     /// class editor's starting-loadout tables have to evaluate the same equip and learn gates character
-    /// creation will, and those need Power / VitalAmount, LevelReq and the class list.
+    /// creation will, and those need Power / VitalAmount, Tier and the class list.
     ///
     /// <para>Sent from the LIVE world rather than read from the editor's offline folder, which may be a
     /// different world entirely. Same reasoning as <see cref="CurrencyItems"/> above: a narrow projection
@@ -292,14 +292,14 @@ public sealed record EditorDataPacket : IPacket
         [property: JsonPropertyName("num")] int Num,
         [property: JsonPropertyName("type")] ItemType Type,
         [property: JsonPropertyName("power")] int Power,
-        [property: JsonPropertyName("levelReq")] short LevelReq,
+        [property: JsonPropertyName("tier")] short Tier,
         [property: JsonPropertyName("price")] int Price = 0);
 
     public sealed record SpellGate(
         [property: JsonPropertyName("num")] int Num,
         [property: JsonPropertyName("type")] SpellType Type,
         [property: JsonPropertyName("vitalAmount")] short VitalAmount,
-        [property: JsonPropertyName("levelReq")] short LevelReq);
+        [property: JsonPropertyName("tier")] short Tier);
 
     /// <summary>NPC footprint sizes (EffectiveSize, 1-based; index 0 unused) so the map editor renders +
     /// validates multi-tile spawn footprints without fetching every full NPC record.</summary>
@@ -322,7 +322,7 @@ public sealed record UpdateSpellPacket : IPacket
     [JsonPropertyName("itemNum")] public short ItemNum { get; init; }
     [JsonPropertyName("itemQuantity")] public short ItemQuantity { get; init; }
     [JsonPropertyName("intReq")] public short IntReq { get; init; }
-    [JsonPropertyName("levelReq")] public short LevelReq { get; init; }
+    [JsonPropertyName("tier")] public short Tier { get; init; }
 }
 
 public sealed record UpdateShopPacket : IPacket

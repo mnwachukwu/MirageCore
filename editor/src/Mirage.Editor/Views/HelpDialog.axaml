@@ -164,10 +164,10 @@
         <Border BorderThickness="4,0,0,0" BorderBrush="{DynamicResource MirageWarnBrush}"
                 Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
           <StackPanel Spacing="3">
-            <TextBlock x:Name="_attrKey" FontWeight="SemiBold" Foreground="#FFBB44"/>
-            <TextBlock x:Name="_attrKeyDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
-            <TextBlock x:Name="_attrKeyDoorDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
-            <TextBlock x:Name="_attrKeyData" Foreground="#5A5480" FontSize="10"/>
+            <TextBlock x:Name="_attrDoor" FontWeight="SemiBold" Foreground="#FFBB44"/>
+            <TextBlock x:Name="_attrDoorDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+            <TextBlock x:Name="_attrDoorRevealDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+            <TextBlock x:Name="_attrDoorData" Foreground="#5A5480" FontSize="10"/>
           </StackPanel>
         </Border>
 
@@ -175,9 +175,9 @@
         <Border BorderThickness="4,0,0,0" BorderBrush="#A020F0"
                 Background="{DynamicResource MirageBgAltBrush}" CornerRadius="0,4,4,0" Padding="10,8">
           <StackPanel Spacing="3">
-            <TextBlock x:Name="_attrKeyOpen" FontWeight="SemiBold" Foreground="#CC66FF"/>
-            <TextBlock x:Name="_attrKeyOpenDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
-            <TextBlock x:Name="_attrKeyOpenData" Foreground="#5A5480" FontSize="10"/>
+            <TextBlock x:Name="_attrPlate" FontWeight="SemiBold" Foreground="#CC66FF"/>
+            <TextBlock x:Name="_attrPlateDesc" TextWrapping="Wrap" Foreground="#CFC9E4" FontSize="11"/>
+            <TextBlock x:Name="_attrPlateData" Foreground="#5A5480" FontSize="10"/>
           </StackPanel>
         </Border>
 

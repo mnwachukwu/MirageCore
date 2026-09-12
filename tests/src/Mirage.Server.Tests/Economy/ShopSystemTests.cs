@@ -264,7 +264,7 @@ public class ShopSystemTests
         var sword = world.Items[Sword];
         sword.Type = ItemType.Weapon;
         sword.Power = 40;
-        sword.LevelReq = 10;
+        sword.Tier = 10;
         sword.Durability = 100;
         p.Inv[1].Num = Sword;
         p.Inv[1].Dur = 100;   // pristine
@@ -290,7 +290,7 @@ public class ShopSystemTests
         var sword = world.Items[Sword];
         sword.Type = ItemType.Weapon;
         sword.Power = 40;
-        sword.LevelReq = 10;
+        sword.Tier = 10;
         sword.Durability = 100;
 
         int pristine = EconomyFormulas.ItemSellValue(sword, 100);
@@ -475,7 +475,7 @@ public class ShopSystemTests
         world.Shops[ShopNum].FixesItems = true;
         world.Items[Sword].Type = ItemType.Weapon;
         world.Items[Sword].Durability = 100;
-        world.Items[Sword].LevelReq = RepairTier;
+        world.Items[Sword].Tier = RepairTier;
         world.Items[Sword].Power = (short)EconomyFormulas.ReferencePower(RepairTier);
         p.Inv[2].Num = Sword;
         p.Inv[2].Dur = currentDur;

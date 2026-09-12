@@ -73,11 +73,11 @@ public sealed partial class MirageGame : Game
     // _lightRT is the ground/whole-view map; _lightRTFringe is the fringe map built only on the split path.
     private RenderTarget2D? _lightRT;
     private RenderTarget2D? _lightRTFringe;
-    // Blood metaball accumulation target (same size as _worldRT).  Blood blobs are MAX-blended into this so
+    // Stain metaball accumulation target (same size as _worldRT).  Blobs are MAX-blended into this so
     // overlapping pools form a smooth UNION (no darkening seams), then it's composited (tinted) into the
     // world below the entities.
-    private RenderTarget2D? _bloodRT;
-    private RenderTarget2D? _bloodRTFringe;   // two-layer world: bridge-top blood field (composited on the deck)
+    private RenderTarget2D? _decalRT;
+    private RenderTarget2D? _decalRTFringe;   // two-layer world: bridge-top stain field (composited on the deck)
     // Procedural radial-gradient light halo textures.  Created once in LoadContent.
     // Warm light halo layers, white-luminance radial gradients. Both drawn per light in the MAX pass
     // (overlapping lights don't additively bleed): a static outer reach + a flickering inner flame core.

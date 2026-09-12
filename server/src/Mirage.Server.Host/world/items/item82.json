@@ -5,7 +5,7 @@
   "type": "Helmet",
   "durability": 770,
   "power": 100,
-  "levelReq": 105,
+  "tier": 105,
   "nonTradeable": false,
   "nonListable": false,
   "nonMailable": false,

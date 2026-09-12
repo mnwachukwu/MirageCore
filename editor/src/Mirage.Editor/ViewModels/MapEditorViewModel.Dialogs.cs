@@ -39,7 +39,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
     public static short ItemTileQuantityMax => short.MaxValue;
     [ObservableProperty] private short _itemTileRespawnSeconds;
 
-    [ObservableProperty] private bool _showKeyDialog;
+    [ObservableProperty] private bool _showDoorDialog;
     [ObservableProperty] private short _keyItemNum;
     // Data2 = take flag (1 = consume key on use, 0 = keep).  Data3 = 0 (unused).
     [ObservableProperty] private bool _keyTake;
@@ -49,13 +49,13 @@ public sealed partial class MapEditorViewModel : ObservableObject
     [ObservableProperty] private bool _blockedBlocksLight = true;
     [ObservableProperty] private bool _blockedBlocksSight = true;
 
-    [ObservableProperty] private bool _showKeyOpenDialog;
+    [ObservableProperty] private bool _showPlateDialog;
     // Data1/2 = coordinates of the Key (door) tile on the same map.
-    [ObservableProperty] private ushort _keyOpenDoorX;
-    [ObservableProperty] private ushort _keyOpenDoorY;
+    [ObservableProperty] private ushort _plateDoorX;
+    [ObservableProperty] private ushort _plateDoorY;
     // Data3 = the target door's WorldLayer (0 Ground / 1 Fringe) — a KeyOpen can open a Key door on EITHER plane,
     // independent of the plane the KeyOpen plate itself sits on (e.g. a ground plate opening a fringe-deck gate).
-    [ObservableProperty] private WorldLayer _keyOpenDoorLayer = WorldLayer.Ground;
+    [ObservableProperty] private WorldLayer _plateDoorLayer = WorldLayer.Ground;
 
     [ObservableProperty] private bool _showNpcSpawnDialog;
     // The chosen eligible slot in the NPC-spawn pin picker (null until one is picked).
@@ -83,8 +83,8 @@ public sealed partial class MapEditorViewModel : ObservableObject
     // that quick.
     [ObservableProperty] private bool _warpRetain = true;
     [ObservableProperty] private bool _itemRetain = true;
-    [ObservableProperty] private bool _keyRetain = true;
-    [ObservableProperty] private bool _keyOpenRetain = true;
+    [ObservableProperty] private bool _doorRetain = true;
+    [ObservableProperty] private bool _plateRetain = true;
     [ObservableProperty] private bool _blockedRetain = true;
 
     // ── Retained values (set only by Confirm when *Retain is true; Alt+Click) ──
@@ -97,13 +97,13 @@ public sealed partial class MapEditorViewModel : ObservableObject
     private bool _hasRetainedItem;
     private short _retItemNum, _retItemQuantity, _retItemRespawn;
 
-    private bool _hasRetainedKey;
+    private bool _hasRetainedDoor;
     private short _retKeyItemNum;
     private bool _retKeyTake;
 
-    private bool _hasRetainedKeyOpen;
-    private ushort _retKeyOpenDoorX, _retKeyOpenDoorY;
-    private WorldLayer _retKeyOpenDoorLayer;
+    private bool _hasRetainedPlate;
+    private ushort _retPlateDoorX, _retPlateDoorY;
+    private WorldLayer _retPlateDoorLayer;
 
     // A wall stops everything until a dialog says otherwise, so these start where a plain wall does.
     private bool _retBlocksLight = true, _retBlocksSight = true;

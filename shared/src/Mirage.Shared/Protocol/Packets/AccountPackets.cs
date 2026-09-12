@@ -153,6 +153,11 @@ public sealed record ServerHelloPacket : IPacket
     /// which looks a game offers is the author's decision rather than a property of the atlas.</summary>
     [JsonPropertyName("appearances")]
     public IReadOnlyList<CharacterAppearance> Appearances { get; init; } = CharacterAppearance.DefaultSet;
+
+    /// <summary>What a stain on the ground looks like in this world, packed 0xRRGGBB. Sent here rather
+    /// than with the stains themselves: one color covers the world, and the client needs it before the
+    /// first map's stains arrive.</summary>
+    [JsonPropertyName("decalColor")] public uint DecalColor { get; init; } = 0x520808;
 }
 
 /// <summary>

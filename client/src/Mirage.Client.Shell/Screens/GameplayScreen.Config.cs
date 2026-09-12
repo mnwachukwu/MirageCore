@@ -61,7 +61,7 @@ public sealed partial class GameplayScreen : IGameScreen
         AlwaysShowBars = prefs.AlwaysShowBars;
         _skipPlayersWithTabTarget = prefs.SkipPlayersWithTabTarget;
         _showNpcNames = prefs.ShowNpcNames;
-        _showBlood = prefs.ShowBlood;
+        _showDecals = prefs.ShowDecals;
         _showOtherPlayerNames = prefs.ShowOtherPlayerNames;
         _showPlayerName = prefs.ShowPlayerName;
         _showCooldownBar = prefs.ShowCooldownBar;
@@ -98,7 +98,7 @@ public sealed partial class GameplayScreen : IGameScreen
         cc.ShowCombatNumbers = _ctx.OptionsPanel.ShowCombatNumbers;
         cc.SkipPlayersWithTabTarget = _ctx.OptionsPanel.SkipPlayersWithTabTarget;
         cc.ShowNpcNames = _ctx.OptionsPanel.ShowNpcNames;
-        cc.ShowBlood = _ctx.OptionsPanel.ShowBlood;
+        cc.ShowDecals = _ctx.OptionsPanel.ShowDecals;
         cc.ShowOtherPlayerNames = _ctx.OptionsPanel.ShowOtherPlayerNames;
         cc.ShowPlayerName = _ctx.OptionsPanel.ShowPlayerName;
         cc.ShowCooldownBar = _ctx.OptionsPanel.ShowCooldownBar;

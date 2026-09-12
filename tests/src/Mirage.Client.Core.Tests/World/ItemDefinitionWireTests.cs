@@ -33,9 +33,9 @@ public class ItemDefinitionWireTests
         return state;
     }
 
-    private static SendItemsPacket.ItemData Sword(short levelReq = 40) => new(
+    private static SendItemsPacket.ItemData Sword(short tier = 40) => new(
         Num: 7, Name: "Iron Sword", Pic: 3, Type: ItemType.Weapon, Durability: 50, VitalAmount: 0,
-        SpellNum: 0, Power: 12, LevelReq: levelReq, NonTradeable: false,
+        SpellNum: 0, Power: 12, Tier: tier, NonTradeable: false,
         NonListable: false, NonMailable: false, DestroyOnDrop: false, NonJunkable: false, Price: 250);
 
     /// <summary>The reported bug: gear is level-gated server-side, but the client dropped the number on
@@ -45,7 +45,7 @@ public class ItemDefinitionWireTests
     {
         var state = Apply(HandleSendItems, new SendItemsPacket { Items = [Sword()] });
 
-        Assert.That(state.Items[7]!.LevelReq, Is.EqualTo(40));
+        Assert.That(state.Items[7]!.Tier, Is.EqualTo(40));
     }
 
     [Test]
@@ -54,10 +54,10 @@ public class ItemDefinitionWireTests
         var state = Apply(HandleUpdateItem, new UpdateItemPacket
         {
             ItemNum = 7, Name = "Iron Sword", Pic = 3, Type = ItemType.Weapon,
-            Durability = 50, Power = 12, LevelReq = 40, Price = 250,
+            Durability = 50, Power = 12, Tier = 40, Price = 250,
         });
 
-        Assert.That(state.Items[7]!.LevelReq, Is.EqualTo(40));
+        Assert.That(state.Items[7]!.Tier, Is.EqualTo(40));
     }
 
     /// <summary>The other gate fields, which fail the same silent way.</summary>
@@ -71,7 +71,7 @@ public class ItemDefinitionWireTests
         {
             Assert.That(it.Type, Is.EqualTo(ItemType.Weapon));
             Assert.That(it.Power, Is.EqualTo(12), "drives the STR requirement line");
-            Assert.That(it.LevelReq, Is.EqualTo(40));
+            Assert.That(it.Tier, Is.EqualTo(40));
             Assert.That(it.Durability, Is.EqualTo(50));
             Assert.That(it.Price, Is.EqualTo(250));
         });

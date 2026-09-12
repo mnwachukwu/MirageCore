@@ -18,45 +18,46 @@ using System.Text;
 namespace Mirage.Client.Shell.Screens;
 
 /// <summary>Floating combat numbers: spawning and shifting them, and the deferred-hit queue behind
-/// them. A bolt's damage, death and blood are held until the projectile lands, so the number appears
+/// them. A bolt's damage, death and splatter are held until the projectile lands, so the number appears
 /// when the hit does rather than when it was rolled; bolts on one target are claimed FIFO so several
 /// stagger across their own arrivals. The public spawn/shift/clear entry points are what
 /// <c>IClientEvents</c> drives from the network layer.</summary>
 public sealed partial class GameplayScreen : IGameScreen
 {
     /// <summary>VitalDelta path (slotted NPC or player) — build the target ref and defer-or-float.</summary>
-    public void SpawnOrDeferVitalFloat(bool isNpc, int idx, int npcMap, int mapNum, int lx, int ly, float xoff, float yoff, string? text, Color color, float bloodIntensity)
+    public void SpawnOrDeferVitalFloat(bool isNpc, int idx, int npcMap, int mapNum, int lx, int ly, float xoff, float yoff, string? text, Color color, float splatterIntensity)
         => DeferOrFloat(isNpc ? new TargetRef(TargetKind.Npc, idx, npcMap) : new TargetRef(TargetKind.Player, idx, 0),
-            mapNum, lx, ly, xoff, yoff, text, color, bloodIntensity);
+            mapNum, lx, ly, xoff, yoff, text, color, splatterIntensity);
 
     /// <summary>Traversal-NPC path (positioned by world tile) — build the traversal ref and defer-or-float.</summary>
-    public void SpawnOrDeferTraversalFloat(int spawnMap, int spawnSlot, int mapNum, int x, int y, string? text, Color color, float bloodIntensity)
-        => DeferOrFloat(new TargetRef(TargetKind.Traversal, spawnMap, spawnSlot), mapNum, x, y, 0f, 0f, text, color, bloodIntensity);
+    public void SpawnOrDeferTraversalFloat(int spawnMap, int spawnSlot, int mapNum, int x, int y, string? text, Color color, float splatterIntensity)
+        => DeferOrFloat(new TargetRef(TargetKind.Traversal, spawnMap, spawnSlot), mapNum, x, y, 0f, 0f, text, color, splatterIntensity);
 
     /// <summary>Float a vital number now, OR — when it belongs to an in-flight spell projectile — defer it
     /// until the bolt would land, so the number appears in sync with the visible impact. The world position
     /// is captured now, since the entity may die or despawn before release.</summary>
-    private void DeferOrFloat(TargetRef target, int mapNum, int lx, int ly, float xoff, float yoff, string? text, Color color, float bloodIntensity)
+    private void DeferOrFloat(TargetRef target, int mapNum, int lx, int ly, float xoff, float yoff, string? text, Color color, float splatterIntensity)
     {
         long release = ClaimRelease(target);
         bool onScreen = TryEntityScreen(mapNum, lx, ly, xoff, yoff, out float sx, out float sy);
-        int tsize = TargetFootprintSize(target);   // center the number/blood on an oversize NPC's body, not its anchor
+        int tsize = TargetFootprintSize(target);   // center the number/splatter on an oversize NPC's body, not its anchor
         if (release > 0 && onScreen)
         {
             float cx = sx + tsize * Constants.PicX / 2f;
             float cy = sy - FloatTextGapAbove;
-            // Defer BOTH the number and the blood burst to the bolt's arrival, so they land with the impact.
+            // Defer BOTH the number and the splatter burst to the bolt's arrival, so they land with the impact.
             _deferredFloats.Add(new DeferredFloat
             {
                 WorldX = cx + _camera.CameraX, WorldY = cy + _camera.CameraY, Text = text, Color = color,
-                ReleaseMs = release, BloodIntensity = bloodIntensity, Layer = LayerAtTile(mapNum, lx, ly),
+                ReleaseMs = release, SplatterIntensity = splatterIntensity, Layer = LayerAtTile(mapNum, lx, ly),
             });
             return;
         }
-        // Immediate (melee, or an unresolved/instant bolt): number now, blood burst now.
+        // Immediate: the number now, the burst now.
         if (text is not null) SpawnFloatingTextAtEntity(mapNum, lx, ly, xoff, yoff, text, color, tsize);
-        if (bloodIntensity > 0f && _showBlood && onScreen)
-            _particles.EmitBloodSplatter(sx + tsize * Constants.PicX / 2f + _camera.CameraX, sy - FloatTextGapAbove + _camera.CameraY, bloodIntensity, LayerAtTile(mapNum, lx, ly));
+        if (splatterIntensity > 0f && _showDecals && onScreen)
+            _particles.EmitSplatter(sx + tsize * Constants.PicX / 2f + _camera.CameraX, sy - FloatTextGapAbove + _camera.CameraY,
+                                    splatterIntensity, _ctx.State.DecalColor, LayerAtTile(mapNum, lx, ly));
     }
 
     /// <summary>Delayed death: hold a killed entity's sprite in place until its killing spell bolt lands, so the
@@ -127,7 +128,7 @@ public sealed partial class GameplayScreen : IGameScreen
             {
                 var d = _deferredFloats[i];
                 if (d.Text is not null) SpawnFloatingText(d.WorldX - _camera.CameraX, d.WorldY - _camera.CameraY, d.Text, d.Color);
-                if (d.BloodIntensity > 0f && _showBlood) _particles.EmitBloodSplatter(d.WorldX, d.WorldY, d.BloodIntensity, d.Layer);
+                if (d.SplatterIntensity > 0f && _showDecals) _particles.EmitSplatter(d.WorldX, d.WorldY, d.SplatterIntensity, _ctx.State.DecalColor, d.Layer);
                 _deferredFloats.RemoveAt(i);
             }
         }

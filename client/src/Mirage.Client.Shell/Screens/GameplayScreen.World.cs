@@ -23,26 +23,26 @@ namespace Mirage.Client.Shell.Screens;
 public sealed partial class GameplayScreen : IGameScreen
 {
     // ── World draw ────────────────────────────────────────────────────────────────────────────────────
-    // Renders the scrolling world (tiles, entities, blood, particles, names, bars, floating text) into a
+    // Renders the scrolling world (tiles, entities, stains, particles, names, bars, floating text) into a
     // SUPERSAMPLED world target (WorldSS× the 512×384 viewport, via the transform) that MirageGame later
     // linear-downscales to the screen offset by the camera's sub-pixel fraction — smooth scrolling, no shimmer,
     // still crisp (commands are reference-pixel; the transform scales up, PointClamp keeps tiles/sprites sharp).
     // BuildWorldFrame runs once (before any target is bound); the ground / fringe / overlay passes each manage
     // their own batch so MirageGame can drive them into one target (flat) or split targets (night-on-a-bridge).
 
-    // Two-layer world light split: BuildWorldFrame stashes the per-frame blood state for the DrawWorld* passes,
+    // Two-layer world light split: BuildWorldFrame stashes the per-frame stain state for the DrawWorld* passes,
     // which MirageGame drives either into one target (flat / daylight) or into split ground/fringe targets
     // (night on a bridge). Set once per frame in BuildWorldFrame; read by DrawWorldGround / DrawWorldFringe.
-    private bool _haveGroundBlood, _haveFringeBlood;
-    private RenderTarget2D? _frameBloodRT, _frameBloodRTFringe;
+    private bool _haveGroundDecals, _haveFringeDecals;
+    private RenderTarget2D? _frameDecalRT, _frameDecalRTFringe;
 
-    /// <summary>Build this frame's draw commands, append spell-FX lights, and accumulate the two blood fields —
-    /// everything that must run ONCE per frame before the world passes. Blood accumulation saves/restores the
+    /// <summary>Build this frame's draw commands, append spell-FX lights, and accumulate the two stain fields —
+    /// everything that must run ONCE per frame before the world passes. Stain accumulation saves/restores the
     /// currently-bound render target (and no-ops if none is bound), so MirageGame binds a world target before
     /// calling this. Returns whether any FRINGE content is visible (fringe tiles or a fringe-layer entity), which
     /// <see cref="MirageGame"/> uses to gate the two-light-map occlusion split (night-on-a-bridge) against the
-    /// single-target path (flat / daylight). Stashes blood state for the DrawWorld* passes.</summary>
-    public bool BuildWorldFrame(SpriteBatch sb, SpriteFont font, Matrix transform, RenderTarget2D? bloodRT, RenderTarget2D? bloodRTFringe)
+    /// single-target path (flat / daylight). Stashes stain state for the DrawWorld* passes.</summary>
+    public bool BuildWorldFrame(SpriteBatch sb, SpriteFont font, Matrix transform, RenderTarget2D? decalRT, RenderTarget2D? decalRTFringe)
     {
         var hovered = AlwaysShowBars ? default : ComputeHoveredEntity();
         SpriteFont nameFontForBuild = _gameFont ?? font;
@@ -59,14 +59,14 @@ public sealed partial class GameplayScreen : IGameScreen
         // Append spell-FX lights/glows to the freshly-built frame BEFORE the light pass consumes it.
         EmitParticleLights();
 
-        // Blood metaball: accumulate each layer's pools into its own offscreen field with MAX blend (overlapping
-        // blobs form a smooth UNION). Runs first because it swaps render targets. Stashed for the passes below.
-        _frameBloodRT = bloodRT;
-        _frameBloodRTFringe = bloodRTFringe;
-        _haveGroundBlood = _showBlood && bloodRT is not null && _renderFrame.Blood.Count > 0
-                           && AccumulateBloodField(sb, bloodRT!, transform, WorldLayer.Ground);
-        _haveFringeBlood = _showBlood && bloodRTFringe is not null && _renderFrame.Blood.Count > 0
-                           && AccumulateBloodField(sb, bloodRTFringe!, transform, WorldLayer.Fringe);
+        // Stain metaball: accumulate each layer's stains into its own offscreen field with MAX blend, so
+        // overlapping blobs form a smooth UNION. Runs first because it swaps render targets.
+        _frameDecalRT = decalRT;
+        _frameDecalRTFringe = decalRTFringe;
+        _haveGroundDecals = _showDecals && decalRT is not null && _renderFrame.Decals.Count > 0
+                           && AccumulateDecalField(sb, decalRT!, transform, WorldLayer.Ground);
+        _haveFringeDecals = _showDecals && decalRTFringe is not null && _renderFrame.Decals.Count > 0
+                           && AccumulateDecalField(sb, decalRTFringe!, transform, WorldLayer.Fringe);
 
         // Any fringe content visible this frame? A fringe tile (deck/décor) or a fringe-layer entity/item/corpse.
         // Under the occlusion model the fringe plane is lit by fringe lights only, so any fringe content wants the
@@ -86,8 +86,8 @@ public sealed partial class GameplayScreen : IGameScreen
     private void DrawEntityGroup(SpriteBatch sb, WorldLayer group, SpriteFont nameFont, float nameCellW, float nameLineH)
     {
         // Corpses: a tile-sized (32x32) red X where each dead player fell — a body on the ground,
-        // drawn ABOVE blood but UNDER items (so dropped loot stays visible/lootable) and UNDER the living
-        // entities. A dark outline underneath keeps the red X readable even over a same-red blood pool.
+        // drawn ABOVE stains but UNDER items (so dropped loot stays visible/lootable) and UNDER the living
+        // entities. A dark outline underneath keeps the red X readable even over a same-colored stain.
         foreach (var c in _renderFrame.Corpses)
         {
             if (c.Layer != group) continue;
@@ -130,7 +130,7 @@ public sealed partial class GameplayScreen : IGameScreen
         }
     }
 
-    /// <summary>Ground pass: the ground tile stack, ground blood, and the ground-layer entity group with its
+    /// <summary>Ground pass: the ground tile stack, ground stains, and the ground-layer entity group with its
     /// spell/combat particles. Drawn into whatever target is bound — the single world target (flat path) or the
     /// split ground target.</summary>
     public void DrawWorldGround(SpriteBatch sb, SpriteFont font, Matrix transform)
@@ -145,8 +145,8 @@ public sealed partial class GameplayScreen : IGameScreen
         foreach (var layer in _renderFrame.Below)
             foreach (var cmd in layer) DrawTile(sb, cmd);
 
-        // Ground blood: composite the merged ground field (tinted) below the ground entities.
-        if (_haveGroundBlood) CompositeBloodField(sb, _frameBloodRT!);
+        // Ground stains: composite the merged ground field, tinted, below the ground entities.
+        if (_haveGroundDecals) CompositeDecalField(sb, _frameDecalRT!);
 
         // Ground-layer entities (under the bridge surface), then their spell/combat particles — so a ground
         // burst is occluded by the bridge deck above.
@@ -156,7 +156,7 @@ public sealed partial class GameplayScreen : IGameScreen
         sb.End();
     }
 
-    /// <summary>Fringe pass: the fringe tile stack (bridge surface), fringe blood, the fringe-layer entity group
+    /// <summary>Fringe pass: the fringe tile stack (bridge surface), fringe stains, the fringe-layer entity group
     /// and its particles, the canopy stack (over everything), then GLOBAL weather. Drawn into the single world
     /// target (flat path) or the TRANSPARENT split fringe target, so a grate/edge gap keeps its alpha and the
     /// ground shows through beneath it.</summary>
@@ -173,8 +173,8 @@ public sealed partial class GameplayScreen : IGameScreen
         foreach (var layer in _renderFrame.Above)
             foreach (var cmd in layer) DrawTile(sb, cmd);
 
-        // Fringe (bridge-top) blood: composite ON the deck, below the fringe entities.
-        if (_haveFringeBlood) CompositeBloodField(sb, _frameBloodRTFringe!);
+        // Fringe (bridge-top) stains: composite ON the deck, below the fringe entities.
+        if (_haveFringeDecals) CompositeDecalField(sb, _frameDecalRTFringe!);
 
         // Fringe-layer entities (on the bridge), then their spell/combat particles — so a bridge-top burst draws
         // over the deck.

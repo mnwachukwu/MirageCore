@@ -11,7 +11,7 @@ namespace Mirage.Client.Core.Tests.Rendering;
 /// Client render-path performance baseline. <b>[Explicit] — run manually.</b>
 ///
 /// <para><see cref="RenderCommandBuilder.Build"/> runs once per frame and walks the whole observable
-/// 3x3 region: every visible tile on three layers, every NPC and traversal guest, every player, blood
+/// 3x3 region: every visible tile on three layers, every NPC and traversal guest, every player, ground stains
 /// decals, lights, and map items. It is the one client function where a per-frame allocation
 /// translates directly into GC pressure at frame rate — 60 allocations a second per byte-source, which
 /// is what produces the periodic hitches players notice rather than a lower average frame time.</para>

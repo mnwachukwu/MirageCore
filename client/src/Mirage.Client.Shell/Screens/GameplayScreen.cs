@@ -278,10 +278,10 @@ public sealed partial class GameplayScreen : IGameScreen
     private TargetRef _tabTarget;
     private bool _skipPlayersWithTabTarget = true;
     private bool _showNpcNames = true;
-    // Blood-pool decals + hit droplet burst.  Own toggle, independent of the damage-numbers toggle.
-    private bool _showBlood = true;
-    /// <summary>Whether blood pools + the hit droplet burst render (its own option, not the damage-numbers toggle).</summary>
-    public bool ShowBlood => _showBlood;
+    // Ground stains + the hit droplet burst.  Own toggle, independent of the damage-numbers toggle.
+    private bool _showDecals = true;
+    /// <summary>Whether ground stains + the hit droplet burst render (its own option, not the damage-numbers toggle).</summary>
+    public bool ShowDecals => _showDecals;
     private bool _showOtherPlayerNames = true;
     private bool _showPlayerName = true;
     private bool _showCooldownBar = true;
@@ -339,7 +339,7 @@ public sealed partial class GameplayScreen : IGameScreen
         public string? Text;
         public Color Color;
         public long ReleaseMs;
-        public float BloodIntensity;
+        public float SplatterIntensity;
         public WorldLayer Layer;
     }
     private struct DelayedDeath

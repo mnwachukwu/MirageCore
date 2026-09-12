@@ -267,7 +267,7 @@ public static partial class EditorStrings
     // outside the switch. Not "Data 1/2/3" any more — there is no numbered slot left to name.
     public const string DataLabel_VitalAmount = nameof(DataLabel_VitalAmount);
     public const string DataLabel_Power = nameof(DataLabel_Power);
-    public const string DataLabel_LevelReq = nameof(DataLabel_LevelReq);
+    public const string DataLabel_Tier = nameof(DataLabel_Tier);
 
     // ── EditorConnection (service-layer errors shown to the user) ─────────────
     public const string EditorConnection_ClosedUnexpectedly = nameof(EditorConnection_ClosedUnexpectedly);
@@ -423,13 +423,13 @@ public static partial class EditorStrings
     public const string HelpDialog_Attr_ItemDesc = nameof(HelpDialog_Attr_ItemDesc);
     public const string HelpDialog_Attr_ItemData = nameof(HelpDialog_Attr_ItemData);
     public const string HelpDialog_Attr_NpcAvoidDesc = nameof(HelpDialog_Attr_NpcAvoidDesc);
-    public const string HelpDialog_Attr_Key = nameof(HelpDialog_Attr_Key);
-    public const string HelpDialog_Attr_KeyDesc = nameof(HelpDialog_Attr_KeyDesc);
-    public const string HelpDialog_Attr_KeyDoorDesc = nameof(HelpDialog_Attr_KeyDoorDesc);
-    public const string HelpDialog_Attr_KeyData = nameof(HelpDialog_Attr_KeyData);
-    public const string HelpDialog_Attr_KeyOpen = nameof(HelpDialog_Attr_KeyOpen);
-    public const string HelpDialog_Attr_KeyOpenDesc = nameof(HelpDialog_Attr_KeyOpenDesc);
-    public const string HelpDialog_Attr_KeyOpenData = nameof(HelpDialog_Attr_KeyOpenData);
+    public const string HelpDialog_Attr_Door = nameof(HelpDialog_Attr_Door);
+    public const string HelpDialog_Attr_DoorDesc = nameof(HelpDialog_Attr_DoorDesc);
+    public const string HelpDialog_Attr_DoorRevealDesc = nameof(HelpDialog_Attr_DoorRevealDesc);
+    public const string HelpDialog_Attr_DoorData = nameof(HelpDialog_Attr_DoorData);
+    public const string HelpDialog_Attr_Plate = nameof(HelpDialog_Attr_Plate);
+    public const string HelpDialog_Attr_PlateDesc = nameof(HelpDialog_Attr_PlateDesc);
+    public const string HelpDialog_Attr_PlateData = nameof(HelpDialog_Attr_PlateData);
     public const string HelpDialog_Attr_NpcSpawnDesc = nameof(HelpDialog_Attr_NpcSpawnDesc);
     public const string HelpDialog_Attr_LayerRamp = nameof(HelpDialog_Attr_LayerRamp);
     public const string HelpDialog_Attr_LayerRampDesc = nameof(HelpDialog_Attr_LayerRampDesc);

@@ -322,8 +322,8 @@ public static class WorldCheck
                     found.Add(WorldIssue.OnTile(WorldIssueKind.ItemMissing, m, x, y, $"{attr.ItemNum}"));
                 break;
 
-            case TileType.Key:
-            case TileType.KeyOpen:
+            case TileType.Door:
+            case TileType.Plate:
                 if (!HasItem(w, attr.KeyItemNum))
                     found.Add(WorldIssue.OnTile(WorldIssueKind.ItemMissing, m, x, y, $"{attr.KeyItemNum}"));
                 break;

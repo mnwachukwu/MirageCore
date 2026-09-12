@@ -18,7 +18,7 @@ public enum ParticleKind : byte
     ImpactBurst,  // spell/impact burst on arrival
     Swoosh,       // melee crescent blade-arc over the target tile
     Orbit,        // restore/give-item landing swirl: motes circle the sprite briefly, then fade
-    BloodSplatter,// blood droplet sprayed on a damaging hit (gravity, dark red); client-side flair over the pool
+    Splatter,     // one droplet of a burst: arcs under gravity, colored by whoever fired it
 }
 
 /// <summary>One pooled particle, world-anchored (world pixels) so night-dimming, camera parallax, and
@@ -145,7 +145,7 @@ public sealed class ParticleSystem
                 break;
             case ParticleKind.Spark:
             case ParticleKind.ImpactBurst:
-            case ParticleKind.BloodSplatter:
+            case ParticleKind.Splatter:
                 p.Vy += ParticleGravity * dtSec;
                 p.X += p.Vx * dtSec;
                 p.Y += p.Vy * dtSec;
@@ -425,37 +425,42 @@ public sealed class ParticleSystem
         }
     }
 
-    /// <summary>Spray a burst of blood droplets from (x,y) on a damaging hit — layered over the melee sparks /
-    /// spell impact.  Count, speed, and size scale with <paramref name="intensity"/> (= damage / target max HP),
-    /// so bigger hits spray more.  Droplets kick up + out, then arc down under gravity (the Spark/ImpactBurst arm
-    /// of <see cref="Move"/>) and fade.  Purely client-side flair; the persistent pool is server-authoritative.</summary>
-    public void EmitBloodSplatter(float x, float y, float intensity, WorldLayer layer = WorldLayer.Ground)
+    /// <summary>Spray a burst of droplets from (x,y).
+    ///
+    /// <para>Count, speed and size scale with <paramref name="intensity"/> in 0..1, so a caller makes a small
+    /// spill and a big one out of the same call. Droplets kick up and out, then arc down under gravity (the
+    /// Spark/ImpactBurst arm of <see cref="Move"/>) and fade.</para>
+    ///
+    /// <para>Purely client-side flair, and deliberately color-blind: blood, sparks off a struck anvil, water
+    /// from a splash and dust off a rockfall are one burst with different <paramref name="rgb"/>. Anything
+    /// that should still be there a minute later is a stain rather than a particle, and goes through
+    /// <c>DecalSystem</c>, which is server-authoritative.</para></summary>
+    public void EmitSplatter(float x, float y, float intensity, uint rgb, WorldLayer layer = WorldLayer.Ground)
     {
         intensity = Math.Clamp(intensity, 0f, 1f);
-        int count = (int)MathF.Round(BloodDropMin + (BloodDropMax - BloodDropMin) * intensity);
+        int count = (int)MathF.Round(SplatterCountMin + (SplatterCountMax - SplatterCountMin) * intensity);
         for (int i = 0; i < count; i++)
         {
             float ang = RandRange(0f, MathF.Tau);
-            float sp = RandRange(BloodDropSpeedMin, BloodDropSpeedMax) * (0.6f + 0.4f * intensity);
+            float sp = RandRange(SplatterSpeedMin, SplatterSpeedMax) * (0.6f + 0.4f * intensity);
             TrySpawn(new Particle
             {
                 X = x, Y = y,
                 Vx = MathF.Cos(ang) * sp,
-                Vy = MathF.Sin(ang) * sp - BloodDropUpBias,   // slight upward kick so droplets arc before falling
-                Life = RandRange(BloodDropLifeMin, BloodDropLifeMax),
-                Size = RandRange(BloodDropSizeMin, BloodDropSizeMax) * (0.7f + 0.6f * intensity),
-                Rgb = BloodDropRgb, Seed = Rand01(), Kind = ParticleKind.BloodSplatter, Layer = layer,
+                Vy = MathF.Sin(ang) * sp - SplatterUpBias,   // slight upward kick so droplets arc before falling
+                Life = RandRange(SplatterLifeMin, SplatterLifeMax),
+                Size = RandRange(SplatterSizeMin, SplatterSizeMax) * (0.7f + 0.6f * intensity),
+                Rgb = rgb, Seed = Rand01(), Kind = ParticleKind.Splatter, Layer = layer,
             });
         }
     }
 
-    private const int BloodDropMin = 3;         // droplets at intensity 0 (a little splatter, guaranteed)
-    private const int BloodDropMax = 12;        // droplets at intensity 1
-    private const float BloodDropSpeedMin = 40f, BloodDropSpeedMax = 150f;
-    private const float BloodDropUpBias = 60f;  // initial upward kick (screen Y+ is down) so the spray fountains, then gravity pulls it down
-    private const float BloodDropLifeMin = 0.30f, BloodDropLifeMax = 0.55f;
-    private const float BloodDropSizeMin = 2f, BloodDropSizeMax = 5f;
-    private const uint BloodDropRgb = 0x8E1010; // droplet red (a touch brighter than the pool tint so it reads mid-air)
+    private const int SplatterCountMin = 3;         // droplets at intensity 0 — a little, guaranteed
+    private const int SplatterCountMax = 12;        // droplets at intensity 1
+    private const float SplatterSpeedMin = 40f, SplatterSpeedMax = 150f;
+    private const float SplatterUpBias = 60f;  // initial upward kick (screen Y+ is down) so the spray fountains, then gravity pulls it down
+    private const float SplatterLifeMin = 0.30f, SplatterLifeMax = 0.55f;
+    private const float SplatterSizeMin = 2f, SplatterSizeMax = 5f;
 
     /// <summary>Turn an arrived restore-glitter mote into one that circles its landing point briefly, then fades —
     /// reuses the flying mote (no new spawn) so the swirl has exactly the cluster that flew in. Keeps its Size + Rgb

@@ -5,7 +5,7 @@
   "type": "Weapon",
   "durability": 320,
   "power": 19,
-  "levelReq": 10,
+  "tier": 10,
   "allowedClasses": [
     1,
     2,

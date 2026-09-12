@@ -26,8 +26,8 @@ public static class EditorVocabulary
     private const string Warp = "Warp";
     private const string ItemSpawn = "Item Spawn";
     private const string NpcAvoid = "NPC Avoid";
-    private const string Key = "Key";
-    private const string KeyOpen = "KeyOpen";
+    private const string Door = "Door";
+    private const string Plate = "Pressure Plate";
     private const string NpcSpawn = "NPC Spawn";
     private const string LayerRamp = "Layer Ramp";
 
@@ -42,8 +42,8 @@ public static class EditorVocabulary
         AttributeTool.Warp => Warp,
         AttributeTool.Item => ItemSpawn,
         AttributeTool.NpcAvoid => NpcAvoid,
-        AttributeTool.Key => Key,
-        AttributeTool.KeyOpen => KeyOpen,
+        AttributeTool.Door => Door,
+        AttributeTool.Plate => Plate,
         AttributeTool.NpcSpawn => NpcSpawn,
         AttributeTool.LayerRamp => LayerRamp,
         _ => tool.ToString(),
@@ -58,8 +58,8 @@ public static class EditorVocabulary
         TileType.Warp => Warp,
         TileType.Item => ItemSpawn,
         TileType.NpcAvoid => NpcAvoid,
-        TileType.Key => Key,
-        TileType.KeyOpen => KeyOpen,
+        TileType.Door => Door,
+        TileType.Plate => Plate,
         TileType.LayerRamp => LayerRamp,
         _ => type.ToString(),
     };

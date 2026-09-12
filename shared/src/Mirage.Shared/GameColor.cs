@@ -53,7 +53,6 @@ public static class GameColor
     public const int Npc = OliveGold;           // NPC dialogue — its own slot, distinct from player names
     public const int Guild = Emerald;           // guild member chat + guild-wide social notices
     public const int GuildOfficer = Mint;       // guild officer chat + officer-only nudges
-    public const int War = Crimson;             // public war announcements
     // (Overhead-name rank colors live in PlayerNameColor.For, which maps each rank to a color constant.)
 
     /// <summary>
@@ -89,7 +88,7 @@ public static class GameColor
         0xC74DE0, // 20 Amethyst    — Creator name
         0x43C46A, // 21 Emerald     — Guild chat
         0x86E3B0, // 22 Mint        — GuildOfficer chat
-        0xE5484D, // 23 Crimson     — War (public)
+        0xE5484D, // 23 Crimson
         0xB5352F, // 24 Brick
         0x3B6FE6, // 25 RoyalBlue   — Developer name
         0x1BA89C, // 26 Turquoise   — Mapper name

@@ -260,37 +260,37 @@ public partial class MapEditorView : LocalizedUserControl
         _blockedCancel.Content = EditorStrings.Get(EditorStrings.Common_Cancel);
         _blockedConfirm.Content = EditorStrings.Get(EditorStrings.Common_Confirm);
 
-        _keyTitle.Text = EditorStrings.Get(EditorStrings.KeyTileDialog_Title);
-        _keyDesc.Text = EditorStrings.Get(EditorStrings.KeyTileDialog_Description);
-        _keyItemLabel.Text = EditorStrings.Get(EditorStrings.KeyTileDialog_KeyItemLabel);
-        ToolTip.SetTip(_keyItemLabel, EditorStrings.Get(EditorStrings.KeyTileDialog_KeyItemTooltip));
+        _doorTitle.Text = EditorStrings.Get(EditorStrings.DoorTileDialog_Title);
+        _doorDesc.Text = EditorStrings.Get(EditorStrings.DoorTileDialog_Description);
+        _keyItemLabel.Text = EditorStrings.Get(EditorStrings.DoorTileDialog_KeyItemLabel);
+        ToolTip.SetTip(_keyItemLabel, EditorStrings.Get(EditorStrings.DoorTileDialog_KeyItemTooltip));
         _searchKeyItem.PlaceholderText = itemPh;
-        _keyTakeCheck.Content = EditorStrings.Get(EditorStrings.KeyTileDialog_TakeKeyCheckbox);
-        ToolTip.SetTip(_keyTakeCheck, EditorStrings.Get(EditorStrings.KeyTileDialog_TakeKeyTooltip));
-        _keyFillRunCheck.Content = EditorStrings.Get(EditorStrings.Common_FillConnectedRun);
-        ToolTip.SetTip(_keyFillRunCheck, EditorStrings.Get(EditorStrings.Common_FillConnectedRunTooltip));
-        _keyRetainCheck.Content = EditorStrings.Get(EditorStrings.Common_RetainOnAltClick);
-        _keyCancel.Content = EditorStrings.Get(EditorStrings.Common_Cancel);
-        _keyConfirm.Content = EditorStrings.Get(EditorStrings.Common_Confirm);
+        _keyTakeCheck.Content = EditorStrings.Get(EditorStrings.DoorTileDialog_TakeKeyCheckbox);
+        ToolTip.SetTip(_keyTakeCheck, EditorStrings.Get(EditorStrings.DoorTileDialog_TakeKeyTooltip));
+        _doorFillRunCheck.Content = EditorStrings.Get(EditorStrings.Common_FillConnectedRun);
+        ToolTip.SetTip(_doorFillRunCheck, EditorStrings.Get(EditorStrings.Common_FillConnectedRunTooltip));
+        _doorRetainCheck.Content = EditorStrings.Get(EditorStrings.Common_RetainOnAltClick);
+        _doorCancel.Content = EditorStrings.Get(EditorStrings.Common_Cancel);
+        _doorConfirm.Content = EditorStrings.Get(EditorStrings.Common_Confirm);
 
         // KeyOpen Trigger dialog
-        _keyOpenTitle.Text = EditorStrings.Format(EditorStrings.KeyOpenDialog_Title,
-            ("Name", EditorVocabulary.NameOf(AttributeTool.KeyOpen)));
-        _keyOpenDesc.Text = EditorStrings.Get(EditorStrings.KeyOpenDialog_Description);
-        _keyOpenXLabel.Text = EditorStrings.Get(EditorStrings.KeyOpenDialog_XLabel);
-        string keyOpenXTooltip = EditorStrings.Get(EditorStrings.KeyOpenDialog_XTooltip);
-        ToolTip.SetTip(_keyOpenXLabel, keyOpenXTooltip);
-        ToolTip.SetTip(_keyOpenXInput, keyOpenXTooltip);
-        _keyOpenYLabel.Text = EditorStrings.Get(EditorStrings.KeyOpenDialog_YLabel);
-        string keyOpenYTooltip = EditorStrings.Get(EditorStrings.KeyOpenDialog_YTooltip);
-        ToolTip.SetTip(_keyOpenYLabel, keyOpenYTooltip);
-        ToolTip.SetTip(_keyOpenYInput, keyOpenYTooltip);
-        _keyOpenLayerLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_LayerHeader);   // reuse the "Layer" string
-        _keyOpenFillRunCheck.Content = EditorStrings.Get(EditorStrings.Common_FillConnectedRun);
-        ToolTip.SetTip(_keyOpenFillRunCheck, EditorStrings.Get(EditorStrings.Common_FillConnectedRunTooltip));
-        _keyOpenRetainCheck.Content = EditorStrings.Get(EditorStrings.Common_RetainOnAltClick);
-        _keyOpenCancel.Content = EditorStrings.Get(EditorStrings.Common_Cancel);
-        _keyOpenConfirm.Content = EditorStrings.Get(EditorStrings.Common_Confirm);
+        _plateTitle.Text = EditorStrings.Format(EditorStrings.PlateDialog_Title,
+            ("Name", EditorVocabulary.NameOf(AttributeTool.Plate)));
+        _plateDesc.Text = EditorStrings.Get(EditorStrings.PlateDialog_Description);
+        _plateXLabel.Text = EditorStrings.Get(EditorStrings.PlateDialog_XLabel);
+        string plateXTooltip = EditorStrings.Get(EditorStrings.PlateDialog_XTooltip);
+        ToolTip.SetTip(_plateXLabel, plateXTooltip);
+        ToolTip.SetTip(_plateXInput, plateXTooltip);
+        _plateYLabel.Text = EditorStrings.Get(EditorStrings.PlateDialog_YLabel);
+        string plateYTooltip = EditorStrings.Get(EditorStrings.PlateDialog_YTooltip);
+        ToolTip.SetTip(_plateYLabel, plateYTooltip);
+        ToolTip.SetTip(_plateYInput, plateYTooltip);
+        _plateLayerLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_LayerHeader);   // reuse the "Layer" string
+        _plateFillRunCheck.Content = EditorStrings.Get(EditorStrings.Common_FillConnectedRun);
+        ToolTip.SetTip(_plateFillRunCheck, EditorStrings.Get(EditorStrings.Common_FillConnectedRunTooltip));
+        _plateRetainCheck.Content = EditorStrings.Get(EditorStrings.Common_RetainOnAltClick);
+        _plateCancel.Content = EditorStrings.Get(EditorStrings.Common_Cancel);
+        _plateConfirm.Content = EditorStrings.Get(EditorStrings.Common_Confirm);
 
         // Tile-animation dialog
         _animTitle.Text = EditorStrings.Get(EditorStrings.MapEditor_AnimDialogTitle);
@@ -399,15 +399,15 @@ public partial class MapEditorView : LocalizedUserControl
                 e.Handled = true;
                 return;
             }
-            if (vm.ShowKeyDialog)
+            if (vm.ShowDoorDialog)
             {
-                vm.CancelKeyCommand.Execute(null);
+                vm.CancelDoorCommand.Execute(null);
                 e.Handled = true;
                 return;
             }
-            if (vm.ShowKeyOpenDialog)
+            if (vm.ShowPlateDialog)
             {
-                vm.CancelKeyOpenCommand.Execute(null);
+                vm.CancelPlateCommand.Execute(null);
                 e.Handled = true;
                 return;
             }

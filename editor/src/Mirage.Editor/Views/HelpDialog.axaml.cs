@@ -143,15 +143,15 @@ public partial class HelpDialog : Window
         _attrItemData.Text = EditorStrings.Get(EditorStrings.HelpDialog_Attr_ItemData);
         _attrNpcAvoid.Text = EditorVocabulary.NameOf(AttributeTool.NpcAvoid);
         _attrNpcAvoidDesc.Text = EditorStrings.Get(EditorStrings.HelpDialog_Attr_NpcAvoidDesc);
-        _attrKey.Text = EditorStrings.Format(EditorStrings.HelpDialog_Attr_Key,
-            ("Name", EditorVocabulary.NameOf(AttributeTool.Key)));
-        _attrKeyDesc.Text = EditorStrings.Get(EditorStrings.HelpDialog_Attr_KeyDesc);
-        _attrKeyDoorDesc.Text = EditorStrings.Get(EditorStrings.HelpDialog_Attr_KeyDoorDesc);
-        _attrKeyData.Text = EditorStrings.Get(EditorStrings.HelpDialog_Attr_KeyData);
-        _attrKeyOpen.Text = EditorStrings.Format(EditorStrings.HelpDialog_Attr_KeyOpen,
-            ("Name", EditorVocabulary.NameOf(AttributeTool.KeyOpen)));
-        _attrKeyOpenDesc.Text = EditorStrings.Get(EditorStrings.HelpDialog_Attr_KeyOpenDesc);
-        _attrKeyOpenData.Text = EditorStrings.Get(EditorStrings.HelpDialog_Attr_KeyOpenData);
+        _attrDoor.Text = EditorStrings.Format(EditorStrings.HelpDialog_Attr_Door,
+            ("Name", EditorVocabulary.NameOf(AttributeTool.Door)));
+        _attrDoorDesc.Text = EditorStrings.Get(EditorStrings.HelpDialog_Attr_DoorDesc);
+        _attrDoorRevealDesc.Text = EditorStrings.Get(EditorStrings.HelpDialog_Attr_DoorRevealDesc);
+        _attrDoorData.Text = EditorStrings.Get(EditorStrings.HelpDialog_Attr_DoorData);
+        _attrPlate.Text = EditorStrings.Format(EditorStrings.HelpDialog_Attr_Plate,
+            ("Name", EditorVocabulary.NameOf(AttributeTool.Plate)));
+        _attrPlateDesc.Text = EditorStrings.Get(EditorStrings.HelpDialog_Attr_PlateDesc);
+        _attrPlateData.Text = EditorStrings.Get(EditorStrings.HelpDialog_Attr_PlateData);
         _attrNpcSpawn.Text = EditorVocabulary.NameOf(AttributeTool.NpcSpawn);
         _attrNpcSpawnDesc.Text = EditorStrings.Get(EditorStrings.HelpDialog_Attr_NpcSpawnDesc);
         _attrLayerRamp.Text = EditorStrings.Format(EditorStrings.HelpDialog_Attr_LayerRamp,

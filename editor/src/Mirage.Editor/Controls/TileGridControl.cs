@@ -316,8 +316,8 @@ public sealed partial class TileGridControl : Control
     private static readonly IBrush BlockedBrush = new SolidColorBrush(Color.FromArgb(120, 255, 0, 0));
     private static readonly IBrush WarpBrush = new SolidColorBrush(Color.FromArgb(100, 0, 0, 255));
     private static readonly IBrush ItemBrush = new SolidColorBrush(Color.FromArgb(100, 255, 255, 0));
-    private static readonly IBrush KeyBrush = new SolidColorBrush(Color.FromArgb(100, 255, 140, 0));
-    private static readonly IBrush KeyOpenBrush = new SolidColorBrush(Color.FromArgb(100, 160, 32, 240));
+    private static readonly IBrush DoorBrush = new SolidColorBrush(Color.FromArgb(100, 255, 140, 0));
+    private static readonly IBrush PlateBrush = new SolidColorBrush(Color.FromArgb(100, 160, 32, 240));
     private static readonly IBrush NpcAvoidBrush = new SolidColorBrush(Color.FromArgb(100, 100, 100, 100));
     // LayerRamp — the sole connector between planes; shown on BOTH layers (it occupies both). Distinct green so it
     // never reads as a wall, plus a mount-direction arrow glyph (Data1) drawn over the fill.
@@ -364,8 +364,8 @@ public sealed partial class TileGridControl : Control
     private static readonly Pen BlockedBorderPen = new(new SolidColorBrush(Color.FromArgb(255, 180, 0, 0)), 1.5);
     private static readonly Pen WarpBorderPen = new(new SolidColorBrush(Color.FromArgb(255, 0, 0, 200)), 1.5);
     private static readonly Pen ItemBorderPen = new(new SolidColorBrush(Color.FromArgb(255, 160, 160, 0)), 1.5);
-    private static readonly Pen KeyBorderPen = new(new SolidColorBrush(Color.FromArgb(255, 180, 80, 0)), 1.5);
-    private static readonly Pen KeyOpenBorderPen = new(new SolidColorBrush(Color.FromArgb(255, 100, 0, 170)), 1.5);
+    private static readonly Pen DoorBorderPen = new(new SolidColorBrush(Color.FromArgb(255, 180, 80, 0)), 1.5);
+    private static readonly Pen PlateBorderPen = new(new SolidColorBrush(Color.FromArgb(255, 100, 0, 170)), 1.5);
     private static readonly Pen NpcAvoidBorderPen = new(new SolidColorBrush(Color.FromArgb(255, 50, 50, 50)), 1.5);
     private static readonly Pen LayerRampBorderPen = new(new SolidColorBrush(Color.FromArgb(255, 20, 150, 90)), 1.5);
     // A ramp block that can't be mounted from the ground (connects nothing) gets a hard red frame ON TOP of its

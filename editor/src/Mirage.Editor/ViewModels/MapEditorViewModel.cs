@@ -114,8 +114,8 @@ public sealed partial class MapEditorViewModel : ObservableObject, IAutoSaveTarg
         AttributeTool.Warp => TileType.Warp,
         AttributeTool.Item => TileType.Item,
         AttributeTool.NpcAvoid => TileType.NpcAvoid,
-        AttributeTool.Key => TileType.Key,
-        AttributeTool.KeyOpen => TileType.KeyOpen,
+        AttributeTool.Door => TileType.Door,
+        AttributeTool.Plate => TileType.Plate,
         AttributeTool.LayerRamp => TileType.LayerRamp,
         _ => TileType.Walkable,
     };

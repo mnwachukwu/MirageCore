@@ -125,8 +125,8 @@ public static partial class EditorStrings
     public const string MapEditor_AttrDesc_Warp = nameof(MapEditor_AttrDesc_Warp);
     public const string MapEditor_AttrDesc_Item = nameof(MapEditor_AttrDesc_Item);
     public const string MapEditor_AttrDesc_NpcAvoid = nameof(MapEditor_AttrDesc_NpcAvoid);
-    public const string MapEditor_AttrDesc_Key = nameof(MapEditor_AttrDesc_Key);
-    public const string MapEditor_AttrDesc_KeyOpen = nameof(MapEditor_AttrDesc_KeyOpen);
+    public const string MapEditor_AttrDesc_Door = nameof(MapEditor_AttrDesc_Door);
+    public const string MapEditor_AttrDesc_Plate = nameof(MapEditor_AttrDesc_Plate);
     public const string MapEditor_AttrDesc_NpcSpawn = nameof(MapEditor_AttrDesc_NpcSpawn);
     public const string MapEditor_AttrDesc_LayerRamp = nameof(MapEditor_AttrDesc_LayerRamp);
     public const string MapEditor_LayerRampDir = nameof(MapEditor_LayerRampDir);
@@ -142,12 +142,12 @@ public static partial class EditorStrings
     public const string MapEditor_Blocked_Nothing = nameof(MapEditor_Blocked_Nothing);
     public const string MapEditor_AttrText_Warp = nameof(MapEditor_AttrText_Warp);
     public const string MapEditor_AttrText_Item = nameof(MapEditor_AttrText_Item);
-    public const string MapEditor_AttrText_Key = nameof(MapEditor_AttrText_Key);
-    public const string MapEditor_AttrText_KeyOpen = nameof(MapEditor_AttrText_KeyOpen);
+    public const string MapEditor_AttrText_Door = nameof(MapEditor_AttrText_Door);
+    public const string MapEditor_AttrText_Plate = nameof(MapEditor_AttrText_Plate);
     public const string MapEditor_AttrText_RespawnDefault = nameof(MapEditor_AttrText_RespawnDefault);
     public const string MapEditor_AttrText_RespawnSeconds = nameof(MapEditor_AttrText_RespawnSeconds);
-    public const string MapEditor_AttrText_KeyTake = nameof(MapEditor_AttrText_KeyTake);
-    public const string MapEditor_AttrText_KeyKeep = nameof(MapEditor_AttrText_KeyKeep);
+    public const string MapEditor_AttrText_DoorTake = nameof(MapEditor_AttrText_DoorTake);
+    public const string MapEditor_AttrText_DoorKeep = nameof(MapEditor_AttrText_DoorKeep);
     public const string MapEditor_AttrText_LayerRamp = nameof(MapEditor_AttrText_LayerRamp);
     public const string MapEditor_AttrText_NpcSpawn = nameof(MapEditor_AttrText_NpcSpawn);
 
@@ -170,20 +170,20 @@ public static partial class EditorStrings
     public const string BlockedTileDialog_BlocksLightTooltip = nameof(BlockedTileDialog_BlocksLightTooltip);
     public const string BlockedTileDialog_BlocksSight = nameof(BlockedTileDialog_BlocksSight);
     public const string BlockedTileDialog_BlocksSightTooltip = nameof(BlockedTileDialog_BlocksSightTooltip);
-    public const string KeyTileDialog_Title = nameof(KeyTileDialog_Title);
-    public const string KeyTileDialog_Description = nameof(KeyTileDialog_Description);
-    public const string KeyTileDialog_KeyItemLabel = nameof(KeyTileDialog_KeyItemLabel);
-    public const string KeyTileDialog_KeyItemTooltip = nameof(KeyTileDialog_KeyItemTooltip);
-    public const string KeyTileDialog_TakeKeyCheckbox = nameof(KeyTileDialog_TakeKeyCheckbox);
-    public const string KeyTileDialog_TakeKeyTooltip = nameof(KeyTileDialog_TakeKeyTooltip);
+    public const string DoorTileDialog_Title = nameof(DoorTileDialog_Title);
+    public const string DoorTileDialog_Description = nameof(DoorTileDialog_Description);
+    public const string DoorTileDialog_KeyItemLabel = nameof(DoorTileDialog_KeyItemLabel);
+    public const string DoorTileDialog_KeyItemTooltip = nameof(DoorTileDialog_KeyItemTooltip);
+    public const string DoorTileDialog_TakeKeyCheckbox = nameof(DoorTileDialog_TakeKeyCheckbox);
+    public const string DoorTileDialog_TakeKeyTooltip = nameof(DoorTileDialog_TakeKeyTooltip);
 
     // ── KeyOpen Trigger Attribute Dialog ──────────────────────────────────────
-    public const string KeyOpenDialog_Title = nameof(KeyOpenDialog_Title);
-    public const string KeyOpenDialog_Description = nameof(KeyOpenDialog_Description);
-    public const string KeyOpenDialog_XLabel = nameof(KeyOpenDialog_XLabel);
-    public const string KeyOpenDialog_YLabel = nameof(KeyOpenDialog_YLabel);
-    public const string KeyOpenDialog_XTooltip = nameof(KeyOpenDialog_XTooltip);
-    public const string KeyOpenDialog_YTooltip = nameof(KeyOpenDialog_YTooltip);
+    public const string PlateDialog_Title = nameof(PlateDialog_Title);
+    public const string PlateDialog_Description = nameof(PlateDialog_Description);
+    public const string PlateDialog_XLabel = nameof(PlateDialog_XLabel);
+    public const string PlateDialog_YLabel = nameof(PlateDialog_YLabel);
+    public const string PlateDialog_XTooltip = nameof(PlateDialog_XTooltip);
+    public const string PlateDialog_YTooltip = nameof(PlateDialog_YTooltip);
 
     // ── Light Source Dialog ───────────────────────────────────────────────────
     public const string LightDialog_Title = nameof(LightDialog_Title);

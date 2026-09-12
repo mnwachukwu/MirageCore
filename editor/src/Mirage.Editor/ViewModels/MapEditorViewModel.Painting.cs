@@ -275,18 +275,18 @@ public sealed partial class MapEditorViewModel : ObservableObject
                     }
                     return;
 
-                case TileType.Key:
+                case TileType.Door:
                     if (altHeld)
                     {
-                        if (_hasRetainedKey)
+                        if (_hasRetainedDoor)
                         {
                             foreach (var (tx, ty) in footprint)
                             {
                                 var t = map.Tile[tx, ty];
                                 var cur = ActiveAttrType(t);
-                                if (cur != TileType.Walkable && cur != TileType.Key) continue;
+                                if (cur != TileType.Walkable && cur != TileType.Door) continue;
                                 var before = Snap(t);
-                                t = WithActiveAttr(t, new TileAttr { Type = TileType.Key, KeyItemNum = _retKeyItemNum, KeyIsConsumed = _retKeyTake });
+                                t = WithActiveAttr(t, new TileAttr { Type = TileType.Door, KeyItemNum = _retKeyItemNum, KeyIsConsumed = _retKeyTake });
                                 map.Tile[tx, ty] = t;
                                 SelectedMap.UpdateRecord(map);
                                 RepaintTile(tx, ty);
@@ -298,7 +298,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
                     }
                     {
                         var attr = ActiveAttrData(map.Tile[x, y]);
-                        bool isKey = attr.Type == TileType.Key;
+                        bool isKey = attr.Type == TileType.Door;
                         KeyItemNum = isKey ? attr.KeyItemNum : (short)0;
                         KeyTake = isKey && attr.KeyIsConsumed;
                         _pendingTiles.Clear();
@@ -315,7 +315,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
                             foreach (var p in footprint)
                             {
                                 var cur = ActiveAttrType(map.Tile[p.X, p.Y]);
-                                if (cur == TileType.Walkable || cur == TileType.Key)
+                                if (cur == TileType.Walkable || cur == TileType.Door)
                                     _pendingTiles.Add(p);
                             }
                         }
@@ -323,22 +323,22 @@ public sealed partial class MapEditorViewModel : ObservableObject
                         if (_pendingTiles.Count == 0) return;  // all tiles blocked by other attributes
                         DialogError = "";
                         if (dragging) return;   // a dialog opens on the press, never on a dragged cell
-                        ShowKeyDialog = true;
+                        ShowDoorDialog = true;
                     }
                     return;
 
-                case TileType.KeyOpen:
+                case TileType.Plate:
                     if (altHeld)
                     {
-                        if (_hasRetainedKeyOpen)
+                        if (_hasRetainedPlate)
                         {
                             foreach (var (tx, ty) in footprint)
                             {
                                 var t = map.Tile[tx, ty];
                                 var cur = ActiveAttrType(t);
-                                if (cur != TileType.Walkable && cur != TileType.KeyOpen) continue;
+                                if (cur != TileType.Walkable && cur != TileType.Plate) continue;
                                 var before = Snap(t);
-                                t = WithActiveAttr(t, new TileAttr { Type = TileType.KeyOpen, DoorX = _retKeyOpenDoorX, DoorY = _retKeyOpenDoorY, DoorLayer = _retKeyOpenDoorLayer });
+                                t = WithActiveAttr(t, new TileAttr { Type = TileType.Plate, DoorX = _retPlateDoorX, DoorY = _retPlateDoorY, DoorLayer = _retPlateDoorLayer });
                                 map.Tile[tx, ty] = t;
                                 SelectedMap.UpdateRecord(map);
                                 RepaintTile(tx, ty);
@@ -350,16 +350,16 @@ public sealed partial class MapEditorViewModel : ObservableObject
                     }
                     {
                         var attr = ActiveAttrData(map.Tile[x, y]);
-                        bool isKeyOpen = attr.Type == TileType.KeyOpen;
-                        KeyOpenDoorX = isKeyOpen ? attr.DoorX : (ushort)0;
-                        KeyOpenDoorY = isKeyOpen ? attr.DoorY : (ushort)0;
-                        KeyOpenDoorLayer = isKeyOpen ? attr.DoorLayer : WorldLayer.Ground;
+                        bool isPlate = attr.Type == TileType.Plate;
+                        PlateDoorX = isPlate ? attr.DoorX : (ushort)0;
+                        PlateDoorY = isPlate ? attr.DoorY : (ushort)0;
+                        PlateDoorLayer = isPlate ? attr.DoorLayer : WorldLayer.Ground;
                         _pendingTiles.Clear();
                         // Editing an existing one anchors the connected-run fill; laying a new one
                         // leaves it inert, since a run grown from open ground would swallow the map.
-                        _runAnchor = isKeyOpen ? (x, y) : null;
+                        _runAnchor = isPlate ? (x, y) : null;
                         OnPropertyChanged(nameof(CanFillRun));
-                        if (isKeyOpen)
+                        if (isPlate)
                         {
                             _pendingTiles.Add((x, y));
                         }
@@ -368,14 +368,14 @@ public sealed partial class MapEditorViewModel : ObservableObject
                             foreach (var p in footprint)
                             {
                                 var cur = ActiveAttrType(map.Tile[p.X, p.Y]);
-                                if (cur == TileType.Walkable || cur == TileType.KeyOpen)
+                                if (cur == TileType.Walkable || cur == TileType.Plate)
                                     _pendingTiles.Add(p);
                             }
                         }
 
                         if (_pendingTiles.Count == 0) return;  // all tiles blocked by other attributes
                         if (dragging) return;   // a dialog opens on the press, never on a dragged cell
-                        ShowKeyOpenDialog = true;
+                        ShowPlateDialog = true;
                     }
                     return;
 
@@ -561,19 +561,19 @@ public sealed partial class MapEditorViewModel : ObservableObject
         RepaintTile(x, y);
     }
 
-    private void ApplyKey(int x, int y)
+    private void ApplyDoor(int x, int y)
     {
         if (SelectedMap is null) return;
-        SelectedMap.Record.Tile[x, y] = WithActiveAttr(SelectedMap.Record.Tile[x, y], new TileAttr { Type = TileType.Key, KeyItemNum = KeyItemNum, KeyIsConsumed = KeyTake });
+        SelectedMap.Record.Tile[x, y] = WithActiveAttr(SelectedMap.Record.Tile[x, y], new TileAttr { Type = TileType.Door, KeyItemNum = KeyItemNum, KeyIsConsumed = KeyTake });
         SelectedMap.UpdateRecord(SelectedMap.Record);
         RepaintTile(x, y);
     }
 
-    private void ApplyKeyOpen(int x, int y)
+    private void ApplyPlate(int x, int y)
     {
         if (SelectedMap is null) return;
         // DoorLayer lets a KeyOpen open a Key door on either plane.
-        SelectedMap.Record.Tile[x, y] = WithActiveAttr(SelectedMap.Record.Tile[x, y], new TileAttr { Type = TileType.KeyOpen, DoorX = KeyOpenDoorX, DoorY = KeyOpenDoorY, DoorLayer = KeyOpenDoorLayer });
+        SelectedMap.Record.Tile[x, y] = WithActiveAttr(SelectedMap.Record.Tile[x, y], new TileAttr { Type = TileType.Plate, DoorX = PlateDoorX, DoorY = PlateDoorY, DoorLayer = PlateDoorLayer });
         SelectedMap.UpdateRecord(SelectedMap.Record);
         RepaintTile(x, y);
     }
@@ -688,8 +688,8 @@ public sealed partial class MapEditorViewModel : ObservableObject
             AttributeTool.Warp => EditorStrings.MapEditor_AttrDesc_Warp,
             AttributeTool.Item => EditorStrings.MapEditor_AttrDesc_Item,
             AttributeTool.NpcAvoid => EditorStrings.MapEditor_AttrDesc_NpcAvoid,
-            AttributeTool.Key => EditorStrings.MapEditor_AttrDesc_Key,
-            AttributeTool.KeyOpen => EditorStrings.MapEditor_AttrDesc_KeyOpen,
+            AttributeTool.Door => EditorStrings.MapEditor_AttrDesc_Door,
+            AttributeTool.Plate => EditorStrings.MapEditor_AttrDesc_Plate,
             AttributeTool.NpcSpawn => EditorStrings.MapEditor_AttrDesc_NpcSpawn,
             AttributeTool.LayerRamp => EditorStrings.MapEditor_AttrDesc_LayerRamp,
             _ => "",

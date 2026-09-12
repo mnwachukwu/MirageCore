@@ -4,7 +4,7 @@
   "itemSheet": 0,
   "type": "PotionAddHp",
   "vitalAmount": 8,
-  "levelReq": 1,
+  "tier": 1,
   "nonTradeable": false,
   "nonListable": false,
   "nonMailable": false,

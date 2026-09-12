@@ -27,6 +27,7 @@ public sealed class JoinLeaveSystem : GameSystem
     private readonly ConversationSystem _conversations;
     private readonly TimeOfDaySystem _tod;
     private readonly WeatherSystem _weather;
+    private readonly DecalSystem _decals;
     private readonly ILogger<JoinLeaveSystem> _logger;
     private readonly Configuration.ServerConfig _config;
 
@@ -34,7 +35,8 @@ public sealed class JoinLeaveSystem : GameSystem
                            PlayerSaver saver, MovementSystem movement,
                            PartySystem party, GuildSystem guilds, MailSystem mail, SocialSystem social, TradeSystem trade, QuestSystem quests,
                            ConversationSystem conversations,
-                           TimeOfDaySystem tod, WeatherSystem weather, ILogger<JoinLeaveSystem> logger,
+                           TimeOfDaySystem tod, WeatherSystem weather, DecalSystem decals,
+                           ILogger<JoinLeaveSystem> logger,
                            IClock? clock = null,
                            Configuration.ServerConfig? config = null)
         : base(dispatcher, clock: clock)
@@ -53,6 +55,7 @@ public sealed class JoinLeaveSystem : GameSystem
         _conversations = conversations;
         _tod = tod;
         _weather = weather;
+        _decals = decals;
         _logger = logger;
     }
 
@@ -276,6 +279,7 @@ public sealed class JoinLeaveSystem : GameSystem
         _guilds.SyncOnJoin(index);
 
         SendMapItemsSnapshot(index, p.Map);
+        _decals.SendSnapshot(index, p.Map);
         _dispatcher.SendTo(index, BuildMapNpcs(_world, p.Map));
         SendTraversalNpcs(index, p.Map);
         SendOpenDoors(index, p.Map);
@@ -370,6 +374,7 @@ public sealed class JoinLeaveSystem : GameSystem
                 // routes them to the right grid cell).  The CheckForMap above arrives first, so
                 // the client already knows which cell this map occupies.
                 SendMapItemsSnapshot(index, mapNum);
+                _decals.SendSnapshot(index, mapNum);
                 _dispatcher.SendTo(index, BuildMapNpcs(_world, mapNum));
                 SendTraversalNpcs(index, mapNum);
                 SendOpenDoors(index, mapNum);

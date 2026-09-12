@@ -2,9 +2,8 @@ namespace Mirage.Shared;
 
 /// <summary>
 /// Game-wide tuning values and hard limits shared by server, client, and editor: collection caps,
-/// combat and AI cadences, economy costs, weather and time-of-day timings, and the blood-pool model.
-/// Everything here is a compile-time constant except the assembly-derived version fields and the
-/// blood-strength helpers at the bottom.
+/// combat and AI cadences, economy costs, weather and time-of-day timings, and the ground-stain model.
+/// Everything here is a compile-time constant except the assembly-derived version fields.
 /// </summary>
 public static class Constants
 {
@@ -106,11 +105,6 @@ public static class Constants
     // irrelevant. Deliberately under the 5% MarketSaleTaxPercent the marketplace and CoD charge: those
     // buy escrow, plain mail does not, and the gap is the price of trust.
     public const int MailAttachedValuePercent = 2;
-    // Share of the DRAINED FRACTION a Sub* potion pays into each of the other two vitals — see
-    // StatFormulas.SubPotionGain. Spending a quarter of one bar buys an eighth of each of the others,
-    // which holds at any pool size; the old rule paid half the raw amount and only made sense while every
-    // pool was equal.
-    public const int SubPotionExchangePercent = 50;
 
     // Player marketplace: sale tax (a gold sink, shown to the seller up front), per-seller listing cap, and
     // the maximum gold price a single listing can be set to.
@@ -197,52 +191,26 @@ public static class Constants
     public const string ItemsAssetSubfolder = "items";
 
     public const int WalkSpeed = 4;
-    public const int RunSpeed = 8;
 
     public const int MaxEditorSessions = 5;
 
     public const int DefaultItemRespawnSeconds = 120;
 
-    public const int MaxLevel = 255;
-    public const int PointsPerLevel = 3;
+    /// <summary>The highest tier the pricing curve is defined over.
+    ///
+    /// <para>NOT a character ceiling — Core has no levels. It is where <c>EconomyFormulas</c>' gold curve
+    /// stops being extrapolated, so a rung at the top prices flat instead of running off the fit.</para></summary>
+    public const int MaxItemTier = 255;
 
-    // Levels one gear tier covers. The armory authors a rung every five levels (five per band), so a piece
-    // bought on tier is worn for five levels before the next one is reachable. EconomyFormulas prices
-    // equipment against the gold earned across exactly this span — buy once, wear it the whole rung.
-    public const int GearTierLevels = 5;
+    // Tiers one gear rung covers. Equipment is authored a rung at a time, so a piece bought on tier is worn
+    // across this many before the next is reachable, and EconomyFormulas prices it against the gold earned
+    // over exactly that span — buy once, wear it the whole rung.
+    public const int GearTierSpan = 5;
 
     // Action-bar slots, bound to keys 1..4 (and to the gamepad's four face buttons under a trigger
     // modifier).  Four is a UI limit as much as a design one: the bar sits in the sidebar strip above the
     // links, and four icons is what fits there at the strip's width without crowding them.
     public const int MaxHotkeys = 4;
-    // Every authored class starts at this total stat allotment (Str+Def+Int+Spd). With PointsPerLevel it
-    // inverts a stat spread back into a character level, which is how an NPC gets a player-faithful
-    // "virtual level" (level = (statSum - PlayerBaseStatTotal)/PointsPerLevel + 1) driving its vitals,
-    // mitigation, EXP and strength readout exactly as a real level drives a player's.
-    public const int PlayerBaseStatTotal = 20;
-
-    // PvP — level gap that fully protects the lower-level player (no EXP/gear/item loss);
-    // also gates the attacker's EXP reward on a kill.
-    public const int PvpLevelGapMax = 5;
-
-    // NPC vs player relative-strength tier: a virtual-level gap of at least this much (either
-    // direction) reads as "no contest" and drives the kill-feed flavor when a mob kills a player
-    // (mob this much stronger → "slaughtered"; this much weaker → a careless death). Mirrors the
-    // outer tiers of the on-target strength readout in PacketHandler (levelDiff >= 5 / <= -5).
-    public const int NpcStrengthTierGap = 5;
-
-    // How far under a player an attack-on-sight NPC has to be before it stops starting fights. The test is
-    // STRICT: a virtual level (StatFormulas.NpcLevel) MORE than this far below the player's is beneath its
-    // notice, so a mob exactly this far under still comes for them and the tier below it is the quiet one.
-    //
-    // Same value as NpcStrengthTierGap and the same "no contest" idea, kept separate because they are tuned
-    // for different things — one is what a zone FEELS like to walk back through, the other is flavor text —
-    // and because the kill feed's test is inclusive where this one is not.
-    //
-    // Unprovoked acquisition only. A mob that is struck still fights back however far beneath the player it
-    // is, so a revisited zone goes quiet without going inert.
-    public const int NpcAggroIgnoreLevelGap = 5;
-
     // What an NPC's sight radius is expected to stay within, in tiles. ADVISORY: Range is a free number,
     // and an author who wants a mob that notices the whole map may have one.
     //
@@ -255,38 +223,15 @@ public static class Constants
     // which is almost always a slip rather than a design. Also advisory, and also called out.
     public const int MinAggressiveNpcRange = 2;
 
-    // PK flag — duration applied/extended on each fresh kill, and the per-death reduction
-    // when a flagged player is killed (2 deaths fully clear a single fresh flag).
-    public const long PkFlagDurationSeconds = 3600;
-    public const long PkKillReductionSeconds = 1800;
-    // Post-respawn protection window for freshly-respawned PK players.
-    public const long PkGraceDurationSeconds = 60;
-
-    // Aggressor flag — lit when a player throws the first hit at a non-PK / non-aggressor target,
-    // refreshed every time the aggressor lands or receives any combat hit (incl. 0-dmg/block/dodge),
-    // cleared on death, on natural lapse, or on becoming a PKer. While lit: guards treat the player
-    // as a PKer, the player is attackable in safe zones, and a kill on them carries no PK flag.
-    public const long AggressorDurationSeconds = 30;
-    public const long AggressorDurationMs = AggressorDurationSeconds * 1000;
-
-    // Death-time drop chances, % per slot.  Compared against Random.Shared.Next(100).
-    public const int NormalDropChancePercent = 20;  // each non-equipped slot on normal death
-    public const int PkEqDropChancePercent = 25;  // each equipped slot on PK death
-
     // The spawn point is a server SETTING, not a constant — see ServerConfig.Spawn. It defaults to the
     // middle of map 1, which is what it was when it lived here.
 
-    // ── Combat timing ────────────────────────────────────────────────────────
-    // TWO cooldowns, not one. The three ACTION values share a 1-second beat — player attack, NPC
-    // attack, spell cast — because they are the same act of committing to a turn, and the client's
-    // InputProcessor paces to the same value so server and client agree on it.
+    // ── Action timing ────────────────────────────────────────────────────────
+    // TWO cooldowns, not one. Both ACTION values share a 1-second beat — a player's and an NPC's —
+    // because they are the same act of committing to a turn, and the client's InputProcessor paces to
+    // the same value so server and client agree on it.
     public const long PlayerAttackCooldownMs = 1000;
     public const long NpcAttackCooldownMs = 1000;
-    public const long SpellCastCooldownMs = 1000;
-
-    /// <summary>Cast-packet <c>TargetType</c> for a cast that found nothing: the pose and the cooldown play,
-    /// no projectile does. The rest of the convention is 0=player, 1=npc, 2=self, 3=traversal.</summary>
-    public const byte CastTargetNone = 4;
 
     // Drinking runs on its OWN clock, and a slower one. Sharing the action beat made a potion cost a
     // swing, which turned self-healing into a straight substitute for a second body in the fight; on a
@@ -297,26 +242,11 @@ public static class Constants
     // forbid walking during a second in which no recast was possible. The 1-second cast cadence above
     // is what paces spell damage.
 
-    // After N consecutive "want to cast but in melee" ticks, a mage NPC stops trying to retreat
-    // and casts the spell at melee range anyway, then resets and tries to break off again next
-    // tick.  Prevents players from kiting the kiter — refusing to leave melee range no longer
-    // locks the NPC into a never-casts-while-adjacent loop.
-    public const int NpcMeleeKiteMaxAttempts = 3;
-
-    // An Int NPC that WEAVES melee and magic commits to whichever modality it rolls for a random run of this many
-    // ready beats before re-rolling, instead of re-rolling every beat.  Rapid per-beat cast↔melee switching reads
-    // as twitchy/mechanical; a short commitment gives a legible "casts for a bit, then melees for a bit" rhythm.
-    // Only bites the MIXED builds (both Str>0 and Int>0): a pure caster always casts, a pure-melee mob never does.
-    public const int NpcWeaveCommitMinBeats = 3;
-    public const int NpcWeaveCommitMaxBeats = 5;
-
     // ── Loot rolling ─────────────────────────────────────────────────────────
     // Players whose damage credit reaches this fraction of the top-damage contributor are eligible to roll
     // for tagged loot on NPC death, and to share the currency. Read it as "within a quarter of the top
     // dealer": someone who did the work alongside the leader shares the kill, someone who chipped does not.
     public const double LootDamageContributionThreshold = 0.75;
-    public const int LootRollSides = 100;          // d100, +1 → roll in [1..100]
-    public const long LootTagDurationMs = 30_000;  // 30 s exclusive pickup window
 
     // ── RNG bounds ───────────────────────────────────────────────────────────
     public const int PercentRollSides = 100;  // Random.Shared.Next(100) for % rolls (durability, drops)
@@ -359,11 +289,6 @@ public static class Constants
     public const int NpcWanderTurnChancePerStep = 4;    // 1-in-N per mid-stride step to bend 90° (Ls / zigzags)
 
     // ── NPC run-chase ────────────────────────────────────────────────────────
-    // SP drained per tile while a chasing NPC RUNS (mirrors the player's per-tile run drain).  Against the
-    // NPC SP pool (StatFormulas.GetNpcMaxSp = Spd×2) this gasses a chaser out after a longer sprint, dropping
-    // it to a walk the player outpaces.  Higher = shorter sprints, easier escapes.
-    public const int NpcRunSpDrainPerTile = 1;   // also drained per kite (retreat) tile — same "SP per tile moved"
-
     // On the tick an AoS NPC first acquires a combat target it rolls this percent chance to COMMIT to running
     // down the opening gap even from CLOSE range.  Without the roll it strolls in only while the target is within
     // the stroll ceiling (NpcApproachWalkMaxGap) — the roll is the "even a short approach, one in five charges"
@@ -380,12 +305,6 @@ public static class Constants
     // gap-reopened charge, since a mob can't stroll at a gap it would also charge at.  At 3 it strolls within 3
     // tiles and charges once the target opens the gap to 4.  Lower = rushes from closer in; raise = roomier stroll.
     public const int NpcApproachWalkMaxGap = 3;
-
-    // Run-stamina hysteresis: once a running NPC drains SP to empty it must rebuild the reservoir back up to
-    // this FRACTION of its max SP before it may sprint again (chase OR kite).  Without the gate an NPC burns
-    // each SP-regen trickle the instant it lands — flicking run/walk every regen tick and snapping the slide;
-    // with it the NPC commits to one sustained walk (rebuilding) then one sustained run per cycle.
-    public const float NpcRunReservoirFraction = 0.5f;
 
     // Chase limit-cycle damping: a chasing NPC that goes this many AI ticks without ever reducing
     // its world-distance to the target is treated as oscillating ("dancing") and damped — it holds
@@ -408,12 +327,6 @@ public static class Constants
     // Item slot 1 is the gold (Currency) item. Every system that charges or
     // rewards gold references this constant; do not hardcode 1 at call sites.
     public const int GoldItemIndex = 1;
-
-    // Item slot 2 is the spellcasting reagent (a Currency item authored in data). A SubHp cast consumes
-    // CombatFormulas.SubHpReagentCostExact(LevelReq) of it — the magic-side mirror of a warrior's repair upkeep.
-    // The item's definition (name, value, drops, shop stock) is authored in item data; the code only references
-    // this index to check/consume the stack, exactly as gold does.
-    public const int CastingReagentItemIndex = 2;
 
     // Earned from war kills + guild quests, spent at the war shop, donated to the guild vault (tax relief),
     // or banked. Per-character; the code references this index to grant/spend it, exactly like gold.
@@ -468,28 +381,6 @@ public static class Constants
     /// <summary>The share of a mob's damage a player deals for the kill to count toward their quest
     /// objectives — player and guild alike, and the valor rolled for advancing one.
     ///
-    /// <para>EXP is split by share, so a token hit earns a token amount and nothing is gained by it. A quest
-    /// objective is not divisible: the tick is the same size however little was done for it, so without a floor
-    /// one point of damage on someone else's kill is a full one, and tagging becomes the fastest way to quest.</para>
-    ///
-    /// <para>Twelve leaves room for eight to share a mob comfortably, which is well past any party size, so a
-    /// group genuinely working a mob together all qualify while a passer-by landing one hit does not.</para>
-    ///
-    /// <para>🔴 A PARTY PARTNER of someone who clears it shares the credit on one damaging blow instead — see
-    /// <c>CombatSystem.QuestCreditFor</c>. The pair still has to put a real share in between them.</para></summary>
-    public const int QuestCreditDamagePercent = 12;
-
-    // ── Death & respawn ──────────────────────────────────────────────────────
-    // Non-war respawn delay = penalty steps x this (base 10s). Steps escalate +1 per death, decay 1 step
-    // per full minute since the last death, and clamp to [1, max] (so the cap is max x 10s = 120s).
-    // On death a caster destroys reagents (item CastingReagentItemIndex) based on its PREPARED spell —
-    // independently of, and on top of, any equipped weapon's wear (a weapon wears from the weapon; reagents
-    // wear from the prepared spell). The amount = the per-cast reagent cost at that tier (the prepared spell's
-    // power, else the strongest known SubHp spell's) x this multiplier, scaled by the death's wear percent
-    // (a normal death = 10%). At 1 reagent = 1 gold this tracks a warrior's weapon-repair cost; in a guild war
-    // it is doubled and the vault absorbs it exactly like weapon wear.
-    public const int CasterDeathReagentMultiplier = 10;
-
     // ── Time of Day cycle ────────────────────────────────────────────────────
     // Full cycle = 4 real hours. Dusk and Dawn are carved from Day's 3-hour gross allotment.
     // Game time only advances while the server is running (pauses on shutdown).
@@ -503,18 +394,9 @@ public static class Constants
     public const long TodDawnStartMs = TodNightStartMs + TodNightDurationMs;
 
     // ── NPC night-boost ──────────────────────────────────────────────────────
-    // While TimePhase == Night, NPCs are boosted. Damage/EXP are checked at their combat chokepoints;
-    // HP flows through GameWorld.EffectiveNpcMaxHp plus a proportional sweep at each Night boundary.
-    // Set any to 1.0 to disable that facet.
-    public const double NpcNightDamageMultiplier = 1.10;  // melee + spell damage to players
+    // While TimePhase == Night, NPCs are tougher: HP flows through GameWorld.EffectiveNpcMaxHp plus a
+    // proportional sweep at each Night boundary. Set it to 1.0 to disable the boost.
     public const double NpcNightHpMultiplier = 1.10;  // effective max HP (tankier)
-    public const double NpcNightExpMultiplier = 1.20;  // EXP reward per kill
-
-    // NPC-vs-player damage disfavor: on-level mobs get +20% HP (favor, StatFormulas.GetNpcMaxHp) AND hit players
-    // this much softer, so PvE fights stay impactful without spiking a squishy build down.  PvE-only lever
-    // (player→NPC and NPC→NPC stay full mirror); applied post-mitigation at CombatSystem.ApplyNpcDamageToPlayer
-    // and folded into the kill-EXP danger term (ExpFormulas.ExpForKill) so EXP prices the softened real threat.
-    public const double NpcVsPlayerDamageMultiplier = 0.70;
 
     // ── Weather ──────────────────────────────────────────────────────────────
     // Global weather cycles via two timers (mirrors Time of Day; pauses while offline).
@@ -538,75 +420,31 @@ public static class Constants
     public const long WeatherHeavyWindMinMs = 5L * 60 * 1_000;   //  5 min
     public const long WeatherHeavyWindMaxMs = 30L * 60 * 1_000;   // 30 min
     // Effect magnitudes. Set any multiplier to its identity (1 / 1.0) to disable that facet.
-    public const int WeatherRainDurabilityWear = 2;    // Rain: durability loss doubled — 2 pts per combat wear event (vs 1) AND x2 on-death gear damage
-    public const int WeatherRainReagentMultiplier = 2; // SubHp casting-reagent cost multiplier (magic mirror of the wear above)
+    // What weather does to combat — damage, stamina, durability, EXP — is a GAME's rule, so only the
+    // ones Core can still act on survive here.
     public const double WeatherReducedRegenMultiplier = 0.5;  // Heat Wave + Snow: vital regen magnitude
-    public const int WeatherHeatWaveSpCostMultiplier = 2;    // Heat Wave: block/crit/dodge/run stamina cost
     public const long WeatherHeavyWindCooldownMultiplier = 2;    // Heavy Wind: attack + cast cooldown doubled
     public const int WeatherHeavyWindMissChancePercent = 10;   // Heavy Wind: attacks and casts torn off course, attacker-side, before any block/dodge
-    // Per-weather EXP reward multiplier (compounds with Night + party). Clear = 1.0.
-    public const double WeatherRainExpMultiplier = 1.05;
-    public const double WeatherHeatWaveExpMultiplier = 1.15;
-    public const double WeatherSnowExpMultiplier = 1.15;
-    public const double WeatherHeavyWindExpMultiplier = 1.25;
-    // Snow temporarily reduces max vitals (current scaled proportionally at the boundary).
-    public const double WeatherSnowMaxHpMultiplier = 0.90;
-    public const double WeatherSnowMaxMpMultiplier = 0.80;
-    public const double WeatherSnowMaxSpMultiplier = 0.80;
 
-    // ── Blood pools (server-authoritative, event-sourced) ─────────────────────
-    // When an entity takes HP damage, blood is deposited on its tile sized by intensity =
-    // clamp(|damage| / targetMaxHp, 0, 1): bigger hits (relative to the target's HP) leave more.  The server
-    // decays the field and broadcasts only the tiles a deposit touched; each client replays the SAME linear
-    // decay locally, so both sides must share BloodDissipationPerSec.  There is no tile-to-tile spread — a
-    // pool grows OUTWARD purely by its decal size scaling up as the tile accumulates (see the render consts).
-    // Amounts are a dimensionless "stain strength"; the wire quantizes amount in [0, BloodMaxTileAmount] to a byte 0..255.
-    public const int BloodTickIntervalMs = 250;        // server sim/broadcast cadence (client fade is per-frame, so this only bounds event latency)
-    public const float BloodPerHitScale = 0.45f;       // per-hit deposit = intensity * this (intensity = hit-size x closeness boost, see BloodDepositStrength)
-    public const float BloodStrengthExponent = 0.5f;   // concave damage-fraction → strength map (sqrt): LOW-damage hits still leave clear blood
-    public const float BloodMinHitStrength = 0.12f;    // floor so ANY damaging hit shows something (a chip off a huge-HP boss still bleeds)
-    public const float BloodLownessScale = 3.0f;       // per-hit deposit boost by HP-left-after-hit: x1 at full HP up to x(1+this)=x4 on a killing blow → pooling ACCELERATES as a mob weakens, and any kill (even a 1-shot) gives a big "death" splash
-    public const float BloodTrailHpThreshold = 0.34f;  // an entity at/below this fraction of max HP leaves a blood TRAIL as it walks/runs (drips onto fresh tiles)
-    public const float BloodTrailStrength = 0.25f;     // deposit strength for one trail drip → ~0.11 amount: a small stain (~24px) that lasts ~6.2s (decays from 0.11 to the 0.02 visibility floor at BloodDissipationPerSec) with ~1 droplet
-    public const float BloodMaxTileAmount = 3.0f;      // hard per-pool amount cap; maps to wire byte 255
-    public const int MaxMapBloodPools = 128;           // safety cap on live blood pools per map; the faintest is evicted past this (merge + decay usually keep it far lower)
-    public const float BloodDissipationPerSec = 0.015f; // linear decay; lifetime = amount / this (0.6 → 40s, 1.0 → 67s). SHARED by server sim + client decay.
-    public const float BloodVisibleEpsilon = 0.02f;    // below this a tile is dry: skip render, and free the map once every tile is under it
-    public const float BloodMaxAlpha = 0.9f;           // decal opacity at full saturation (near-opaque so pools read solid, not washed out)
-    // Render mapping (client only): OPACITY = freshness — any hit REDARKENS the stain to full, then it fades in
-    // step with the amount as it decays (a new hit on an almost-gone stain darkens it back to full).  SIZE grows
-    // with the raw amount, so a tile's pool expands OUTWARD the more it's bled on and shrinks back as it dries.
-    public const float BloodSizeFullAmount = 2.5f;     // amount at which the pool blob reaches max SIZE — a pool starts small and, as the victim weakens and deposits accelerate, the finishing hits push it near/at max (the emergent "death splash")
-    public const float BloodDecalMinSizePx = 20f;      // pool blob diameter (px) for a fresh light spill (small start)
-    public const float BloodDecalMaxSizePx = 120f;     // pool blob diameter (px) at full accumulation (~3.75 tiles) — big, but reached only slowly
-    // The furthest-reaching blood element (a max blob ~85px, or a droplet flung ~BloodSatelliteDistMax past the
-    // tile center) sits under ~3 tiles from the tile ORIGIN.  EmitBloodDecals scans this many tiles beyond the
-    // strict visible bounds so blood whose origin sits just off-screen still renders its overhang (the world pass
-    // is scissor-clipped, so the off-screen part is trimmed) — without it, blood pops in/out at the viewport edge.
-    public const int BloodCullMarginTiles = 3;
-    public const uint BloodTintRgb = 0x520808;         // dark arterial red (packed 0xRRGGBB); dims naturally under the night multiply
+    // ── Stains on the ground (server-authoritative, event-sourced) ────────────
+    // A deposit puts a colored rectangle on the ground; the server dries every stain on a shared linear
+    // clock and broadcasts only the maps whose LIST changed, because both sides run the same fade from the
+    // same constant. Amounts are a dimensionless "stain strength"; the wire quantizes over [0, DecalMaxAmount]
+    // to a byte.
+    //
+    // What makes a stain appear, how big it is and what color it is are a GAME's rules and live in its
+    // script. What is here is the part that is the same whatever spilled.
+    public const int DecalTickIntervalMs = 250;        // server dry/broadcast cadence; the client fades per-frame, so this only bounds event latency
+    public const float DecalMaxAmount = 3.0f;          // hard per-stain cap; maps to wire byte 255
+    public const int MaxMapDecals = 128;               // safety cap per map; past it the FAINTEST is evicted
+    public const float DecalDryingPerSec = 0.015f;     // linear; lifetime = amount / this (0.6 → 40s, 1.0 → 67s). SHARED by the server tick and the client fade
+    public const float DecalVisibleEpsilon = 0.02f;    // below this a stain is dry: skip the draw, and free the map once every stain is under it
+    public const float DecalMaxAlpha = 0.9f;           // opacity at full saturation — near-opaque, so a stain reads solid rather than washed out
 
-    /// <summary>Maps a hit to a 0..1 blood "strength" driving both the pool deposit and the droplet burst:
-    /// the fraction of the target's max HP the hit dealt, run through a concave curve
-    /// (<see cref="BloodStrengthExponent"/>) so LOW-damage hits still leave clearly-visible blood, with a
-    /// floor (<see cref="BloodMinHitStrength"/>) so any damaging hit shows something.</summary>
-    public static float BloodStrength(int damage, int maxHp)
-    {
-        if (damage <= 0 || maxHp <= 0) return 0f;
-        float raw = Math.Clamp(damage / (float)maxHp, 0f, 1f);
-        return Math.Max(MathF.Pow(raw, BloodStrengthExponent), BloodMinHitStrength);
-    }
-
-    /// <summary>Per-hit blood-pool deposit intensity: the hit-size term (<see cref="BloodStrength"/> — bigger hits
-    /// leave more) times a CLOSENESS boost that rises as the victim nears death (<see cref="BloodLownessScale"/>).
-    /// The boost keys on the HP left AFTER the hit, so a KILLING blow (0 HP after) always gets the FULL boost —
-    /// a quick 1-2 hit kill splashes big, and a long fight (already near-death at the end) is barely changed.  The
-    /// "death splash" falls out of this with no special death case.  Can exceed 1.  <paramref name="victimHp"/> is
-    /// the PRE-hit HP.</summary>
-    public static float BloodDepositStrength(int damage, int maxHp, int victimHp)
-    {
-        if (maxHp <= 0) return 0f;
-        float hpAfter = Math.Clamp((victimHp - damage) / (float)maxHp, 0f, 1f);   // 0 on a kill → finishing blows get the full boost
-        return BloodStrength(damage, maxHp) * (1f + BloodLownessScale * (1f - hpAfter));
-    }
+    // Render mapping (client only): OPACITY is freshness — a fresh deposit redarkens a stain to full, then it
+    // fades in step with the amount. SIZE grows with the raw amount, so a stain spreads OUTWARD the more is
+    // spilled on it and shrinks back as it dries.
+    public const float DecalSizeFullAmount = 2.5f;     // amount at which the blob reaches its maximum size
+    public const float DecalMinSizePx = 20f;           // blob diameter for a fresh light spill
+    public const float DecalMaxSizePx = 120f;          // blob diameter at full accumulation (~3.75 tiles)
 }

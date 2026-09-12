@@ -42,7 +42,7 @@ public class ClientLineOfSightTests
     public void HasClear_KeyDoor_ClosedBlocks_OpenClears()
     {
         var s = CenterState();
-        s.Map.EditTile(8, 5, t => t with { Type = TileType.Key });   // world (24,17) on the line
+        s.Map.EditTile(8, 5, t => t with { Type = TileType.Door });   // world (24,17) on the line
         Assert.That(ClientLineOfSight.HasClearFromLocalPlayer(s, TargetWX, TargetWY), Is.False, "closed door blocks");
 
         s.TempTile.Set(8, 5, (int)WorldLayer.Ground, true);   // ground door open
@@ -71,7 +71,7 @@ public class ClientLineOfSightTests
     public void HasClear_FringeDoor_IsIndependentOfTheGroundDoorState()
     {
         var s = CenterState();
-        s.Map.EditTile(8, 5, t => t with { FringeAttr = new FringeAttr { Type = TileType.Key } });   // a fringe-deck door on the line
+        s.Map.EditTile(8, 5, t => t with { FringeAttr = new FringeAttr { Type = TileType.Door } });   // a fringe-deck door on the line
         s.Me.Layer = WorldLayer.Fringe;
 
         Assert.That(ClientLineOfSight.HasClearFromLocalPlayer(s, TargetWX, TargetWY, WorldLayer.Fringe), Is.False,

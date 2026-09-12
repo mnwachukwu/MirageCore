@@ -3,8 +3,12 @@
 //     node .github/checks/check-readme-facts.mjs
 //
 // The sibling check-seed-counts.mjs guards the size of the shipped world. This one guards the facts
-// about the codebase itself — how many projects the solution ties together, the level ceiling, the
-// framework — which drift for the same reason and are caught by nothing else.
+// about the codebase itself — how many projects the solution ties together, the framework it targets,
+// how many test suites there are — which drift for the same reason and are caught by nothing else.
+//
+// A number is only a fact for this check when the README is stating it ABOUT THE CODE. The README's
+// level bands describe the seed world's content, not an engine limit, so they belong to the seed check
+// even where a constant happens to carry the same number.
 //
 // It found the README claiming eighteen projects when the solution held twenty-one. Nobody adding a
 // test project rereads a sentence in Project Structure.
@@ -36,14 +40,6 @@ const NUMBER_WORDS = {
   21: 'twenty-one', 22: 'twenty-two', 23: 'twenty-three', 24: 'twenty-four', 25: 'twenty-five',
 };
 
-/** A `const <type> <Name> = <value>;` from a source file. */
-function constant(relPath, name) {
-  const file = join(root, relPath);
-  if (!existsSync(file)) return null;
-  const m = readFileSync(file, 'utf8').match(new RegExp(`const\\s+\\w+\\s+${name}\\s*=\\s*([0-9.]+)`));
-  return m ? Number(m[1]) : null;
-}
-
 const facts = [];
 
 // How many projects the root solution actually ties together.
@@ -54,12 +50,6 @@ facts.push({
   actual: projects,
   // Spelled out in prose, which is how the README writes it.
   phrase: n => `all ${NUMBER_WORDS[n] ?? n} projects together`,
-});
-
-facts.push({
-  what: 'level ceiling',
-  actual: constant('shared/src/Mirage.Shared/Constants.cs', 'MaxLevel'),
-  phrase: n => `${n} levels`,
 });
 
 // The framework every project targets. Read from Mirage.Shared rather than a props file, because that

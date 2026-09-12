@@ -30,6 +30,7 @@ public sealed class GameLoop : IDisposable
     private readonly MailSystem _mail;
     private readonly MarketSystem _market;
     private readonly TradeSystem _trade;
+    private readonly DecalSystem _decals;
     private readonly IPersistenceService _persistence;
     private readonly IBackgroundPersistence _bg;
     private readonly ILogger<GameLoop> _logger;
@@ -44,9 +45,9 @@ public sealed class GameLoop : IDisposable
     // chase-steps (no acquisition / BFS-cache rebuild), so it's cheap.  100ms divides the flat 200ms run
     // cleanly, so the client slide matches with no snap.  See NpcAiSystem.RunMovement.
     private const int NpcMoveIntervalMs = 100;
-    // Blood-pool sim/broadcast pass — its own cadence so pools fade + spread smoothly and deposit/spread
+    // Stain dry/broadcast pass — its own cadence so stains fade smoothly and a deposit
     // events reach observers promptly, independent of the 500ms brain.
-    private const int BloodIntervalMs = Constants.BloodTickIntervalMs;
+    private const int DecalIntervalMs = Constants.DecalTickIntervalMs;
     private const int SpawnIntervalMs = 1_000;
     private const int SaveIntervalMs = 60_000;
     // Mailbox maturity sweep — flips in-transit P2P mail to delivered on both ends. Coarse (10-15 min delays).
@@ -64,7 +65,7 @@ public sealed class GameLoop : IDisposable
 
     public GameLoop(GameWorld world, PlayerManager pm, NpcAiSystem npcAi, PartySystem party,
                     ItemSystem items, PlayerSaver saver, TimeOfDaySystem tod, WeatherSystem weather,
-                    MailSystem mail, MarketSystem market, TradeSystem trade,
+                    MailSystem mail, MarketSystem market, TradeSystem trade, DecalSystem decals,
                     IPersistenceService persistence, IBackgroundPersistence bg, ILogger<GameLoop> logger,
                     IClock? clock = null)
     {
@@ -79,6 +80,7 @@ public sealed class GameLoop : IDisposable
         _mail = mail;
         _market = market;
         _trade = trade;
+        _decals = decals;
         _persistence = persistence;
         _bg = bg;
         _logger = logger;
@@ -126,7 +128,7 @@ public sealed class GameLoop : IDisposable
         long now = Environment.TickCount64;
         long nextAi = now + AiIntervalMs;
         long nextNpcMove = now + NpcMoveIntervalMs;
-        long nextBlood = now + BloodIntervalMs;
+        long nextDecal = now + DecalIntervalMs;
         long nextSpawn = now + SpawnIntervalMs;
         long nextSave = now + SaveIntervalMs;
         long nextMailSweep = now + MailSweepIntervalMs;
@@ -136,7 +138,7 @@ public sealed class GameLoop : IDisposable
         while (_running)
         {
             now = Environment.TickCount64;
-            long nextDeadline = Math.Min(Math.Min(Math.Min(Math.Min(nextAi, nextNpcMove), Math.Min(nextSpawn, nextSave)), nextBlood), nextMailSweep);
+            long nextDeadline = Math.Min(Math.Min(Math.Min(Math.Min(nextAi, nextNpcMove), Math.Min(nextSpawn, nextSave)), nextDecal), nextMailSweep);
             int wait = (int)Math.Clamp(nextDeadline - now, 0, MaxWaitMs);
 
             // Wake on the next queued action OR the next tick deadline, then drain everything pending so
@@ -168,10 +170,10 @@ public sealed class GameLoop : IDisposable
                 RunTick(NpcMoveTick, "npc-move");
                 nextNpcMove = Schedule(nextNpcMove, now, NpcMoveIntervalMs);
             }
-            if (now >= nextBlood)
+            if (now >= nextDecal)
             {
-                RunTick(BloodTick, "blood");
-                nextBlood = Schedule(nextBlood, now, BloodIntervalMs);
+                RunTick(DecalTick, "decals");
+                nextDecal = Schedule(nextDecal, now, DecalIntervalMs);
             }
             if (now >= nextSpawn)
             {
@@ -257,11 +259,9 @@ public sealed class GameLoop : IDisposable
         _npcAi.RunMovement(Environment.TickCount64);
     }
 
-    // Blood-pool pass — decays + spreads active maps' pools and broadcasts the deposit/spread events
-    // (dirty tiles) to observers.  Cheap: only maps that have seen recent combat carry a grid.
-    private void BloodTick()
-    {
-    }
+    // Stain pass — dries every map's stains and broadcasts the maps whose list changed. Cheap: only maps
+    // something has actually spilled on carry anything at all.
+    private void DecalTick() => _decals.Tick();
 
     private void SpawnTick()
     {

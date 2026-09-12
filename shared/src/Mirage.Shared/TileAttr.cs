@@ -31,13 +31,13 @@ public readonly record struct TileAttr
     /// <see cref="Constants.DefaultItemRespawnSeconds"/>.</summary>
     public short ItemRespawnSecs { get; init; }
 
-    // ── Key: a locked door ──────────────────────────────────────────────────────────────────────
+    // ── Door: blocked until somebody holding the right item opens it ────────────────────────────────
     /// <summary>The item that opens it, by item number.</summary>
     public short KeyItemNum { get; init; }
     /// <summary>Whether opening it consumes the key.</summary>
     public bool KeyIsConsumed { get; init; }
 
-    // ── KeyOpen: a pressure plate that opens a door elsewhere ───────────────────────────────────
+    // ── Plate: a pressure plate that opens a door elsewhere ─────────────────────────────────────────────
     public ushort DoorX { get; init; }
     public ushort DoorY { get; init; }
     /// <summary>Which plane the door sits on, so a ground plate can open a door up on the deck.</summary>

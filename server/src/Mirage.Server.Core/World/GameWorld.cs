@@ -45,7 +45,7 @@ public sealed class GameWorld
     public ConversationRecord[] Conversations { get; }
 
     // Guilds are runtime-created and UNBOUNDED (no cap): a sparse map keyed by guild Index (like
-    // MapBlood), each entry backed by guilds/guild{Index}.json. There is no fixed slot array.
+    // MapDecals), each entry backed by guilds/guild{Index}.json. There is no fixed slot array.
     public Dictionary<int, GuildRecord> Guilds { get; } = new();
 
     /// <summary>The largest guild number ever issued, retired ones included. Seeded from disk at boot and
@@ -384,11 +384,14 @@ public sealed class GameWorld
     // Unlimited size, in-memory only; each is keyed by its permanent (SpawnMapNum, SpawnSlot).
     public List<TraversalNpcRecord>[] MapTraversalNpcs { get; }
 
-    // Blood pools: sparse per-map field (float sim grid + a Dirty flag grid), driven by BloodSystem.
-    // Created on the first deposit for a map and removed when the map fully dries — so only maps that
-    // have seen recent combat allocate a grid (versus a dense 1000-entry array).  Server-authoritative:
-    // the client mirrors just the float amounts and replays decay locally.
-    public Dictionary<int, BloodField> MapBlood { get; } = new();
+    // Stains on the ground: a sparse per-map list, driven by DecalSystem. Created on the first deposit for
+    // a map and removed when the map fully dries, so only maps something has actually spilled on allocate
+    // anything. Server-authoritative: the client mirrors the list and replays the decay locally.
+    public Dictionary<int, DecalField> MapDecals { get; } = new();
+
+    /// <summary>What a stain looks like here, packed 0xRRGGBB, from `world.json`. One color for the whole
+    /// world: the renderer merges a layer's stains into one field and tints it once.</summary>
+    public uint DecalColor { get; set; } = 0x520808;
 
     public WeatherType Weather { get; set; }
     public TimePhase TimePhase { get; set; }

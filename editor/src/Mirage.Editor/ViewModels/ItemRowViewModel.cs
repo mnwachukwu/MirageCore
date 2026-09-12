@@ -39,11 +39,9 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
     [ObservableProperty] private short _vitalAmount;
     [ObservableProperty] private short _spellNum;
     [ObservableProperty] private short _power;
-    /// <summary>Minimum character level to equip or use it; 0 = no level gate. This is what paces the tier
-    /// ladder: the stat requirement derived from <see cref="Power"/> gates WHO may wear a piece, and a
-    /// class's base stat is high enough at level 1 to meet a mid-ladder item on the day it is rolled — so
-    /// only a level gates WHEN.</summary>
-    [ObservableProperty] private short _levelReq;
+    /// <summary>Where this item sits on the progression the game defines; 0 = ungated. The engine reads it
+    /// only to price the item, so what a tier means is the game's to decide.</summary>
+    [ObservableProperty] private short _tier;
     /// <summary>Classes allowed to equip it; null or empty = every class. Replaced wholesale by the
     /// class multi-select rather than mutated, so the change notification actually fires.</summary>
     [ObservableProperty] private List<short>? _allowedClasses;
@@ -83,7 +81,7 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
         _vitalAmount = r.VitalAmount;
         _spellNum = r.SpellNum;
         _power = r.Power;
-        _levelReq = r.LevelReq;
+        _tier = r.Tier;
         _nonTradeable = r.NonTradeable;
         _nonListable = r.NonListable;
         _nonMailable = r.NonMailable;
@@ -108,7 +106,7 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
     partial void OnVitalAmountChanged(short value) => MarkDirty();
     partial void OnSpellNumChanged(short value) => MarkDirty();
     partial void OnPowerChanged(short value) => MarkDirty();
-    partial void OnLevelReqChanged(short value) => MarkDirty();
+    partial void OnTierChanged(short value) => MarkDirty();
     partial void OnNonTradeableChanged(bool value) => MarkDirty();
     partial void OnNonListableChanged(bool value) => MarkDirty();
     partial void OnNonMailableChanged(bool value) => MarkDirty();
@@ -127,7 +125,7 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
         OnPropertyChanged(nameof(VitalAmountVisible));
         OnPropertyChanged(nameof(SpellNumVisible));
         OnPropertyChanged(nameof(PowerVisible));
-        OnPropertyChanged(nameof(LevelReqVisible));
+        OnPropertyChanged(nameof(TierVisible));
     }
 
     private void MarkDirty()
@@ -172,7 +170,7 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             VitalAmount = r.VitalAmount;
             SpellNum = r.SpellNum;
             Power = r.Power;
-            LevelReq = r.LevelReq;
+            Tier = r.Tier;
             NonTradeable = r.NonTradeable;
             NonListable = r.NonListable;
             NonMailable = r.NonMailable;
@@ -204,7 +202,7 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             VitalAmount = pkt.VitalAmount;
             SpellNum = pkt.SpellNum;
             Power = pkt.Power;
-            LevelReq = pkt.LevelReq;
+            Tier = pkt.Tier;
             NonTradeable = pkt.NonTradeable;
             NonListable = pkt.NonListable;
             NonMailable = pkt.NonMailable;
@@ -238,7 +236,7 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             VitalAmount = VitalAmount,
             SpellNum = SpellNum,
             Power = Power,
-            LevelReq = LevelReq,
+            Tier = Tier,
             NonTradeable = NonTradeable,
             NonListable = NonListable,
             NonMailable = NonMailable,
@@ -267,7 +265,7 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             VitalAmount = r.VitalAmount,
             SpellNum = r.SpellNum,
             Power = r.Power,
-            LevelReq = r.LevelReq,
+            Tier = r.Tier,
             NonTradeable = r.NonTradeable,
             NonListable = r.NonListable,
             NonMailable = r.NonMailable,
@@ -311,5 +309,5 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
     public bool VitalAmountVisible => ItemRecord.UsesVitalAmount(Type);
     public bool SpellNumVisible => ItemRecord.UsesSpellNum(Type);
     public bool PowerVisible => ItemRecord.UsesPower(Type);
-    public bool LevelReqVisible => ItemRecord.UsesLevelReq(Type);
+    public bool TierVisible => ItemRecord.UsesTier(Type);
 }

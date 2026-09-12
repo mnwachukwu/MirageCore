@@ -5,7 +5,7 @@
   "type": "Helmet",
   "durability": 1070,
   "power": 145,
-  "levelReq": 115,
+  "tier": 115,
   "allowedClasses": [
     2,
     3,

@@ -504,14 +504,8 @@ public sealed partial class AccountEditorViewModel : ObservableObject
 /// also assigns real access.</summary>
 public sealed record AccessFilterOption(AdminLevel? Level, string Label);
 
-/// <summary>One editable character row. Name and class are shown but not editable — a rename has to go
-/// through the character-name registry, which is a different job from fixing a level or a position.
-///
-/// <para>Level drags EXP and stat points along with it, so setting a level here produces the character
-/// the game itself would have produced at that level: EXP lands on the level's floor, and the point pool
-/// gains or loses <see cref="Constants.PointsPerLevel"/> per level exactly as levelling and the death
-/// penalty do. A delevel that cannot pay out of unspent points does NOT drain stats the way the death
-/// penalty does — the row goes over budget and says so, and the editor refuses to save it.</para></summary>
+/// <summary>One editable character row. The name is shown but not editable — a rename has to go through
+/// the character-name registry, which is a different job from fixing a position.</summary>
 public sealed partial class AccountCharRowViewModel : ObservableObject
 {
     private readonly int _slot;
@@ -657,8 +651,8 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
     /// a targeted operation changes — and leave every typed field the account Save carries exactly as it is.
     ///
     /// <para>The bag, the book and the log are read-only here and only ever change through their own round
-    /// trips, so the server's copy is always the right one. Level, EXP, position and the stats are the
-    /// operator's until Save sends them, and re-reading over them throws away work they have not finished.</para></summary>
+    /// trips, so the server's copy is always the right one. Every typed field is the operator's until Save
+    /// sends it, and re-reading over one throws away work they have not finished.</para></summary>
     internal void AdoptServerState(EditorCharRow row)
     {
         if (!string.Equals(_name, row.Name, StringComparison.Ordinal))

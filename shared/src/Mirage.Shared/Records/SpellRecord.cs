@@ -48,16 +48,12 @@ public sealed class SpellRecord
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public short IntReq { get; set; }
 
-    /// <summary>Minimum character level to learn this spell. 0 = no level gate. Applies to every spell
-    /// type, unlike the fields above.
-    /// <para>The INT requirement above cannot pace the tier ladder on its own — a specialist starts with
-    /// enough INT to meet a mid-ladder spell at level 1 — so INT decides <em>who</em> may learn a spell
-    /// and this decides <em>when</em>. Both are checked, and the message names whichever failed.</para>
-    /// <para>Not to be confused with the VB6 field of the same name, which was inert: it was saved, sent
-    /// and bound to a slider that nothing ever read (see docs/changes-from-vb6.md). This one is
-    /// enforced on the learn path.</para></summary>
+    /// <summary>Where this spell sits on the progression a game defines. 0 = ungated.
+    ///
+    /// <para>Same field as <see cref="ItemRecord.Tier"/> and read for the same reason: a scroll that teaches
+    /// this spell is priced from it, because the paper carries no tier of its own.</para></summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public short LevelReq { get; set; }
+    public short Tier { get; set; }
 
     // ── Which fields apply to which type ──────────────────────────────────────
     // As on ItemRecord: one statement of the rule, consulted by the editor to decide what to show and

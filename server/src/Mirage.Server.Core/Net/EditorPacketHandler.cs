@@ -294,12 +294,12 @@ public sealed partial class EditorPacketHandler
         var itemGates = Enumerable.Range(1, _world.Limits.Items)
             .Where(i => !string.IsNullOrEmpty(_world.Items[i].Name))
             .Select(i => new EditorDataPacket.ItemGate(i, _world.Items[i].Type, _world.Items[i].Power,
-                _world.Items[i].LevelReq, _world.Items[i].Price))
+                _world.Items[i].Tier, _world.Items[i].Price))
             .ToArray();
         var spellGates = Enumerable.Range(1, _world.Limits.Spells)
             .Where(i => !string.IsNullOrEmpty(_world.Spells[i].Name))
             .Select(i => new EditorDataPacket.SpellGate(i, _world.Spells[i].Type, _world.Spells[i].VitalAmount,
-                _world.Spells[i].LevelReq))
+                _world.Spells[i].Tier))
             .ToArray();
 
         var npcSizes = new int[_world.Limits.Npcs + 1];
@@ -468,7 +468,7 @@ public sealed partial class EditorPacketHandler
         item.VitalAmount = p.VitalAmount;
         item.SpellNum = p.SpellNum;
         item.Power = p.Power;
-        item.LevelReq = p.LevelReq;
+        item.Tier = p.Tier;
         item.NonTradeable = p.NonTradeable;
         item.NonListable = p.NonListable;
         item.NonMailable = p.NonMailable;
@@ -795,7 +795,7 @@ public sealed partial class EditorPacketHandler
         spell.ItemNum = p.ItemNum;
         spell.ItemQuantity = p.ItemQuantity;
         spell.IntReq = p.IntReq;
-        spell.LevelReq = p.LevelReq;
+        spell.Tier = p.Tier;
         // As on the item path: the server clears what the new Type doesn't use before storing or
         // broadcasting. It matters more here — a stale IntReq would silently re-gate the spell.
         spell.Normalize();

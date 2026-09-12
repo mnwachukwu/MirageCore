@@ -72,8 +72,8 @@ public class EditorVocabularyTests
     [TestCase(AttributeTool.Warp, TileType.Warp)]
     [TestCase(AttributeTool.Item, TileType.Item)]
     [TestCase(AttributeTool.NpcAvoid, TileType.NpcAvoid)]
-    [TestCase(AttributeTool.Key, TileType.Key)]
-    [TestCase(AttributeTool.KeyOpen, TileType.KeyOpen)]
+    [TestCase(AttributeTool.Door, TileType.Door)]
+    [TestCase(AttributeTool.Plate, TileType.Plate)]
     [TestCase(AttributeTool.LayerRamp, TileType.LayerRamp)]
     public void ToolAndStoredAttribute_ShareOneName(AttributeTool tool, TileType type)
         => Assert.That(EditorVocabulary.NameOf(tool), Is.EqualTo(EditorVocabulary.NameOf(type)));

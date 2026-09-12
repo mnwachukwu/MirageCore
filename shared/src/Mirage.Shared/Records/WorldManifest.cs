@@ -75,4 +75,12 @@ public sealed record WorldManifest
         get;
         init => field = StartingLoadout.Normalize(value);
     } = [];
+
+    /// <summary>What a stain on the ground looks like, packed 0xRRGGBB. Blood in most worlds, which is
+    /// why the default is a dark arterial red; oil, soot, spilled dye or melt-water in others.
+    ///
+    /// <para>One color for the whole world, not one per stain: the renderer merges every stain on a layer
+    /// into one field so overlapping ones union smoothly instead of darkening at their seams, and it tints
+    /// that field once. A second color would mean a second field.</para></summary>
+    public uint DecalColor { get; init; } = 0x520808;
 }

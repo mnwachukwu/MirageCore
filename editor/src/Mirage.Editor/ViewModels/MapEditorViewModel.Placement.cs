@@ -93,7 +93,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
         ShowWarpDialog = false;
     }
 
-    // ── Blocked dialog confirm ───────────────────────────────────────────────
+    // ── Blocked dialog confirm ────────────────────────────────────────────────
 
     [RelayCommand]
     private void ConfirmBlocked()
@@ -327,10 +327,10 @@ public sealed partial class MapEditorViewModel : ObservableObject
         ShowItemDialog = false;
     }
 
-    // ── Key dialog confirm ────────────────────────────────────────────────────
+    // ── Door dialog confirm ───────────────────────────────────────────────────
 
     [RelayCommand]
-    private void ConfirmKey()
+    private void ConfirmDoor()
     {
         if (SelectedMap is null) return;
         if (KeyItemNum <= 0)
@@ -343,51 +343,51 @@ public sealed partial class MapEditorViewModel : ObservableObject
         foreach (var (tx, ty) in TargetTiles())
         {
             var before = Snap(SelectedMap.Record.Tile[tx, ty]);
-            ApplyKey(tx, ty);
+            ApplyDoor(tx, ty);
             Record(tx, ty, before, Snap(SelectedMap.Record.Tile[tx, ty]));
         }
         CommitBatch();
-        if (KeyRetain)
+        if (DoorRetain)
         {
-            _hasRetainedKey = true;
+            _hasRetainedDoor = true;
             _retKeyItemNum = KeyItemNum;
             _retKeyTake = KeyTake;
         }
-        ShowKeyDialog = false;
+        ShowDoorDialog = false;
     }
 
     [RelayCommand]
-    private void CancelKey()
+    private void CancelDoor()
     {
         DialogError = "";
-        ShowKeyDialog = false;
+        ShowDoorDialog = false;
     }
 
-    // ── KeyOpen dialog confirm ────────────────────────────────────────────────
+    // ── Plate dialog confirm ──────────────────────────────────────────────────
 
     [RelayCommand]
-    private void ConfirmKeyOpen()
+    private void ConfirmPlate()
     {
         if (SelectedMap is null) return;
         BeginBatch();
         foreach (var (tx, ty) in TargetTiles())
         {
             var before = Snap(SelectedMap.Record.Tile[tx, ty]);
-            ApplyKeyOpen(tx, ty);
+            ApplyPlate(tx, ty);
             Record(tx, ty, before, Snap(SelectedMap.Record.Tile[tx, ty]));
         }
         CommitBatch();
-        if (KeyOpenRetain)
+        if (PlateRetain)
         {
-            _hasRetainedKeyOpen = true;
-            _retKeyOpenDoorX = KeyOpenDoorX;
-            _retKeyOpenDoorY = KeyOpenDoorY;
-            _retKeyOpenDoorLayer = KeyOpenDoorLayer;
+            _hasRetainedPlate = true;
+            _retPlateDoorX = PlateDoorX;
+            _retPlateDoorY = PlateDoorY;
+            _retPlateDoorLayer = PlateDoorLayer;
         }
-        ShowKeyOpenDialog = false;
+        ShowPlateDialog = false;
     }
 
-    [RelayCommand] private void CancelKeyOpen() => ShowKeyOpenDialog = false;
+    [RelayCommand] private void CancelPlate() => ShowPlateDialog = false;
 
     // ── Light dialog confirm / clear ──────────────────────────────────────────
 

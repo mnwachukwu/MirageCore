@@ -64,15 +64,15 @@ public sealed class ItemRecord
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public short Power { get; set; }
 
-    /// <summary>Minimum character level to equip or use this item. 0 = no level gate.
-    /// <para>This is what actually paces the tier ladder. The stat requirement derived from
-    /// <see cref="Power"/> cannot do it: a class's base stat is high enough at level 1 that a Sage already
-    /// meets a mid-ladder piece the day it rolls a character, so the stat gate is a floor that stops the
-    /// wrong CLASS wearing something, not a clock. A level is the clock.</para>
-    /// <para>Both gates apply — an item can be out of reach for either reason, and the tooltip says
-    /// which. Applies to anything equipped or consumed; currency and keys carry no level.</para></summary>
+    /// <summary>Where this item sits on the progression a game defines. 0 = ungated.
+    ///
+    /// <para>Core reads it for ONE thing: pricing. <c>EconomyFormulas</c> quotes an item's worth against the
+    /// income expected at its tier, so a tier is what makes a derived price mean anything. A game decides
+    /// what a tier IS — a level, a badge, a chapter, an hour played — and what, if anything, it gates.</para>
+    ///
+    /// <para>Applies to anything equipped or consumed; currency and keys carry none.</para></summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public short LevelReq { get; set; }
+    public short Tier { get; set; }
 
     /// <summary>Item restriction flags. Each blocks exactly one action; banking is always allowed.
     /// Absent = false, so existing item data is unaffected. All five are enforced server-side:
@@ -99,8 +99,8 @@ public sealed class ItemRecord
     /// fraction so player-to-player trade still wins).
     ///
     /// <para><b>int, not short.</b> Every other type-specific field here is a <c>short</c>, which makes
-    /// <c>short</c> the reflex — and the top-tier weapon prices at 1,369,194, which wraps silently at
-    /// 32,767. The whole ladder above about level 60 would be corrupt and nothing would report it.</para>
+    /// <c>short</c> the reflex — and a top-tier weapon prices at 1,369,194, which wraps silently at 32,767.
+    /// Most of the ladder would be corrupt and nothing would report it.</para>
     ///
     /// <para>SEEDED, NOT AUTHORED. A generator pass writes <see cref="EconomyFormulas.ItemValue"/> into
     /// every item, so 471 prices stay consistent with each other and with measured income without anyone
@@ -140,18 +140,17 @@ public sealed class ItemRecord
     public static bool UsesVitalAmount(ItemType type) => IsPotion(type);
     public static bool UsesSpellNum(ItemType type) => type is ItemType.Spell;
 
-    /// <summary>What a character wears or drinks carries a level gate: the wearables and the potions.
-    /// <para>A SCROLL does not. Its gate lives on the SPELL it teaches, which is where learning is actually
-    /// refused, so a level on the paper would be a second number nothing reads. Currency and keys carry none
-    /// either: gold is not something you qualify for, and a door that refuses its own key because the holder
-    /// is level 4 is a puzzle nobody asked for.</para></summary>
-    public static bool UsesLevelReq(ItemType type) => IsEquipment(type) || IsPotion(type);
+    /// <summary>What a character wears or drinks carries a tier: the wearables and the potions.
+    /// <para>A SCROLL does not. Its tier lives on the SPELL it teaches, so one on the paper would be a
+    /// second number nothing reads. Currency and keys carry none either: gold is not something you qualify
+    /// for, and a key that refuses its own door is a puzzle nobody asked for.</para></summary>
+    public static bool UsesTier(ItemType type) => IsEquipment(type) || IsPotion(type);
 
-    /// <summary>The item's level gate; for a spell scroll, the gate on the spell it teaches.</summary>
-    public static int EffectiveLevelReq(ItemRecord? item, SpellRecord? taughtSpell)
+    /// <summary>The item's tier; for a spell scroll, the tier of the spell it teaches.</summary>
+    public static int EffectiveTier(ItemRecord? item, SpellRecord? taughtSpell)
     {
-        if (item is { LevelReq: > 0 }) return item.LevelReq;
-        return item?.Type == ItemType.Spell ? taughtSpell?.LevelReq ?? 0 : 0;
+        if (item is { Tier: > 0 }) return item.Tier;
+        return item?.Type == ItemType.Spell ? taughtSpell?.Tier ?? 0 : 0;
     }
 
     /// <summary>Zero every field that does not apply to the current <see cref="Type"/>, so the record
@@ -166,6 +165,6 @@ public sealed class ItemRecord
         if (!UsesVitalAmount(Type)) VitalAmount = 0;
         if (!UsesSpellNum(Type)) SpellNum = 0;
         if (!UsesPower(Type)) Power = 0;
-        if (!UsesLevelReq(Type)) LevelReq = 0;
+        if (!UsesTier(Type)) Tier = 0;
     }
 }

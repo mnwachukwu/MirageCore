@@ -27,7 +27,7 @@ namespace Mirage.Client.Shell;
 public sealed partial class MirageGame : Game
 {
     /// <summary>Renders the frame in passes: the scrolling world into its supersampled target (with the
-    /// light and blood passes, split per layer when a bridge is in view), the composite of that target
+    /// light and stain passes, split per layer when a bridge is in view), the composite of that target
     /// onto the letterboxed map area, then the HUD, panels and dialogs at reference scale.</summary>
     protected override void Draw(GameTime gameTime)
     {
@@ -77,13 +77,13 @@ public sealed partial class MirageGame : Game
             EnsureWorldTarget(lb);
             var wt = Matrix.CreateScale(_worldSS);
 
-            // Bind a world target BEFORE BuildWorldFrame: its blood accumulation saves/restores whatever target is
+            // Bind a world target BEFORE BuildWorldFrame: its stain accumulation saves/restores whatever target is
             // currently bound and NO-OPS if none is (it won't draw to the backbuffer), so one must be live for the
-            // blood fields to build. The split/flat branches below re-bind their own targets afterward.
+            // stain fields to build. The split/flat branches below re-bind their own targets afterward.
             GraphicsDevice.SetRenderTarget(_worldRT);
 
-            // Build the frame + accumulate the blood fields, and learn whether a bridge/fringe surface is visible.
-            bool hasFringe = gs.BuildWorldFrame(_sb!, _font!, wt, _bloodRT, _bloodRTFringe);
+            // Build the frame + accumulate the stain fields, and learn whether a bridge/fringe surface is visible.
+            bool hasFringe = gs.BuildWorldFrame(_sb!, _font!, wt, _decalRT, _decalRTFringe);
 
             bool haveLights = needsLightPass && _lightRT is not null && _mapLightTex is not null
                 && _lightHaloOuterTex is not null && _lightHaloInnerTex is not null;
@@ -360,8 +360,8 @@ public sealed partial class MirageGame : Game
         _worldRTFringe?.Dispose();
         _lightRT?.Dispose();
         _lightRTFringe?.Dispose();
-        _bloodRT?.Dispose();
-        _bloodRTFringe?.Dispose();
+        _decalRT?.Dispose();
+        _decalRTFringe?.Dispose();
         // PreserveContents is REQUIRED on _worldRT too: the split path composites the world into it, then RE-BINDS it
         // TWICE MORE to alpha-composite the lit label overlays on top (LitLabelPass). With the default DiscardContents
         // those re-binds wipe the just-composited world, leaving only the labels — the "black map, only my name
@@ -381,8 +381,8 @@ public sealed partial class MirageGame : Game
             SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
         _lightRTFringe = new RenderTarget2D(GraphicsDevice, Camera.ViewW * ss, Camera.ViewH * ss, false,
             SurfaceFormat.Color, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);   // fringe-layer light map (split only)
-        _bloodRT = new RenderTarget2D(GraphicsDevice, Camera.ViewW * ss, Camera.ViewH * ss);
-        _bloodRTFringe = new RenderTarget2D(GraphicsDevice, Camera.ViewW * ss, Camera.ViewH * ss);   // fringe-layer blood field
+        _decalRT = new RenderTarget2D(GraphicsDevice, Camera.ViewW * ss, Camera.ViewH * ss);
+        _decalRTFringe = new RenderTarget2D(GraphicsDevice, Camera.ViewW * ss, Camera.ViewH * ss);   // fringe-layer stain field
         _worldSS = ss;
     }
 

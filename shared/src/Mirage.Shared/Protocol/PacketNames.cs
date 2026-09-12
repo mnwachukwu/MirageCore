@@ -220,6 +220,8 @@ public static class PacketNames
     public const string JoinMap = "joinmap";
     public const string LeaveMap = "leavemap";
     public const string SendPlayerData = "playerdata";
+    // A map's stains, whole-list. Sent only when the list changes; drying needs no wire.
+    public const string DecalUpdate = "decals";
     // The loaded game's attribute keys and their wire numbering, sent once before anything is synced.
     public const string AttributeSchema = "attrschema";
     // One body's changed attributes, already filtered to what the receiver may see.

@@ -1006,14 +1006,14 @@
     </Border>
 
     <Border Grid.Row="0"
-            IsVisible="{Binding ShowKeyDialog}"
+            IsVisible="{Binding ShowDoorDialog}"
             Background="#CC000000"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Padding="20" CornerRadius="8">
       <StackPanel Spacing="10" Width="260">
-        <TextBlock x:Name="_keyTitle" FontSize="14" FontWeight="Bold"/>
-        <TextBlock x:Name="_keyDesc" FontSize="11" Foreground="#8B84AE" TextWrapping="Wrap"/>
+        <TextBlock x:Name="_doorTitle" FontSize="14" FontWeight="Bold"/>
+        <TextBlock x:Name="_doorDesc" FontSize="11" Foreground="#8B84AE" TextWrapping="Wrap"/>
         <StackPanel Spacing="8">
           <Grid>
             <Grid.ColumnDefinitions>
@@ -1030,37 +1030,37 @@
           <CheckBox x:Name="_keyTakeCheck"
                     IsChecked="{Binding KeyTake}"/>
         </StackPanel>
-        <CheckBox x:Name="_keyFillRunCheck" IsChecked="{Binding FillRun}"
+        <CheckBox x:Name="_doorFillRunCheck" IsChecked="{Binding FillRun}"
                   IsEnabled="{Binding CanFillRun}" Margin="0,4,0,0"/>
-        <CheckBox x:Name="_keyRetainCheck" IsChecked="{Binding KeyRetain}" Margin="0,4,0,0"/>
+        <CheckBox x:Name="_doorRetainCheck" IsChecked="{Binding DoorRetain}" Margin="0,4,0,0"/>
         <TextBlock Text="{Binding DialogError}"
                    Foreground="#FF6666" FontSize="11" TextWrapping="Wrap"
                    IsVisible="{Binding DialogError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-          <Button x:Name="_keyCancel"  Command="{Binding CancelKeyCommand}"/>
-          <Button x:Name="_keyConfirm" Command="{Binding ConfirmKeyCommand}" IsDefault="True"/>
+          <Button x:Name="_doorCancel"  Command="{Binding CancelDoorCommand}"/>
+          <Button x:Name="_doorConfirm" Command="{Binding ConfirmDoorCommand}" IsDefault="True"/>
         </StackPanel>
       </StackPanel>
     </Border>
 
     <Border Grid.Row="0"
-            IsVisible="{Binding ShowKeyOpenDialog}"
+            IsVisible="{Binding ShowPlateDialog}"
             Background="#CC000000"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Padding="20" CornerRadius="8">
       <StackPanel Spacing="10" Width="280">
-        <TextBlock x:Name="_keyOpenTitle" FontSize="14" FontWeight="Bold"/>
-        <TextBlock x:Name="_keyOpenDesc" FontSize="11" Foreground="#8B84AE" TextWrapping="Wrap"/>
+        <TextBlock x:Name="_plateTitle" FontSize="14" FontWeight="Bold"/>
+        <TextBlock x:Name="_plateDesc" FontSize="11" Foreground="#8B84AE" TextWrapping="Wrap"/>
         <StackPanel Spacing="8">
           <Grid>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
               <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock x:Name="_keyOpenXLabel" Grid.Column="0" VerticalAlignment="Center"/>
-            <NumericUpDown x:Name="_keyOpenXInput" Grid.Column="1"
-                           Value="{Binding KeyOpenDoorX}"
+            <TextBlock x:Name="_plateXLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown x:Name="_plateXInput" Grid.Column="1"
+                           Value="{Binding PlateDoorX}"
                            Minimum="0" Maximum="15" FormatString="0"/>
           </Grid>
           <Grid>
@@ -1068,9 +1068,9 @@
               <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
               <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock x:Name="_keyOpenYLabel" Grid.Column="0" VerticalAlignment="Center"/>
-            <NumericUpDown x:Name="_keyOpenYInput" Grid.Column="1"
-                           Value="{Binding KeyOpenDoorY}"
+            <TextBlock x:Name="_plateYLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown x:Name="_plateYInput" Grid.Column="1"
+                           Value="{Binding PlateDoorY}"
                            Minimum="0" Maximum="11" FormatString="0"/>
           </Grid>
           <!-- Two-plane world: which layer's Key door this plate opens (independent of the plate's own plane). -->
@@ -1079,18 +1079,18 @@
               <ColumnDefinition Width="Auto" SharedSizeGroup="MapPropLabel"/>
               <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock x:Name="_keyOpenLayerLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <TextBlock x:Name="_plateLayerLabel" Grid.Column="0" VerticalAlignment="Center"/>
             <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
                       ItemsSource="{Binding AttributeLayers}" ItemTemplate="{StaticResource VocabularyItem}"
-                      SelectedItem="{Binding KeyOpenDoorLayer, Mode=TwoWay}"/>
+                      SelectedItem="{Binding PlateDoorLayer, Mode=TwoWay}"/>
           </Grid>
         </StackPanel>
-        <CheckBox x:Name="_keyOpenFillRunCheck" IsChecked="{Binding FillRun}"
+        <CheckBox x:Name="_plateFillRunCheck" IsChecked="{Binding FillRun}"
                   IsEnabled="{Binding CanFillRun}" Margin="0,4,0,0"/>
-        <CheckBox x:Name="_keyOpenRetainCheck" IsChecked="{Binding KeyOpenRetain}" Margin="0,4,0,0"/>
+        <CheckBox x:Name="_plateRetainCheck" IsChecked="{Binding PlateRetain}" Margin="0,4,0,0"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-          <Button x:Name="_keyOpenCancel"  Command="{Binding CancelKeyOpenCommand}"/>
-          <Button x:Name="_keyOpenConfirm" Command="{Binding ConfirmKeyOpenCommand}" IsDefault="True"/>
+          <Button x:Name="_plateCancel"  Command="{Binding CancelPlateCommand}"/>
+          <Button x:Name="_plateConfirm" Command="{Binding ConfirmPlateCommand}" IsDefault="True"/>
         </StackPanel>
       </StackPanel>
     </Border>

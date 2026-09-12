@@ -217,7 +217,7 @@ public class WorldCheckTests
     {
         var w = World();
         w.Maps[1]!.Tile[2, 2] = w.Maps[1]!.Tile[2, 2].WithGroundAttr(
-            new TileAttr { Type = TileType.Key, KeyItemNum = 0 });
+            new TileAttr { Type = TileType.Door, KeyItemNum = 0 });
 
         Assert.That(Kinds(w), Does.Contain(WorldIssueKind.ItemMissing));
     }

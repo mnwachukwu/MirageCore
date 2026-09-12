@@ -7,7 +7,7 @@ namespace Mirage.Server.Core.Configuration;
 ///
 /// <para>Only values NO CLIENT READS may live here. <c>Constants</c> is in <c>Mirage.Shared</c> and its
 /// values are <c>const</c>, so anything the client compiles against is inlined into it — moving one here
-/// desyncs every connected client silently. Cooldowns, the blood model and the record ceilings stay
+/// desyncs every connected client silently. Cooldowns, the stain model and the record ceilings stay
 /// const for that reason.</para>
 /// </summary>
 public sealed record ServerConfig

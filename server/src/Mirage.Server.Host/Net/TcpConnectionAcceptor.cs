@@ -261,6 +261,7 @@ public sealed class TcpConnectionAcceptor : IDisposable
         // The one part of the greeting that is the WORLD's rather than the operator's: which looks a
         // character may be made with is authored beside the records, not configured beside the port.
         Appearances = _world.Appearances,
+        DecalColor = _world.DecalColor,
     };
 
     private async Task<int> ClaimEditorSlotAsync(CancellationToken ct)

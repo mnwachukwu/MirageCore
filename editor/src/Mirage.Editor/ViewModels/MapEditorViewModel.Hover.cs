@@ -128,12 +128,12 @@ public sealed partial class MapEditorViewModel : ObservableObject
             ("Respawn", a.ItemRespawnSecs == 0
                 ? EditorStrings.Get(EditorStrings.MapEditor_AttrText_RespawnDefault)
                 : EditorStrings.Format(EditorStrings.MapEditor_AttrText_RespawnSeconds, ("Seconds", a.ItemRespawnSecs)))),
-        TileType.Key => EditorStrings.Format(EditorStrings.MapEditor_AttrText_Key,
+        TileType.Door => EditorStrings.Format(EditorStrings.MapEditor_AttrText_Door,
             ("Name", EditorVocabulary.NameOf(type)), ("Item", ItemLabel(a.KeyItemNum)),
             ("Action", a.KeyIsConsumed
-                ? EditorStrings.Get(EditorStrings.MapEditor_AttrText_KeyTake)
-                : EditorStrings.Get(EditorStrings.MapEditor_AttrText_KeyKeep))),
-        TileType.KeyOpen => EditorStrings.Format(EditorStrings.MapEditor_AttrText_KeyOpen,
+                ? EditorStrings.Get(EditorStrings.MapEditor_AttrText_DoorTake)
+                : EditorStrings.Get(EditorStrings.MapEditor_AttrText_DoorKeep))),
+        TileType.Plate => EditorStrings.Format(EditorStrings.MapEditor_AttrText_Plate,
             ("Name", EditorVocabulary.NameOf(type)), ("X", a.DoorX), ("Y", a.DoorY)),
         TileType.LayerRamp => EditorStrings.Format(EditorStrings.MapEditor_AttrText_LayerRamp,
             ("Name", EditorVocabulary.NameOf(type)), ("Direction", EditorVocabulary.NameOf(a.RampGroundSide))),

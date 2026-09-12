@@ -50,7 +50,7 @@ public class MovementSystemTests
             Assert.That(MovementSystem.IsNpcWalkableTileType(TileType.Item, false), Is.True);
             Assert.That(MovementSystem.IsNpcWalkableTileType(TileType.Blocked, false), Is.False);
             Assert.That(MovementSystem.IsNpcWalkableTileType(TileType.Warp, false), Is.False);
-            Assert.That(MovementSystem.IsNpcWalkableTileType(TileType.Key, true), Is.False);
+            Assert.That(MovementSystem.IsNpcWalkableTileType(TileType.Door, true), Is.False);
             Assert.That(MovementSystem.IsNpcWalkableTileType(TileType.NpcAvoid, false), Is.False, "a wall for every NPC the engine moves");
             Assert.That(MovementSystem.IsNpcWalkableTileType(TileType.NpcAvoid, true), Is.True, "walkable for a caller that waives the rule");
             Assert.That(MovementSystem.IsNpcWalkableTileType(TileType.LayerRamp, false), Is.True, "a ramp is the walkable connector between layers");
@@ -88,7 +88,7 @@ public class MovementSystemTests
     public void PlayerMove_KeyDoor_ClosedBlocks_OpenPasses()
     {
         var (world, _, move, p) = Setup(5, 5);
-        world.Maps[Map].EditTile(5, 6, t => t with { Type = TileType.Key });
+        world.Maps[Map].EditTile(5, 6, t => t with { Type = TileType.Door });
         move.PlayerMove(Idx, Direction.Down, MovementType.Walking);
         Assert.That(p.Y, Is.EqualTo(5), "a closed door blocks");
 
@@ -243,15 +243,15 @@ public class MovementSystemTests
     // §1b per-layer doors: a KeyOpen opens the door on the layer AUTHORED in its DoorLayer — independent of the plane
     // the plate sits on — so a GROUND plate can open a FRINGE-deck door, leaving the ground door at that tile shut.
     [Test]
-    public void PlayerMove_KeyOpen_OpensTheDoorOnItsAuthoredLayer()
+    public void PlayerMove_Plate_OpensTheDoorOnItsAuthoredLayer()
     {
         var (world, _, move, p) = Setup(5, 5);   // p.Layer defaults to Ground → steps onto a ground plate
         var map = world.Maps[Map];
-        map.EditTile(5, 6, t => t with { Type = TileType.KeyOpen });                                 // a GROUND KeyOpen plate at (5,6)
+        map.EditTile(5, 6, t => t with { Type = TileType.Plate });                                 // a GROUND KeyOpen plate at (5,6)
         map.EditTile(5, 6, t => t with { DoorX = 5 });
         map.EditTile(5, 6, t => t with { DoorY = 7 });  // targeting the door at (5,7)…
         map.EditTile(5, 6, t => t with { DoorLayer = WorldLayer.Fringe });                           // …on the FRINGE plane (cross-layer)
-        map.EditTile(5, 7, t => t with { FringeAttr = new FringeAttr { Type = TileType.Key } });     // the fringe Key door it opens
+        map.EditTile(5, 7, t => t with { FringeAttr = new FringeAttr { Type = TileType.Door } });     // the fringe Key door it opens
 
         move.PlayerMove(Idx, Direction.Down, MovementType.Walking);   // step onto the ground plate
 
@@ -271,7 +271,7 @@ public class MovementSystemTests
         // Ground walker passes under a closed fringe door.
         {
             var (world, _, move, p) = Setup(5, 5);   // p.Layer defaults to Ground
-            world.Maps[Map].EditTile(5, 6, t => t with { FringeAttr = new FringeAttr { Type = TileType.Key } });
+            world.Maps[Map].EditTile(5, 6, t => t with { FringeAttr = new FringeAttr { Type = TileType.Door } });
             move.PlayerMove(Idx, Direction.Down, MovementType.Walking);
             Assert.That(p.Y, Is.EqualTo(6), "a ground walker is not blocked by a fringe door above");
         }
@@ -280,7 +280,7 @@ public class MovementSystemTests
         {
             var (world, _, move, p) = Setup(5, 5);
             p.Layer = WorldLayer.Fringe;
-            world.Maps[Map].EditTile(5, 6, t => t with { FringeAttr = new FringeAttr { Type = TileType.Key } });
+            world.Maps[Map].EditTile(5, 6, t => t with { FringeAttr = new FringeAttr { Type = TileType.Door } });
 
             move.PlayerMove(Idx, Direction.Down, MovementType.Walking);
             Assert.That(p.Y, Is.EqualTo(5), "a closed fringe door blocks the fringe walker");

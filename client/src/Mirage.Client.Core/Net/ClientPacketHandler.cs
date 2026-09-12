@@ -193,6 +193,9 @@ public sealed partial class ClientPacketHandler : IClientEvents
             case AttributeSyncPacket p:
                 HandleAttributeSync(p);
                 break;
+            case DecalUpdatePacket p:
+                HandleDecalUpdate(p);
+                break;
             case AggressorRefreshPacket p:
                 HandleAggressorRefresh(p);
                 break;
@@ -352,6 +355,8 @@ public sealed partial class ClientPacketHandler : IClientEvents
         // What character creation may offer. Held from the greeting because the screen is reached
         // without asking the server anything.
         _state.Appearances = p.Appearances;
+        // One color for the whole world, so it arrives before the first map's stains do.
+        _state.DecalColor = p.DecalColor;
         GameNameChanged?.Invoke(_state.GameName);
     }
 

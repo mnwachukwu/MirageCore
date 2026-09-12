@@ -4,7 +4,7 @@
   "itemSheet": 0,
   "type": "PotionAddMp",
   "vitalAmount": 2822,
-  "levelReq": 240,
+  "tier": 240,
   "nonTradeable": false,
   "nonListable": false,
   "nonMailable": false,

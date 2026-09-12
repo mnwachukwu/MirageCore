@@ -125,27 +125,27 @@ public sealed class EditorDataService
     /// connected and the offline records otherwise. Never mixes the two: an offline folder can be a
     /// completely different world from the server, so falling back per-field would produce a gate answer
     /// that is true of neither.</summary>
-    public (ItemType Type, int Power, short LevelReq)? ItemGate(int num)
+    public (ItemType Type, int Power, short Tier)? ItemGate(int num)
     {
         if (num <= 0) return null;
         if (IsOnline)
             return _onlineItemGates is not null && _onlineItemGates.TryGetValue(num, out var g)
-                ? (g.Type, g.Power, g.LevelReq) : null;
+                ? (g.Type, g.Power, g.Tier) : null;
         if (num >= OfflineItems.Length || string.IsNullOrEmpty(OfflineItems[num].Name)) return null;
         var r = OfflineItems[num];
-        return (r.Type, r.Power, r.LevelReq);
+        return (r.Type, r.Power, r.Tier);
     }
 
     /// <summary>As <see cref="ItemGate"/>, for spells.</summary>
-    public (SpellType Type, short VitalAmount, short LevelReq)? SpellGate(int num)
+    public (SpellType Type, short VitalAmount, short Tier)? SpellGate(int num)
     {
         if (num <= 0) return null;
         if (IsOnline)
             return _onlineSpellGates is not null && _onlineSpellGates.TryGetValue(num, out var g)
-                ? (g.Type, g.VitalAmount, g.LevelReq) : null;
+                ? (g.Type, g.VitalAmount, g.Tier) : null;
         if (num >= OfflineSpells.Length || string.IsNullOrEmpty(OfflineSpells[num].Name)) return null;
         var r = OfflineSpells[num];
-        return (r.Type, r.VitalAmount, r.LevelReq);
+        return (r.Type, r.VitalAmount, r.Tier);
     }
 
     /// <summary>What item <paramref name="num"/> sells for in a shop's sales table, from the LIVE world when

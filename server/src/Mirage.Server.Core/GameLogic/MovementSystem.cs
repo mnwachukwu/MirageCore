@@ -173,14 +173,14 @@ public sealed class MovementSystem : GameSystem
             sp.WarpToY = dest.WarpY;
             PlayerWarp(index, dest.WarpMap, dest.WarpX, dest.WarpY, destLayer: dest.WarpLayer);
         }
-        else if (dest.Type == TileType.KeyOpen)
+        else if (dest.Type == TileType.Plate)
         {
             int kx = dest.DoorX;
             int ky = dest.DoorY;
             // The door's layer is authored on the KeyOpen, so a plate can open a Key door on EITHER plane —
             // a ground plate can open a fringe-deck gate, or a fringe plate the ground door beneath.
             var doorLayer = dest.DoorLayer;
-            if (LayerLogic.AttrFor(_world.Maps[p.Map].Tile[kx, ky], doorLayer).Type == TileType.Key &&
+            if (LayerLogic.AttrFor(_world.Maps[p.Map].Tile[kx, ky], doorLayer).Type == TileType.Door &&
                 !_world.TempTiles[p.Map].IsDoorOpen(kx, ky, doorLayer))
             {
                 _world.TempTiles[p.Map].OpenDoor(kx, ky, doorLayer, Environment.TickCount64);
@@ -634,7 +634,7 @@ public sealed class MovementSystem : GameSystem
         var tile = _world.Maps[destMapNum].Tile[x, y];
         var attrType = LayerLogic.AttrFor(tile, newLayer).Type;
         if (attrType == TileType.Blocked) return false;
-        if (attrType == TileType.Key && !_world.TempTiles[destMapNum].IsDoorOpen(x, y, newLayer)) return false;
+        if (attrType == TileType.Door && !_world.TempTiles[destMapNum].IsDoorOpen(x, y, newLayer)) return false;
 
         // Block on any live NPC on the SAME layer — native slot or visiting traversal NPC.
         if (_world.IsTileOccupiedByNpc(destMapNum, x, y, null, newLayer)) return false;

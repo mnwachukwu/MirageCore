@@ -45,6 +45,10 @@ public sealed class WorldManifestConverter : JsonConverter<WorldManifest>
                 var authored = p.Value.Deserialize<List<StartingItem>>(options);
                 if (authored is not null) result = result with { StartingItems = authored };
             }
+            else if (p.NameEquals("decalColor"))
+            {
+                if (ReadColor(p.Value) is { } rgb) result = result with { DecalColor = rgb };
+            }
             else if (p.NameEquals("appearances"))
             {
                 var offered = p.Value.Deserialize<List<CharacterAppearance>>(options);
@@ -87,6 +91,11 @@ public sealed class WorldManifestConverter : JsonConverter<WorldManifest>
             JsonSerializer.Serialize(writer, value.Appearances, options);
         }
 
+        if (value.DecalColor != stock.DecalColor)
+        {
+            writer.WriteString("decalColor", $"#{value.DecalColor:X6}");
+        }
+
         if (value.StartingItems.Count > 0)
         {
             writer.WritePropertyName("startingItems");
@@ -94,5 +103,17 @@ public sealed class WorldManifestConverter : JsonConverter<WorldManifest>
         }
 
         writer.WriteEndObject();
+    }
+
+    // Written as "#RRGGBB" because this file is hand-edited and 5375496 is not a color anybody recognizes.
+    // A bare number still reads, so a file written by some other tool is not rejected over its notation.
+    private static uint? ReadColor(JsonElement e)
+    {
+        if (e.ValueKind == JsonValueKind.Number) return e.TryGetUInt32(out uint n) ? n & 0xFFFFFFu : null;
+        if (e.ValueKind != JsonValueKind.String) return null;
+
+        string t = (e.GetString() ?? "").Trim().TrimStart('#');
+        return uint.TryParse(t, System.Globalization.NumberStyles.HexNumber,
+                             System.Globalization.CultureInfo.InvariantCulture, out uint v) ? v & 0xFFFFFFu : null;
     }
 }

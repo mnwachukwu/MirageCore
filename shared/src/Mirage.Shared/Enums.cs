@@ -35,8 +35,10 @@ public enum TileType : byte
     Warp = 2,
     Item = 3,
     NpcAvoid = 4,
-    Key = 5,
-    KeyOpen = 6,
+    // A door stays blocked until somebody holding the item named in Data1 opens it; a plate opens the
+    // door whose coordinates it carries, with nothing held at all.
+    Door = 5,
+    Plate = 6,
     // A bridge ramp connects the ground layer to the fringe layer (the walkable top of a bridge).
     // Carried in FringeAttr.Type; Data1 = the ground-side Direction you mount from. See LayerLogic.
     LayerRamp = 7,

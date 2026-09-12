@@ -5,7 +5,7 @@
   "type": "Armor",
   "durability": 800,
   "power": 109,
-  "levelReq": 115,
+  "tier": 115,
   "nonTradeable": false,
   "nonListable": false,
   "nonMailable": false,

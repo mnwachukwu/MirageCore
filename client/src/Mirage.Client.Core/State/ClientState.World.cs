@@ -81,7 +81,7 @@ public sealed partial class ClientState
         for (int i = 1; i <= Constants.MaxMapNpcs; i++) MapNpcs[i] = new ClientMapNpc();
         TraversalNpcs.Clear();
         TempTile.Clear();
-        BloodByMap.Clear();
+        DecalsByMap.Clear();
         // Drop stale neighbor maps, their map numbers, and their entities; the server
         // re-pushes them for the new center.  Keep the center cell ([1,1]).
         for (int c = 0; c < 3; c++)
@@ -168,8 +168,8 @@ public sealed partial class ClientState
 
         CenterMapNum = NeighborMapNums[1, 1];
 
-        // Blood is keyed by map number (not shifted); drop maps that just scrolled out of the observable area.
-        PruneBloodToObserved();
+        // Stains are keyed by map number (not shifted); drop maps that just scrolled out of the observable area.
+        PruneDecalsToObserved();
 
         // Prune visiting guests that fell out of the shifted grid.  Unlike the per-cell arrays (re-init'd
         // above), the identity-keyed TraversalNpcs dict isn't shifted — so when WE move away from a guest

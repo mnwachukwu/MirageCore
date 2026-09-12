@@ -294,7 +294,7 @@ public sealed partial class GameplayScreen : IGameScreen
     }
 
     // Footprint size (tiles) of a spell target — players are 1; an NPC/guest yields its EffectiveSize.  Used to
-    // center the projectile impact (and the deferred number/blood) on an oversize NPC's body, not its anchor.
+    // center the projectile impact (and the deferred number/splatter) on an oversize NPC's body, not its anchor.
     private int TargetFootprintSize(TargetRef t)
     {
         var state = _ctx.State;

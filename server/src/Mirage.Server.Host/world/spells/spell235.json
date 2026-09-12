@@ -10,5 +10,5 @@
   ],
   "type": "SubHp",
   "vitalAmount": 230,
-  "levelReq": 250
+  "tier": 250
 }

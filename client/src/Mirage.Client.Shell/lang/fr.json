@@ -344,7 +344,7 @@
   "OptionsPanel_UseGamepad": "Utiliser la manette",
   "OptionsPanel_SkipPlayersTabTarget": "Ignorer les joueurs avec Tab",
   "OptionsPanel_ShowNpcNames": "Afficher les noms des PNJ",
-  "OptionsPanel_ShowBlood": "Afficher le sang",
+  "OptionsPanel_ShowDecals": "Afficher les taches",
   "OptionsPanel_ShowOtherPlayerNames": "Afficher les noms des autres joueurs",
   "OptionsPanel_ShowPlayerName": "Afficher votre nom",
   "OptionsPanel_ShowCooldownBar": "Afficher la barre de recharge",

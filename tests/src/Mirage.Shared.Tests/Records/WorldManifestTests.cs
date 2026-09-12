@@ -78,6 +78,7 @@ public class WorldManifestTests
             Assert.That(back.StartingItems, Has.Count.EqualTo(2));
             Assert.That(back.StartingItems[0].ItemNum, Is.EqualTo(4));
             Assert.That(back.StartingItems[1].Quantity, Is.EqualTo((short)75));
+            Assert.That(back.DecalColor, Is.EqualTo(0x1A3C0Bu));
         });
     }
 
@@ -121,6 +122,7 @@ public class WorldManifestTests
             new CharacterAppearance { Name = "Sailor", Sprite = 17, SpriteSheet = 2 },
         ],
         StartingItems = [new StartingItem { ItemNum = 4 }, new StartingItem { ItemNum = 1, Quantity = 75 }],
+        DecalColor = 0x1A3C0B,
     };
 
     /// <summary>An absent key has to mean what an absent FILE means, or a partial manifest would answer
@@ -150,6 +152,22 @@ public class WorldManifestTests
     public void AWorldKnows_WhetherItIsNamed(string name, bool named)
     {
         Assert.That(new WorldManifest { Name = name }.IsNamed, Is.EqualTo(named));
+    }
+
+    /// <summary>The stain color is written for a human to read and edit, and read back in whichever of the
+    /// three notations a file happens to carry.</summary>
+    [Test]
+    public void TheStainColor_IsWrittenAsHexAndReadInEitherNotation()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(Write(new WorldManifest { DecalColor = 0x1A3C0B }), Does.Contain("#1A3C0B"));
+            Assert.That(Read("""{ "decalColor": "#1A3C0B" }""").DecalColor, Is.EqualTo(0x1A3C0Bu));
+            Assert.That(Read("""{ "decalColor": "1A3C0B" }""").DecalColor, Is.EqualTo(0x1A3C0Bu));
+            Assert.That(Read("""{ "decalColor": 1719307 }""").DecalColor, Is.EqualTo(0x1A3C0Bu));
+            Assert.That(Read("""{ "decalColor": "puce" }""").DecalColor, Is.EqualTo(new WorldManifest().DecalColor),
+                        "a color nobody can parse leaves the world on its default rather than turning it black");
+        });
     }
 
     /// <summary>A hand-edited file cannot ask for a zero-width map or an allocation measured in gigabytes,

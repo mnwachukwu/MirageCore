@@ -209,7 +209,7 @@ public class SeedIntegrityTests
         // pinned is its SHAPE: a higher tier is sturdier, and within a tier a heavier piece is sturdier
         // than a lighter one. Bulk is not stored, but Power carries it — both come off the same
         // multiplier — so within a slot and tier, more Power must mean more durability.
-        var tiers = gear.Select(i => (int)i.LevelReq).Distinct().OrderBy(l => l).ToArray();
+        var tiers = gear.Select(i => (int)i.Tier).Distinct().OrderBy(l => l).ToArray();
         Assert.Multiple(() =>
         {
             // Compared BAND TO BAND — floor against floor and ceiling against ceiling — not every piece
@@ -219,15 +219,15 @@ public class SeedIntegrityTests
             // forbid the bulk spread rather than test the curve.
             for (int i = 1; i < tiers.Length; i++)
             {
-                var lower = gear.Where(g => g.LevelReq == tiers[i - 1]).ToArray();
-                var higher = gear.Where(g => g.LevelReq == tiers[i]).ToArray();
+                var lower = gear.Where(g => g.Tier == tiers[i - 1]).ToArray();
+                var higher = gear.Where(g => g.Tier == tiers[i]).ToArray();
                 Assert.That(higher.Min(g => g.Durability), Is.GreaterThan(lower.Min(g => g.Durability)),
                     $"tier {tiers[i]}'s lightest piece is no sturdier than tier {tiers[i - 1]}'s");
                 Assert.That(higher.Max(g => g.Durability), Is.GreaterThan(lower.Max(g => g.Durability)),
                     $"tier {tiers[i]}'s heaviest piece is no sturdier than tier {tiers[i - 1]}'s");
             }
 
-            foreach (var slot in gear.GroupBy(g => (g.Type, g.LevelReq)))
+            foreach (var slot in gear.GroupBy(g => (g.Type, g.Tier)))
             {
                 var byPower = slot.OrderBy(g => g.Power).ToArray();
                 for (int i = 1; i < byPower.Length; i++)

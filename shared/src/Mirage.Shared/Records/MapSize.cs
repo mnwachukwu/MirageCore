@@ -11,7 +11,7 @@ public readonly record struct MapSize(int Width, int Height)
 {
     /// <summary>The largest a map can be on either axis, and a real limit rather than a preference.
     ///
-    /// <para>A warp and a KeyOpen name their destination tile as a 16-bit coordinate — on disk, on the wire
+    /// <para>A warp and a Plate name their destination tile as a 16-bit coordinate — on disk, on the wire
     /// and in the editor's own records. A map wider than this could hold tiles that no door could ever point
     /// at, so this is where the format stops rather than where the advice does.</para></summary>
     public const int HardMax = ushort.MaxValue;   // 65,535

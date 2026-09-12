@@ -156,10 +156,10 @@
           <!-- Level requirement: anything equipped or consumed. What actually paces the tier ladder —
                Power's stat requirement gates WHO may wear a piece, this gates WHEN. -->
           <mui:FormRow LabelWidth="120"
-                IsVisible="{Binding SelectedItem.LevelReqVisible}">
-            <TextBlock x:Name="_levelReqLabel" Grid.Column="0" VerticalAlignment="Center"/>
+                IsVisible="{Binding SelectedItem.TierVisible}">
+            <TextBlock x:Name="_tierLabel" Grid.Column="0" VerticalAlignment="Center"/>
             <NumericUpDown Grid.Column="1"
-                           Value="{Binding SelectedItem.LevelReq}"
+                           Value="{Binding SelectedItem.Tier}"
                            Minimum="0" Maximum="255" FormatString="0"/>
           </mui:FormRow>
 

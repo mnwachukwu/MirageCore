@@ -55,7 +55,7 @@ public static class RenderCommandBuilder
         // Lighting overrides first so frame.AlwaysDarkMapLights is populated for EffectiveDarkness lookups.
         EmitMapDarkOverrides(state, frame, camera);
         EmitTileGround(state, frame, camera);
-        EmitBloodDecals(state, frame, camera);
+        EmitDecals(state, frame, camera);
         EmitItems(state, frame, camera);
         EmitNpcs(state, frame, camera, tickNow, alwaysShowBars, hoveredEntity, targetEntity, showNpcNames, nameLineH);
         EmitPlayers(state, frame, camera, tickNow, alwaysShowBars, hoveredEntity, targetEntity, showOtherPlayerNames, showPlayerName, myIndex, nameLineH);
@@ -113,7 +113,7 @@ public static class RenderCommandBuilder
                 var tile = map.Tile[localX, localY];
                 var (screenX, screenY) = camera.WorldTileToScreen(wx, wy, 0, 0);
 
-                bool doorOpen = tile.Type == TileType.Key
+                bool doorOpen = tile.Type == TileType.Door
                     && ((col == 1 && row == 1)
                         ? state.TempTile[localX, localY, (int)WorldLayer.Ground]
                         : state.NeighborTempTiles[col, row][localX, localY, (int)WorldLayer.Ground]);
@@ -133,44 +133,44 @@ public static class RenderCommandBuilder
         }
     }
 
-    // Emits blood-pool ground decals (drawn below entities, above the base tiles).  Blood is a per-map LIST of
-    // pool rectangles (server-driven, client-decayed); each pool renders as ONE decal centered on its footprint
-    // (see GameplayScreen.DrawBloodInfluence).  Walks the 9 observable cells and draws each cell's map pools at
-    // that cell's world offset — no tile scan, so a merged/absorbed pool is simply absent.
-    private static void EmitBloodDecals(ClientState state, RenderFrame frame, Camera camera)
+    // Emits ground stains (drawn below entities, above the base tiles). Stains are a per-map LIST of
+    // rectangles — server-driven, client-dried — and each renders as ONE decal centered on its footprint
+    // (see GameplayScreen.DrawDecalInfluence). Walks the 9 observable cells and draws each cell's map stains
+    // at that cell's world offset: no tile scan, so a merged-away stain is simply absent.
+    private static void EmitDecals(ClientState state, RenderFrame frame, Camera camera)
     {
-        if (state.BloodByMap.Count == 0) return;
+        if (state.DecalsByMap.Count == 0) return;
         for (int row = 0; row < 3; row++)
         {
             for (int col = 0; col < 3; col++)
             {
                 int mapNum = (col == 1 && row == 1) ? state.CenterMapNum : state.NeighborMapNums[col, row];
-                if (mapNum <= 0 || !state.BloodByMap.TryGetValue(mapNum, out var pools) || pools.Count == 0) continue;
+                if (mapNum <= 0 || !state.DecalsByMap.TryGetValue(mapNum, out var decals) || decals.Count == 0) continue;
                 int offX = col * state.MapTilesX;
                 int offY = row * state.MapTilesY;
-                foreach (var p in pools)
+                foreach (var p in decals)
                 {
-                    if (p.Amount <= Constants.BloodVisibleEpsilon) continue;
+                    if (p.Amount <= Constants.DecalVisibleEpsilon) continue;
                     int size = p.Size < 1 ? 1 : p.Size;
                     var (screenX, screenY) = camera.WorldTileToScreen(offX + p.X, offY + p.Y, 0, 0);
-                    if (!BloodDecalOnScreen(screenX, screenY, size)) continue;
-                    // Stable per-pool hash keyed on MAP + LOCAL pool tile (NOT world coords), so a seam cross that
-                    // re-frames the observable area doesn't re-roll the blob variant/rotation/scale of a pool.
+                    if (!DecalOnScreen(screenX, screenY, size)) continue;
+                    // Stable per-stain hash keyed on MAP + LOCAL tile, never world coords, so a seam cross that
+                    // re-frames the observable area does not re-roll a stain's blob variant, rotation or scale.
                     int seed = (mapNum * 73856093) ^ (p.X * 19349663) ^ (p.Y * 83492791);
-                    frame.Blood.Add(new BloodDrawCmd(screenX, screenY, p.Amount, p.Freshness, seed, size, p.Layer));
+                    frame.Decals.Add(new DecalDrawCmd(screenX, screenY, p.Amount, p.Freshness, seed, size, p.Layer));
                 }
             }
         }
     }
 
-    // A pool decal is centered on its footprint (screen origin + size*Pic/2) and its blob reaches ~size*Max/2 past
-    // that center, so it stays visible well beyond its anchor tile.  Cull against the 512x384 map viewport by that
-    // reach so a big pool whose anchor sits just off-screen still draws (the world pass is scissor-clipped).
-    private static bool BloodDecalOnScreen(float screenX, float screenY, int size)
+    // A stain is centered on its footprint (screen origin + size*Pic/2) and its blob reaches ~size*Max/2 past
+    // that center, so it stays visible well beyond its anchor tile. Cull against the map viewport by that reach,
+    // so a big stain whose anchor sits just off-screen still draws (the world pass is scissor-clipped).
+    private static bool DecalOnScreen(float screenX, float screenY, int size)
     {
         float cx = screenX + size * Constants.PicX * 0.5f;
         float cy = screenY + size * Constants.PicY * 0.5f;
-        float reach = size * Constants.BloodDecalMaxSizePx * 0.5f;
+        float reach = size * Constants.DecalMaxSizePx * 0.5f;
         return cx + reach >= 0f && cx - reach <= Camera.ViewW
             && cy + reach >= 0f && cy - reach <= Camera.ViewH;
     }
@@ -199,7 +199,7 @@ public static class RenderCommandBuilder
                 var tile = map.Tile[localX, localY];
                 var (screenX, screenY) = camera.WorldTileToScreen(wx, wy, 0, 0);
 
-                bool doorOpen = tile.FringeAttr is { Type: TileType.Key }
+                bool doorOpen = tile.FringeAttr is { Type: TileType.Door }
                     && ((col == 1 && row == 1)
                         ? state.TempTile[localX, localY, (int)WorldLayer.Fringe]
                         : state.NeighborTempTiles[col, row][localX, localY, (int)WorldLayer.Fringe]);

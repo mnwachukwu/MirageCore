@@ -281,7 +281,7 @@ public class InputProcessorTests
             ("a wall", s => s.Map.EditTile(5, 6, t => t with { Type = TileType.Blocked })),
             ("a closed door", s =>
             {
-                s.Map.EditTile(5, 6, t => t with { Type = TileType.Key });
+                s.Map.EditTile(5, 6, t => t with { Type = TileType.Door });
                 s.TempTile.Set(5, 6, (int)WorldLayer.Ground, false);
             }),
             ("another player", s =>

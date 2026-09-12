@@ -4,7 +4,7 @@
   "itemSheet": 0,
   "type": "PotionAddSp",
   "vitalAmount": 3,
-  "levelReq": 1,
+  "tier": 1,
   "nonTradeable": false,
   "nonListable": false,
   "nonMailable": false,

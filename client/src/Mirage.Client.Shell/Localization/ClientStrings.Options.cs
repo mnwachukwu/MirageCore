@@ -48,7 +48,7 @@ public static partial class ClientStrings
     public const string OptionsPanel_UseGamepad = nameof(OptionsPanel_UseGamepad);
     public const string OptionsPanel_SkipPlayersTabTarget = nameof(OptionsPanel_SkipPlayersTabTarget);
     public const string OptionsPanel_ShowNpcNames = nameof(OptionsPanel_ShowNpcNames);
-    public const string OptionsPanel_ShowBlood = nameof(OptionsPanel_ShowBlood);
+    public const string OptionsPanel_ShowDecals = nameof(OptionsPanel_ShowDecals);
     public const string OptionsPanel_ShowOtherPlayerNames = nameof(OptionsPanel_ShowOtherPlayerNames);
     public const string OptionsPanel_ShowPlayerName = nameof(OptionsPanel_ShowPlayerName);
     public const string OptionsPanel_ShowCooldownBar = nameof(OptionsPanel_ShowCooldownBar);
