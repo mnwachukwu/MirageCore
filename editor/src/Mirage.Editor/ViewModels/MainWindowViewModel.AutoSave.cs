@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Mirage.Editor.Localization;
 using Mirage.Shared.Extensibility;
 
+using Mirage.Editor.Services;
 namespace Mirage.Editor.ViewModels;
 
 /// <summary>
@@ -21,7 +22,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
 {
     /// <summary>Section ids that can auto-save. Accounts is absent on purpose: those records are the
     /// server's, they have no dirty tracking to drive a schedule, and every save is a live write.</summary>
-    public static readonly string[] AutoSaveSections = [.. CoreRecordFamilies.World.Select(f => f.Id)];
+    public static string[] AutoSaveSections => [.. WorldFamilies.All.Select(f => f.Id)];
 
     // When each section is next due. Seeded on the first tick, so a slow startup does not count against
     // the first interval.

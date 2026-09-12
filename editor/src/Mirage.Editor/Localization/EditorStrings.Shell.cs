@@ -169,6 +169,9 @@ public static partial class EditorStrings
     public const string MainWindow_Section_Conversations = nameof(MainWindow_Section_Conversations);
     public const string MainWindow_Section_Accounts = nameof(MainWindow_Section_Accounts);
 
+    // Shown when a family reaches the rail from a server's schema and this build has no screen for it.
+    public const string MainWindow_NoEditorForFamily = nameof(MainWindow_NoEditorForFamily);
+
     // ── AccountEditor (Creator only, online only) ─────────────────────────────
     public const string AccountEditor_SearchPlaceholder = nameof(AccountEditor_SearchPlaceholder);
     public const string AccountEditor_OfflineNotice = nameof(AccountEditor_OfflineNotice);

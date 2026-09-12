@@ -120,10 +120,19 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public const string AccountsSection = "Accounts";
 
     // Stable section ids — used for switching and lookup. Display labels are localized separately
-    // via SectionLabelKey, so these strings never reach the UI. The world families come from the
-    // family table in their declared order, so a family registered there appears here too.
-    private static readonly string[] AllSectionNames =
-        [.. CoreRecordFamilies.World.Select(f => f.Id), AccountsSection];
+    // via SectionLabelKey, so these strings never reach the UI.
+    //
+    // Read from WorldFamilies rather than from a compile-time table: the families are the SERVER's, so
+    // connecting to a game that declares its own puts them in the rail without this build knowing them.
+    private string[] AllSectionNames => SectionNamesFor(WorldFamilies.All);
+
+    /// <summary>The rail's ids for a given set of families: every family in its declared order, then
+    /// Accounts.
+    ///
+    /// <para>A function of the families rather than of the process, so what the rail lists for a game
+    /// that declares its own can be asked without a running server.</para></summary>
+    internal static string[] SectionNamesFor(IReadOnlyList<RecordFamily> families)
+        => [.. families.Select(f => f.Id), AccountsSection];
     private readonly Dictionary<string, SectionViewModel> _sectionMap;
     /// <summary>The nav sections currently visible, narrowed by the connected account's access level.</summary>
     public ObservableCollection<SectionViewModel> Sections { get; }
@@ -173,8 +182,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
         ];
         // Hand each section its label KEY, not the resolved text — the nav list outlives a language
         // switch, so a resolved string would freeze it in the startup language.
-        _sectionMap = AllSectionNames.ToDictionary(n => n, n => new SectionViewModel(n, SectionLabelKey(n)));
-        Sections = new ObservableCollection<SectionViewModel>(AllSectionNames.Select(n => _sectionMap[n]));
+        _sectionMap = [];
+        Sections = new ObservableCollection<SectionViewModel>(AllSectionNames.Select(SectionFor));
+        WorldFamilies.Changed += OnWorldFamiliesChanged;
         // The rail reopens in the shape it was left in, so a restored collapse has to reach the rows.
         if (IsRailCollapsed) foreach (var s in _sectionMap.Values) s.IsLabelVisible = false;
         EditorStrings.LanguageChanged += OnLanguageChanged;
@@ -347,7 +357,23 @@ public sealed partial class MainWindowViewModel : ObservableObject
             "Accounts" => AccountEditor,
             _ => null,
         };
+
+        // A family a MODULE declared reaches the rail but has no screen behind it yet. Saying so beats a
+        // blank pane, which reads as a broken window rather than as a feature that is not built.
+        NoEditorFamily = CurrentEditor is null && section is not null && WorldFamilies.Find(section) is not null
+            ? section
+            : null;
     }
+
+    /// <summary>The id of the selected family when the editor has no screen for it, else null.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NoEditorMessage))]
+    private string? _noEditorFamily;
+
+    /// <summary>What to say about a family this build cannot author.</summary>
+    public string NoEditorMessage => NoEditorFamily is null
+        ? ""
+        : EditorStrings.Format(EditorStrings.MainWindow_NoEditorForFamily, ("Family", NoEditorFamily));
 
     // The nav labels are the one piece of shell chrome the window's own ApplyStrings cannot reach:
     // they live on the section rows, not on named controls.
@@ -372,8 +398,35 @@ public sealed partial class MainWindowViewModel : ObservableObject
     {
         if (id == AccountsSection) return EditorStrings.MainWindow_Section_Accounts;
 
-        string? key = CoreRecordFamilies.Find(id)?.LabelKey;
+        string? key = WorldFamilies.Find(id)?.LabelKey;
         return string.IsNullOrEmpty(key) ? EditorStrings.MainWindow_Section_Maps : key;
+    }
+
+    /// <summary>The rail row for a section, made once and kept.
+    ///
+    /// <para>A module's family names a label key this build has never heard of, so the row falls back to
+    /// the family id. <c>EditorStrings.Get</c> would throw on it, which is right for the editor's own
+    /// text and wrong for a key that arrived over the wire.</para></summary>
+    private SectionViewModel SectionFor(string id)
+    {
+        if (_sectionMap.TryGetValue(id, out var existing)) return existing;
+
+        var row = new SectionViewModel(id, SectionLabelKey(id), fallbackLabel: id)
+        {
+            IsLabelVisible = !IsRailCollapsed,
+        };
+        _sectionMap[id] = row;
+        return row;
+    }
+
+    // A schema arriving replaces the rail's contents; the rows for families that survive are the same
+    // objects, so a section that was selected stays selected and its dirty marker is not reset.
+    private void OnWorldFamiliesChanged()
+    {
+        var wanted = AllSectionNames;
+        Sections.Clear();
+        foreach (string id in wanted) Sections.Add(SectionFor(id));
+        if (SelectedSection is null || !Sections.Contains(SelectedSection)) SelectedSection = Sections[0];
     }
 
     // ── Online connect / disconnect ───────────────────────────────────────────
@@ -531,11 +584,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
         var visibleNames = access switch
         {
             >= AdminLevel.Creator => AllSectionNames,
-            >= AdminLevel.Developer => AllSectionNames.Where(n => n != "Accounts").ToArray(),
+            >= AdminLevel.Developer => [.. AllSectionNames.Where(n => n != AccountsSection)],
             _ => ["Maps", "MapGroups"],
         };
         Sections.Clear();
-        foreach (var name in visibleNames) Sections.Add(_sectionMap[name]);
+        foreach (var name in visibleNames) Sections.Add(SectionFor(name));
         if (SelectedSection is null || !Sections.Contains(SelectedSection))
             SelectedSection = Sections[0];
     }
@@ -543,7 +596,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private void RestoreAllSections()
     {
         Sections.Clear();
-        foreach (var name in AllSectionNames) Sections.Add(_sectionMap[name]);
+        foreach (var name in AllSectionNames) Sections.Add(SectionFor(name));
     }
 
     private void RefreshEditors(bool online)

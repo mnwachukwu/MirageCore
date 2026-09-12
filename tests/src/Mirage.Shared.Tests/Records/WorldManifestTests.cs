@@ -1,3 +1,4 @@
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Records;
 using Mirage.Shared.Serialization;
 using NUnit.Framework;
@@ -79,6 +80,9 @@ public class WorldManifestTests
             Assert.That(back.StartingItems[0].ItemNum, Is.EqualTo(4));
             Assert.That(back.StartingItems[1].Quantity, Is.EqualTo((short)75));
             Assert.That(back.DecalColor, Is.EqualTo(0x1A3C0Bu));
+            Assert.That(back.Families.Single().Id, Is.EqualTo("Species"));
+            Assert.That(back.Families.Single().DefaultLimit, Is.EqualTo(386));
+            Assert.That(back.ChoiceSets.Single().Find("fire"), Is.Not.Null);
         });
     }
 
@@ -123,6 +127,8 @@ public class WorldManifestTests
         ],
         StartingItems = [new StartingItem { ItemNum = 4 }, new StartingItem { ItemNum = 1, Quantity = 75 }],
         DecalColor = 0x1A3C0B,
+        Families = [new RecordFamily { Id = "Species", Directory = "species", DefaultLimit = 386 }],
+        ChoiceSets = [new ChoiceSet { Id = "types", Members = [new KindDescriptor { Id = "fire" }] }],
     };
 
     /// <summary>An absent key has to mean what an absent FILE means, or a partial manifest would answer
@@ -170,7 +176,35 @@ public class WorldManifestTests
         });
     }
 
-    /// <summary>A hand-edited file cannot ask for a zero-width map or an allocation measured in gigabytes,
+    /// <summary>A world folder is opened by editors that do not have the game that wrote it, so what
+    /// families it holds has to be in the folder. Core's are always there; the manifest carries the
+    /// rest.</summary>
+    [Test]
+    public void TheSchema_IsCoresFamiliesThenTheWorldsOwn()
+    {
+        var world = new WorldManifest
+        {
+            Families = [new RecordFamily { Id = "Species", Directory = "species" }],
+        };
+
+        var schema = world.Schema;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(schema.Family(CoreRecordFamilies.Items), Is.Not.Null, "Core's are always present");
+            Assert.That(schema.Family("Species"), Is.Not.Null);
+            Assert.That(schema.Families[^1].Id, Is.EqualTo("Species"), "the world's own follow Core's");
+        });
+    }
+
+    [Test]
+    public void AWorldWithNoFamiliesOfItsOwn_StillHasCores()
+    {
+        Assert.That(new WorldManifest().Schema.Families.Select(f => f.Id),
+                    Is.EqualTo(CoreRecordFamilies.World.Select(f => f.Id)));
+    }
+
+        /// <summary>A hand-edited file cannot ask for a zero-width map or an allocation measured in gigabytes,
     /// and that clamp has to survive the converter.</summary>
     [Test]
     public void AHandEditedFile_IsStillClamped()

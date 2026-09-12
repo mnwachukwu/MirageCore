@@ -83,4 +83,26 @@ public sealed record WorldManifest
     /// into one field so overlapping ones union smoothly instead of darkening at their seams, and it tints
     /// that field once. A second color would mean a second field.</para></summary>
     public uint DecalColor { get; init; } = 0x520808;
+
+    /// <summary>The record families this world holds, beyond the ones the engine ships with.
+    ///
+    /// <para><b>A record of what the world was authored against, not a declaration.</b> A compiled module
+    /// is what makes a family exist; this is what a world folder carries so it can be opened by an editor
+    /// that does not have that module — which is the difference between a world you can hand somebody and
+    /// one that only opens on the machine that built it.</para>
+    ///
+    /// <para>Empty for a world holding only Core's families, which is most of them.</para></summary>
+    public IReadOnlyList<Extensibility.RecordFamily> Families { get; init; } = [];
+
+    /// <summary>The choice sets <see cref="Families"/> draw on. Empty when none of them do.</summary>
+    public IReadOnlyList<Extensibility.ChoiceSet> ChoiceSets { get; init; } = [];
+
+    /// <summary>This world's families as a schema, Core's first and then its own — the same shape a
+    /// server reports, so a folder opened offline and a server connected to answer alike.</summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public Extensibility.RecordSchema Schema => new()
+    {
+        Families = [.. Extensibility.CoreRecordFamilies.World, .. Families],
+        ChoiceSets = ChoiceSets,
+    };
 }

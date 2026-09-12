@@ -4,6 +4,7 @@ using Mirage.Shared.Extensibility;
 using NUnit.Framework;
 using System.Reflection;
 
+using Mirage.Editor.Services;
 namespace Mirage.Editor.Tests.Platform;
 
 /// <summary>
@@ -19,11 +20,13 @@ namespace Mirage.Editor.Tests.Platform;
 [TestFixture]
 public class SectionCompositionTests
 {
-    private static string[] Sections()
+    private static string[] Sections() => Sections(WorldFamilies.All);
+
+    private static string[] Sections(IReadOnlyList<RecordFamily> families)
     {
-        var field = typeof(MainWindowViewModel)
-            .GetField("AllSectionNames", BindingFlags.NonPublic | BindingFlags.Static)!;
-        return (string[])field.GetValue(null)!;
+        var method = typeof(MainWindowViewModel)
+            .GetMethod("SectionNamesFor", BindingFlags.NonPublic | BindingFlags.Static)!;
+        return (string[])method.Invoke(null, [families])!;
     }
 
     private static string LabelKey(string id)
@@ -61,6 +64,44 @@ public class SectionCompositionTests
         {
             Assert.That(Sections(), Does.Contain(MainWindowViewModel.AccountsSection));
             Assert.That(CoreRecordFamilies.Find(MainWindowViewModel.AccountsSection), Is.Null);
+        });
+    }
+
+    // ── A family a module declared ────────────────────────────────────────────
+
+    /// <summary>The rail is the SERVER's family list, not this build's. A family the editor was never
+    /// compiled against still gets a row, or nobody can see that the world has it.</summary>
+    [Test]
+    public void AFamilyThisBuildNeverHeardOf_StillGetsARow()
+    {
+        var families = new List<RecordFamily>(WorldFamilies.All)
+        {
+            new() { Id = "Species", Directory = "species", LabelKey = "Pocket_Section_Species" },
+        };
+
+        var rail = Sections(families);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(rail, Does.Contain("Species"));
+            Assert.That(rail[^1], Is.EqualTo(MainWindowViewModel.AccountsSection), "Accounts stays last");
+            Assert.That(Array.IndexOf(rail, "Species"), Is.LessThan(Array.IndexOf(rail, MainWindowViewModel.AccountsSection)));
+        });
+    }
+
+    /// <summary>🔴 A module's label key is not in any of this editor's language files, by definition.
+    /// <c>EditorStrings.Get</c> throws on an unknown key in DEBUG, so resolving one the normal way would
+    /// crash the editor the moment it connected to a game that declares a family.</summary>
+    [Test]
+    public void AModulesLabelKey_FallsBackInsteadOfThrowing()
+    {
+        EditorStrings.Load(Path.Combine(AppContext.BaseDirectory, "lang"));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(() => EditorStrings.Get("Pocket_Section_Species"), Throws.Exception,
+                        "the editor's own text still fails loudly on a missing key");
+            Assert.That(EditorStrings.GetOrFallback("Pocket_Section_Species", "Species"), Is.EqualTo("Species"));
         });
     }
 

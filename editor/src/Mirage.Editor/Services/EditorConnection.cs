@@ -124,6 +124,10 @@ public sealed class EditorConnection : IDisposable
         }
         SessionId = response.SessionId;
 
+        // What families this server has. Adopted before the data packet is read, so anything that follows
+        // can refer to a family this build was not compiled with.
+        WorldFamilies.Adopt(response.Schema);
+
         var (dataPacketRead, closedBeforeData) = await ReadHandshakeAsync(ct);
         if (closedBeforeData)
             return AuthResult.Failed(EditorStrings.Get(EditorStrings.EditorConnection_ClosedBeforeData));
@@ -399,6 +403,10 @@ public sealed class EditorConnection : IDisposable
     {
         _closingDeliberately = true;
         SessionId = "";
+
+        // Back to the families this build ships with: the next thing edited may be a folder on disk,
+        // which carries no schema of its own.
+        WorldFamilies.Reset();
         _cts?.Cancel();
         _cts = null;
         FailAllPending();

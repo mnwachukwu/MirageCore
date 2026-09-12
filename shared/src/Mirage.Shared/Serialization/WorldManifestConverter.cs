@@ -1,3 +1,4 @@
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Records;
 using System.Linq;
 using System.Text.Json;
@@ -49,6 +50,16 @@ public sealed class WorldManifestConverter : JsonConverter<WorldManifest>
             {
                 if (ReadColor(p.Value) is { } rgb) result = result with { DecalColor = rgb };
             }
+            else if (p.NameEquals("families"))
+            {
+                var declared = p.Value.Deserialize<List<RecordFamily>>(options);
+                if (declared is not null) result = result with { Families = declared };
+            }
+            else if (p.NameEquals("choiceSets"))
+            {
+                var sets = p.Value.Deserialize<List<ChoiceSet>>(options);
+                if (sets is not null) result = result with { ChoiceSets = sets };
+            }
             else if (p.NameEquals("appearances"))
             {
                 var offered = p.Value.Deserialize<List<CharacterAppearance>>(options);
@@ -94,6 +105,18 @@ public sealed class WorldManifestConverter : JsonConverter<WorldManifest>
         if (value.DecalColor != stock.DecalColor)
         {
             writer.WriteString("decalColor", $"#{value.DecalColor:X6}");
+        }
+
+        if (value.Families.Count > 0)
+        {
+            writer.WritePropertyName("families");
+            JsonSerializer.Serialize(writer, value.Families, options);
+        }
+
+        if (value.ChoiceSets.Count > 0)
+        {
+            writer.WritePropertyName("choiceSets");
+            JsonSerializer.Serialize(writer, value.ChoiceSets, options);
         }
 
         if (value.StartingItems.Count > 0)

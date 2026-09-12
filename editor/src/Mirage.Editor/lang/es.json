@@ -591,6 +591,7 @@
   "PushChangesDialog_DirtyQuest": "Misión {Index}: {Name}",
   "MainWindow_Section_Conversations": "Conversaciones",
   "MainWindow_Section_Accounts": "Cuentas",
+  "MainWindow_NoEditorForFamily": "«{Family}» forma parte del juego de este mundo y este editor aún no tiene una pantalla para ella. Sus registros se cargan, guardan y transfieren igualmente; solo no se pueden editar aquí.",
   "AccountEditor_SearchPlaceholder": "Buscar cuentas...",
   "AccountEditor_OfflineNotice": "Las cuentas residen en el servidor, así que esta sección necesita conexión. Conéctate para consultarlas y editarlas.",
   "AccountEditor_SelectPrompt": "Selecciona una cuenta para editarla.",

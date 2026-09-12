@@ -8,6 +8,7 @@ using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Server.Host.Net;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Records;
 using System.Diagnostics;
 using System.Reflection;
@@ -22,6 +23,7 @@ namespace Mirage.Server.Host.Services;
 public sealed class MirageServerService : IHostedService
 {
     private readonly GameWorld _world;
+    private readonly CoreRegistry _registry;
     private readonly PlayerManager _pm;
     private readonly IPersistenceService _persistence;
     private readonly IBackgroundPersistence _bg;
@@ -41,6 +43,7 @@ public sealed class MirageServerService : IHostedService
     private CancellationTokenSource? _cts;
 
     public MirageServerService(
+        CoreRegistry registry,
         GameWorld world,
         PlayerManager pm,
         IPersistenceService persistence,
@@ -60,6 +63,7 @@ public sealed class MirageServerService : IHostedService
     {
         _config = config;
         _world = world;
+        _registry = registry;
         _pm = pm;
         _persistence = persistence;
         _bg = bg;
@@ -89,6 +93,11 @@ public sealed class MirageServerService : IHostedService
         LocalizedLog.Info(_logger, ServerStrings.Server_Starting,
             ("GameName", _config.GameName), ("Version", version));
         _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_RunningInLanguage));
+
+        // What game this is. An engine with no modules is a valid server, and "Modules: Core" is the
+        // honest way to say so — quieter than a warning, and it makes a module that failed to be added
+        // visible on the line an operator already reads.
+        _logger.LogInformation("Modules: {Modules}", string.Join(", ", _registry.ModuleNames));
 
         await LoadWorldDataAsync(ct);
 

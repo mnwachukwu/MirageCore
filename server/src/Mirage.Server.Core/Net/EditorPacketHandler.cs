@@ -31,6 +31,7 @@ namespace Mirage.Server.Core.Net;
 public sealed partial class EditorPacketHandler
 {
     private readonly GameWorld _world;
+    private readonly CoreRegistry _registry;
     private readonly PlayerManager _pm;
     private readonly EditorSessionManager _editors;
     private readonly EditorLockRegistry _locks;
@@ -53,9 +54,11 @@ public sealed partial class EditorPacketHandler
         IPersistenceService persistence, IBackgroundPersistence bg, ItemSystem items,
         JoinLeaveSystem joinLeave, QuestSystem quests, SpawnSystem spawn,
         PlayerSaver saver, GameLoop gameLoop,
-        ILogger<EditorPacketHandler> logger)
+        ILogger<EditorPacketHandler> logger,
+        CoreRegistry? registry = null)
     {
         _saver = saver;
+        _registry = registry ?? CoreRegistry.CoreOnly;
         _gameLoop = gameLoop;
         _world = world;
         _pm = pm;
@@ -245,6 +248,7 @@ public sealed partial class EditorPacketHandler
             Message = ServerStrings.ForLocale(locale, ServerStrings.EditorAuth_Authenticated),
             AccessLevel = access,
             SessionId = session.SessionId,
+            Schema = _registry.Schema,
         });
 
         _dispatcher.SendToEditor(editorIndex, BuildEditorDataPacket());

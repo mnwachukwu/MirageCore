@@ -4,6 +4,7 @@ using Mirage.Server.Core.Persistence;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using System.Collections.Concurrent;
 
 namespace Mirage.Server.Core.GameLogic;
@@ -31,6 +32,11 @@ public sealed class GameLoop : IDisposable
     private readonly MarketSystem _market;
     private readonly TradeSystem _trade;
     private readonly DecalSystem _decals;
+    private readonly TickSchedule _modules;
+
+    /// <summary>Ticks since the loop started — the clock <see cref="DeadlineClock.Tick"/>
+    /// deadlines are counted against. Read from the game thread.</summary>
+    public long CurrentTick { get; private set; }
     private readonly IPersistenceService _persistence;
     private readonly IBackgroundPersistence _bg;
     private readonly ILogger<GameLoop> _logger;
@@ -52,6 +58,10 @@ public sealed class GameLoop : IDisposable
     private const int SaveIntervalMs = 60_000;
     // Mailbox maturity sweep — flips in-transit P2P mail to delivered on both ends. Coarse (10-15 min delays).
     private const int MailSweepIntervalMs = 5_000;
+
+    // The base beat. Module work counts in TICKS rather than milliseconds, so this is what one tick IS,
+    // and it is the shortest interval above so module work can run as often as anything Core does.
+    private const int ModuleIntervalMs = NpcMoveIntervalMs;
     private const int MaxWaitMs = 250;   // cap the queue wait so shutdown stays responsive
 
     private readonly BlockingCollection<Action> _queue = new(new ConcurrentQueue<Action>());
@@ -67,7 +77,7 @@ public sealed class GameLoop : IDisposable
                     ItemSystem items, PlayerSaver saver, TimeOfDaySystem tod, WeatherSystem weather,
                     MailSystem mail, MarketSystem market, TradeSystem trade, DecalSystem decals,
                     IPersistenceService persistence, IBackgroundPersistence bg, ILogger<GameLoop> logger,
-                    IClock? clock = null)
+                    IClock? clock = null, CoreRegistry? registry = null)
     {
         _world = world;
         _pm = pm;
@@ -85,6 +95,7 @@ public sealed class GameLoop : IDisposable
         _bg = bg;
         _logger = logger;
         _clock = clock ?? SystemClock.Instance;
+        _modules = (registry ?? CoreRegistry.CoreOnly).Tick;
     }
 
     /// <summary>
@@ -132,13 +143,16 @@ public sealed class GameLoop : IDisposable
         long nextSpawn = now + SpawnIntervalMs;
         long nextSave = now + SaveIntervalMs;
         long nextMailSweep = now + MailSweepIntervalMs;
+        long nextModuleTick = now + ModuleIntervalMs;
 
         long iterationStart = System.Diagnostics.Stopwatch.GetTimestamp();
 
         while (_running)
         {
             now = Environment.TickCount64;
-            long nextDeadline = Math.Min(Math.Min(Math.Min(Math.Min(nextAi, nextNpcMove), Math.Min(nextSpawn, nextSave)), nextDecal), nextMailSweep);
+            long nextDeadline = Math.Min(
+                Math.Min(Math.Min(Math.Min(nextAi, nextNpcMove), Math.Min(nextSpawn, nextSave)), nextDecal),
+                Math.Min(nextMailSweep, nextModuleTick));
             int wait = (int)Math.Clamp(nextDeadline - now, 0, MaxWaitMs);
 
             // Wake on the next queued action OR the next tick deadline, then drain everything pending so
@@ -189,6 +203,11 @@ public sealed class GameLoop : IDisposable
             {
                 RunTick(MailTick, "mail");
                 nextMailSweep = Schedule(nextMailSweep, now, MailSweepIntervalMs);
+            }
+            if (now >= nextModuleTick)
+            {
+                RunTick(ModuleTick, "modules");
+                nextModuleTick = Schedule(nextModuleTick, now, ModuleIntervalMs);
             }
 
             // End of iteration: persist any player flagged dirty by this tick's packet handlers or AI
@@ -262,6 +281,24 @@ public sealed class GameLoop : IDisposable
     // Stain pass — dries every map's stains and broadcasts the maps whose list changed. Cheap: only maps
     // something has actually spilled on carry anything at all.
     private void DecalTick() => _decals.Tick();
+
+    /// <summary>Runs whatever the loaded modules put on this tick, in their registered order.
+    ///
+    /// <para>Runs after Core's own ticks, so a game reacting to the world sees the world Core has already
+    /// finished moving.</para>
+    ///
+    /// <para><b>Caught per item, not per tick.</b> One module throwing must not silently starve every
+    /// module registered after it — that presents as a feature that stopped working rather than as an
+    /// error, and a log line naming the tick would not say which module to look at.</para></summary>
+    internal void ModuleTick()
+    {
+        CurrentTick++;
+        foreach (var work in _modules.DueOn(CurrentTick))
+        {
+            try { work.Tick(CurrentTick); }
+            catch (Exception ex) { _logger.LogError(ex, "Error in module tick work {Work}", work.Name); }
+        }
+    }
 
     private void SpawnTick()
     {

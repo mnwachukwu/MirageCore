@@ -62,6 +62,47 @@ public class RecordLimitsByFamilyTests
         Assert.That(Configured.For("Creatures"), Is.Zero);
     }
 
+    // ── A family a MODULE declared ───────────────────────────────────────
+
+    // The id overload can only look one up in Core's table, where a game's family is not, so it answers
+    // "no room" for content that exists. Holding the family is what makes the question answerable.
+    [Test]
+    public void AModulesFamily_AnswersWithItsOwnDefault_ByFamilyButNotById()
+    {
+        var species = new RecordFamily { Id = "Species", Directory = "species", DefaultLimit = 386 };
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(Configured.For(species), Is.EqualTo(386));
+            Assert.That(Configured.For(species.Id), Is.Zero, "by id, a family Core never heard of has no room");
+        });
+    }
+
+    /// <summary>A fixed ceiling is baked into something that is not a setting — a save format, a wire
+    /// shape — so raising it is a data migration. Core ships no family that sets it, which is exactly why
+    /// this exercises a synthetic one: the flag is read on every lookup and nothing else would notice it
+    /// being dropped.</summary>
+    [Test]
+    public void AFixedCeiling_IgnoresWhatTheOperatorConfigured()
+    {
+        var fixedFamily = new RecordFamily
+        {
+            Id = CoreRecordFamilies.Items,   // configurable to 13 above
+            DefaultLimit = 64,
+            LimitIsFixed = true,
+        };
+
+        Assert.That(Configured.For(fixedFamily), Is.EqualTo(64), "not 13 — a fixed ceiling is not a setting");
+    }
+
+    [Test]
+    public void AConfigurableFamily_DoesNotIgnoreTheOperator()
+    {
+        var configurable = new RecordFamily { Id = CoreRecordFamilies.Items, DefaultLimit = 64 };
+
+        Assert.That(Configured.For(configurable), Is.EqualTo(13), "the same family without the flag reads the setting");
+    }
+
     [Test]
     public void TheStockLimitsMatchEachFamilysDeclaredDefault()
     {

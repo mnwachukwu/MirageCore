@@ -1,3 +1,4 @@
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Records;
 using System.Text.Json.Serialization;
 
@@ -251,6 +252,16 @@ public sealed record EditorLoginResponsePacket : IPacket
     /// locks from those of another session signed in as the same account. Fresh on every login, so a reused
     /// slot never inherits the last occupant's identity. Blank on a refused login.</summary>
     [JsonPropertyName("session")] public string SessionId { get; init; } = "";
+
+    /// <summary>What record families this server actually has, from the modules it loaded.
+    ///
+    /// <para><b>The editor must be told rather than assume.</b> Its own build knows Core's families; the
+    /// server may have loaded a game that adds more, and a family the editor does not list is one nobody
+    /// can author. Sent on the login response rather than as its own packet because it is part of the
+    /// answer to "what am I connected to", and everything after it may refer to a family it names.</para>
+    ///
+    /// <para>Empty on a refused login.</para></summary>
+    [JsonPropertyName("schema")] public RecordSchema Schema { get; init; } = RecordSchema.Empty;
 }
 
 public sealed record EditorDataPacket : IPacket

@@ -591,6 +591,7 @@
   "PushChangesDialog_DirtyQuest": "Quest {Index}: {Name}",
   "MainWindow_Section_Conversations": "Conversations",
   "MainWindow_Section_Accounts": "Accounts",
+  "MainWindow_NoEditorForFamily": "\"{Family}\" is part of this world's game, and this editor has no screen for it yet. Its records are still loaded, saved and transferred — they just cannot be edited here.",
   "AccountEditor_SearchPlaceholder": "Search accounts...",
   "AccountEditor_OfflineNotice": "Accounts live on the server, so this section needs a connection. Connect to browse and edit them.",
   "AccountEditor_SelectPrompt": "Select an account to edit.",

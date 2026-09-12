@@ -16,6 +16,8 @@ using Mirage.Server.Host.Management;
 using Mirage.Server.Host.Net;
 using Mirage.Server.Host.Services;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
+using Mirage.Shared.Protocol;
 using Serilog;
 using Serilog.Expressions;
 using Serilog.Settings.Configuration;
@@ -140,6 +142,16 @@ var host = Host.CreateDefaultBuilder(args)
         // reproducible stress run). Tests pin them per-system instead of through this container.
         services.AddSingleton<IClock>(SystemClock.Instance);
         services.AddSingleton<IRandomSource>(SharedRandom.Instance);
+
+        // What game this is. Modules are configured once, here, before anything reads a registry — so
+        // every subsystem downstream treats its families, attribute keys and packet table as complete.
+        // An engine with no modules is a valid server: it serves Core's own world and nothing else.
+        var registry = CoreRegistry.Build(GameModules.Load());
+        services.AddSingleton(registry);
+
+        // The line decoder is a static, so the table has to be installed rather than injected. Doing it
+        // at composition time means a module's packets are readable before the first connection.
+        PacketSerializer.Registry = registry.Packets;
 
         // Registered like the two above: systems take it as an optional parameter defaulting to
         // ServerConfig.Default, so this line is what makes the FILE take effect.

@@ -64,17 +64,30 @@ public sealed record RecordLimits
 
     /// <summary>How many <paramref name="familyId"/> this server has room for.
     ///
-    /// <para>Lets a caller holding a <see cref="Extensibility.RecordFamily"/> ask about it without a
-    /// switch over family names. A family whose ceiling is fixed answers with that ceiling whatever is
-    /// configured, and an id this server does not know answers 0 — which reads as a family with no room
-    /// rather than as a family of unlimited size.</para></summary>
+    /// <para>Resolves the id against Core's own families, so an id this server does not know answers 0 —
+    /// which reads as a family with no room rather than as one of unlimited size. A caller that already
+    /// HOLDS the family should use the overload below, which is the one a module's family works with.</para></summary>
     public int For(string familyId)
     {
         var family = Extensibility.CoreRecordFamilies.Find(familyId);
-        if (family is null) return 0;
+        return family is null ? 0 : For(family);
+    }
+
+    /// <summary>How many of <paramref name="family"/> this server has room for.
+    ///
+    /// <para>The overload a caller holding a family uses, and the only one that works for a family a
+    /// MODULE declared: the id overload can only look one up in Core's own table, so a game's family
+    /// would answer 0 there — "no room" — rather than its own ceiling.</para>
+    ///
+    /// <para>Core's eight families are configurable per server and read their own property. Everything
+    /// else answers with what it declared, which is what a module gets until there is a reason to make
+    /// its ceiling an operator setting.</para></summary>
+    public int For(Extensibility.RecordFamily family)
+    {
+        ArgumentNullException.ThrowIfNull(family);
         if (family.LimitIsFixed) return family.DefaultLimit;
 
-        return familyId switch
+        return family.Id switch
         {
             Extensibility.CoreRecordFamilies.Maps => Maps,
             Extensibility.CoreRecordFamilies.MapGroups => MapGroups,

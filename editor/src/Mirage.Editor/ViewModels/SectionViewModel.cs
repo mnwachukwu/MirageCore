@@ -11,9 +11,10 @@ public sealed partial class SectionViewModel : ObservableObject
     // Holds the KEY, not the resolved text: a section row outlives a language switch, so resolving
     // once in the constructor would freeze the nav list in whatever language was active at startup.
     private readonly string _labelKey;
+    private readonly string _fallbackLabel;
 
     /// <summary>Localized label shown in the section nav; decoupled from <see cref="Name"/> so the id stays stable.</summary>
-    public string DisplayName => EditorStrings.Get(_labelKey);
+    public string DisplayName => EditorStrings.GetOrFallback(_labelKey, _fallbackLabel);
 
     [ObservableProperty] private bool _hasDirty;
 
@@ -26,10 +27,13 @@ public sealed partial class SectionViewModel : ObservableObject
     /// Collapsed, the icon is the only thing naming the section, so the name has to be reachable.</summary>
     public string? TooltipText => IsLabelVisible ? null : DisplayName;
 
-    public SectionViewModel(string name, string labelKey)
+    /// <param name="fallbackLabel">Shown when this build has no text for <paramref name="labelKey"/> — a
+    /// family a module declared names a key the editor has never heard of. Defaults to the key.</param>
+    public SectionViewModel(string name, string labelKey, string? fallbackLabel = null)
     {
         Name = name;
         _labelKey = labelKey;
+        _fallbackLabel = fallbackLabel ?? labelKey;
     }
 
     /// <summary>Re-read <see cref="DisplayName"/> after a language change. Raised by

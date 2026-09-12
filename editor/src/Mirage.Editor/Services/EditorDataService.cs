@@ -225,6 +225,10 @@ public sealed class EditorDataService
         EditorLog.Info("Loading the offline data set from {Path}.", dataPath);
         EnsureRecordFolders(dataPath);
         Manifest = await LoadManifestAsync(dataPath);
+
+        // A folder is opened by an editor that may not have the game that wrote it, so what families the
+        // world holds is read from the folder rather than assumed.
+        WorldFamilies.Adopt(Manifest.Schema);
         OfflineItems = await LoadAllFromDirAsync<ItemRecord>(Path.Combine(dataPath, "items"), "item", Limits.Items);
         OfflineNpcs = await LoadAllFromDirAsync<NpcRecord>(Path.Combine(dataPath, "npcs"), "npc", Limits.Npcs);
         OfflineShops = await LoadAllFromDirAsync<ShopRecord>(Path.Combine(dataPath, "shops"), "shop", Limits.Shops);

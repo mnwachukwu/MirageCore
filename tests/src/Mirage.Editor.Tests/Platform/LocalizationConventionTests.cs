@@ -99,7 +99,11 @@ public class LocalizationConventionTests
                    or "LogLevelOption" or "LogRetentionOption" or "AutoSaveMessages"
                    // Rebuilt from the recent-worlds setting every time MainWindowViewModel raises the
                    // property, which OnLanguageChanged does.
-                   or "RecentWorldViewModel";
+                   or "RecentWorldViewModel"
+                   // One of each exists per field of every record an author opens, so a subscription
+                   // would outlive every form ever opened. Both expose NotifyLabelsChanged, and whoever
+                   // holds the form calls it — the arrangement SectionViewModel has above.
+                   or "SchemaFieldViewModel" or "SchemaFormViewModel";
 
         var uses = new HashSet<string>(StringComparer.Ordinal);
         var hooked = new HashSet<string>(StringComparer.Ordinal);

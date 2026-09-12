@@ -591,6 +591,7 @@
   "PushChangesDialog_DirtyQuest": "Quête {Index} : {Name}",
   "MainWindow_Section_Conversations": "Conversations",
   "MainWindow_Section_Accounts": "Comptes",
+  "MainWindow_NoEditorForFamily": "« {Family} » fait partie du jeu de ce monde, et cet éditeur n'a pas encore d'écran pour elle. Ses enregistrements sont toujours chargés, enregistrés et transférés — ils ne peuvent simplement pas être modifiés ici.",
   "AccountEditor_SearchPlaceholder": "Rechercher des comptes...",
   "AccountEditor_OfflineNotice": "Les comptes vivent sur le serveur : cette section a besoin d'une connexion. Connectez-vous pour les parcourir et les modifier.",
   "AccountEditor_SelectPrompt": "Sélectionnez un compte à modifier.",
