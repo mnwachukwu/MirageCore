@@ -56,22 +56,15 @@ public class NpcPathCacheTests
     [Test]
     public void CachedField_MatchesSingleSource_OverEverySourceTile()
     {
-        // One world geometry, exercised for three NPC profiles that hit different BFS branches:
-        //  - AttackOnSight size-1 : NpcAvoid is a wall, single-tile footprint;
-        //  - Guard        size-1 : NpcAvoid is walkable (ignoreNpcAvoid) — a different reachable region;
-        //  - AttackOnSight size-2 : the footprint (FootprintBlockWalkable) branch.
+        // One world geometry, exercised for two NPC footprints that hit different BFS branches:
+        // size-1 takes the single-tile path, size-2 the footprint (FootprintBlockWalkable) branch.
         // Two targets vary the expansion root (root-handling: invariants 2 & 3).  A live NPC sits on the ring
         // of the first target so the attack-slot mask + its visited side-effect are on the hot path.
         var (ai, world) = NewWorldWithGeometry();
 
-        foreach (var (behavior, size) in new[]
+        foreach (int size in new[] { 1, 2 })
         {
-            (NpcBehavior.AttackOnSight, 1),
-            (NpcBehavior.Guard,         1),
-            (NpcBehavior.AttackOnSight, 2),
-        })
-        {
-            world.Npcs[1].Behavior = behavior;
+            world.Npcs[1].Behavior = NpcBehavior.Pursue;
             world.Npcs[1].Size = size;
             var npc = world.Npcs[1];
 
@@ -198,7 +191,7 @@ public class NpcPathCacheTests
     {
         var world = new GameWorld();
         var pm = new PlayerManager();
-        world.Npcs[1].Behavior = NpcBehavior.AttackOnSight;
+        world.Npcs[1].Behavior = NpcBehavior.Pursue;
         world.Npcs[1].Size = 1;
         world.Maps[Map].Right = 2;      // link Map 1 → Map 2 at the right seam
         world.Maps[2].Left = Map;
@@ -233,7 +226,7 @@ public class NpcPathCacheTests
     {
         var (ai, world) = NewWorldWithGeometry();
         var npc = world.Npcs[1];
-        npc.Behavior = NpcBehavior.AttackOnSight;
+        npc.Behavior = NpcBehavior.Pursue;
         npc.Size = 1;
         const int toX = 8, toY = 3;
 
@@ -285,7 +278,7 @@ public class NpcPathCacheTests
     {
         var (ai, world) = NewWorldWithGeometry();
         var npc = world.Npcs[1];
-        npc.Behavior = NpcBehavior.AttackOnSight;
+        npc.Behavior = NpcBehavior.Pursue;
         npc.Size = 1;
 
         SetPathNow(ai, 6_000);
@@ -295,19 +288,19 @@ public class NpcPathCacheTests
         Cached(ai, npc, 2, 2, 4, 8);
         Assert.That(FieldsBuilt(ai), Is.EqualTo(2), "a different target roots a different flood");
 
-        npc.Behavior = NpcBehavior.Guard;            // ignoreNpcAvoid flips => different walkable region
+        npc.Behavior = NpcBehavior.Flee;             // behavior is not an input to walkability
         Cached(ai, npc, 2, 2, 8, 3);
-        Assert.That(FieldsBuilt(ai), Is.EqualTo(3), "behavior changes walkability => its own flood");
+        Assert.That(FieldsBuilt(ai), Is.EqualTo(2), "behavior does not key the field");
 
-        npc.Behavior = NpcBehavior.AttackOnSight;
+        npc.Behavior = NpcBehavior.Pursue;
         npc.Size = 2;                                // footprint changes what fits
         Cached(ai, npc, 2, 2, 8, 3);
-        Assert.That(FieldsBuilt(ai), Is.EqualTo(4), "footprint changes fit => its own flood");
+        Assert.That(FieldsBuilt(ai), Is.EqualTo(3), "footprint changes fit => its own flood");
 
         npc.Size = 1;                                // back to the very first profile, from a new source tile
         Cached(ai, npc, 9, 9, 8, 3);
-        Assert.That(FieldsBuilt(ai), Is.EqualTo(4),
-                    "same behavior+footprint+target reuses the first flood — the field is source-agnostic");
+        Assert.That(FieldsBuilt(ai), Is.EqualTo(3),
+                    "same footprint+target reuses the first flood — the field is source-agnostic");
     }
 
     // ── Benchmark: gang share beats per-chaser (Explicit; run manually) ────────
@@ -319,7 +312,7 @@ public class NpcPathCacheTests
         // NOTE: both paths pay the same per-call reflection Invoke tax, so the RELATIVE numbers are meaningful
         // (the difference is BFS work, not reflection).  Open map => each BFS is a full 48x36 flood.
         var (ai, world) = NewWorldWithGeometry(open: true);
-        world.Npcs[1].Behavior = NpcBehavior.AttackOnSight;
+        world.Npcs[1].Behavior = NpcBehavior.Pursue;
         world.Npcs[1].Size = 1;
         var npc = world.Npcs[1];
         int toX = 8, toY = 6;
@@ -369,7 +362,7 @@ public class NpcPathCacheTests
     {
         var world = new GameWorld();
         var pm = new PlayerManager();
-        world.Npcs[1].Behavior = NpcBehavior.AttackOnSight;   // chaser template (mutated per profile)
+        world.Npcs[1].Behavior = NpcBehavior.Pursue;   // chaser template (mutated per profile)
         world.Npcs[2].Behavior = NpcBehavior.Stationary;      // blocker template
 
         if (!open)
@@ -397,7 +390,7 @@ public class NpcPathCacheTests
     {
         var world = new GameWorld();
         var pm = new PlayerManager();
-        world.Npcs[1].Behavior = NpcBehavior.AttackOnSight;
+        world.Npcs[1].Behavior = NpcBehavior.Pursue;
         world.Npcs[1].Size = 1;
 
         for (int x = 5; x <= 9; x++)

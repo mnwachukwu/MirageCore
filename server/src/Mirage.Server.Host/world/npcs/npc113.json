@@ -5,7 +5,7 @@
   "spriteSheet": 0,
   "size": 2,
   "spawnSecs": 300,
-  "behavior": "AttackWhenAttacked",
+  "behavior": "Pursue",
   "group": 0,
   "range": 3,
   "drops": [

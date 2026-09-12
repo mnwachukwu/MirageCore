@@ -28,58 +28,26 @@ public class NpcTargetAcquisitionTests
     const int AggroRange = 15;        // spans the 16x12 map so range never excludes a candidate
 
     [Test]
-    public void FindAosNpcTarget_PicksNearestHostile_NotFirstInSlotOrder()
+    public void FindNoticeableNpc_PicksTheNearest_NotFirstInSlotOrder()
     {
         var world = new GameWorld();
         var pm = new PlayerManager();
-        world.Npcs[1].Behavior = NpcBehavior.AttackOnSight;   // attacker template
+        world.Npcs[1].Behavior = NpcBehavior.Pursue;   // the noticing NPC's template
         world.Npcs[1].Range = AggroRange;
-        world.Npcs[2].Behavior = NpcBehavior.AttackOnSight;   // different Num => not allied, so targetable
+        world.Npcs[2].Behavior = NpcBehavior.Pursue;   // different Num => not kin, so noticeable
 
         var attacker = PlaceNpc(world, ActorSlot, num: 1, ActorX, ActorY);
         PlaceNpc(world, slot: 2, num: 2, ActorX, ActorY + 4);   // FAR  (dist 4), earlier in scan order
         PlaceNpc(world, slot: 3, num: 2, ActorX, ActorY + 2);   // NEAR (dist 2), later in scan order
 
-        var winner = InvokeTuple(NewAi(world, pm), "FindAosNpcTarget", Map, ActorSlot, attacker);
+        var winner = InvokeTuple(NewAi(world, pm), "FindNoticeableNpc", Map, ActorSlot, attacker);
 
         // Scan order alone would return slot 2 (first eligible); the nearest is slot 3.
         Assert.That(winner, Is.EqualTo((Map, 3)));
     }
 
     [Test]
-    public void FindGuardNpcTarget_PicksNearestHostile_NotFirstInSlotOrder()
-    {
-        var world = new GameWorld();
-        var pm = new PlayerManager();
-        world.Npcs[2].Behavior = NpcBehavior.AttackOnSight;   // candidate hostiles' template
-
-        var guard = PlaceNpc(world, ActorSlot, num: 1, ActorX, ActorY);
-        // Guards only engage a hostile that is itself already chasing a player (Target > 0).
-        PlaceNpc(world, slot: 2, num: 2, ActorX, ActorY + 4, target: 99);   // FAR, earlier slot
-        PlaceNpc(world, slot: 3, num: 2, ActorX, ActorY + 2, target: 99);   // NEAR, later slot
-
-        var winner = InvokeTuple(NewAi(world, pm), "FindGuardNpcTarget", Map, ActorSlot, guard);
-
-        Assert.That(winner, Is.EqualTo((Map, 3)));
-    }
-
-    [Test]
-    public void FindGuardTarget_PicksNearestPkPlayer()
-    {
-        var world = new GameWorld();
-        var pm = new PlayerManager();
-        var guard = PlaceNpc(world, ActorSlot, num: 1, ActorX, ActorY);
-        RegisterPlayer(world, pm, index: 5, ActorX, ActorY + 4, level: 5, pk: true);   // FAR PK
-        RegisterPlayer(world, pm, index: 6, ActorX, ActorY + 2, level: 5, pk: true);   // NEAR PK
-
-        // `now` is irrelevant: PkExpiryUtc = long.MaxValue makes IsPk true against any clock.
-        int winner = (int)InvokePrivate(NewAi(world, pm), "FindGuardTarget", Map, guard, 0L);
-
-        Assert.That(winner, Is.EqualTo(6));
-    }
-
-    [Test]
-    public void FindLowestLevelPlayer_BreaksEqualLevelTieByNearest()
+    public void FindNoticeablePlayer_BreaksEqualLevelTieByNearest()
     {
         var world = new GameWorld();
         var pm = new PlayerManager();
@@ -87,13 +55,13 @@ public class NpcTargetAcquisitionTests
         RegisterPlayer(world, pm, index: 5, ActorX, ActorY + 4, level: 3);   // FAR,  same level
         RegisterPlayer(world, pm, index: 6, ActorX, ActorY + 2, level: 3);   // NEAR, same level
 
-        int winner = (int)InvokePrivate(NewAi(world, pm), "FindLowestLevelPlayer", Map, mob, AggroRange);
+        int winner = (int)InvokePrivate(NewAi(world, pm), "FindNoticeablePlayer", Map, mob, AggroRange);
 
         Assert.That(winner, Is.EqualTo(6));
     }
 
     [Test]
-    public void FindLowestLevelPlayer_KeepsLowestLevelOverCloserHigherLevel()
+    public void FindNoticeablePlayer_KeepsLowestLevelOverCloserHigherLevel()
     {
         var world = new GameWorld();
         var pm = new PlayerManager();
@@ -101,7 +69,7 @@ public class NpcTargetAcquisitionTests
         RegisterPlayer(world, pm, index: 5, ActorX, ActorY + 4, level: 2);   // FAR,  LOWER level
         RegisterPlayer(world, pm, index: 6, ActorX, ActorY + 2, level: 9);   // NEAR, higher level
 
-        int winner = (int)InvokePrivate(NewAi(world, pm), "FindLowestLevelPlayer", Map, mob, AggroRange);
+        int winner = (int)InvokePrivate(NewAi(world, pm), "FindNoticeablePlayer", Map, mob, AggroRange);
 
         // Distance is only a tie-break: the intentional lowest-level "prey on the weak" rule still wins.
         Assert.That(winner, Is.EqualTo(5));

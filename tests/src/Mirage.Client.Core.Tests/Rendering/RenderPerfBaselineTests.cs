@@ -59,7 +59,7 @@ public class RenderPerfBaselineTests
 
         // NPC definitions the emitters read for size/name/behavior.
         for (int i = 1; i <= 20; i++)
-            state.NpcDefs[i] = new NpcRecord { Name = $"npc{i}", Behavior = NpcBehavior.AttackOnSight };
+            state.NpcDefs[i] = new NpcRecord { Name = $"npc{i}", Behavior = NpcBehavior.Pursue };
 
         // Native NPCs on the center map.
         for (int slot = 1; slot <= npcsPerMap && slot < state.MapNpcs.Length; slot++)

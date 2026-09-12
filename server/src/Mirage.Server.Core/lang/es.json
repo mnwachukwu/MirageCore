@@ -386,7 +386,7 @@
   "CombatSystem_ReagentsLostOnDeath": "{Count} de tus reactivos de conjuro se destruyeron en la caída.",
   "CombatSystem_WarKillReadout": "Guerra de Agravios: ¡{AttackerName} de {AttackerGuild} ha derribado a {VictimName} de {VictimGuild}!",
   "CombatSystem_TerritoryKillReadout": "Guerra de {Territory}: ¡{AttackerName} de {AttackerGuild} ha vencido a {VictimName} de {VictimGuild}!",
-  "CombatSystem_NpcSays": "Un {NpcName} dice: '{Say}'",
+  "NpcAiSystem_NpcSays": "Un {NpcName} dice: '{Say}'",
   "CombatSystem_GuardGraceWarn": "¡Cuidado!",
   "CombatSystem_YourShieldBlockedNpc": "¡Tu {ShieldName} bloquea el golpe del {NpcName}!",
   "CombatSystem_YouDodgedNpc": "¡Esquivaste el golpe del {NpcName}!",

@@ -92,7 +92,7 @@ public class NpcChaseRoutingTests
     {
         var world = new GameWorld();
         var pm = new PlayerManager();
-        world.Npcs[1].Behavior = NpcBehavior.AttackOnSight;   // the chaser, size 1
+        world.Npcs[1].Behavior = NpcBehavior.Pursue;   // the chaser, size 1
         world.Npcs[2].Behavior = NpcBehavior.Stationary;      // the victim's template
         world.Npcs[2].Size = 3;
         world.Npcs[3].Behavior = NpcBehavior.Stationary;      // whoever is standing in the slot
@@ -136,7 +136,7 @@ public class NpcChaseRoutingTests
         var pm = new PlayerManager();
         var ai = BuildAi(world, pm);
 
-        world.Npcs[1].Behavior = NpcBehavior.AttackOnSight;   // chaser template
+        world.Npcs[1].Behavior = NpcBehavior.Pursue;   // chaser template
         world.Npcs[1].Str = 20;
         world.Npcs[1].Def = 10;
         world.Npcs[1].Int = 0;
@@ -184,7 +184,6 @@ public class NpcChaseRoutingTests
         {
             chaser.NextMoveMs = 0;
             chaser.AttackTimer = 0;
-            chaser.CombatExpiresAt = tick + 10_000_000;
             ai.RunMovement(tick);
             ai.RunForAllMaps(tick);
             best = Math.Min(best, Manhattan(chaser.X, chaser.Y, victim.X, victim.Y));
@@ -205,7 +204,7 @@ public class NpcChaseRoutingTests
     {
         var world = new GameWorld();
         var pm = new PlayerManager();
-        world.Npcs[1].Behavior = NpcBehavior.AttackOnSight;
+        world.Npcs[1].Behavior = NpcBehavior.Pursue;
         world.Npcs[2].Behavior = NpcBehavior.Stationary;
         var chaser = world.MapNpcs[Map, 1];
         chaser.Num = 1;

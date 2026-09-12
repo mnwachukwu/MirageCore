@@ -5,7 +5,7 @@
   "spriteSheet": 0,
   "size": 1,
   "spawnSecs": 60,
-  "behavior": "Friendly",
+  "behavior": "Wander",
   "group": 0,
   "range": 4,
   "str": 18,

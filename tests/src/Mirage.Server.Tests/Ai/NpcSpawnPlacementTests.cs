@@ -29,7 +29,7 @@ public class NpcSpawnPlacementTests
     {
         var npc = world.Npcs[NpcNum];
         npc.Name = "mob";
-        npc.Behavior = NpcBehavior.AttackOnSight;
+        npc.Behavior = NpcBehavior.Pursue;
     }
 
     [Test]

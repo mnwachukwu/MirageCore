@@ -43,9 +43,8 @@ public sealed partial class GameplayScreen : IGameScreen
         int myWY = _ctx.State.MapTilesY + me.Y;
         var list = new List<(TargetRef Ref, int DistSq)>();
 
-        void TryAddNpc(TargetRef r, int worldX, int worldY, int size, NpcBehavior behavior, WorldLayer layer)
+        void TryAddNpc(TargetRef r, int worldX, int worldY, int size, WorldLayer layer)
         {
-            if (behavior is not (NpcBehavior.AttackOnSight or NpcBehavior.AttackWhenAttacked)) return;
             if (!WorldCoordHelper.IsInSpellRange(myWX, myWY, 1, worldX, worldY, size)) return;   // footprint-aware (Tab picks a big NPC by its body)
             // Skip targets the player couldn't actually cast on — the FULL layer-aware LoS gate (same-layer or a
             // ramp bridge, then walls/doors), matching the server's HasLineOfSight. So Tab won't land on a target
@@ -71,7 +70,7 @@ public sealed partial class GameplayScreen : IGameScreen
                     if (n.Num == 0 || n.Num > state.Limits.Npcs) continue;
                     var def = state.NpcDefs[n.Num];
                     if (def is null) continue;
-                    TryAddNpc(new TargetRef(TargetKind.Npc, i, cellMap), offX + n.X, offY + n.Y, def.EffectiveSize, def.Behavior, n.Layer);
+                    TryAddNpc(new TargetRef(TargetKind.Npc, i, cellMap), offX + n.X, offY + n.Y, def.EffectiveSize, n.Layer);
                 }
             }
         }
@@ -84,7 +83,7 @@ public sealed partial class GameplayScreen : IGameScreen
             if (def is null) continue;
             var off = CellOffsetForMapClient(t.CurrentMapNum);
             if (off is null) continue;
-            TryAddNpc(new TargetRef(TargetKind.Traversal, t.SpawnMapNum, t.SpawnSlot), off.Value.ox + t.X, off.Value.oy + t.Y, def.EffectiveSize, def.Behavior, t.Layer);
+            TryAddNpc(new TargetRef(TargetKind.Traversal, t.SpawnMapNum, t.SpawnSlot), off.Value.ox + t.X, off.Value.oy + t.Y, def.EffectiveSize, t.Layer);
         }
 
         if (!_skipPlayersWithTabTarget && !safeMap)

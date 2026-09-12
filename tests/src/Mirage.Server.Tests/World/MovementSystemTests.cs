@@ -53,20 +53,9 @@ public class MovementSystemTests
             Assert.That(MovementSystem.IsNpcWalkableTileType(TileType.Blocked, false), Is.False);
             Assert.That(MovementSystem.IsNpcWalkableTileType(TileType.Warp, false), Is.False);
             Assert.That(MovementSystem.IsNpcWalkableTileType(TileType.Key, true), Is.False);
-            Assert.That(MovementSystem.IsNpcWalkableTileType(TileType.NpcAvoid, false), Is.False, "a wall for normal NPCs");
-            Assert.That(MovementSystem.IsNpcWalkableTileType(TileType.NpcAvoid, true), Is.True, "walkable for guards");
+            Assert.That(MovementSystem.IsNpcWalkableTileType(TileType.NpcAvoid, false), Is.False, "a wall for every NPC the engine moves");
+            Assert.That(MovementSystem.IsNpcWalkableTileType(TileType.NpcAvoid, true), Is.True, "walkable for a caller that waives the rule");
             Assert.That(MovementSystem.IsNpcWalkableTileType(TileType.LayerRamp, false), Is.True, "a ramp is the walkable connector between layers");
-        });
-    }
-
-    [Test]
-    public void NpcIgnoresNpcAvoid_OnlyGuards()
-    {
-        Assert.Multiple(() =>
-        {
-            Assert.That(MovementSystem.NpcIgnoresNpcAvoid(NpcBehavior.Guard), Is.True);
-            Assert.That(MovementSystem.NpcIgnoresNpcAvoid(NpcBehavior.AttackOnSight), Is.False);
-            Assert.That(MovementSystem.NpcIgnoresNpcAvoid(NpcBehavior.Friendly), Is.False);
         });
     }
 
@@ -474,7 +463,7 @@ public class MovementSystemTests
     public void CanNpcMoveFrom_OpenTileTrue_BlockedFalse()
     {
         var (world, _, move, _) = Setup(0, 0);   // player parked away from the NPC's path
-        world.Npcs[1].Behavior = NpcBehavior.AttackOnSight;
+        world.Npcs[1].Behavior = NpcBehavior.Pursue;
         var npc = world.MapNpcs[Map, 1];
         npc.Num = 1;
         npc.X = 5;
@@ -495,7 +484,7 @@ public class MovementSystemTests
     public void CanNpcMoveFrom_RampSolidExceptTheMount_NoPerpendicular_NoUnderWalk()
     {
         var (world, _, move, _) = Setup(0, 0);
-        world.Npcs[1].Behavior = NpcBehavior.AttackOnSight;
+        world.Npcs[1].Behavior = NpcBehavior.Pursue;
         var map = world.Maps[Map];
         map.EditTile(5, 5, t => t with { FringeAttr = new FringeAttr { Type = TileType.LayerRamp, RampGroundSide = Direction.Down } });
         map.EditTile(6, 5, t => t with { FringeAttr = new FringeAttr { Type = TileType.LayerRamp, RampGroundSide = Direction.Down } });
@@ -541,7 +530,7 @@ public class MovementSystemTests
     public void NpcStepPassesRampGate_AcrossASeam_BlocksPerpendicular_AllowsAlongAxisMount()
     {
         var (world, _, move, _) = Setup(0, 0);
-        world.Npcs[1].Behavior = NpcBehavior.AttackOnSight;
+        world.Npcs[1].Behavior = NpcBehavior.Pursue;
         world.Maps[Map].Right = 2;      // link Map 1 → Map 2 at the right seam
         world.Maps[2].Left = Map;
         var npc = world.MapNpcs[Map, 1];

@@ -138,7 +138,7 @@ public class PerfBaselineTests
         for (int i = 1; i <= RecordLimits.Default.Items; i++)
             world.Items[i] = new ItemRecord { Name = $"item{i}" };
         for (int i = 1; i <= RecordLimits.Default.Npcs; i++)
-            world.Npcs[i] = new NpcRecord { Name = $"npc{i}", Behavior = NpcBehavior.AttackOnSight };
+            world.Npcs[i] = new NpcRecord { Name = $"npc{i}", Behavior = NpcBehavior.Pursue };
         for (int i = 1; i <= RecordLimits.Default.Shops; i++)
             world.Shops[i] = new ShopRecord { Name = $"shop{i}" };
         for (int i = 1; i <= RecordLimits.Default.Spells; i++)

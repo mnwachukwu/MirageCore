@@ -48,7 +48,7 @@ public sealed partial class GuildTerritorySystem : GameSystem
 
         // NPCs vanish for the whole war state (no PvE / no income mid-war), guards excepted — they hold their
         // post. Non-participants standing in the territory are warned to leave.
-        foreach (int m in maps) _spawn.DespawnMapNpcs(m, keepGuards: true);
+        foreach (int m in maps) _spawn.DespawnMapNpcs(m);
         WarnNonParticipantsPresent(contest);
 
         int mins = Constants.TerritoryContestSetupSeconds / 60;

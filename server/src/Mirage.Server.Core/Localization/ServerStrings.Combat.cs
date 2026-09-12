@@ -71,7 +71,7 @@ public static partial class ServerStrings
     public const string CombatSystem_ReagentsLostOnDeath = nameof(CombatSystem_ReagentsLostOnDeath);
     public const string CombatSystem_WarKillReadout = nameof(CombatSystem_WarKillReadout);
     public const string CombatSystem_TerritoryKillReadout = nameof(CombatSystem_TerritoryKillReadout);
-    public const string CombatSystem_NpcSays = nameof(CombatSystem_NpcSays);
+    public const string NpcAiSystem_NpcSays = nameof(NpcAiSystem_NpcSays);
     public const string CombatSystem_GuardGraceWarn = nameof(CombatSystem_GuardGraceWarn);
     public const string CombatSystem_YourShieldBlockedNpc = nameof(CombatSystem_YourShieldBlockedNpc);
     public const string CombatSystem_YouDodgedNpc = nameof(CombatSystem_YouDodgedNpc);

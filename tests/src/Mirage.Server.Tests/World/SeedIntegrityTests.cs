@@ -662,7 +662,7 @@ public class SeedIntegrityTests
     }
 
     /// <summary>Anyone who carries content must be non-hostile and must not be loot. A shopkeeper on
-    /// AttackOnSight would attack the customer; one with a drop table turns a storefront into a farm.</summary>
+    /// A behavior that notices would walk off after the customer; a drop table turns a storefront into a farm.</summary>
     [Test]
     public void EveryContentCarrier_IsFriendlyAndCarriesNoLoot()
     {
@@ -678,47 +678,10 @@ public class SeedIntegrityTests
             foreach (int num in carriers)
             {
                 var npc = _npcs[num];
-                Assert.That(npc.Behavior, Is.EqualTo(NpcBehavior.Friendly),
-                    $"npc {num} ({npc.TrimmedName}) carries content but is {npc.Behavior} — it would fight its own customers");
+                Assert.That(npc.Behavior, Is.EqualTo(NpcBehavior.Wander),
+                    $"npc {num} ({npc.TrimmedName}) carries content but is {npc.Behavior} — it would walk out on its own customers");
                 Assert.That(npc.Drops ?? [], Is.Empty,
                     $"npc {num} ({npc.TrimmedName}) carries content AND a drop table — killing the shopkeeper pays");
-            }
-        });
-    }
-
-    /// <summary>A guard is an unwinnable fight, but LEVEL is the wrong lever for that: it is a derived
-    /// number, and pushing it past the ceiling only makes the stat line strange. Guards sit AT the player
-    /// ceiling and are made unwinnable by <see cref="NpcRecord.ExtraHp"/>.
-    ///
-    /// <para>Two shapes. A melee guard runs INT 0 so it never casts; a caster guard runs STR 0, so
-    /// <c>P(cast) = Int/(Int+Str)</c> makes it cast every beat. Dropping the unused stat is what lets the
-    /// other three read high at 255, so a guard with all four populated has lost its teeth.</para></summary>
-    [Test]
-    public void EveryGuard_IsAMaxedWallThatDropsNothing()
-    {
-        RequireSeed();
-        var guards = _npcs.Where(kv => kv.Value.Behavior == NpcBehavior.Guard).ToArray();
-        Assert.That(guards, Is.Not.Empty, "the roster authors no guards");
-
-        Assert.Multiple(() =>
-        {
-            foreach (var (num, g) in guards)
-            {
-                string who = $"guard {num} ({g.TrimmedName})";
-                int level = StatFormulas.NpcLevel(g.Str, g.Def, g.Int, g.Spd);
-
-                Assert.That(level, Is.EqualTo(Constants.MaxLevel),
-                    $"{who} computes to level {level} — guards sit exactly at the player ceiling");
-                Assert.That(g.ExtraHp, Is.GreaterThan(0),
-                    $"{who} has no ExtraHp — at level {Constants.MaxLevel} with no HP wall it is just a "
-                    + "very good player, and a maxed character can kill it");
-                Assert.That(g.Spd, Is.GreaterThan(0),
-                    $"{who} has no SPD — guards always run, and one that cannot close is one you walk away from");
-                Assert.That(g.Str == 0 || g.Int == 0, Is.True,
-                    $"{who} carries both STR and INT — a guard commits to melee (INT 0) or to casting "
-                    + "(STR 0); splitting the budget four ways makes all of it mediocre");
-                Assert.That(g.Drops ?? [], Is.Empty,
-                    $"{who} carries loot — killing guards must never be worth doing");
             }
         });
     }
@@ -852,7 +815,7 @@ public class SeedIntegrityTests
     public void NoBanner_MustersASingleKind()
     {
         RequireSeed();
-        var hostile = _npcs.Where(n => n.Value.Behavior is NpcBehavior.AttackOnSight or NpcBehavior.AttackWhenAttacked)
+        var hostile = _npcs.Where(n => n.Value.Behavior is NpcBehavior.Pursue)
             .ToDictionary(k => k.Key, v => v.Value);
         Assume.That(hostile, Is.Not.Empty);
 
@@ -877,8 +840,10 @@ public class SeedIntegrityTests
         RequireSeed();
         foreach (var (lo, hi, band) in new[] { (100, 120, "the Sunken Reach"), (235, 255, "the Ashen Throne") })
         {
+            // A side is a bestiary matter, and the drop table is what says an NPC IS bestiary: something
+            // that pays nothing for killing it is a wall or a warden, put there to be walked around.
             var inBand = _npcs.Values
-                .Where(n => n.Behavior is NpcBehavior.AttackOnSight or NpcBehavior.AttackWhenAttacked)
+                .Where(n => n.Behavior is NpcBehavior.Pursue && (n.Drops?.Count ?? 0) > 0)
                 .Where(n => StatFormulas.NpcLevel(n) >= lo && StatFormulas.NpcLevel(n) <= hi)
                 .ToList();
             Assume.That(inBand, Is.Not.Empty);
@@ -895,8 +860,8 @@ public class SeedIntegrityTests
         }
     }
 
-    /// <summary>A side means nothing on an NPC the hostility scan never looks at — it skips Friendly,
-    /// Stationary and Guard outright — and a guard wearing one reads as a guard that has taken a side.</summary>
+    /// <summary>A side means nothing on an NPC the notice scan never looks at, and one wearing a number it
+    /// can never act on reads as a faction member that has wandered out of its faction.</summary>
     [Test]
     public void NothingElse_CarriesASide()
     {
@@ -905,7 +870,7 @@ public class SeedIntegrityTests
         {
             foreach (var (num, npc) in _npcs.OrderBy(k => k.Key))
             {
-                if (npc.Behavior is NpcBehavior.AttackOnSight or NpcBehavior.AttackWhenAttacked) continue;
+                if (npc.Behavior is NpcBehavior.Pursue) continue;
                 Assert.That(npc.Group, Is.Zero,
                     $"npc{num} \"{npc.TrimmedName}\" is {npc.Behavior} and carries group {npc.Group}");
             }
@@ -915,13 +880,13 @@ public class SeedIntegrityTests
     /// <summary>
     /// Everyone who LIVES here carries a light.
     ///
-    /// <para>The bestiary lights its hostiles — every one that has hands for a torch — so a world where the
-    /// townsfolk and wardens are dark is one whose only night-time glow belongs to the things hunting you.
-    /// A town reads as abandoned and a warden becomes something that runs at you out of the black.</para>
+    /// <para>The bestiary lights its mobs — every one that has hands for a torch — so a world where the
+    /// townsfolk are dark is one whose only night-time glow belongs to the things that come at you, and a
+    /// town reads as abandoned.</para>
     ///
-    /// <para>This is guarded because the gap was invisible: friendlies and guards come from a different
-    /// generator than the mobs, and that one simply never mentioned light, so every one of them defaulted
-    /// dark and nothing anywhere said so.</para>
+    /// <para>This is guarded because the gap is invisible: the townsfolk come from a different generator
+    /// than the mobs, and that one never mentions light, so without this every one of them reads dark and
+    /// nothing anywhere says so.</para>
     /// </summary>
     [Test]
     public void EverythingThatLivesHere_CarriesALight()
@@ -931,7 +896,7 @@ public class SeedIntegrityTests
         {
             foreach (var (num, npc) in _npcs.OrderBy(k => k.Key))
             {
-                if (npc.Behavior is not (NpcBehavior.Friendly or NpcBehavior.Guard)) continue;
+                if (npc.Behavior is not NpcBehavior.Wander) continue;
                 Assert.That(npc.EmitsLight, Is.True,
                     $"npc{num} \"{npc.TrimmedName}\" is {npc.Behavior} and stands in the dark");
             }
@@ -953,7 +918,7 @@ public class SeedIntegrityTests
         const int creatureSheet = 0;
         int[] creatureRows = [8, 11, 12, 13, 14, 18, 19, 20, 21, 22, 46];
         var byRow = _npcs.Values
-            .Where(n => n.Behavior is NpcBehavior.AttackOnSight or NpcBehavior.AttackWhenAttacked)
+            .Where(n => n.Behavior is NpcBehavior.Pursue)
             .Where(n => n.SpriteSheet == creatureSheet && creatureRows.Contains(n.Sprite))
             .GroupBy(n => n.Sprite);
 

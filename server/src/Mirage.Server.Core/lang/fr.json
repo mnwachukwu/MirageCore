@@ -386,7 +386,7 @@
   "CombatSystem_ReagentsLostOnDeath": "{Count} de vos réactifs d'incantation ont été détruits dans la chute.",
   "CombatSystem_WarKillReadout": "Guerre de rancune : {AttackerName} de {AttackerGuild} a terrassé {VictimName} de {VictimGuild}!",
   "CombatSystem_TerritoryKillReadout": "Guerre de {Territory} : {AttackerName} de {AttackerGuild} a vaincu {VictimName} de {VictimGuild}!",
-  "CombatSystem_NpcSays": "Un {NpcName} dit : '{Say}'",
+  "NpcAiSystem_NpcSays": "Un {NpcName} dit : '{Say}'",
   "CombatSystem_GuardGraceWarn": "Attention!",
   "CombatSystem_YourShieldBlockedNpc": "Votre {ShieldName} bloque le coup du {NpcName}!",
   "CombatSystem_YouDodgedNpc": "Vous avez esquivé le coup du {NpcName}!",

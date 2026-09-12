@@ -45,30 +45,7 @@ public sealed partial class NpcAiSystem : GameSystem
         };
     }
 
-    /// <summary>
-    /// Whether this NPC keeps itself engaged purely by PURSUING (so it never lets a fleeing target go),
-    /// versus only while actually trading blows.
-    ///
-    /// <para>Only a GUARD does, and only against criminals — a PK player or an active PvP aggressor.
-    /// The moment its quarry is neither, it yields: combat stops being refreshed by the chase, so it
-    /// lapses and the guard returns to its post.</para>
-    ///
-    /// <para>Every other behavior, AttackOnSight included, refreshes combat only by FIGHTING. Breaking
-    /// contact for the combat window therefore ends any ordinary chase, on one clock, whatever it was
-    /// that attacked you — a hostile mob lets go on the same terms as one that only ever retaliated.
-    /// This is the single rule for refreshing pursuit combat.</para>
-    /// </summary>
-    private bool IsRelentlessPursuit(NpcRecord npc, int target, long now)
-    {
-        long nowUtc = NowUtc;
-        return npc.Behavior switch
-        {
-            NpcBehavior.Guard => (_pm[target].Char.IsPk(nowUtc) && _pm[target].PkGraceUntilUtc <= nowUtc)
-                                 || _pm[target].PvpAttackerUntil > now,
-            _ => false,
-        };
-    }
-
+    /// <summary>Clear an NPC's player lock and notify observers.</summary>
     private void DropNativeTarget(int mapNum, int slot, MapNpcRecord mn)
     {
         mn.Target = 0;
@@ -76,12 +53,6 @@ public sealed partial class NpcAiSystem : GameSystem
             new NpcTargetPacket { MapNum = mapNum, NpcSlot = slot, HasTarget = false });
     }
 
-    /// <summary>
-    /// A native (slot) NPC whose target has moved to a different map.  Refreshes combat for a
-    /// relentless pursuer and dispatches the chase step through the observable-area BFS — which either
-    /// routes within the map toward the border, crosses the border (converting the NPC into a
-    /// traversal guest), or warp-follows when the target has left the observable area.
-    /// </summary>
     private void NativeChaseAcrossBorder(int mapNum, int slot, MapNpcRecord mn, int target, long now,
                                           Direction? precomputedStep = null, bool legsStep = false)
     {
@@ -96,10 +67,6 @@ public sealed partial class NpcAiSystem : GameSystem
                 DropNativeTarget(mapNum, slot, mn);
             return;
         }
-
-        // Relentless pursuers refresh combat to keep hounding across borders.  Same-map refresh
-        // is the caller's responsibility — preserves the existing AoS/AWA yield-on-chase rule.
-        if (IsRelentlessPursuit(npc, target, now))
 
         // On an OBSERVED map the fast legs pass (AdvanceNativeChaseStep) runs the cross-seam STEP at run/walk
         // pace — parity with the same-map chase, so an NPC keeps its sprint through a boundary.  The light-AI
@@ -136,16 +103,14 @@ public sealed partial class NpcAiSystem : GameSystem
             Layer = crossLayer,
             Moving = MovementType.Walking,
             AttackTimer = mn.AttackTimer,
-            CombatExpiresAt = mn.CombatExpiresAt,
-            WasInCombat = mn.WasInCombat,
             LastAttackSayTarget = mn.LastAttackSayTarget,
-            // NPC-vs-NPC fields ride along — a guard chasing a hostile NPC across a seam keeps its
-            // target identity and contributor ledger so the fight continues seamlessly.
+            // The noticed-NPC identity rides along, so a pursuit that crosses a seam continues
+            // against the same body.
             NpcTargetSpawnMap = mn.NpcTargetSpawnMap,
             NpcTargetSpawnSlot = mn.NpcTargetSpawnSlot,
             LastAttackSayNpcTarget = mn.LastAttackSayNpcTarget,
-            // Carry the give-up clock across the seam so the AoS chase doesn't get a fresh 10s lease
-            // every time it crosses a border.
+            // Carry the give-up clock across the seam so a chase doesn't get a fresh lease every
+            // time it crosses a border.
             LastReachedTargetMs = mn.LastReachedTargetMs,
             // Carry chase-stall damping state too, so a dance that straddles this seam is damped from
             // the FIRST guest tick instead of re-accumulating ~3 ticks of stall on the guest side.
@@ -164,11 +129,6 @@ public sealed partial class NpcAiSystem : GameSystem
             HasMadeContact = mn.HasMadeContact,
             ChaseSprinting = mn.ChaseSprinting,
             RunReservoirLow = mn.RunReservoirLow,
-            // Carry the in-progress kite so a caster that RETREATS across a seam keeps kiting on the far side
-            // instead of reverting to a chase: WantsKite tells the guest's legs pass to continue the retreat, and
-            // MeleeKiteAttempts preserves the bail-out cap so it doesn't reset to a fresh kite budget every seam.
-            WantsKite = mn.WantsKite,
-            MeleeKiteAttempts = mn.MeleeKiteAttempts,
             // Count this cross as the guest's action for THIS pass.  Maps tick in ascending order, so a
             // native crossing UP into a higher-numbered map (e.g. 1→2) lands in the destination's
             // traversal list before that map ticks; without this stamp RunTraversalAi would give it a
@@ -177,10 +137,7 @@ public sealed partial class NpcAiSystem : GameSystem
             // equivalent: RunTraversalAi already stamps LastAiTick before a guest→guest hop.
             LastAiTick = _aiNow,
         };
-        // Hand the WHOLE combat ledger to the guest atomically — DamageByPlayer, the guard grace tally
-        // (WarnHitsByPlayer), AND the NPC contributor list.  The grace tally MUST cross with the damage or the
-        // guest's guard grace-skip breaks and it aggros a still-graced player (the "hit a guard, fight a mob,
-        // guard chases across the seam and turns on you" bug).  See MapNpcRecord.CopyCombatLedgerTo.
+        // The whole damage ledger crosses atomically — see MapNpcRecord.CopyCombatLedgerTo.
         mn.CopyCombatLedgerTo(t);
         _world.MapTraversalNpcs[toMap].Add(t);
 
@@ -189,8 +146,6 @@ public sealed partial class NpcAiSystem : GameSystem
         mn.Target = 0;
         mn.NpcTargetSpawnMap = 0;
         mn.NpcTargetSpawnSlot = 0;
-        mn.WasInCombat = false;
-        mn.CombatExpiresAt = 0;
         mn.IsReservedSlot = true;
         mn.LastAttackSayTarget = 0;
         mn.LastAttackSayNpcTarget = 0;
@@ -230,7 +185,7 @@ public sealed partial class NpcAiSystem : GameSystem
         // Warp tiles aren't NPC-walkable, so step through once adjacent (like walking into a doorway).
         if (Math.Abs(mn.X - sp.WarpFromX) + Math.Abs(mn.Y - sp.WarpFromY) <= 1)
         {
-            if (FindWarpLanding(sp.WarpToMap, sp.WarpToX, sp.WarpToY, npc.EffectiveSize, MovementSystem.NpcIgnoresNpcAvoid(npc.Behavior), mn, out int lx, out int ly))
+            if (FindWarpLanding(sp.WarpToMap, sp.WarpToX, sp.WarpToY, npc.EffectiveSize, ignoreNpcAvoid: false, mn, out int lx, out int ly))
                 NativeNpcCrossBorder(mapNum, slot, mn, sp.WarpToMap, lx, ly, mn.Dir, stepped: false, mn.Layer);  // warp = teleport, keep layer
             else
                 BroadcastNpcDir(mapNum, slot, toward);  // dest + all neighbors blocked — wait it out
@@ -332,33 +287,21 @@ public sealed partial class NpcAiSystem : GameSystem
             if (regenTick) RegenNpcVitals(mapNum, t, npc, now);  // parity with native regen (esp. MP for casting)
             t.Attacking = false;  // cleared each tick; the attack path re-sets it for one swing
 
-            // Safe-zone aggro rule (AoS only): an AoS guest with a guard in viewport drops non-guard
-            // targets and locks onto the nearest guard.  AWA guests are exempt and early-return inside
-            // the rule, retaliating against their attacker even in safe zones.
-            EnforceSafeZoneAggroRule(t, t.CurrentMapNum, 0, now);
-
-            // Unified combat-expire: any guest whose combat lapsed returns home (fresh respawn on the
-            // home slot).  This is the ONLY path that resets a guest — target loss alone does not.
-            // Pursuit refreshes combat only while a target exists, so an idle guest's combat ticks down
-            // and eventually trips this gate, sending it home cleanly without an immediate reset on
-            // the very tick the target vanished.
-            if (t.WasInCombat && t.CombatExpiresAt > 0 && now >= t.CombatExpiresAt)
+            // A guest that has had nobody for the give-up window goes home (fresh respawn on the home
+            // slot).  This is the ONLY path that ends a guest's trip — losing a target alone does not,
+            // so one that loses its quarry gets the rest of the window to find another before the walk
+            // back.  RunGuestIdle restamps the clock the moment it notices somebody, and every closing
+            // step restamps it too, so the window only runs out on a guest with genuinely nothing to do.
+            if (t.Target == 0 && t.NpcTargetSpawnSlot == 0
+                && t.LastReachedTargetMs > 0 && now - t.LastReachedTargetMs > NpcUnreachedGiveUpMs)
             {
                 ReturnTraversalHome(mapNum, i, t);
                 continue;
             }
 
-            // Per-tick aggro re-eval (parity with native RunAggressiveAi): flip to the current highest damage
-            // contributor before the chase logic below reads the target. No-op on an empty ledger, so a freshly
-            // scan-acquired target isn't dropped next tick. ReEvaluateAggro handles the guest case internally.
-            if (t.Target > 0 || t.NpcTargetSpawnSlot > 0)
-
-            // NPC-target path: a guest carrying an NpcTarget (no player target) pursues to the death
-            // OR until combat expires (handled above).  Mirrors RunNpcVsNpcStep for the native case,
-            // cast decision included — an Int>0 guest casts at an NPC victim just as it does at a player.
             if (t.NpcTargetSpawnSlot > 0 && t.Target == 0)
             {
-                RunGuestNpcVsNpcStep(mapNum, i, t, now);
+                RunGuestNoticedNpcStep(mapNum, i, t, now);
                 continue;
             }
 
@@ -367,8 +310,8 @@ public sealed partial class NpcAiSystem : GameSystem
             if (!targetValid)
             {
                 // Target gone (offline / leaving game).  Drop the lock but do NOT return home — the
-                // guest stays put and reverts to idle (scan / wander) while combat ticks down.  The
-                // unified combat-expire gate above will eventually fire and send it home cleanly.
+                // guest reverts to idle (scan / wander) and the gate above walks it home if it finds
+                // nobody else before the window runs out.
                 if (target > 0)
                 {
                     t.Target = 0;
@@ -378,10 +321,9 @@ public sealed partial class NpcAiSystem : GameSystem
                 continue;
             }
 
-            // AoS guest unreachable give-up — same 10s rule as natives.  Drop the lock and idle in
-            // place; combat keeps ticking and the expire gate at the top of the next pass sends the
-            // guest home if no new target shows up.
-            if (ShouldGiveUpUnreachableAosTarget(t, now))
+            // Unreached give-up — the same clock natives run.  A guest that cannot reach its quarry
+            // goes straight home rather than lingering abroad.
+            if (ShouldGiveUpUnreachedTarget(t, now))
             {
                 ReturnTraversalHome(mapNum, i, t);
                 continue;
@@ -401,41 +343,33 @@ public sealed partial class NpcAiSystem : GameSystem
                 continue;
             }
 
-            // NPC magic decision (mirrors the native RunAggressiveAi order): an Int>0 guest casts when
-            // cooldown+mana+range+LoS allow, kites when a target closes into melee, or holds at range —
-            // consuming the tick. Int=0 guests short-circuit and fall through to the melee + chase below.
-            if (TryNpcMagicAction(mapNum, i, t, target, vp, now))
+            // A fleeing guest lets go once the gap is wider than what it can notice — the retreat
+            // worked.  A pursuing one closes instead.
+            if (npc.Behavior == NpcBehavior.Flee)
             {
-                if (!t.WantsKite) t.NextMoveMs = now + Constants.AiTickIntervalMs;
+                if (!IsWithinNoticeRange(mapNum, t, npc, vp))
+                {
+                    t.Target = 0;
+                    BroadcastTraversalState(t);
+                    RunGuestIdle(mapNum, i, t, now);
+                }
                 continue;
             }
-
-            // Strike when adjacent — same map or one tile across a seam (world-space adjacency).  The
-            // attack itself refreshes combat for any behavior, so an AWA mob in melee stays engaged.
-
-            // Not adjacent: a relentless pursuer refreshes combat to keep hounding the target; a
-            // yield-able one lets combat tick down (eventually trips the unified expire gate above).
-            if (IsRelentlessPursuit(npc, target, now))
 
             TraversalChaseStep(mapNum, i, t, vp, now);
         }
     }
 
-    /// <summary>Idle behavior for a guest with no active target: scan for a new target in the
-    /// current map's 9-map area (player first per priority, then NPC for AoS/Guard); if nothing is
-    /// found, amble in committed strides (see <see cref="WanderStep"/>).  Does NOT return home — the
-    /// unified combat-expire gate in <see cref="RunTraversalAi"/> is the only path that ends the guest's
-    /// lifecycle, so an idle guest just strolls out the clock here.</summary>
+    /// <summary>Idle behavior for a guest with nobody: scan the current map's 9-map area for a player
+    /// and then for a non-kin NPC; if neither turns up, amble in committed strides (see
+    /// <see cref="WanderStep"/>).  Does NOT return home — the idle gate in
+    /// <see cref="RunTraversalAi"/> is the only path that ends a guest's trip, so an idle guest strolls
+    /// out its window here.  Only <see cref="NpcBehavior.Pursue"/> and <see cref="NpcBehavior.Flee"/>
+    /// guests exist: nothing else ever leaves its home map.</summary>
     private void RunGuestIdle(int mapNum, int listIndex, TraversalNpcRecord t, long now)
     {
         var npc = _world.Npcs[t.Num];
-        // Player scan — same logic the native uses, applied to the guest's current map.
-        int playerTarget = npc.Behavior switch
-        {
-            NpcBehavior.AttackOnSight => FindLowestLevelPlayer(mapNum, t, npc.Range),
-            NpcBehavior.Guard => FindGuardTarget(mapNum, t, now),
-            _ => 0,
-        };
+        int playerTarget = FindNoticeablePlayer(mapNum, t, npc.Range);
         if (playerTarget > 0)
         {
             t.Target = playerTarget;
@@ -444,24 +378,23 @@ public sealed partial class NpcAiSystem : GameSystem
             return;
         }
 
-        // NPC scan fallback (AoS / Guard only; AWA stays passive).
-        (int npcSpawnMap, int npcSpawnSlot) npcPick = npc.Behavior switch
+        // A fleeing guest never goes looking for an NPC to run from: it retreats from what noticed it,
+        // and an NPC it has not met is not chasing it.
+        if (npc.Behavior == NpcBehavior.Pursue)
         {
-            NpcBehavior.AttackOnSight => FindAosNpcTarget(mapNum, 0, t),
-            NpcBehavior.Guard => FindGuardNpcTarget(mapNum, 0, t),
-            _ => (0, 0),
-        };
-        if (npcPick.npcSpawnSlot > 0)
-        {
-            t.NpcTargetSpawnMap = npcPick.npcSpawnMap;
-            t.NpcTargetSpawnSlot = npcPick.npcSpawnSlot;
-            t.MarkReachedTarget(now);
-            BroadcastTraversalState(t);
-            return;
+            var (npcSpawnMap, npcSpawnSlot) = FindNoticeableNpc(mapNum, 0, t);
+            if (npcSpawnSlot > 0)
+            {
+                t.NpcTargetSpawnMap = npcSpawnMap;
+                t.NpcTargetSpawnSlot = npcSpawnSlot;
+                t.MarkReachedTarget(now);
+                BroadcastTraversalState(t);
+                return;
+            }
         }
 
-        // Nothing in range — amble in committed strides (see WanderStep), so a guest running out its
-        // combat clock strolls deliberately instead of twitching.  slot is unused on the guest path.
+        // Nobody in range — amble in committed strides (see WanderStep), so a guest running out its
+        // window strolls deliberately instead of twitching.  slot is unused on the guest path.
         WanderStep(mapNum, 0, t);
     }
 
@@ -469,9 +402,8 @@ public sealed partial class NpcAiSystem : GameSystem
     {
         // Single chase-step path — same-map and cross-map both flow through observable-area BFS, which
         // produces a within-map move or a one-tile border cross as needed.  RunTraversalAi already
-        // checked the target is observable; defensive fallback drops the target and idles in place
-        // (per the "no reset on target-disappear" rule — combat-expire is the only path that sends a
-        // guest home).
+        // checked the target is observable; the defensive fallback drops it and idles in place, since
+        // the idle gate in RunTraversalAi is the only path that sends a guest home.
         if (WorldCoordHelper.GridPosition(_world.Maps, mapNum, vp.Map) is null)
         {
             t.Target = 0;
@@ -565,7 +497,7 @@ public sealed partial class NpcAiSystem : GameSystem
         // Warp tiles aren't NPC-walkable, so step through once adjacent (like walking into a doorway).
         if (Math.Abs(t.X - sp.WarpFromX) + Math.Abs(t.Y - sp.WarpFromY) <= 1)
         {
-            if (FindWarpLanding(sp.WarpToMap, sp.WarpToX, sp.WarpToY, npc.EffectiveSize, MovementSystem.NpcIgnoresNpcAvoid(npc.Behavior), t, out int lx, out int ly))
+            if (FindWarpLanding(sp.WarpToMap, sp.WarpToX, sp.WarpToY, npc.EffectiveSize, ignoreNpcAvoid: false, t, out int lx, out int ly))
                 MoveGuestToMap(mapNum, listIndex, t, sp.WarpToMap, lx, ly, t.Dir, stepped: false);
             else
                 BroadcastTraversalFacing(t, toward);  // dest + all neighbors blocked — wait it out

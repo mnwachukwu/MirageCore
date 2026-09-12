@@ -225,7 +225,7 @@ public sealed partial class GuildSystem : GameSystem
                 int npcId = entry.Npc;
                 if (npcId < 1 || npcId > _world.Limits.Npcs || !seen.Add(npcId)) continue;
                 var npc = _world.Npcs[npcId];
-                if (npc is null || npc.Behavior is not (NpcBehavior.AttackOnSight or NpcBehavior.AttackWhenAttacked)) continue;
+                if (npc is null || npc.Behavior != NpcBehavior.Pursue) continue;
                 list.Add((npcId, NpcDifficulty(npc)));
             }
         }

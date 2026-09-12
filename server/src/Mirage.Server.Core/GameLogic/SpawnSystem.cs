@@ -38,7 +38,7 @@ public sealed class SpawnSystem : GameSystem
         // state (setup + contest + cooldown), guards excepted. The single spawn chokepoint, so respawn /
         // guest-return / bulk spawn are all covered; the contest-end resume clears the suppression before
         // re-spawning. Asked AFTER the slot resolves, because the answer depends on which NPC this is.
-        if (_world.IsContestSuppressedNpc(mapNum, npcNum)) return;
+        if (_world.IsContestSuppressedMap(mapNum)) return;
 
         var mn = _world.MapNpcs[mapNum, mapNpcSlot];
         // A copy of this NPC is away chasing as a traversal guest — its slot is held.  Spawning now would
@@ -52,7 +52,6 @@ public sealed class SpawnSystem : GameSystem
         mn.JanitorTarget = 0;
         mn.NpcTargetSpawnMap = 0;
         mn.NpcTargetSpawnSlot = 0;
-        mn.WasInCombat = false;
         mn.LastAttackSayTarget = 0;
         mn.LastAttackSayNpcTarget = 0;
         mn.LastReachedTargetMs = 0;
@@ -228,20 +227,16 @@ public sealed class SpawnSystem : GameSystem
 
     /// <summary>Clear every live native NPC on a map and tell observers to remove them — the territory-war
     /// despawn. Mirrors the death-side slot cleanup (Num/Hp zeroed, SpawnWait stamped) but with no
-    /// damage or FX; respawns then stay suppressed by <see cref="GameWorld.IsContestSuppressedNpc"/> for the
+    /// damage or FX; respawns then stay suppressed by <see cref="GameWorld.IsContestSuppressedMap"/> for the
     /// war state, and the contest-end resume calls <see cref="SpawnMapNpcs"/> once suppression lifts. Reserved
-    /// slots (a native away chasing as a guest) already read Num = 0, so they are left untouched.
-    ///
-    /// <para><paramref name="keepGuards"/> leaves <see cref="NpcBehavior.Guard"/> NPCs standing, and pairs
-    /// with the same exemption in <see cref="GameWorld.IsContestSuppressedNpc"/>.</para></summary>
-    public void DespawnMapNpcs(int mapNum, bool keepGuards)
+    /// slots (a native away chasing as a guest) already read Num = 0, so they are left untouched.</summary>
+    public void DespawnMapNpcs(int mapNum)
     {
         if (mapNum <= 0 || mapNum > _world.Limits.Maps) return;
         for (int i = 1; i <= Constants.MaxMapNpcs; i++)
         {
             var mn = _world.MapNpcs[mapNum, i];
             if (mn.Num <= 0) continue;   // already dead/empty (or a reserved guest home)
-            if (keepGuards && _world.Npcs[mn.Num].Behavior == NpcBehavior.Guard) continue;
             mn.Num = 0;
             mn.Hp = 0;
             mn.SpawnWait = Environment.TickCount64;

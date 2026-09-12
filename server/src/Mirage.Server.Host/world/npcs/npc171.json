@@ -5,7 +5,7 @@
   "spriteSheet": 0,
   "size": 1,
   "spawnSecs": 120,
-  "behavior": "Guard",
+  "behavior": "Pursue",
   "group": 0,
   "range": 6,
   "str": 352,

@@ -9,9 +9,9 @@ using Mirage.Shared.Records;
 
 namespace Mirage.Server.Core.GameLogic;
 
-/// <summary>Per-map NPC AI loop: acquires targets, advances chases and kites, casts, ticks regen,
-/// and drives idle wander for every native NPC and visiting guest on the map. Also sweeps open
-/// doors shut, which rides the same per-map tick.</summary>
+/// <summary>Per-map NPC AI loop: notices bodies, advances pursuits and retreats, ticks regen, and
+/// drives idle wander for every native NPC and visiting guest on the map. Also sweeps open doors
+/// shut, which rides the same per-map tick.</summary>
 public sealed partial class NpcAiSystem : GameSystem
 {
     private readonly GameWorld _world;
@@ -43,19 +43,15 @@ public sealed partial class NpcAiSystem : GameSystem
     private readonly SelectionTracking _selection;
 
     private const long DoorAutoCloseMs = 5_000;  // a door swings shut this long after it opens
-    // NPC regen tick — every 5 s, matching the player HP cadence on a normal map (combat
-    // status still gates HP regen for both sides; only HP is combat-suppressed, MP/SP regen
-    // during combat too).  Matched to the player cadence so NPC throughput stays close to the
-    // player's per-second rate.
+    // NPC regen tick, matched to the player cadence so NPC recovery stays close to the player's
+    // per-second rate.
     private const long NpcHpRegenMs = 5_000;
 
-    // AoS-only unreachable give-up window: an AttackOnSight NPC that goes this long without
-    // taking ANY damaging action against its target (melee landed, chase step, or cast) drops
-    // the lock and reverts to scan/wander.  Casts DO count — a high-Int AoS casting from afar
-    // is still "engaging" — so this timer only fires when the NPC literally can't act on the
-    // target (out-of-mana melee NPC pinned by impassable terrain, or an exhausted caster who
-    // also can't path).  Protects against perpetual lock-on without penalizing ranged combat.
-    private const long NpcAosUnreachableGiveUpMs = 10_000;
+    // How long an NPC holds a lock it cannot make progress on before letting go, and how long a
+    // traversal guest with nobody at all wanders abroad before walking home.  One window for both:
+    // each is "this NPC has had nothing to do for long enough", measured off the same
+    // MapNpcRecord.LastReachedTargetMs stamp.
+    private const long NpcUnreachedGiveUpMs = 10_000;
 
     private long _giveNpcHpTimer;
 
@@ -116,8 +112,7 @@ public sealed partial class NpcAiSystem : GameSystem
     // field.  CenterMap fixes the BuildMapGrid frame (the same target local-coords differ per center map);
     // (TargetMap,ToX,ToY,TargetLayer) is the expansion root — the layer is part of the root because the field
     // spans BOTH source layers (2*N states) and a target on the ground vs the fringe surface roots a different
-    // flood; Footprint (npc.EffectiveSize) and Behavior — which folds in ignoreNpcAvoid, i.e.
-    // NpcIgnoresNpcAvoid(b) == (b == Guard) — drive walkability.  That is the complete set of inputs
+    // flood; Footprint (npc.EffectiveSize) drives walkability.  That is the complete set of inputs
     // FillPathField reads, so the key is exhaustive by construction: the chaser's own spawn map is not an
     // input to the flood at all, which is what lets a gang converging from different home maps share one
     // field (locked by NpcPathCacheTests).
@@ -126,13 +121,12 @@ public sealed partial class NpcAiSystem : GameSystem
     // omitted because they are read only in the stalled planAroundActors branch, which never uses this cache.
     // If a future per-chaser or per-destination rule is ever added inside the flood, it must be added here too.
     private readonly record struct PathFieldKey(
-        int CenterMap, int TargetMap, int ToX, int ToY, int TargetLayer, int Footprint, int Behavior, int TargetFootprint);
+        int CenterMap, int TargetMap, int ToX, int ToY, int TargetLayer, int Footprint, int TargetFootprint);
 
-    /// <summary>The 500ms NPC "brain" pass over every map: target acquisition, magic/kite decisions, attacks,
-    /// give-up, warp-follow, wander, and (on its own 5s cadence) regen. An observed map gets the full
-    /// player-scanning AI; an unobserved one gets only combat resolution and upkeep, since nothing there can
-    /// acquire a target. Visiting guests tick on every map either way, so a chaser can't be stranded by luring
-    /// it somewhere nobody is watching.</summary>
+    /// <summary>The 500ms NPC "brain" pass over every map: noticing, give-up, warp-follow, wander, and (on its
+    /// own 5s cadence) regen. An observed map gets the full player-scanning AI; an unobserved one gets only
+    /// pursuit upkeep and scavenging, since nothing there can notice anybody. Visiting guests tick on every map
+    /// either way, so a pursuer can't be stranded by luring it somewhere nobody is watching.</summary>
     public void RunForAllMaps(long now)
     {
         _aiNow = now;
@@ -142,8 +136,8 @@ public sealed partial class NpcAiSystem : GameSystem
         for (int mapNum = 1; mapNum <= _world.Limits.Maps; mapNum++)
         {
             // Seamless world: run the full, player-scanning AI only on maps someone can SEE (it or a
-            // neighbor of their map) — an unobserved map can't have a player in target range, so its
-            // native NPCs have nothing to acquire and nothing to broadcast.
+            // neighbor of their map) — an unobserved map can't have a player in notice range, so its
+            // native NPCs have nobody to notice and nothing to broadcast.
             if (_world.MapObservers[mapNum].Count > 0)
             {
                 RunAiForMap(mapNum, now, regenTick);
@@ -152,12 +146,12 @@ public sealed partial class NpcAiSystem : GameSystem
             }
             else
             {
-                RunUnobservedCombat(mapNum, now);
+                RunUnobservedPursuit(mapNum, now);
                 RunUnobservedUpkeep(mapNum);
             }
 
             // Visiting guests are ticked on EVERY map, observed or not, so a player can't "stick" a
-            // chaser by luring it into space nobody is currently watching — it keeps pursuing (incl.
+            // pursuer by luring it into space nobody is currently watching — it keeps pursuing (incl.
             // through warps) or returns home.  Free where there are no guests (empty list, no scan).
             RunTraversalAi(mapNum, now, regenTick);
         }
@@ -167,13 +161,13 @@ public sealed partial class NpcAiSystem : GameSystem
     }
 
     /// <summary>Fast per-NPC MOVEMENT pass (GameLoop.NpcMoveTick, Constants.NpcMoveIntervalMs — finer than the 500ms brain).
-    /// Executes chase-STEPS for target-holding NPCs (native + guest, player + NPC target) on each NPC's own SPD
-    /// step-clock, so a chasing NPC runs (SPD-scaled, capped just under player max) while it has stamina and walks
-    /// once SP runs out.  The step includes crossing a map seam toward a target on an adjacent map (the BFS routes
-    /// to the border and converts a native into a guest), so an NPC keeps its run pace through a boundary.  Only the
-    /// step lives here — the brain (<see cref="RunForAllMaps"/> @ 500ms) still does acquisition, magic/kite, attack,
-    /// give-up AND warp-follow (a target that has left the 3×3 observable area).  Cheap: observed maps only, chasers
-    /// only, and the BFS reuses the brain tick's occupancy snapshot (no roster-scan rebuild between brain ticks).</summary>
+    /// Executes the STEPS for NPCs holding a lock (native + guest, player + NPC), each on its own SPD step-clock, so
+    /// one runs (SPD-scaled, capped just under player max) while it has stamina and walks once SP runs out.  A
+    /// <see cref="NpcBehavior.Pursue"/> NPC steps toward, a <see cref="NpcBehavior.Flee"/> one steps away.  Closing
+    /// includes crossing a map seam toward a body on an adjacent map (the BFS routes to the border and converts a
+    /// native into a guest), so an NPC keeps its run pace through a boundary.  Only the step lives here — the brain
+    /// (<see cref="RunForAllMaps"/> @ 500ms) still does noticing, give-up AND warp-follow.  Cheap: observed maps
+    /// only, movers only, and the BFS reuses the brain tick's occupancy snapshot.</summary>
     public void RunMovement(long now)
     {
         _pathNow = now;
@@ -214,37 +208,30 @@ public sealed partial class NpcAiSystem : GameSystem
     private bool ChaserVacatesRampFor(int mapNum, MapNpcRecord mn, WorldLayer targetLayer)
         => targetLayer == mn.Layer && NpcStandsOnRamp(mapNum, mn);
 
-    /// <summary>Legs-pass chase-step for a native NPC with a PLAYER target.  Gated by the per-NPC step-clock
-    /// (which also absorbs the magic-push, so a kiting caster is left alone).  Skips when adjacent (brain
-    /// swings); otherwise steps toward the target at run/walk pace — including across a map seam when the
-    /// target is on an adjacent map.  Runs while SP > 0 (draining it per tile), walks otherwise — so the
-    /// sprint gasses out and the player pulls away.</summary>
+    /// <summary>Legs-pass step for a native NPC holding a PLAYER, gated by the per-NPC step-clock.  A fleeing
+    /// NPC retreats; a pursuing one holds position when already in reach (facing its quarry) and otherwise closes
+    /// at run/walk pace — including across a map seam.  Runs while SP > 0 (draining it per tile), walks
+    /// otherwise, so the sprint gasses out and the player pulls away.</summary>
     private void AdvanceNativeChaseStep(int mapNum, int slot, MapNpcRecord mn, long now)
     {
         if (now < mn.NextMoveMs) return;                             // step-clock / magic-push not ready
         int target = mn.Target;
         if (!_pm[target].IsPlaying) return;                          // target gone — brain drops it next tick
         var vp = _pm[target].Char;
-        if (mn.WantsKite)
+        if (_world.Npcs[mn.Num].Behavior == NpcBehavior.Flee)
         {
-            TryLegsKite(mapNum, slot, mn, vp.Map, vp.X, vp.Y, now);
+            TryLegsFlee(mapNum, slot, mn, vp.Map, vp.X, vp.Y, now);
             return;
-        }  // caster retreat (run pace)
+        }
         if (_queries.IsWithinReach(mapNum, mn.X, mn.Y, _world.Npcs[mn.Num].EffectiveSize, mn.Layer, vp.Map, vp.X, vp.Y, vp.Layer) && !ChaserVacatesRampFor(mapNum, mn, vp.Layer))
         {
             mn.HasMadeContact = true;
             mn.ChaseSprinting = false;
             FaceNpcToward(mapNum, slot, mn, vp.Map, vp.X, vp.Y);
             return;
-        }  // adjacent — orient toward the target now (post-slide), brain swings; end the sprint (walk-follow until it re-opens the gap). On a ramp with a same-layer target: fall through to step OFF (don't camp the 1-wide mount).
-        // An off-map target (on an adjacent map) is handled here rather than by the brain: the legs pass runs the
-        // same run/walk step toward the target's map, crossing the seam via StepNpcTowardObservableArea.
-        // A caster only HOLDS at cast range for a SAME-map target; an off-map target is out of spell range, so it closes.
-        if (vp.Map == mapNum && CasterHoldsAtCastRange(mapNum, mn, vp.X, vp.Y, vp.Layer))
-        {
-            FaceNpcToward(mapNum, slot, mn, vp.Map, vp.X, vp.Y);
-            return;
-        }  // in cast position — hold; brain casts
+        }  // in reach — orient toward it now (post-slide); end the sprint (walk-follow until it re-opens the gap). On a ramp with a same-layer body: fall through to step OFF (don't camp the 1-wide mount).
+        // An off-map body (on an adjacent map) is handled here rather than by the brain: the legs pass runs the
+        // same run/walk step toward its map, crossing the seam via StepNpcTowardObservableArea.
 
         var npc = _world.Npcs[mn.Num];
         int gap = WorldDistanceTo(mapNum, mn.X, mn.Y, npc.EffectiveSize, vp.Map, vp.X, vp.Y, 1);
@@ -257,33 +244,27 @@ public sealed partial class NpcAiSystem : GameSystem
         FinishChaseStep(mn, npc.Spd, running, beforeX, beforeY, spBefore, now);
     }
 
-    /// <summary>Legs-pass chase-step for a native NPC chasing another NPC in its observable area.  Same run/
-    /// walk-by-stamina rule; skips adjacent victims (brain attacks) and steps across a seam toward an off-map victim.</summary>
+    /// <summary>Legs-pass step for a native NPC holding another NPC in its observable area.  Same run/walk-by-
+    /// stamina rule; holds when already in reach and steps across a seam toward an off-map body.</summary>
     private void AdvanceNativeNpcChaseStep(int mapNum, int slot, MapNpcRecord mn, long now)
     {
         if (now < mn.NextMoveMs) return;
         var resolved = _queries.ResolveNpc(mn.NpcTargetSpawnMap, mn.NpcTargetSpawnSlot);
         if (resolved is null) return;                               // victim gone — brain drops it
         var (victimMap, _, victimMn) = resolved.Value;
-        if (mn.WantsKite)
+        if (_world.Npcs[mn.Num].Behavior == NpcBehavior.Flee)
         {
-            TryLegsKite(mapNum, slot, mn, victimMap, victimMn.X, victimMn.Y, now, _world.Npcs[victimMn.Num].EffectiveSize);
+            TryLegsFlee(mapNum, slot, mn, victimMap, victimMn.X, victimMn.Y, now);
             return;
-        }  // caster retreat
+        }
         if (_queries.IsWithinReach(mapNum, mn.X, mn.Y, _world.Npcs[mn.Num].EffectiveSize, mn.Layer, victimMap, victimMn.X, victimMn.Y, victimMn.Layer) && !ChaserVacatesRampFor(mapNum, mn, victimMn.Layer))
         {
             mn.HasMadeContact = true;
             mn.ChaseSprinting = false;
             FaceNpcToward(mapNum, slot, mn, victimMap, victimMn.X, victimMn.Y);
             return;
-        }  // adjacent — orient now, brain attacks; end the sprint (but vacate a ramp for a same-layer victim)
-        // An off-map victim is handled here too — the legs pass runs the same run/walk step across the seam.
-        // A caster only HOLDS at cast range for a SAME-map victim; an off-map victim is out of spell range, so it closes.
-        if (victimMap == mapNum && CasterHoldsAtCastRange(mapNum, mn, victimMn.X, victimMn.Y, victimMn.Layer, _world.Npcs[victimMn.Num].EffectiveSize))
-        {
-            FaceNpcToward(mapNum, slot, mn, victimMap, victimMn.X, victimMn.Y);
-            return;
-        }  // in cast position — hold; brain casts
+        }  // in reach — orient now; end the sprint (but vacate a ramp for a same-layer body)
+        // An off-map body is handled here too — the legs pass runs the same run/walk step across the seam.
 
         var npc = _world.Npcs[mn.Num];
         int gap = WorldDistanceTo(mapNum, mn.X, mn.Y, npc.EffectiveSize, victimMap, victimMn.X, victimMn.Y, _world.Npcs[victimMn.Num].EffectiveSize);
@@ -297,30 +278,30 @@ public sealed partial class NpcAiSystem : GameSystem
         FinishChaseStep(mn, npc.Spd, running, beforeX, beforeY, spBefore, now);
     }
 
-    /// <summary>Legs-pass chase-step for a traversal GUEST (player or NPC target).  Steps toward the target at
-    /// run/walk pace, including across a map seam (full parity with the native steppers).  Same run/walk-by-
-    /// stamina rule.</summary>
+    /// <summary>Legs-pass step for a traversal GUEST (player or NPC lock).  Steps toward or away at run/walk
+    /// pace, including across a map seam — full parity with the native steppers.</summary>
     private void AdvanceGuestChaseStep(int mapNum, int listIndex, TraversalNpcRecord t, long now)
     {
         if (now < t.NextMoveMs) return;
         int targetMap, targetX, targetY, targetSize = 1;
         var targetLayer = WorldLayer.Ground;
+        bool flees = _world.Npcs[t.Num].Behavior == NpcBehavior.Flee;
         if (t.Target > 0)
         {
             if (!_pm[t.Target].IsPlaying) return;                   // target gone — brain drops it
             var vp = _pm[t.Target].Char;
-            if (t.WantsKite)
+            if (flees)
             {
-                TryLegsKite(mapNum, listIndex, t, vp.Map, vp.X, vp.Y, now);
+                TryLegsFlee(mapNum, listIndex, t, vp.Map, vp.X, vp.Y, now);
                 return;
-            }  // caster retreat
+            }
             if (_queries.IsWithinReach(mapNum, t.X, t.Y, _world.Npcs[t.Num].EffectiveSize, t.Layer, vp.Map, vp.X, vp.Y, vp.Layer) && !ChaserVacatesRampFor(mapNum, t, vp.Layer))
             {
                 t.HasMadeContact = true;
                 t.ChaseSprinting = false;
                 FaceNpcToward(mapNum, 0, t, vp.Map, vp.X, vp.Y);
                 return;
-            }  // adjacent — orient now, brain attacks; end the sprint (but vacate a ramp for a same-layer target)
+            }  // in reach — orient now; end the sprint (but vacate a ramp for a same-layer body)
             targetMap = vp.Map;
             targetX = vp.X;
             targetY = vp.Y;
@@ -331,31 +312,24 @@ public sealed partial class NpcAiSystem : GameSystem
             var resolved = _queries.ResolveNpc(t.NpcTargetSpawnMap, t.NpcTargetSpawnSlot);
             if (resolved is null) return;
             var (victimMap, _, victimMn) = resolved.Value;
-            if (t.WantsKite)
+            if (flees)
             {
-                TryLegsKite(mapNum, listIndex, t, victimMap, victimMn.X, victimMn.Y, now, _world.Npcs[victimMn.Num].EffectiveSize);
+                TryLegsFlee(mapNum, listIndex, t, victimMap, victimMn.X, victimMn.Y, now);
                 return;
-            }  // caster retreat
+            }
             if (_queries.IsWithinReach(mapNum, t.X, t.Y, _world.Npcs[t.Num].EffectiveSize, t.Layer, victimMap, victimMn.X, victimMn.Y, victimMn.Layer) && !ChaserVacatesRampFor(mapNum, t, victimMn.Layer))
             {
                 t.HasMadeContact = true;
                 t.ChaseSprinting = false;
                 FaceNpcToward(mapNum, 0, t, victimMap, victimMn.X, victimMn.Y);
                 return;
-            }  // adjacent — orient now, brain attacks; end the sprint (but vacate a ramp for a same-layer victim)
+            }  // in reach — orient now; end the sprint (but vacate a ramp for a same-layer body)
             targetMap = victimMap;
             targetX = victimMn.X;
             targetY = victimMn.Y;
             targetSize = _world.Npcs[victimMn.Num].EffectiveSize;
             targetLayer = victimMn.Layer;
         }
-
-        // A caster only HOLDS at cast range for a SAME-map target; an off-map target is out of spell range, so it closes.
-        if (targetMap == mapNum && CasterHoldsAtCastRange(mapNum, t, targetX, targetY, targetLayer, targetSize))
-        {
-            FaceNpcToward(mapNum, 0, t, targetMap, targetX, targetY);
-            return;
-        }  // in cast position — hold; brain casts
 
         var npc = _world.Npcs[t.Num];
         int gap = WorldDistanceTo(mapNum, t.X, t.Y, npc.EffectiveSize, targetMap, targetX, targetY, targetSize);
@@ -369,7 +343,7 @@ public sealed partial class NpcAiSystem : GameSystem
     }
 
     /// <summary>Shared tail for a legs chase-step.  The run-SP drain is applied by the CALLER *before* the step
-    /// (so a seam cross carries the cost onto the new guest, matching the guest stepper + the kite path); this
+    /// (so a seam cross carries the cost onto the new guest, matching the guest stepper and the retreat path); this
     /// REFUNDS it when the step didn't actually move (a blocked/facing tick — a stuck NPC must not bleed run SP),
     /// resets the one-shot run MoveType, and advances the per-NPC step-clock by the pace just used.  A cross
     /// (<c>mn.Num == 0</c> — the native converted to a guest, which owns the drained SP AND the new position)
@@ -408,31 +382,23 @@ public sealed partial class NpcAiSystem : GameSystem
         return true;
     }
 
-    /// <summary>Run-vs-walk decision for a CHASE step. SP gating is separate, in
-    /// <see cref="NpcCanRun"/>, and kiting does not consult this at all — a caster opening distance is not
-    /// closing a gap.
+    /// <summary>Run-vs-walk decision for a step that CLOSES a gap. SP gating is separate, in
+    /// <see cref="NpcCanRun"/>, and a retreat does not consult this at all.
     ///
-    /// <para>OPENING approach, before first contact: non-AoS always runs. An AoS mob strolls ONLY while
-    /// stalking within <see cref="Constants.NpcApproachWalkMaxGap"/> tiles having lost the per-engagement
-    /// charge roll (<see cref="MapNpcRecord.RushCommitted"/>); spotted farther, or opening past that
-    /// ceiling, it RUSHES — the <see cref="MapNpcRecord.ChaseSprinting"/> latch holds the charge to melee,
-    /// where the adjacency early-return clears it into the hysteresis below.</para>
+    /// <para>OPENING approach, before first contact: the NPC strolls in ONLY while stalking within
+    /// <see cref="Constants.NpcApproachWalkMaxGap"/> tiles having lost the per-engagement charge roll
+    /// (<see cref="MapNpcRecord.RushCommitted"/>); spotted farther, or opening past that ceiling, it
+    /// RUSHES — the <see cref="MapNpcRecord.ChaseSprinting"/> latch holds the charge all the way in,
+    /// where the in-reach early-return clears it into the hysteresis below.</para>
     ///
-    /// <para>RE-CLOSE, after <see cref="MapNpcRecord.HasMadeContact"/>: a run/walk HYSTERESIS. The mob
-    /// walks while close and sprints only once the target opens
-    /// <see cref="Constants.NpcChaseSprintGapTiles"/>, holding the sprint until it regains melee — so it
-    /// bursts stamina instead of gluing, and a running player can slip past. EXCEPT guards, which stay
-    /// sticky as a deterrent, and a spell-primary caster (Int > Str, with mana), which closes to spell
-    /// range and holds there.</para></summary>
+    /// <para>RE-CLOSE, after <see cref="MapNpcRecord.HasMadeContact"/>: a run/walk HYSTERESIS. It walks
+    /// while close and sprints only once its quarry opens
+    /// <see cref="Constants.NpcChaseSprintGapTiles"/>, holding the sprint until it regains reach — so it
+    /// bursts stamina instead of gluing, and a running player can slip past.</para></summary>
     private static bool NpcWantsChaseRun(MapNpcRecord mn, NpcRecord npc, int gap)
     {
-        // Opening approach (before first contact): non-AoS runs in (provoked).  An AoS mob strolls in ONLY while
-        // it's stalking a CLOSE target (gap within NpcApproachWalkMaxGap) and didn't win the charge roll; a target
-        // spotted farther — or a stalked one that OPENS the gap past the stroll ceiling — is RUSHED, latching
-        // ChaseSprinting so the charge holds to melee (the adjacency early-return then clears it into the hysteresis).
         if (!mn.HasMadeContact)
         {
-            if (npc.Behavior != NpcBehavior.AttackOnSight) return true;
             if (mn.RushCommitted || gap > Constants.NpcApproachWalkMaxGap)
             {
                 mn.ChaseSprinting = true;
@@ -440,89 +406,20 @@ public sealed partial class NpcAiSystem : GameSystem
             }
             return mn.ChaseSprinting;
         }
-        // A REAL (spell-primary) caster with mana keeps always-run-to-close: it closes to SPELL range and holds/
-        // kites there, so the melee-adjacency latch doesn't fit it.  "Spell-primary" = Int > Str (under the combat
-        // mirror it hits harder with spells than melee) — NOT merely Int > 0, so a STR bruiser with a splash of
-        // INT (99 STR / 1 INT) is the melee chaser it is and DOES get the hysteresis.  An out-of-mana caster
-        // (Mp < 1) also falls through to the melee hysteresis.
-        if (npc.Int > npc.Str && mn.Mp >= 1) return true;
-        // Guards stay STICKY (always-run re-close) — a deterrent that shouldn't be slippable.
-        if (npc.Behavior == NpcBehavior.Guard) return true;
-        // All other melee chasers (AoS, AttackWhenAttacked): run/walk HYSTERESIS.  Sprint once the target opens
-        // the gap; keep sprinting until adjacent (the stepper's adjacency early-return clears the latch), else walk.
         if (gap >= Constants.NpcChaseSprintGapTiles) mn.ChaseSprinting = true;
         return mn.ChaseSprinting;
     }
 
-    /// <summary>Whether an Int NPC can AFFORD a SubHp cast right now — the SINGLE source of truth for cast
-    /// affordability, shared by the cast decision (<see cref="TryNpcMagicActionCore"/>'s hasMana) and the
-    /// hold-at-cast-range check (<see cref="CasterHoldsAtCastRange"/>) so the two can never drift.  The cost is
-    /// the player's trivial pool-fraction (<see cref="CombatFormulas.GetSubHpSpellMpCost"/> = round(maxMp/20)),
-    /// which in-combat regen out-paces — so a caster normally sustains and only fails this gate when its pool is
-    /// genuinely near zero (e.g. Snow cuts max MP).  When it does, BOTH gates must agree it can't cast so the legs
-    /// close in for melee instead of holding at range and standing idle.  Int=0 NPCs never cast.</summary>
-    private bool NpcCanAffordCast(MapNpcRecord mn, NpcRecord npc) =>
-        npc.Int > 0 && mn.Mp >= CombatFormulas.GetSubHpSpellMpCost(_world.EffectiveNpcMaxMp(npc));
-
-    /// <summary>Roll cast-vs-melee for a fresh weave commitment.  Base P(cast) = Int/(Int+Str) — a Str-dominant
-    /// NPC mostly swings, an Int-dominant one mostly casts, and a pure caster (Str=0) always casts (melee is only
-    /// its OOM last resort).  An INT-PRIMARY hybrid (Int>Str AND Str>0) additionally TAPERS P(cast) by its current
-    /// mana fraction (Mp / max) so it leans on magic while its pool is deep and shifts toward melee as the pool
-    /// drains — a soft ramp that sits on top of the hard OOM cutoff.  A Str>=Int mob keeps the flat ratio.</summary>
-    private bool RollCastModality(MapNpcRecord mn, NpcRecord npc)
-    {
-        double pCast = (double)npc.Int / (npc.Int + npc.Str);        // Str==0 => 1.0 (pure caster always casts)
-        if (npc.Str > 0 && npc.Int > npc.Str)                        // INT-primary hybrid: cast more at high mana, melee more at low
-            pCast *= (double)mn.Mp / Math.Max(_world.EffectiveNpcMaxMp(npc), 1);
-        return Rng.NextDouble() < pCast;
-    }
-
-    /// <summary>Legs-pass gate: true when a magic-capable NPC is ALREADY positioned to cast (in spell
-    /// range, clear LoS, enough mana) and so must NOT take a chase step — the 500ms brain will cast or
-    /// hold at range on its next tick.
-    ///
-    /// <para>Without it the fast movement pass sprints a caster forward in the window between a reactive
-    /// target acquisition and the brain's first cast, visibly closing a gap it does not need to close.</para>
-    ///
-    /// <para>Mirrors the in-range hold in <see cref="TryNpcMagicActionCore"/> — same range, LoS and mana
-    /// test plus the per-beat weave decision — so legs and brain agree. Out of mana, out of range,
-    /// LoS-blocked or meleeing this beat returns false and falls through to the chase, so the NPC can
-    /// still close to melee at 0 MP or reposition to regain range. Same-map only: callers invoke this
-    /// after their own off-map early-return.</para></summary>
-    private bool CasterHoldsAtCastRange(int mapNum, MapNpcRecord mn, int targetX, int targetY, WorldLayer targetLayer, int targetSize = 1)
-    {
-        var npc = _world.Npcs[mn.Num];
-        if (!NpcCanAffordCast(mn, npc)) return false;   // not a caster, or can't AFFORD a cast — do NOT hold at range; fall through so the legs close in for melee (an out-of-mana caster must never stand idle)
-        if (npc.Int <= npc.Str) return false;           // melee-primary/balanced (Str>=Int): fights AT melee, so it never holds at cast range — only an INT-primary kiter (Int>Str) does
-        if (!mn.WeaveCastThisBeat) return false;        // this beat the weave chose melee — let the legs close in, don't hold at range
-        var grid = WorldCoordHelper.BuildMapGrid(_world.Maps, mapNum);
-        var (npcWX, npcWY) = grid.CenterToWorld(mn.X, mn.Y);
-        var (tgtWX, tgtWY) = grid.CenterToWorld(targetX, targetY);
-        // Footprint-aware: an oversize caster holds when its BODY is in cast range of the target's body.
-        if (!WorldCoordHelper.IsInSpellRange(npcWX, npcWY, npc.EffectiveSize, tgtWX, tgtWY, targetSize)) return false;
-        // Two-plane: only HOLD to cast if the caster could ACTUALLY cast — same layer, or ramp-bridged. Otherwise a
-        // ground caster would camp at 2-D spell range against a target up on the fringe it can't hit (the cast is
-        // layer-gated in TryNpcMagicActionCore), never closing to a ramp to follow it. Mirror the cast's exact gate:
-        // LayerConnects + a ramp-blocks-the-line LoS for a cross-layer shot.
-        if (!LayerLogic.LayerConnects(new ServerTileView(_world, grid), npcWX, npcWY, mn.Layer, tgtWX, tgtWY, targetLayer))
-            return false;
-        return WorldCoordHelper.HasClearSpellLineOfSight(npcWX, npcWY, tgtWX, tgtWY,
-            new WorldLosPredicate(_world, grid, mn.Layer, blockRamps: mn.Layer != targetLayer));
-    }
-
-    /// <summary>Regen one NPC's HP/MP/SP for a regen tick (weather-scaled).  HP is combat-suppressed; MP/SP
-    /// regen unconditionally (player parity).  Shared by native slot NPCs and traversal guests so both recover
-    /// identically — a guest that drains MP casting refills it exactly like a native would at home.</summary>
+    /// <summary>Regen one NPC's HP/MP/SP for a regen tick (weather-scaled).  Shared by native slot NPCs and
+    /// traversal guests so both recover identically — a guest that spent SP sprinting refills it exactly like a
+    /// native would at home.</summary>
     private void RegenNpcVitals(int mapNum, MapNpcRecord mn, NpcRecord npc, long now)
     {
         // Heat Wave / Snow halve regen magnitude; Snow also shrinks the max pools (Effective*).
         double regenMult = WeatherEffects.RegenMultiplier(_world.WeatherOn(mapNum));
         int maxHp = _world.EffectiveNpcMaxHp(npc);
-        if (mn.Hp < maxHp && mn.Hp > 0
-            && (mn.CombatExpiresAt == 0 || now >= mn.CombatExpiresAt))
-        {
+        if (mn.Hp < maxHp && mn.Hp > 0)
             mn.Hp = Math.Min(mn.Hp + StatFormulas.GetNpcHpRegen(npc, regenMult), maxHp);
-        }
 
         int maxMp = _world.EffectiveNpcMaxMp(npc);
         if (mn.Mp < maxMp && mn.Hp > 0)

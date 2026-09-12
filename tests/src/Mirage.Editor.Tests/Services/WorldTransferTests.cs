@@ -67,7 +67,7 @@ public class WorldTransferTests
         var w = Blank();
         w.Items[1] = new ItemRecord { Name = "Bronze Sword", Type = ItemType.Weapon, Power = 12, Pic = 3 };
         w.Items[2] = new ItemRecord { Name = "Gold", Type = ItemType.Currency, Pic = 9 };
-        w.Npcs[1] = new NpcRecord { Name = "Cave Troll", Sprite = 42, Str = 20, Behavior = NpcBehavior.AttackOnSight };
+        w.Npcs[1] = new NpcRecord { Name = "Cave Troll", Sprite = 42, Str = 20, Behavior = NpcBehavior.Pursue };
         w.Shops[1] = new ShopRecord { Name = "Smithy", Keeper = 1 };
         w.Spells[1] = new SpellRecord { Name = "Ember", Type = SpellType.SubHp, VitalAmount = 15 };
         w.Classes[1] = new ClassRecord { Name = "Warrior", Str = 8, Def = 6, Spd = 3, Int = 3 };

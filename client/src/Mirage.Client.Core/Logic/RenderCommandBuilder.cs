@@ -901,11 +901,12 @@ public static class RenderCommandBuilder
         frame.Npcs.Add(new SpriteDrawCmd(screenX, screenY, spriteRow, animFrame, n.Dir, size,
             SlideRenderLayer(n.Layer, n.PrevLayer, n.XOffset, n.YOffset), def.SpriteSheet));
 
-        bool isSightAggro = def.Behavior is NpcBehavior.AttackOnSight or NpcBehavior.Guard;
-        bool isHostile = isSightAggro || def.Behavior == NpcBehavior.AttackWhenAttacked;
-        bool showBars = isHostile && (alwaysShowBars
+        // Vital bars belong to NPCs that react to you at all; one that only ambles never shows them
+        // unless you are pointing at it.
+        bool reacts = def.Behavior is NpcBehavior.Pursue or NpcBehavior.Flee;
+        bool showBars = reacts && (alwaysShowBars
             || IsInCombat(n.LastCombatMs, tickNow)
-            || (isSightAggro && n.HasTarget)
+            || n.HasTarget
             || hoveredHere
             || targetHere);
 
@@ -944,12 +945,7 @@ public static class RenderCommandBuilder
 
         if (showNames && !string.IsNullOrEmpty(def.Name))
         {
-            int npcNameColor = def.Behavior switch
-            {
-                NpcBehavior.Guard => GameColor.Yellow,
-                NpcBehavior.Friendly or NpcBehavior.Stationary => GameColor.BrightGreen,
-                _ => GameColor.White,
-            };
+            int npcNameColor = reacts ? GameColor.White : GameColor.BrightGreen;
             frame.Names.Add(new TextDrawCmd(centerX, npcNameY, def.Name, npcNameColor, nameAlignBottom, Layer: n.Layer));
         }
 

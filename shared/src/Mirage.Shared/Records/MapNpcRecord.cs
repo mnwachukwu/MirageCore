@@ -17,9 +17,6 @@ public class MapNpcRecord
     public WorldLayer Layer { get; set; }
     public long SpawnWait { get; set; }
     public long AttackTimer { get; set; }
-    public int MeleeKiteAttempts { get; set; }  // consecutive "want to cast but in melee" ticks; reset on a non-melee tick or a bail-out cast
-    public long CombatExpiresAt { get; set; }   // 0 = never in combat; future tick = in combat until then
-
     // Seamless chase: true while this home slot's NPC is away visiting a neighbor map.
     // Blocks respawn into the slot until the traveler returns or dies.
     public bool IsReservedSlot { get; set; }
@@ -51,26 +48,6 @@ public class MapNpcRecord
     // Per-NPC step-clock: earliest tick (Environment.TickCount64) this NPC may take its next chase-step
     // (the SPD-scaled run cadence).  The fast movement pass gates on this; 0 = ready.
     public long NextMoveMs { get; set; }
-    // A caster wants to RETREAT (kite) this cycle: the brain sets it after taking the first retreat step so the
-    // fast legs pass CONTINUES the retreat at run cadence.  Cleared each brain magic eval and when a legs
-    // retreat is cornered.  Distinguishes "brain handled me by KITING (legs, keep moving me away)" from "brain
-    // handled me by casting/holding (legs, leave me alone)" — see the magic-push sites and TryLegsKite.
-    public bool WantsKite { get; set; }
-
-    // Per-beat melee-vs-magic weave (runtime; not persisted).  On each ready 1s combat beat an Int>0 NPC
-    // rolls cast(true)/melee(false) with P(cast)=Int/(Int+Str) — see NpcAiSystem.TryNpcMagicActionCore.
-    // WeaveCastThisBeat is LATCHED (rolled once per beat on the rising edge of castReady) so the 500ms brain
-    // and the faster legs pass agree within a beat: the legs pass reads it via CasterHoldsAtCastRange to
-    // hold-at-range (cast beat) vs close-in (melee beat).  WeaveWasReady carries the previous eval's castReady
-    // for that rising-edge detection.  Defaults (false) are safe — an undecided tick closes in, never idles.
-    public bool WeaveCastThisBeat { get; set; }
-    public bool WeaveWasReady { get; set; }
-
-    // Modality-commitment counter (runtime; not persisted).  A mixed NPC re-rolls WeaveCastThisBeat only when this
-    // hits 0, then commits to that modality for NpcWeaveCommitMinBeats..MaxBeats ready beats — so it casts for
-    // a short run, then melees for a short run, instead of flickering every beat.  0 = re-roll on the next beat.
-    public int WeaveModalityBeatsLeft { get; set; }
-
     // Run-stamina hysteresis latch (runtime; not persisted).  Set when a run drains SP to 0; while set the
     // NPC walks until SP rebuilds to Constants.NpcRunReservoirFraction of its max, then it clears and the NPC
     // may sprint again.  Stops the run/walk flicker (and slide-snap) of burning each SP-regen trickle the
@@ -121,7 +98,6 @@ public class MapNpcRecord
     // At most a handful of entries per fight (one or two guards, maybe a different-kind AoS mob),
     // so list+linear scan beats Dictionary overhead and keeps the zero-allocation hot path.
     public List<NpcDamageEntry>? DamageByNpc { get; set; }
-    public bool WasInCombat { get; set; }
 
     /// <summary>Zero every entry in <see cref="DamageByPlayer"/> and clear <see cref="DamageByNpc"/>.
     /// Called when combat ends, the NPC respawns, or is converted to a traversal guest — anywhere
@@ -184,10 +160,6 @@ public class MapNpcRecord
         }
     }
 
-    /// <summary>True iff <see cref="CombatExpiresAt"/> sits strictly in the future.
-    /// `CombatExpiresAt == 0` means "never entered combat" — the zero check guards against
-    /// a stale 0 reading as "in combat forever" once the loop's TickCount64 advances.</summary>
-    public bool IsInCombat(long now) => CombatExpiresAt > 0 && now < CombatExpiresAt;
 
     /// <summary>Universal NPC identity — (SpawnMap, SpawnSlot) so a native at home and a guest abroad
     /// resolve to the same key.  Native default uses its current (mapNum, slot); TraversalNpcRecord

@@ -386,7 +386,7 @@
   "CombatSystem_ReagentsLostOnDeath": "{Count} of your casting reagents were destroyed in the fall.",
   "CombatSystem_WarKillReadout": "War of Grievance: {AttackerName} of {AttackerGuild} has taken out {VictimName} of {VictimGuild}!",
   "CombatSystem_TerritoryKillReadout": "{Territory} War: {AttackerName} of {AttackerGuild} has vanquished {VictimName} of {VictimGuild}!",
-  "CombatSystem_NpcSays": "A {NpcName} says, '{Say}'",
+  "NpcAiSystem_NpcSays": "A {NpcName} says, '{Say}'",
   "CombatSystem_GuardGraceWarn": "Watch it!",
   "CombatSystem_YourShieldBlockedNpc": "Your {ShieldName} blocks the {NpcName}'s hit!",
   "CombatSystem_YouDodgedNpc": "You dodged the {NpcName}'s hit!",

@@ -51,7 +51,7 @@ public class NpcFringeSpawnTests
         var world = new GameWorld();
         var npc = world.Npcs[NpcNum];
         npc.Name = "mob";
-        npc.Behavior = NpcBehavior.AttackOnSight;
+        npc.Behavior = NpcBehavior.Pursue;
         world.Maps[Map].Npcs.Add(new MapNpcEntry(NpcNum, PinX: null, PinY: null));
         return world;
     }

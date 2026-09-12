@@ -17,19 +17,19 @@ public class NpcRangeWarningTests
     private static NpcRowViewModel Row(NpcBehavior behavior, int range) =>
         new(1, new NpcRecord { Name = "Thing", Behavior = behavior, Range = range }, isLoaded: false);
 
-    [TestCase(NpcBehavior.AttackOnSight, 2)]
-    [TestCase(NpcBehavior.AttackOnSight, 6)]
-    [TestCase(NpcBehavior.AttackWhenAttacked, 1)]
-    [TestCase(NpcBehavior.Friendly, 0)]
+    [TestCase(NpcBehavior.Pursue, 2)]
+    [TestCase(NpcBehavior.Pursue, 6)]
+    [TestCase(NpcBehavior.Flee, 2)]
+    [TestCase(NpcBehavior.Wander, 0)]
     public void AnOrdinaryReach_SaysNothing(NpcBehavior behavior, int range)
     {
         Assert.That(Row(behavior, range).HasRangeWarning, Is.False);
     }
 
     /// <summary>Past what a player can see, whatever the behavior: the surprise is the same.</summary>
-    [TestCase(NpcBehavior.AttackOnSight)]
-    [TestCase(NpcBehavior.AttackWhenAttacked)]
-    [TestCase(NpcBehavior.Guard)]
+    [TestCase(NpcBehavior.Pursue)]
+    [TestCase(NpcBehavior.Flee)]
+    [TestCase(NpcBehavior.Wander)]
     public void AReachPastTheViewport_IsCalledOut(NpcBehavior behavior)
     {
         var row = Row(behavior, Constants.NpcRangeSoftCap + 1);
@@ -41,16 +41,18 @@ public class NpcRangeWarningTests
         });
     }
 
-    /// <summary>Attack-on-sight only. A Guard never reads its Range, and everything else waits to be
-    /// struck, so a short reach says nothing about either.</summary>
-    [Test]
-    public void AnAttackOnSightMobThatNoticesNothing_IsCalledOut()
+    /// <summary>Only the two that notice. A reach this short leaves one unable to see somebody standing
+    /// beside it, which is an NPC that never does the one thing its behavior names.</summary>
+    [TestCase(NpcBehavior.Pursue)]
+    [TestCase(NpcBehavior.Flee)]
+    public void ANoticerThatNoticesNothing_IsCalledOut(NpcBehavior behavior)
     {
-        Assert.That(Row(NpcBehavior.AttackOnSight, 1).HasRangeWarning, Is.True);
+        Assert.That(Row(behavior, 1).HasRangeWarning, Is.True);
     }
 
-    [TestCase(NpcBehavior.Guard)]
-    [TestCase(NpcBehavior.AttackWhenAttacked)]
+    /// <summary>Nothing else reads Range at all, so a short one says nothing about them.</summary>
+    [TestCase(NpcBehavior.Wander)]
+    [TestCase(NpcBehavior.Scavenge)]
     [TestCase(NpcBehavior.Stationary)]
     public void AShortReachOnAnythingElse_SaysNothing(NpcBehavior behavior)
     {
@@ -61,7 +63,7 @@ public class NpcRangeWarningTests
     [Test]
     public void TheWarning_TracksBothFields()
     {
-        var row = Row(NpcBehavior.AttackOnSight, 4);
+        var row = Row(NpcBehavior.Pursue, 4);
         Assume.That(row.HasRangeWarning, Is.False);
 
         row.Range = Constants.NpcRangeSoftCap + 5;
@@ -70,7 +72,7 @@ public class NpcRangeWarningTests
         row.Range = 1;
         Assert.That(row.HasRangeWarning, Is.True, "dropping it below the floor");
 
-        row.Behavior = NpcBehavior.Friendly;
-        Assert.That(row.HasRangeWarning, Is.False, "the floor is an attack-on-sight matter");
+        row.Behavior = NpcBehavior.Wander;
+        Assert.That(row.HasRangeWarning, Is.False, "the floor only concerns a behavior that notices");
     }
 }

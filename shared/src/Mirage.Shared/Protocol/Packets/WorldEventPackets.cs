@@ -64,7 +64,7 @@ public sealed record NpcDeadPacket : IPacket
     [JsonPropertyName("crit")] public bool IsCrit { get; init; }
 }
 
-/// <summary>Server broadcasts that an AttackOnSight/Guard NPC acquired or dropped its target.</summary>
+/// <summary>Server broadcasts that an NPC noticed somebody, or let them go.</summary>
 public sealed record NpcTargetPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.NpcTarget;

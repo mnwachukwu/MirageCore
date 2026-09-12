@@ -99,7 +99,7 @@ public sealed partial class NpcAiSystem : GameSystem
 
         // Guards path across NpcAvoid ("npc block") tiles as if walkable; every other behavior
         // still treats them as walls, so the planned route only cuts through for guards.
-        bool ignoreNpcAvoid = MovementSystem.NpcIgnoresNpcAvoid(npc.Behavior);
+        const bool ignoreNpcAvoid = false;
         int footprintSize = npc.EffectiveSize;   // >1 => the BFS must fit the whole SxS body at each cell
 
         int head = 0, tail = 0;
@@ -223,7 +223,7 @@ public sealed partial class NpcAiSystem : GameSystem
             _pathFieldStamp = _pathNow;
         }
 
-        var key = new PathFieldKey(mapNum, targetMap, toX, toY, (int)targetLayer, npc.EffectiveSize, (int)npc.Behavior, targetSize);
+        var key = new PathFieldKey(mapNum, targetMap, toX, toY, (int)targetLayer, npc.EffectiveSize, targetSize);
         if (!_pathFieldCache.TryGetValue(key, out byte[]? field))
         {
             var gp = grid.PositionOf(targetMap);
@@ -279,7 +279,7 @@ public sealed partial class NpcAiSystem : GameSystem
         Span<int> queue = queueBuf.AsSpan(0, 2 * N);
         visited.Clear();
 
-        bool ignoreNpcAvoid = MovementSystem.NpcIgnoresNpcAvoid(npc.Behavior);
+        const bool ignoreNpcAvoid = false;
         int footprintSize = npc.EffectiveSize;
 
         int head = 0, tail = 0;

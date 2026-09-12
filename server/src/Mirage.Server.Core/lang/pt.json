@@ -386,7 +386,7 @@
   "CombatSystem_ReagentsLostOnDeath": "{Count} dos seus reagentes de magia foram destruídos na queda.",
   "CombatSystem_WarKillReadout": "Guerra de Rancor: {AttackerName} de {AttackerGuild} derrubou {VictimName} de {VictimGuild}!",
   "CombatSystem_TerritoryKillReadout": "Guerra de {Territory}: {AttackerName} de {AttackerGuild} venceu {VictimName} de {VictimGuild}!",
-  "CombatSystem_NpcSays": "Um {NpcName} diz: '{Say}'",
+  "NpcAiSystem_NpcSays": "Um {NpcName} diz: '{Say}'",
   "CombatSystem_GuardGraceWarn": "Olha o respeito!",
   "CombatSystem_YourShieldBlockedNpc": "Seu {ShieldName} bloqueia o golpe do {NpcName}!",
   "CombatSystem_YouDodgedNpc": "Você esquivou do golpe do {NpcName}!",

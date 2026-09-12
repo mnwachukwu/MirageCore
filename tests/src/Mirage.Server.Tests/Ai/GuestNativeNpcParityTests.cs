@@ -45,8 +45,8 @@ public class GuestNativeNpcParityTests
             "a guest may add ONLY home-identity fields; every combat/AI state field must live on MapNpcRecord (inherited)");
     }
 
-    // Every combat/AI state field the player can perceive is declared on the BASE — inherited by the guest, never
-    // shadowed — so a guest and a native carry it identically (melee/spell timers, chase + kite latches, vitals,
+    // Every AI state field the player can perceive is declared on the BASE — inherited by the guest, never
+    // shadowed — so a guest and a native carry it identically (action timers, chase latches, vitals,
     // and all three aggro-ledger arrays that must cross a seam together).
     [TestCase("Hp")]
     [TestCase("Mp")]
@@ -58,8 +58,6 @@ public class GuestNativeNpcParityTests
     [TestCase("ChaseSprinting")]
     [TestCase("RushCommitted")]
     [TestCase("RunReservoirLow")]
-    [TestCase("WantsKite")]
-    [TestCase("MeleeKiteAttempts")]
     [TestCase("LastReachedTargetMs")]
     [TestCase("DamageByPlayer")]
     [TestCase("WarnHitsByPlayer")]
@@ -101,7 +99,7 @@ public class GuestNativeNpcParityTests
         var decide = typeof(NpcAiSystem).GetMethod("NpcWantsChaseRun", BindingFlags.NonPublic | BindingFlags.Static);
         Assert.That(decide, Is.Not.Null, "NpcWantsChaseRun must exist (shared chase-run decision)");
 
-        foreach (var beh in new[] { NpcBehavior.AttackOnSight, NpcBehavior.AttackWhenAttacked, NpcBehavior.Guard })
+        foreach (var beh in new[] { NpcBehavior.Pursue, NpcBehavior.Flee, NpcBehavior.Wander })
         {
             foreach (var (str, intel) in new[] { (30, 0), (99, 1), (5, 30) })   // pure melee, STR bruiser + INT splash, caster
             {

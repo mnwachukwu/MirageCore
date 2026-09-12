@@ -162,15 +162,14 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
     // The same non-blocking guard, for a reach that reads as a slip at either end. Both are advisory:
     // the record is legal and occasionally deliberate, so this says so and writes it anyway.
     //
-    // Too far is judged for every behavior that acquires; too near only for attack-on-sight, since a
-    // Guard watches the whole observable area and never reads its Range, and everything else waits to be
-    // struck.
+    // Too far is judged for every behavior; too near only for the two that read Range at all, since a
+    // reach under MinAggressiveNpcRange leaves an NPC unable to notice anyone standing beside it.
     /// <summary>Warning text for a reach that will read as a surprise in play; empty otherwise.</summary>
     public string RangeWarning =>
         Range > Constants.NpcRangeSoftCap
             ? EditorStrings.Format(EditorStrings.NpcEditor_RangeWarnTooFar,
                 ("Range", Range), ("Cap", Constants.NpcRangeSoftCap))
-      : Behavior is NpcBehavior.AttackOnSight && Range < Constants.MinAggressiveNpcRange
+      : Behavior is (NpcBehavior.Pursue or NpcBehavior.Flee) && Range < Constants.MinAggressiveNpcRange
             ? EditorStrings.Format(EditorStrings.NpcEditor_RangeWarnTooShort,
                 ("Range", Range), ("Min", Constants.MinAggressiveNpcRange))
       : string.Empty;

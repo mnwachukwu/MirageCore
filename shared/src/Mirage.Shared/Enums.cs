@@ -79,13 +79,28 @@ public enum ItemType : byte
     Spell = 13,
 }
 
+/// <summary>What an NPC does with its time. Each member drives one distinct part of the AI, and none
+/// of them names a genre: a <see cref="Pursue"/> body closes on what it notices and holds contact, and
+/// what contact MEANS is the game layer's to decide.</summary>
 public enum NpcBehavior : byte
 {
-    AttackOnSight = 0,
-    AttackWhenAttacked = 1,
-    Friendly = 2,
-    Stationary = 3,
-    Guard = 4,
+    /// <summary>Holds its tile. Never moves, never notices anybody.</summary>
+    Stationary = 0,
+
+    /// <summary>Ambles in committed strides, never noticing anybody.</summary>
+    Wander = 1,
+
+    /// <summary>Notices a player or a non-kin NPC within <see cref="Records.NpcRecord.Range"/>, closes
+    /// on it across map seams and through warps, and holds contact. Wanders while it has nobody.</summary>
+    Pursue = 2,
+
+    /// <summary>Notices on the same terms as <see cref="Pursue"/> and retreats instead, opening the gap
+    /// until whoever it noticed is out of range. Wanders while it has nobody.</summary>
+    Flee = 3,
+
+    /// <summary>Walks to player-dropped litter on its map and clears it. Wanders while the map is
+    /// clean.</summary>
+    Scavenge = 4,
 }
 
 public enum SpellType : byte

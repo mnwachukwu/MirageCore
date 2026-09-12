@@ -30,7 +30,7 @@ public sealed partial class NpcAiSystem : GameSystem
                 // tiles across the seam), then land at the RESOLVED layer — so a bridge at a seam obeys the same
                 // ramp rules a within-map one does (no perpendicular/under mount at the seam).
                 && _movement.NpcStepPassesRampGate(mapNum, mn, dir, out var crossLayer)
-                && _movement.IsNpcFootprintLandingFree(neighborMap, destX, destY, npc.EffectiveSize, MovementSystem.NpcIgnoresNpcAvoid(npc.Behavior), mn, crossLayer))
+                && _movement.IsNpcFootprintLandingFree(neighborMap, destX, destY, npc.EffectiveSize, ignoreNpcAvoid: false, mn, crossLayer))
             {
                 NativeNpcCrossBorder(mapNum, slot, mn, neighborMap, destX, destY, dir, stepped: true, crossLayer);
                 return true;
@@ -55,7 +55,7 @@ public sealed partial class NpcAiSystem : GameSystem
         {
             if (neighborMap > 0
                 && _movement.NpcStepPassesRampGate(mapNum, t, dir, out var crossLayer)
-                && _movement.IsNpcFootprintLandingFree(neighborMap, destX, destY, npc.EffectiveSize, MovementSystem.NpcIgnoresNpcAvoid(npc.Behavior), t, crossLayer))
+                && _movement.IsNpcFootprintLandingFree(neighborMap, destX, destY, npc.EffectiveSize, ignoreNpcAvoid: false, t, crossLayer))
             {
                 MoveGuestToMap(mapNum, listIndex, t, neighborMap, destX, destY, dir, stepped: true, crossLayer);
                 return true;
@@ -110,7 +110,7 @@ public sealed partial class NpcAiSystem : GameSystem
     {
         var npc = _world.Npcs[mn.Num];
         // precomputedStep lets the caller hand in a BFS result already computed elsewhere (e.g. the
-        // unreachable-cast check in TryNpcMagicActionCore).  Skips a duplicate BFS when supplied.
+        // Skips a duplicate BFS when supplied.
         int preDistance = WorldDistanceTo(mapNum, mn.X, mn.Y, npc.EffectiveSize, targetMap, targetX, targetY, targetSize);
         int beforeX = mn.X, beforeY = mn.Y;
         bool isChase = mn.Target > 0 || mn.NpcTargetSpawnSlot > 0;

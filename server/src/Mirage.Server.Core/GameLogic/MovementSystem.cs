@@ -449,7 +449,6 @@ public sealed class MovementSystem : GameSystem
     // tiles as if walkable, so a guard can cut straight through an npc-block barrier when chasing a
     // PK or sweeping litter.  Every other behavior still treats NpcAvoid as a wall (its normal use:
     // shaping wander zones / fencing wild mobs out of an area).
-    public static bool NpcIgnoresNpcAvoid(NpcBehavior behavior) => behavior == NpcBehavior.Guard;
 
     // Tile-type landing test for an NPC: Walkable, Item, and a LayerRamp surface are always legal; NpcAvoid
     // is legal only when the mover ignores it (guards).  Blocked / Warp / Key stay impassable for every NPC.
@@ -479,7 +478,7 @@ public sealed class MovementSystem : GameSystem
 
         var npcRec = _world.Npcs[npc.Num];
         int size = npcRec.EffectiveSize;
-        bool ignoreNpcAvoid = NpcIgnoresNpcAvoid(npcRec.Behavior);
+        const bool ignoreNpcAvoid = false;
 
         // Resolve the destination anchor in world space and let LayerLogic pick the resulting layer
         // (sticky, ramp-gated) and reject an illegal deck-edge walk-off.  Covers cross-seam bridges.
@@ -521,7 +520,6 @@ public sealed class MovementSystem : GameSystem
     /// <summary>
     /// True when a tile on a map is a legal landing spot for an NPC — walkable type and free of
     /// players and other NPCs (native or traversal).  Used to validate a border-cross destination.
-    /// <paramref name="ignoreNpcAvoid"/> is the mover's guard exception (see <see cref="NpcIgnoresNpcAvoid"/>).
     /// </summary>
     public bool IsNpcDestFree(int mapNum, int x, int y, bool ignoreNpcAvoid)
         => IsNpcTileFree(mapNum, x, y, WorldLayer.Ground, ignoreNpcAvoid, null);
