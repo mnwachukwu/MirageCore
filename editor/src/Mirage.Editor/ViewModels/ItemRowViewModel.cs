@@ -270,14 +270,9 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
     // ── Captions ──────────────────────────────────────────────────────────────
     // set from the view's code-behind. Only these two vary by type.
 
-    /// <summary>Form caption for the potion amount — which vital it moves depends on the type.</summary>
-    public string VitalAmountLabel => Type switch
-    {
-        ItemType.PotionAddHp or ItemType.PotionSubHp => EditorStrings.Get(EditorStrings.DataLabel_HpAmount),
-        ItemType.PotionAddMp or ItemType.PotionSubMp => EditorStrings.Get(EditorStrings.DataLabel_MpAmount),
-        ItemType.PotionAddSp or ItemType.PotionSubSp => EditorStrings.Get(EditorStrings.DataLabel_SpAmount),
-        _ => EditorStrings.Get(EditorStrings.DataLabel_VitalAmount),
-    };
+    /// <summary>Form caption for the amount a consumable carries. What that amount MEANS is a game's
+    /// rule, so the caption says no more than the record does.</summary>
+    public string VitalAmountLabel => EditorStrings.Get(EditorStrings.DataLabel_VitalAmount);
 
     /// <summary>Form caption for <see cref="Power"/> — the one field whose name understates it. It is
     /// damage on a weapon and defense on the three defensive pieces, so the form says which, even though

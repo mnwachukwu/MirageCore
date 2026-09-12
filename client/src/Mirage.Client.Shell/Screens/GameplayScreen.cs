@@ -158,9 +158,9 @@ public sealed partial class GameplayScreen : IGameScreen
         _panels = new PanelSlot[PanelSlots.Count];
         _isPanelOpen = slot => _panels[slot].Panel.IsOpen;   // allocated once; see the field's note
 
-        // A potion spends the global beat, so the panel's Use button follows the same clock the action
+        // A consumable runs on its own clock, so the panel's Use button follows the same one the action
         // bar's sweep does.
-        _inv.CanUsePotion = () => PotionReady(Environment.TickCount64);
+        _inv.CanUseConsumable = () => ConsumableReady(Environment.TickCount64);
 
         _panels[PanelInventory] = new(PanelInventory, _inv,
             (input, active) => _inv.Update(input, _ctx.State, _ctx.Sender, active),

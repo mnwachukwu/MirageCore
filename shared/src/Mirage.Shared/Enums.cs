@@ -64,19 +64,24 @@ public enum HotkeyKind : byte
 
 public enum ItemType : byte
 {
+    /// <summary>What TREASURE is typed as: an item whose only purpose is its worth, which is authored
+    /// rather than derived.</summary>
     None = 0,
+
     Weapon = 1,
     Armor = 2,
     Helmet = 3,
     Shield = 4,
-    PotionAddHp = 5,
-    PotionAddMp = 6,
-    PotionAddSp = 7,
-    PotionSubHp = 8,
-    PotionSubMp = 9,
-    PotionSubSp = 10,
-    Key = 11,
-    Currency = 12,
+
+    /// <summary>Something used up. Core paces it on its own clock and knows nothing else about it — what
+    /// using one DOES is a game's rule, supplied by the module that declares the effect.</summary>
+    Consumable = 5,
+
+    /// <summary>Opens a Door tile that names this item.</summary>
+    Key = 6,
+
+    /// <summary>Counted rather than carried one per slot; gold is the stock example.</summary>
+    Currency = 7,
 }
 
 /// <summary>What an NPC does with its time. Each member drives one distinct part of the AI, and none

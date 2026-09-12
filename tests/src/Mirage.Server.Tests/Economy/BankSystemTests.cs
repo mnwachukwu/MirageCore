@@ -155,7 +155,7 @@ public class BankSystemTests
         world.Items[Gold].Type = ItemType.Currency;
         world.Items[Sword].Type = ItemType.Weapon;
         world.Items[Sword].Power = 5;
-        world.Items[Potion].Type = ItemType.PotionAddHp;
+        world.Items[Potion].Type = ItemType.Consumable;
         world.Items[Potion].VitalAmount = 50;
 
         sp.Bank[1].Num = Potion;                          // deliberately out of order

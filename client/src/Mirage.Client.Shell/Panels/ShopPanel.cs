@@ -837,16 +837,6 @@ public sealed class ShopPanel : IGamePanel
         string giveName = give?.Name?.Trim() ?? "?";
 
         bool isEquip = get is not null && ItemRecord.IsEquipment(get.Type);
-        string? potionEffect = get?.Type switch
-        {
-            ItemType.PotionAddHp when get!.VitalAmount > 0 => $"+{get.VitalAmount} HP",
-            ItemType.PotionAddMp when get!.VitalAmount > 0 => $"+{get.VitalAmount} MP",
-            ItemType.PotionAddSp when get!.VitalAmount > 0 => $"+{get.VitalAmount} SP",
-            ItemType.PotionSubHp when get!.VitalAmount > 0 => $"+{get.VitalAmount / 2} MP / +{get.VitalAmount / 2} SP / -{get.VitalAmount} HP",
-            ItemType.PotionSubMp when get!.VitalAmount > 0 => $"+{get.VitalAmount / 2} HP / +{get.VitalAmount / 2} SP / -{get.VitalAmount} MP",
-            ItemType.PotionSubSp when get!.VitalAmount > 0 => $"+{get.VitalAmount / 2} HP / +{get.VitalAmount / 2} MP / -{get.VitalAmount} SP",
-            _ => null,
-        };
 
         string nameLine = get?.Type == ItemType.Currency ? $"{row.GetQuantity} {name}" : name;
 
@@ -854,9 +844,7 @@ public sealed class ShopPanel : IGamePanel
         UiHelper.DrawLabel(sb, font, nameLine, new Vector2(c.X + 8, textY), Color.White, c.Width - 16);
         textY += 18;
         textY = DrawItemPreview(sb, c, itemsTex, get?.Pic ?? -1, get?.ItemSheet ?? 0, textY);
-        if (potionEffect is not null)
         {
-            UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_PotionEffect, ("Effect", potionEffect)), new Vector2(c.X + 8, textY), Color.Cyan, c.Width - 16);
             textY += 18;
         }
         UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_TradeCost, ("Amount", row.GiveQuantity), ("Item", giveName)), new Vector2(c.X + 8, textY), Color.Yellow, c.Width - 16);

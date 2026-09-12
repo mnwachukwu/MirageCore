@@ -562,7 +562,7 @@ public class ShopSystemTests
     {
         var (world, shop, p) = Setup();
         world.Shops[ShopNum].FixesItems = true;
-        world.Items[Potion].Type = ItemType.PotionAddHp;
+        world.Items[Potion].Type = ItemType.Consumable;
         p.Inv[2].Num = Potion;
         p.Inv[1].Num = Gold;
         p.Inv[1].Quantity = 100;

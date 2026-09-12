@@ -253,12 +253,12 @@ public sealed partial class GameplayScreen : IGameScreen
         _ctx.State.Weather == WeatherType.HeavyWind ? Constants.WeatherHeavyWindCooldownMultiplier : 1L;
 
     internal long ActionCooldownMs => Constants.PlayerAttackCooldownMs * WindMult;
-    private long PotionCooldownMs => Constants.PotionCooldownMs * WindMult;
+    private long ConsumableCooldownMs => Constants.ConsumableCooldownMs * WindMult;
 
     /// <summary>Whether a potion may be drunk. Only potions wait on the drinking clock — the action
     /// beat has nothing to do with reaching into a bag.</summary>
-    private bool PotionReady(long nowMs) =>
-        _ctx.State.Me is not { } me || nowMs - me.PotionTimer >= PotionCooldownMs;
+    private bool ConsumableReady(long nowMs) =>
+        _ctx.State.Me is not { } me || nowMs - me.ConsumableTimer >= ConsumableCooldownMs;
 
     /// <summary>Whether a bar slot may fire, asking the clock its contents answer to. A spell waits on
     /// the action beat, a potion on the drinking clock, and anything else on neither. The server decides
@@ -269,7 +269,7 @@ public sealed partial class GameplayScreen : IGameScreen
         if (me?.Hotkeys is null || slot < 1 || slot >= me.Hotkeys.Length) return true;
 
         var hk = me.Hotkeys[slot];
-        return !IsPotion(hk.Num) || PotionReady(nowMs);
+        return !IsConsumable(hk.Num) || ConsumableReady(nowMs);
     }
 
     /// <summary>Charges the clock the slot's contents answer to. The beat is stamped by the use
@@ -284,7 +284,7 @@ public sealed partial class GameplayScreen : IGameScreen
         var me = _ctx.State.Me;
         if (me?.Hotkeys is null || slot < 1 || slot >= me.Hotkeys.Length) return;
         int itemNum = me.Hotkeys[slot].Num;
-        if (IsPotion(itemNum)) me.PotionTimer = nowMs;
+        if (IsConsumable(itemNum)) me.ConsumableTimer = nowMs;
     }
 
     /// <summary>How much of the clock a bound slot answers to is still to run, 1→0. A potion reads the
@@ -294,17 +294,16 @@ public sealed partial class GameplayScreen : IGameScreen
         if (_ctx.State.Me is not { } me) return 0f;
 
         long stamped, span;
-        if (IsPotion(hk.Num)) (stamped, span) = (me.PotionTimer, PotionCooldownMs);
+        if (IsConsumable(hk.Num)) (stamped, span) = (me.ConsumableTimer, ConsumableCooldownMs);
         else return 0f;
 
         long elapsed = nowMs - stamped;
         return stamped > 0 && elapsed < span ? 1f - elapsed / (float)span : 0f;
     }
 
-    private bool IsPotion(int itemNum) =>
+    private bool IsConsumable(int itemNum) =>
         itemNum > 0 && itemNum < _ctx.State.Items.Length
-        && _ctx.State.Items[itemNum]?.Type is ItemType.PotionAddHp or ItemType.PotionAddMp
-            or ItemType.PotionAddSp or ItemType.PotionSubHp or ItemType.PotionSubMp or ItemType.PotionSubSp;
+        && _ctx.State.Items[itemNum]?.Type is ItemType.Consumable;
 
     private bool TryUseHotkey(int slot)
     {

@@ -89,8 +89,8 @@ public sealed class ServerPlayer
     public long AttackTimer { get; set; }
 
     /// <summary>When this player last drank. Separate from <see cref="AttackTimer"/> so a potion and a
-    /// swing never spend each other's turn — see <see cref="Constants.PotionCooldownMs"/>.</summary>
-    public long PotionTimer { get; set; }
+    /// swing never spend each other's turn — see <see cref="Constants.ConsumableCooldownMs"/>.</summary>
+    public long ConsumableTimer { get; set; }
 
     /// <summary>The tick at which this player's next step becomes legal — the movement pace gate's
     /// virtual clock, charged one tile's worth per step by

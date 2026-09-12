@@ -1,6 +1,6 @@
 {
-  "name": "Gold",
-  "pic": 2,
+  "name": "Coin",
+  "pic": 0,
   "itemSheet": 0,
   "type": "Currency",
   "nonTradeable": false,

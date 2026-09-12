@@ -78,14 +78,14 @@ public class ItemRowViewModelTests
     {
         var vm = new ItemRowViewModel(1, new ItemRecord { Name = "" }, isLoaded: false);
 
-        vm.ApplyPacket(new UpdateItemPacket { Name = "Potion", Type = ItemType.PotionAddHp, VitalAmount = 25 });
+        vm.ApplyPacket(new UpdateItemPacket { Name = "Potion", Type = ItemType.Consumable, VitalAmount = 25 });
 
         Assert.Multiple(() =>
         {
             Assert.That(vm.IsDirty, Is.False, "loading from the wire is not an edit");
             Assert.That(vm.IsLoaded, Is.True, "the row is now loaded");
             Assert.That(vm.ToRecord().Name, Is.EqualTo("Potion"));
-            Assert.That(vm.ToRecord().Type, Is.EqualTo(ItemType.PotionAddHp));
+            Assert.That(vm.ToRecord().Type, Is.EqualTo(ItemType.Consumable));
             Assert.That(vm.ToRecord().VitalAmount, Is.EqualTo((short)25));
         });
     }
@@ -102,7 +102,7 @@ public class ItemRowViewModelTests
             Assert.That(weapon.PowerVisible, Is.True);
             Assert.That(weapon.VitalAmountVisible, Is.False);
 
-            var potion = Row(ItemType.PotionAddHp);
+            var potion = Row(ItemType.Consumable);
             Assert.That(potion.VitalAmountVisible, Is.True, "potion amount is editable");
             Assert.That(potion.DurabilityVisible, Is.False, "potions do not wear");
             Assert.That(potion.PowerVisible, Is.False);
@@ -123,7 +123,7 @@ public class ItemRowViewModelTests
     public void ToRecord_ZeroesFieldsTheTypeDoesNotUse()
     {
         var vm = new ItemRowViewModel(3, Sword());
-        vm.Type = ItemType.PotionAddHp;
+        vm.Type = ItemType.Consumable;
         vm.VitalAmount = 25;
 
         var r = vm.ToRecord();
@@ -142,7 +142,7 @@ public class ItemRowViewModelTests
     public void ToRecord_DoesNotMutateTheRow()
     {
         var vm = new ItemRowViewModel(3, Sword());
-        vm.Type = ItemType.PotionAddHp;
+        vm.Type = ItemType.Consumable;
 
         vm.ToRecord();
         vm.Type = ItemType.Weapon;
@@ -160,7 +160,7 @@ public class ItemRowViewModelTests
     public void BuildSavePacket_IsNormalizedLikeToRecord()
     {
         var vm = new ItemRowViewModel(3, Sword());
-        vm.Type = ItemType.PotionAddHp;
+        vm.Type = ItemType.Consumable;
         vm.VitalAmount = 7;
 
         var pkt = vm.BuildSavePacket();

@@ -1,19 +1,12 @@
 {
-  "name": "Reed Runner",
+  "name": "Keeper",
   "attackSay": "",
-  "sprite": 20,
+  "sprite": 0,
   "spriteSheet": 0,
   "size": 1,
-  "spawnSecs": 20,
-  "behavior": "Pursue",
+  "spawnSecs": 0,
+  "behavior": "Stationary",
   "group": 0,
-  "range": 2,
-  "drops": [
-    {
-      "itemNum": 186,
-      "quantity": 0,
-      "chance": 10
-    }
-  ],
+  "range": 0,
   "emitsLight": false
 }

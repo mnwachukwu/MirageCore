@@ -1,22 +1,15 @@
 {
-  "name": "Rusted Sword",
-  "pic": 13,
+  "name": "Buckler",
+  "pic": 0,
   "itemSheet": 0,
-  "type": "Weapon",
-  "durability": 100,
-  "power": 8,
-  "tier": 1,
-  "allowedClasses": [
-    1,
-    2,
-    3,
-    7,
-    10
-  ],
+  "type": "Shield",
   "nonTradeable": false,
   "nonListable": false,
   "nonMailable": false,
   "destroyOnDrop": false,
   "nonJunkable": false,
+  "durability": 40,
+  "power": 8,
+  "tier": 1,
   "price": 14
 }

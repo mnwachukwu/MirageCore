@@ -232,10 +232,10 @@ public static class Constants
     public const long PlayerAttackCooldownMs = 1000;
     public const long NpcAttackCooldownMs = 1000;
 
-    // Drinking runs on its OWN clock, and a slower one. Sharing the action beat made a potion cost a
-    // swing, which turned self-healing into a straight substitute for a second body in the fight; on a
-    // separate 2s track it stays useful without replacing the healer standing next to you.
-    public const long PotionCooldownMs = 2000;
+    // Using something up runs on its OWN clock, and a slower one. Sharing the action beat would make a
+    // consumable cost an action, which turns any restorative into a straight substitute for acting; on a
+    // separate track it stays useful without replacing what a player would otherwise have done.
+    public const long ConsumableCooldownMs = 2000;
     // There is deliberately NO post-cast MOVE lockout: casting does not restrict movement at all, for
     // players or NPCs. At equal run speed a caster can't open a gap anyway, so a lockout would only
     // forbid walking during a second in which no recast was possible. The 1-second cast cadence above

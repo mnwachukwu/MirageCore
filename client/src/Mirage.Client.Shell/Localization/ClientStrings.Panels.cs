@@ -96,7 +96,6 @@ public static partial class ClientStrings
     public const string ShopPanel_PartialRepairCost = nameof(ShopPanel_PartialRepairCost);
     public const string ShopPanel_DurabilityGain = nameof(ShopPanel_DurabilityGain);
     public const string ShopPanel_InsufficientGold = nameof(ShopPanel_InsufficientGold);
-    public const string ShopPanel_PotionEffect = nameof(ShopPanel_PotionEffect);
     public const string ShopPanel_TradeCost = nameof(ShopPanel_TradeCost);
 
     // ── InventoryPanel ────────────────────────────────────────────────────────
@@ -105,12 +104,6 @@ public static partial class ClientStrings
     public const string InventoryPanel_DropItemButton = nameof(InventoryPanel_DropItemButton);
     public const string InventoryPanel_DropItemLabel = nameof(InventoryPanel_DropItemLabel);
     public const string InventoryPanel_DestroyDropWarn = nameof(InventoryPanel_DestroyDropWarn);
-    public const string InventoryPanel_HpPotionsLong = nameof(InventoryPanel_HpPotionsLong);
-    public const string InventoryPanel_MpPotionsLong = nameof(InventoryPanel_MpPotionsLong);
-    public const string InventoryPanel_SpPotionsLong = nameof(InventoryPanel_SpPotionsLong);
-    public const string InventoryPanel_HpPotionsShort = nameof(InventoryPanel_HpPotionsShort);
-    public const string InventoryPanel_MpPotionsShort = nameof(InventoryPanel_MpPotionsShort);
-    public const string InventoryPanel_SpPotionsShort = nameof(InventoryPanel_SpPotionsShort);
 
     // ── ModerationPanel (Creator only) ────────────────────────────────────────
     public const string ModerationPanel_Title = nameof(ModerationPanel_Title);

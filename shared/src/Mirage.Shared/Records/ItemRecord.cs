@@ -34,7 +34,7 @@ public sealed class ItemRecord
     // number meant durability on a sword and healing on a potion.)
     //
     // All five are WhenWritingDefault, so a zero is left out of the file entirely and an item row
-    // lists exactly the properties it has — a potion shows VitalAmount and nothing else. That is the
+    // lists exactly the properties it has — a consumable shows VitalAmount and nothing else. That is the
     // whole point of the expansion: the JSON has to read as a domain object, not as five slots of
     // which three happen to be blank. It is set per-property rather than on the serializer because
     // the global option is shared with map, player and guild persistence, where an explicit 0 is
@@ -120,27 +120,25 @@ public sealed class ItemRecord
     //
     // This is the half of the expansion that actually removes the old format's hazard. Naming the
     // fields makes a row readable; only clearing the inapplicable ones makes it TRUE. Without it,
-    // retyping a Weapon as a Potion leaves Power and ClassReq sitting on the record at their old
+    // retyping a Weapon as a Consumable leaves Power sitting on the record at its old
     // values — invisible in the editor (which hides them) but live in the file and in every packet.
 
     /// <summary>The four wearable types, which alone carry durability, power and a class requirement.</summary>
     public static bool IsEquipment(ItemType type) =>
         type is ItemType.Weapon or ItemType.Armor or ItemType.Helmet or ItemType.Shield;
 
-    /// <summary>The six potion types, which alone carry <see cref="VitalAmount"/>.</summary>
-    public static bool IsPotion(ItemType type) =>
-        type is ItemType.PotionAddHp or ItemType.PotionAddMp or ItemType.PotionAddSp
-             or ItemType.PotionSubHp or ItemType.PotionSubMp or ItemType.PotionSubSp;
+    /// <summary>Whether this type is used up rather than worn or carried.</summary>
+    public static bool IsConsumable(ItemType type) => type is ItemType.Consumable;
 
     public static bool UsesDurability(ItemType type) => IsEquipment(type);
     public static bool UsesPower(ItemType type) => IsEquipment(type);
-    public static bool UsesVitalAmount(ItemType type) => IsPotion(type);
+    public static bool UsesVitalAmount(ItemType type) => IsConsumable(type);
 
     /// <summary>What a character wears or drinks carries a tier: the wearables and the potions.
     /// <para>A SCROLL does not. Its tier lives on the SPELL it teaches, so one on the paper would be a
     /// second number nothing reads. Currency and keys carry none either: gold is not something you qualify
     /// for, and a key that refuses its own door is a puzzle nobody asked for.</para></summary>
-    public static bool UsesTier(ItemType type) => IsEquipment(type) || IsPotion(type);
+    public static bool UsesTier(ItemType type) => IsEquipment(type) || IsConsumable(type);
 
 
     /// <summary>Zero every field that does not apply to the current <see cref="Type"/>, so the record

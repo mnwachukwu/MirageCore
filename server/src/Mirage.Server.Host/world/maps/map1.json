@@ -1,11 +1,11 @@
 {
-  "name": "Fenn's Landing 1",
-  "displayName": "",
-  "revision": 14,
-  "up": 4,
-  "down": 0,
-  "left": 2,
-  "right": 6,
+  "name": "plaza",
+  "displayName": "The Plaza",
+  "revision": 1,
+  "up": 0,
+  "down": 3,
+  "left": 0,
+  "right": 2,
   "music": 0,
   "bootMap": 0,
   "bootX": 0,
@@ -17,1029 +17,345 @@
   "tile": [
     [
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113,
-          145
-        ],
-        "type": "NpcAvoid"
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113,
-          145
-        ],
-        "type": "NpcAvoid"
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       }
     ],
     [
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
       {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       }
     ],
     [
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
       {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       }
     ],
     [
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
+      {},
+      {},
       {
-        "ground": [
-          113
-        ]
+        "type": "Door",
+        "keyItemNum": 7,
+        "keyIsConsumed": false
       },
+      {},
+      {},
       {
-        "ground": [
-          113
-        ]
+        "type": "Plate",
+        "doorX": 3,
+        "doorY": 3,
+        "doorLayer": "Ground"
       },
+      {},
+      {},
+      {},
+      {},
       {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       }
     ],
     [
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
       {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       }
     ],
     [
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
       {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       }
     ],
     [
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
       {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       }
     ],
     [
       {
-        "ground": [
-          113,
-          145
-        ]
+        "type": "Blocked"
       },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {}
+    ],
+    [
       {
-        "ground": [
-          113,
-          145
-        ]
+        "type": "Blocked"
       },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {}
+    ],
+    [
       {
-        "ground": [
-          113,
-          145
-        ]
+        "type": "Blocked"
       },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {}
+    ],
+    [
       {
-        "ground": [
-          113,
-          145
-        ]
+        "type": "Blocked"
       },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
       {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       }
     ],
     [
       {
-        "ground": [
-          113,
-          145
-        ]
+        "type": "Blocked"
       },
+      {},
+      {},
+      {},
       {
-        "ground": [
-          113,
-          145
-        ]
+        "type": "Item",
+        "itemNum": 8,
+        "itemQuantity": 1
       },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
       {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113,
-          145
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       }
     ],
     [
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
       {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       }
     ],
     [
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
       {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       }
     ],
     [
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
       {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       }
     ],
     [
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
+      },
+      {},
+      {},
+      {},
+      {
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       },
       {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      }
-    ],
-    [
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      }
-    ],
-    [
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      }
-    ],
-    [
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
-      },
-      {
-        "ground": [
-          113
-        ]
+        "type": "Blocked"
       }
     ]
   ],
-  "npcs": [],
+  "npcs": [
+    {
+      "npcNum": 1,
+      "x": 5,
+      "y": 5
+    },
+    {
+      "npcNum": 2,
+      "x": 9,
+      "y": 7
+    }
+  ],
   "lights": []
 }

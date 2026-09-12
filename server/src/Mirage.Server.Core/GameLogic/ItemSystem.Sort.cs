@@ -98,13 +98,8 @@ public sealed partial class ItemSystem : GameSystem
             ItemType.Helmet => (3, 2, item.Power),
             ItemType.Shield => (3, 3, item.Power),
             ItemType.Key => (4, 0, 0),
-            ItemType.PotionAddHp => (5, 0, item.VitalAmount),
-            ItemType.PotionAddMp => (5, 1, item.VitalAmount),
-            ItemType.PotionAddSp => (5, 2, item.VitalAmount),
-            ItemType.PotionSubHp => (6, 0, item.VitalAmount),
-            ItemType.PotionSubMp => (6, 1, item.VitalAmount),
-            ItemType.PotionSubSp => (6, 2, item.VitalAmount),
-            _ => (7, 0, 0),
+            ItemType.Consumable => (5, 0, item.VitalAmount),
+            _ => (6, 0, 0),
         };
     }
 

@@ -1,12 +1,15 @@
 {
-  "name": "Magical Reagent",
-  "pic": 28,
+  "name": "Practice Blade",
+  "pic": 0,
   "itemSheet": 0,
-  "type": "Currency",
+  "type": "Weapon",
   "nonTradeable": false,
-  "nonListable": true,
+  "nonListable": false,
   "nonMailable": false,
   "destroyOnDrop": false,
   "nonJunkable": false,
-  "price": 1
+  "durability": 40,
+  "power": 8,
+  "tier": 1,
+  "price": 14
 }

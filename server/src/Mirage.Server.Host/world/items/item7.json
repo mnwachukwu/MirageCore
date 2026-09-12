@@ -1,15 +1,11 @@
 {
-  "name": "Rusted Tunic",
-  "pic": 7,
+  "name": "Plaza Key",
+  "pic": 0,
   "itemSheet": 0,
-  "type": "Armor",
-  "durability": 80,
-  "power": 6,
-  "tier": 1,
+  "type": "Key",
   "nonTradeable": false,
   "nonListable": false,
   "nonMailable": false,
   "destroyOnDrop": false,
-  "nonJunkable": false,
-  "price": 11
+  "nonJunkable": false
 }

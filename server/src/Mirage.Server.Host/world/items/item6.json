@@ -1,19 +1,14 @@
 {
-  "name": "Rusted Greataxe",
-  "pic": 13,
+  "name": "Ration",
+  "pic": 0,
   "itemSheet": 0,
-  "type": "Weapon",
-  "durability": 130,
-  "power": 10,
-  "tier": 1,
-  "allowedClasses": [
-    1,
-    10
-  ],
+  "type": "Consumable",
   "nonTradeable": false,
   "nonListable": false,
   "nonMailable": false,
   "destroyOnDrop": false,
   "nonJunkable": false,
-  "price": 18
+  "vitalAmount": 10,
+  "tier": 1,
+  "price": 1
 }

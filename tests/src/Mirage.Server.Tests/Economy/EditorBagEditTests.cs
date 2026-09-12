@@ -25,7 +25,7 @@ public class EditorBagEditTests
         items[Gold].Type = ItemType.Currency;
         items[Sword].Type = ItemType.Weapon;
         items[Sword].Durability = 60;
-        items[Potion].Type = ItemType.PotionAddHp;
+        items[Potion].Type = ItemType.Consumable;
 
         var p = new PlayerRecord();
         for (int i = 0; i <= Constants.MaxInv; i++) p.Inv[i] = new PlayerInvSlot();

@@ -26,7 +26,7 @@ public class EditorVaultEditTests
         items[Gold].Type = ItemType.Currency;
         items[Sword].Type = ItemType.Weapon;
         items[Sword].Durability = 60;
-        items[Potion].Type = ItemType.PotionAddHp;
+        items[Potion].Type = ItemType.Consumable;
 
         return (items, AccountRecord.NewBank());
     }

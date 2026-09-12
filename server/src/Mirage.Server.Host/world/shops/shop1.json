@@ -1,9 +1,22 @@
 {
-  "name": "Fenn's Clearing Inn",
-  "fixesItems": false,
-  "shopType": "Inn",
-  "allowBanking": true,
-  "keeper": 125,
-  "barterItem": [],
-  "salesItem": []
+  "name": "The Plaza Stall",
+  "fixesItems": true,
+  "shopType": "Store",
+  "allowBanking": false,
+  "keeper": 1,
+  "barterItem": [
+    {
+      "giveItem": 8,
+      "giveQuantity": 1,
+      "getItem": 1,
+      "getQuantity": 120
+    }
+  ],
+  "salesItem": [
+    2,
+    3,
+    4,
+    5,
+    6
+  ]
 }

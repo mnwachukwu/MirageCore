@@ -19,7 +19,7 @@ public class StartingLoadoutTests
         new(),
         new() { Name = "Gold", Type = ItemType.Currency },
         new() { Name = "Light Sword", Type = ItemType.Weapon, Power = 6, Durability = 40 },
-        new() { Name = "Elixir", Type = ItemType.PotionAddHp, VitalAmount = 20 },
+        new() { Name = "Elixir", Type = ItemType.Consumable, VitalAmount = 20 },
     ];
 
     private static List<StartingItem> Authored(params int[] itemNums) =>

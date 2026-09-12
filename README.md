@@ -63,7 +63,7 @@ The suites split the way the code does: a **core** and a **shell** get separate 
 Some things people expect to find here live **outside** this repository, because they write into it
 rather than build with it: the content generators that produced the seed, the scripts that draw the
 app icons and control-scheme images, and the converter that imports an old VB6 world. Those are
-published separately — see [Authoring tools](#authoring-tools) below.
+published separately — see [Authoring content](#authoring-content) below.
 
 The standalone balance simulators are not published. They answer "what would this feel like" against
 the shipped formulas, nothing here builds or ships them, and their output is a judgment call that
@@ -117,7 +117,7 @@ from source there is no bundled copy, so the first Open is yours to aim.
 > gets it back. To start from nothing instead, leave an empty `world/` in place. The editor needs no copy
 > at all: it opens a world wherever it lives, and starts its picker at `seed-world/`.
 
-> **Importing VB6 world data:** [MirageSourceRemasteredConverter](https://github.com/mnwachukwu/MirageSourceRemastered.Tools.Public) turns an original VB6 server directory into this JSON format in one pass — all binary `.dat` maps and INI data files, with account passwords hashed on the way through and the source files never modified, so a run costs nothing if the result is not what you wanted. See [Authoring tools](#authoring-tools).
+> **Importing VB6 world data:** [MirageSourceRemasteredConverter](https://github.com/mnwachukwu/MirageSourceRemastered.Tools.Public) turns an original VB6 server directory into this JSON format in one pass — all binary `.dat` maps and INI data files, with account passwords hashed on the way through and the source files never modified, so a run costs nothing if the result is not what you wanted. See [Authoring content](#authoring-content).
 
 > **`world.json`** at a world folder's root is what the folder says about itself: its **name**, the **size new maps are created at**, and its record ceilings. Set them in the editor under **World → World Settings**. The file is optional — a folder without one runs on the stock answers.
 >
@@ -135,55 +135,41 @@ from source there is no bundled copy, so the first Open is yours to aim.
 >
 > Both are set independently, `WorldDir` and `DataDir`, and both default to a per-user folder — `%LocalAppData%\Mirage Source Remastered Server\` on Windows, `~/.local/share/mirage-source-remastered-server/` on Linux, `~/Library/Application Support/` on macOS. Not beside the executable: an installed server runs out of a folder the updater replaces wholesale, so a world and a set of accounts kept there would last exactly one update.
 >
-> **Seed data:** `server/src/Mirage.Server.Host/world/` is the shipped default configuration — 147 maps, 288 items, 177 NPCs, 38 conversations, 54 quests, and 21 shops. Any collection you leave out is created empty and written on first save, so a partial world folder boots fine.
+> **Seed data:** `server/src/Mirage.Server.Host/world/` holds a demo world — 4 maps, 8 items, 2 NPCs, 1 conversation, 1 quest, and 1 shop. Any collection you leave out is created empty and written on first save, so a partial world folder boots fine.
 >
 > Those counts are checked against the folder by `.github/checks/check-seed-counts.mjs`, which CI runs — they have gone stale twice.
 >
-> **It is a placed world, not just a library.** 133 of the maps carry spawns, and 175 of the 177 NPCs stand somewhere: three towns with their shops, inns, and quest-givers, the routes between them, and the boss rooms at the end of each. You can start a server, make a character, and walk it.
+> **It is a demonstration, not a game.** One record of every family, so each format has a worked example you can open in the editor and read on disk. The four maps are linked in a square because the seamless neighbourhood is the thing a single map cannot show; map 1 carries a door, the pressure plate that opens it, and an item spawn. You can start a server, make a character, and walk it across a seam.
 >
-> **It is still TEST data rather than a game.** It exercises the engine at three specific bands — **levels 1–20, 100–120, and 235–255** — and there is deliberately *nothing in between*. Levels 21–99 and 121–234 have no mobs, no gear, and no spells at all: a character leveling normally runs out of world twice. The three bands exist so combat, gearing, and party scaling could be measured at the bottom, middle, and top of the curve without authoring 255 levels of content to get there. Each band is a self-contained region reached from the hub, so the gap between them is a wall you arrive at rather than a stretch of empty map.
+> **It references no artwork**, because none ships here. The maps are laid out with attributes rather than tile graphics, so the demo runs against whatever tilesets you supply rather than requiring a particular set.
 >
-> It is included as a courtesy — enough to start a server and see the systems work end to end, and a worked example of what the record formats look like — but it is not a finished game and was never intended as one. The content is regular enough to look machine-written because most of it is: the generators that wrote the records and laid out the route maps are published, so the seed can be regenerated, retuned, or replaced wholesale rather than treated as fixed. See [Authoring tools](#authoring-tools).
+> **It is deliberately small.** A genre-agnostic engine that shipped a fantasy world's towns, bestiary and quest prose would be handing every game a pile of content to delete first. What a world looks like is the game's business; what the records look like is the engine's, and that is all this demonstrates.
 
 ---
 
-## Authoring tools
+## Authoring content
 
-Most of the seed world in `world/` was not hand-authored. It was generated, and the generators that wrote
-it are published: **[MirageSourceRemastered.Tools.Public](https://github.com/mnwachukwu/MirageSourceRemastered.Tools.Public)**.
+The demo world in `world/` is hand-authored, and small enough to read. For anything larger the editor is
+the tool: it opens a world folder directly, and a server it connects to tells it what record families that
+world has, so it can author families this build was never compiled against.
 
-They are there because a seed you cannot regenerate is a seed you can only edit. With them you can retune
-the whole economy, rescale the bestiary, or throw the shipped content away and generate your own to the
-same shape.
+**Generators are a game's business, not the engine's.** A world of a few hundred records is not something
+to type, and the practical answer is a generator that computes against `Mirage.Shared` — item prices from
+`EconomyFormulas`, and whatever a game's own module adds. A generator that takes a project reference on
+the engine cannot drift from it, because it has no second copy of the rule to drift from.
 
-The **records** — items, spells, the bestiary, conversations, quests, shops — are generated
-outright. The **maps** started generated and were then edited by hand, so they are the one part of the
-seed a regeneration would not reproduce.
+One worked example exists: **[MirageSourceRemastered.Tools.Public](https://github.com/mnwachukwu/MirageSourceRemastered.Tools.Public)**,
+which wrote Mirage Source Remastered's own world and imports an original VB6 Mirage Online server
+directory into this JSON format. It targets **that** game's schema rather than this engine's, so treat it
+as a worked example of the shape rather than something to run against a Core world.
 
-| | |
-|---|---|
-| **`ContentGenerators/`** | The ones that wrote the seed — spellbook, armory, bestiary, conversations, quests, shops. `run-all.cs` runs them in the order they depend on each other and stops at the first failure. |
-| **`ArtGenerators/`** | The app icons and the in-game control-scheme reference images, drawn as geometry rather than exported from a design file. |
-| **`MirageSourceRemasteredConverter/`** | Imports an original VB6 Mirage Online server directory into this JSON format — binary `.dat` maps and INI data alike, with account passwords hashed on the way through. The source directory is only ever read. |
+Two things worth knowing before writing one:
 
-Two things worth knowing before running any of them:
-
-- **They compute with this engine's own formulas.** Each one takes a project reference on
-  `Mirage.Shared`, so item prices come from `EconomyFormulas`, NPC health from the same
-  `GetNpcMaxHp` the server uses, and experience from `ExpFormulas`. A generator cannot drift from the
-  engine, because it has no second copy of the rule to drift from. That is also why the tools repository
-  expects to sit beside this one — the reference is a relative path.
-- **They own their collections outright.** A generator clears its collection before writing, so hand
-  edits to `world/items/` are lost the next time the armory generator runs. Author in the editor, or
-  author in the generator — not both.
-
-The record generators reproduce the committed seed byte-identically, which makes `git status` on those
-collections after a run a real check that nothing has drifted. The map generators do **not**: the shipped
-maps carry hand edits made after they were laid out, so a rerun produces a valid world rather than the
-one in the repository. Regenerate maps into a scratch folder and diff, rather than over `world/`.
-
-Not published: the standalone balance simulators. They exist to answer design questions, their output is
-already baked into the numbers the generators use, and nothing here builds them.
+- **A generator owns its collection outright.** Clearing the collection before writing is what makes a
+  rerun reproducible, and it is also what loses hand edits. Author in the editor, or author in the
+  generator — not both.
+- **Maps are the exception.** A generated map that is then edited by hand cannot be regenerated without
+  losing the edits, so generate maps into a scratch folder and diff, rather than over `world/`.
 
 ---
 

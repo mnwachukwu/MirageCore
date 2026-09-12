@@ -75,18 +75,16 @@ public sealed class InventoryPanel : IGamePanel
     /// <summary>Whether the global beat has come round. A POTION spends the same tick as a swing or a
     /// cast; nothing else does. The server enforces it, and asking here only keeps Use from looking
     /// broken while the beat is still running. Unset means always ready.</summary>
-    public Func<bool>? CanUsePotion { get; set; }
+    public Func<bool>? CanUseConsumable { get; set; }
 
-    private bool PotionReady => CanUsePotion?.Invoke() ?? true;
+    private bool ConsumableReady => CanUseConsumable?.Invoke() ?? true;
 
     private bool UseReady(ClientState state)
     {
         if (_list.SelectedIndex < 0) return false;
         var inv = state.Me.Inv[_list.SelectedIndex + 1];
         var type = inv.Num > 0 && inv.Num < state.Items.Length ? state.Items[inv.Num]?.Type : null;
-        bool potion = type is ItemType.PotionAddHp or ItemType.PotionAddMp or ItemType.PotionAddSp
-                           or ItemType.PotionSubHp or ItemType.PotionSubMp or ItemType.PotionSubSp;
-        return !potion || PotionReady;
+        return type != ItemType.Consumable || ConsumableReady;
     }
 
     public void Update(InputState input, ClientState state, ClientPacketSender sender, bool isActive = false)
@@ -170,7 +168,7 @@ public sealed class InventoryPanel : IGamePanel
         _useBtn.Bounds = UiHelper.PanelBottomButton(c, 0);
         _dropBtn.Bounds = UiHelper.PanelBottomButton(c, 1);
 
-        _list.Update(input, ListBoundsOf(c, HasAnyPotions(state)), keyboardActive: isActive);
+        _list.Update(input, ListBoundsOf(c), keyboardActive: isActive);
 
         // Drop button disables when the map is at the voluntary clutter cap. Use only PlayerDropped
         // items in the count — NPC loot piles don't block voluntary drops server-side either.
@@ -339,12 +337,10 @@ public sealed class InventoryPanel : IGamePanel
         _useBtn.Bounds = UiHelper.PanelBottomButton(c, 0);
         _dropBtn.Bounds = UiHelper.PanelBottomButton(c, 1);
 
-        bool hasPotions = HasAnyPotions(state);
-        _list.Draw(sb, font, ListBoundsOf(c, hasPotions));
-        float infoY = hasPotions ? c.Bottom - 74 : c.Bottom - 56;
+        _list.Draw(sb, font, ListBoundsOf(c));
+        float infoY = c.Bottom - 56;
         UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.Common_GoldLabel, ("Gold", state.PlayerGold())), new Vector2(c.X + 8, infoY), Color.Gold, c.Width - 16);
         DrawSlotCount(sb, font, state, c, infoY);
-        if (hasPotions) DrawPotionCounts(sb, font, state, c);
         _useBtn.Draw(sb, font, _input);
         _dropBtn.Draw(sb, font, _input);
         _panel.DrawOverlay(sb);
@@ -435,102 +431,14 @@ public sealed class InventoryPanel : IGamePanel
         sb.DrawString(font, text, new Vector2(c.Right - 8 - w, y), color);
     }
 
-    private static void DrawPotionCounts(SpriteBatch sb, SpriteFont font, ClientState state, Rectangle c)
-    {
-        int hp = 0, mp = 0, sp = 0;
-        var me = state.Me;
-        if (me?.Inv is not null)
-        {
-            for (int i = 1; i <= Constants.MaxInv; i++)
-            {
-                var slot = me.Inv[i];
-                if (slot is null || slot.Num <= 0 || slot.Num > state.Limits.Items) continue;
-                switch (state.Items[slot.Num]?.Type)
-                {
-                    case ItemType.PotionAddHp:
-                        hp++;
-                        break;
-                    case ItemType.PotionAddMp:
-                        mp++;
-                        break;
-                    case ItemType.PotionAddSp:
-                        sp++;
-                        break;
-                }
-            }
-        }
-
-        float y = c.Bottom - 56;
-        float x = c.X + 8;
-        float rightLimit = c.Right - 8;
-        // Three-tier fallback:
-        //   1. Long labels ("HP Potions: 5  MP Potions: 3  SP Potions: 2") — multi-colored.
-        //   2. Short labels ("HP: 5  MP: 3  SP: 2") — multi-colored.
-        //   3. Short labels combined into a single string and FitText-truncated with ellipsis,
-        //      rendered in white (gives up per-label colors so something is always visible
-        //      instead of leaving a blank strip when even short labels can't fit).
-        if (TryDrawPotionRow(sb, font, hp, mp, sp, x, y, rightLimit, longLabels: true)) return;
-        if (TryDrawPotionRow(sb, font, hp, mp, sp, x, y, rightLimit, longLabels: false)) return;
-        DrawPotionRowEllipsized(sb, font, hp, mp, sp, x, y, rightLimit);
-    }
-
-    private static bool TryDrawPotionRow(SpriteBatch sb, SpriteFont font, int hp, int mp, int sp,
-        float x, float y, float rightLimit, bool longLabels)
-    {
-        string FmtHp() => longLabels ? ClientStrings.Format(ClientStrings.InventoryPanel_HpPotionsLong, ("Count", hp)) : ClientStrings.Format(ClientStrings.InventoryPanel_HpPotionsShort, ("Count", hp));
-        string FmtMp() => longLabels ? ClientStrings.Format(ClientStrings.InventoryPanel_MpPotionsLong, ("Count", mp)) : ClientStrings.Format(ClientStrings.InventoryPanel_MpPotionsShort, ("Count", mp));
-        string FmtSp() => longLabels ? ClientStrings.Format(ClientStrings.InventoryPanel_SpPotionsLong, ("Count", sp)) : ClientStrings.Format(ClientStrings.InventoryPanel_SpPotionsShort, ("Count", sp));
-        float w = 0f;
-        if (hp > 0) w += font.MeasureString(FmtHp()).X + (w > 0 ? 10 : 0);
-        if (mp > 0) w += font.MeasureString(FmtMp()).X + (w > 0 ? 10 : 0);
-        if (sp > 0) w += font.MeasureString(FmtSp()).X + (w > 0 ? 10 : 0);
-        if (x + w > rightLimit) return false;
-
-        if (hp > 0) DrawPotionLabel(sb, font, FmtHp(), UiHelper.VitalHpColor, ref x, y);
-        if (mp > 0) DrawPotionLabel(sb, font, FmtMp(), UiHelper.VitalMpColor, ref x, y);
-        if (sp > 0) DrawPotionLabel(sb, font, FmtSp(), UiHelper.VitalSpColor, ref x, y);
-        return true;
-    }
-
-    private static void DrawPotionRowEllipsized(SpriteBatch sb, SpriteFont font, int hp, int mp, int sp,
-        float x, float y, float rightLimit)
-    {
-        string hpStr = hp > 0 ? ClientStrings.Format(ClientStrings.InventoryPanel_HpPotionsShort, ("Count", hp)) : "";
-        string mpStr = mp > 0 ? ClientStrings.Format(ClientStrings.InventoryPanel_MpPotionsShort, ("Count", mp)) : "";
-        string spStr = sp > 0 ? ClientStrings.Format(ClientStrings.InventoryPanel_SpPotionsShort, ("Count", sp)) : "";
-        string combined = string.Join("  ", new[] { hpStr, mpStr, spStr }.Where(s => s.Length > 0));
-        if (combined.Length == 0) return;
-        string fitted = UiHelper.FitText(font, combined, Math.Max(10f, rightLimit - x));
-        sb.DrawString(font, fitted, new Vector2(x, y), Color.White);
-    }
-
     private static void DrawPotionLabel(SpriteBatch sb, SpriteFont font, string text, Color color, ref float x, float y)
     {
         sb.DrawString(font, text, new Vector2(x, y), color);
         x += font.MeasureString(text).X + 10;
     }
 
-    private static Rectangle ListBoundsOf(Rectangle c, bool hasPotions) =>
-        new(c.X + 4, c.Y + 2 + LinkStripH, c.Width - 8, Math.Max(0, c.Height - LinkStripH - (hasPotions ? 84 : 66)));
-
-    private static bool HasAnyPotions(ClientState state)
-    {
-        var me = state.Me;
-        if (me?.Inv is null) return false;
-        for (int i = 1; i <= Constants.MaxInv; i++)
-        {
-            var slot = me.Inv[i];
-            if (slot is null || slot.Num <= 0 || slot.Num > state.Limits.Items) continue;
-            switch (state.Items[slot.Num]?.Type)
-            {
-                case ItemType.PotionAddHp:
-                case ItemType.PotionAddMp:
-                case ItemType.PotionAddSp:
-                    return true;
-            }
-        }
-        return false;
-    }
+    private static Rectangle ListBoundsOf(Rectangle c) =>
+        new(c.X + 4, c.Y + 2 + LinkStripH, c.Width - 8, Math.Max(0, c.Height - LinkStripH - 66));
 
     // ── Equipment paper-doll sub-view (folded in from the former EquipmentView) ──────────────────────
     // The four equipped pieces (Helmet top-center, then Weapon / Chest / Shield beneath), each showing the

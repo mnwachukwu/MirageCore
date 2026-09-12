@@ -286,22 +286,16 @@ public class SeedIntegrityTests
     /// says its AttackSay instead. So authored dialogue that can never open is silent, and this is what
     /// catches it.
     ///
-    /// <para>Two things have to hold, and only two: the speaker sits above the hostile bestiary, and it
-    /// names an NPC that exists. The number itself is free — a conversation may speak for any friendly,
-    /// which is what lets a talker be added without disturbing a block that shops and quests already
-    /// point at.</para></summary>
+    /// <para>One thing has to hold: it names an NPC that exists. WHICH one is free — where a world puts
+    /// its talkers is the world's business, not the engine's.</para></summary>
     [Test]
-    public void EveryConversation_SpeaksForItsReservedNpc()
+    public void EveryConversation_SpeaksForAnNpcThatExists()
     {
         RequireConversations();
-        const int firstFriendlyNpc = 125;   // 1-124 is the hostile bestiary
         Assert.Multiple(() =>
         {
             foreach (var (num, conv) in _conversations.OrderBy(kv => kv.Key))
             {
-                Assert.That(conv.SpeakerNpc, Is.GreaterThanOrEqualTo(firstFriendlyNpc),
-                    $"conversation{num} ({conv.TrimmedName}) speaks for npc {conv.SpeakerNpc}, inside the "
-                    + "hostile bestiary — a mob would open a dialogue tree instead of fighting");
                 Assert.That(_npcs.ContainsKey(conv.SpeakerNpc), Is.True,
                     $"conversation{num} ({conv.TrimmedName}) speaks for npc {conv.SpeakerNpc}, which does not exist");
             }
@@ -646,7 +640,7 @@ public class SeedIntegrityTests
     /// <summary>Anyone who carries content must be non-hostile and must not be loot. A shopkeeper on
     /// A behavior that notices would walk off after the customer; a drop table turns a storefront into a farm.</summary>
     [Test]
-    public void EveryContentCarrier_IsFriendlyAndCarriesNoLoot()
+    public void NoContentCarrier_IsAlsoLoot()
     {
         RequireSeed();
         var carriers = _conversations.Values.Where(c => c.TrimmedName.Length > 0).Select(c => c.SpeakerNpc)
@@ -660,8 +654,6 @@ public class SeedIntegrityTests
             foreach (int num in carriers)
             {
                 var npc = _npcs[num];
-                Assert.That(npc.Behavior, Is.EqualTo(NpcBehavior.Wander),
-                    $"npc {num} ({npc.TrimmedName}) carries content but is {npc.Behavior} — it would walk out on its own customers");
                 Assert.That(npc.Drops ?? [], Is.Empty,
                     $"npc {num} ({npc.TrimmedName}) carries content AND a drop table — killing the shopkeeper pays");
             }
@@ -825,32 +817,6 @@ public class SeedIntegrityTests
                 if (npc.Behavior is NpcBehavior.Pursue) continue;
                 Assert.That(npc.Group, Is.Zero,
                     $"npc{num} \"{npc.TrimmedName}\" is {npc.Behavior} and carries group {npc.Group}");
-            }
-        });
-    }
-
-    /// <summary>
-    /// Everyone who LIVES here carries a light.
-    ///
-    /// <para>The bestiary lights its mobs — every one that has hands for a torch — so a world where the
-    /// townsfolk are dark is one whose only night-time glow belongs to the things that come at you, and a
-    /// town reads as abandoned.</para>
-    ///
-    /// <para>This is guarded because the gap is invisible: the townsfolk come from a different generator
-    /// than the mobs, and that one never mentions light, so without this every one of them reads dark and
-    /// nothing anywhere says so.</para>
-    /// </summary>
-    [Test]
-    public void EverythingThatLivesHere_CarriesALight()
-    {
-        RequireSeed();
-        Assert.Multiple(() =>
-        {
-            foreach (var (num, npc) in _npcs.OrderBy(k => k.Key))
-            {
-                if (npc.Behavior is not NpcBehavior.Wander) continue;
-                Assert.That(npc.EmitsLight, Is.True,
-                    $"npc{num} \"{npc.TrimmedName}\" is {npc.Behavior} and stands in the dark");
             }
         });
     }

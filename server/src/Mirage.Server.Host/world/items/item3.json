@@ -1,11 +1,15 @@
 {
-  "name": "Valor",
-  "pic": 1,
+  "name": "Padded Vest",
+  "pic": 0,
   "itemSheet": 0,
-  "type": "Currency",
-  "nonTradeable": true,
-  "nonListable": true,
-  "nonMailable": true,
-  "destroyOnDrop": true,
-  "nonJunkable": true
+  "type": "Armor",
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "durability": 40,
+  "power": 8,
+  "tier": 1,
+  "price": 14
 }

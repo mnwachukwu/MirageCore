@@ -18,9 +18,11 @@ public sealed partial class ItemSystem : GameSystem
 
     /// <summary>Use the item in an inventory slot, dispatching on its type. Equipment toggles the matching
     /// gear slot — refused in combat, on a class mismatch, below the stat requirement, or when the piece has
-    /// been worn to 0 durability (unequipping is always allowed). Potions apply their vital change, a spell
-    /// scroll is studied into an open spell slot, and a key opens the door the player faces (across a map seam
-    /// if need be), consuming itself only when that door's take flag is set.</summary>
+    /// been worn to 0 durability (unequipping is always allowed). A key opens the door the player faces
+    /// (across a map seam if need be), consuming itself only when that door's take flag is set.
+    ///
+    /// <para><b>A consumable does nothing here.</b> It takes its cooldown and no more: what using one means
+    /// is a game's rule, and Core has nothing left that could decide it.</para></summary>
     public void UseItem(int index, int invSlot)
     {
         if (!_pm[index].IsPlaying || !SlotValidation.IsValidInvSlot(invSlot)) return;
@@ -53,22 +55,18 @@ public sealed partial class ItemSystem : GameSystem
             return;
         }
 
-        // ── The drinking cooldown ────────────────────────────────────────────────────────────────
-        // Potions run on their own 2s clock, apart from the 1s action beat that attacking and casting
-        // share, so a potion never costs a swing and a swing never delays a potion. Heavy Wind doubles
-        // it as it doubles the others. Authoritative here because a client-side gate is a courtesy.
+        // ── The consumable cooldown ──────────────────────────────────────────────────────────────
+        // Its own clock, apart from the action beat, so using something up never costs an action and an
+        // action never delays it. Authoritative here because a client-side gate is a courtesy.
         //
-        // ONLY potions. Everything else is already guarded or has no business being paced: equipment and
-        // scrolls are blocked outright in combat, and a KEY is deliberately free — opening a door
-        // mid-fight is a legitimate move and must not cost the swing that follows it.
-        //
-        // Placed after every guard that rejects a use outright, so a refused use never burns the cooldown.
-        bool isPotion = item.Type is ItemType.PotionAddHp or ItemType.PotionAddMp or ItemType.PotionAddSp
-                                  or ItemType.PotionSubHp or ItemType.PotionSubMp or ItemType.PotionSubSp;
+        // ONLY consumables: a KEY is deliberately free, because opening a door is a legitimate move and
+        // must not be paced. Placed after every guard that rejects a use outright, so a refused use never
+        // burns the cooldown.
+        bool isConsumable = ItemRecord.IsConsumable(item.Type);
         long useWindMult = _world.WeatherOn(p.Map) == WeatherType.HeavyWind
             ? Constants.WeatherHeavyWindCooldownMultiplier : 1L;
         long useNow = Environment.TickCount64;
-        if (isPotion && useNow < sp.PotionTimer + Constants.PotionCooldownMs * useWindMult) return;
+        if (isConsumable && useNow < sp.ConsumableTimer + Constants.ConsumableCooldownMs * useWindMult) return;
 
         // Set by the potion branches that actually spend the item, so one refused — a full bar, a vital
         // with nothing left to give — costs neither the item nor the beat.
@@ -132,7 +130,7 @@ public sealed partial class ItemSystem : GameSystem
                 break;
         }
 
-        if (consumed) sp.PotionTimer = useNow;
+        if (consumed) sp.ConsumableTimer = useNow;
     }
 
 }

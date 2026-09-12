@@ -139,7 +139,7 @@ public class EconomyFormulasTests
         });
 
         // Condition is meaningless for anything with no durability budget.
-        var potion = new ItemRecord { Type = ItemType.PotionAddHp, Tier = 120, VitalAmount = 10 };
+        var potion = new ItemRecord { Type = ItemType.Consumable, Tier = 120, VitalAmount = 10 };
         Assert.That(EconomyFormulas.ItemSellValue(potion, 0),
             Is.EqualTo(EconomyFormulas.ItemSellValue(potion, 999)), "a potion has no wear to price");
     }

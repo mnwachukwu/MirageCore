@@ -31,12 +31,12 @@ public class ItemFormulaTests
         items[Hlm].Type = ItemType.Helmet;
         items[Shd].Type = ItemType.Shield;
         items[Key].Type = ItemType.Key;
-        items[PAdHp].Type = ItemType.PotionAddHp;
-        items[PAdMp].Type = ItemType.PotionAddMp;
-        items[PAdSp].Type = ItemType.PotionAddSp;
-        items[PSuHp].Type = ItemType.PotionSubHp;
-        items[PSuMp].Type = ItemType.PotionSubMp;
-        items[PSuSp].Type = ItemType.PotionSubSp;
+        items[PAdHp].Type = ItemType.Consumable;
+        items[PAdMp].Type = ItemType.Consumable;
+        items[PAdSp].Type = ItemType.Consumable;
+        items[PSuHp].Type = ItemType.Consumable;
+        items[PSuMp].Type = ItemType.Consumable;
+        items[PSuSp].Type = ItemType.Consumable;
         return items;
     }
 
@@ -193,26 +193,19 @@ public class ItemFormulaTests
         });
     }
 
-    // Add potions (cat 5) sort above Sub potions (cat 6); each groups by vital HP/MP/SP and carries the
-    // potion's VitalAmount as the magnitude so bigger potions rise within a group.
+    // Consumables share one category and order by the amount they carry, so a bigger one rises within
+    // the group. What the amount MEANS is a game's rule; the sort only needs it to be comparable.
     [Test]
-    public void SortKey_Potions_AddBeforeSub_ByVital_WithAmountMagnitude()
+    public void SortKey_Consumables_OrderByTheAmountTheyCarry()
     {
         var items = BuildItems();
-        items[PAdHp].VitalAmount =100;
-        items[PAdMp].VitalAmount =80;
-        items[PAdSp].VitalAmount =60;
-        items[PSuHp].VitalAmount =40;
-        items[PSuMp].VitalAmount =20;
-        items[PSuSp].VitalAmount =10;
+        items[PAdHp].VitalAmount = 100;
+        items[PAdMp].VitalAmount = 80;
+
         Assert.Multiple(() =>
         {
             Assert.That(SortKey(PAdHp, items[PAdHp], false), Is.EqualTo((5, 0, 100)));
-            Assert.That(SortKey(PAdMp, items[PAdMp], false), Is.EqualTo((5, 1, 80)));
-            Assert.That(SortKey(PAdSp, items[PAdSp], false), Is.EqualTo((5, 2, 60)));
-            Assert.That(SortKey(PSuHp, items[PSuHp], false), Is.EqualTo((6, 0, 40)));
-            Assert.That(SortKey(PSuMp, items[PSuMp], false), Is.EqualTo((6, 1, 20)));
-            Assert.That(SortKey(PSuSp, items[PSuSp], false), Is.EqualTo((6, 2, 10)));
+            Assert.That(SortKey(PAdMp, items[PAdMp], false), Is.EqualTo((5, 0, 80)));
         });
     }
 
@@ -227,13 +220,11 @@ public class ItemFormulaTests
         int equip = SortKey(Wep, items[Wep], true).Cat;
         int gear = SortKey(Wep, items[Wep], false).Cat;
         int key = SortKey(Key, items[Key], false).Cat;
-        int add = SortKey(PAdHp, items[PAdHp], false).Cat;
-        int sub = SortKey(PSuHp, items[PSuHp], false).Cat;
+        int consumable = SortKey(PAdHp, items[PAdHp], false).Cat;
         Assert.That(gold, Is.LessThan(cur));
         Assert.That(cur, Is.LessThan(equip));
         Assert.That(equip, Is.LessThan(gear));
         Assert.That(gear, Is.LessThan(key));
-        Assert.That(key, Is.LessThan(add));
-        Assert.That(add, Is.LessThan(sub));
+        Assert.That(key, Is.LessThan(consumable));
     }
 }

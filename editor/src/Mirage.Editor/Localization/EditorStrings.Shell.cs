@@ -249,9 +249,6 @@ public static partial class EditorStrings
 
     // ── Data field labels (shared by Item/Spell row editors) ──────────────────
     public const string DataLabel_Durability = nameof(DataLabel_Durability);
-    public const string DataLabel_HpAmount = nameof(DataLabel_HpAmount);
-    public const string DataLabel_MpAmount = nameof(DataLabel_MpAmount);
-    public const string DataLabel_SpAmount = nameof(DataLabel_SpAmount);
     public const string DataLabel_Damage = nameof(DataLabel_Damage);
     public const string DataLabel_Defense = nameof(DataLabel_Defense);
     // The class multi-select shared by the item, spell and quest editors.
