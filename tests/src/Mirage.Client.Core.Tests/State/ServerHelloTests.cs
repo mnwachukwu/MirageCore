@@ -129,7 +129,7 @@ public class ServerHelloTests
         var state = new ClientState();
         Hello(state, 20, records: new RecordLimits
         {
-            Items = 40, Npcs = 30, Shops = 12, Spells = 25,
+            Items = 40, Npcs = 30, Shops = 12,
             Quests = 8, Conversations = 9, Maps = 20, MapGroups = 6,
         });
 
@@ -139,7 +139,6 @@ public class ServerHelloTests
             Assert.That(state.Items, Has.Length.EqualTo(41), "1-based, so one longer than the limit");
             Assert.That(state.NpcDefs, Has.Length.EqualTo(31));
             Assert.That(state.ShopDefs, Has.Length.EqualTo(13));
-            Assert.That(state.SpellDefs, Has.Length.EqualTo(26));
             Assert.That(state.QuestDefs, Has.Length.EqualTo(9));
             Assert.That(state.ConvDefs, Has.Length.EqualTo(10));
             Assert.That(state.MapGroups, Has.Length.EqualTo(7));

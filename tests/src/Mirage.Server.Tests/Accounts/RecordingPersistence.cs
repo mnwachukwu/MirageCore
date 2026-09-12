@@ -16,7 +16,6 @@ internal sealed class RecordingPersistence : IPersistenceService
     public readonly List<int> SavedItems = new();
     public readonly List<int> SavedNpcs = new();
     public readonly List<int> SavedShops = new();
-    public readonly List<int> SavedSpells = new();
 
     public Task SaveMapAsync(int mapNum, MapRecord map)
     {
@@ -43,11 +42,6 @@ internal sealed class RecordingPersistence : IPersistenceService
         SavedShops.Add(num);
         return Task.CompletedTask;
     }
-    public Task SaveSpellAsync(int num, SpellRecord spell)
-    {
-        SavedSpells.Add(num);
-        return Task.CompletedTask;
-    }
 
     // ── Unused reads/writes: benign defaults ──────────────────────────────────
     public Task<bool> AccountExistsAsync(string login) => Task.FromResult(false);
@@ -69,7 +63,6 @@ internal sealed class RecordingPersistence : IPersistenceService
     public Task<(ItemRecord[] records, int padded)> LoadAllItemsAsync() => Task.FromResult((Array.Empty<ItemRecord>(), 0));
     public Task<(NpcRecord[] records, int padded)> LoadAllNpcsAsync() => Task.FromResult((Array.Empty<NpcRecord>(), 0));
     public Task<(ShopRecord[] records, int padded)> LoadAllShopsAsync() => Task.FromResult((Array.Empty<ShopRecord>(), 0));
-    public Task<(SpellRecord[] records, int padded)> LoadAllSpellsAsync() => Task.FromResult((Array.Empty<SpellRecord>(), 0));
     public Task<(QuestRecord[] records, int padded)> LoadAllQuestsAsync() => Task.FromResult((Array.Empty<QuestRecord>(), 0));
     public Task SaveQuestAsync(int num, QuestRecord quest) => Task.CompletedTask;
     public Task<(ConversationRecord[] records, int padded)> LoadAllConversationsAsync() => Task.FromResult((Array.Empty<ConversationRecord>(), 0));

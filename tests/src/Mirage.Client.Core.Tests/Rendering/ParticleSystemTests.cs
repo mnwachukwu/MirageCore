@@ -57,11 +57,11 @@ public class ParticleSystemTests
     }
 
     [Test]
-    public void EmitsLight_MagicalKindsOnly()
+    public void EmitsLight_GlowingKindsOnly()
     {
         Assert.Multiple(() =>
         {
-            Assert.That(ParticleSystem.EmitsLight(ParticleKind.SpellBall), Is.True);
+            Assert.That(ParticleSystem.EmitsLight(ParticleKind.Bolt), Is.True);
             Assert.That(ParticleSystem.EmitsLight(ParticleKind.Orbit), Is.True);
             Assert.That(ParticleSystem.EmitsLight(ParticleKind.ImpactBurst), Is.True);
             Assert.That(ParticleSystem.EmitsLight(ParticleKind.RainStreak), Is.False);
@@ -121,7 +121,7 @@ public class ParticleSystemTests
         const float MapWidthPx = 16 * 32;    // one map slide, the offset a real seam cross applies
         const float MapHeightPx = 12 * 32;
         var sys = new ParticleSystem();
-        sys.TrySpawn(new Particle { X = 100f, Y = 50f, Tx = 260f, Ty = 210f, Life = 1f, Kind = ParticleKind.SpellBall });
+        sys.TrySpawn(new Particle { X = 100f, Y = 50f, Tx = 260f, Ty = 210f, Life = 1f, Kind = ParticleKind.Bolt });
 
         var before = sys.Active[0];
         float aimX = before.Tx - before.X, aimY = before.Ty - before.Y;
@@ -145,7 +145,7 @@ public class ParticleSystemTests
     public void ShiftAll_DoesNotExtendAProjectilesLife()
     {
         var sys = new ParticleSystem();
-        sys.TrySpawn(new Particle { X = 0f, Y = 0f, Tx = 100f, Ty = 0f, Life = 0.9f, Age = 0.4f, Kind = ParticleKind.SpellBall });
+        sys.TrySpawn(new Particle { X = 0f, Y = 0f, Tx = 100f, Ty = 0f, Life = 0.9f, Age = 0.4f, Kind = ParticleKind.Bolt });
 
         sys.ShiftAll(-512f, 384f);
 
@@ -182,7 +182,7 @@ public class ParticleSystemTests
     {
         var sys = new ParticleSystem();
         // Target 10px away; one large dt snaps the bolt onto the target this frame.
-        sys.TrySpawn(new Particle { X = 0f, Y = 0f, Tx = 10f, Ty = 0f, Life = 0.9f, Kind = ParticleKind.SpellBall });
+        sys.TrySpawn(new Particle { X = 0f, Y = 0f, Tx = 10f, Ty = 0f, Life = 0.9f, Kind = ParticleKind.Bolt });
         sys.Update(1f);
         Assert.That(sys.Count, Is.GreaterThan(0), "arrival spawns an impact burst");
         foreach (var p in sys.Active)

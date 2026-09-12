@@ -269,8 +269,7 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         ClearChars();
         foreach (var c in record.Chars)
         {
-            var row = new AccountCharRowViewModel(c, () => _data.LiveItemEntries, () => _data.LiveSpellEntries,
-                () => _data.LiveQuestEntries);
+            var row = new AccountCharRowViewModel(c, () => _data.LiveItemEntries, () => _data.LiveQuestEntries);
             Chars.Add(row);
         }
         OnPropertyChanged(nameof(GuildText));
@@ -412,20 +411,6 @@ public sealed partial class AccountEditorViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private Task LearnSpellAsync(AccountCharRowViewModel? row) =>
-        row is { CanLearnSpell: true, LearnSpell: { } pick }
-            ? RunCharOpAsync(() => _conn.LearnSpellAsync(Login, row.Slot, pick.Id))
-            : Task.CompletedTask;
-
-    [RelayCommand]
-    private Task ForgetSpellAsync(EditorSpellSlot? slot)
-    {
-        var row = slot is null ? null : Chars.FirstOrDefault(c => c.Spells.Contains(slot));
-        return row is null ? Task.CompletedTask
-            : RunCharOpAsync(() => _conn.ForgetSpellAsync(Login, row.Slot, slot!.Slot));
-    }
-
-    [RelayCommand]
     private Task GiveToBankAsync() =>
         BankItem is { Id: > 0 } pick
             ? RunCharOpAsync(() => _conn.BankGiveAsync(Login, pick.Id, BankQuantity))
@@ -512,13 +497,11 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
     private string _name;
 
     public AccountCharRowViewModel(EditorCharRow row, Func<NamedEntry[]> itemEntriesProvider,
-        Func<NamedEntry[]> spellEntriesProvider, Func<NamedEntry[]> questEntriesProvider)
+        Func<NamedEntry[]> questEntriesProvider)
     {
         _itemEntriesProvider = itemEntriesProvider;
-        _spellEntriesProvider = spellEntriesProvider;
         _questEntriesProvider = questEntriesProvider;
         foreach (var s in row.Inv) Inv.Add(s);
-        foreach (var s in row.Spells) Spells.Add(s);
         foreach (var q in row.Quests) Quests.Add(q);
         _slot = row.Slot;
         _name = row.Name;
@@ -556,15 +539,6 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
 
     public NamedEntry[] ItemEntries => _itemEntriesProvider();
 
-    private readonly Func<NamedEntry[]> _spellEntriesProvider;
-
-    /// <summary>The character's spell book, as the server last described it. Read-only for the same reason
-    /// the bag is: teaching and forgetting are their own round trips.</summary>
-    public ObservableCollection<EditorSpellSlot> Spells { get; } = [];
-
-    public bool HasNoSpells => Spells.Count == 0;
-
-    public NamedEntry[] SpellEntries => _spellEntriesProvider();
 
     private readonly Func<NamedEntry[]> _questEntriesProvider;
 
@@ -586,12 +560,6 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
 
     public bool CanSetQuest => QuestToSet is { Id: > 0 };
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanLearnSpell))]
-    private NamedEntry? _learnSpell;
-
-    public bool CanLearnSpell => LearnSpell is { Id: > 0 };
-
     /// <summary>The item to hand over. Null until one is picked, which is what keeps Give greyed out.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanGiveItem))]
@@ -610,10 +578,6 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
     public string GiveLabel => EditorStrings.Get(EditorStrings.AccountEditor_Give);
     public string TakeLabel => EditorStrings.Get(EditorStrings.AccountEditor_Take);
     public string ItemPlaceholder => EditorStrings.Get(EditorStrings.AccountEditor_ItemPlaceholder);
-    public string BookHeader => EditorStrings.Get(EditorStrings.AccountEditor_BookHeader);
-    public string BookEmpty => EditorStrings.Get(EditorStrings.AccountEditor_BookEmpty);
-    public string TeachLabel => EditorStrings.Get(EditorStrings.AccountEditor_Teach);
-    public string SpellPlaceholder => EditorStrings.Get(EditorStrings.AccountEditor_SpellPlaceholder);
     public string LogHeader => EditorStrings.Get(EditorStrings.AccountEditor_LogHeader);
     public string LogEmpty => EditorStrings.Get(EditorStrings.AccountEditor_LogEmpty);
     public string SetLabel => EditorStrings.Get(EditorStrings.AccountEditor_SetQuest);
@@ -623,7 +587,6 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
     internal void NotifyItemEntriesChanged()
     {
         OnPropertyChanged(nameof(ItemEntries));
-        OnPropertyChanged(nameof(SpellEntries));
         OnPropertyChanged(nameof(QuestEntries));
     }
 
@@ -636,10 +599,6 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
         OnPropertyChanged(nameof(GiveLabel));
         OnPropertyChanged(nameof(TakeLabel));
         OnPropertyChanged(nameof(ItemPlaceholder));
-        OnPropertyChanged(nameof(BookHeader));
-        OnPropertyChanged(nameof(BookEmpty));
-        OnPropertyChanged(nameof(TeachLabel));
-        OnPropertyChanged(nameof(SpellPlaceholder));
         OnPropertyChanged(nameof(LogHeader));
         OnPropertyChanged(nameof(LogEmpty));
         OnPropertyChanged(nameof(SetLabel));
@@ -664,10 +623,8 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
         }
 
         Refill(Inv, row.Inv);
-        Refill(Spells, row.Spells);
         Refill(Quests, row.Quests);
         OnPropertyChanged(nameof(HasNoInv));
-        OnPropertyChanged(nameof(HasNoSpells));
         OnPropertyChanged(nameof(HasNoQuests));
     }
 

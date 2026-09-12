@@ -134,7 +134,6 @@ sealed class TestClientEvents : IClientEvents
     public event Action<int, int>? OpenNpcQuestMenu;
     public event Action<int, int, int>? OpenNpcConversation;
     public event Action? TrainingReady;
-    public event Action<int>? PreparedSpellReceived;
     public event Action<string, int>? PartyRequest;
     public event Action<GuildOfferNotifyPacket>? GuildOffer;
     public event Action<string>? TradeInvite;

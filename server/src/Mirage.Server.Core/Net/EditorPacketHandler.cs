@@ -110,9 +110,6 @@ public sealed partial class EditorPacketHandler
                 case EditorRequestConversationPacket p:
                     HandleEditorRequestConversation(editorIndex, p);
                     break;
-                case EditorRequestSpellPacket p:
-                    HandleEditorRequestSpell(editorIndex, p);
-                    break;
                 case EditorRequestMapPacket p:
                     HandleEditorRequestMap(editorIndex, p);
                     break;
@@ -130,9 +127,6 @@ public sealed partial class EditorPacketHandler
                     break;
                 case EditorRequestAllConversationsPacket p:
                     HandleEditorRequestAllConversations(editorIndex, p);
-                    break;
-                case EditorRequestAllSpellsPacket p:
-                    HandleEditorRequestAllSpells(editorIndex, p);
                     break;
                 case EditorRequestMapGroupPacket p:
                     HandleEditorRequestMapGroup(editorIndex, p);
@@ -160,9 +154,6 @@ public sealed partial class EditorPacketHandler
                     break;
                 case EditorSaveConversationPacket p:
                     HandleEditorSaveConversation(editorIndex, p);
-                    break;
-                case EditorSaveSpellPacket p:
-                    HandleEditorSaveSpell(editorIndex, p);
                     break;
                 case EditorSaveMapPacket p:
                     HandleEditorSaveMap(editorIndex, p);
@@ -268,9 +259,6 @@ public sealed partial class EditorPacketHandler
         var shops = Enumerable.Range(1, _world.Limits.Shops)
             .Select(i => new EditorDataPacket.NameEntry(i, _world.Shops[i].Name))
             .ToArray();
-        var spells = Enumerable.Range(1, _world.Limits.Spells)
-            .Select(i => new EditorDataPacket.NameEntry(i, _world.Spells[i].Name))
-            .ToArray();
         var maps = Enumerable.Range(1, _world.Limits.Maps)
             .Select(i => new EditorDataPacket.NameEntry(i, _world.Maps[i].Name))
             .ToArray();
@@ -300,11 +288,6 @@ public sealed partial class EditorPacketHandler
             .Select(i => new EditorDataPacket.ItemGate(i, _world.Items[i].Type, _world.Items[i].Power,
                 _world.Items[i].Tier, _world.Items[i].Price))
             .ToArray();
-        var spellGates = Enumerable.Range(1, _world.Limits.Spells)
-            .Where(i => !string.IsNullOrEmpty(_world.Spells[i].Name))
-            .Select(i => new EditorDataPacket.SpellGate(i, _world.Spells[i].Type, _world.Spells[i].VitalAmount,
-                _world.Spells[i].Tier))
-            .ToArray();
 
         var npcSizes = new int[_world.Limits.Npcs + 1];
         for (int i = 1; i <= _world.Limits.Npcs; i++) npcSizes[i] = _world.Npcs[i].EffectiveSize;
@@ -314,14 +297,12 @@ public sealed partial class EditorPacketHandler
             Items = items,
             Npcs = npcs,
             Shops = shops,
-            Spells = spells,
             Maps = maps,
             MapGroups = mapGroups,
             Quests = quests,
             Conversations = conversations,
             CurrencyItems = currencyItems,
             ItemGates = itemGates,
-            SpellGates = spellGates,
             NpcSizes = npcSizes,
             WorldName = _world.WorldName,
         };
@@ -399,14 +380,6 @@ public sealed partial class EditorPacketHandler
         _dispatcher.SendToEditor(editorIndex, PacketBuilder.UpdateShop(n, _world.Shops[n]));
     }
 
-    private void HandleEditorRequestSpell(int editorIndex, EditorRequestSpellPacket p)
-    {
-        if (!RequireAccess(editorIndex, AdminLevel.Mapper)) return;
-        int n = p.SpellNum;
-        if (!SlotValidation.IsValidSpellNum(n, _world.Limits.Spells)) return;
-        _dispatcher.SendToEditor(editorIndex, PacketBuilder.UpdateSpell(n, _world.Spells[n]));
-    }
-
     private void HandleEditorRequestMap(int editorIndex, EditorRequestMapPacket p)
     {
         if (!RequireAccess(editorIndex, AdminLevel.Mapper)) return;
@@ -445,16 +418,6 @@ public sealed partial class EditorPacketHandler
         });
     }
 
-    private void HandleEditorRequestAllSpells(int editorIndex, EditorRequestAllSpellsPacket _)
-    {
-        if (!RequireAccess(editorIndex, AdminLevel.Mapper)) return;
-        _dispatcher.SendToEditor(editorIndex, new EditorAllSpellsPacket
-        {
-            Spells = Enumerable.Range(1, _world.Limits.Spells)
-                .Select(n => PacketBuilder.UpdateSpell(n, _world.Spells[n])).ToArray(),
-        });
-    }
-
     private void HandleEditorSaveItem(int editorIndex, EditorSaveItemPacket p)
     {
         if (!RequireAccess(editorIndex, AdminLevel.Developer)) return;
@@ -470,7 +433,6 @@ public sealed partial class EditorPacketHandler
         item.Type = p.Type;
         item.Durability = p.Durability;
         item.VitalAmount = p.VitalAmount;
-        item.SpellNum = p.SpellNum;
         item.Power = p.Power;
         item.Tier = p.Tier;
         item.NonTradeable = p.NonTradeable;
@@ -782,33 +744,6 @@ public sealed partial class EditorPacketHandler
         if (itemNum <= 0 || itemNum > _world.Limits.Items) return 0;
         if (_world.Items[itemNum].Type != ItemType.Currency) return 1;
         return value < 1 ? 1 : value;
-    }
-
-    private void HandleEditorSaveSpell(int editorIndex, EditorSaveSpellPacket p)
-    {
-        if (!RequireAccess(editorIndex, AdminLevel.Developer)) return;
-
-        int n = p.SpellNum;
-        if (!SlotValidation.IsValidSpellNum(n, _world.Limits.Spells)) return;
-        if (LockedByAnother(editorIndex, CoreRecordFamilies.Spells, n)) return;
-
-        var spell = _world.Spells[n];
-        spell.Name = p.Name;
-        spell.Type = p.Type;
-        spell.VitalAmount = p.VitalAmount;
-        spell.ItemNum = p.ItemNum;
-        spell.ItemQuantity = p.ItemQuantity;
-        spell.IntReq = p.IntReq;
-        spell.Tier = p.Tier;
-        // As on the item path: the server clears what the new Type doesn't use before storing or
-        // broadcasting. It matters more here — a stale IntReq would silently re-gate the spell.
-        spell.Normalize();
-
-        _bg.Run(_persistence.SaveSpellAsync(n, spell), nameof(IPersistenceService.SaveSpellAsync));
-        _dispatcher.SendToAll(PacketBuilder.UpdateSpell(n, spell));
-        // Editors too, or a session that did not make this save keeps showing what it loaded.
-        _dispatcher.SendToAllEditors(PacketBuilder.UpdateSpell(n, spell));
-        _logger.LogInformation("Editor saved spell #{Num}.", n);
     }
 
     private void HandleEditorSaveMap(int editorIndex, EditorSaveMapPacket p)

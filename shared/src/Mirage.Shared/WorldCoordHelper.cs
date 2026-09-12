@@ -267,19 +267,19 @@ public static class WorldCoordHelper
     /// Inherently two-way: if A is within B's circle, B is within A's circle (distance is
     /// symmetric in (dx,dy)), so no separate "mutual range" check is needed for PvP fairness.
     /// </summary>
-    public static bool IsInSpellRange(int playerWorldX, int playerWorldY, int targetWorldX, int targetWorldY) =>
-        IsInSpellRange(playerWorldX, playerWorldY, 1, targetWorldX, targetWorldY, 1);
+    public static bool IsInInteractRange(int playerWorldX, int playerWorldY, int targetWorldX, int targetWorldY) =>
+        IsInInteractRange(playerWorldX, playerWorldY, 1, targetWorldX, targetWorldY, 1);
 
     /// <summary>Footprint-aware spell-circle test: true when the NEAREST tiles of two SxS footprints (top-left
     /// anchors A and B, sizes in tiles) fall within the r=5 circle.  So an oversize NPC is targetable when ANY
     /// tile of its body is inside the caster's circle (not just its anchor), and an oversize NPC caster reaches
     /// from its body edge.  <see cref="RectAxisGap"/> is symmetric, so this stays inherently two-way (PvP-fair)
     /// at any sizes; size 1 on both sides is exactly the plain point check above.</summary>
-    public static bool IsInSpellRange(int aWorldX, int aWorldY, int aSize, int bWorldX, int bWorldY, int bSize)
+    public static bool IsInInteractRange(int aWorldX, int aWorldY, int aSize, int bWorldX, int bWorldY, int bSize)
     {
         int dx = RectAxisGap(aWorldX, aSize, bWorldX, bSize);
         int dy = RectAxisGap(aWorldY, aSize, bWorldY, bSize);
-        const int r = Constants.SpellRangeTiles;
+        const int r = Constants.InteractRangeTiles;
         return dx * dx + dy * dy <= r * r;
     }
 
@@ -300,15 +300,15 @@ public static class WorldCoordHelper
     ///
     /// Movement is cardinal-only, so a diagonal step also fails when BOTH perpendicular corner
     /// tiles are blocked: that pair forms an impassable wall even though the diagonal line itself
-    /// slips between them — a spell shouldn't fly through a corner a chasing NPC can't walk through.
+    /// slips between them — an interaction shouldn't fly through a corner a chasing NPC can't walk through.
     ///
     /// Used by the server's authoritative cast gate and the client's target-arrow color so the
     /// gray arrow never lies about whether the cast will land.
     /// </summary>
-    public static bool HasClearSpellLineOfSight<TPredicate>(
+    public static bool HasClearLineOfSight<TPredicate>(
         int fromWorldX, int fromWorldY,
         int toWorldX, int toWorldY,
-        TPredicate isBlockedAt) where TPredicate : struct, ISpellLosPredicate
+        TPredicate isBlockedAt) where TPredicate : struct, ILineOfSightPredicate
     {
         // Direction-independence: standard Bresenham picks alternate minor-axis tiles based on
         // which endpoint the trace starts at, so without this normalization A→B could clear LoS
@@ -365,13 +365,13 @@ public static class WorldCoordHelper
 }
 
 /// <summary>
-/// Tile-blocking predicate for <see cref="WorldCoordHelper.HasClearSpellLineOfSight"/>.  Always
+/// Tile-blocking predicate for <see cref="WorldCoordHelper.HasClearLineOfSight"/>.  Always
 /// implemented as a <c>readonly struct</c> so the generic call site is JIT-specialized: no boxing,
 /// no virtual dispatch on <see cref="IsBlocked"/>, no per-call closure allocation.  Each consumer
 /// supplies its own struct that captures whatever world state it needs (server: GameWorld + a
 /// pre-built MapGrid; client: the ClientState).
 /// </summary>
-public interface ISpellLosPredicate
+public interface ILineOfSightPredicate
 {
     bool IsBlocked(int worldX, int worldY);
 }

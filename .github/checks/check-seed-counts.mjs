@@ -44,7 +44,6 @@ const COLLECTIONS = {
   maps: 'maps',
   classes: 'classes',
   items: 'items',
-  spells: 'spells',
   npcs: 'npcs',
   conversations: 'conversations',
   quests: 'quests',

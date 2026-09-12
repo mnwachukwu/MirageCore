@@ -180,7 +180,6 @@ public static class CorePackets
         builder.Register(PacketNames.JoinParty, Read<JoinPartyPacket>);
         builder.Register(PacketNames.LeaveParty, Read<LeavePartyPacket>);
 
-        // Spells
         builder.Register(PacketNames.SetHotkey, Read<SetHotkeyPacket>);
 
         // Who is online
@@ -258,7 +257,6 @@ public static class CorePackets
         builder.Register(PacketNames.UpdateShop, Read<UpdateShopPacket>);
         builder.Register(PacketNames.UpdateQuest, Read<UpdateQuestPacket>);
         builder.Register(PacketNames.UpdateConversation, Read<UpdateConversationPacket>);
-        builder.Register(PacketNames.UpdateSpell, Read<UpdateSpellPacket>);
         builder.Register(PacketNames.PlayerHotkeys, Read<PlayerHotkeysPacket>);
         builder.Register(PacketNames.PartyRequest, Read<PartyRequestNotifyPacket>);
         builder.Register(PacketNames.PartyVitals, Read<PartyVitalsPacket>);
@@ -281,7 +279,6 @@ public static class CorePackets
         builder.Register(PacketNames.EditorRequestShop, Read<EditorRequestShopPacket>);
         builder.Register(PacketNames.EditorRequestQuest, Read<EditorRequestQuestPacket>);
         builder.Register(PacketNames.EditorRequestConversation, Read<EditorRequestConversationPacket>);
-        builder.Register(PacketNames.EditorRequestSpell, Read<EditorRequestSpellPacket>);
         builder.Register(PacketNames.EditorRequestMap, Read<EditorRequestMapPacket>);
         builder.Register(PacketNames.EditorLock, Read<EditorLockPacket>);
         builder.Register(PacketNames.EditorUnlock, Read<EditorUnlockPacket>);
@@ -291,7 +288,6 @@ public static class CorePackets
         builder.Register(PacketNames.EditorRequestAllShops, Read<EditorRequestAllShopsPacket>);
         builder.Register(PacketNames.EditorRequestAllQuests, Read<EditorRequestAllQuestsPacket>);
         builder.Register(PacketNames.EditorRequestAllConversations, Read<EditorRequestAllConversationsPacket>);
-        builder.Register(PacketNames.EditorRequestAllSpells, Read<EditorRequestAllSpellsPacket>);
         builder.Register(PacketNames.EditorRequestMapGroup, Read<EditorRequestMapGroupPacket>);
         builder.Register(PacketNames.EditorRequestAllMapGroups, Read<EditorRequestAllMapGroupsPacket>);
         builder.Register(PacketNames.EditorRequestAllMaps, Read<EditorRequestAllMapsPacket>);
@@ -303,8 +299,7 @@ public static class CorePackets
         builder.Register(PacketNames.EditorRenameChar, Read<EditorRenameCharPacket>);
         builder.Register(PacketNames.EditorGiveItem, Read<EditorGiveItemPacket>);
         builder.Register(PacketNames.EditorTakeItem, Read<EditorTakeItemPacket>);
-        builder.Register(PacketNames.EditorLearnSpell, Read<EditorLearnSpellPacket>);
-        builder.Register(PacketNames.EditorForgetSpell, Read<EditorForgetSpellPacket>);
+
         builder.Register(PacketNames.EditorBankGive, Read<EditorBankGivePacket>);
         builder.Register(PacketNames.EditorBankTake, Read<EditorBankTakePacket>);
         builder.Register(PacketNames.EditorSetQuestStatus, Read<EditorSetQuestStatusPacket>);
@@ -315,7 +310,6 @@ public static class CorePackets
         builder.Register(PacketNames.EditorSaveShop, Read<EditorSaveShopPacket>);
         builder.Register(PacketNames.EditorSaveQuest, Read<EditorSaveQuestPacket>);
         builder.Register(PacketNames.EditorSaveConversation, Read<EditorSaveConversationPacket>);
-        builder.Register(PacketNames.EditorSaveSpell, Read<EditorSaveSpellPacket>);
         builder.Register(PacketNames.EditorSaveMap, Read<EditorSaveMapPacket>);
         builder.Register(PacketNames.EditorLoginResponse, Read<EditorLoginResponsePacket>);
         builder.Register(PacketNames.EditorData, Read<EditorDataPacket>);
@@ -324,7 +318,6 @@ public static class CorePackets
         builder.Register(PacketNames.EditorAllShops, Read<EditorAllShopsPacket>);
         builder.Register(PacketNames.EditorAllQuests, Read<EditorAllQuestsPacket>);
         builder.Register(PacketNames.EditorAllConversations, Read<EditorAllConversationsPacket>);
-        builder.Register(PacketNames.EditorAllSpells, Read<EditorAllSpellsPacket>);
         builder.Register(PacketNames.UpdateMapGroup, Read<UpdateMapGroupPacket>);
         builder.Register(PacketNames.EditorAllMapGroups, Read<EditorAllMapGroupsPacket>);
         builder.Register(PacketNames.EditorAllMaps, Read<EditorAllMapsPacket>);

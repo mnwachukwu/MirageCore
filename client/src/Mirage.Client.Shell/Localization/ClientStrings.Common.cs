@@ -45,12 +45,6 @@ public static partial class ClientStrings
     public const string Stats_Mp = nameof(Stats_Mp);
     public const string Stats_Sp = nameof(Stats_Sp);
     public const string Stats_Exp = nameof(Stats_Exp);
-    public const string Stats_MDmg = nameof(Stats_MDmg);
-    public const string Stats_MpDmg = nameof(Stats_MpDmg);
-    public const string Stats_SpDmg = nameof(Stats_SpDmg);
-    public const string Stats_HpRestore = nameof(Stats_HpRestore);
-    public const string Stats_MpRestore = nameof(Stats_MpRestore);
-    public const string Stats_SpRestore = nameof(Stats_SpRestore);
 
     // Floating combat text (Block/Dodge over an entity; vital labels reuse Stats_*).
     public const string Combat_EnterCombat = nameof(Combat_EnterCombat);
@@ -60,7 +54,6 @@ public static partial class ClientStrings
     public const string Tooltip_Durability = nameof(Tooltip_Durability);
     public const string Tooltip_Quantity = nameof(Tooltip_Quantity);
     public const string NumberPrompt_OverMax = nameof(NumberPrompt_OverMax);
-    public const string Tooltip_Teaches = nameof(Tooltip_Teaches);
     // Action bar
     public const string HotkeyBar_EmptyHint = nameof(HotkeyBar_EmptyHint);
     public const string HotkeyBar_GamepadModifier = nameof(HotkeyBar_GamepadModifier);

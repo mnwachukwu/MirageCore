@@ -235,7 +235,7 @@ public sealed partial class GameplayScreen : IGameScreen
         held.Sort((a, b) => b.Slot.CompareTo(a.Slot));
 
         bool InReach(WorldLayer layer) =>
-            WorldCoordHelper.IsInSpellRange(
+            WorldCoordHelper.IsInInteractRange(
                 _ctx.State.MapTilesX + _ctx.State.Me.X, _ctx.State.MapTilesY + _ctx.State.Me.Y, 1,
                 worldTx, worldTy, 1)
             && ClientLineOfSight.LayerConnectsFromLocalPlayer(_ctx.State, worldTx, worldTy, layer);
@@ -388,7 +388,7 @@ public sealed partial class GameplayScreen : IGameScreen
             if (!ResolveTargetTile(npc, out int m, out int nx, out int ny)) return false;
             var off = CellOffsetForMapClient(m);
             if (off is null) return false;
-            return WorldCoordHelper.IsInSpellRange(
+            return WorldCoordHelper.IsInInteractRange(
                 _ctx.State.MapTilesX + me.X, _ctx.State.MapTilesY + me.Y, 1,
                 off.Value.ox + nx, off.Value.oy + ny, npcSize);
         }

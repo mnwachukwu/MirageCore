@@ -626,7 +626,7 @@ public sealed class MailPanel : IGamePanel
         var def = state.Items[slot.Num];
         if (def is not null)
             Tooltip.NotifyHoverItem(TooltipScope, key, def, slot, state.Me, itemsTex, _input.MousePosition,
-            state.SpellDefs, state.Items, state.Weather);
+            state.Items, state.Weather);
     }
 
     private void DrawReadingPane(SpriteBatch sb, SpriteFont font, ClientState state, Rectangle r, IReadOnlyList<Texture2D?> itemsTex)
@@ -728,7 +728,7 @@ public sealed class MailPanel : IGamePanel
                 Tooltip.NotifyHoverItem(TooltipScope, (TooltipScope, "read", msg.Id, ai), def,
                     new PlayerInvSlot { Num = a.ItemNum, Quantity = a.Quantity, Dur = a.Dur },
                     state.Me, itemsTex, _input.MousePosition,
-            state.SpellDefs, state.Items, state.Weather);
+            state.Items, state.Weather);
             }
 
             ay += lineH;

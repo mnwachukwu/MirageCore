@@ -639,22 +639,19 @@
               <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding RecordShopsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
               <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding RecordShops}" Minimum="1" Maximum="{Binding RecordCeiling}"
                              FormatString="0" Increment="100" ParsingNumberStyle="Integer" Margin="0,6,0,0"/>
-              <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding RecordSpellsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
-              <NumericUpDown Grid.Row="1" Grid.Column="3" Value="{Binding RecordSpells}" Minimum="1" Maximum="{Binding RecordCeiling}"
+              <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding RecordQuestsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
+              <NumericUpDown Grid.Row="1" Grid.Column="3" Value="{Binding RecordQuests}" Minimum="1" Maximum="{Binding RecordCeiling}"
                              FormatString="0" Increment="100" ParsingNumberStyle="Integer" Margin="0,6,0,0"/>
 
-              <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding RecordQuestsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
-              <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding RecordQuests}" Minimum="1" Maximum="{Binding RecordCeiling}"
+              <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding RecordConversationsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
+              <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding RecordConversations}" Minimum="1" Maximum="{Binding RecordCeiling}"
                              FormatString="0" Increment="100" ParsingNumberStyle="Integer" Margin="0,6,0,0"/>
-              <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding RecordConversationsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
-              <NumericUpDown Grid.Row="2" Grid.Column="3" Value="{Binding RecordConversations}" Minimum="1" Maximum="{Binding RecordCeiling}"
+              <TextBlock Grid.Row="2" Grid.Column="2" Text="{Binding RecordMapsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
+              <NumericUpDown Grid.Row="2" Grid.Column="3" Value="{Binding RecordMaps}" Minimum="1" Maximum="{Binding RecordCeiling}"
                              FormatString="0" Increment="100" ParsingNumberStyle="Integer" Margin="0,6,0,0"/>
 
-              <TextBlock Grid.Row="3" Grid.Column="0" Text="{Binding RecordMapsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
-              <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding RecordMaps}" Minimum="1" Maximum="{Binding RecordCeiling}"
-                             FormatString="0" Increment="100" ParsingNumberStyle="Integer" Margin="0,6,0,0"/>
-              <TextBlock Grid.Row="3" Grid.Column="2" Text="{Binding RecordMapGroupsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
-              <NumericUpDown Grid.Row="3" Grid.Column="3" Value="{Binding RecordMapGroups}" Minimum="1" Maximum="{Binding RecordCeiling}"
+              <TextBlock Grid.Row="3" Grid.Column="0" Text="{Binding RecordMapGroupsLabel}" VerticalAlignment="Center" Margin="0,6,0,0"/>
+              <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding RecordMapGroups}" Minimum="1" Maximum="{Binding RecordCeiling}"
                              FormatString="0" Increment="100" ParsingNumberStyle="Integer" Margin="0,6,0,0"/>
             </Grid>
           </StackPanel>

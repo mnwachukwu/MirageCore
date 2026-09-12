@@ -21,7 +21,7 @@ public sealed class RecordLimitsTests
     {
         var world = new GameWorld(Config(new RecordLimits
         {
-            Items = 40, Npcs = 30, Shops = 12, Spells = 25,
+            Items = 40, Npcs = 30, Shops = 12,
             Quests = 8, Conversations = 9, Maps = 20, MapGroups = 6,
         }));
 
@@ -31,7 +31,6 @@ public sealed class RecordLimitsTests
             Assert.That(world.Items, Has.Length.EqualTo(41));
             Assert.That(world.Npcs, Has.Length.EqualTo(31));
             Assert.That(world.Shops, Has.Length.EqualTo(13));
-            Assert.That(world.Spells, Has.Length.EqualTo(26));
             Assert.That(world.Quests, Has.Length.EqualTo(9));
             Assert.That(world.Conversations, Has.Length.EqualTo(10));
             Assert.That(world.Maps, Has.Length.EqualTo(21));
@@ -74,10 +73,10 @@ public sealed class RecordLimitsTests
     {
         // Bounds checks read Limits and the arrays are cut from it, so a check can never guard an array of
         // a different size. Assert the relationship rather than the numbers.
-        var world = new GameWorld(Config(RecordLimits.Default with { Items = 77, Spells = 13 }));
+
+        var world = new GameWorld(Config(RecordLimits.Default with { Items = 77 }));
 
         Assert.That(world.Items, Has.Length.EqualTo(world.Limits.Items + 1));
-        Assert.That(world.Spells, Has.Length.EqualTo(world.Limits.Spells + 1));
     }
 
     [Test]

@@ -35,7 +35,7 @@ public class ItemDefinitionWireTests
 
     private static SendItemsPacket.ItemData Sword(short tier = 40) => new(
         Num: 7, Name: "Iron Sword", Pic: 3, Type: ItemType.Weapon, Durability: 50, VitalAmount: 0,
-        SpellNum: 0, Power: 12, Tier: tier, NonTradeable: false,
+        Power: 12, Tier: tier, NonTradeable: false,
         NonListable: false, NonMailable: false, DestroyOnDrop: false, NonJunkable: false, Price: 250);
 
     /// <summary>The reported bug: gear is level-gated server-side, but the client dropped the number on

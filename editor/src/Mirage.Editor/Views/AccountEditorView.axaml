@@ -246,47 +246,6 @@
                                 CommandParameter="{Binding}"/>
                       </Grid>
 
-                      <!-- The spell book. Teaching skips the class, level and INT gates a scroll enforces:
-                           an operator granting a spell means it, and casting re-checks INT live anyway. -->
-                      <TextBlock Text="{Binding BookHeader}" FontWeight="SemiBold" FontSize="11"
-                                 Margin="0,6,0,0" Foreground="{DynamicResource MirageMutedBrush}"/>
-                      <TextBlock Text="{Binding BookEmpty}" FontSize="11" FontStyle="Italic"
-                                 IsVisible="{Binding HasNoSpells}"
-                                 Foreground="{DynamicResource MirageFaintBrush}"/>
-                      <ScrollViewer MaxHeight="260" HorizontalScrollBarVisibility="Disabled">
-                      <ItemsControl ItemsSource="{Binding Spells}">
-                        <ItemsControl.ItemTemplate>
-                          <DataTemplate DataType="proto:EditorSpellSlot">
-                            <Grid ColumnDefinitions="34,*,Auto" Height="24" Margin="0,0,0,2">
-                              <TextBlock Grid.Column="0" Text="{Binding Slot}" FontSize="11"
-                                         VerticalAlignment="Center"
-                                         Foreground="{DynamicResource MirageFaintBrush}"/>
-                              <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="11"
-                                         VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                              <Button Grid.Column="2" Content="-" FontWeight="Bold" Classes="glyph"
-                                      Margin="6,0,0,0"
-                                      Command="{Binding $parent[UserControl].DataContext.ForgetSpellCommand}"
-                                      CommandParameter="{Binding}"/>
-                            </Grid>
-                          </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                      </ItemsControl>
-                      </ScrollViewer>
-
-                      <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
-                        <controls:DropdownAutoCompleteBox Grid.Column="0"
-                                         ItemsSource="{Binding SpellEntries}"
-                                         SelectedItem="{Binding LearnSpell, Mode=TwoWay}"
-                                         ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
-                                         FilterMode="Custom" MinimumPrefixLength="0"
-                                         PlaceholderText="{Binding SpellPlaceholder}"/>
-                        <Button Grid.Column="1" Margin="6,0,0,0" Padding="10,3"
-                                Content="{Binding TeachLabel}"
-                                IsEnabled="{Binding CanLearnSpell}"
-                                Command="{Binding $parent[UserControl].DataContext.LearnSpellCommand}"
-                                CommandParameter="{Binding}"/>
-                      </Grid>
-
                       <!-- The quest log. A row whose requirements the character does not meet is flagged in
                            place: seeing a quest somebody should not have is why the log is here. -->
                       <TextBlock Text="{Binding LogHeader}" FontWeight="SemiBold" FontSize="11"

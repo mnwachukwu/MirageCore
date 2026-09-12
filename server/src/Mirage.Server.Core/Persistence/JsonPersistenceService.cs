@@ -85,7 +85,6 @@ public sealed class JsonPersistenceService : IPersistenceService
     private string ConversationsPath => WorldDir(CoreRecordFamilies.Conversations);
     private string NpcsPath => WorldDir(CoreRecordFamilies.Npcs);
     private string ShopsPath => WorldDir(CoreRecordFamilies.Shops);
-    private string SpellsPath => WorldDir(CoreRecordFamilies.Spells);
     private string MapGroupsPath => WorldDir(CoreRecordFamilies.MapGroups);
 
     // ── This installation: everything the server itself writes ──────────────
@@ -106,7 +105,6 @@ public sealed class JsonPersistenceService : IPersistenceService
     private string ConversationFile(int num) => WorldFile(CoreRecordFamilies.Conversations, num);
     private string NpcFile(int num) => WorldFile(CoreRecordFamilies.Npcs, num);
     private string ShopFile(int num) => WorldFile(CoreRecordFamilies.Shops, num);
-    private string SpellFile(int num) => WorldFile(CoreRecordFamilies.Spells, num);
     private string GuildFile(int num) => Path.Combine(GuildsPath, $"{GuildRecord.FileStem}{num}.json");
     private string MapGroupFile(int num) => WorldFile(CoreRecordFamilies.MapGroups, num);
     private string MarketListingFile(int id) => Path.Combine(MarketListingsPath, $"{MarketListing.FileStem}{id}.json");
@@ -450,14 +448,6 @@ public sealed class JsonPersistenceService : IPersistenceService
         return (result, padded);
     }
 
-    public async Task<(SpellRecord[] records, int padded)> LoadAllSpellsAsync()
-    {
-        var result = new SpellRecord[_limits.Spells + 1];
-        for (int i = 0; i <= _limits.Spells; i++) result[i] = new SpellRecord();
-        int padded = await CheckAndLoadRecordsAsync(result, _limits.Spells, SpellFile);
-        return (result, padded);
-    }
-
     public async Task<(QuestRecord[] records, int padded)> LoadAllQuestsAsync()
     {
         var result = new QuestRecord[_limits.Quests + 1];
@@ -516,12 +506,6 @@ public sealed class JsonPersistenceService : IPersistenceService
     {
         if (!SlotValidation.IsValidShopNum(num, _limits.Shops)) return;
         await File.WriteAllTextAsync(ShopFile(num), JsonSerializer.Serialize(shop, Options));
-    }
-
-    public async Task SaveSpellAsync(int num, SpellRecord spell)
-    {
-        if (!SlotValidation.IsValidSpellNum(num, _limits.Spells)) return;
-        await File.WriteAllTextAsync(SpellFile(num), JsonSerializer.Serialize(spell, Options));
     }
 
     public async Task SaveQuestAsync(int num, QuestRecord quest)

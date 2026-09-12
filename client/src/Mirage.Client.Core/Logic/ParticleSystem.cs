@@ -12,13 +12,27 @@ public enum ParticleKind : byte
     WindStreak,   // fast horizontal speed-line
     Debris,       // wind-blown leaf/dust
     Spark,        // melee hit spark
-    Sparkle,      // restore-spell glitter
-    SpellBall,    // drain-spell bullet (homes on its target)
-    Cube,         // give-item box (homes on its target)
-    ImpactBurst,  // spell/impact burst on arrival
-    Swoosh,       // melee crescent blade-arc over the target tile
-    Orbit,        // restore/give-item landing swirl: motes circle the sprite briefly, then fade
+    Sparkle,      // one mote of a glitter cluster (homes on its target)
+    Bolt,         // a bullet that homes on its target
+    Parcel,       // a carried box that homes on its target
+    ImpactBurst,  // burst thrown off where a projectile arrived
+    Arc,          // crescent sweep over a tile, oriented by a facing direction
+    Orbit,        // landing swirl: motes circle the sprite briefly, then fade
     Splatter,     // one droplet of a burst: arcs under gravity, colored by whoever fired it
+}
+
+/// <summary>What a projectile looks like on its way. Describes the VISUAL, not what caused it — which is
+/// the whole reason a game can use these without Core knowing what it is making.</summary>
+public enum ProjectileStyle : byte
+{
+    /// <summary>A single bullet that homes on its target and bursts on arrival.</summary>
+    Bolt = 0,
+
+    /// <summary>A scattered cluster of motes that land spread around the target.</summary>
+    Glitter = 1,
+
+    /// <summary>A carried box, for something visibly changing hands.</summary>
+    Parcel = 2,
 }
 
 /// <summary>One pooled particle, world-anchored (world pixels) so night-dimming, camera parallax, and
@@ -33,7 +47,7 @@ public struct Particle
     public uint Rgb;        // packed 0xRRGGBB core color
     public float Seed;      // 0..1 per-particle variation (sway phase, jitter)
     public ParticleKind Kind;
-    // Two-layer world: the logical layer a SPELL/COMBAT particle lives on, so it occludes with the bridge (a
+    // Two-layer world: the logical layer a world-anchored effect particle lives on, so it occludes with the bridge (a
     // ground-layer burst draws under the deck, a fringe-layer one on top).  Weather kinds ignore it (drawn global).
     public WorldLayer Layer;
 }
@@ -102,17 +116,17 @@ public sealed class ParticleSystem
             {
                 switch (p.Kind)
                 {
-                    case ParticleKind.SpellBall:
+                    case ParticleKind.Bolt:
                         EmitImpact(p.X, p.Y, p.Rgb, p.Layer);
                         break;  // drain: radial burst
-                    case ParticleKind.Cube:
+                    case ParticleKind.Parcel:
                         SpawnOrbit(p.X, p.Y, p.Rgb, p.Layer);
                         break;  // give-item: swirl in its light color
                     case ParticleKind.Sparkle:
                         MorphToOrbit(ref p);
                         continue;  // restore: glitter becomes the swirl
                 }
-                p.Age = p.Life; // SpellBall + Cube expire now; Sparkle already continued as an Orbit mote
+                p.Age = p.Life; // Bolt + Parcel expire now; Sparkle already continued as an Orbit mote
             }
             if (p.Age >= p.Life)
             {
@@ -157,11 +171,11 @@ public sealed class ParticleSystem
                 p.Y += (p.Vy + bob) * dtSec;
                 break;
             case ParticleKind.Splash:
-            case ParticleKind.Swoosh:
+            case ParticleKind.Arc:
                 break; // static (Vx/Vy hold facing for the swoosh's draw rotation), just ages out
-            case ParticleKind.SpellBall:
+            case ParticleKind.Bolt:
             case ParticleKind.Sparkle:
-            case ParticleKind.Cube:
+            case ParticleKind.Parcel:
                 // Home toward the target at constant speed; clamp on arrival (Update fires the impact).
                 float hx = p.Tx - p.X, hy = p.Ty - p.Y;
                 float hd = MathF.Sqrt(hx * hx + hy * hy);
@@ -322,19 +336,23 @@ public sealed class ParticleSystem
         }
     }
 
-    // ── Combat emission ─────────────────────────────────────────────────────
-    /// <summary>A melee swing: an oriented crescent blade-arc over the target tile in the attacker's facing
-    /// direction (dirX,dirY = unit tile step). When <paramref name="sparks"/> is true (the swing connected)
-    /// it also flings a crescent of sparks; a whiff (no target struck) shows the blade-arc alone. Augments
-    /// the sprite's attack frame.</summary>
-    public void EmitMeleeSwing(float x, float y, int dirX, int dirY, bool sparks, WorldLayer layer = WorldLayer.Ground)
+    // ── Effects a game asks for ─────────────────────────────────────────────
+    //
+    // Nothing in Core calls any of these. They are machinery with no opinion about what causes it: a
+    // crescent sweeping over a tile is a sword, a claw, a thrown net or a shop door opening, and which
+    // one it is belongs to whoever made the call.
+
+    /// <summary>A crescent sweeping over a tile, oriented by a facing direction (dirX,dirY = unit tile
+    /// step). With <paramref name="sparks"/> it also flings a crescent of motes, which is what makes a
+    /// sweep read as having CONNECTED with something rather than passing through air.</summary>
+    public void EmitArc(float x, float y, int dirX, int dirY, bool sparks, WorldLayer layer = WorldLayer.Ground)
     {
         // The blade-arc itself: an oriented crescent that sweeps + fades over the target tile. Vx/Vy hold the
         // facing unit vector (no motion) so the draw can rotate the crescent to point where the attacker faces.
         TrySpawn(new Particle
         {
             X = x, Y = y, Vx = dirX, Vy = dirY,
-            Life = SwooshLifeSec, Size = SwooshSize, Rgb = SwooshRgb, Seed = Rand01(), Kind = ParticleKind.Swoosh, Layer = layer,
+            Life = SwooshLifeSec, Size = SwooshSize, Rgb = SwooshRgb, Seed = Rand01(), Kind = ParticleKind.Arc, Layer = layer,
         });
 
         // Sparks only on contact — a whiff shows the blade-arc with nothing struck.
@@ -369,19 +387,20 @@ public sealed class ParticleSystem
     private const float SwooshSize = 46f;        // ~1.4 tiles so the arc sweeps around the target
     private const uint SwooshRgb = 0xE0E8FF;     // pale steel
 
-    /// <summary>Spawn the FX for a spell cast: a typed projectile homing from the caster (sx,sy) to the
-    /// target (tx,ty). Drain spells throw a colored bullet; restore spells a glitter cluster; give-item a
-    /// cube. If start ~= end (self-cast or unresolved target) the projectile arrives instantly in place.</summary>
-    public void EmitSpell(SpellType type, float sx, float sy, float tx, float ty, WorldLayer layer = WorldLayer.Ground)
+    /// <summary>Something that travels from (sx,sy) to (tx,ty) and bursts where it lands.
+    ///
+    /// <para><paramref name="style"/> picks what flies and <paramref name="rgb"/> what colour it is, so one
+    /// call covers a thrown bolt, a handful of glitter and a parcel changing hands. A start and end close
+    /// enough together — a self-cast, a target that is not observable — arrives in place instead of
+    /// travelling, rather than being refused.</para></summary>
+    public void EmitProjectile(ProjectileStyle style, float sx, float sy, float tx, float ty, uint rgb,
+                               WorldLayer layer = WorldLayer.Ground)
     {
-        uint rgb = SpellColor(type);
-        switch (type)
+        switch (style)
         {
-            case SpellType.AddHp:
-            case SpellType.AddMp:
-            case SpellType.AddSp:
-                // A loose glitter cluster, not a ball: jitter BOTH ends so each mote flies its own path and lands
-                // scattered around the target (staggered sizes add to the twinkle) instead of converging to a point.
+            case ProjectileStyle.Glitter:
+                // A loose cluster, not a ball: jitter BOTH ends so each mote flies its own path and lands
+                // scattered around the target (staggered sizes add to the twinkle) instead of converging.
                 for (int i = 0; i < SparkleCount; i++)
                 {
                     SpawnProjectile(ParticleKind.Sparkle,
@@ -391,11 +410,11 @@ public sealed class ParticleSystem
                 }
 
                 break;
-            case SpellType.GiveItem:
-                SpawnProjectile(ParticleKind.Cube, sx, sy, tx, ty, CubeLightRgb, CubeSize, layer);
+            case ProjectileStyle.Parcel:
+                SpawnProjectile(ParticleKind.Parcel, sx, sy, tx, ty, rgb, CubeSize, layer);
                 break;
-            default: // SubHp / SubMp / SubSp — a single bullet
-                SpawnProjectile(ParticleKind.SpellBall, sx, sy, tx, ty, rgb, BallSize, layer);
+            default:
+                SpawnProjectile(ParticleKind.Bolt, sx, sy, tx, ty, rgb, BallSize, layer);
                 break;
         }
     }
@@ -496,7 +515,7 @@ public sealed class ParticleSystem
     }
 
     private static bool IsHoming(ParticleKind k) =>
-        k is ParticleKind.SpellBall or ParticleKind.Sparkle or ParticleKind.Cube;
+        k is ParticleKind.Bolt or ParticleKind.Sparkle or ParticleKind.Parcel;
 
     /// <summary>Weather particles (rain/snow/wind/debris) are GLOBAL — drawn above everything, ignoring the layer.
     /// Every other (spell/combat) kind carries a <see cref="Particle.Layer"/> and draws in that layer's world pass
@@ -506,7 +525,7 @@ public sealed class ParticleSystem
 
     /// <summary>Which particle kinds emit a transient light + glow core (magical FX read at night).</summary>
     public static bool EmitsLight(ParticleKind k) =>
-        k is ParticleKind.SpellBall or ParticleKind.Sparkle or ParticleKind.Cube or ParticleKind.ImpactBurst or ParticleKind.Orbit;
+        k is ParticleKind.Bolt or ParticleKind.Sparkle or ParticleKind.Parcel or ParticleKind.ImpactBurst or ParticleKind.Orbit;
 
     // Falling weather (rain/snow) never lets its ON-SCREEN fall drop below this floor, so a fast camera can't
     // outrun it panning down or make it hang. Full natural world parallax applies whenever the plain on-screen
@@ -532,16 +551,6 @@ public sealed class ParticleSystem
 
     /// <summary>FX color for a spell type: action-color for HP (damage red / heal green), identity for MP
     /// (blue) and SP (gold/amber), white for give-item. Green means heal only — see the SP recolor.</summary>
-    private static uint SpellColor(SpellType type) => type switch
-    {
-        SpellType.SubHp => 0xE03828, // red
-        SpellType.AddHp => 0x40E050, // green (heal)
-        SpellType.SubMp => 0x3060E0, // deep blue
-        SpellType.AddMp => 0x40D0F0, // cyan
-        SpellType.SubSp => 0xE0A030, // amber
-        SpellType.AddSp => 0xF0D040, // gold
-        _ => 0xFFFFFF,               // GiveItem / fallback: white
-    };
 
     /// <summary>Milliseconds a projectile takes to cross <paramref name="distancePx"/> at the homing speed,
     /// capped at the projectile lifetime — the client times deferred hit FX (number/death) to the bolt's arrival.</summary>

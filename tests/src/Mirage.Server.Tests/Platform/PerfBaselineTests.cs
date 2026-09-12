@@ -141,8 +141,6 @@ public class PerfBaselineTests
             world.Npcs[i] = new NpcRecord { Name = $"npc{i}", Behavior = NpcBehavior.Pursue };
         for (int i = 1; i <= RecordLimits.Default.Shops; i++)
             world.Shops[i] = new ShopRecord { Name = $"shop{i}" };
-        for (int i = 1; i <= RecordLimits.Default.Spells; i++)
-            world.Spells[i] = new SpellRecord { Name = $"spell{i}" };
 
         var join = new JoinLeaveSystem(world, new PlayerManager(), new NoOpDispatcher(),
             saver: null!, movement: null!, party: null!, guilds: null!, mail: null!, social: null!,

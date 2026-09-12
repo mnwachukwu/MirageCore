@@ -634,11 +634,6 @@ public sealed class JoinLeaveSystem : GameSystem
         slot = p.ShieldSlot;
         ValidateSlot(ref slot, ItemType.Shield);
         p.ShieldSlot = slot;
-        if (p.PreparedSpell < 0 || p.PreparedSpell > Constants.MaxPlayerSpells ||
-            (p.PreparedSpell > 0 && p.Spell[p.PreparedSpell] <= 0))
-        {
-            p.PreparedSpell = 0;
-        }
     }
 
     // The welcome batch (welcome line, /help hint, MOTD, who's-online) is tagged Always so it bypasses

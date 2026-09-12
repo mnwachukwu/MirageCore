@@ -135,7 +135,7 @@ from source there is no bundled copy, so the first Open is yours to aim.
 >
 > Both are set independently, `WorldDir` and `DataDir`, and both default to a per-user folder — `%LocalAppData%\Mirage Source Remastered Server\` on Windows, `~/.local/share/mirage-source-remastered-server/` on Linux, `~/Library/Application Support/` on macOS. Not beside the executable: an installed server runs out of a folder the updater replaces wholesale, so a world and a set of accounts kept there would last exactly one update.
 >
-> **Seed data:** `server/src/Mirage.Server.Host/world/` is the shipped default configuration — 147 maps, 558 items, 270 spells, 177 NPCs, 38 conversations, 54 quests, and 21 shops. Any collection you leave out is created empty and written on first save, so a partial world folder boots fine.
+> **Seed data:** `server/src/Mirage.Server.Host/world/` is the shipped default configuration — 147 maps, 288 items, 177 NPCs, 38 conversations, 54 quests, and 21 shops. Any collection you leave out is created empty and written on first save, so a partial world folder boots fine.
 >
 > Those counts are checked against the folder by `.github/checks/check-seed-counts.mjs`, which CI runs — they have gone stale twice.
 >

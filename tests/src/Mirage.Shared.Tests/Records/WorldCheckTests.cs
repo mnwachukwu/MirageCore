@@ -32,7 +32,6 @@ public class WorldCheckTests
             Items = Family(i => new ItemRecord { Name = $"Item {i}" }),
             Npcs = Family(i => new NpcRecord { Name = $"Npc {i}" }),
             Shops = Family(i => new ShopRecord { Name = $"Shop {i}", Keeper = 1 }),
-            Spells = Family(i => new SpellRecord { Name = $"Spell {i}" }),
             Quests = Family(i => new QuestRecord { Name = $"Quest {i}" }),
             Conversations = Family(i => new ConversationRecord { Name = $"Conv {i}" }),
         };
@@ -239,37 +238,8 @@ public class WorldCheckTests
         });
     }
 
-    [Test]
-    public void AScrollTeachingAnUnauthoredSpell_IsFound()
-    {
-        var w = World();
-        w.Items[1]!.Type = ItemType.Spell;
-        w.Items[1]!.SpellNum = Absent;
 
-        Assert.That(Kinds(w), Does.Contain(WorldIssueKind.SpellMissing));
-    }
 
-    /// <summary>The field only means a spell on a scroll. On every other type it carries something else, so
-    /// reading it as a reference would report a fault on almost every item in the world.</summary>
-    [Test]
-    public void ANonScrollItem_IsNotReadAsASpellReference()
-    {
-        var w = World();
-        w.Items[1]!.Type = ItemType.Weapon;
-        w.Items[1]!.SpellNum = 999;
-
-        Assert.That(Kinds(w), Does.Not.Contain(WorldIssueKind.SpellMissing));
-    }
-
-    [Test]
-    public void AGiveItemSpellNamingAnUnauthoredItem_IsFound()
-    {
-        var w = World();
-        w.Spells[1]!.Type = SpellType.GiveItem;
-        w.Spells[1]!.ItemNum = Absent;
-
-        Assert.That(Kinds(w), Does.Contain(WorldIssueKind.ItemMissing));
-    }
 
     // ── Shops ────────────────────────────────────────────────────────────────
 

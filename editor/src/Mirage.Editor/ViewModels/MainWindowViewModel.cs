@@ -39,7 +39,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public ItemEditorViewModel ItemEditor { get; }
     public NpcEditorViewModel NpcEditor { get; }
     public ShopEditorViewModel ShopEditor { get; }
-    public SpellEditorViewModel SpellEditor { get; }
     public QuestEditorViewModel QuestEditor { get; }
     public ConversationEditorViewModel ConversationEditor { get; }
     /// <summary>Creator-only, and the only section that is online-only — accounts are the server's.</summary>
@@ -159,7 +158,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
         ItemEditor = new ItemEditorViewModel(data, conn);
         NpcEditor = new NpcEditorViewModel(data, conn);
         ShopEditor = new ShopEditorViewModel(data, conn);
-        SpellEditor = new SpellEditorViewModel(data, conn);
         QuestEditor = new QuestEditorViewModel(data, conn);
         ConversationEditor = new ConversationEditorViewModel(data, conn);
         AccountEditor = new AccountEditorViewModel(data, conn);
@@ -175,7 +173,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
             (ItemEditor.LoadOnline,  ItemEditor.LoadOffline),
             (NpcEditor.LoadOnline,   NpcEditor.LoadOffline),
             (ShopEditor.LoadOnline,  ShopEditor.LoadOffline),
-            (SpellEditor.LoadOnline, SpellEditor.LoadOffline),
             (QuestEditor.LoadOnline, QuestEditor.LoadOffline),
             (ConversationEditor.LoadOnline, ConversationEditor.LoadOffline),
             (AccountEditor.LoadOnline, AccountEditor.LoadOffline),
@@ -209,10 +206,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
         ShopEditor.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == "HasAnyDirty") _sectionMap["Shops"].HasDirty = ShopEditor.HasAnyDirty;
-        };
-        SpellEditor.PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName == "HasAnyDirty") _sectionMap["Spells"].HasDirty = SpellEditor.HasAnyDirty;
         };
         QuestEditor.PropertyChanged += (_, e) =>
         {
@@ -255,7 +248,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
                     MapEditor.OnNpcLiveUpdated(p.NpcNum, p.Size);
                     break;
                 case UpdateShopPacket p: ShopEditor.ApplyLiveRecord(p.ShopNum, p); break;
-                case UpdateSpellPacket p: SpellEditor.ApplyLiveRecord(p.SpellNum, p); break;
                 case UpdateQuestPacket p: QuestEditor.ApplyLiveRecord(p.QuestNum, p); break;
                 case UpdateConversationPacket p: ConversationEditor.ApplyLiveRecord(p.ConvNum, p); break;
                 case UpdateMapGroupPacket p: MapGroupEditor.ApplyLiveRecord(p.GroupNum, p); break;
@@ -267,7 +259,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     /// <summary>The eight editors that keep a list of records the lock table can name. Maps are held apart:
     /// the map editor is not one of these and carries its own lock plumbing.</summary>
     private IEnumerable<dynamic> RecordEditors =>
-        [ItemEditor, NpcEditor, ShopEditor, SpellEditor, QuestEditor, ConversationEditor, MapGroupEditor];
+        [ItemEditor, NpcEditor, ShopEditor, QuestEditor, ConversationEditor, MapGroupEditor];
 
     /// <summary>First-run startup: read the offline data set, seed and load the editable asset folder,
     /// then open the map editor. Always starts offline — connecting is an explicit user action.</summary>
@@ -351,7 +343,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
             "Items" => ItemEditor,
             "NPCs" => NpcEditor,
             "Shops" => ShopEditor,
-            "Spells" => SpellEditor,
             "Quests" => QuestEditor,
             "Conversations" => ConversationEditor,
             "Accounts" => AccountEditor,
@@ -523,7 +514,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
                 ("Items",   c => ItemEditor.EagerLoadAllAsync(c)),
                 ("NPCs",    c => NpcEditor.EagerLoadAllAsync(c)),
                 ("Shops",   c => ShopEditor.EagerLoadAllAsync(c)),
-                ("Spells",  c => SpellEditor.EagerLoadAllAsync(c)),
                 ("Quests",  c => QuestEditor.EagerLoadAllAsync(c)),
                 ("Conversations", c => ConversationEditor.EagerLoadAllAsync(c)),
             ];
@@ -620,7 +610,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
         foreach (var vm in ItemEditor.GetDirty()) yield return vm;
         foreach (var vm in NpcEditor.GetDirty()) yield return vm;
         foreach (var vm in ShopEditor.GetDirty()) yield return vm;
-        foreach (var vm in SpellEditor.GetDirty()) yield return vm;
         foreach (var vm in MapEditor.GetDirty()) yield return vm;
         foreach (var vm in MapGroupEditor.GetDirty()) yield return vm;
         foreach (var vm in QuestEditor.GetDirty()) yield return vm;

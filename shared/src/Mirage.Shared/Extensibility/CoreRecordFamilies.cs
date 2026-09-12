@@ -27,7 +27,6 @@ public static class CoreRecordFamilies
     public const string Items = "Items";
     public const string Npcs = "NPCs";
     public const string Shops = "Shops";
-    public const string Spells = "Spells";
     public const string Quests = "Quests";
     public const string Conversations = "Conversations";
 
@@ -77,14 +76,6 @@ public static class CoreRecordFamilies
             LabelKey = "MainWindow_Section_Shops",
             Directory = "shops",
             FilePrefix = "shop",
-            DefaultLimit = 1000,
-        },
-        new()
-        {
-            Id = Spells,
-            LabelKey = "MainWindow_Section_Spells",
-            Directory = "spells",
-            FilePrefix = "spell",
             DefaultLimit = 1000,
         },
         new()

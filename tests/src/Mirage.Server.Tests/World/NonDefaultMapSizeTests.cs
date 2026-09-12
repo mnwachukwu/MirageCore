@@ -141,12 +141,12 @@ public class NonDefaultMapSizeTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(WorldCoordHelper.IsInSpellRange(cx, cy, cx + Constants.SpellRangeTiles, cy), Is.True,
+            Assert.That(WorldCoordHelper.IsInInteractRange(cx, cy, cx + Constants.InteractRangeTiles, cy), Is.True,
                 "exactly r away is in range");
-            Assert.That(WorldCoordHelper.IsInSpellRange(cx, cy, cx + Constants.SpellRangeTiles + 1, cy), Is.False,
+            Assert.That(WorldCoordHelper.IsInInteractRange(cx, cy, cx + Constants.InteractRangeTiles + 1, cy), Is.False,
                 "one past r is out, on a map of any width");
-            Assert.That(WorldCoordHelper.IsInSpellRange(cx, cy, cx, cy + Constants.SpellRangeTiles), Is.True);
-            Assert.That(WorldCoordHelper.IsInSpellRange(cx, cy, cx, cy + Constants.SpellRangeTiles + 1), Is.False);
+            Assert.That(WorldCoordHelper.IsInInteractRange(cx, cy, cx, cy + Constants.InteractRangeTiles), Is.True);
+            Assert.That(WorldCoordHelper.IsInInteractRange(cx, cy, cx, cy + Constants.InteractRangeTiles + 1), Is.False);
         });
     }
 

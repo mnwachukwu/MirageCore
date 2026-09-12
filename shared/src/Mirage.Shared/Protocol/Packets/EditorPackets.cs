@@ -32,12 +32,6 @@ public sealed record EditorRequestShopPacket : IPacket
     [JsonPropertyName("shopNum")] public int ShopNum { get; init; }
 }
 
-public sealed record EditorRequestSpellPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorRequestSpell;
-    [JsonPropertyName("spellNum")] public int SpellNum { get; init; }
-}
-
 public sealed record EditorRequestMapPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorRequestMap;
@@ -113,11 +107,6 @@ public sealed record EditorRequestAllShopsPacket : IPacket
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorRequestAllShops;
 }
 
-public sealed record EditorRequestAllSpellsPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorRequestAllSpells;
-}
-
 public sealed record EditorRequestAllMapGroupsPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorRequestAllMapGroups;
@@ -134,7 +123,6 @@ public sealed record EditorSaveItemPacket : IPacket
     // Type-specific fields; see ItemRecord for which apply to which ItemType.
     [JsonPropertyName("durability")] public short Durability { get; init; }
     [JsonPropertyName("vitalAmount")] public short VitalAmount { get; init; }
-    [JsonPropertyName("spellNum")] public short SpellNum { get; init; }
     [JsonPropertyName("power")] public short Power { get; init; }
     [JsonPropertyName("tier")] public short Tier { get; init; }
     // Item restriction flags. See ItemRecord for behavior.
@@ -194,20 +182,6 @@ public sealed record EditorSaveShopPacket : IPacket
         [property: JsonPropertyName("getItem")] int GetItem,
         [property: JsonPropertyName("getQuantity")] int GetQuantity
     );
-}
-
-public sealed record EditorSaveSpellPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorSaveSpell;
-    [JsonPropertyName("spellNum")] public int SpellNum { get; init; }
-    [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("type")] public SpellType Type { get; init; }
-    // Type-specific fields; see SpellRecord for which apply to which SpellType.
-    [JsonPropertyName("vitalAmount")] public short VitalAmount { get; init; }
-    [JsonPropertyName("itemNum")] public short ItemNum { get; init; }
-    [JsonPropertyName("itemQuantity")] public short ItemQuantity { get; init; }
-    [JsonPropertyName("intReq")] public short IntReq { get; init; }
-    [JsonPropertyName("tier")] public short Tier { get; init; }
 }
 
 public sealed record EditorSaveMapPacket : IPacket
@@ -270,7 +244,6 @@ public sealed record EditorDataPacket : IPacket
     [JsonPropertyName("items")] public NameEntry[] Items { get; init; } = [];
     [JsonPropertyName("npcs")] public NameEntry[] Npcs { get; init; } = [];
     [JsonPropertyName("shops")] public NameEntry[] Shops { get; init; } = [];
-    [JsonPropertyName("spells")] public NameEntry[] Spells { get; init; } = [];
     [JsonPropertyName("maps")] public NameEntry[] Maps { get; init; } = [];
     [JsonPropertyName("mapGroups")] public NameEntry[] MapGroups { get; init; } = [];
     [JsonPropertyName("quests")] public NameEntry[] Quests { get; init; } = [];
@@ -286,7 +259,6 @@ public sealed record EditorDataPacket : IPacket
     /// different world entirely. Same reasoning as <see cref="CurrencyItems"/> above: a narrow projection
     /// of the facts the editor needs, not every full record.</para></summary>
     [JsonPropertyName("itemGates")] public ItemGate[] ItemGates { get; init; } = [];
-    [JsonPropertyName("spellGates")] public SpellGate[] SpellGates { get; init; } = [];
 
     /// <summary>What the server calls the world an editor is now editing — its `world.json` name, blank
     /// when it has none.
@@ -306,11 +278,6 @@ public sealed record EditorDataPacket : IPacket
         [property: JsonPropertyName("tier")] short Tier,
         [property: JsonPropertyName("price")] int Price = 0);
 
-    public sealed record SpellGate(
-        [property: JsonPropertyName("num")] int Num,
-        [property: JsonPropertyName("type")] SpellType Type,
-        [property: JsonPropertyName("vitalAmount")] short VitalAmount,
-        [property: JsonPropertyName("tier")] short Tier);
 
     /// <summary>NPC footprint sizes (EffectiveSize, 1-based; index 0 unused) so the map editor renders +
     /// validates multi-tile spawn footprints without fetching every full NPC record.</summary>
@@ -320,20 +287,6 @@ public sealed record EditorDataPacket : IPacket
         [property: JsonPropertyName("num")] int Num,
         [property: JsonPropertyName("name")] string Name
     );
-}
-
-public sealed record UpdateSpellPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.UpdateSpell;
-    [JsonPropertyName("spellNum")] public int SpellNum { get; init; }
-    [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("type")] public SpellType Type { get; init; }
-    // Type-specific fields; see SpellRecord for which apply to which SpellType.
-    [JsonPropertyName("vitalAmount")] public short VitalAmount { get; init; }
-    [JsonPropertyName("itemNum")] public short ItemNum { get; init; }
-    [JsonPropertyName("itemQuantity")] public short ItemQuantity { get; init; }
-    [JsonPropertyName("intReq")] public short IntReq { get; init; }
-    [JsonPropertyName("tier")] public short Tier { get; init; }
 }
 
 public sealed record UpdateShopPacket : IPacket
@@ -365,12 +318,6 @@ public sealed record EditorAllShopsPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorAllShops;
     [JsonPropertyName("shops")] public UpdateShopPacket[] Shops { get; init; } = [];
-}
-
-public sealed record EditorAllSpellsPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorAllSpells;
-    [JsonPropertyName("spells")] public UpdateSpellPacket[] Spells { get; init; } = [];
 }
 
 // S→C: one group's full state (RequestMapGroup response). Mirrors the authored fields; ControllingGuild is

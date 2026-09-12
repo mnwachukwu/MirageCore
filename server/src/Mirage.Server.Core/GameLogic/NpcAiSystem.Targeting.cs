@@ -43,7 +43,7 @@ public sealed partial class NpcAiSystem : GameSystem
             int d = WorldCoordHelper.FootprintManhattan(npcWX, npcWY, npc.EffectiveSize, pwx, pwy, 1);
             // Nearest wins. A cheap cutoff before the LoS and BFS work below.
             if (d >= bestDist) continue;
-            if (!WorldCoordHelper.HasClearSpellLineOfSight(npcWX, npcWY, pwx, pwy, los)) continue;
+            if (!WorldCoordHelper.HasClearLineOfSight(npcWX, npcWY, pwx, pwy, los)) continue;
             if (FindStepTowardObservableArea(mapNum, mn.X, mn.Y, mn.Layer, p.Map, p.X, p.Y, p.Layer, npc) is null)
                 continue;
             best = i;
@@ -86,7 +86,7 @@ public sealed partial class NpcAiSystem : GameSystem
                     if (!WorldCoordHelper.AreFootprintsWithin(aWX, aWY, selfNpc.EffectiveSize, oWX, oWY, otherSize, range)) continue;
                     int d = WorldCoordHelper.FootprintManhattan(aWX, aWY, selfNpc.EffectiveSize, oWX, oWY, otherSize);
                     if (d >= bestDist) continue;  // can't beat the current nearest; skip before LoS/BFS
-                    if (!WorldCoordHelper.HasClearSpellLineOfSight(aWX, aWY, oWX, oWY, los)) continue;
+                    if (!WorldCoordHelper.HasClearLineOfSight(aWX, aWY, oWX, oWY, los)) continue;
                     if (FindStepTowardObservableArea(mapNum, self.X, self.Y, self.Layer, m, other.X, other.Y, other.Layer, selfNpc,
                                                  targetSize: otherSize) is null)
                         continue;
@@ -103,7 +103,7 @@ public sealed partial class NpcAiSystem : GameSystem
                     if (Math.Abs(oWX - aWX) > range || Math.Abs(oWY - aWY) > range) continue;
                     int d = WorldCoordHelper.WorldManhattan(aWX, aWY, oWX, oWY);
                     if (d >= bestDist) continue;
-                    if (!WorldCoordHelper.HasClearSpellLineOfSight(aWX, aWY, oWX, oWY, los)) continue;
+                    if (!WorldCoordHelper.HasClearLineOfSight(aWX, aWY, oWX, oWY, los)) continue;
                     if (FindStepTowardObservableArea(mapNum, self.X, self.Y, self.Layer, m, gt.X, gt.Y, gt.Layer, selfNpc,
                                                  targetSize: _world.Npcs[gt.Num].EffectiveSize) is null)
                         continue;

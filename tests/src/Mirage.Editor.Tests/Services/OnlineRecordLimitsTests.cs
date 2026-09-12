@@ -62,13 +62,11 @@ public class OnlineRecordLimitsTests
         {
             Items = Slots(300),
             Npcs = Slots(120),
-            Spells = Slots(270),
             Maps = Slots(1000),
         });
 
         Assert.That(data.LiveItemEntries.Length, Is.EqualTo(301));
         Assert.That(data.LiveNpcEntries.Length, Is.EqualTo(121));
-        Assert.That(data.LiveSpellEntries.Length, Is.EqualTo(271));
         Assert.That(data.LiveMapEntries.Length, Is.EqualTo(1001));
     }
 

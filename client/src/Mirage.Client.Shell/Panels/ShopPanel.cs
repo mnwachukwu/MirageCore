@@ -417,9 +417,7 @@ public sealed class ShopPanel : IGamePanel
             if (me is not null && (me.WeaponSlot == i || me.ArmorSlot == i || me.HelmetSlot == i || me.ShieldSlot == i))
                 continue;
 
-            var spell = item.Type == ItemType.Spell && item.SpellNum > 0 && item.SpellNum <= state.Limits.Spells
-                ? state.SpellDefs[item.SpellNum] : null;
-            int offer = EconomyFormulas.ItemSellValue(item, slot.Dur, spell);
+            int offer = EconomyFormulas.ItemSellValue(item, slot.Dur);
             if (item.Type == ItemType.Currency) offer *= Math.Max(slot.Quantity, 1);
 
             string name = item.Name?.Trim() ?? "?";
@@ -735,7 +733,7 @@ public sealed class ShopPanel : IGamePanel
         var slot = new PlayerInvSlot { Num = itemNum, Quantity = 1, Dur = item.Durability };
         Tooltip.NotifyHoverItem(TooltipScope, (TooltipScope, "buy", itemNum), item, slot,
             state.Me, itemsTex, _input.MousePosition,
-            state.SpellDefs, state.Items, state.Weather);
+            state.Items, state.Weather);
     }
 
     private void NotifySellSlotHover(ClientState state, IReadOnlyList<Texture2D?> itemsTex)
@@ -756,7 +754,7 @@ public sealed class ShopPanel : IGamePanel
         if (item is null) return;
         Tooltip.NotifyHoverItem(TooltipScope, (TooltipScope, list, slotIdx, slot.Num), item, slot,
             state.Me, itemsTex, _input.MousePosition,
-            state.SpellDefs, state.Items, state.Weather);
+            state.Items, state.Weather);
     }
 
     private void DrawRepairConfirm(SpriteBatch sb, SpriteFont font, ClientState state, Rectangle c, IReadOnlyList<Texture2D?> itemsTex)
@@ -839,9 +837,6 @@ public sealed class ShopPanel : IGamePanel
         string giveName = give?.Name?.Trim() ?? "?";
 
         bool isEquip = get is not null && ItemRecord.IsEquipment(get.Type);
-        bool isSpell = get?.Type == ItemType.Spell;
-        var spell = isSpell && get!.SpellNum > 0 && get.SpellNum <= state.Limits.Spells
-            ? state.SpellDefs[get.SpellNum] : null;
         string? potionEffect = get?.Type switch
         {
             ItemType.PotionAddHp when get!.VitalAmount > 0 => $"+{get.VitalAmount} HP",
@@ -859,26 +854,6 @@ public sealed class ShopPanel : IGamePanel
         UiHelper.DrawLabel(sb, font, nameLine, new Vector2(c.X + 8, textY), Color.White, c.Width - 16);
         textY += 18;
         textY = DrawItemPreview(sb, c, itemsTex, get?.Pic ?? -1, get?.ItemSheet ?? 0, textY);
-        if (spell is not null)
-        {
-            UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_TeachesSpell, ("SpellName", spell.Name?.Trim() ?? "?")), new Vector2(c.X + 8, textY), Color.Cyan, c.Width - 16);
-            textY += 18;
-            string? effectLabel = spell.Type switch
-            {
-                SpellType.SubHp => ClientStrings.Get(ClientStrings.Stats_MDmg),
-                SpellType.SubMp => ClientStrings.Get(ClientStrings.Stats_MpDmg),
-                SpellType.SubSp => ClientStrings.Get(ClientStrings.Stats_SpDmg),
-                SpellType.AddHp => ClientStrings.Get(ClientStrings.Stats_HpRestore),
-                SpellType.AddMp => ClientStrings.Get(ClientStrings.Stats_MpRestore),
-                SpellType.AddSp => ClientStrings.Get(ClientStrings.Stats_SpRestore),
-                _ => null,
-            };
-            if (effectLabel is not null && spell.VitalAmount > 0)
-            {
-                UiHelper.DrawLabel(sb, font, $"{effectLabel}: +{spell.VitalAmount}", new Vector2(c.X + 8, textY), Color.Cyan, c.Width - 16);
-                textY += 18;
-            }
-        }
         if (potionEffect is not null)
         {
             UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_PotionEffect, ("Effect", potionEffect)), new Vector2(c.X + 8, textY), Color.Cyan, c.Width - 16);
@@ -895,25 +870,8 @@ public sealed class ShopPanel : IGamePanel
             textY += 18;
         }
 
-        bool alreadyKnown = false;
-        if (spell is not null && me is not null)
-        {
-            if (me.Spell is not null)
-            {
-                for (int i = 1; i <= Constants.MaxPlayerSpells; i++)
-                {
-                    if (me.Spell[i] == get!.SpellNum)
-                    {
-                        alreadyKnown = true;
-                        break;
-                    }
-                }
-            }
-        }
 
         textY += 4;
-        if (isSpell && alreadyKnown)
-            UiHelper.DrawLabel(sb, font, ClientStrings.Get(ClientStrings.ShopPanel_AlreadyKnowSpell), new Vector2(c.X + 8, textY), Color.OrangeRed, c.Width - 16);
 
         confirmBtn.Draw(sb, font, _input);
         cancelBtn.Draw(sb, font, _input);
@@ -958,9 +916,7 @@ public sealed class ShopPanel : IGamePanel
             textY += 18;
         }
 
-        var spell = item?.Type == ItemType.Spell && item.SpellNum > 0 && item.SpellNum <= state.Limits.Spells
-            ? state.SpellDefs[item.SpellNum] : null;
-        int offer = item is not null ? EconomyFormulas.ItemSellValue(item, inv!.Dur, spell) * quantity : 0;
+        int offer = item is not null ? EconomyFormulas.ItemSellValue(item, inv!.Dur) * quantity : 0;
 
         UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_SellOffer, ("Gold", offer)),
             new Vector2(c.X + 8, textY), offer > 0 ? Color.Gold : Color.OrangeRed, c.Width - 16);

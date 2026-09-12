@@ -8,12 +8,6 @@ using Mirage.Shared.Records;
 
 namespace Mirage.Client.Core.Net;
 
-/// <summary>Payload for <see cref="ClientPacketHandler.SpellCast"/>: the caster's tile + walk offsets, the
-/// resolved <see cref="SpellType"/> (drives the FX color/shape), and the target identity so the shell can
-/// home the projectile to the live target (or play the FX in place for a self-cast/unresolved target).</summary>
-public readonly record struct SpellCastFx(
-    int CasterMap, int CasterX, int CasterY, float CasterXOff, float CasterYOff, int CasterSize,
-    SpellType Type, TargetRef Target);
 
 /// <summary>Payload for <see cref="ClientPacketHandler.EntityDied"/>: a killed entity's target identity +
 /// pre-clear render state, so the shell can hold a delayed-death sprite in place until a killing spell bolt
@@ -161,9 +155,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
                 break;
             case UpdateConversationPacket p:
                 HandleUpdateConversation(p);
-                break;
-            case UpdateSpellPacket p:
-                HandleUpdateSpell(p);
                 break;
             case UpdateMapGroupPacket p:
                 HandleUpdateMapGroup(p);

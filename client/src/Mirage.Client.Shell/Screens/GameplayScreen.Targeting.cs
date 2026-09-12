@@ -45,7 +45,7 @@ public sealed partial class GameplayScreen : IGameScreen
 
         void TryAddNpc(TargetRef r, int worldX, int worldY, int size, WorldLayer layer)
         {
-            if (!WorldCoordHelper.IsInSpellRange(myWX, myWY, 1, worldX, worldY, size)) return;   // footprint-aware (Tab picks a big NPC by its body)
+            if (!WorldCoordHelper.IsInInteractRange(myWX, myWY, 1, worldX, worldY, size)) return;   // footprint-aware (Tab picks a big NPC by its body)
             // Skip targets the player couldn't actually cast on — the FULL layer-aware LoS gate (same-layer or a
             // ramp bridge, then walls/doors), matching the server's HasLineOfSight. So Tab won't land on a target
             // across a plane it can't reach (e.g. up on a bridge you're not on), same as the grayed arrow.
@@ -96,7 +96,7 @@ public sealed partial class GameplayScreen : IGameScreen
                 var off = CellOffsetForMapClient(p.Map);
                 if (off is null) continue;
                 int wx = off.Value.ox + p.X, wy = off.Value.oy + p.Y;
-                if (!WorldCoordHelper.IsInSpellRange(myWX, myWY, wx, wy)) continue;
+                if (!WorldCoordHelper.IsInInteractRange(myWX, myWY, wx, wy)) continue;
                 if (!ClientLineOfSight.HasClearFromLocalPlayer(state, wx, wy, p.Layer)) continue;
                 int dx = wx - myWX, dy = wy - myWY;
                 list.Add((new TargetRef(TargetKind.Player, i, 0), dx * dx + dy * dy));

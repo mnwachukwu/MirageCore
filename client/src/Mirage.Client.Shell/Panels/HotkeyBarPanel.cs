@@ -84,22 +84,11 @@ public static class HotkeyBarPanel
         return 0;
     }
 
-    /// <summary>Spellbook slot holding this spell number, or 0 when it is not known.</summary>
-    public static int FindSpellSlot(ClientState state, int spellNum)
-    {
-        var me = state.Me;
-        if (me?.Spell is null || spellNum <= 0) return 0;
-        for (int i = 1; i <= Constants.MaxPlayerSpells && i < me.Spell.Length; i++)
-            if (me.Spell[i] == spellNum) return i;
-        return 0;
-    }
-
-    /// <summary>Whether the slot's binding can be acted on right now — the item is in the bag, or the
-    /// spell is still known. Drives the gray/color state and is re-read every frame.</summary>
+    /// <summary>Whether the slot's binding can be acted on right now — the item is in the bag. Drives
+    /// the gray/color state and is re-read every frame.</summary>
     public static bool IsAvailable(ClientState state, PlayerHotkey hk) => hk.Kind switch
     {
         HotkeyKind.Item => FindInvSlot(state, hk.Num) > 0,
-        HotkeyKind.Spell => FindSpellSlot(state, hk.Num) > 0,
         _ => false,
     };
 
@@ -296,15 +285,8 @@ public static class HotkeyBarPanel
                 int inv = FindInvSlot(state, hk.Num);
                 Tooltip.NotifyHoverItem(TooltipScope, (TooltipScope, slot), item,
                     inv > 0 ? me.Inv[inv] : null, me, itemsTex, input.MousePosition,
-                    state.SpellDefs, state.Items, state.Weather);
+                    state.Items, state.Weather);
             }
-        }
-        else if (hk.Kind == HotkeyKind.Spell && hk.Num > 0 && hk.Num < state.SpellDefs.Length)
-        {
-            // The whole point of the shared book glyph: the tooltip is what says which spell this is.
-            if (state.SpellDefs[hk.Num] is { } spell)
-                Tooltip.NotifyHoverSpell(TooltipScope, (TooltipScope, slot), spell,
-                    me, state.Items, state.Weather, input.MousePosition);
         }
     }
 

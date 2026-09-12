@@ -4,7 +4,7 @@ using Mirage.Shared.Records;
 namespace Mirage.Server.Core.World;
 
 /// <summary>
-/// World-tile blocking predicate for <see cref="WorldCoordHelper.HasClearSpellLineOfSight"/>.
+/// World-tile blocking predicate for <see cref="WorldCoordHelper.HasClearLineOfSight"/>.
 /// Walls always block; a Key tile blocks only while its door is closed (open Key = you can see
 /// through the doorway, matching movement).  Tiles outside the observer's 3×3 observable area
 /// count as walls — LoS can't reach where the server hasn't loaded.  Shared by every world-LoS
@@ -21,7 +21,7 @@ namespace Mirage.Server.Core.World;
 /// <para>Held as a readonly struct so the generic LoS helper specializes per call site: no boxing on the
 /// interface, no closure alloc on the predicate — zero GC per check.</para>
 /// </summary>
-internal readonly struct WorldLosPredicate(GameWorld world, MapGrid grid, WorldLayer layer, bool blockRamps = false) : ISpellLosPredicate
+internal readonly struct WorldLosPredicate(GameWorld world, MapGrid grid, WorldLayer layer, bool blockRamps = false) : ILineOfSightPredicate
 {
     private readonly GameWorld _world = world;
     private readonly MapGrid _grid = grid;

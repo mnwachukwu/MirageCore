@@ -1,9 +1,0 @@
-{
-  "name": "Celestial Mana Rupture",
-  "allowedClasses": [
-    10
-  ],
-  "type": "SubMp",
-  "vitalAmount": 384,
-  "tier": 250
-}

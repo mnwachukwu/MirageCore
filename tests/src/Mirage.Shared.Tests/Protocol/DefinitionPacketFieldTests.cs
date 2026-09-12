@@ -17,15 +17,6 @@ namespace Mirage.Shared.Tests.Protocol;
 [TestFixture]
 public class DefinitionPacketFieldTests
 {
-    [Test]
-    public void UpdateSpell_CarriesEveryFieldItSharesWithTheRecord()
-    {
-        var spell = Populated<SpellRecord>();
-        var packet = PacketBuilder.UpdateSpell(12, spell);
-
-        Assert.That(packet.SpellNum, Is.EqualTo(12));
-        Assert.That(Mismatches(spell, packet), Is.Empty);
-    }
 
     [Test]
     public void UpdateItem_CarriesEveryFieldItSharesWithTheRecord()

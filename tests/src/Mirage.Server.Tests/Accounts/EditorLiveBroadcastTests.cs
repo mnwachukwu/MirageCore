@@ -97,25 +97,6 @@ public class EditorLiveBroadcastTests
         });
     }
 
-    [Test]
-    public void SaveSpell_BroadcastsUpdateSpellToAll()
-    {
-        var h = new Harness();
-        h.Save(new EditorSaveSpellPacket
-        {
-            SpellNum = 5, Name = "Fireball", Type = SpellType.AddHp,
-            VitalAmount = 25,
-        });
-
-        var u = h.Dispatcher.OneBroadcast<UpdateSpellPacket>();
-        Assert.Multiple(() =>
-        {
-            Assert.That(u.SpellNum, Is.EqualTo(5));
-            Assert.That(u.Name, Is.EqualTo("Fireball"));
-            Assert.That(u.Type, Is.EqualTo(SpellType.AddHp));
-            Assert.That(u.VitalAmount, Is.EqualTo(25));
-        });
-    }
 
     // ── MapGroup save: an independent client-cached def — broadcast it, never touch member maps ──
 
@@ -192,12 +173,10 @@ public class EditorLiveBroadcastTests
         var h = new Harness(AdminLevel.Mapper);
 
         h.Save(new EditorSaveItemPacket { ItemNum = 3, Name = "Short Sword" });
-        h.Save(new EditorSaveSpellPacket { SpellNum = 5, Name = "Fireball" });
 
         Assert.Multiple(() =>
         {
             Assert.That(h.World.Items[3].Name, Is.Empty, "a Mapper must not be able to rewrite an item");
-            Assert.That(h.World.Spells[5].Name, Is.Empty, "a Mapper must not be able to rewrite a spell");
             Assert.That(h.Dispatcher.Broadcasts, Is.Empty, "a refused save must not reach players either");
         });
     }

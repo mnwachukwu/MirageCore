@@ -86,10 +86,6 @@ public sealed partial class ItemEditorViewModel : EditorViewModelBase<ItemRowVie
     public ItemEditorViewModel(EditorDataService data, EditorConnection conn) : base(data, conn)
     {
         HookItems();
-        _data.EntriesInvalidated += () =>
-        {
-            OnPropertyChanged(nameof(SpellEntries));
-        };
     }
 
     // Set while a checkbox click is writing into the row, so the row's own change notification doesn't
@@ -134,26 +130,6 @@ public sealed partial class ItemEditorViewModel : EditorViewModelBase<ItemRowVie
         OnPropertyChanged(nameof(FilteredItems));
     }
 
-    public NamedEntry[] SpellEntries => _data.LiveSpellEntries;
-
-    public NamedEntry? SelectedSpellItem
-    {
-        get
-        {
-            if (SelectedItem is null) return null;
-            var id = SelectedItem.SpellNum;
-            return id > 0 && id < SpellEntries.Length ? SpellEntries[id] : null;
-        }
-        set
-        {
-            if (SelectedItem is null) return;
-            var id = (short)(value?.Id ?? 0);
-            if (SelectedItem.SpellNum == id) return;
-            SelectedItem.SpellNum = id;
-            OnPropertyChanged(nameof(SelectedSpellItem));
-        }
-    }
-
     partial void OnSelectedItemChanged(ItemRowViewModel? oldValue, ItemRowViewModel? newValue)
     {
         NotifyInboundRefsChanged();
@@ -162,14 +138,11 @@ public sealed partial class ItemEditorViewModel : EditorViewModelBase<ItemRowVie
         NotifyDirtyState();
         if (newValue is not null && !newValue.IsLoaded && _data.IsOnline)
             _ = LoadEntityAsync(newValue);
-        OnPropertyChanged(nameof(SelectedSpellItem));
         NotifyPicChanged();
     }
 
     private void OnItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(ItemRowViewModel.SpellNum) or nameof(ItemRowViewModel.Type))
-            OnPropertyChanged(nameof(SelectedSpellItem));
         // The sheet number chooses which bitmap the pic picker reads.
         if (e.PropertyName == nameof(ItemRowViewModel.ItemSheet)) NotifyPicChanged();
     }

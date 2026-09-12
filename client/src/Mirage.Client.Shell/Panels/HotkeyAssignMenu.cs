@@ -45,7 +45,6 @@ public static class HotkeyAssignMenu
         return hk.Kind switch
         {
             HotkeyKind.Item when hk.Num < state.Items.Length => state.Items[hk.Num]?.TrimmedName ?? "",
-            HotkeyKind.Spell when hk.Num < state.SpellDefs.Length => state.SpellDefs[hk.Num]?.TrimmedName ?? "",
             _ => "",
         };
     }

@@ -499,7 +499,7 @@ public sealed class TradeSystem : GameSystem
         var grid = WorldCoordHelper.BuildMapGrid(_world.Maps, pa.Map);
         var (aWX, aWY) = grid.CenterToWorld(pa.X, pa.Y);
         var bw = grid.ToWorldRelative(pb.Map, pb.X, pb.Y);
-        return bw is not null && WorldCoordHelper.IsInSpellRange(aWX, aWY, bw.Value.worldX, bw.Value.worldY);
+        return bw is not null && WorldCoordHelper.IsInInteractRange(aWX, aWY, bw.Value.worldX, bw.Value.worldY);
     }
 
     // Whether every item in 'incoming' fits the receiver's bag: currency stacks onto an existing pile; else a

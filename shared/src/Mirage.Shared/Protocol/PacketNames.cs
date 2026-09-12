@@ -170,14 +170,12 @@ public static class PacketNames
     public const string EditorSaveShop = "editorsaveshop";
     public const string EditorSaveQuest = "editorsavequest";
     public const string EditorSaveConversation = "editorsaveconv";
-    public const string EditorSaveSpell = "editorsavespell";
     public const string EditorSaveMap = "editorsavemap";
     public const string EditorRequestItem = "editorreqitem";
     public const string EditorRequestNpc = "editorreqnpc";
     public const string EditorRequestShop = "editorreqshop";
     public const string EditorRequestQuest = "editorreqquest";
     public const string EditorRequestConversation = "editorreqconv";
-    public const string EditorRequestSpell = "editorreqspell";
     public const string EditorRequestMap = "editorreqmap";
     public const string EditorLock = "editorlock";
     public const string EditorUnlock = "editorunlock";
@@ -186,7 +184,6 @@ public static class PacketNames
     public const string EditorRequestAllShops = "editorreqallshops";
     public const string EditorRequestAllQuests = "editorreqallquests";
     public const string EditorRequestAllConversations = "editorreqallconvs";
-    public const string EditorRequestAllSpells = "editorreqallspells";
     public const string EditorSaveMapGroup = "editorsavemapgroup";
     public const string EditorRequestMapGroup = "editorreqmapgroup";
     public const string EditorRequestAllMapGroups = "editorreqallmapgroups";
@@ -200,8 +197,7 @@ public static class PacketNames
     public const string EditorRenameChar = "editorrenamechar";
     public const string EditorGiveItem = "editorgiveitem";
     public const string EditorTakeItem = "editortakeitem";
-    public const string EditorLearnSpell = "editorlearnspell";
-    public const string EditorForgetSpell = "editorforgetspell";
+
     public const string EditorBankGive = "editorbankgive";
     public const string EditorBankTake = "editorbanktake";
     public const string EditorSetQuestStatus = "editorsetqueststatus";
@@ -245,7 +241,6 @@ public static class PacketNames
     public const string UpdateShop = "updateshop";
     public const string UpdateQuest = "updatequest";
     public const string UpdateConversation = "updateconv";
-    public const string UpdateSpell = "updatespell";
     public const string ShopContents = "shopcontents";             // S→C: an open shop's barter rows AND its sales list
     public const string OpenInn = "openinn";                       // S→C: raise the client-local Inn panel (from an NPC interact)
     public const string PlayerHotkeys = "playerhotkeys";
@@ -274,7 +269,6 @@ public static class PacketNames
     public const string EditorAllShops = "editorallshops";
     public const string EditorAllQuests = "editorallquests";
     public const string EditorAllConversations = "editorallconvs";
-    public const string EditorAllSpells = "editorallspells";
     public const string UpdateMapGroup = "updatemapgroup";
     public const string EditorAllMapGroups = "editorallmapgroups";
     public const string EditorAllMaps = "editorallmaps";

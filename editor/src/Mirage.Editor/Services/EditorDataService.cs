@@ -17,7 +17,6 @@ public sealed class EditorDataService
     public ItemRecord[] OfflineItems { get; private set; } = [];
     public NpcRecord[] OfflineNpcs { get; private set; } = [];
     public ShopRecord[] OfflineShops { get; private set; } = [];
-    public SpellRecord[] OfflineSpells { get; private set; } = [];
     public MapGroupRecord[] OfflineMapGroups { get; private set; } = [];
     public QuestRecord[] OfflineQuests { get; private set; } = [];
     public ConversationRecord[] OfflineConversations { get; private set; } = [];
@@ -30,7 +29,6 @@ public sealed class EditorDataService
     private NamedEntry[]? _npcEntries;
     private NamedEntry[]? _mapEntries;
     private NamedEntry[]? _shopEntries;
-    private NamedEntry[]? _spellEntries;
     private NamedEntry[]? _mapGroupEntries;
     private NamedEntry[]? _questEntries;
 
@@ -38,7 +36,6 @@ public sealed class EditorDataService
     public NamedEntry[] NpcEntries => _npcEntries ??= BuildEntries(OfflineNpcs, r => r.Name);
     public NamedEntry[] MapEntries => _mapEntries ??= BuildEntries(OfflineMaps, r => r.Name);
     public NamedEntry[] ShopEntries => _shopEntries ??= BuildEntries(OfflineShops, r => r.Name);
-    public NamedEntry[] SpellEntries => _spellEntries ??= BuildEntries(OfflineSpells, r => r.Name);
     public NamedEntry[] MapGroupEntries => _mapGroupEntries ??= BuildEntries(OfflineMapGroups, r => r.Name);
     public NamedEntry[] QuestEntries => _questEntries ??= BuildEntries(OfflineQuests, r => r.Name);
 
@@ -48,7 +45,6 @@ public sealed class EditorDataService
     public NamedEntry[] LiveNpcEntries => OnlineNpcs is not null ? BuildEntriesFromLive(OnlineNpcs) : NpcEntries;
     public NamedEntry[] LiveMapEntries => OnlineMaps is not null ? BuildEntriesFromLive(OnlineMaps) : MapEntries;
     public NamedEntry[] LiveShopEntries => OnlineShops is not null ? BuildEntriesFromLive(OnlineShops) : ShopEntries;
-    public NamedEntry[] LiveSpellEntries => OnlineSpells is not null ? BuildEntriesFromLive(OnlineSpells) : SpellEntries;
     public NamedEntry[] LiveMapGroupEntries => OnlineMapGroups is not null ? BuildEntriesFromLive(OnlineMapGroups) : MapGroupEntries;
     public NamedEntry[] LiveQuestEntries => OnlineQuests is not null ? BuildEntriesFromLive(OnlineQuests) : QuestEntries;
 
@@ -82,7 +78,7 @@ public sealed class EditorDataService
     private void RaiseEntriesInvalidated() => EntriesInvalidated?.Invoke();
 
     private void ClearEntryCache() =>
-        _itemEntries = _npcEntries = _mapEntries = _shopEntries = _spellEntries = _mapGroupEntries = _questEntries = null;
+        _itemEntries = _npcEntries = _mapEntries = _shopEntries = _mapGroupEntries = _questEntries = null;
 
     // ── Online data pushed by server ──────────────────────────────────────────
     // null when not in online mode; only names are stored — full records are fetched on demand
@@ -110,7 +106,6 @@ public sealed class EditorDataService
             sizes[npcNum] = Math.Max(1, size);
     }
     public EditorDataPacket.NameEntry[]? OnlineShops { get; private set; }
-    public EditorDataPacket.NameEntry[]? OnlineSpells { get; private set; }
     public EditorDataPacket.NameEntry[]? OnlineMaps { get; private set; }
     public EditorDataPacket.NameEntry[]? OnlineMapGroups { get; private set; }
     public EditorDataPacket.NameEntry[]? OnlineQuests { get; private set; }
@@ -119,7 +114,6 @@ public sealed class EditorDataService
     private HashSet<int>? _onlineCurrencyItems;
     // Server-sent gate facts for the class editor's starting loadout; null when offline.
     private Dictionary<int, EditorDataPacket.ItemGate>? _onlineItemGates;
-    private Dictionary<int, EditorDataPacket.SpellGate>? _onlineSpellGates;
 
     /// <summary>Everything the starting-loadout gates need about an item, from the LIVE world when
     /// connected and the offline records otherwise. Never mixes the two: an offline folder can be a
@@ -134,18 +128,6 @@ public sealed class EditorDataService
         if (num >= OfflineItems.Length || string.IsNullOrEmpty(OfflineItems[num].Name)) return null;
         var r = OfflineItems[num];
         return (r.Type, r.Power, r.Tier);
-    }
-
-    /// <summary>As <see cref="ItemGate"/>, for spells.</summary>
-    public (SpellType Type, short VitalAmount, short Tier)? SpellGate(int num)
-    {
-        if (num <= 0) return null;
-        if (IsOnline)
-            return _onlineSpellGates is not null && _onlineSpellGates.TryGetValue(num, out var g)
-                ? (g.Type, g.VitalAmount, g.Tier) : null;
-        if (num >= OfflineSpells.Length || string.IsNullOrEmpty(OfflineSpells[num].Name)) return null;
-        var r = OfflineSpells[num];
-        return (r.Type, r.VitalAmount, r.Tier);
     }
 
     /// <summary>What item <paramref name="num"/> sells for in a shop's sales table, from the LIVE world when
@@ -201,7 +183,6 @@ public sealed class EditorDataService
         OfflineItems = [];
         OfflineNpcs = [];
         OfflineShops = [];
-        OfflineSpells = [];
         OfflineQuests = [];
         OfflineConversations = [];
         OfflineMaps = [];
@@ -232,7 +213,6 @@ public sealed class EditorDataService
         OfflineItems = await LoadAllFromDirAsync<ItemRecord>(Path.Combine(dataPath, "items"), "item", Limits.Items);
         OfflineNpcs = await LoadAllFromDirAsync<NpcRecord>(Path.Combine(dataPath, "npcs"), "npc", Limits.Npcs);
         OfflineShops = await LoadAllFromDirAsync<ShopRecord>(Path.Combine(dataPath, "shops"), "shop", Limits.Shops);
-        OfflineSpells = await LoadAllFromDirAsync<SpellRecord>(Path.Combine(dataPath, "spells"), "spell", Limits.Spells);
         OfflineQuests = await LoadAllFromDirAsync<QuestRecord>(Path.Combine(dataPath, "quests"), "quest", Limits.Quests);
         OfflineConversations = await LoadAllFromDirAsync<ConversationRecord>(Path.Combine(dataPath, "conversations"), "conversation", Limits.Conversations);
         OfflineMaps = await LoadAllMapsAsync(dataPath, Limits.Maps, Manifest.DefaultMapSize);
@@ -374,14 +354,12 @@ public sealed class EditorDataService
         OnlineNpcs = pkt.Npcs;
         OnlineNpcSizes = pkt.NpcSizes;
         OnlineShops = pkt.Shops;
-        OnlineSpells = pkt.Spells;
         OnlineMaps = pkt.Maps;
         OnlineMapGroups = pkt.MapGroups;
         OnlineQuests = pkt.Quests;
         OnlineConversations = pkt.Conversations;
         _onlineCurrencyItems = new HashSet<int>(pkt.CurrencyItems);
         _onlineItemGates = pkt.ItemGates.ToDictionary(g => g.Num);
-        _onlineSpellGates = pkt.SpellGates.ToDictionary(g => g.Num);
     }
 
     public void ClearOnline()
@@ -392,14 +370,12 @@ public sealed class EditorDataService
         OnlineNpcs = null;
         OnlineNpcSizes = null;
         OnlineShops = null;
-        OnlineSpells = null;
         OnlineMaps = null;
         OnlineMapGroups = null;
         OnlineQuests = null;
         OnlineConversations = null;
         _onlineCurrencyItems = null;
         _onlineItemGates = null;
-        _onlineSpellGates = null;
     }
 
     // ── Online name patching (after online save, keeps type-ahead lists fresh) ─
@@ -417,7 +393,6 @@ public sealed class EditorDataService
     public void PatchOnlineShopName(int index, string name) => PatchAndNotify(OnlineShops, index, name);
     public void PatchOnlineQuestName(int index, string name) => PatchAndNotify(OnlineQuests, index, name);
     public void PatchOnlineConversationName(int index, string name) => PatchAndNotify(OnlineConversations, index, name);
-    public void PatchOnlineSpellName(int index, string name) => PatchAndNotify(OnlineSpells, index, name);
     public void PatchOnlineMapGroupName(int index, string name) => PatchAndNotify(OnlineMapGroups, index, name);
 
     private void PatchAndNotify(EditorDataPacket.NameEntry[]? store, int index, string name)
@@ -473,14 +448,6 @@ public sealed class EditorDataService
     {
         OfflineConversations[index] = record;
         await WriteJsonAsync(Path.Combine(EditorPaths.Data, "conversations", $"conversation{index}.json"), record);
-        RaiseEntriesInvalidated();
-    }
-
-    public async Task SaveOfflineSpellAsync(int index, SpellRecord record)
-    {
-        OfflineSpells[index] = record;
-        _spellEntries = null;
-        await WriteJsonAsync(Path.Combine(EditorPaths.Data, "spells", $"spell{index}.json"), record);
         RaiseEntriesInvalidated();
     }
 

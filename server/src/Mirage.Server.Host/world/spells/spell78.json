@@ -1,9 +1,0 @@
-{
-  "name": "Expert Mana Rupture",
-  "allowedClasses": [
-    10
-  ],
-  "type": "SubMp",
-  "vitalAmount": 38,
-  "tier": 20
-}

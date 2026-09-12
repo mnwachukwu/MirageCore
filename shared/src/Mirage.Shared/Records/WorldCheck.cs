@@ -7,7 +7,6 @@ public enum WorldRecordKind
     Item,
     Npc,
     Shop,
-    Spell,
     Quest,
     Conversation,
 }
@@ -60,8 +59,6 @@ public enum WorldIssueKind
     /// <summary>Something names an item that is not there.</summary>
     ItemMissing,
 
-    /// <summary>Something names a spell that is not there.</summary>
-    SpellMissing,
 
     /// <summary>Something names a quest that is not there.</summary>
     QuestMissing,
@@ -115,7 +112,6 @@ public sealed record WorldContent
     public ItemRecord?[] Items { get; init; } = [];
     public NpcRecord?[] Npcs { get; init; } = [];
     public ShopRecord?[] Shops { get; init; } = [];
-    public SpellRecord?[] Spells { get; init; } = [];
     public QuestRecord?[] Quests { get; init; } = [];
     public ConversationRecord?[] Conversations { get; init; } = [];
 
@@ -148,7 +144,6 @@ public static class WorldCheck
         CheckMaps(found, world, authored);
         CheckNpcs(found, world);
         CheckItems(found, world);
-        CheckSpells(found, world);
         CheckShops(found, world);
         CheckQuests(found, world);
         CheckConversations(found, world);
@@ -171,7 +166,6 @@ public static class WorldCheck
 
     private static bool HasNpc(WorldContent w, int n) => Has(w.Npcs, n, r => r.Name);
     private static bool HasItem(WorldContent w, int n) => Has(w.Items, n, r => r.Name);
-    private static bool HasSpell(WorldContent w, int n) => Has(w.Spells, n, r => r.Name);
     private static bool HasQuest(WorldContent w, int n) => Has(w.Quests, n, r => r.Name);
     // Every family iterates the same way: 1-based, skipping slots nobody has authored.
     private static IEnumerable<(int Num, T Record)> Authored<T>(T?[] all, Func<T, string> nameOf) where T : class
@@ -345,21 +339,9 @@ public static class WorldCheck
     {
         foreach (var (num, item) in Authored(w.Items, r => r.Name))
         {
-            // SpellNum only means a spell on a scroll; on every other type the field carries nothing.
-            if (item.Type == ItemType.Spell)
-                Ref(found, HasSpell(w, item.SpellNum), WorldIssueKind.SpellMissing, WorldRecordKind.Item, num, $"{item.SpellNum}");
         }
     }
 
-    private static void CheckSpells(List<WorldIssue> found, WorldContent w)
-    {
-        foreach (var (num, spell) in Authored(w.Spells, r => r.Name))
-        {
-            // A GiveItem spell hands over an item; the other types put a magnitude in this field.
-            if (spell.Type == SpellType.GiveItem)
-                Ref(found, HasItem(w, spell.ItemNum), WorldIssueKind.ItemMissing, WorldRecordKind.Spell, num, $"{spell.ItemNum}");
-        }
-    }
 
     private static void CheckShops(List<WorldIssue> found, WorldContent w)
     {

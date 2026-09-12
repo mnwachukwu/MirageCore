@@ -183,7 +183,6 @@ public sealed partial class ClientState
         NpcQuestGlyph = new int[Limits.Npcs + 1];
         NpcConvGlyph = new int[Limits.Npcs + 1];
         ShopDefs = new ShopRecord[Limits.Shops + 1];
-        SpellDefs = new SpellRecord[Limits.Spells + 1];
         QuestDefs = new QuestRecord[Limits.Quests + 1];
         ConvDefs = new ConversationRecord[Limits.Conversations + 1];
         MapGroups = new MapGroupRecord?[Limits.MapGroups + 1];

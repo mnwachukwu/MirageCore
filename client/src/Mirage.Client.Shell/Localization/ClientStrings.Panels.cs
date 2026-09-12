@@ -96,10 +96,8 @@ public static partial class ClientStrings
     public const string ShopPanel_PartialRepairCost = nameof(ShopPanel_PartialRepairCost);
     public const string ShopPanel_DurabilityGain = nameof(ShopPanel_DurabilityGain);
     public const string ShopPanel_InsufficientGold = nameof(ShopPanel_InsufficientGold);
-    public const string ShopPanel_TeachesSpell = nameof(ShopPanel_TeachesSpell);
     public const string ShopPanel_PotionEffect = nameof(ShopPanel_PotionEffect);
     public const string ShopPanel_TradeCost = nameof(ShopPanel_TradeCost);
-    public const string ShopPanel_AlreadyKnowSpell = nameof(ShopPanel_AlreadyKnowSpell);
 
     // ── InventoryPanel ────────────────────────────────────────────────────────
     public const string InventoryPanel_Title = nameof(InventoryPanel_Title);

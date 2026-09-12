@@ -350,16 +350,6 @@ public sealed partial class EditorPacketHandler
     /// edit the file instead. A key nothing looks up, so it can never be shown.</summary>
     private const string NotOnline = "(offline)";
 
-    // ── The spell book ────────────────────────────────────────────────────────
-
-    private static string ForgetSpell(PlayerRecord c, int spellSlot, string locale)
-    {
-        if (c.Spell[spellSlot] <= 0)
-            return ServerStrings.ForLocale(locale, ServerStrings.EditorAccounts_BookSlotEmpty);
-        c.Spell[spellSlot] = 0;
-        return "";
-    }
-
     // ── The quest log ─────────────────────────────────────────────────────────
 
     private void HandleEditorSetQuestStatus(int editorIndex, EditorSetQuestStatusPacket p)
@@ -531,7 +521,6 @@ public sealed partial class EditorPacketHandler
                 X = c.X,
                 Y = c.Y,
                 Inv = BagOf(c),
-                Spells = BookOf(c),
                 Quests = LogOf(c),
             });
         }
@@ -559,19 +548,6 @@ public sealed partial class EditorPacketHandler
             });
         }
         return bag;
-    }
-
-    /// <summary>The occupied slots of one character's spell book, named rather than numbered.</summary>
-    private List<EditorSpellSlot> BookOf(PlayerRecord c)
-    {
-        var book = new List<EditorSpellSlot>();
-        for (int i = 1; i <= Constants.MaxPlayerSpells; i++)
-        {
-            int num = c.Spell[i];
-            if (num <= 0 || num > _world.Limits.Spells) continue;
-            book.Add(new EditorSpellSlot { Slot = i, Num = num, Name = _world.Spells[num].TrimmedName });
-        }
-        return book;
     }
 
     /// <summary>One character's quest log, with the objective counts read against the quest's own

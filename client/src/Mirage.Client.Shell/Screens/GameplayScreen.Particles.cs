@@ -94,7 +94,7 @@ public sealed partial class GameplayScreen : IGameScreen
                 sb.Draw(tex, new Vector2(sx, sy), null, tint, rot, new Vector2(0f, tex.Height / 2f),
                     new Vector2(p.Size / tex.Width, StreakThickness / tex.Height), SpriteEffects.None, 0f);
                 break;
-            case ParticleKind.Swoosh:
+            case ParticleKind.Arc:
                 // Crescent aimed at the attacker's facing (Vx/Vy), sweeping through a small arc over its life.
                 float swT = p.Age / p.Life;
                 float swRot = MathF.Atan2(p.Vy, p.Vx) + (swT - 0.5f) * SwooshSweepRad;
@@ -102,7 +102,7 @@ public sealed partial class GameplayScreen : IGameScreen
                 sb.Draw(sw, new Vector2(sx, sy), null, tint, swRot,
                     new Vector2(sw.Width / 2f, sw.Height / 2f), p.Size / sw.Width, SpriteEffects.None, 0f);
                 break;
-            case ParticleKind.Cube:
+            case ParticleKind.Parcel:
                 // Gray box with a soft drop shadow; p.Rgb (white) drives the light/glow, not the body.
                 float half = p.Size / 2f;
                 sb.Draw(_particlePixelTex!,
@@ -196,7 +196,7 @@ public sealed partial class GameplayScreen : IGameScreen
         // World-pixel CENTER of the target tile: attacker tile origin (screen + camera) + one tile ahead + half.
         float wx = sx + _camera.CameraX + (dxT + 0.5f) * Constants.PicX;
         float wy = sy + _camera.CameraY + (dyT + 0.5f) * Constants.PicY;
-        _particles.EmitMeleeSwing(wx, wy, dxT, dyT, sparks, LayerAtTile(map, lx, ly));
+        _particles.EmitArc(wx, wy, dxT, dyT, sparks, LayerAtTile(map, lx, ly));
     }
 
     /// <summary>The logical layer of an entity standing at (map,lx,ly) — used to anchor a combat/spell FX particle
@@ -226,30 +226,43 @@ public sealed partial class GameplayScreen : IGameScreen
         _ => (0, 0),
     };
 
-    /// <summary>Spawn typed spell FX for a cast: a projectile homing from the caster to the resolved target
-    /// (or arriving in place if self-cast / the target isn't observable). Driven by
-    /// <see cref="ClientPacketHandler.SpellCast"/>.</summary>
-    public void SpawnSpellCast(SpellCastFx fx)
+    /// <summary>Throws a projectile from one entity to another, and holds any number owed to the target
+    /// until it lands.
+    ///
+    /// <para><b>Nothing in Core calls this.</b> It is the client half of an effect a game asks for:
+    /// <paramref name="style"/> and <paramref name="rgb"/> say what flies and what colour it is, and the
+    /// engine handles the rest — footprint centring, a target that moves or is not observable, and the
+    /// timing.</para>
+    ///
+    /// <para><b>The timing is the part worth keeping.</b> A number that appears before its projectile
+    /// arrives reads as two unrelated events, so the hit is registered as PENDING and released when the
+    /// bolt would land. A target that resolves to nowhere — out of view, or the thrower itself — gets the
+    /// effect in place rather than no effect at all.</para></summary>
+    public void SpawnProjectile(ProjectileStyle style, uint rgb, int fromMap, int fromX, int fromY,
+                                float fromXOff, float fromYOff, int fromSize, TargetRef target)
     {
-        if (!TryEntityScreen(fx.CasterMap, fx.CasterX, fx.CasterY, fx.CasterXOff, fx.CasterYOff, out float csx, out float csy)) return;
-        // Center the bolt on each body's FOOTPRINT (size*Pic/2) so an oversize NPC's cast leaves and arrives at its
-        // center of mass, not its top-left anchor tile.
-        int casterSize = fx.CasterSize < 1 ? 1 : fx.CasterSize;
-        float sx = csx + _camera.CameraX + casterSize * Constants.PicX / 2f;
-        float sy = csy + _camera.CameraY + casterSize * Constants.PicY / 2f;
-        float ex = sx, ey = sy; // default: self / unresolved target → arrive in place (no travel)
-        if (ResolveTargetTile(fx.Target, out int tMap, out int tX, out int tY)
+        if (!TryEntityScreen(fromMap, fromX, fromY, fromXOff, fromYOff, out float csx, out float csy)) return;
+
+        // Centre on each body's FOOTPRINT (size*Pic/2) so an oversize NPC throws from, and is hit at, its
+        // centre of mass rather than its top-left anchor tile.
+        int size = fromSize < 1 ? 1 : fromSize;
+        float sx = csx + _camera.CameraX + size * Constants.PicX / 2f;
+        float sy = csy + _camera.CameraY + size * Constants.PicY / 2f;
+
+        float ex = sx, ey = sy;
+        if (ResolveTargetTile(target, out int tMap, out int tX, out int tY)
             && TryEntityScreen(tMap, tX, tY, 0f, 0f, out float tsx, out float tsy))
         {
-            int targetSize = TargetFootprintSize(fx.Target);
+            int targetSize = TargetFootprintSize(target);
             ex = tsx + _camera.CameraX + targetSize * Constants.PicX / 2f;
             ey = tsy + _camera.CameraY + targetSize * Constants.PicY / 2f;
         }
-        // Record a pending hit so the target's damage/heal number releases when the bolt would land (in sync).
+
         float dist = MathF.Sqrt((ex - sx) * (ex - sx) + (ey - sy) * (ey - sy));
         if (dist > 1f)
-            _pendingHits.Add(new PendingHit { Target = fx.Target, ReleaseMs = Environment.TickCount64 + (long)ParticleSystem.ProjectileFlightMs(dist) });
-        _particles.EmitSpell(fx.Type, sx, sy, ex, ey, LayerAtTile(fx.CasterMap, fx.CasterX, fx.CasterY));
+            _pendingHits.Add(new PendingHit { Target = target, ReleaseMs = Environment.TickCount64 + (long)ParticleSystem.ProjectileFlightMs(dist) });
+
+        _particles.EmitProjectile(style, sx, sy, ex, ey, rgb, LayerAtTile(fromMap, fromX, fromY));
     }
 
     /// <summary>Pushes a transient light + glow core for each light-emitting particle (spell FX) into the

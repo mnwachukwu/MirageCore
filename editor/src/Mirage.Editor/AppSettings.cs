@@ -51,8 +51,6 @@ public sealed class AppSettings
     public double ItemEditorRightWidth { get; set; } = 220;
     public double NpcEditorLeftWidth { get; set; } = 200;
     public double NpcEditorRightWidth { get; set; } = 220;
-    public double SpellEditorLeftWidth { get; set; } = 200;
-    public double SpellEditorRightWidth { get; set; } = 220;
     public double ShopEditorLeftWidth { get; set; } = 200;
     public double QuestEditorLeftWidth { get; set; } = 200;
     public double QuestEditorRightWidth { get; set; } = 220;

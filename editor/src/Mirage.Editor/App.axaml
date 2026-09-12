@@ -100,9 +100,6 @@
     <DataTemplate DataType="{x:Type vm:ShopEditorViewModel}">
       <views:ShopEditorView />
     </DataTemplate>
-    <DataTemplate DataType="{x:Type vm:SpellEditorViewModel}">
-      <views:SpellEditorView />
-    </DataTemplate>
     <DataTemplate DataType="{x:Type vm:MapEditorViewModel}">
       <views:MapEditorView />
     </DataTemplate>

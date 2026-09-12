@@ -17,7 +17,6 @@ public sealed record SendItemsPacket : IPacket
         // Type-specific fields; see ItemRecord for which apply to which ItemType.
         [property: JsonPropertyName("durability")] short Durability,
         [property: JsonPropertyName("vitalAmount")] short VitalAmount,
-        [property: JsonPropertyName("spellNum")] short SpellNum,
         [property: JsonPropertyName("power")] short Power,
         [property: JsonPropertyName("tier")] short Tier,
         // Item restriction flags — drive the client's list/mail/drop-warning gates.
@@ -47,7 +46,6 @@ public sealed record UpdateItemPacket : IPacket
     // Type-specific fields; see ItemRecord for which apply to which ItemType.
     [JsonPropertyName("durability")] public short Durability { get; init; }
     [JsonPropertyName("vitalAmount")] public short VitalAmount { get; init; }
-    [JsonPropertyName("spellNum")] public short SpellNum { get; init; }
     [JsonPropertyName("power")] public short Power { get; init; }
     [JsonPropertyName("tier")] public short Tier { get; init; }
     // Item restriction flags. See ItemRecord for behavior.

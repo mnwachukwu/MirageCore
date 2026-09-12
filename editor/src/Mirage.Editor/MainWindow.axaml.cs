@@ -210,7 +210,6 @@ public partial class MainWindow : FAAppWindow
         this.FindDescendantOfType<MapEditorView>()?.SavePanelState();
         this.FindDescendantOfType<ItemEditorView>()?.SavePanelState();
         this.FindDescendantOfType<NpcEditorView>()?.SavePanelState();
-        this.FindDescendantOfType<SpellEditorView>()?.SavePanelState();
         this.FindDescendantOfType<ShopEditorView>()?.SavePanelState();
         this.FindDescendantOfType<QuestEditorView>()?.SavePanelState();
         this.FindDescendantOfType<ConversationEditorView>()?.SavePanelState();

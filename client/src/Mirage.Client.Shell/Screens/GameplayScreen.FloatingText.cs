@@ -17,35 +17,40 @@ using System.Text;
 
 namespace Mirage.Client.Shell.Screens;
 
-/// <summary>Floating combat numbers: spawning and shifting them, and the deferred-hit queue behind
-/// them. A bolt's damage, death and splatter are held until the projectile lands, so the number appears
-/// when the hit does rather than when it was rolled; bolts on one target are claimed FIFO so several
-/// stagger across their own arrivals. The public spawn/shift/clear entry points are what
-/// <c>IClientEvents</c> drives from the network layer.</summary>
+/// <summary>
+/// Text that floats up off an entity, and the queue that holds some of it back.
+///
+/// <para><b>Core never spawns any.</b> What the text SAYS is a game's business — a number, a word, a
+/// name. What the engine owns is the awkward part: centring it on an oversize body's footprint rather
+/// than its anchor tile, keeping it anchored across a seam crossing, and holding it until an in-flight
+/// projectile lands so the text and the impact read as one event rather than two. Several projectiles on
+/// one target are claimed FIFO, so their text staggers across their own arrivals.</para>
+/// </summary>
 public sealed partial class GameplayScreen : IGameScreen
 {
-    /// <summary>VitalDelta path (slotted NPC or player) — build the target ref and defer-or-float.</summary>
-    public void SpawnOrDeferVitalFloat(bool isNpc, int idx, int npcMap, int mapNum, int lx, int ly, float xoff, float yoff, string? text, Color color, float splatterIntensity)
+    /// <summary>Text over a slotted NPC or player. The splatter is optional: pass zero intensity for
+    /// text alone.</summary>
+    public void SpawnOrDeferEntityText(bool isNpc, int idx, int npcMap, int mapNum, int lx, int ly, float xoff, float yoff, string? text, Color color, float splatterIntensity)
         => DeferOrFloat(isNpc ? new TargetRef(TargetKind.Npc, idx, npcMap) : new TargetRef(TargetKind.Player, idx, 0),
             mapNum, lx, ly, xoff, yoff, text, color, splatterIntensity);
 
-    /// <summary>Traversal-NPC path (positioned by world tile) — build the traversal ref and defer-or-float.</summary>
-    public void SpawnOrDeferTraversalFloat(int spawnMap, int spawnSlot, int mapNum, int x, int y, string? text, Color color, float splatterIntensity)
+    /// <summary>Text over a traversal guest, which is positioned by world tile rather than by slot.</summary>
+    public void SpawnOrDeferTraversalText(int spawnMap, int spawnSlot, int mapNum, int x, int y, string? text, Color color, float splatterIntensity)
         => DeferOrFloat(new TargetRef(TargetKind.Traversal, spawnMap, spawnSlot), mapNum, x, y, 0f, 0f, text, color, splatterIntensity);
 
-    /// <summary>Float a vital number now, OR — when it belongs to an in-flight spell projectile — defer it
-    /// until the bolt would land, so the number appears in sync with the visible impact. The world position
-    /// is captured now, since the entity may die or despawn before release.</summary>
+    /// <summary>Float the text now, or — when it belongs to a projectile still in flight — hold it until
+    /// that projectile would land, so it appears in sync with the visible impact. The world position is
+    /// captured now, because the entity may die or despawn before the text is released.</summary>
     private void DeferOrFloat(TargetRef target, int mapNum, int lx, int ly, float xoff, float yoff, string? text, Color color, float splatterIntensity)
     {
         long release = ClaimRelease(target);
         bool onScreen = TryEntityScreen(mapNum, lx, ly, xoff, yoff, out float sx, out float sy);
-        int tsize = TargetFootprintSize(target);   // center the number/splatter on an oversize NPC's body, not its anchor
+        int tsize = TargetFootprintSize(target);   // centre the text/splatter on an oversize body, not its anchor tile
         if (release > 0 && onScreen)
         {
             float cx = sx + tsize * Constants.PicX / 2f;
             float cy = sy - FloatTextGapAbove;
-            // Defer BOTH the number and the splatter burst to the bolt's arrival, so they land with the impact.
+            // Both the text and the splatter wait for the projectile, so they land with the impact.
             _deferredFloats.Add(new DeferredFloat
             {
                 WorldX = cx + _camera.CameraX, WorldY = cy + _camera.CameraY, Text = text, Color = color,
@@ -53,15 +58,15 @@ public sealed partial class GameplayScreen : IGameScreen
             });
             return;
         }
-        // Immediate: the number now, the burst now.
+        // Nothing in flight: the text now, the burst now.
         if (text is not null) SpawnFloatingTextAtEntity(mapNum, lx, ly, xoff, yoff, text, color, tsize);
         if (splatterIntensity > 0f && _showDecals && onScreen)
             _particles.EmitSplatter(sx + tsize * Constants.PicX / 2f + _camera.CameraX, sy - FloatTextGapAbove + _camera.CameraY,
                                     splatterIntensity, _ctx.State.DecalColor, LayerAtTile(mapNum, lx, ly));
     }
 
-    /// <summary>Delayed death: hold a killed entity's sprite in place until its killing spell bolt lands, so the
-    /// body doesn't vanish before the visible projectile arrives. Works for NPCs, traversal guests, and other
+    /// <summary>Delayed death: hold a killed entity's sprite in place until the projectile that killed it
+    /// lands, so the body does not vanish before the thing that killed it arrives. Works for NPCs, traversal guests, and other
     /// players. No-op for the LOCAL player (its own death must not lag) or a death with no in-flight hit.
     /// (Distinct from the combat-logoff "ghost" feature — different concept, different vocabulary.)</summary>
     public void OnEntityDied(EntityDeathFx fx)

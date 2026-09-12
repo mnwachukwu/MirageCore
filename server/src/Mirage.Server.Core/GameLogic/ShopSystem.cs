@@ -264,9 +264,7 @@ public sealed class ShopSystem : GameSystem
         int have = stacks ? Math.Max(p.Inv[invSlot].Quantity, 1) : group.Count;
         int amount = quantity <= 0 || quantity > have ? have : quantity;
 
-        var spell = item.Type == ItemType.Spell && item.SpellNum > 0 && item.SpellNum <= _world.Limits.Spells
-            ? _world.Spells[item.SpellNum] : null;
-        long gold = (long)EconomyFormulas.ItemSellValue(item, p.Inv[invSlot].Dur, spell) * amount;
+        long gold = (long)EconomyFormulas.ItemSellValue(item, p.Inv[invSlot].Dur) * amount;
 
         if (stacks) _items.TakeItem(index, itemNum, amount);
         else for (int i = 0; i < amount; i++) _items.RemoveFromSlot(index, group[i], 0);

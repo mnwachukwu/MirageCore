@@ -209,9 +209,6 @@ public sealed class EditorConnection : IDisposable
     public Task<EditorAllConversationsPacket?> RequestAllConversationsAsync(CancellationToken ct = default)
         => RequestBulkAsync<EditorAllConversationsPacket>(PacketNames.EditorAllConversations, new EditorRequestAllConversationsPacket(), ct);
 
-    public Task<EditorAllSpellsPacket?> RequestAllSpellsAsync(CancellationToken ct = default)
-        => RequestBulkAsync<EditorAllSpellsPacket>(PacketNames.EditorAllSpells, new EditorRequestAllSpellsPacket(), ct);
-
     public Task<EditorAllMapGroupsPacket?> RequestAllMapGroupsAsync(CancellationToken ct = default)
         => RequestBulkAsync<EditorAllMapGroupsPacket>(PacketNames.EditorAllMapGroups, new EditorRequestAllMapGroupsPacket(), ct);
 
@@ -259,15 +256,6 @@ public sealed class EditorConnection : IDisposable
         CancellationToken ct = default)
         => RequestBulkAsync<EditorNoticePacket>(PacketNames.EditorNotice,
             new EditorTakeItemPacket { Login = login, Slot = slot, InvSlot = invSlot, Quantity = quantity }, ct);
-
-    /// <summary>Teaches a character a spell. The class, level and INT gates a scroll enforces do not apply.</summary>
-    public Task<EditorNoticePacket?> LearnSpellAsync(string login, int slot, int spellNum, CancellationToken ct = default)
-        => RequestBulkAsync<EditorNoticePacket>(PacketNames.EditorNotice,
-            new EditorLearnSpellPacket { Login = login, Slot = slot, SpellNum = spellNum }, ct);
-
-    public Task<EditorNoticePacket?> ForgetSpellAsync(string login, int slot, int spellSlot, CancellationToken ct = default)
-        => RequestBulkAsync<EditorNoticePacket>(PacketNames.EditorNotice,
-            new EditorForgetSpellPacket { Login = login, Slot = slot, SpellSlot = spellSlot }, ct);
 
     /// <summary>Puts an item in the account vault. No character slot — the bank is account-shared.</summary>
     public Task<EditorNoticePacket?> BankGiveAsync(string login, int itemNum, int quantity, CancellationToken ct = default)
@@ -342,11 +330,6 @@ public sealed class EditorConnection : IDisposable
         => RequestAsync<UpdateConversationPacket>(
             PacketNames.UpdateConversation, convNum,
             new EditorRequestConversationPacket { ConvNum = convNum }, ct);
-
-    public Task<UpdateSpellPacket?> RequestSpellAsync(int spellNum, CancellationToken ct = default)
-        => RequestAsync<UpdateSpellPacket>(
-            PacketNames.UpdateSpell, spellNum,
-            new EditorRequestSpellPacket { SpellNum = spellNum }, ct);
 
     public Task<SendMapPacket?> RequestMapAsync(int mapNum, CancellationToken ct = default)
         => RequestAsync<SendMapPacket>(
@@ -493,7 +476,6 @@ public sealed class EditorConnection : IDisposable
         EditorAllShopsPacket => PacketNames.EditorAllShops,
         EditorAllQuestsPacket => PacketNames.EditorAllQuests,
         EditorAllConversationsPacket => PacketNames.EditorAllConversations,
-        EditorAllSpellsPacket => PacketNames.EditorAllSpells,
         EditorAllMapGroupsPacket => PacketNames.EditorAllMapGroups,
         EditorAllMapsPacket => PacketNames.EditorAllMaps,
         EditorAccountListPacket => PacketNames.EditorAccountList,
@@ -516,7 +498,6 @@ public sealed class EditorConnection : IDisposable
             UpdateShopPacket p => (PacketNames.UpdateShop, p.ShopNum),
             UpdateQuestPacket p => (PacketNames.UpdateQuest, p.QuestNum),
             UpdateConversationPacket p => (PacketNames.UpdateConversation, p.ConvNum),
-            UpdateSpellPacket p => (PacketNames.UpdateSpell, p.SpellNum),
             SendMapPacket p => (PacketNames.SendMap, p.MapNum),
             UpdateMapGroupPacket p => (PacketNames.UpdateMapGroup, p.GroupNum),
             _ => ("", 0),

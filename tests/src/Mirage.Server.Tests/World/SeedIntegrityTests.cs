@@ -39,7 +39,6 @@ public class SeedIntegrityTests
 
     private static Dictionary<int, ItemRecord> _items = new();
     private static Dictionary<int, NpcRecord> _npcs = new();
-    private static Dictionary<int, SpellRecord> _spells = new();
     private static Dictionary<int, ConversationRecord> _conversations = new();
     private static Dictionary<int, QuestRecord> _quests = new();
     private static Dictionary<int, ShopRecord> _shops = new();
@@ -52,7 +51,6 @@ public class SeedIntegrityTests
         if (data is null) return;
         _items = LoadAll<ItemRecord>(data, "items", "item");
         _npcs = LoadAll<NpcRecord>(data, "npcs", "npc");
-        _spells = LoadAll<SpellRecord>(data, "spells", "spell");
         _conversations = LoadAll<ConversationRecord>(data, "conversations", "conversation");
         _quests = LoadAll<QuestRecord>(data, "quests", "quest");
         _shops = LoadAll<ShopRecord>(data, "shops", "shop");
@@ -162,19 +160,6 @@ public class SeedIntegrityTests
         });
     }
 
-    [Test]
-    public void EveryScroll_TeachesASpellThatExists()
-    {
-        RequireSeed();
-        // A scroll is the ONLY way to learn a spell, so a scroll pointing at nothing is not a cosmetic
-        // fault — it is a permanently unreachable ability.
-        Assert.Multiple(() =>
-        {
-            foreach (var (num, item) in _items.Where(kv => kv.Value.Type == ItemType.Spell))
-                Assert.That(_spells.ContainsKey(item.SpellNum), Is.True,
-                    $"item{num} ({item.Name}) teaches spell {item.SpellNum}, which does not exist");
-        });
-    }
 
     // ── What the generators own, and nothing else guards ──────────────────────
 
@@ -189,7 +174,7 @@ public class SeedIntegrityTests
         {
             foreach (var (num, item) in _items)
             {
-                int derived = EconomyFormulas.ItemValue(item, _spells.GetValueOrDefault(item.SpellNum));
+                int derived = EconomyFormulas.ItemValue(item);
                 if (derived <= 0) continue;   // currency, keys, treasure — authored or genuinely worthless
                 Assert.That(item.Price, Is.EqualTo(derived),
                     $"item{num} ({item.Name}) is priced {item.Price} but the formula says {derived} — "

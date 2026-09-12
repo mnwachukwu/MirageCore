@@ -40,7 +40,6 @@ public sealed class GameWorld
     public ItemRecord[] Items { get; }
     public NpcRecord[] Npcs { get; }
     public ShopRecord[] Shops { get; }
-    public SpellRecord[] Spells { get; }
     public QuestRecord[] Quests { get; }
     public ConversationRecord[] Conversations { get; }
 
@@ -132,7 +131,7 @@ public sealed class GameWorld
         var (myWX, myWY) = grid.CenterToWorld(pc.X, pc.Y);
         var tw = grid.ToWorldRelative(mapNum, mn.X, mn.Y);
         // Footprint-aware r=5: interacting with an oversize NPC counts its whole body, not just its anchor.
-        if (tw is null || !WorldCoordHelper.IsInSpellRange(myWX, myWY, 1, tw.Value.worldX, tw.Value.worldY, Npcs[mn.Num].EffectiveSize)) return false;
+        if (tw is null || !WorldCoordHelper.IsInInteractRange(myWX, myWY, 1, tw.Value.worldX, tw.Value.worldY, Npcs[mn.Num].EffectiveSize)) return false;
         // Two-layer world: a keeper on the bridge deck and a player on the ground beneath it are a few pixels apart
         // on screen but not on the same plane. Same connect rule combat and spell targeting use (LayerConnects is
         // range-agnostic): same layer always, across them only from a ramp's mount side — so you can talk to a
@@ -181,7 +180,7 @@ public sealed class GameWorld
         var grid = WorldCoordHelper.BuildMapGrid(Maps, pc.Map);
         var (myWX, myWY) = grid.CenterToWorld(pc.X, pc.Y);
         var tw = grid.ToWorldRelative(mapNum, mi.X, mi.Y);
-        if (tw is null || !WorldCoordHelper.IsInSpellRange(myWX, myWY, 1, tw.Value.worldX, tw.Value.worldY, 1))
+        if (tw is null || !WorldCoordHelper.IsInInteractRange(myWX, myWY, 1, tw.Value.worldX, tw.Value.worldY, 1))
             return false;
 
         return LayerLogic.LayerConnects(new ServerTileView(this, grid), myWX, myWY, pc.Layer,
@@ -435,7 +434,6 @@ public sealed class GameWorld
         Items = Fill<ItemRecord>(Limits.Items);
         Npcs = Fill<NpcRecord>(Limits.Npcs);
         Shops = Fill<ShopRecord>(Limits.Shops);
-        Spells = Fill<SpellRecord>(Limits.Spells);
         Quests = Fill<QuestRecord>(Limits.Quests);
         Conversations = Fill<ConversationRecord>(Limits.Conversations);
 

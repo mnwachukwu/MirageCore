@@ -29,7 +29,6 @@ public sealed record RecordLimits
     public int Items { get; init; } = 1000;
     public int Npcs { get; init; } = 1000;
     public int Shops { get; init; } = 1000;
-    public int Spells { get; init; } = 1000;
     public int Quests { get; init; } = 1000;
     public int Conversations { get; init; } = 1000;
     public int Maps { get; init; } = 1000;
@@ -49,7 +48,6 @@ public sealed record RecordLimits
         Items = Math.Clamp(Items, 1, ceiling),
         Npcs = Math.Clamp(Npcs, 1, ceiling),
         Shops = Math.Clamp(Shops, 1, ceiling),
-        Spells = Math.Clamp(Spells, 1, ceiling),
         Quests = Math.Clamp(Quests, 1, ceiling),
         Conversations = Math.Clamp(Conversations, 1, ceiling),
         Maps = Math.Clamp(Maps, 1, ceiling),
@@ -94,7 +92,6 @@ public sealed record RecordLimits
             Extensibility.CoreRecordFamilies.Items => Items,
             Extensibility.CoreRecordFamilies.Npcs => Npcs,
             Extensibility.CoreRecordFamilies.Shops => Shops,
-            Extensibility.CoreRecordFamilies.Spells => Spells,
             Extensibility.CoreRecordFamilies.Quests => Quests,
             Extensibility.CoreRecordFamilies.Conversations => Conversations,
             _ => family.DefaultLimit,

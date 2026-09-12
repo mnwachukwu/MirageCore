@@ -28,7 +28,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
                 Type = item.Type,
                 Durability = item.Durability,
                 VitalAmount = item.VitalAmount,
-                SpellNum = item.SpellNum,
                 Power = item.Power,
                 Tier = item.Tier,
                 NonTradeable = item.NonTradeable,
@@ -185,7 +184,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
             Type = p.Type,
             Durability = p.Durability,
             VitalAmount = p.VitalAmount,
-            SpellNum = p.SpellNum,
             Power = p.Power,
             Tier = p.Tier,
             NonTradeable = p.NonTradeable,
@@ -234,21 +232,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
                 .Select(t => new ShopContentsPacket.BarterRow(t.GiveItem, t.GiveQuantity, t.GetItem, t.GetQuantity))
                 .ToArray();
         }
-    }
-
-    private void HandleUpdateSpell(UpdateSpellPacket p)
-    {
-        if (!SlotValidation.IsValidSpellNum(p.SpellNum, _state.Limits.Spells)) return;
-        _state.SpellDefs[p.SpellNum] = new SpellRecord
-        {
-            Name = p.Name,
-            Type = p.Type,
-            VitalAmount = p.VitalAmount,
-            ItemNum = p.ItemNum,
-            ItemQuantity = p.ItemQuantity,
-            IntReq = p.IntReq,
-            Tier = p.Tier,
-        };
     }
 
     // MapGroup defs. Bulk at join, then live per-group on an editor save. The client caches these and

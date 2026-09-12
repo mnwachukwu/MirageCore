@@ -164,7 +164,6 @@ public static partial class EditorStrings
     public const string MainWindow_Section_Items = nameof(MainWindow_Section_Items);
     public const string MainWindow_Section_Npcs = nameof(MainWindow_Section_Npcs);
     public const string MainWindow_Section_Shops = nameof(MainWindow_Section_Shops);
-    public const string MainWindow_Section_Spells = nameof(MainWindow_Section_Spells);
     public const string MainWindow_Section_Quests = nameof(MainWindow_Section_Quests);
     public const string MainWindow_Section_Conversations = nameof(MainWindow_Section_Conversations);
     public const string MainWindow_Section_Accounts = nameof(MainWindow_Section_Accounts);
@@ -198,10 +197,6 @@ public static partial class EditorStrings
     public const string AccountEditor_Take = nameof(AccountEditor_Take);
     public const string AccountEditor_ItemPlaceholder = nameof(AccountEditor_ItemPlaceholder);
     public const string AccountEditor_Worn = nameof(AccountEditor_Worn);
-    public const string AccountEditor_BookHeader = nameof(AccountEditor_BookHeader);
-    public const string AccountEditor_BookEmpty = nameof(AccountEditor_BookEmpty);
-    public const string AccountEditor_Teach = nameof(AccountEditor_Teach);
-    public const string AccountEditor_SpellPlaceholder = nameof(AccountEditor_SpellPlaceholder);
     public const string AccountEditor_VaultHeader = nameof(AccountEditor_VaultHeader);
     public const string AccountEditor_VaultEmpty = nameof(AccountEditor_VaultEmpty);
     public const string AccountEditor_LogHeader = nameof(AccountEditor_LogHeader);
@@ -248,7 +243,6 @@ public static partial class EditorStrings
     public const string PushChangesDialog_DirtyShop = nameof(PushChangesDialog_DirtyShop);
     public const string PushChangesDialog_DirtyQuest = nameof(PushChangesDialog_DirtyQuest);
     public const string PushChangesDialog_DirtyConversation = nameof(PushChangesDialog_DirtyConversation);
-    public const string PushChangesDialog_DirtySpell = nameof(PushChangesDialog_DirtySpell);
     public const string PushChangesDialog_DirtyMap = nameof(PushChangesDialog_DirtyMap);
     public const string PushChangesDialog_DirtyMapGroup = nameof(PushChangesDialog_DirtyMapGroup);
     public const string PushChangesDialog_DirtyUnknown = nameof(PushChangesDialog_DirtyUnknown);
@@ -258,13 +252,8 @@ public static partial class EditorStrings
     public const string DataLabel_HpAmount = nameof(DataLabel_HpAmount);
     public const string DataLabel_MpAmount = nameof(DataLabel_MpAmount);
     public const string DataLabel_SpAmount = nameof(DataLabel_SpAmount);
-    public const string DataLabel_SpellNumber = nameof(DataLabel_SpellNumber);
-    public const string DataLabel_ItemNumber = nameof(DataLabel_ItemNumber);
     public const string DataLabel_Damage = nameof(DataLabel_Damage);
     public const string DataLabel_Defense = nameof(DataLabel_Defense);
-    public const string DataLabel_MpDrain = nameof(DataLabel_MpDrain);
-    public const string DataLabel_SpDrain = nameof(DataLabel_SpDrain);
-    public const string DataLabel_Quantity = nameof(DataLabel_Quantity);
     // The class multi-select shared by the item, spell and quest editors.
     // Fallback captions for the two fields whose caption varies by type, shown if a type ever falls
     // outside the switch. Not "Data 1/2/3" any more — there is no numbered slot left to name.
@@ -510,14 +499,12 @@ public static partial class EditorStrings
     public const string WorldCheck_KindItem = nameof(WorldCheck_KindItem);
     public const string WorldCheck_KindNpc = nameof(WorldCheck_KindNpc);
     public const string WorldCheck_KindShop = nameof(WorldCheck_KindShop);
-    public const string WorldCheck_KindSpell = nameof(WorldCheck_KindSpell);
     public const string WorldCheck_KindQuest = nameof(WorldCheck_KindQuest);
     public const string WorldCheck_KindConversation = nameof(WorldCheck_KindConversation);
     public const string WorldCheck_WarpMapMissing = nameof(WorldCheck_WarpMapMissing);
     public const string WorldCheck_BootMapMissing = nameof(WorldCheck_BootMapMissing);
     public const string WorldCheck_NpcMissing = nameof(WorldCheck_NpcMissing);
     public const string WorldCheck_ItemMissing = nameof(WorldCheck_ItemMissing);
-    public const string WorldCheck_SpellMissing = nameof(WorldCheck_SpellMissing);
     public const string WorldCheck_QuestMissing = nameof(WorldCheck_QuestMissing);
     public const string WorldCheck_ClassMissing = nameof(WorldCheck_ClassMissing);
     public const string WorldCheck_ConversationNodeMissing = nameof(WorldCheck_ConversationNodeMissing);

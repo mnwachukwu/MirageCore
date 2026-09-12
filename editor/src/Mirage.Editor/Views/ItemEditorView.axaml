@@ -174,16 +174,6 @@
                            Minimum="0" Maximum="9999" FormatString="0"/>
           </mui:FormRow>
 
-          <!-- Spell taught: spell scrolls only — picks from the live spell list. -->
-          <mui:FormRow LabelWidth="120"
-                IsVisible="{Binding SelectedItem.SpellNumVisible}">
-            <TextBlock x:Name="_spellNumLabel" Grid.Column="0" VerticalAlignment="Center"/>
-            <controls:DropdownAutoCompleteBox x:Name="_spellPicker" Grid.Column="1"
-                             ItemsSource="{Binding SpellEntries}"
-                             SelectedItem="{Binding SelectedSpellItem, Mode=TwoWay}"
-                             ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
-                             FilterMode="Custom" MinimumPrefixLength="0"/>
-          </mui:FormRow>
 
           <!-- Item restriction flags (S10 authoring surface; enforcement of the new flags lands in S10) -->
           <TextBlock x:Name="_restrictionsLabel" FontWeight="SemiBold" Margin="0,6,0,0"/>
@@ -231,13 +221,6 @@
                          FontWeight="SemiBold" Foreground="#99BBDD" FontSize="11" Margin="0,6,0,0"/>
               <StackPanel Margin="8,0,0,0" Spacing="3">
                 <TextBlock x:Name="_notesPotionsAmount" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
-              </StackPanel>
-
-              <!-- Spell scrolls -->
-              <TextBlock x:Name="_notesSpellScrollHeader"
-                         FontWeight="SemiBold" Foreground="#99BBDD" FontSize="11" Margin="0,6,0,0"/>
-              <StackPanel Margin="8,0,0,0" Spacing="3">
-                <TextBlock x:Name="_notesSpellScrollSpell" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
               </StackPanel>
 
               <!-- Key -->

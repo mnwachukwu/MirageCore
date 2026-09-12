@@ -71,11 +71,6 @@ public static class EconomyFormulas
     /// <c>0.025</c> puts a full kit at a tenth of the rung.</summary>
     private const double EquipmentTierShare = 0.025;
 
-    /// <summary>Share of a rung's income that a spell scroll costs.  Dearer than a single piece of
-    /// gear because a scroll is permanent — it teaches the spell and is consumed, where armor wears out
-    /// and is replaced every rung anyway.</summary>
-    private const double ScrollTierShare = 0.05;
-
     /// <summary>Share of ONE tier's income that a potion costs.  Consumables are priced per tier rather
     /// than per rung because they are bought continuously rather than once a rung.</summary>
     private const double PotionTierShare = 0.002;
@@ -102,15 +97,10 @@ public static class EconomyFormulas
 
     /// <summary>What a shop charges for <paramref name="item"/>, in gold.
     ///
-    /// <para><paramref name="spell"/> is required only for a <see cref="ItemType.Spell"/> scroll and is
-    /// ignored otherwise: a scroll carries no <c>Tier</c> of its own — the gate lives on the spell it
-    /// teaches — so its tier has to come from there.  A scroll passed without its spell falls back to the
-    /// floor rather than pricing at zero.</para>
-    ///
     /// <para>Currency and keys return 0: gold has no price in gold, and a key is quest furniture rather
     /// than stock.  A shop CAN still trade either — a BarterItemRecord names both sides explicitly — this
     /// only says the derivation declines to invent a number for them.</para></summary>
-    public static int ItemValue(ItemRecord item, SpellRecord? spell = null)
+    public static int ItemValue(ItemRecord item)
     {
         // None is in this list for the OPPOSITE reason to the other two. Currency and Key have no worth to
         // derive; None is what TREASURE is typed as, and its worth is the entire point — it is simply
@@ -124,10 +114,6 @@ public static class EconomyFormulas
             return Clamp(forTier * bulk);
         }
 
-        if (item.Type == ItemType.Spell)
-            return Clamp(ExpectedGoldForRung(spell?.Tier ?? 0) * ScrollTierShare);
-
-        // The six potion types.
         return Clamp(ExpectedGoldPerTier(item.Tier) * PotionTierShare);
     }
 
@@ -140,10 +126,10 @@ public static class EconomyFormulas
     /// <para><paramref name="currentDurability"/> is REQUIRED rather than defaulted, deliberately. Every
     /// real sell path holds an inventory slot and therefore knows the wear; a default would let that path
     /// quietly pay full price for a ruined item, which is precisely the bug this parameter exists to
-    /// prevent. Items with no durability budget — potions, scrolls, keys — ignore it entirely.</para></summary>
-    public static int ItemSellValue(ItemRecord item, int currentDurability, SpellRecord? spell = null)
+    /// prevent. Items with no durability budget — consumables and keys — ignore it entirely.</para></summary>
+    public static int ItemSellValue(ItemRecord item, int currentDurability)
     {
-        int value = ItemValue(item, spell);
+        int value = ItemValue(item);
         if (value <= 0) return 0;
         int full = (int)(value * SellBackPercent / PercentDenominator);
 

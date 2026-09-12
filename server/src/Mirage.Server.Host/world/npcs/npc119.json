@@ -88,16 +88,6 @@
       "itemNum": 239,
       "quantity": 0,
       "chance": 30
-    },
-    {
-      "itemNum": 456,
-      "quantity": 0,
-      "chance": 20
-    },
-    {
-      "itemNum": 461,
-      "quantity": 0,
-      "chance": 15
     }
   ],
   "emitsLight": true

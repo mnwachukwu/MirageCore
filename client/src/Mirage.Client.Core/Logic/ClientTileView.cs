@@ -9,7 +9,7 @@ namespace Mirage.Client.Core.Logic;
 /// player's 3x3 <see cref="ClientState.NeighborMaps"/> grid, center = cell 1,1) to its <see cref="TileRecord"/>,
 /// so the movement-prediction bridge gate reads the same tiles across a seam that the server's
 /// <c>ServerTileView</c> does.  A coordinate off the loaded grid returns null (LayerLogic treats that as
-/// "no fringe" / not walkable).  Mirrors the <c>SpellLosPredicate</c> cell math; a readonly struct so the
+/// "no fringe" / not walkable).  Mirrors the <c>LineOfSightPredicate</c> cell math; a readonly struct so the
 /// per-step prediction gate never allocates.
 /// </summary>
 internal readonly struct ClientTileView(ClientState state) : LayerLogic.IWorldTileView

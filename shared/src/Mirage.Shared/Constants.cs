@@ -116,11 +116,10 @@ public static class Constants
     public const int MarketListingLifetimeSeconds = 30 * 24 * 60 * 60;
     public const int MaxMarketSalesLog = 1000;
     // Direct player-to-player trade: max items each side can stage in an offer, and the pending-invite timeout.
-    // Proximity uses the shared spell-range radius (r=5) via WorldCoordHelper.IsInSpellRange.
+    // Proximity uses the shared spell-range radius (r=5) via WorldCoordHelper.IsInInteractRange.
     public const int MaxTradeOfferItems = 8;
     public const long TradeInviteTimeoutMs = 30_000;
     public const int MaxMapNpcs = 20;   // per-map NPC spawn slots, 1-based (1..MaxMapNpcs)
-    public const int MaxPlayerSpells = 20;
     public const int MaxChars = 3;
     public const int NameLength = 30;
     public const int MinFieldLength = 3;
@@ -153,7 +152,7 @@ public static class Constants
     /// <summary>Spell-cast radius in tiles: a symmetric circle around the caster. The largest circle that
     /// fits the viewport, limited by its short half-extent in Y — larger would reach past what is drawn.
     /// Pinned to the VIEWPORT, so a large map never grants extra reach.</summary>
-    public const int SpellRangeTiles = (ViewportTilesY / 2) - 1;   // 5
+    public const int InteractRangeTiles = (ViewportTilesY / 2) - 1;   // 5
 
     public const int PicX = 32; // Size, in pixels
     public const int PicY = 32; // Size, in pixels

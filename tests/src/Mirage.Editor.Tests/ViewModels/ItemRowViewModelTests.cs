@@ -101,24 +101,17 @@ public class ItemRowViewModelTests
             Assert.That(weapon.DurabilityVisible, Is.True);
             Assert.That(weapon.PowerVisible, Is.True);
             Assert.That(weapon.VitalAmountVisible, Is.False);
-            Assert.That(weapon.SpellNumVisible, Is.False);
 
             var potion = Row(ItemType.PotionAddHp);
             Assert.That(potion.VitalAmountVisible, Is.True, "potion amount is editable");
             Assert.That(potion.DurabilityVisible, Is.False, "potions do not wear");
             Assert.That(potion.PowerVisible, Is.False);
 
-            var scroll = Row(ItemType.Spell);
-            Assert.That(scroll.SpellNumVisible, Is.True, "a scroll picks the spell it teaches");
-            Assert.That(scroll.VitalAmountVisible, Is.False);
-            Assert.That(scroll.PowerVisible, Is.False);
-
             foreach (var bare in new[] { ItemType.Key, ItemType.Currency, ItemType.None })
             {
                 var row = Row(bare);
                 Assert.That(row.DurabilityVisible, Is.False, $"{bare} carries no editable fields");
                 Assert.That(row.VitalAmountVisible, Is.False, $"{bare} carries no editable fields");
-                Assert.That(row.SpellNumVisible, Is.False, $"{bare} carries no editable fields");
                 Assert.That(row.PowerVisible, Is.False, $"{bare} carries no editable fields");
             }
         });
@@ -167,15 +160,15 @@ public class ItemRowViewModelTests
     public void BuildSavePacket_IsNormalizedLikeToRecord()
     {
         var vm = new ItemRowViewModel(3, Sword());
-        vm.Type = ItemType.Spell;
-        vm.SpellNum = 7;
+        vm.Type = ItemType.PotionAddHp;
+        vm.VitalAmount = 7;
 
         var pkt = vm.BuildSavePacket();
 
         Assert.Multiple(() =>
         {
             Assert.That(pkt.ItemNum, Is.EqualTo(3));
-            Assert.That(pkt.SpellNum, Is.EqualTo((short)7));
+            Assert.That(pkt.VitalAmount, Is.EqualTo((short)7));
             Assert.That(pkt.Durability, Is.EqualTo((short)0));
             Assert.That(pkt.Power, Is.EqualTo((short)0));
         });

@@ -72,7 +72,6 @@ public static class WorldTransfer
         "NPCs" => new NpcRowViewModel(num, (NpcRecord)record).BuildSavePacket(),
         "Shops" => new ShopRowViewModel(num, (ShopRecord)record, () => ctx.Items, () => ctx.Npcs, ctx.IsCurrency)
             .BuildSavePacket(),
-        "Spells" => new SpellRowViewModel(num, (SpellRecord)record).BuildSavePacket(),
         "Quests" => new QuestRowViewModel(num, (QuestRecord)record, () => ctx.Npcs, () => ctx.Items,
             () => ctx.Quests, ctx.IsCurrency).BuildSavePacket(),
         "Conversations" => new ConversationRowViewModel(num, (ConversationRecord)record, () => ctx.Npcs)
@@ -94,7 +93,6 @@ public static class WorldTransfer
         "Items" => new ItemRecord(),
         "NPCs" => new NpcRecord(),
         "Shops" => new ShopRecord(),
-        "Spells" => new SpellRecord(),
         "Quests" => new QuestRecord(),
         "Conversations" => new ConversationRecord(),
         _ => throw new ArgumentOutOfRangeException(nameof(section), section, "Unknown world section."),
@@ -162,7 +160,6 @@ public static class WorldTransfer
             Items = await ReadDirAsync<ItemRecord>(root, "items", "item", limits.Items),
             Npcs = await ReadDirAsync<NpcRecord>(root, "npcs", "npc", limits.Npcs),
             Shops = await ReadDirAsync<ShopRecord>(root, "shops", "shop", limits.Shops),
-            Spells = await ReadDirAsync<SpellRecord>(root, "spells", "spell", limits.Spells),
             Quests = await ReadDirAsync<QuestRecord>(root, "quests", "quest", limits.Quests),
             Conversations = await ReadDirAsync<ConversationRecord>(root, "conversations", "conversation", limits.Conversations),
             Maps = await ReadDirAsync<MapRecord>(root, "maps", "map", limits.Maps),
@@ -284,7 +281,6 @@ public static class WorldTransfer
         var items = await conn.RequestAllItemsAsync(ct) ?? throw Refused("items");
         var npcs = await conn.RequestAllNpcsAsync(ct) ?? throw Refused("npcs");
         var shops = await conn.RequestAllShopsAsync(ct) ?? throw Refused("shops");
-        var spells = await conn.RequestAllSpellsAsync(ct) ?? throw Refused("spells");
         var quests = await conn.RequestAllQuestsAsync(ct) ?? throw Refused("quests");
         var convs = await conn.RequestAllConversationsAsync(ct) ?? throw Refused("conversations");
         var groups = await conn.RequestAllMapGroupsAsync(ct) ?? throw Refused("map groups");
@@ -320,12 +316,6 @@ public static class WorldTransfer
             Shops = Fill(shops.Shops, limits.Shops, p => p.ShopNum, _ => new ShopRecord(), (n, p) =>
             {
                 var row = new ShopRowViewModel(n, new ShopRecord(), Empty, Empty, _ => false, null, false);
-                row.ApplyPacket(p);
-                return row.ToRecord();
-            }),
-            Spells = Fill(spells.Spells, limits.Spells, p => p.SpellNum, _ => new SpellRecord(), (n, p) =>
-            {
-                var row = new SpellRowViewModel(n, new SpellRecord(), false);
                 row.ApplyPacket(p);
                 return row.ToRecord();
             }),

@@ -1166,7 +1166,7 @@ public static class RenderCommandBuilder
         var me = state.Me;
         int myWX = CenterWorldOffX(state) + me.X, myWY = CenterWorldOffY(state) + me.Y;
         // Footprint-aware so the gray arrow matches the server: an oversize NPC is in range by its body, not (X,Y).
-        return !WorldCoordHelper.IsInSpellRange(myWX, myWY, 1, targetWX, targetWY, targetSize);
+        return !WorldCoordHelper.IsInInteractRange(myWX, myWY, 1, targetWX, targetWY, targetSize);
     }
 
     // Inverse of ClientLineOfSight.HasClearFromLocalPlayer — same algorithm, framed as the

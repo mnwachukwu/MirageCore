@@ -60,7 +60,6 @@ public enum HotkeyKind : byte
 {
     None = 0,
     Item = 1,
-    Spell = 2,
 }
 
 public enum ItemType : byte
@@ -78,7 +77,6 @@ public enum ItemType : byte
     PotionSubSp = 10,
     Key = 11,
     Currency = 12,
-    Spell = 13,
 }
 
 /// <summary>What an NPC does with its time. Each member drives one distinct part of the AI, and none
@@ -105,16 +103,6 @@ public enum NpcBehavior : byte
     Scavenge = 4,
 }
 
-public enum SpellType : byte
-{
-    AddHp = 0,
-    AddMp = 1,
-    AddSp = 2,
-    SubHp = 3,
-    SubMp = 4,
-    SubSp = 5,
-    GiveItem = 6,
-}
 
 public enum AdminLevel : byte
 {

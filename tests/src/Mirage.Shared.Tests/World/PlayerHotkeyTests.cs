@@ -39,7 +39,7 @@ public class PlayerHotkeyTests
         // As if MaxHotkeys had been 2 when this character was last saved.
         var saved = new PlayerHotkey[3];
         saved[1] = new PlayerHotkey(HotkeyKind.Item, 7);
-        saved[2] = new PlayerHotkey(HotkeyKind.Spell, 9);
+        saved[2] = new PlayerHotkey(HotkeyKind.Item, 9);
 
         var bar = PlayerHotkey.Normalize(saved);
 
@@ -47,7 +47,7 @@ public class PlayerHotkeyTests
         {
             Assert.That(bar, Has.Length.EqualTo(Constants.MaxHotkeys + 1));
             Assert.That(bar[1], Is.EqualTo(new PlayerHotkey(HotkeyKind.Item, 7)));
-            Assert.That(bar[2], Is.EqualTo(new PlayerHotkey(HotkeyKind.Spell, 9)));
+            Assert.That(bar[2], Is.EqualTo(new PlayerHotkey(HotkeyKind.Item, 9)));
             for (int i = 3; i <= Constants.MaxHotkeys; i++)
                 Assert.That(bar[i].IsBound, Is.False);
         });
@@ -72,7 +72,7 @@ public class PlayerHotkeyTests
     {
         var saved = PlayerHotkey.NewBar();
         saved[1] = new PlayerHotkey(HotkeyKind.Item, 0);
-        saved[2] = new PlayerHotkey(HotkeyKind.Spell, 0);
+        saved[2] = new PlayerHotkey(HotkeyKind.Item, 0);
 
         var bar = PlayerHotkey.Normalize(saved);
 
@@ -89,7 +89,7 @@ public class PlayerHotkeyTests
             Assert.That(new PlayerHotkey(HotkeyKind.None, 5).IsBound, Is.False, "a number alone is not a binding");
             Assert.That(new PlayerHotkey(HotkeyKind.Item, 0).IsBound, Is.False, "a kind alone is not a binding");
             Assert.That(new PlayerHotkey(HotkeyKind.Item, 5).IsBound, Is.True);
-            Assert.That(new PlayerHotkey(HotkeyKind.Spell, 5).IsBound, Is.True);
+            Assert.That(new PlayerHotkey(HotkeyKind.Item, 5).IsBound, Is.True);
         });
     }
 

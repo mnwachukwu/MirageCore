@@ -29,7 +29,6 @@ public sealed class WorldIssueRowViewModel(WorldIssue issue, string ownerName, A
         WorldRecordKind.Item => EditorStrings.WorldCheck_KindItem,
         WorldRecordKind.Npc => EditorStrings.WorldCheck_KindNpc,
         WorldRecordKind.Shop => EditorStrings.WorldCheck_KindShop,
-        WorldRecordKind.Spell => EditorStrings.WorldCheck_KindSpell,
         WorldRecordKind.Quest => EditorStrings.WorldCheck_KindQuest,
         _ => EditorStrings.WorldCheck_KindConversation,
     });
@@ -48,7 +47,6 @@ public sealed class WorldIssueRowViewModel(WorldIssue issue, string ownerName, A
         WorldIssueKind.LightOutside => EditorStrings.WorldCheck_LightOutside,
         WorldIssueKind.NpcMissing => EditorStrings.WorldCheck_NpcMissing,
         WorldIssueKind.ItemMissing => EditorStrings.WorldCheck_ItemMissing,
-        WorldIssueKind.SpellMissing => EditorStrings.WorldCheck_SpellMissing,
         WorldIssueKind.QuestMissing => EditorStrings.WorldCheck_QuestMissing,
         WorldIssueKind.ClassMissing => EditorStrings.WorldCheck_ClassMissing,
         WorldIssueKind.ConversationNodeMissing => EditorStrings.WorldCheck_ConversationNodeMissing,

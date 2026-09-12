@@ -25,7 +25,6 @@ public sealed partial class MainWindowViewModel
             .ToList();
 
         ItemEditor.ResolveInboundRefs = RefsToItem;
-        SpellEditor.ResolveInboundRefs = RefsToSpell;
         NpcEditor.ResolveInboundRefs = RefsToNpc;
         QuestEditor.ResolveInboundRefs = RefsToQuest;
         // Shops and conversations are pointed FROM, never TO: a shop names its keeper, a conversation names
@@ -41,7 +40,6 @@ public sealed partial class MainWindowViewModel
     {
         MapGroupEditor.NotifyGroupMapsChanged();
         ItemEditor.NotifyInboundRefsChanged();
-        SpellEditor.NotifyInboundRefsChanged();
         NpcEditor.NotifyInboundRefsChanged();
         QuestEditor.NotifyInboundRefsChanged();
     }
@@ -68,9 +66,6 @@ public sealed partial class MainWindowViewModel
     private IEnumerable<ReferenceLinkViewModel> ShopLinks(Func<ShopRecord, bool> names) =>
         ShopEditor.Items.Where(r => names(r.ToRecord())).Select(r => Link(r.DisplayName, () => Open("Shops", ShopEditor, r.Index)));
 
-    private IEnumerable<ReferenceLinkViewModel> SpellLinks(Func<SpellRecord, bool> names) =>
-        SpellEditor.Items.Where(r => names(r.ToRecord())).Select(r => Link(r.DisplayName, () => Open("Spells", SpellEditor, r.Index)));
-
     private IEnumerable<ReferenceLinkViewModel> QuestLinks(Func<QuestRecord, bool> names) =>
         QuestEditor.Items.Where(r => names(r.ToRecord())).Select(r => Link(r.DisplayName, () => Open("Quests", QuestEditor, r.Index)));
 
@@ -94,15 +89,6 @@ public sealed partial class MainWindowViewModel
             QuestLinks(q => q.RewardItems.Any(r => r.ItemNum == num)
                          || q.RepeatRewardItems.Any(r => r.ItemNum == num)
                          || q.Objectives.Any(o => o.Kind is ObjectiveKind.Gather or ObjectiveKind.Fetch && o.Target == num)));
-        AddGroup(groups, EditorStrings.References_ReagentFor, SpellLinks(s => s.ItemNum == num));
-        return groups;
-    }
-
-    private IReadOnlyList<ReferenceGroupViewModel> RefsToSpell(int num)
-    {
-        var groups = new List<ReferenceGroupViewModel>();
-        AddGroup(groups, EditorStrings.References_TaughtBy,
-            ItemLinks(i => i.Type == ItemType.Spell && i.SpellNum == num));
         return groups;
     }
 

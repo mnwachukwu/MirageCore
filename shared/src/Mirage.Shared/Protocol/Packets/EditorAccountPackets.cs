@@ -100,7 +100,6 @@ public sealed record EditorCharRow
     [JsonPropertyName("inv")] public List<EditorInvSlot> Inv { get; init; } = new();
     /// <summary>The character's spell book, occupied slots only. Sent S→C and never read back, for the same
     /// reason as <see cref="Inv"/>.</summary>
-    [JsonPropertyName("spells")] public List<EditorSpellSlot> Spells { get; init; } = new();
     /// <summary>The character's quest log. Sent S→C and never read back, for the same reason as
     /// <see cref="Inv"/>.</summary>
     [JsonPropertyName("quests")] public List<EditorQuestRow> Quests { get; init; } = new();
@@ -120,14 +119,6 @@ public sealed record EditorQuestRow
     [JsonPropertyName("eligible")] public bool Eligible { get; init; }
 }
 
-/// <summary>One occupied spell-book slot.</summary>
-public sealed record EditorSpellSlot
-{
-    /// <summary>1-based slot in the book.</summary>
-    [JsonPropertyName("slot")] public int Slot { get; init; }
-    [JsonPropertyName("num")] public int Num { get; init; }
-    [JsonPropertyName("name")] public string Name { get; init; } = "";
-}
 
 /// <summary>One occupied bag slot, as the account browser shows it.</summary>
 public sealed record EditorInvSlot
@@ -195,29 +186,6 @@ public sealed record EditorTakeItemPacket : IPacket
     /// <summary>1-based inventory slot within that character's bag.</summary>
     [JsonPropertyName("invSlot")] public int InvSlot { get; init; }
     [JsonPropertyName("quantity")] public int Quantity { get; init; }
-}
-
-/// <summary>C→S: teach a character a spell. The class, level and INT gates a scroll enforces are NOT applied
-/// — an operator granting a spell means it, and casting re-checks INT live anyway, so a spell handed out
-/// early is one the character grows into rather than one that breaks anything.</summary>
-public sealed record EditorLearnSpellPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorLearnSpell;
-    [JsonPropertyName("login")] public string Login { get; init; } = "";
-    /// <summary>1-based character slot on the account.</summary>
-    [JsonPropertyName("slot")] public int Slot { get; init; }
-    [JsonPropertyName("spellNum")] public int SpellNum { get; init; }
-}
-
-/// <summary>C→S: take a spell back out of a character's book, by the book slot holding it.</summary>
-public sealed record EditorForgetSpellPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorForgetSpell;
-    [JsonPropertyName("login")] public string Login { get; init; } = "";
-    /// <summary>1-based character slot on the account.</summary>
-    [JsonPropertyName("slot")] public int Slot { get; init; }
-    /// <summary>1-based slot within that character's spell book.</summary>
-    [JsonPropertyName("spellSlot")] public int SpellSlot { get; init; }
 }
 
 /// <summary>C→S: put an item in the account's vault. <b>No character slot</b> — the bank is account-shared,

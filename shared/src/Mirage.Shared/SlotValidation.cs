@@ -29,13 +29,11 @@ public static class SlotValidation
     // ── Per-player slots (fixed: these shapes are in the save format) ───────────
     public static bool IsValidInvSlot(int slot) => slot >= 1 && slot <= Constants.MaxInv;
     public static bool IsValidBankSlot(int slot) => slot >= 1 && slot <= Constants.MaxBankSlots;
-    public static bool IsValidSpellSlot(int slot) => slot >= 1 && slot <= Constants.MaxPlayerSpells;
     // ── World-data record numbers (per-server; pass the limit) ──────────────────
     public static bool IsValidMapNum(int mapNum, int maxMaps) => mapNum >= 1 && mapNum <= maxMaps;
     public static bool IsValidItemNum(int num, int maxItems) => num >= 1 && num <= maxItems;
     public static bool IsValidNpcNum(int num, int maxNpcs) => num >= 1 && num <= maxNpcs;
     public static bool IsValidShopNum(int num, int maxShops) => num >= 1 && num <= maxShops;
-    public static bool IsValidSpellNum(int num, int maxSpells) => num >= 1 && num <= maxSpells;
     public static bool IsValidQuestNum(int num, int maxQuests) => num >= 1 && num <= maxQuests;
     public static bool IsValidConversationNum(int num, int maxConversations) => num >= 1 && num <= maxConversations;
     public static bool IsValidMapGroupNum(int num, int maxMapGroups) => num >= 1 && num <= maxMapGroups;

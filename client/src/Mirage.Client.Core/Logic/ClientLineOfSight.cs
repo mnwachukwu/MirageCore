@@ -24,8 +24,8 @@ public static class ClientLineOfSight
         var me = state.Me;
         int myWX = state.MapTilesX + me.X;
         int myWY = state.MapTilesY + me.Y;
-        return WorldCoordHelper.HasClearSpellLineOfSight(myWX, myWY, targetWorldX, targetWorldY,
-            new SpellLosPredicate(state, me.Layer));
+        return WorldCoordHelper.HasClearLineOfSight(myWX, myWY, targetWorldX, targetWorldY,
+            new LineOfSightPredicate(state, me.Layer));
     }
 
     /// <summary>Arrow-feedback form: a full mirror of the server's HasLineOfSight.  The caster and target must
@@ -41,8 +41,8 @@ public static class ClientLineOfSight
             return false;
         // Cross-layer cast: ramp tiles on the line block (mirrors the server) — can't cast through a ramp to a
         // target behind/under it; only a clean shot at the ramp foot (an excluded endpoint) lands.
-        return WorldCoordHelper.HasClearSpellLineOfSight(myWX, myWY, targetWorldX, targetWorldY,
-            new SpellLosPredicate(state, me.Layer, blockRamps: me.Layer != targetLayer));
+        return WorldCoordHelper.HasClearLineOfSight(myWX, myWY, targetWorldX, targetWorldY,
+            new LineOfSightPredicate(state, me.Layer, blockRamps: me.Layer != targetLayer));
     }
 
     /// <summary>Just the cross-layer CONNECT half of the rule above, with no obstacle line — what NPC INTERACTION
@@ -60,7 +60,7 @@ public static class ClientLineOfSight
     // readonly struct so the generic LoS helper specializes per call site: no boxing on the
     // interface, no closure alloc — zero GC per frame on the arrow color check or per tab cycle.
     // Obstacles are read on the shooter's layer (via LayerLogic.AttrFor), mirroring the server predicate.
-    private readonly struct SpellLosPredicate(ClientState state, WorldLayer layer, bool blockRamps = false) : ISpellLosPredicate
+    private readonly struct LineOfSightPredicate(ClientState state, WorldLayer layer, bool blockRamps = false) : ILineOfSightPredicate
     {
         private readonly ClientState _state = state;
         private readonly WorldLayer _layer = layer;

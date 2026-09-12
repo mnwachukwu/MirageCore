@@ -23,11 +23,6 @@
       "itemNum": 2,
       "quantity": 3,
       "chance": 20
-    },
-    {
-      "itemNum": 426,
-      "quantity": 0,
-      "chance": 6
     }
   ],
   "emitsLight": true

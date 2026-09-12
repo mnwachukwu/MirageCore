@@ -42,9 +42,7 @@ public partial class ItemEditorView : LocalizedUserControl
         // their captions instead, since those two vary by item type.
         _durabilityLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_Durability);
         _tierLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_Tier);
-        _spellNumLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_SpellNumber);
 
-        _spellPicker.PlaceholderText = EditorStrings.Get(EditorStrings.ItemEditor_SpellSearchPlaceholder);
 
         _notesEquipmentHeader.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentHeader);
         _notesEquipmentDurability.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentDurability);
@@ -59,8 +57,6 @@ public partial class ItemEditorView : LocalizedUserControl
         _notesPotionsHeader.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_PotionsHeader);
         _notesPotionsAmount.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_PotionsAmount);
 
-        _notesSpellScrollHeader.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_SpellScrollHeader);
-        _notesSpellScrollSpell.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_SpellScrollSpell);
 
         _notesKeyHeader.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_KeyHeader);
         _notesKeyId.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_KeyId);

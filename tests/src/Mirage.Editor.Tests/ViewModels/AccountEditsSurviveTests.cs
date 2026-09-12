@@ -32,7 +32,6 @@ public class AccountEditsSurviveTests
         Slot = 1, Name = "Tavin", Map = 3, X = 4, Y = 5,
         Str = 20, Def = 15, Spd = 6, Int = 6, Points = 0,
         Inv = [new EditorInvSlot { Slot = 1, Num = 7, Quantity = 1 }],
-        Spells = [new EditorSpellSlot { Slot = 1, Num = 2 }],
         Quests = [new EditorQuestRow { QuestNum = 4, Status = QuestStatus.InProgress }]
     };
 
@@ -94,7 +93,6 @@ public class AccountEditsSurviveTests
         {
             Inv = [new EditorInvSlot { Slot = 1, Num = 7, Quantity = 1 },
                    new EditorInvSlot { Slot = 2, Num = 42, Quantity = 1 }],
-            Spells = [],
             Quests = []
         };
         vm.AdoptServerOwned(Account(afterGiving));
@@ -102,7 +100,6 @@ public class AccountEditsSurviveTests
         Assert.Multiple(() =>
         {
             Assert.That(vm.Chars[0].Inv, Has.Count.EqualTo(2), "the item just handed over is not on screen");
-            Assert.That(vm.Chars[0].Spells, Is.Empty);
             Assert.That(vm.Chars[0].Quests, Is.Empty);
         });
         AssertStillTyped(vm);

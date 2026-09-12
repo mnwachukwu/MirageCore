@@ -114,7 +114,7 @@ public readonly record struct TextDrawCmd(float ScreenX, float ScreenY, string T
 /// NameY/NameAlignBottom mirror the paired TextDrawCmd so the shell can
 /// compute the final pixel position after measuring the font line height.
 /// OutOfRange grays the arrow when the target lies beyond the local player's
-/// Pythagorean-clamped centered range (see WorldCoordHelper.IsInSpellRange).
+/// Pythagorean-clamped centered range (see WorldCoordHelper.IsInInteractRange).
 /// NoLineOfSight grays the arrow when a Blocked tile or closed Key door sits
 /// on the straight tile-line between caster and target — same "can't cast"
 /// signal as OutOfRange, just a different reason.

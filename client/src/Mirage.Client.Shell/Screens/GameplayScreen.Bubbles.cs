@@ -269,11 +269,10 @@ public sealed partial class GameplayScreen : IGameScreen
         if (me?.Hotkeys is null || slot < 1 || slot >= me.Hotkeys.Length) return true;
 
         var hk = me.Hotkeys[slot];
-        if (hk.Kind == HotkeyKind.Spell) return nowMs - me.AttackTimer >= ActionCooldownMs;
         return !IsPotion(hk.Num) || PotionReady(nowMs);
     }
 
-    /// <summary>Charges the clock the slot's contents answer to. A spell's beat is stamped by the cast
+    /// <summary>Charges the clock the slot's contents answer to. The beat is stamped by the use
     /// itself, so only drinking is recorded here.
     ///
     /// <para>A sip the server will refuse — a full bar, a vital with nothing left to give — starts no
@@ -295,8 +294,7 @@ public sealed partial class GameplayScreen : IGameScreen
         if (_ctx.State.Me is not { } me) return 0f;
 
         long stamped, span;
-        if (hk.Kind == HotkeyKind.Spell) (stamped, span) = (me.AttackTimer, ActionCooldownMs);
-        else if (IsPotion(hk.Num)) (stamped, span) = (me.PotionTimer, PotionCooldownMs);
+        if (IsPotion(hk.Num)) (stamped, span) = (me.PotionTimer, PotionCooldownMs);
         else return 0f;
 
         long elapsed = nowMs - stamped;

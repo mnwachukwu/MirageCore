@@ -100,10 +100,10 @@ public class WorldCoordHelperFootprintTests
     [Test]
     public void IsInSpellRange_Size1_MatchesPointCheck_AtTheBoundary()
     {
-        Assert.That(WorldCoordHelper.IsInSpellRange(0, 0, 5, 0), Is.True, "exactly r=5 away is in range");
-        Assert.That(WorldCoordHelper.IsInSpellRange(0, 0, 6, 0), Is.False, "6 away is out");
-        Assert.That(WorldCoordHelper.IsInSpellRange(0, 0, 1, 5, 0, 1),
-            Is.EqualTo(WorldCoordHelper.IsInSpellRange(0, 0, 5, 0)), "the 6-arg with size 1/1 is the plain point check");
+        Assert.That(WorldCoordHelper.IsInInteractRange(0, 0, 5, 0), Is.True, "exactly r=5 away is in range");
+        Assert.That(WorldCoordHelper.IsInInteractRange(0, 0, 6, 0), Is.False, "6 away is out");
+        Assert.That(WorldCoordHelper.IsInInteractRange(0, 0, 1, 5, 0, 1),
+            Is.EqualTo(WorldCoordHelper.IsInInteractRange(0, 0, 5, 0)), "the 6-arg with size 1/1 is the plain point check");
     }
 
     [Test]
@@ -111,25 +111,25 @@ public class WorldCoordHelperFootprintTests
     {
         // Caster (9,4); a size-3 NPC anchored (2,2) has footprint [2,4]x[2,4].  Its near corner (4,4) is exactly
         // r=5 away (IN), but its anchor (2,2) is ~7.3 away (OUT) - the fix targets the body, not the corner.
-        Assert.That(WorldCoordHelper.IsInSpellRange(9, 4, 1, 2, 2, 3), Is.True, "the near edge is inside the circle");
-        Assert.That(WorldCoordHelper.IsInSpellRange(9, 4, 2, 2), Is.False, "the anchor alone is out of the circle");
+        Assert.That(WorldCoordHelper.IsInInteractRange(9, 4, 1, 2, 2, 3), Is.True, "the near edge is inside the circle");
+        Assert.That(WorldCoordHelper.IsInInteractRange(9, 4, 2, 2), Is.False, "the anchor alone is out of the circle");
     }
 
     [Test]
     public void IsInSpellRange_IsSymmetric_ForMixedSizes()
     {
         // Two-way: swapping caster/target roles agrees, so an oversize NPC casting at a player is fair both ways.
-        Assert.That(WorldCoordHelper.IsInSpellRange(9, 4, 1, 2, 2, 3),
-            Is.EqualTo(WorldCoordHelper.IsInSpellRange(2, 2, 3, 9, 4, 1)));
+        Assert.That(WorldCoordHelper.IsInInteractRange(9, 4, 1, 2, 2, 3),
+            Is.EqualTo(WorldCoordHelper.IsInInteractRange(2, 2, 3, 9, 4, 1)));
     }
 
     [Test]
     public void IsInSpellRange_NpcVsNpc_BothOversize_UsesNearestEdges()
     {
         // Two size-3 footprints on the same rows: A [0,2], B [7,9] on X → nearest edges col 2↔7 → gap 5 = IN.
-        Assert.That(WorldCoordHelper.IsInSpellRange(0, 0, 3, 7, 0, 3), Is.True);
+        Assert.That(WorldCoordHelper.IsInInteractRange(0, 0, 3, 7, 0, 3), Is.True);
         // Shift B one further (anchor 8 → near edge col 8) → gap 6 → OUT.
-        Assert.That(WorldCoordHelper.IsInSpellRange(0, 0, 3, 8, 0, 3), Is.False);
+        Assert.That(WorldCoordHelper.IsInInteractRange(0, 0, 3, 8, 0, 3), Is.False);
     }
 
     // ── Edge-to-edge melee adjacency ──────────────────────────────────────────

@@ -46,7 +46,6 @@ public sealed partial class MainWindowViewModel
         ("Items",         ItemEditor.LoadOffline,         () => ItemEditor.HasAnyDirty,         () => ItemEditor.Items.Count),
         ("NPCs",          NpcEditor.LoadOffline,          () => NpcEditor.HasAnyDirty,          () => NpcEditor.Npcs.Count),
         ("Shops",         ShopEditor.LoadOffline,         () => ShopEditor.HasAnyDirty,         () => ShopEditor.Shops.Count),
-        ("Spells",        SpellEditor.LoadOffline,        () => SpellEditor.HasAnyDirty,        () => SpellEditor.Spells.Count),
         ("Quests",        QuestEditor.LoadOffline,        () => QuestEditor.HasAnyDirty,        () => QuestEditor.Quests.Count),
         ("Conversations", ConversationEditor.LoadOffline, () => ConversationEditor.HasAnyDirty, () => ConversationEditor.Conversations.Count),
         ("Accounts",      AccountEditor.LoadOffline,      () => false,                          () => AccountEditor.Accounts.Count),

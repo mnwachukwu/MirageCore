@@ -1,9 +1,0 @@
-{
-  "name": "Novice Exhaustion",
-  "allowedClasses": [
-    10
-  ],
-  "type": "SubSp",
-  "vitalAmount": 10,
-  "tier": 1
-}

@@ -37,7 +37,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
     // Type-specific fields — see ItemRecord for which apply to which type.
     [ObservableProperty] private short _durability;
     [ObservableProperty] private short _vitalAmount;
-    [ObservableProperty] private short _spellNum;
     [ObservableProperty] private short _power;
     /// <summary>Where this item sits on the progression the game defines; 0 = ungated. The engine reads it
     /// only to price the item, so what a tier means is the game's to decide.</summary>
@@ -79,7 +78,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
         _type = r.Type;
         _durability = r.Durability;
         _vitalAmount = r.VitalAmount;
-        _spellNum = r.SpellNum;
         _power = r.Power;
         _tier = r.Tier;
         _nonTradeable = r.NonTradeable;
@@ -104,7 +102,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
     }
     partial void OnDurabilityChanged(short value) => MarkDirty();
     partial void OnVitalAmountChanged(short value) => MarkDirty();
-    partial void OnSpellNumChanged(short value) => MarkDirty();
     partial void OnPowerChanged(short value) => MarkDirty();
     partial void OnTierChanged(short value) => MarkDirty();
     partial void OnNonTradeableChanged(bool value) => MarkDirty();
@@ -123,7 +120,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
         OnPropertyChanged(nameof(PowerLabel));
         OnPropertyChanged(nameof(DurabilityVisible));
         OnPropertyChanged(nameof(VitalAmountVisible));
-        OnPropertyChanged(nameof(SpellNumVisible));
         OnPropertyChanged(nameof(PowerVisible));
         OnPropertyChanged(nameof(TierVisible));
     }
@@ -168,7 +164,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             Type = r.Type;
             Durability = r.Durability;
             VitalAmount = r.VitalAmount;
-            SpellNum = r.SpellNum;
             Power = r.Power;
             Tier = r.Tier;
             NonTradeable = r.NonTradeable;
@@ -200,7 +195,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             Type = pkt.Type;
             Durability = pkt.Durability;
             VitalAmount = pkt.VitalAmount;
-            SpellNum = pkt.SpellNum;
             Power = pkt.Power;
             Tier = pkt.Tier;
             NonTradeable = pkt.NonTradeable;
@@ -234,7 +228,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             Type = Type,
             Durability = Durability,
             VitalAmount = VitalAmount,
-            SpellNum = SpellNum,
             Power = Power,
             Tier = Tier,
             NonTradeable = NonTradeable,
@@ -263,7 +256,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             Type = r.Type,
             Durability = r.Durability,
             VitalAmount = r.VitalAmount,
-            SpellNum = r.SpellNum,
             Power = r.Power,
             Tier = r.Tier,
             NonTradeable = r.NonTradeable,
@@ -276,7 +268,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
     }
 
     // ── Captions ──────────────────────────────────────────────────────────────
-    // Durability, SpellNum and the class gate mean one thing wherever they apply, so their captions are
     // set from the view's code-behind. Only these two vary by type.
 
     /// <summary>Form caption for the potion amount — which vital it moves depends on the type.</summary>
@@ -307,7 +298,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
 
     public bool DurabilityVisible => ItemRecord.UsesDurability(Type);
     public bool VitalAmountVisible => ItemRecord.UsesVitalAmount(Type);
-    public bool SpellNumVisible => ItemRecord.UsesSpellNum(Type);
     public bool PowerVisible => ItemRecord.UsesPower(Type);
     public bool TierVisible => ItemRecord.UsesTier(Type);
 }

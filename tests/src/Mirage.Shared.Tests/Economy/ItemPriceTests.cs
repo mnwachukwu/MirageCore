@@ -92,7 +92,7 @@ public class ItemPriceTests
         {
             Name = "Jade Seal", Type = ItemType.None, Price = 461, NonJunkable = true,
             // Junk left over from whatever this row used to be — Normalize should strip all of it.
-            Durability = 100, Power = 40, Tier = 15, VitalAmount = 9, SpellNum = 3,
+            Durability = 100, Power = 40, Tier = 15, VitalAmount = 9,
         };
 
         gem.Normalize();
@@ -106,7 +106,6 @@ public class ItemPriceTests
             Assert.That(gem.Power, Is.Zero);
             Assert.That(gem.Tier, Is.Zero, "treasure is not gated — a gem is worth what it is worth");
             Assert.That(gem.VitalAmount, Is.Zero);
-            Assert.That(gem.SpellNum, Is.Zero);
         });
     }
 

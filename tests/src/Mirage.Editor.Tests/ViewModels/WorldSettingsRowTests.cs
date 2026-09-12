@@ -36,7 +36,7 @@ public class WorldSettingsRowTests
     private static readonly RecordLimits Distinct = new()
     {
         Maps = 101, MapGroups = 102, Items = 103, Npcs = 104,
-        Shops = 105, Spells = 106, Quests = 107, Conversations = 108,
+        Shops = 105, Quests = 107, Conversations = 108,
     };
 
     [Test]
@@ -51,7 +51,6 @@ public class WorldSettingsRowTests
             Assert.That(back.Items, Is.EqualTo(103));
             Assert.That(back.Npcs, Is.EqualTo(104));
             Assert.That(back.Shops, Is.EqualTo(105));
-            Assert.That(back.Spells, Is.EqualTo(106));
             Assert.That(back.Quests, Is.EqualTo(107));
             Assert.That(back.Conversations, Is.EqualTo(108));
         });

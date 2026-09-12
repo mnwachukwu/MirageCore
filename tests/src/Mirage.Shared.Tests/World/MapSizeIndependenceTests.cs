@@ -64,7 +64,7 @@ public class MapSizeIndependenceTests
     [Test]
     public void TheSpellRadius_IsDerivedFromTheViewportAndNothingElse()
     {
-        string definition = Definition(SharedSource("Constants.cs"), "SpellRangeTiles");
+        string definition = Definition(SharedSource("Constants.cs"), "InteractRangeTiles");
 
         Assert.Multiple(() =>
         {
@@ -73,7 +73,7 @@ public class MapSizeIndependenceTests
             foreach (string mapName in (string[])["MaxMapX", "MaxMapY", "DefaultMapWidth", "DefaultMapHeight"])
             {
                 Assert.That(definition, Does.Not.Contain(mapName),
-                    $"SpellRangeTiles reads {mapName}: a large map would grant a longer cast.");
+                    $"InteractRangeTiles reads {mapName}: a large map would grant a longer cast.");
             }
         });
     }
@@ -210,7 +210,7 @@ public class MapSizeIndependenceTests
             Assert.That(Constants.MaxMapY, Is.EqualTo(11));
             Assert.That(Constants.ViewportTilesX, Is.EqualTo(16));
             Assert.That(Constants.ViewportTilesY, Is.EqualTo(12));
-            Assert.That(Constants.SpellRangeTiles, Is.EqualTo(5), "the r=5 circle every range test is written against");
+            Assert.That(Constants.InteractRangeTiles, Is.EqualTo(5), "the r=5 circle every range test is written against");
         });
     }
 }

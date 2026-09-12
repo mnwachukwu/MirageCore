@@ -61,7 +61,7 @@ public class LockBlocksEditingTests
     {
         int showing = ViewFiles().Count(f => ShowsBadge.IsMatch(Markup(f)));
 
-        Assert.That(showing, Is.GreaterThanOrEqualTo(8),
+        Assert.That(showing, Is.GreaterThanOrEqualTo(7),
             "Every record editor and the map editor show a lock badge; finding fewer means the binding was "
             + "renamed and the guard above is no longer looking at anything.");
     }

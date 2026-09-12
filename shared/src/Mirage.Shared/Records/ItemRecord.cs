@@ -50,9 +50,6 @@ public sealed class ItemRecord
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public short VitalAmount { get; set; }
 
-    /// <summary>Spell scroll: the spell taught on use (1-based index into the spell table).</summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public short SpellNum { get; set; }
 
     /// <summary>Weapon/Armor/Helmet/Shield: how good the piece is — one number driving three things.
     /// On a weapon it is damage (via <c>WeaponContribution</c>); on armor/helmet it is mitigation (via
@@ -138,7 +135,6 @@ public sealed class ItemRecord
     public static bool UsesDurability(ItemType type) => IsEquipment(type);
     public static bool UsesPower(ItemType type) => IsEquipment(type);
     public static bool UsesVitalAmount(ItemType type) => IsPotion(type);
-    public static bool UsesSpellNum(ItemType type) => type is ItemType.Spell;
 
     /// <summary>What a character wears or drinks carries a tier: the wearables and the potions.
     /// <para>A SCROLL does not. Its tier lives on the SPELL it teaches, so one on the paper would be a
@@ -146,12 +142,6 @@ public sealed class ItemRecord
     /// for, and a key that refuses its own door is a puzzle nobody asked for.</para></summary>
     public static bool UsesTier(ItemType type) => IsEquipment(type) || IsPotion(type);
 
-    /// <summary>The item's tier; for a spell scroll, the tier of the spell it teaches.</summary>
-    public static int EffectiveTier(ItemRecord? item, SpellRecord? taughtSpell)
-    {
-        if (item is { Tier: > 0 }) return item.Tier;
-        return item?.Type == ItemType.Spell ? taughtSpell?.Tier ?? 0 : 0;
-    }
 
     /// <summary>Zero every field that does not apply to the current <see cref="Type"/>, so the record
     /// carries only properties it actually has. Call on any path that writes an item — the editor's save
@@ -163,7 +153,6 @@ public sealed class ItemRecord
     {
         if (!UsesDurability(Type)) Durability = 0;
         if (!UsesVitalAmount(Type)) VitalAmount = 0;
-        if (!UsesSpellNum(Type)) SpellNum = 0;
         if (!UsesPower(Type)) Power = 0;
         if (!UsesTier(Type)) Tier = 0;
     }

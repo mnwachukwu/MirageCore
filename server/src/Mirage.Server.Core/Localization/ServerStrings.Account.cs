@@ -58,7 +58,6 @@ public static partial class ServerStrings
     public const string EditorAccounts_BagSlotEmpty = nameof(EditorAccounts_BagSlotEmpty);
     public const string EditorAccounts_QuestPrereq = nameof(EditorAccounts_QuestPrereq);
     public const string EditorAccounts_QuestNotInLog = nameof(EditorAccounts_QuestNotInLog);
-    public const string EditorAccounts_BookSlotEmpty = nameof(EditorAccounts_BookSlotEmpty);
     public const string EditorAccounts_BankFull = nameof(EditorAccounts_BankFull);
     public const string EditorAccounts_BankSlotEmpty = nameof(EditorAccounts_BankSlotEmpty);
 

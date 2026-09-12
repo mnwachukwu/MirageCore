@@ -110,17 +110,6 @@ public class EconomyFormulasTests
         Assert.That(EconomyFormulas.ItemValue(new ItemRecord { Type = ItemType.None }), Is.Zero);
     }
 
-    [Test]
-    public void ItemValue_ScrollPricesOffItsSpellNotItself()
-    {
-        // A scroll carries no Tier of its own — the gate lives on the spell it teaches — so passing the
-        // spell is what gives it a tier. Without one it must not price at zero.
-        var scroll = new ItemRecord { Name = "scroll", Type = ItemType.Spell, SpellNum = 1 };
-        int low = EconomyFormulas.ItemValue(scroll, new SpellRecord { Tier = 1 });
-        int high = EconomyFormulas.ItemValue(scroll, new SpellRecord { Tier = 235 });
-        Assert.That(high, Is.GreaterThan(low * 1000), "a max-band scroll must cost orders more than a starter one");
-        Assert.That(EconomyFormulas.ItemValue(scroll), Is.GreaterThan(0), "a scroll with no spell still prices at the floor");
-    }
 
     [Test]
     public void ItemSellValue_IsTheConfiguredFractionOfValue()

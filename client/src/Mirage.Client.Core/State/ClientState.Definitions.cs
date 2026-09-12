@@ -15,5 +15,4 @@ public sealed partial class ClientState
     // right-click menu label (Shop vs Inn). Parallel to NpcDefs; never persisted.
     public int[] NpcKeeperShop { get; private set; } = new int[RecordLimits.Default.Npcs + 1];
     public ShopRecord[] ShopDefs { get; private set; } = new ShopRecord[RecordLimits.Default.Shops + 1];
-    public SpellRecord[] SpellDefs { get; private set; } = new SpellRecord[RecordLimits.Default.Spells + 1];
 }

@@ -36,7 +36,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
         "Items" => ItemEditor,
         "NPCs" => NpcEditor,
         "Shops" => ShopEditor,
-        "Spells" => SpellEditor,
         "Quests" => QuestEditor,
         "Conversations" => ConversationEditor,
         _ => null,

@@ -19,7 +19,6 @@ public class HotkeyBarTests
         var state = new ClientState();
         state.Me.Inv = new PlayerInvSlot[Constants.MaxInv + 1];
         for (int i = 0; i < state.Me.Inv.Length; i++) state.Me.Inv[i] = new PlayerInvSlot();
-        state.Me.Spell = new int[Constants.MaxPlayerSpells + 1];
         state.Me.Hotkeys = PlayerHotkey.NewBar();
         foreach (var (slot, num) in bag) state.Me.Inv[slot].Num = num;
         return state;
@@ -95,27 +94,15 @@ public class HotkeyBarTests
         Assert.That(HotkeyBarPanel.FindInvSlot(state, 42), Is.EqualTo(9));
     }
 
-    [Test]
-    public void FindSpellSlot_FindsAKnownSpellAndMissesAnUnknownOne()
-    {
-        var state = StateWith();
-        state.Me.Spell[4] = 17;
-        Assert.Multiple(() =>
-        {
-            Assert.That(HotkeyBarPanel.FindSpellSlot(state, 17), Is.EqualTo(4));
-            Assert.That(HotkeyBarPanel.FindSpellSlot(state, 18), Is.EqualTo(0));
-        });
-    }
 
     [Test]
-    public void FindSlots_RejectNonPositiveNumbers()
+    public void FindInvSlot_RejectsNonPositiveNumbers()
     {
         var state = StateWith((3, 42));
         Assert.Multiple(() =>
         {
             Assert.That(HotkeyBarPanel.FindInvSlot(state, 0), Is.EqualTo(0));
             Assert.That(HotkeyBarPanel.FindInvSlot(state, -1), Is.EqualTo(0));
-            Assert.That(HotkeyBarPanel.FindSpellSlot(state, 0), Is.EqualTo(0));
         });
     }
 

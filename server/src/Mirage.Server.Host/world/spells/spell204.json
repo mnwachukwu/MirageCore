@@ -1,9 +1,0 @@
-{
-  "name": "Void Mana Rupture",
-  "allowedClasses": [
-    10
-  ],
-  "type": "SubMp",
-  "vitalAmount": 368,
-  "tier": 240
-}

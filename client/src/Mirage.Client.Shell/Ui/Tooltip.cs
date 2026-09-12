@@ -8,7 +8,7 @@ using Mirage.Shared.Records;
 namespace Mirage.Client.Shell.Ui;
 
 /// <summary>
-/// Hover tooltip for items and spells. Exactly one tooltip is rendered at a time; panels feed
+/// Hover tooltip for items. Exactly one tooltip is rendered at a time; panels feed
 /// it via <see cref="NotifyHoverItem"/> / <see cref="NotifyHoverSpell"/> while their row is
 /// hovered, and <c>GameplayScreen</c> calls <see cref="TickAndDraw"/> after every panel
 /// has been drawn so the tooltip floats above the rest of the UI.
@@ -22,8 +22,7 @@ namespace Mirage.Client.Shell.Ui;
 ///   • Mouse over the source row OR over the tooltip's own rect keeps it open. The instant both
 ///     leave (and no new row is hovered), the tooltip clears on the same frame — no linger.
 ///
-/// Item tooltips show the item icon from items.bmp next to the header; spell tooltips are
-/// text-only because spells have no per-spell graphic.
+/// Item tooltips show the item icon from items.bmp next to the header.
 /// </summary>
 public static class Tooltip
 {
@@ -47,7 +46,7 @@ public static class Tooltip
 
     private readonly record struct Line(string Label, string Value, Color Color);
 
-    private enum Kind { None, Item, Spell, Text }
+    private enum Kind { None, Item, Text }
 
     private static Kind _kind;
     private static string _scope = "";   // panel id that spawned the active tooltip
@@ -60,11 +59,9 @@ public static class Tooltip
     // stat changes) reflects in the tooltip without callers having to refresh on every change.
     private static ItemRecord? _item;
     private static PlayerInvSlot? _slot;
-    private static SpellRecord? _spell;
     private static string? _text;   // Kind.Text: the full string a truncated label shows on hover
     private static PlayerRecord? _me;
     private static IReadOnlyList<Texture2D?> _itemsTex = [];
-    private static SpellRecord?[] _spellDefs = Array.Empty<SpellRecord?>();   // spell definitions (for a scroll's spell half)
     private static ItemRecord?[] _itemDefs = Array.Empty<ItemRecord?>();   // item definitions (for the SubHp reagent name)
     private static WeatherType _weather;                                    // current weather (for the rain "(x2)" reagent hint)
 
@@ -84,7 +81,7 @@ public static class Tooltip
     /// </summary>
     public static void NotifyHoverItem(string scope, object key, ItemRecord item, PlayerInvSlot? slot,
         PlayerRecord? me, IReadOnlyList<Texture2D?> itemsTex, Point mousePos,
-        SpellRecord?[]? spellDefs = null, ItemRecord?[]? itemDefs = null, WeatherType weather = default)
+ ItemRecord?[]? itemDefs = null, WeatherType weather = default)
     {
         if (_kind != Kind.Item || !Equals(_key, key))
         {
@@ -99,31 +96,8 @@ public static class Tooltip
         _itemsTex = itemsTex;
         // Assigned even when null: these are shared with the spell path, and leaving them behind would
         // price a scroll's reagent line off whatever spell was hovered last.
-        _spellDefs = spellDefs ?? [];
         _itemDefs = itemDefs ?? [];
         _weather = weather;
-        _spell = null;
-        _hoverPersists = true;
-    }
-
-    /// <summary>Spell counterpart to <see cref="NotifyHoverItem"/>.</summary>
-    public static void NotifyHoverSpell(string scope, object key, SpellRecord spell,
-        PlayerRecord? me, ItemRecord?[] itemDefs, WeatherType weather, Point mousePos)
-    {
-        if (_kind != Kind.Spell || !Equals(_key, key))
-        {
-            _kind = Kind.Spell;
-            _scope = scope;
-            _key = key;
-            PinTo(mousePos);
-        }
-        _spell = spell;
-        _me = me;
-        _itemDefs = itemDefs;
-        _weather = weather;
-        _item = null;
-        _slot = null;
-        _itemsTex = [];
         _hoverPersists = true;
     }
 
@@ -142,7 +116,6 @@ public static class Tooltip
         _text = text;
         _item = null;
         _slot = null;
-        _spell = null;
         _itemsTex = [];
         _hoverPersists = true;
     }
@@ -185,7 +158,6 @@ public static class Tooltip
         _bounds = Rectangle.Empty;
         _item = null;
         _slot = null;
-        _spell = null;
         _me = null;
         _itemsTex = [];
         _text = null;
@@ -227,17 +199,10 @@ public static class Tooltip
         {
             case Kind.Item when _item is not null:
                 header = _item.Name?.TrimEnd() ?? "Unknown";
-                BuildItemLines(_item, _slot, _me, _spellDefs, _itemDefs, _weather);
+                BuildItemLines(_item, _slot, _me, _itemDefs, _weather);
                 hasIcon = _item.Pic >= 0 && _itemsTex.Sheet(_item.ItemSheet) is not null;
                 pic = _item.Pic;
                 itemSheet = _item.ItemSheet;
-                break;
-            case Kind.Spell when _spell is not null:
-                header = _spell.Name?.TrimEnd() ?? "Unknown";
-                BuildSpellLines(_spell, _me, _itemDefs, _weather);
-                hasIcon = false;
-                pic = 0;
-                itemSheet = 0;
                 break;
             case Kind.Text when _text is not null:
                 header = _text;   // a single-line tooltip: just the full (un-truncated) label text
@@ -313,7 +278,7 @@ public static class Tooltip
     }
 
     private static void BuildItemLines(ItemRecord item, PlayerInvSlot? slot, PlayerRecord? me,
-        SpellRecord?[] spellDefs, ItemRecord?[] itemDefs, WeatherType weather)
+        ItemRecord?[] itemDefs, WeatherType weather)
     {
         if (ItemRecord.IsEquipment(item.Type) && item.Durability > 0)
         {
@@ -332,31 +297,5 @@ public static class Tooltip
         // A scroll is a delivery mechanism: what it teaches lives on the spell, not on the paper.
         // Appended below rather than replacing the item lines — a scroll is still a thing with a price
         // that occupies a bag slot, and the buy confirm shows both halves the same way.
-        if (item.Type == ItemType.Spell && item.SpellNum > 0 && item.SpellNum < spellDefs.Length
-            && spellDefs[item.SpellNum] is { } taught)
-        {
-            _lines.Add(new Line(
-                ClientStrings.Format(ClientStrings.Tooltip_Teaches, ("SpellName", taught.TrimmedName)),
-                "", HeaderColor));
-            BuildSpellLines(taught, me, itemDefs, weather);
-        }
-    }
-
-    private static void BuildSpellLines(SpellRecord spell, PlayerRecord? me, ItemRecord?[] itemDefs, WeatherType weather)
-    {
-        // What a spell IS, from the record: the vital it moves and by how much. What that costs, who may
-        // cast it, and what it actually lands for are a game's rules, and none of them is in here.
-        string? effectLabel = spell.Type switch
-        {
-            SpellType.SubHp => ClientStrings.Get(ClientStrings.Stats_MDmg),
-            SpellType.SubMp => ClientStrings.Get(ClientStrings.Stats_MpDmg),
-            SpellType.SubSp => ClientStrings.Get(ClientStrings.Stats_SpDmg),
-            SpellType.AddHp => ClientStrings.Get(ClientStrings.Stats_HpRestore),
-            SpellType.AddMp => ClientStrings.Get(ClientStrings.Stats_MpRestore),
-            SpellType.AddSp => ClientStrings.Get(ClientStrings.Stats_SpRestore),
-            _ => null,
-        };
-        if (effectLabel is not null && spell.VitalAmount > 0)
-            _lines.Add(new Line(effectLabel, $"+{spell.VitalAmount}", ValueColor));
     }
 }

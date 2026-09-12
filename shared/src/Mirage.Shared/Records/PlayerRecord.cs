@@ -81,8 +81,6 @@ public sealed class PlayerRecord
     public int WeaponSlot { get; set; }
     public int HelmetSlot { get; set; }
     public int ShieldSlot { get; set; }
-    // 1-based spell-slot index of the prepared (Q-cast) spell; 0 = none
-    public int PreparedSpell { get; set; }
 
     // Inventory: 1-based, indices 1..MaxInv; index 0 unused
     public PlayerInvSlot[] Inv { get; set; } = new PlayerInvSlot[Constants.MaxInv + 1];
@@ -93,9 +91,7 @@ public sealed class PlayerRecord
     // returned to the bag by TradeSystem.RecoverEscrowOnLogin; a live trade never resumes across a restart.
     public List<PlayerInvSlot> TradeOffer { get; set; } = new();
     // The bank is account-shared, not per-character — see AccountRecord.Bank / ServerPlayer.Bank.
-    // Spells: 1-based, indices 1..MaxPlayerSpells; index 0 unused; value 0 = empty slot
-    public int[] Spell { get; set; } = new int[Constants.MaxPlayerSpells + 1];
-    // Action bar: 1-based, indices 1..MaxHotkeys; index 0 unused. Each slot names an item or spell by
+    // Action bar: 1-based, indices 1..MaxHotkeys; index 0 unused. Each slot names an item by
     // NUMBER, never by bag/book position — see PlayerHotkey. Load through PlayerHotkey.Normalize so a
     // character saved before the bar existed (or at a different width) comes back the right length.
     public PlayerHotkey[] Hotkeys { get; set; } = PlayerHotkey.NewBar();
@@ -198,7 +194,7 @@ public sealed class PlayerRecord
     /// <summary>
     /// Deep copy used to snapshot a still-live player for a background save: the server game thread
     /// keeps mutating the original while the write happens off-thread, so the array fields
-    /// (<see cref="Inv"/>, <see cref="Spell"/>) must be cloned, not shared.  (Leave/ghost saves don't
+    /// (<see cref="Inv"/>) must be cloned, not shared.  (Leave/ghost saves don't
     /// need this — there the record is already detached from its slot before the save fires.)  The
     /// account-shared bank is snapshotted separately (ServerPlayer.CloneBank).
     /// </summary>
@@ -206,7 +202,6 @@ public sealed class PlayerRecord
     {
         var c = (PlayerRecord)MemberwiseClone();   // all scalars; array/list fields still shared after this
         c.Attributes = Attributes.Clone();
-        c.Spell = (int[])Spell.Clone();
         c.Inv = new PlayerInvSlot[Inv.Length];
         for (int i = 0; i < Inv.Length; i++)
         {

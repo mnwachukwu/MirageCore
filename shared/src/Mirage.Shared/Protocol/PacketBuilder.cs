@@ -181,7 +181,7 @@ public static partial class PacketBuilder
         {
             Items = items.Select(x => new SendItemsPacket.ItemData(
                 x.num, x.item.Name, x.item.Pic, x.item.Type,
-                x.item.Durability, x.item.VitalAmount, x.item.SpellNum, x.item.Power, x.item.Tier,
+                x.item.Durability, x.item.VitalAmount, x.item.Power, x.item.Tier,
                 x.item.NonTradeable, x.item.NonListable, x.item.NonMailable, x.item.DestroyOnDrop,
                 x.item.NonJunkable, x.item.Price, x.item.ItemSheet)).ToArray()
         };
@@ -196,7 +196,6 @@ public static partial class PacketBuilder
             Type = item.Type,
             Durability = item.Durability,
             VitalAmount = item.VitalAmount,
-            SpellNum = item.SpellNum,
             Power = item.Power,
             Tier = item.Tier,
             NonTradeable = item.NonTradeable,
@@ -207,23 +206,6 @@ public static partial class PacketBuilder
             Price = item.Price,
         };
 
-    // ── Spell ────────────────────────────────────────────────────────────────
-
-    /// <summary>The one place a <see cref="SpellRecord"/> becomes an <see cref="UpdateSpellPacket"/> —
-    /// used for the single-spell editor response, the bulk editor list and the post-save broadcast alike,
-    /// so a field added to the record reaches all three by editing this.</summary>
-    public static UpdateSpellPacket UpdateSpell(int spellNum, SpellRecord spell) =>
-        new()
-        {
-            SpellNum = spellNum,
-            Name = spell.Name,
-            Type = spell.Type,
-            VitalAmount = spell.VitalAmount,
-            ItemNum = spell.ItemNum,
-            ItemQuantity = spell.ItemQuantity,
-            IntReq = spell.IntReq,
-            Tier = spell.Tier,
-        };
 
     // ── Npc / Shop / Class ───────────────────────────────────────────────────
 

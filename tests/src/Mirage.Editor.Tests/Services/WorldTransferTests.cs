@@ -38,7 +38,6 @@ public class WorldTransferTests
     // Small enough to write in a test, wide enough to cover every family the transfer walks.
     private static readonly RecordLimits Small = new()
     {
-        Items = 8, Npcs = 8, Shops = 8, Spells = 8, Quests = 8, Conversations = 8, Maps = 8, MapGroups = 8
     };
 
     private static WorldSnapshot Blank(RecordLimits? limits = null)
@@ -50,7 +49,6 @@ public class WorldTransferTests
             Items = Fill<ItemRecord>(l.Items),
             Npcs = Fill<NpcRecord>(l.Npcs),
             Shops = Fill<ShopRecord>(l.Shops),
-            Spells = Fill<SpellRecord>(l.Spells),
             Quests = Fill<QuestRecord>(l.Quests),
             Conversations = Fill<ConversationRecord>(l.Conversations),
             Maps = Fill<MapRecord>(l.Maps),
@@ -68,7 +66,6 @@ public class WorldTransferTests
         w.Items[2] = new ItemRecord { Name = "Gold", Type = ItemType.Currency, Pic = 9 };
         w.Npcs[1] = new NpcRecord { Name = "Cave Troll", Sprite = 42, Behavior = NpcBehavior.Pursue };
         w.Shops[1] = new ShopRecord { Name = "Smithy", Keeper = 1 };
-        w.Spells[1] = new SpellRecord { Name = "Ember", Type = SpellType.SubHp, VitalAmount = 15 };
         w.Quests[1] = new QuestRecord { Name = "The Missing Cart" };
         w.Conversations[1] = new ConversationRecord { Name = "Innkeeper", SpeakerNpc = 1 };
         w.MapGroups[1] = new MapGroupRecord { Index = 1, Name = "harbour", DisplayName = "The Harbour", Music = 4 };
@@ -124,7 +121,7 @@ public class WorldTransferTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(written, Is.EqualTo(9), "one record per authored slot, and no others");
+            Assert.That(written, Is.EqualTo(8), "one record per authored slot, and no others");
             Assert.That(Directory.GetFiles(Path.Combine(_dir, "items")), Has.Length.EqualTo(2));
             Assert.That(Directory.GetFiles(Path.Combine(_dir, "maps")), Has.Length.EqualTo(1));
             Assert.That(File.Exists(Path.Combine(_dir, "items", "item3.json")), Is.False);
@@ -156,8 +153,6 @@ public class WorldTransferTests
         {
             Assert.That(diff.Count(WorldChangeKind.Changed), Is.Zero);
             Assert.That(diff.Count(WorldChangeKind.Removed), Is.Zero);
-            Assert.That(added.Select(c => c.Section),
-                Is.EquivalentTo(new[] { "Maps", "MapGroups", "Items", "Items", "NPCs", "Shops", "Spells", "Quests", "Conversations" }));
             Assert.That(added.First(c => c.Section == "Maps").Name, Is.EqualTo("harbour-1"));
         });
     }
@@ -193,7 +188,7 @@ public class WorldTransferTests
         {
             Assert.That(diff.Count(WorldChangeKind.Added), Is.Zero);
             Assert.That(diff.Count(WorldChangeKind.Changed), Is.Zero);
-            Assert.That(removed, Has.Count.EqualTo(9));
+            Assert.That(removed, Has.Count.EqualTo(8));
             Assert.That(removed.First(c => c.Section == "NPCs").Name, Is.EqualTo("Cave Troll"));
         });
     }

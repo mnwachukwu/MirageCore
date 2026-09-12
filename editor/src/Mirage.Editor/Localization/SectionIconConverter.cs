@@ -52,7 +52,6 @@ public sealed class SectionIconConverter : IValueConverter
             "Items" => Bag,
             "NPCs" => Person,
             "Shops" => Shop,
-            "Spells" => Spark,
             "Classes" => Shield,
             "Quests" => List,
             "Conversations" => Bubble,
