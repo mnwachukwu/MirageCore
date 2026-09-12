@@ -21,6 +21,13 @@ public static partial class EditorStrings
     public const string ItemEditor_PriceLabel = nameof(ItemEditor_PriceLabel);
     public const string ItemEditor_SaveItemButton = nameof(ItemEditor_SaveItemButton);
     // Notes panel — sub-headers, formula lines, and explanatory paragraphs.
+    // The section that authors a family a module declared. Only the chrome is here — every field's own
+    // caption comes from the schema, in the game's catalog rather than this build's.
+    public const string SchemaEditor_SelectPrompt = nameof(SchemaEditor_SelectPrompt);
+    public const string SchemaEditor_NoFields = nameof(SchemaEditor_NoFields);
+    public const string SchemaEditor_MissingRequired = nameof(SchemaEditor_MissingRequired);
+    public const string SchemaEditor_SaveButton = nameof(SchemaEditor_SaveButton);
+
     public const string ItemEditor_Notes_EquipmentHeader = nameof(ItemEditor_Notes_EquipmentHeader);
     public const string ItemEditor_Notes_EquipmentDurability = nameof(ItemEditor_Notes_EquipmentDurability);
     public const string ItemEditor_Notes_EquipmentPower = nameof(ItemEditor_Notes_EquipmentPower);

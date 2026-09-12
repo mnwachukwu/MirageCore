@@ -10,7 +10,7 @@ namespace Mirage.Editor.ViewModels;
 public sealed class WorldChangeRowViewModel(WorldChange change)
 {
     public WorldChange Change { get; } = change;
-    public string Section => EditorStrings.Get(MainWindowViewModel.SectionLabelKey(Change.Section));
+    public string Section => MainWindowViewModel.SectionLabel(Change.Section);
     public string Num => Change.Num.ToString();
     public string Name => Change.Name.Length > 0 ? Change.Name : EditorStrings.Get(EditorStrings.WorldTransfer_Unnamed);
 }

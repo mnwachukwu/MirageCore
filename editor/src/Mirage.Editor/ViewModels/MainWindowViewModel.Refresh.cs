@@ -49,6 +49,10 @@ public sealed partial class MainWindowViewModel
         ("Quests",        QuestEditor.LoadOffline,        () => QuestEditor.HasAnyDirty,        () => QuestEditor.Quests.Count),
         ("Conversations", ConversationEditor.LoadOffline, () => ConversationEditor.HasAnyDirty, () => ConversationEditor.Conversations.Count),
         ("Accounts",      AccountEditor.LoadOffline,      () => false,                          () => AccountEditor.Accounts.Count),
+        // A game's families, in the order they were declared. Only the sections that have been opened:
+        // one that has not has nothing on screen to re-read.
+        .. ModuleEditors.Select(ed =>
+            (ed.Family.Id, (Action)ed.LoadOffline, (Func<bool>)(() => ed.HasAnyDirty), (Func<int>)(() => ed.Records.Count))),
     ];
 
     public string RefreshMenuItemLabel => EditorStrings.Get(EditorStrings.MainWindow_DataRefresh);
@@ -60,7 +64,12 @@ public sealed partial class MainWindowViewModel
     /// </summary>
     private static string SourceStamp(string section)
     {
-        if (!SectionFolder.TryGetValue(section, out string? folder)) return "";
+        // A game's family is not in the static table — which families exist is only known once a world is
+        // open — so it answers from its own declaration instead.
+        string? folder = SectionFolder.TryGetValue(section, out string? known)
+            ? known
+            : WorldFamilies.Find(section)?.EffectiveDirectory;
+        if (string.IsNullOrEmpty(folder)) return "";
         string dir = Path.Combine(EditorPaths.Data, folder);
         if (!Directory.Exists(dir)) return "";
         try
@@ -129,7 +138,7 @@ public sealed partial class MainWindowViewModel
 
         foreach (var (key, reload, dirty, count) in Refreshable)
         {
-            string label = EditorStrings.Get(SectionLabelKey(key));
+            string label = SectionLabel(key);
             if (dirty()) { skipped.Add(label); continue; }
 
             string before = _lastSeen.GetValueOrDefault(key, "");

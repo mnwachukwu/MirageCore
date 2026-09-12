@@ -1,0 +1,183 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Mirage.Editor.ViewModels"
+             Grid.IsSharedSizeScope="True"
+             x:DataType="vm:SchemaRecordEditorViewModel"
+             x:Class="Mirage.Editor.Views.SchemaRecordEditorView">
+
+  <!-- The same list-and-detail shape every other section has. What differs is that the detail pane is an
+       ItemsControl over rows the server described, rather than a hand-written form. -->
+  <Grid x:Name="PanelGrid" RowDefinitions="*,Auto">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="200" MinWidth="120"/>
+      <ColumnDefinition Width="5"/>
+      <ColumnDefinition Width="*" MinWidth="200"/>
+    </Grid.ColumnDefinitions>
+
+    <!-- ── Left: record list ── -->
+    <DockPanel x:Name="LeftPanel" Grid.Column="0">
+      <TextBox x:Name="_filterTextBox"
+               DockPanel.Dock="Top"
+               Text="{Binding FilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+               Margin="4,4,4,2"
+               FontSize="11">
+        <TextBox.InnerRightContent>
+          <Button Classes="clearFilter" Content="×" Focusable="False"
+                  Command="{Binding ClearFilterCommand}"
+                  IsVisible="{Binding FilterText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+        </TextBox.InnerRightContent>
+      </TextBox>
+      <TextBlock DockPanel.Dock="Bottom"
+                 Text="{Binding FilterStatus}"
+                 IsVisible="{Binding IsFilterActive}"
+                 FontSize="11" Foreground="#8B84AE"
+                 Margin="4,2" HorizontalAlignment="Right"/>
+      <ListBox ItemsSource="{Binding FilteredItems}"
+               SelectedItem="{Binding SelectedRecord}"
+               Background="Transparent">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <TextBlock Text="&#x1F512;" FontSize="10" VerticalAlignment="Center"
+                         Foreground="{DynamicResource MirageFaintBrush}"
+                         IsVisible="{Binding LockedByOther}"
+                         ToolTip.Tip="{Binding LockHolder}"/>
+              <Ellipse Width="7" Height="7" Fill="{DynamicResource MirageWarnBrush}"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding IsDirty}"/>
+              <TextBlock Text="{Binding DisplayName}" Padding="4,2"/>
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </DockPanel>
+
+    <GridSplitter Grid.Column="1" Width="5" Background="{DynamicResource MirageLineSoftBrush}"
+                  ResizeDirection="Columns" ResizeBehavior="PreviousAndNext"/>
+
+    <!-- ── Right: the form the schema described ── -->
+    <Grid Grid.Column="2">
+      <TextBlock x:Name="_selectPrompt"
+                 IsVisible="{Binding SelectedRecord, Converter={x:Static ObjectConverters.IsNull}}"
+                 Foreground="#6B6491" HorizontalAlignment="Center" VerticalAlignment="Center"
+                 FontStyle="Italic"/>
+      <ScrollViewer Grid.IsSharedSizeScope="True"
+                    IsVisible="{Binding SelectedRecord, Converter={x:Static ObjectConverters.IsNotNull}}"
+                    IsEnabled="{Binding !IsSelectedLocked}">
+        <StackPanel Margin="16" Spacing="8">
+
+          <TextBlock Text="{Binding FamilyLabel}" FontSize="16" FontWeight="Bold" Margin="0,0,0,4"/>
+
+          <!-- A family that declared no fields still lists and saves; there is just nothing to type into,
+               which is the honest thing to show rather than an empty pane. -->
+          <TextBlock x:Name="_noFields"
+                     IsVisible="{Binding !SelectedRecord.Form.Fields.Count}"
+                     Foreground="#8B84AE" FontSize="12" TextWrapping="Wrap"/>
+
+          <ItemsControl ItemsSource="{Binding SelectedRecord.Form.Fields}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:SchemaFieldViewModel">
+                <Grid Margin="0,0,0,8" ToolTip.Tip="{Binding Hint}">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" MinWidth="120" SharedSizeGroup="SchemaFieldLabel"/>
+                    <ColumnDefinition Width="*"/>
+                  </Grid.ColumnDefinitions>
+
+                  <TextBlock Grid.Column="0" Text="{Binding Label}"
+                             VerticalAlignment="Center" Margin="0,0,10,0"
+                             TextWrapping="Wrap"/>
+
+                  <!-- One control per field kind, shown by the descriptor's own flags. Adding a kind is a
+                       block here plus a flag on the row, not a switch in code-behind. -->
+                  <Panel Grid.Column="1">
+                    <NumericUpDown IsVisible="{Binding IsInteger}"
+                                   Value="{Binding NumberValue}"
+                                   Minimum="{Binding Minimum}" Maximum="{Binding Maximum}"
+                                   Increment="1" FormatString="0"/>
+
+                    <NumericUpDown IsVisible="{Binding IsReal}"
+                                   Value="{Binding NumberValue}"
+                                   Minimum="{Binding Minimum}" Maximum="{Binding Maximum}"
+                                   Increment="0.1" FormatString="0.###"/>
+
+                    <CheckBox IsVisible="{Binding IsFlag}"
+                              IsChecked="{Binding FlagValue}"/>
+
+                    <TextBox IsVisible="{Binding IsText}"
+                             Text="{Binding TextValue}"/>
+
+                    <ComboBox IsVisible="{Binding IsChoice}"
+                              HorizontalAlignment="Stretch"
+                              ItemsSource="{Binding Options}"
+                              SelectedValue="{Binding ChoiceValue}"
+                              SelectedValueBinding="{Binding Id}"
+                              DisplayMemberBinding="{Binding Label}"/>
+
+                    <!-- A reference is a slot number. The picker names the records when this editor has
+                         that family's list; the spinner beside it is what an author uses when it does
+                         not, so a reference is always settable. -->
+                    <Grid IsVisible="{Binding IsRecordRef}" ColumnDefinitions="*,Auto">
+                      <ComboBox Grid.Column="0" HorizontalAlignment="Stretch"
+                                IsVisible="{Binding References.Count}"
+                                ItemsSource="{Binding References}"
+                                SelectedValue="{Binding ReferenceValue}"
+                                SelectedValueBinding="{Binding Id}"
+                                DisplayMemberBinding="{Binding Name}"/>
+                      <NumericUpDown Grid.Column="1" Width="110" Margin="6,0,0,0"
+                                     Value="{Binding ReferenceValue}"
+                                     Minimum="0" Increment="1" FormatString="0"/>
+                    </Grid>
+                  </Panel>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <!-- Required fields still empty. Reported, never enforced: a half-filled record is an ordinary
+               state to be in while typing, and the server is what refuses a bad one. -->
+          <TextBlock x:Name="_missingRequired"
+                     IsVisible="{Binding !SelectedRecord.Form.IsComplete}"
+                     Foreground="{DynamicResource MirageWarnBrush}"
+                     FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
+
+    <!-- ── Footer: status line, and the always-visible Save / Discard strip ── -->
+    <Border Classes="actionBar" Grid.Row="1" Grid.ColumnSpan="3" Padding="8,6"
+            BorderBrush="{DynamicResource MirageLineBrush}" BorderThickness="0,1,0,0">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6">
+          <Button x:Name="_copyBtn"
+                  ToolTip.Tip="{Binding CopyTooltip}"
+                  ToolTip.ShowOnDisabled="True"
+                  Command="{Binding CopyCommand}"
+                  IsEnabled="{Binding CanCopy}"/>
+          <Button x:Name="_discardBtn"
+                  Command="{Binding DiscardCommand}"
+                  IsEnabled="{Binding IsSelectedDirty}"
+                  Classes="danger"/>
+          <Button x:Name="_discardAllBtn"
+                  Command="{Binding DiscardAllCommand}"
+                  IsEnabled="{Binding HasAnyDirty}"
+                  Classes="danger"/>
+          <Button x:Name="_saveBtn"
+                  Command="{Binding SaveCommand}"
+                  IsEnabled="{Binding IsSelectedDirty}"
+                  HotKey="Ctrl+S" ToolTip.Tip="Ctrl+S"
+                  Classes="primary"/>
+          <Button x:Name="_saveAllBtn"
+                  Command="{Binding SaveAllCommand}"
+                  IsEnabled="{Binding HasAnyDirty}"
+                  HotKey="Ctrl+Shift+S" ToolTip.Tip="Ctrl+Shift+S"
+                  Classes="primary"/>
+        </StackPanel>
+        <TextBlock Text="{Binding StatusMessage}"
+                   Foreground="{DynamicResource MirageOkBrush}"
+                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                   IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </DockPanel>
+    </Border>
+
+  </Grid>
+</UserControl>

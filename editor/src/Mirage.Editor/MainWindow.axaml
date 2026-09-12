@@ -213,14 +213,6 @@
       <ContentControl Content="{Binding CurrentEditor}" Margin="0"
                       IsVisible="{Binding !ShowEmptyWorld}" />
 
-      <!-- A family a module declared: listed in the rail, with nothing behind it until the editor can
-           build a form from its fields. -->
-      <TextBlock Text="{Binding NoEditorMessage}"
-                 IsVisible="{Binding NoEditorFamily, Converter={x:Static ObjectConverters.IsNotNull}}"
-                 HorizontalAlignment="Center" VerticalAlignment="Center"
-                 TextWrapping="Wrap" MaxWidth="420" TextAlignment="Center" FontSize="13"
-                 Foreground="{DynamicResource MirageMutedBrush}"/>
-
       <!-- Nothing is open until something is opened, and the window says which. -->
       <StackPanel IsVisible="{Binding ShowEmptyWorld}"
                   HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">

@@ -1,5 +1,6 @@
 using Mirage.Editor.Models;
 using Mirage.Editor.ViewModels;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -187,6 +188,7 @@ public sealed class EditorDataService
         OfflineConversations = [];
         OfflineMaps = [];
         OfflineMapGroups = [];
+        _moduleRecords.Clear();
         Limits = RecordLimits.Default;
         ClearEntryCache();
         RaiseEntriesInvalidated();
@@ -211,6 +213,7 @@ public sealed class EditorDataService
         // world holds is read from the folder rather than assumed.
         WorldFamilies.Adopt(Manifest.Schema);
         WorldEquipSlots.Adopt(Manifest.EquipSlots);
+        await LoadModuleRecordsAsync(dataPath);
         OfflineItems = await LoadAllFromDirAsync<ItemRecord>(Path.Combine(dataPath, "items"), "item", Limits.Items);
         OfflineNpcs = await LoadAllFromDirAsync<NpcRecord>(Path.Combine(dataPath, "npcs"), "npc", Limits.Npcs);
         OfflineShops = await LoadAllFromDirAsync<ShopRecord>(Path.Combine(dataPath, "shops"), "shop", Limits.Shops);
@@ -222,6 +225,82 @@ public sealed class EditorDataService
         EditorLog.Info("Offline data set loaded: {Items} items, {Npcs} npcs, {Maps} maps, {Groups} map groups.",
             OfflineItems.Count(r => r is not null), OfflineNpcs.Count(r => r is not null),
             OfflineMaps.Count(r => r is not null), OfflineMapGroups.Length);
+    }
+
+    // ── A game's own families ───────────────────────────────────────────────────────
+
+    private readonly Dictionary<string, AttributeBag[]> _moduleRecords = new(StringComparer.Ordinal);
+
+    /// <summary>The on-disk records of one family a module declared, 1-based. Empty for a family this
+    /// folder holds nothing for — which is also what an online session answers, since there the records
+    /// come from the server rather than from here.</summary>
+    public AttributeBag[] OfflineModuleRecords(RecordFamily family)
+    {
+        ArgumentNullException.ThrowIfNull(family);
+        return _moduleRecords.TryGetValue(family.Id, out var records) ? records : [];
+    }
+
+    /// <summary>Writes one record of a game's family into the world folder, under the folder and filename
+    /// the family itself names.</summary>
+    public async Task SaveOfflineModuleRecordAsync(RecordFamily family, int index, AttributeBag record)
+    {
+        ArgumentNullException.ThrowIfNull(family);
+        ArgumentNullException.ThrowIfNull(record);
+
+        var records = OfflineModuleRecords(family);
+        if (index >= 1 && index < records.Length) records[index] = record;
+
+        string dir = Path.Combine(EditorPaths.Data, family.EffectiveDirectory);
+        Directory.CreateDirectory(dir);
+        await WriteJsonAsync(Path.Combine(dir, family.FileNameFor(index)), record);
+    }
+
+    /// <summary>The picker list for a <see cref="FieldKind.RecordRef"/> field, by the family it points at.
+    ///
+    /// <para>Core's families answer from their own name index. A family a module declared answers from the
+    /// records this folder holds, and answers empty online — the login handshake carries a name index for
+    /// Core's families only, so there is nothing to build one from. A field whose picker is empty is still
+    /// settable by slot number.</para></summary>
+    public IReadOnlyList<NamedEntry> EntriesFor(string? familyId) => familyId switch
+    {
+        CoreRecordFamilies.Items => LiveItemEntries,
+        CoreRecordFamilies.Npcs => LiveNpcEntries,
+        CoreRecordFamilies.Maps => LiveMapEntries,
+        CoreRecordFamilies.Shops => LiveShopEntries,
+        CoreRecordFamilies.MapGroups => LiveMapGroupEntries,
+        CoreRecordFamilies.Quests => LiveQuestEntries,
+        null => [],
+        _ => ModuleEntries(familyId),
+    };
+
+    private IReadOnlyList<NamedEntry> ModuleEntries(string familyId)
+    {
+        if (WorldFamilies.Find(familyId) is not { } family) return [];
+        var records = OfflineModuleRecords(family);
+        if (records.Length == 0) return [];
+
+        string nameKey = family.NameFieldKey;
+        var result = new NamedEntry[records.Length];
+        result[0] = new NamedEntry(0, "(none)");
+        for (int i = 1; i < records.Length; i++)
+        {
+            string name = string.IsNullOrEmpty(nameKey) ? "" : records[i][nameKey].AsText();
+            result[i] = new NamedEntry(i, name);
+        }
+        return result;
+    }
+
+    private async Task LoadModuleRecordsAsync(string dataPath)
+    {
+        _moduleRecords.Clear();
+        foreach (var family in WorldFamilies.All)
+        {
+            if (CoreRecordFamilies.Find(family.Id) is not null) continue;
+            _moduleRecords[family.Id] = await LoadAllFromDirAsync<AttributeBag>(
+                Path.Combine(dataPath, family.EffectiveDirectory),
+                family.EffectiveFilePrefix,
+                Limits.For(family));
+        }
     }
 
     /// <summary>What the folder says about itself. A world with no manifest runs on the stock answers.</summary>

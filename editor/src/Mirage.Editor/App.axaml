@@ -112,6 +112,9 @@
     <DataTemplate DataType="{x:Type vm:ConversationEditorViewModel}">
       <views:ConversationEditorView />
     </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:SchemaRecordEditorViewModel}">
+      <views:SchemaRecordEditorView />
+    </DataTemplate>
     <DataTemplate DataType="{x:Type vm:AccountEditorViewModel}">
       <views:AccountEditorView />
     </DataTemplate>

@@ -38,7 +38,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
         "Shops" => ShopEditor,
         "Quests" => QuestEditor,
         "Conversations" => ConversationEditor,
-        _ => null,
+        // A game's family auto-saves like any other section, but only once its section has been opened:
+        // nothing is dirty in one nobody has looked at.
+        _ => _moduleEditors.TryGetValue(section, out var editor) ? editor : null,
     };
 
     /// <summary>The Auto-Save menu item's caption: what it does when it is available, and why it is not

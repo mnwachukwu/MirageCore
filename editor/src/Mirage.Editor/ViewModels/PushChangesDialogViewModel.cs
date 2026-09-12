@@ -127,6 +127,11 @@ public sealed partial class PushChangesDialogViewModel : ObservableObject
                 ConversationRowViewModel vm => EditorStrings.Format(EditorStrings.PushChangesDialog_DirtyConversation, ("Index", vm.Index), ("Name", vm.Name)),
                 MapRowViewModel vm => EditorStrings.Format(EditorStrings.PushChangesDialog_DirtyMap, ("Index", vm.Index), ("Name", vm.Record.Name)),
                 MapGroupRowViewModel vm => EditorStrings.Format(EditorStrings.PushChangesDialog_DirtyMapGroup, ("Index", vm.Index), ("Name", vm.Name)),
+                // A game's own record names its family, because the caption cannot be written in advance
+                // for a family this build has never heard of.
+                SchemaRecordRowViewModel vm => EditorStrings.Format(EditorStrings.PushChangesDialog_DirtyRecord,
+                    ("Family", EditorStrings.GetOrFallback(vm.Family.SingularLabelKey, vm.Family.Id)),
+                    ("Index", vm.Index), ("Name", vm.Name)),
                 _ => item.ToString() ?? EditorStrings.Get(EditorStrings.PushChangesDialog_DirtyUnknown),
             });
         }
@@ -194,6 +199,11 @@ public sealed partial class PushChangesDialogViewModel : ObservableObject
                         break;
                     case MapGroupRowViewModel vm:
                         if (_commitsToDisk) await _data.SaveOfflineMapGroupAsync(vm.Index, vm.ToRecord());
+                        else await _conn.SendSaveAsync(vm.BuildSavePacket());
+                        vm.ClearDirty();
+                        break;
+                    case SchemaRecordRowViewModel vm:
+                        if (_commitsToDisk) await _data.SaveOfflineModuleRecordAsync(vm.Family, vm.Index, vm.ToRecord());
                         else await _conn.SendSaveAsync(vm.BuildSavePacket());
                         vm.ClearDirty();
                         break;

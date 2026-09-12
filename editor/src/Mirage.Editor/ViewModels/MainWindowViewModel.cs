@@ -44,6 +44,42 @@ public sealed partial class MainWindowViewModel : ObservableObject
     /// <summary>Creator-only, and the only section that is online-only — accounts are the server's.</summary>
     public AccountEditorViewModel AccountEditor { get; }
 
+    // One section per family a MODULE declared, made the first time that section is opened rather than at
+    // startup: which families exist is not known until a world is opened or a server is connected to.
+    private readonly Dictionary<string, SchemaRecordEditorViewModel> _moduleEditors = new(StringComparer.Ordinal);
+
+    private IEnumerable<SchemaRecordEditorViewModel> ModuleEditors => _moduleEditors.Values;
+
+    /// <summary>The section for a family a module declared, made if this is the first time it is opened.
+    /// Null for a Core family, which has its own screen, and for an id no family claims.</summary>
+    private SchemaRecordEditorViewModel? ModuleEditorFor(string? section)
+    {
+        if (section is null || CoreRecordFamilies.Find(section) is not null) return null;
+        if (_moduleEditors.TryGetValue(section, out var existing)) return existing;
+        if (WorldFamilies.Find(section) is not { } family) return null;
+
+        var editor = new SchemaRecordEditorViewModel(_data, _conn, family) { Locks = Locks };
+        editor.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == "HasAnyDirty" && _sectionMap.TryGetValue(section, out var row))
+                row.HasDirty = editor.HasAnyDirty;
+        };
+
+        if (IsOnline)
+        {
+            editor.LoadOnline();
+            _ = editor.EagerLoadAllAsync(CancellationToken.None);
+        }
+        else
+        {
+            editor.LoadOffline();
+        }
+        editor.RefreshLockState();
+
+        _moduleEditors[section] = editor;
+        return editor;
+    }
+
     /// <summary>The child editor view-model the content pane is bound to; null for an unknown section.</summary>
     [ObservableProperty] private object? _currentEditor;
     [ObservableProperty] private SectionViewModel? _selectedSection;
@@ -259,7 +295,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     /// <summary>The eight editors that keep a list of records the lock table can name. Maps are held apart:
     /// the map editor is not one of these and carries its own lock plumbing.</summary>
     private IEnumerable<dynamic> RecordEditors =>
-        [ItemEditor, NpcEditor, ShopEditor, QuestEditor, ConversationEditor, MapGroupEditor];
+        [ItemEditor, NpcEditor, ShopEditor, QuestEditor, ConversationEditor, MapGroupEditor, .. ModuleEditors];
 
     /// <summary>First-run startup: read the offline data set, seed and load the editable asset folder,
     /// then open the map editor. Always starts offline — connecting is an explicit user action.</summary>
@@ -346,25 +382,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
             "Quests" => QuestEditor,
             "Conversations" => ConversationEditor,
             "Accounts" => AccountEditor,
-            _ => null,
+            // A family a MODULE declared: the same list-and-detail screen, built from the fields the
+            // family itself carries rather than from a view this build shipped.
+            _ => ModuleEditorFor(section),
         };
-
-        // A family a MODULE declared reaches the rail but has no screen behind it yet. Saying so beats a
-        // blank pane, which reads as a broken window rather than as a feature that is not built.
-        NoEditorFamily = CurrentEditor is null && section is not null && WorldFamilies.Find(section) is not null
-            ? section
-            : null;
     }
-
-    /// <summary>The id of the selected family when the editor has no screen for it, else null.</summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(NoEditorMessage))]
-    private string? _noEditorFamily;
-
-    /// <summary>What to say about a family this build cannot author.</summary>
-    public string NoEditorMessage => NoEditorFamily is null
-        ? ""
-        : EditorStrings.Format(EditorStrings.MainWindow_NoEditorForFamily, ("Family", NoEditorFamily));
 
     // The nav labels are the one piece of shell chrome the window's own ApplyStrings cannot reach:
     // they live on the section rows, not on named controls.
@@ -388,10 +410,13 @@ public sealed partial class MainWindowViewModel : ObservableObject
     internal static string SectionLabelKey(string id)
     {
         if (id == AccountsSection) return EditorStrings.MainWindow_Section_Accounts;
-
-        string? key = WorldFamilies.Find(id)?.LabelKey;
-        return string.IsNullOrEmpty(key) ? EditorStrings.MainWindow_Section_Maps : key;
+        return WorldFamilies.Find(id)?.LabelKey ?? "";
     }
+
+    /// <summary>What a section is CALLED, resolved. A family that declares no caption key, or one whose
+    /// key this build's language files have never heard of, is called by its ID — a name an author
+    /// recognises from their own game, and the only one available.</summary>
+    internal static string SectionLabel(string id) => EditorStrings.GetOrFallback(SectionLabelKey(id), id);
 
     /// <summary>The rail row for a section, made once and kept.
     ///
@@ -417,6 +442,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
         var wanted = AllSectionNames;
         Sections.Clear();
         foreach (string id in wanted) Sections.Add(SectionFor(id));
+
+        // A world opened after this one may declare different families, and a section left behind would
+        // hold records nothing in the rail points at any more.
+        foreach (string id in _moduleEditors.Keys.Where(id => WorldFamilies.Find(id) is null).ToList())
+            _moduleEditors.Remove(id);
+
         if (SelectedSection is null || !Sections.Contains(SelectedSection)) SelectedSection = Sections[0];
     }
 
@@ -516,13 +547,17 @@ public sealed partial class MainWindowViewModel : ObservableObject
                 ("Shops",   c => ShopEditor.EagerLoadAllAsync(c)),
                 ("Quests",  c => QuestEditor.EagerLoadAllAsync(c)),
                 ("Conversations", c => ConversationEditor.EagerLoadAllAsync(c)),
+                // Every family a module declared, each pulled down the same way. A section nobody has
+                // opened has no editor yet and is fetched when it is.
+                .. ModuleEditors.Select(ed =>
+                    (ed.Family.Id, (Func<CancellationToken, Task>)(c => ed.EagerLoadAllAsync(c)))),
             ];
             var currentSection = SelectedSection?.Name ?? "";
             foreach (var (label, loader) in steps.OrderBy(s => s.Label == currentSection ? 0 : 1))
             {
                 if (ct.IsCancellationRequested) break;
                 LoadingStatus = EditorStrings.Format(EditorStrings.MainWindow_LoadingSection,
-                    ("Section", EditorStrings.Get(SectionLabelKey(label))));
+                    ("Section", SectionLabel(label)));
                 await loader(ct);
             }
         }
@@ -597,6 +632,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
             else lof();
         }
 
+        foreach (var ed in ModuleEditors)
+        {
+            if (online) ed.LoadOnline();
+            else ed.LoadOffline();
+        }
+
         // Every loader throws its rows away and builds new ones, and the padlock lives on the row. The table
         // itself has not moved, so re-reading it is what puts the indicators back — otherwise a session that
         // connects while somebody else is mid-edit shows nothing held until the next time the table changes.
@@ -607,6 +648,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
     // Every dirty row across every child editor, as one flat sequence for the push-changes dialog.
     private IEnumerable<object> GetAllDirty()
     {
+        foreach (var editor in ModuleEditors)
+            foreach (var vm in editor.GetDirty()) yield return vm;
         foreach (var vm in ItemEditor.GetDirty()) yield return vm;
         foreach (var vm in NpcEditor.GetDirty()) yield return vm;
         foreach (var vm in ShopEditor.GetDirty()) yield return vm;

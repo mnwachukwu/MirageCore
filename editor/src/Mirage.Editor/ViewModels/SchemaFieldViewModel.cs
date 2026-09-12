@@ -67,19 +67,32 @@ public sealed partial class SchemaFieldViewModel : ObservableObject
     public IReadOnlyList<NamedEntry> References { get; }
 
     // ── The value, in each shape a control binds to ───────────────────────────
+    //
+    // ONE of these belongs to any given row, and every setter refuses a write that is not its kind's. The
+    // view stacks a control per kind and shows the one that applies, so all six are constructed and all six
+    // bind — and a two-way control writes its value back as it initializes. Unguarded, opening a record
+    // would stamp a blank onto every row whose control is hidden.
 
     public double NumberValue
     {
         get => _bag.TryGet(Key, out var v) ? v.AsDouble() : Descriptor.Clamp(0);
-        set => Write(Kind == FieldKind.Integer
-            ? AttributeValue.From((long)Descriptor.Clamp(Math.Round(value)))
-            : AttributeValue.From(Descriptor.Clamp(value)));
+        set
+        {
+            if (Kind is not (FieldKind.Integer or FieldKind.Real)) return;
+            Write(Kind == FieldKind.Integer
+                ? AttributeValue.From((long)Descriptor.Clamp(Math.Round(value)))
+                : AttributeValue.From(Descriptor.Clamp(value)));
+        }
     }
 
     public bool FlagValue
     {
         get => _bag.TryGet(Key, out var v) && v.AsBool();
-        set => Write(AttributeValue.From(value));
+        set
+        {
+            if (Kind != FieldKind.Flag) return;
+            Write(AttributeValue.From(value));
+        }
     }
 
     public string TextValue
@@ -87,6 +100,7 @@ public sealed partial class SchemaFieldViewModel : ObservableObject
         get => _bag.TryGet(Key, out var v) ? v.AsText() : "";
         set
         {
+            if (Kind != FieldKind.Text) return;
             string text = value ?? "";
             // A declared limit is the record's rule, not the control's: a value pasted past it would
             // otherwise be refused by whatever validates on save, one screen away from the paste.
@@ -100,14 +114,22 @@ public sealed partial class SchemaFieldViewModel : ObservableObject
     public string ChoiceValue
     {
         get => _bag.TryGet(Key, out var v) ? v.AsText() : "";
-        set => Write(AttributeValue.From(value ?? ""));
+        set
+        {
+            if (Kind != FieldKind.Choice) return;
+            Write(AttributeValue.From(value ?? ""));
+        }
     }
 
     /// <summary>The referenced record's slot number; 0 means none.</summary>
     public long ReferenceValue
     {
         get => _bag.TryGet(Key, out var v) ? v.AsLong() : 0;
-        set => Write(AttributeValue.From(Math.Max(0, value)));
+        set
+        {
+            if (Kind != FieldKind.RecordRef) return;
+            Write(AttributeValue.From(Math.Max(0, value)));
+        }
     }
 
     /// <summary>True when this field is required and holds nothing. The form reports it; nothing here
@@ -134,8 +156,23 @@ public sealed partial class SchemaFieldViewModel : ObservableObject
         OnPropertyChanged(nameof(Options));
     }
 
+    /// <summary>What this row currently READS as, whether or not the key is there. Writing this back is
+    /// not an edit, and saying so is what stops a control from creating a key as it initializes.</summary>
+    private AttributeValue Displayed => Kind switch
+    {
+        FieldKind.Integer => AttributeValue.From((long)Descriptor.Clamp(Math.Round(NumberValue))),
+        FieldKind.Real => AttributeValue.From(Descriptor.Clamp(NumberValue)),
+        FieldKind.Flag => AttributeValue.From(FlagValue),
+        FieldKind.RecordRef => AttributeValue.From(ReferenceValue),
+        _ => AttributeValue.From(TextValue),
+    };
+
     private void Write(AttributeValue value)
     {
+        // A two-way control writes its value back as it is created, and an absent key reads as a zero or
+        // a blank — so without this, a record an author merely LOOKED at gains a key per row and reads as
+        // edited, with a dirty marker beside it and a Save button lit.
+        if (Displayed.Equals(value)) return;
         if (_bag.TryGet(Key, out var existing) && existing.Equals(value)) return;
 
         _bag.Set(Key, value);

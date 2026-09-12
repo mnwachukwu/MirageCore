@@ -24,7 +24,7 @@ public sealed class AutoSaveReachOption(AutoSaveReach reach, string labelKey)
 public sealed partial class AutoSaveRowViewModel : ObservableObject
 {
     public string Section { get; }
-    public string DisplayName => EditorStrings.Get(MainWindowViewModel.SectionLabelKey(Section));
+    public string DisplayName => MainWindowViewModel.SectionLabel(Section);
 
     [ObservableProperty] private bool _enabled;
     [ObservableProperty] private AutoSaveIntervalOption _interval;

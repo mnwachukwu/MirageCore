@@ -169,7 +169,6 @@ public static partial class EditorStrings
     public const string MainWindow_Section_Accounts = nameof(MainWindow_Section_Accounts);
 
     // Shown when a family reaches the rail from a server's schema and this build has no screen for it.
-    public const string MainWindow_NoEditorForFamily = nameof(MainWindow_NoEditorForFamily);
 
     // ── AccountEditor (Creator only, online only) ─────────────────────────────
     public const string AccountEditor_SearchPlaceholder = nameof(AccountEditor_SearchPlaceholder);
@@ -245,6 +244,7 @@ public static partial class EditorStrings
     public const string PushChangesDialog_DirtyConversation = nameof(PushChangesDialog_DirtyConversation);
     public const string PushChangesDialog_DirtyMap = nameof(PushChangesDialog_DirtyMap);
     public const string PushChangesDialog_DirtyMapGroup = nameof(PushChangesDialog_DirtyMapGroup);
+    public const string PushChangesDialog_DirtyRecord = nameof(PushChangesDialog_DirtyRecord);
     public const string PushChangesDialog_DirtyUnknown = nameof(PushChangesDialog_DirtyUnknown);
 
     // ── Data field labels (shared by Item/Spell row editors) ──────────────────
