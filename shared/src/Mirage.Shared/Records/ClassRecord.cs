@@ -41,14 +41,6 @@ public sealed class ClassRecord
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public int Sprite { get; set; }
 
-    /// <summary>The sprite this class gives <paramref name="sex"/>. The single place that mapping is
-    /// made, so the create screen's preview, the grant at creation, and anything later cannot disagree
-    /// about which art a character of a given sex gets.</summary>
-    public int SpriteFor(Sex sex) => sex == Sex.Female ? SpriteFemale : SpriteMale;
-
-    /// <summary>The sheet <see cref="SpriteFor"/>'s row is on. Both are read for the same sex.</summary>
-    public int SpriteSheetFor(Sex sex) => sex == Sex.Female ? SpriteSheetFemale : SpriteSheetMale;
-
     public int Str { get; set; }
     public int Def { get; set; }
     public int Spd { get; set; }

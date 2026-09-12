@@ -26,7 +26,6 @@ public sealed class PlayerRecord
     /// Saves ~100 string allocations across the server's hot paths.</summary>
     [JsonIgnore]
     public string TrimmedName => _trimmedName ??= _name.TrimEnd();
-    public Sex Sex { get; set; }
     public int Class { get; set; }
     public int Sprite { get; set; }
     /// <summary>Which sprite sheet <see cref="Sprite"/> is a row of. Copied from the class at creation
@@ -50,27 +49,12 @@ public sealed class PlayerRecord
     public bool IsPk(long nowUtc) => PkExpiryUtc > nowUtc;
 
     // ── Death & respawn ──────────────────────────────────────────────────────
-    // Persisted: a relogin while dead re-opens the death panel, and the escalating penalty survives
-    // sessions.
+    // Persisted: a relogin while dead re-opens the death panel.
     /// <summary>True while in the timed dead state (a corpse awaiting a Respawn click).</summary>
     public bool Dead { get; set; }
     /// <summary>UTC-seconds the Respawn button unlocks (server-owned countdown). Meaningful only while
     /// <see cref="Dead"/>.</summary>
     public long RespawnReadyUtc { get; set; }
-    /// <summary>Escalating penalty step count; the non-war respawn delay is steps x 10s. Decays with time
-    /// since the last death, clamped to [1, <see cref="Constants.RespawnMaxPenaltySteps"/>]. 0 = no deaths yet.</summary>
-    public int RespawnPenaltySteps { get; set; }
-    /// <summary>UTC-seconds of the last death, for decaying <see cref="RespawnPenaltySteps"/>.</summary>
-    public long LastDeathUtc { get; set; }
-    /// <summary>True when the current dead state came from a guild-war death (both accounts in a live war).
-    /// A war death uses a flat respawn timer (it neither reads nor touches <see cref="RespawnPenaltySteps"/>)
-    /// and respawns on the map the player fell on rather than at their set-spawn. Persisted with the rest of
-    /// the dead state so a relogin-while-dead still respawns correctly. Cleared on respawn.</summary>
-    public bool DiedInWar { get; set; }
-    /// <summary>When a war death happened inside a territory contest, the territory (MapGroup) index whose maps
-    /// the player respawns into at a random walkable tile; 0 = a grudge war death (respawn on
-    /// the death tile). Persisted with the dead state; cleared on respawn.</summary>
-    public int DiedInTerritory { get; set; }
 
     // Vitals (persistent)
     public int Hp { get; set; }

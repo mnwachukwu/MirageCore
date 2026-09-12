@@ -1,4 +1,5 @@
 using Mirage.Shared.Records;
+using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -39,6 +40,13 @@ public sealed class WorldManifestConverter : JsonConverter<WorldManifest>
             {
                 result = result with { DefaultMapSize = p.Value.Deserialize<MapSize>(options) };
             }
+            else if (p.NameEquals("appearances"))
+            {
+                var offered = p.Value.Deserialize<List<CharacterAppearance>>(options);
+                // An empty list is the same statement as an absent key, and the init accessor answers both
+                // with the stock set — so a world cannot accidentally offer nothing at character creation.
+                if (offered is { Count: > 0 }) result = result with { Appearances = offered };
+            }
         }
 
         return result;
@@ -64,6 +72,14 @@ public sealed class WorldManifestConverter : JsonConverter<WorldManifest>
         {
             writer.WritePropertyName("records");
             JsonSerializer.Serialize(writer, value.Records, options);
+        }
+
+        // Compared by CONTENT, not by reference: the stock set is one entry, and a world that authored a
+        // roster identical to it is saying nothing this file has to carry.
+        if (!value.Appearances.SequenceEqual(stock.Appearances))
+        {
+            writer.WritePropertyName("appearances");
+            JsonSerializer.Serialize(writer, value.Appearances, options);
         }
 
         writer.WriteEndObject();

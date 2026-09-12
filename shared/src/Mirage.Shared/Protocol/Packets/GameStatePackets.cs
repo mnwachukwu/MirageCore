@@ -40,7 +40,6 @@ public sealed record SendPlayerDataPacket : IPacket
     [JsonPropertyName("map")] public int Map { get; init; }
     [JsonPropertyName("level")] public int Level { get; init; }
     [JsonPropertyName("class")] public int Class { get; init; }
-    [JsonPropertyName("sex")] public Sex Sex { get; init; }
     [JsonPropertyName("access")] public AdminLevel Access { get; init; }
     [JsonPropertyName("pkExpiryUtc")] public long PkExpiryUtc { get; init; }
     [JsonPropertyName("graceUntilUtc")] public long GraceUntilUtc { get; init; }

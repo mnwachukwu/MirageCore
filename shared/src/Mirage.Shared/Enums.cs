@@ -231,12 +231,6 @@ public enum FlickerStyle : byte
     Pulse = 2,
 }
 
-public enum Sex : byte
-{
-    Male = 0,
-    Female = 1,
-}
-
 public enum MapMoral : byte
 {
     None = 0,

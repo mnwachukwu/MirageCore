@@ -483,8 +483,6 @@ public static class Constants
     // ── Death & respawn ──────────────────────────────────────────────────────
     // Non-war respawn delay = penalty steps x this (base 10s). Steps escalate +1 per death, decay 1 step
     // per full minute since the last death, and clamp to [1, max] (so the cap is max x 10s = 120s).
-    public const int RespawnPenaltyStepSeconds = 10;
-    public const int RespawnMaxPenaltySteps = 12;
     // On death a caster destroys reagents (item CastingReagentItemIndex) based on its PREPARED spell —
     // independently of, and on top of, any equipped weapon's wear (a weapon wears from the weapon; reagents
     // wear from the prepared spell). The amount = the per-cast reagent cost at that tier (the prepared spell's

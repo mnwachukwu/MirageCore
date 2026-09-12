@@ -90,19 +90,7 @@ public class StartingLoadoutTests
         });
     }
 
-    // ── Per-sex class art ────────────────────────────────────────────────────
-
-    [Test]
-    public void SpriteFor_PicksThePerSexArt()
-    {
-        var cls = new ClassRecord { Name = "Warrior", SpriteMale = 3, SpriteFemale = 13 };
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(cls.SpriteFor(Sex.Male), Is.EqualTo(3));
-            Assert.That(cls.SpriteFor(Sex.Female), Is.EqualTo(13));
-        });
-    }
+    // ── Class art ────────────────────────────────────────────────────────────
 
     [Test]
     public void Normalize_MigratesALegacySingleSpriteToBothSexes()

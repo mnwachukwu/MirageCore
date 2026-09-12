@@ -1,6 +1,7 @@
 using Mirage.Shared.Records;
 using Mirage.Shared.Serialization;
 using NUnit.Framework;
+using System.Linq;
 using System.Text.Json;
 
 namespace Mirage.Shared.Tests.Records;
@@ -51,17 +52,17 @@ public class WorldManifestTests
         });
     }
 
+    /// <summary>A manifest whose every setting differs from stock, written and read back.
+    ///
+    /// <para>🔴 The converter is hand-written, so a setting added to the record without a matching arm in
+    /// BOTH halves of it is silently dropped on save and silently defaulted on load. Nothing about that
+    /// fails, warns, or looks wrong until an author notices their work has gone. This test and the coverage
+    /// check below it are the only things that catch it, which is why the check exists rather than trusting
+    /// this list to be kept current by hand.</para></summary>
     [Test]
     public void EverySetting_SurvivesARoundTrip()
     {
-        var original = new WorldManifest
-        {
-            Name = "Demo Landia",
-            DefaultMapSize = new MapSize(24, 20),
-            Records = new RecordLimits { Items = 2000, Maps = 300 },
-        };
-
-        var back = Read(Write(original));
+        var back = Read(Write(FullyAuthored()));
 
         Assert.Multiple(() =>
         {
@@ -70,8 +71,53 @@ public class WorldManifestTests
             Assert.That(back.Records.Items, Is.EqualTo(2000));
             Assert.That(back.Records.Maps, Is.EqualTo(300));
             Assert.That(back.Records.Npcs, Is.EqualTo(RecordLimits.Default.Npcs), "an untouched family keeps its default");
+            Assert.That(back.Appearances, Has.Count.EqualTo(2));
+            Assert.That(back.Appearances[0].Name, Is.EqualTo("Villager"));
+            Assert.That(back.Appearances[1].Sprite, Is.EqualTo(17));
+            Assert.That(back.Appearances[1].SpriteSheet, Is.EqualTo(2));
         });
     }
+
+    /// <summary>Every setting the manifest declares must actually differ from stock in the fixture above —
+    /// otherwise a property could be added, left out of the converter, and still "pass" a round trip that
+    /// never set it in the first place.</summary>
+    [Test]
+    public void TheRoundTripFixture_CoversEverySettingTheManifestDeclares()
+    {
+        var stock = new WorldManifest();
+        var authored = FullyAuthored();
+
+        var uncovered = typeof(WorldManifest).GetProperties()
+            .Where(pi => pi.CanRead && pi.GetIndexParameters().Length == 0)
+            .Where(pi => pi.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonIgnoreAttribute), true).Length == 0)
+            .Where(pi => pi.SetMethod is not null)
+            .Where(pi => Equals(Describe(pi.GetValue(authored)), Describe(pi.GetValue(stock))))
+            .Select(pi => pi.Name)
+            .ToList();
+
+        Assert.That(uncovered, Is.Empty,
+            "these settings are left at their default by the round-trip fixture, so it proves nothing about them");
+    }
+
+    // Value equality for the comparison above: a list has to be compared by content, not by reference.
+    private static string Describe(object? v) => v switch
+    {
+        null => "<null>",
+        System.Collections.IEnumerable e and not string => string.Join("|", e.Cast<object>().Select(x => x?.ToString())),
+        _ => v.ToString() ?? "",
+    };
+
+    private static WorldManifest FullyAuthored() => new()
+    {
+        Name = "Demo Landia",
+        DefaultMapSize = new MapSize(24, 20),
+        Records = new RecordLimits { Items = 2000, Maps = 300 },
+        Appearances =
+        [
+            new CharacterAppearance { Name = "Villager", Sprite = 3, SpriteSheet = 0 },
+            new CharacterAppearance { Name = "Sailor", Sprite = 17, SpriteSheet = 2 },
+        ],
+    };
 
     /// <summary>An absent key has to mean what an absent FILE means, or a partial manifest would answer
     /// differently from no manifest at all.</summary>

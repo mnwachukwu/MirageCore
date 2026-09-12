@@ -130,7 +130,6 @@ public static class PacketBuilder
             Map = mapNum,
             Level = p.Level,
             Class = p.Class,
-            Sex = p.Sex,
             Access = p.Access,
             PkExpiryUtc = p.PkExpiryUtc,
             GraceUntilUtc = graceUntilUtc,

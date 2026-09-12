@@ -29,7 +29,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
         player.Map = p.Map;
         player.Level = p.Level;
         player.Class = p.Class;
-        player.Sex = p.Sex;
         player.Access = p.Access;
         player.PkExpiryUtc = p.PkExpiryUtc;
         player.PkGraceUntilUtc = p.GraceUntilUtc;
