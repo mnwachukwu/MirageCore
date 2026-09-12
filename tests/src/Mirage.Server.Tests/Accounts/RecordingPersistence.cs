@@ -1,5 +1,6 @@
 using Mirage.Server.Core.Persistence;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Records;
 using Mirage.Shared.Security;
 using System.Collections.Generic;
@@ -65,6 +66,15 @@ internal sealed class RecordingPersistence : IPersistenceService
     public Task<(ShopRecord[] records, int padded)> LoadAllShopsAsync() => Task.FromResult((Array.Empty<ShopRecord>(), 0));
     public Task<(QuestRecord[] records, int padded)> LoadAllQuestsAsync() => Task.FromResult((Array.Empty<QuestRecord>(), 0));
     public Task SaveQuestAsync(int num, QuestRecord quest) => Task.CompletedTask;
+
+    public readonly List<(string Family, int Num, AttributeBag Record)> SavedModuleRecords = new();
+    public Task<(AttributeBag[] records, int padded)> LoadAllModuleRecordsAsync(RecordFamily family, int limit)
+        => Task.FromResult((Array.Empty<AttributeBag>(), 0));
+    public Task SaveModuleRecordAsync(RecordFamily family, int num, AttributeBag record)
+    {
+        SavedModuleRecords.Add((family.Id, num, record));
+        return Task.CompletedTask;
+    }
     public Task<(ConversationRecord[] records, int padded)> LoadAllConversationsAsync() => Task.FromResult((Array.Empty<ConversationRecord>(), 0));
     public Task SaveConversationAsync(int num, ConversationRecord conversation) => Task.CompletedTask;
     public Task<Dictionary<int, GuildRecord>> LoadAllGuildsAsync() => Task.FromResult(new Dictionary<int, GuildRecord>());

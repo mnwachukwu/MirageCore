@@ -224,6 +224,11 @@ public static class CorePackets
         builder.Register(PacketNames.DecalUpdate, Read<DecalUpdatePacket>);
         builder.Register(PacketNames.AttributeSchema, Read<AttributeSchemaPacket>);
         builder.Register(PacketNames.EquipSlots, Read<EquipSlotsPacket>);
+        builder.Register(PacketNames.EditorRequestRecord, Read<EditorRequestRecordPacket>);
+        builder.Register(PacketNames.EditorRequestAllRecords, Read<EditorRequestAllRecordsPacket>);
+        builder.Register(PacketNames.EditorSaveRecord, Read<EditorSaveRecordPacket>);
+        builder.Register(PacketNames.UpdateRecord, Read<UpdateRecordPacket>);
+        builder.Register(PacketNames.EditorAllRecords, Read<EditorAllRecordsPacket>);
         builder.Register(PacketNames.AttributeSync, Read<AttributeSyncPacket>);
         builder.Register(PacketNames.AggressorRefresh, Read<AggressorRefreshPacket>);
         builder.Register(PacketNames.LeftGame, Read<LeftGamePacket>);

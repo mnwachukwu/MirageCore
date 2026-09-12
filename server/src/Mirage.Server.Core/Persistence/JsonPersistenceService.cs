@@ -520,6 +520,37 @@ public sealed class JsonPersistenceService : IPersistenceService
         await File.WriteAllTextAsync(ConversationFile(num), JsonSerializer.Serialize(conversation, Options));
     }
 
+    // ── A module's families ────────────────────────────────────────────────────
+    //
+    // Folder, filename and padding all come off the family the module declared, so these two methods
+    // serve every family a game will ever add. The records are bags: the engine stores what it is given
+    // and hands it back, and the module's own code is what makes any of it mean something.
+
+    public async Task<(AttributeBag[] records, int padded)> LoadAllModuleRecordsAsync(RecordFamily family, int limit)
+    {
+        ArgumentNullException.ThrowIfNull(family);
+
+        var result = new AttributeBag[Math.Max(limit, 0) + 1];
+        for (int i = 0; i < result.Length; i++) result[i] = new AttributeBag();
+
+        Directory.CreateDirectory(Path.Combine(_worldPath, family.EffectiveDirectory));
+        int padded = await CheckAndLoadRecordsAsync(result, Math.Max(limit, 0), num => ModuleRecordFile(family, num));
+        return (result, padded);
+    }
+
+    public async Task SaveModuleRecordAsync(RecordFamily family, int num, AttributeBag record)
+    {
+        ArgumentNullException.ThrowIfNull(family);
+        ArgumentNullException.ThrowIfNull(record);
+        if (num < 1 || num > _limits.For(family)) return;
+
+        Directory.CreateDirectory(Path.Combine(_worldPath, family.EffectiveDirectory));
+        await File.WriteAllTextAsync(ModuleRecordFile(family, num), JsonSerializer.Serialize(record, Options));
+    }
+
+    private string ModuleRecordFile(RecordFamily family, int num) =>
+        Path.Combine(_worldPath, family.EffectiveDirectory, family.FileNameFor(num));
+
     // ── Guilds ────────────────────────────────────────────────────────────────
     // Runtime-created and UNBOUNDED: load every guild{N}.json present (keyed by its N), rather than
     // scanning a fixed 1..Max range or blank-padding. Unused numbers simply have no entry.

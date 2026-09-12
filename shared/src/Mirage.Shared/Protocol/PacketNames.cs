@@ -189,6 +189,14 @@ public static class PacketNames
     public const string EditorRequestAllMapGroups = "editorreqallmapgroups";
     public const string EditorRequestAllMaps = "editorreqallmaps";
     // Accounts — CREATOR only, and the only editor family that touches a person rather than content.
+    // A record of a family neither side was compiled against: the editor names the family, the server
+    // answers with the bag it holds. One trio serves every family a game declares.
+    public const string EditorRequestRecord = "editorreqrecord";
+    public const string EditorRequestAllRecords = "editorreqallrecords";
+    public const string EditorSaveRecord = "editorsaverecord";
+    public const string UpdateRecord = "updaterecord";
+    public const string EditorAllRecords = "editorallrecords";
+
     public const string EditorRequestAccounts = "editorreqaccounts";
     public const string EditorAccountList = "editoraccountlist";
     public const string EditorRequestAccount = "editorreqaccount";

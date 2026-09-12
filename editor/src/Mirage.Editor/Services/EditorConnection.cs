@@ -213,6 +213,15 @@ public sealed class EditorConnection : IDisposable
     public Task<EditorAllMapGroupsPacket?> RequestAllMapGroupsAsync(CancellationToken ct = default)
         => RequestBulkAsync<EditorAllMapGroupsPacket>(PacketNames.EditorAllMapGroups, new EditorRequestAllMapGroupsPacket(), ct);
 
+    /// <summary>Every record of a family a module declared.
+    ///
+    /// <para>The waiter is keyed by command AND family, unlike Core's own bulk fetches: one command
+    /// carries every game family, so keying on the command alone would have a request for one family
+    /// displace an outstanding request for another.</para></summary>
+    public Task<EditorAllRecordsPacket?> RequestAllRecordsAsync(string family, CancellationToken ct = default)
+        => RequestBulkAsync<EditorAllRecordsPacket>(BulkRecordKey(family),
+            new EditorRequestAllRecordsPacket { Family = family }, ct);
+
     /// <summary>Asks for one slice of the world's maps. The server clamps the count to its own chunk
     /// ceiling, so a short answer is normal and the caller reads the next slice from where this one ends.</summary>
     public Task<EditorAllMapsPacket?> RequestAllMapsAsync(int start, int count, CancellationToken ct = default)
@@ -341,6 +350,19 @@ public sealed class EditorConnection : IDisposable
         => RequestAsync<UpdateMapGroupPacket>(
             PacketNames.UpdateMapGroup, groupNum,
             new EditorRequestMapGroupPacket { GroupNum = groupNum }, ct);
+
+    /// <summary>One record of a family a module declared. Keyed by family as well as slot, for the same
+    /// reason the bulk fetch is.</summary>
+    public Task<UpdateRecordPacket?> RequestRecordAsync(string family, int num, CancellationToken ct = default)
+        => RequestAsync<UpdateRecordPacket>(
+            RecordKey(family), num,
+            new EditorRequestRecordPacket { Family = family, Num = num }, ct);
+
+    /// <summary>The waiter key for one family's records. A command alone would not tell two families
+    /// apart, and the answers carry the family so the routing side can rebuild the same key.</summary>
+    private static string RecordKey(string family) => $"{PacketNames.UpdateRecord}:{family}";
+
+    private static string BulkRecordKey(string family) => $"{PacketNames.EditorAllRecords}:{family}";
 
     private async Task<T?> RequestAsync<T>(string responseCmd, int num, IPacket request,
                                            CancellationToken ct) where T : class, IPacket
@@ -480,6 +502,7 @@ public sealed class EditorConnection : IDisposable
         EditorAllConversationsPacket => PacketNames.EditorAllConversations,
         EditorAllMapGroupsPacket => PacketNames.EditorAllMapGroups,
         EditorAllMapsPacket => PacketNames.EditorAllMaps,
+        EditorAllRecordsPacket p => BulkRecordKey(p.Family),
         EditorAccountListPacket => PacketNames.EditorAccountList,
         EditorAccountPacket => PacketNames.EditorAccount,
         EditorNoticePacket => PacketNames.EditorNotice,
@@ -502,6 +525,7 @@ public sealed class EditorConnection : IDisposable
             UpdateConversationPacket p => (PacketNames.UpdateConversation, p.ConvNum),
             SendMapPacket p => (PacketNames.SendMap, p.MapNum),
             UpdateMapGroupPacket p => (PacketNames.UpdateMapGroup, p.GroupNum),
+            UpdateRecordPacket p => (RecordKey(p.Family), p.Num),
             _ => ("", 0),
         };
         if (key.cmd == "") return false;

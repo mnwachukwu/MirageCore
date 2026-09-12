@@ -69,6 +69,14 @@ public sealed record RecordFamily
     /// author changes that field.</summary>
     [JsonPropertyName("kindFieldKey")] public string? KindFieldKey { get; init; }
 
+    /// <summary>Which of <see cref="Fields"/> holds the record's display name — what a list shows
+    /// beside a slot number, and the only field the engine reads out of a game's record.
+    ///
+    /// <para>A family whose records have no name leaves it blank, and every slot then reads as its
+    /// number alone. That is a legitimate shape: a lookup table keyed by number has nothing to
+    /// call a row.</para></summary>
+    [JsonPropertyName("nameFieldKey")] public string NameFieldKey { get; init; } = "name";
+
     /// <summary>Whether the editor offers this family its own section. False for a family a game keeps
     /// but does not want authored by hand.</summary>
     [JsonPropertyName("authorable")] public bool Authorable { get; init; } = true;

@@ -103,6 +103,10 @@ public sealed class MirageServerService : IHostedService
         // it was authored against, for an editor opening the folder without them.
         _world.EquipSlots = _registry.EquipSlots;
 
+        // Likewise the attribute keys: a client is sent this numbering on join, so a schema left empty here
+        // means every value a module declared is unreadable on the far side.
+        _world.Attributes = _registry.Attributes;
+
         await LoadWorldDataAsync(ct);
 
         // Wire the level-up → quest-eligibility refresh now that every system exists (can't be done at
@@ -252,6 +256,19 @@ public sealed class MirageServerService : IHostedService
         CopyArray(shops, _world.Shops, _world.Limits.Shops);
         CopyArray(quests, _world.Quests, _world.Limits.Quests);
         CopyArray(conversations, _world.Conversations, _world.Limits.Conversations);
+
+        // Whatever families the modules added. Core knows nothing about their contents, so each one is
+        // loaded as bags out of the folder its own declaration names — no line here per family, and a
+        // server with no modules does nothing at all.
+        foreach (var family in _registry.Schema.Families)
+        {
+            if (CoreRecordFamilies.Find(family.Id) is not null) continue;
+
+            int limit = _world.Limits.For(family);
+            var (records, padded) = await _persistence.LoadAllModuleRecordsAsync(family, limit);
+            _world.ModuleRecords.Adopt(family, records);
+            _logger.LogInformation("Loaded {Count} {Family} ({Padded} created).", limit, family.Id, padded);
+        }
 
         // Guilds — runtime-created and unbounded; load every guild file present into the sparse map.
         var guilds = await _persistence.LoadAllGuildsAsync();

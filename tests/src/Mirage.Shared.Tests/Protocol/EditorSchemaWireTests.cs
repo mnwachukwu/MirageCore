@@ -55,6 +55,7 @@ public class EditorSchemaWireTests
                     LoadsIndividually = true,
                     Authorable = false,
                     KindFieldKey = "kind",
+                    NameFieldKey = "speciesName",
                 },
             ],
         };
@@ -72,6 +73,7 @@ public class EditorSchemaWireTests
             Assert.That(family.LoadsIndividually, Is.True);
             Assert.That(family.Authorable, Is.False);
             Assert.That(family.KindFieldKey, Is.EqualTo("kind"));
+            Assert.That(family.NameFieldKey, Is.EqualTo("speciesName"));
             Assert.That(family.FileNameFor(7), Is.EqualTo("mon7.json"), "the derived name follows the prefix that travelled");
         });
     }

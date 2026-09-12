@@ -1,4 +1,5 @@
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Records;
 
 namespace Mirage.Server.Core.Persistence;
@@ -62,6 +63,18 @@ public interface IPersistenceService
     Task SaveShopAsync(int num, ShopRecord shop);
     Task SaveQuestAsync(int num, QuestRecord quest);
     Task SaveConversationAsync(int num, ConversationRecord conversation);
+
+    /// <summary>Every record of a family this server was never compiled against, padded to
+    /// <paramref name="limit"/> slots. Returns the records 1-based, plus how many blank files had to be
+    /// created — the same shape the typed loads above return.
+    ///
+    /// <para>The family carries its own folder and filename, so a game adding a family needs no line
+    /// here: the folder is created if it is missing and every slot gets a file.</para></summary>
+    Task<(AttributeBag[] records, int padded)> LoadAllModuleRecordsAsync(RecordFamily family, int limit);
+
+    /// <summary>Writes one record of a module's family. The bag replaces the file wholesale, keys the
+    /// engine cannot read included.</summary>
+    Task SaveModuleRecordAsync(RecordFamily family, int num, AttributeBag record);
 
     // ── Guilds ────────────────────────────────────────────────────────────────
     Task<Dictionary<int, GuildRecord>> LoadAllGuildsAsync();

@@ -158,6 +158,16 @@ public sealed partial class EditorPacketHandler
                 case EditorSaveMapPacket p:
                     HandleEditorSaveMap(editorIndex, p);
                     break;
+                // A module's own families — one trio for all of them; see the .Records partial.
+                case EditorRequestRecordPacket p:
+                    HandleEditorRequestRecord(editorIndex, p);
+                    break;
+                case EditorRequestAllRecordsPacket p:
+                    HandleEditorRequestAllRecords(editorIndex, p);
+                    break;
+                case EditorSaveRecordPacket p:
+                    HandleEditorSaveRecord(editorIndex, p);
+                    break;
                 // Accounts — Creator only; see the .Accounts partial.
                 case EditorRequestAccountsPacket p:
                     HandleEditorRequestAccounts(editorIndex, p);
