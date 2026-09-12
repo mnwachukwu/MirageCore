@@ -31,7 +31,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
                 SpellNum = item.SpellNum,
                 Power = item.Power,
                 LevelReq = item.LevelReq,
-                AllowedClasses = item.AllowedClasses,
                 NonTradeable = item.NonTradeable,
                 NonListable = item.NonListable,
                 NonMailable = item.NonMailable,
@@ -92,7 +91,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
         Description = q.Description,
         Objectives = q.Objectives,   // fresh off the wire — no sharing to guard against
         ReqLevel = q.ReqLevel, ReqStr = q.ReqStr, ReqDef = q.ReqDef, ReqSpd = q.ReqSpd, ReqInt = q.ReqInt,
-        AllowedClasses = q.AllowedClasses, PrereqQuest = q.PrereqQuest,
         RewardExp = q.RewardExp, RewardItems = q.RewardItems,
         RepeatRewardExp = q.RepeatRewardExp, RepeatRewardItems = q.RepeatRewardItems,
         GiverNpc = q.GiverNpc, TurnInNpc = q.TurnInNpc, Repeatable = q.Repeatable, Cadence = q.Cadence,
@@ -122,7 +120,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
         Description = q.Description,
         Objectives = q.Objectives,   // fresh off the wire — no sharing to guard against
         ReqLevel = q.ReqLevel, ReqStr = q.ReqStr, ReqDef = q.ReqDef, ReqSpd = q.ReqSpd, ReqInt = q.ReqInt,
-        AllowedClasses = q.AllowedClasses, PrereqQuest = q.PrereqQuest,
         RewardExp = q.RewardExp, RewardItems = q.RewardItems,
         RepeatRewardExp = q.RepeatRewardExp, RepeatRewardItems = q.RepeatRewardItems,
         GiverNpc = q.GiverNpc, TurnInNpc = q.TurnInNpc, Repeatable = q.Repeatable, Cadence = q.Cadence,
@@ -194,7 +191,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
             SpellNum = p.SpellNum,
             Power = p.Power,
             LevelReq = p.LevelReq,
-            AllowedClasses = p.AllowedClasses,
             NonTradeable = p.NonTradeable,
             NonListable = p.NonListable,
             NonMailable = p.NonMailable,
@@ -252,7 +248,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
         _state.SpellDefs[p.SpellNum] = new SpellRecord
         {
             Name = p.Name,
-            AllowedClasses = p.AllowedClasses,
             Type = p.Type,
             VitalAmount = p.VitalAmount,
             ItemNum = p.ItemNum,

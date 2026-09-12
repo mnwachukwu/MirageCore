@@ -25,6 +25,10 @@ public sealed class GameWorld
     public IReadOnlyList<CharacterAppearance> Appearances { get; set; } =
         CharacterAppearance.DefaultSet;
 
+    /// <summary>What a brand-new character is created holding, from `world.json`. Empty in a world that
+    /// authored none, which is a world where everyone starts with nothing.</summary>
+    public IReadOnlyList<StartingItem> StartingItems { get; set; } = [];
+
     public MapRecord[] Maps { get; }
     public TempTileState[] TempTiles { get; }
     public ItemRecord[] Items { get; }
@@ -33,8 +37,6 @@ public sealed class GameWorld
     public SpellRecord[] Spells { get; }
     public QuestRecord[] Quests { get; }
     public ConversationRecord[] Conversations { get; }
-
-    public ClassRecord[] Classes { get; } = new ClassRecord[Constants.MaxClasses + 1];
 
     // Guilds are runtime-created and UNBOUNDED (no cap): a sparse map keyed by guild Index (like
     // MapBlood), each entry backed by guilds/guild{Index}.json. There is no fixed slot array.
@@ -466,7 +468,6 @@ public sealed class GameWorld
         PlayersOnMap = new bool[Limits.Maps + 1];
         _nextItemSlotId = new int[Limits.Maps + 1];
 
-        for (int i = 0; i <= Constants.MaxClasses; i++) Classes[i] = new ClassRecord();
 
         // NPC slot dimension is 1-based: index 0 left as null (never accessed), 1..MaxMapNpcs initialized.
         MapNpcs = new MapNpcRecord[Limits.Maps + 1, Constants.MaxMapNpcs + 1];

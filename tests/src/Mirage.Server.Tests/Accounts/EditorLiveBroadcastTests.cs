@@ -30,36 +30,13 @@ public class EditorLiveBroadcastTests
     // ── Simple entity saves broadcast their Update packet to ALL players ───────────
 
     [Test]
-    public void SaveClass_BroadcastsUpdateClassToAll()
-    {
-        var h = new Harness();
-        h.Save(new EditorSaveClassPacket
-        {
-            ClassNum = 2, Name = "Warrior", SpriteMale = 7, SpriteFemale = 17, Str = 11, Def = 12, Spd = 13, Int = 14,
-        });
-
-        var u = h.Dispatcher.OneBroadcast<UpdateClassPacket>();
-        Assert.Multiple(() =>
-        {
-            Assert.That(u.ClassNum, Is.EqualTo(2));
-            Assert.That(u.Name, Is.EqualTo("Warrior"));
-            Assert.That(u.SpriteMale, Is.EqualTo(7));
-            Assert.That(u.SpriteFemale, Is.EqualTo(17));
-            Assert.That(u.Str, Is.EqualTo(11));
-            Assert.That(u.Def, Is.EqualTo(12));
-            Assert.That(u.Spd, Is.EqualTo(13));
-            Assert.That(u.Int, Is.EqualTo(14));
-        });
-    }
-
-    [Test]
     public void SaveItem_BroadcastsUpdateItemToAll()
     {
         var h = new Harness();
         h.Save(new EditorSaveItemPacket
         {
             ItemNum = 3, Name = "Short Sword", Pic = 4, Type = ItemType.Weapon,
-            Durability = 100, Power = 10, AllowedClasses = [5, 2],
+            Durability = 100, Power = 10,
         });
 
         var u = h.Dispatcher.OneBroadcast<UpdateItemPacket>();
@@ -71,8 +48,6 @@ public class EditorLiveBroadcastTests
             Assert.That(u.Type, Is.EqualTo(ItemType.Weapon));
             Assert.That(u.Durability, Is.EqualTo(100));
             Assert.That(u.Power, Is.EqualTo(10));
-            // Sorted, not as sent: the server canonicalizes the gate before broadcasting it.
-            Assert.That(u.AllowedClasses, Is.EqualTo(new short[] { 2, 5 }));
         });
     }
 
@@ -129,7 +104,7 @@ public class EditorLiveBroadcastTests
         var h = new Harness();
         h.Save(new EditorSaveSpellPacket
         {
-            SpellNum = 5, Name = "Fireball", AllowedClasses = [2], Type = SpellType.AddHp,
+            SpellNum = 5, Name = "Fireball", Type = SpellType.AddHp,
             VitalAmount = 25,
         });
 
@@ -138,7 +113,6 @@ public class EditorLiveBroadcastTests
         {
             Assert.That(u.SpellNum, Is.EqualTo(5));
             Assert.That(u.Name, Is.EqualTo("Fireball"));
-            Assert.That(u.AllowedClasses, Is.EqualTo(new short[] { 2 }));
             Assert.That(u.Type, Is.EqualTo(SpellType.AddHp));
             Assert.That(u.VitalAmount, Is.EqualTo(25));
         });
@@ -194,12 +168,12 @@ public class EditorLiveBroadcastTests
         var h = new Harness();
         h.Editors.GetSession(Editor)!.IsAuthenticated = false;
 
-        h.Save(new EditorSaveClassPacket { ClassNum = 2, Name = "Warrior", SpriteMale = 7 });
+        h.Save(new EditorSaveItemPacket { ItemNum = 3, Name = "Short Sword" });
 
         Assert.Multiple(() =>
         {
             Assert.That(h.Dispatcher.Broadcasts, Is.Empty, "no broadcast without an authenticated editor");
-            Assert.That(h.World.Classes[2].Name, Is.Empty, "no mutation without an authenticated editor");
+            Assert.That(h.World.Items[3].Name, Is.Empty, "no mutation without an authenticated editor");
         });
     }
 
@@ -207,7 +181,7 @@ public class EditorLiveBroadcastTests
     //
     // The handlers used to check authentication alone. session.AdminLevel was set at login and never
     // read again, so a MAPPER — the lowest tier the editor admits — could save items, NPCs, shops,
-    // spells, classes, quests and conversations. The editor client hides those sections below Developer,
+    // spells, quests and conversations. The editor client hides those sections below Developer,
     // but that is presentation, and this engine ships its client's source.
     //
     // The compiler cannot help here: the old guard and the new one both return bool, so a handler left on
@@ -218,13 +192,11 @@ public class EditorLiveBroadcastTests
     {
         var h = new Harness(AdminLevel.Mapper);
 
-        h.Save(new EditorSaveClassPacket { ClassNum = 2, Name = "Warrior", SpriteMale = 7 });
         h.Save(new EditorSaveItemPacket { ItemNum = 3, Name = "Short Sword" });
         h.Save(new EditorSaveSpellPacket { SpellNum = 5, Name = "Fireball" });
 
         Assert.Multiple(() =>
         {
-            Assert.That(h.World.Classes[2].Name, Is.Empty, "a Mapper must not be able to rewrite a class");
             Assert.That(h.World.Items[3].Name, Is.Empty, "a Mapper must not be able to rewrite an item");
             Assert.That(h.World.Spells[5].Name, Is.Empty, "a Mapper must not be able to rewrite a spell");
             Assert.That(h.Dispatcher.Broadcasts, Is.Empty, "a refused save must not reach players either");

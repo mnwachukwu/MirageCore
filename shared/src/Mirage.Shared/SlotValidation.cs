@@ -30,9 +30,6 @@ public static class SlotValidation
     public static bool IsValidInvSlot(int slot) => slot >= 1 && slot <= Constants.MaxInv;
     public static bool IsValidBankSlot(int slot) => slot >= 1 && slot <= Constants.MaxBankSlots;
     public static bool IsValidSpellSlot(int slot) => slot >= 1 && slot <= Constants.MaxPlayerSpells;
-    public static bool IsValidClassNum(int num) => num >= 1 && num <= Constants.MaxClasses;
-
-
     // ── World-data record numbers (per-server; pass the limit) ──────────────────
     public static bool IsValidMapNum(int mapNum, int maxMaps) => mapNum >= 1 && mapNum <= maxMaps;
     public static bool IsValidItemNum(int num, int maxItems) => num >= 1 && num <= maxItems;

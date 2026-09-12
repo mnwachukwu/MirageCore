@@ -200,7 +200,6 @@ public static class Constants
     public const int RunSpeed = 8;
 
     public const int MaxEditorSessions = 5;
-    public const int MaxClasses = 50;
 
     public const int DefaultItemRespawnSeconds = 120;
 

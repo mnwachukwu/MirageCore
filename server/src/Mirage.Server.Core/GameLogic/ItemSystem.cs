@@ -461,12 +461,11 @@ public sealed partial class ItemSystem : GameSystem
     public void RevalidateEquipmentRequirements(int index)
     {
         var p = _pm[index].Char;
-        var cls = _world.Classes[p.Class];
         bool anyRemoved = false;
-        anyRemoved |= UnequipIfRequirementsUnmet(index, p, cls, ItemType.Weapon);
-        anyRemoved |= UnequipIfRequirementsUnmet(index, p, cls, ItemType.Armor);
-        anyRemoved |= UnequipIfRequirementsUnmet(index, p, cls, ItemType.Helmet);
-        anyRemoved |= UnequipIfRequirementsUnmet(index, p, cls, ItemType.Shield);
+        anyRemoved |= UnequipIfRequirementsUnmet(index, p, ItemType.Weapon);
+        anyRemoved |= UnequipIfRequirementsUnmet(index, p, ItemType.Armor);
+        anyRemoved |= UnequipIfRequirementsUnmet(index, p, ItemType.Helmet);
+        anyRemoved |= UnequipIfRequirementsUnmet(index, p, ItemType.Shield);
         if (anyRemoved) SendEquippedGear(index);
     }
 
@@ -480,7 +479,7 @@ public sealed partial class ItemSystem : GameSystem
     /// The item is left in its inventory slot; only the gear-slot pointer is cleared. Returns true if it
     /// removed the piece. Does NOT broadcast — the caller sends one <see cref="SendEquippedGear"/> after
     /// sweeping all slots.</summary>
-    private bool UnequipIfRequirementsUnmet(int index, PlayerRecord p, ClassRecord cls, ItemType type)
+    private bool UnequipIfRequirementsUnmet(int index, PlayerRecord p, ItemType type)
     {
         int invSlot = EquippedSlotForType(p, type);
         if (invSlot == 0) return false;
@@ -489,8 +488,7 @@ public sealed partial class ItemSystem : GameSystem
         var item = _world.Items[itemNum];
         bool isWeapon = type == ItemType.Weapon;
         int playerStat = isWeapon ? p.Str : p.Def;
-        int classStat = isWeapon ? cls.Str : cls.Def;
-        bool statOk = playerStat >= CombatFormulas.GearStatRequirement(item.Power, classStat);
+        bool statOk = playerStat >= CombatFormulas.GearStatRequirement(item.Power, 0);
         bool levelOk = item.LevelReq <= p.Level;
         if (statOk && levelOk) return false;
         switch (type)

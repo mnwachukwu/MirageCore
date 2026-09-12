@@ -211,10 +211,7 @@ public sealed partial class ClientState
         }
     }
 
-    // Classes and map groups
-    /// <summary>1-based; index 0 is unused dummy. Sized dynamically from server.</summary>
-    public ClassRecord[] Classes { get; set; } = new ClassRecord[1]; // placeholder until server sends
-
+    // Map groups
     // MapGroup defs, cached like the other shared defs: filled in bulk at join (SendMapGroups) and
     // refreshed per-group on a live editor save (UpdateMapGroup). The client resolves a map's EFFECTIVE
     // inheritable values against these on demand via the *Of helpers below — the client-side mirror of the

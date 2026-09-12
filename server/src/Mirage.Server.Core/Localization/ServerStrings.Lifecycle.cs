@@ -14,7 +14,6 @@ public static partial class ServerStrings
     public const string Server_LoadingNpcs = nameof(Server_LoadingNpcs);
     public const string Server_LoadingShops = nameof(Server_LoadingShops);
     public const string Server_LoadingSpells = nameof(Server_LoadingSpells);
-    public const string Server_LoadingClasses = nameof(Server_LoadingClasses);
     public const string Server_LoadingQuests = nameof(Server_LoadingQuests);
     public const string Server_LoadingConversations = nameof(Server_LoadingConversations);
     public const string Server_LoadingMaps = nameof(Server_LoadingMaps);

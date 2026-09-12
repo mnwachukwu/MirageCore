@@ -15,7 +15,7 @@ public class ItemRowViewModelTests
 {
     static ItemRecord Sword() => new()
     {
-        Name = "Rusty Sword", Pic = 12, Type = ItemType.Weapon, Durability = 100, Power = 8, AllowedClasses = [2, 3],
+        Name = "Rusty Sword", Pic = 12, Type = ItemType.Weapon, Durability = 100, Power = 8,
     };
 
     static ItemRowViewModel Row(ItemType type) => new(1, new ItemRecord { Type = type });
@@ -32,7 +32,6 @@ public class ItemRowViewModelTests
             Assert.That(r.Type, Is.EqualTo(ItemType.Weapon));
             Assert.That(r.Durability, Is.EqualTo((short)100));
             Assert.That(r.Power, Is.EqualTo((short)8));
-            Assert.That(r.AllowedClasses, Is.EqualTo(new short[] { 2, 3 }));
             Assert.That(vm.IsDirty, Is.False, "a freshly loaded row is not dirty");
             Assert.That(vm.IsLoaded, Is.True);
         });
@@ -101,7 +100,6 @@ public class ItemRowViewModelTests
             var weapon = Row(ItemType.Weapon);
             Assert.That(weapon.DurabilityVisible, Is.True);
             Assert.That(weapon.PowerVisible, Is.True);
-            Assert.That(weapon.AllowedClassesVisible, Is.True);
             Assert.That(weapon.VitalAmountVisible, Is.False);
             Assert.That(weapon.SpellNumVisible, Is.False);
 
@@ -109,7 +107,6 @@ public class ItemRowViewModelTests
             Assert.That(potion.VitalAmountVisible, Is.True, "potion amount is editable");
             Assert.That(potion.DurabilityVisible, Is.False, "potions do not wear");
             Assert.That(potion.PowerVisible, Is.False);
-            Assert.That(potion.AllowedClassesVisible, Is.False);
 
             var scroll = Row(ItemType.Spell);
             Assert.That(scroll.SpellNumVisible, Is.True, "a scroll picks the spell it teaches");
@@ -123,13 +120,12 @@ public class ItemRowViewModelTests
                 Assert.That(row.VitalAmountVisible, Is.False, $"{bare} carries no editable fields");
                 Assert.That(row.SpellNumVisible, Is.False, $"{bare} carries no editable fields");
                 Assert.That(row.PowerVisible, Is.False, $"{bare} carries no editable fields");
-                Assert.That(row.AllowedClassesVisible, Is.False, $"{bare} carries no editable fields");
             }
         });
     }
 
-    // The hazard the named fields alone don't fix: retype a weapon as a potion and its Power/ClassReq are
-    // hidden but still set. Saving has to drop them, or the file keeps numbers the item no longer has.
+    // The hazard the named fields alone don't fix: retype a weapon as a potion and its Power is hidden
+    // but still set. Saving has to drop it, or the file keeps numbers the item no longer has.
     [Test]
     public void ToRecord_ZeroesFieldsTheTypeDoesNotUse()
     {
@@ -144,7 +140,6 @@ public class ItemRowViewModelTests
             Assert.That(r.VitalAmount, Is.EqualTo((short)25));
             Assert.That(r.Durability, Is.EqualTo((short)0), "a potion does not wear");
             Assert.That(r.Power, Is.EqualTo((short)0), "the weapon's power must not survive the retype");
-            Assert.That(r.AllowedClasses, Is.Null, "nor its class gate");
         });
     }
 
@@ -183,7 +178,6 @@ public class ItemRowViewModelTests
             Assert.That(pkt.SpellNum, Is.EqualTo((short)7));
             Assert.That(pkt.Durability, Is.EqualTo((short)0));
             Assert.That(pkt.Power, Is.EqualTo((short)0));
-            Assert.That(pkt.AllowedClasses, Is.Null);
         });
     }
 }

@@ -15,7 +15,6 @@ public sealed class WorldSnapshot
     public NpcRecord[] Npcs { get; init; } = [];
     public ShopRecord[] Shops { get; init; } = [];
     public SpellRecord[] Spells { get; init; } = [];
-    public ClassRecord[] Classes { get; init; } = [];
     public QuestRecord[] Quests { get; init; } = [];
     public ConversationRecord[] Conversations { get; init; } = [];
     public MapGroupRecord[] MapGroups { get; init; } = [];
@@ -41,7 +40,6 @@ public sealed class WorldSnapshot
             "NPCs" => num < Npcs.Length ? Npcs[num] : null,
             "Shops" => num < Shops.Length ? Shops[num] : null,
             "Spells" => num < Spells.Length ? Spells[num] : null,
-            "Classes" => num < Classes.Length ? Classes[num] : null,
             "Quests" => num < Quests.Length ? Quests[num] : null,
             "Conversations" => num < Conversations.Length ? Conversations[num] : null,
             _ => null,
@@ -57,7 +55,6 @@ public sealed class WorldSnapshot
         NpcRecord n => n.Name,
         ShopRecord s => s.Name,
         SpellRecord s => s.Name,
-        ClassRecord c => c.Name,
         QuestRecord q => q.Name,
         ConversationRecord c => c.Name,
         _ => "",

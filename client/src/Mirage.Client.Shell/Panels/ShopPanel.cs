@@ -734,7 +734,7 @@ public sealed class ShopPanel : IGamePanel
         if (item is null) return;
         var slot = new PlayerInvSlot { Num = itemNum, Quantity = 1, Dur = item.Durability };
         Tooltip.NotifyHoverItem(TooltipScope, (TooltipScope, "buy", itemNum), item, slot,
-            state.Me, state.Classes, itemsTex, _input.MousePosition,
+            state.Me, itemsTex, _input.MousePosition,
             state.SpellDefs, state.Items, state.Weather);
     }
 
@@ -755,7 +755,7 @@ public sealed class ShopPanel : IGamePanel
         var item = state.Items[slot.Num];
         if (item is null) return;
         Tooltip.NotifyHoverItem(TooltipScope, (TooltipScope, list, slotIdx, slot.Num), item, slot,
-            state.Me, state.Classes, itemsTex, _input.MousePosition,
+            state.Me, itemsTex, _input.MousePosition,
             state.SpellDefs, state.Items, state.Weather);
     }
 
@@ -859,12 +859,8 @@ public sealed class ShopPanel : IGamePanel
         UiHelper.DrawLabel(sb, font, nameLine, new Vector2(c.X + 8, textY), Color.White, c.Width - 16);
         textY += 18;
         textY = DrawItemPreview(sb, c, itemsTex, get?.Pic ?? -1, get?.ItemSheet ?? 0, textY);
-        // Hoisted so the stat-req and INT-req blocks further down all share the same class record:
-        // the class-affinity head-start discounts equip STR/DEF reqs and the spell INT req alike.
         // Player's own Int (me.Int) is what drives M-DMG via RawSpellPower.
-        var myClass = (me is not null && me.Class > 0 && me.Class < state.Classes.Length)
-            ? state.Classes[me.Class] : null;
-        int classInt = myClass?.Int ?? 0;
+        const int classInt = 0;
 
         if (spell is not null)
         {
@@ -973,45 +969,30 @@ public sealed class ShopPanel : IGamePanel
         bool meetsStat = true;
         if (isEquip && get!.Power > 0)
         {
-            (string label, int playerStat, int classStat) = get.Type switch
+            (string label, int playerStat) = get.Type switch
             {
-                ItemType.Weapon => (ClientStrings.Get(ClientStrings.Stats_Str), me?.Str ?? 0, myClass?.Str ?? 0),
-                ItemType.Armor => (ClientStrings.Get(ClientStrings.Stats_Def), me?.Def ?? 0, myClass?.Def ?? 0),
-                ItemType.Helmet => (ClientStrings.Get(ClientStrings.Stats_Def), me?.Def ?? 0, myClass?.Def ?? 0),
-                ItemType.Shield => (ClientStrings.Get(ClientStrings.Stats_Def), me?.Def ?? 0, myClass?.Def ?? 0),
-                _ => ("", 0, 0),
+                ItemType.Weapon => (ClientStrings.Get(ClientStrings.Stats_Str), me?.Str ?? 0),
+                ItemType.Armor => (ClientStrings.Get(ClientStrings.Stats_Def), me?.Def ?? 0),
+                ItemType.Helmet => (ClientStrings.Get(ClientStrings.Stats_Def), me?.Def ?? 0),
+                ItemType.Shield => (ClientStrings.Get(ClientStrings.Stats_Def), me?.Def ?? 0),
+                _ => ("", 0),
             };
-            int statReq = CombatFormulas.GearStatRequirement(get.Power, classStat);
+            int statReq = CombatFormulas.GearStatRequirement(get.Power, 0);
             meetsStat = playerStat >= statReq;
             var color = meetsStat ? Color.LightGreen : Color.OrangeRed;
             UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_StatRequirement, ("Stat", label), ("Value", UiHelper.FormatRequirement(get.Power, statReq))), new Vector2(c.X + 8, textY), color, c.Width - 16);
             textY += 18;
         }
 
-        // Equipment carries a class gate of its own, and the server enforces it on equip. Stated here as
-        // well as in the tooltip: this is the last screen before gold changes hands, and a piece that reads
-        // fully affordable and then refuses to go on is the mistake the confirm exists to catch.
-        bool meetsEquipClass = true;
-        if (isEquip && ClassGate.IsRestricted(get!.AllowedClasses))
-        {
-            string equipClassNames = ClassGate.Describe(get.AllowedClasses, state.Classes);
-            if (equipClassNames.Length > 0)
-            {
-                meetsEquipClass = me is not null && ClassGate.Allows(get.AllowedClasses, me.Class);
-                UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_ClassRequirement, ("Class", equipClassNames)),
-                    new Vector2(c.X + 8, textY), meetsEquipClass ? Color.LightGreen : Color.OrangeRed, c.Width - 16);
-                textY += 18;
-            }
-        }
+        const bool meetsEquipClass = true;
 
         bool meetsInt = true;
-        bool meetsClass = true;
+        const bool meetsClass = true;
         bool alreadyKnown = false;
         if (spell is not null && me is not null)
         {
             int intReq = CombatFormulas.GetSpellIntRequirement(spell, classInt);
             meetsInt = me.Int >= intReq;
-            meetsClass = ClassGate.Allows(spell.AllowedClasses, me.Class);
             if (me.Spell is not null)
             {
                 for (int i = 1; i <= Constants.MaxPlayerSpells; i++)
@@ -1028,13 +1009,6 @@ public sealed class ShopPanel : IGamePanel
             UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_IntRequirement, ("Int", UiHelper.FormatRequirement(CombatFormulas.RawSpellRequirement(spell), intReq))), new Vector2(c.X + 8, textY), reqColor, c.Width - 16);
             textY += 18;
 
-            if (ClassGate.IsRestricted(spell.AllowedClasses))
-            {
-                string classNames = ClassGate.Describe(spell.AllowedClasses, state.Classes);
-                var classColor = meetsClass ? Color.LightGreen : Color.OrangeRed;
-                UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_ClassRequirement, ("Class", classNames)), new Vector2(c.X + 8, textY), classColor, c.Width - 16);
-                textY += 18;
-            }
         }
 
         textY += 4;

@@ -40,6 +40,11 @@ public sealed class WorldManifestConverter : JsonConverter<WorldManifest>
             {
                 result = result with { DefaultMapSize = p.Value.Deserialize<MapSize>(options) };
             }
+            else if (p.NameEquals("startingItems"))
+            {
+                var authored = p.Value.Deserialize<List<StartingItem>>(options);
+                if (authored is not null) result = result with { StartingItems = authored };
+            }
             else if (p.NameEquals("appearances"))
             {
                 var offered = p.Value.Deserialize<List<CharacterAppearance>>(options);
@@ -80,6 +85,12 @@ public sealed class WorldManifestConverter : JsonConverter<WorldManifest>
         {
             writer.WritePropertyName("appearances");
             JsonSerializer.Serialize(writer, value.Appearances, options);
+        }
+
+        if (value.StartingItems.Count > 0)
+        {
+            writer.WritePropertyName("startingItems");
+            JsonSerializer.Serialize(writer, value.StartingItems, options);
         }
 
         writer.WriteEndObject();

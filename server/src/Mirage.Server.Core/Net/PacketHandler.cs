@@ -159,7 +159,7 @@ public sealed partial class PacketHandler
     private static bool AllowedWhileDead(IPacket packet) => packet is
         // Session and account: mostly pre-login, where nobody is dead — listed so the gate never becomes
         // the reason a player cannot get out of a character.
-        GetClassesPacket or NewAccountPacket or LoginPacket or AddCharPacket or DelCharPacket
+        NewAccountPacket or LoginPacket or AddCharPacket or DelCharPacket
         or UseCharPacket or DelAccountPacket or ChangePasswordPacket or LogoutToCharSelectPacket
         or SetLanguagePacket
 
@@ -253,9 +253,6 @@ public sealed partial class PacketHandler
             switch (packet)
             {
                 // ── Pre-login ────────────────────────────────────────────────
-                case GetClassesPacket p:
-                    HandleGetClasses(index, p);
-                    break;
                 case NewAccountPacket p:
                     HandleNewAccount(index, p);
                     break;

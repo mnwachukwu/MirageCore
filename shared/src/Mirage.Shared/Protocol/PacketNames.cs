@@ -6,7 +6,6 @@ namespace Mirage.Shared.Protocol;
 public static class PacketNames
 {
     // ── C→S: pre-login ──────────────────────────────────────────────────────
-    public const string GetClasses = "getclasses";
     public const string NewAccount = "newaccount";
     public const string DelAccount = "delaccount";
     public const string ChangePassword = "changepass";
@@ -180,8 +179,6 @@ public static class PacketNames
     public const string EditorRequestConversation = "editorreqconv";
     public const string EditorRequestSpell = "editorreqspell";
     public const string EditorRequestMap = "editorreqmap";
-    public const string EditorRequestClass = "editorreqclass";
-    public const string EditorSaveClass = "editorsaveclass";
     public const string EditorLock = "editorlock";
     public const string EditorUnlock = "editorunlock";
     public const string EditorRequestAllItems = "editorreqallitems";
@@ -190,7 +187,6 @@ public static class PacketNames
     public const string EditorRequestAllQuests = "editorreqallquests";
     public const string EditorRequestAllConversations = "editorreqallconvs";
     public const string EditorRequestAllSpells = "editorreqallspells";
-    public const string EditorRequestAllClasses = "editorreqallclasses";
     public const string EditorSaveMapGroup = "editorsavemapgroup";
     public const string EditorRequestMapGroup = "editorreqmapgroup";
     public const string EditorRequestAllMapGroups = "editorreqallmapgroups";
@@ -235,8 +231,6 @@ public static class PacketNames
     public const string InventoryUpdate = "inventoryupdate";
     public const string EquippedGear = "equippedgear";
     public const string Welcome = "welcome";
-    public const string SendClasses = "sendclasses";
-    public const string NewCharClasses = "newcharclasses";
     public const string LeftGame = "leftgame";
     public const string PlayerXY = "playerxy";
     public const string UpdateItem = "updateitem";
@@ -269,14 +263,12 @@ public static class PacketNames
     // ── S→C: editor session ──────────────────────────────────────────────────
     public const string EditorLoginResponse = "editorloginresp";
     public const string EditorData = "editordata";
-    public const string UpdateClass = "updateclass";
     public const string EditorAllItems = "editorallitems";
     public const string EditorAllNpcs = "editorallnpcs";
     public const string EditorAllShops = "editorallshops";
     public const string EditorAllQuests = "editorallquests";
     public const string EditorAllConversations = "editorallconvs";
     public const string EditorAllSpells = "editorallspells";
-    public const string EditorAllClasses = "editorallclasses";
     public const string UpdateMapGroup = "updatemapgroup";
     public const string EditorAllMapGroups = "editorallmapgroups";
     public const string EditorAllMaps = "editorallmaps";

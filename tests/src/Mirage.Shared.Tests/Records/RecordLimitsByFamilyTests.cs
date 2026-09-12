@@ -54,13 +54,6 @@ public class RecordLimitsByFamilyTests
             "these read their default rather than the configured value: " + string.Join(", ", stuck));
     }
 
-    /// <summary>A class number rides in every saved character, so no configuration moves it.</summary>
-    [Test]
-    public void AFixedCeilingIgnoresConfiguration()
-    {
-        Assert.That(Configured.For(CoreRecordFamilies.Classes), Is.EqualTo(Constants.MaxClasses));
-    }
-
     /// <summary>Zero reads as "no room", which a caller stops on. A family this server does not know
     /// answering with some large number would have it allocate for content that cannot exist.</summary>
     [Test]

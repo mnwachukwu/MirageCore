@@ -5,12 +5,6 @@ namespace Mirage.Shared.Protocol.Packets;
 
 // ── C→S ─────────────────────────────────────────────────────────────────────
 
-/// <summary>C→S: request the class list for the account and new-character screens.</summary>
-public sealed record GetClassesPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.GetClasses;
-}
-
 /// <summary>C→S: create an account. <c>Locale</c> tells the server which language to reply in, since no session exists yet.
 ///
 /// <para>Carries the machine key for the same reason <see cref="LoginPacket"/> does, and with more at
@@ -184,104 +178,17 @@ public sealed record QueueUpdatePacket : IPacket
     [JsonPropertyName("total")] public int Total { get; init; }
 }
 
-/// <summary>S→C: the class list, in response to <see cref="GetClassesPacket"/>.</summary>
-public sealed record SendClassesPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.SendClasses;
-    [JsonPropertyName("classes")] public ClassData[] Classes { get; init; } = [];
-
-    /// <summary>One selectable class: its name, sprite, starting stat spread, pitch, and the loadout a
-    /// new character of it would be created with.
-    ///
-    /// <para>The loadout is carried as ITEM AND SPELL NUMBERS, resolved against the catalog on
-    /// <see cref="NewCharClassesPacket"/>. It is filled only on that packet — the in-game class list has
-    /// no use for it and already has the whole armory to hand.</para></summary>
-    public sealed record ClassData(
-        [property: JsonPropertyName("name")] string Name,
-        [property: JsonPropertyName("spriteM")] int SpriteMale,
-        [property: JsonPropertyName("spriteF")] int SpriteFemale,
-        [property: JsonPropertyName("str")] int Str,
-        [property: JsonPropertyName("def")] int Def,
-        [property: JsonPropertyName("spd")] int Spd,
-        [property: JsonPropertyName("int")] int Int,
-        [property: JsonPropertyName("desc")] string Description = "",
-        [property: JsonPropertyName("worn")] int[]? Worn = null,
-        [property: JsonPropertyName("carried")] CarriedItem[]? Carried = null,
-        [property: JsonPropertyName("spells")] int[]? Spells = null,
-        [property: JsonPropertyName("spriteSheetM")] int SpriteSheetMale = 0,
-        [property: JsonPropertyName("spriteSheetF")] int SpriteSheetFemale = 0
-    );
-
-    /// <summary>A carried starting item: its number, plus the stack size for currency (0 for everything
-    /// else, which is always exactly one).</summary>
-    public sealed record CarriedItem(
-        [property: JsonPropertyName("num")] int Num,
-        [property: JsonPropertyName("quantity")] int Quantity
-    );
-}
-
-/// <summary>S→C: the class list for the character-creation screen, with the starting loadout each
-/// class grants. Reuses <see cref="SendClassesPacket.ClassData"/> so both class screens read one shape.
-///
-/// <para>The loadout rides along as DEFINITIONS rather than pre-rendered text, because the screen shows
-/// the real in-game item and spell tooltips on hover and those are built from the records — power, the
-/// stat requirement with its class-affinity head-start, durability, MP cost. Flattened strings could not
-/// feed them, and a second tooltip written for this one screen would drift from the one it imitates.
-/// A player here has not joined, so the client holds no item or spell table to resolve numbers against;
-/// what it gets instead is the handful of records the ten classes actually reference, deduped — a few
-/// dozen entries, not the armory.</para></summary>
-public sealed record NewCharClassesPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.NewCharClasses;
-    [JsonPropertyName("classes")] public SendClassesPacket.ClassData[] Classes { get; init; } = [];
-
-    /// <summary>Every item any class's loadout references, deduped and keyed by number.</summary>
-    [JsonPropertyName("itemDefs")] public ItemDef[] ItemDefs { get; init; } = [];
-    /// <summary>Every spell any class's loadout references, deduped and keyed by number.</summary>
-    [JsonPropertyName("spellDefs")] public SpellDef[] SpellDefs { get; init; } = [];
-
-    /// <summary>An item definition, narrowed to what the item tooltip reads. Field names match
-    /// <see cref="UpdateItemPacket"/>, which is the same projection for the in-game table.</summary>
-    public sealed record ItemDef(
-        [property: JsonPropertyName("num")] int Num,
-        [property: JsonPropertyName("name")] string Name,
-        [property: JsonPropertyName("pic")] short Pic,
-        [property: JsonPropertyName("type")] ItemType Type,
-        [property: JsonPropertyName("durability")] short Durability,
-        [property: JsonPropertyName("vitalAmount")] short VitalAmount,
-        [property: JsonPropertyName("power")] short Power,
-        [property: JsonPropertyName("levelReq")] short LevelReq,
-        [property: JsonPropertyName("allowedClasses")] List<short>? AllowedClasses,
-        [property: JsonPropertyName("itemSheet")] short ItemSheet = 0
-    );
-
-    /// <summary>A spell definition, narrowed to what the spell tooltip reads — MP cost, magnitude, and
-    /// both gates all derive from these.</summary>
-    public sealed record SpellDef(
-        [property: JsonPropertyName("num")] int Num,
-        [property: JsonPropertyName("name")] string Name,
-        [property: JsonPropertyName("type")] SpellType Type,
-        [property: JsonPropertyName("vitalAmount")] short VitalAmount,
-        [property: JsonPropertyName("intReq")] short IntReq,
-        [property: JsonPropertyName("levelReq")] short LevelReq,
-        [property: JsonPropertyName("allowedClasses")] List<short>? AllowedClasses
-    );
-}
-
 /// <summary>S→C: the account's character slots, for the selection screen.</summary>
 public sealed record SendCharsPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.SendChars;
     [JsonPropertyName("chars")] public CharSlot[] Chars { get; init; } = [];
 
-    /// <summary>One character slot. <c>ClassName</c> is resolved server-side so the selection screen
-    /// needs no class table of its own.</summary>
+    /// <summary>One character slot, as the selection screen shows it.</summary>
     public sealed record CharSlot(
         [property: JsonPropertyName("name")] string Name,
         [property: JsonPropertyName("level")] int Level,
-        [property: JsonPropertyName("class")] int Class,
         [property: JsonPropertyName("sprite")] int Sprite,
-        [property: JsonPropertyName("className")] string ClassName,
         [property: JsonPropertyName("spriteSheet")] int SpriteSheet = 0
     );
 }

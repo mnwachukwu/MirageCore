@@ -89,34 +89,11 @@ public sealed partial class ItemEditorViewModel : EditorViewModelBase<ItemRowVie
         _data.EntriesInvalidated += () =>
         {
             OnPropertyChanged(nameof(SpellEntries));
-            OnPropertyChanged(nameof(ClassEntries));
-            RebuildClassSelection();   // a renamed or newly named class must re-label its checkbox
-        };
-        ClassSelection.SelectionChanged += ids =>
-        {
-            if (SelectedItem is null) return;
-            _applyingClassSelection = true;
-            try { SelectedItem.AllowedClasses = ids; }
-            finally { _applyingClassSelection = false; }
         };
     }
 
     // Set while a checkbox click is writing into the row, so the row's own change notification doesn't
     // bounce back and rebuild the checkboxes mid-edit.
-    private bool _applyingClassSelection;
-
-    public NamedEntry[] ClassEntries => _data.LiveClassEntries;
-
-    /// <summary>The equipment class gate: a checkbox per class, none ticked meaning every class. One
-    /// instance for the whole list, re-pointed at whichever row is selected.</summary>
-    public ClassSelectionViewModel ClassSelection { get; } = new();
-
-    private void RebuildClassSelection()
-    {
-        if (SelectedItem is null) ClassSelection.Clear();
-        else ClassSelection.Rebuild(ClassEntries, SelectedItem.AllowedClasses);
-        ClassSelection.IsActive = SelectedItem is not null;
-    }
 
     protected override void AfterSave(ItemRowViewModel vm)
     {
@@ -186,7 +163,6 @@ public sealed partial class ItemEditorViewModel : EditorViewModelBase<ItemRowVie
         if (newValue is not null && !newValue.IsLoaded && _data.IsOnline)
             _ = LoadEntityAsync(newValue);
         OnPropertyChanged(nameof(SelectedSpellItem));
-        RebuildClassSelection();
         NotifyPicChanged();
     }
 
@@ -196,11 +172,6 @@ public sealed partial class ItemEditorViewModel : EditorViewModelBase<ItemRowVie
             OnPropertyChanged(nameof(SelectedSpellItem));
         // The sheet number chooses which bitmap the pic picker reads.
         if (e.PropertyName == nameof(ItemRowViewModel.ItemSheet)) NotifyPicChanged();
-        // A row whose list changed from anywhere other than the checkboxes — a packet landing, a discard —
-        // has to re-tick them. The guard skips the author's own clicks, which set the row FROM the
-        // toggles; rebuilding there would clear and refill the list the click is still walking.
-        if (e.PropertyName is nameof(ItemRowViewModel.AllowedClasses) && !_applyingClassSelection)
-            RebuildClassSelection();
     }
 
     public void LoadOffline()

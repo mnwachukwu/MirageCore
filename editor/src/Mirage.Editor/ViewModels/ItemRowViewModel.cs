@@ -84,7 +84,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
         _spellNum = r.SpellNum;
         _power = r.Power;
         _levelReq = r.LevelReq;
-        _allowedClasses = r.AllowedClasses is null ? null : new List<short>(r.AllowedClasses);
         _nonTradeable = r.NonTradeable;
         _nonListable = r.NonListable;
         _nonMailable = r.NonMailable;
@@ -110,7 +109,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
     partial void OnSpellNumChanged(short value) => MarkDirty();
     partial void OnPowerChanged(short value) => MarkDirty();
     partial void OnLevelReqChanged(short value) => MarkDirty();
-    partial void OnAllowedClassesChanged(List<short>? value) => MarkDirty();
     partial void OnNonTradeableChanged(bool value) => MarkDirty();
     partial void OnNonListableChanged(bool value) => MarkDirty();
     partial void OnNonMailableChanged(bool value) => MarkDirty();
@@ -130,7 +128,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
         OnPropertyChanged(nameof(SpellNumVisible));
         OnPropertyChanged(nameof(PowerVisible));
         OnPropertyChanged(nameof(LevelReqVisible));
-        OnPropertyChanged(nameof(AllowedClassesVisible));
     }
 
     private void MarkDirty()
@@ -176,7 +173,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             SpellNum = r.SpellNum;
             Power = r.Power;
             LevelReq = r.LevelReq;
-            AllowedClasses = r.AllowedClasses is null ? null : new List<short>(r.AllowedClasses);
             NonTradeable = r.NonTradeable;
             NonListable = r.NonListable;
             NonMailable = r.NonMailable;
@@ -209,7 +205,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             SpellNum = pkt.SpellNum;
             Power = pkt.Power;
             LevelReq = pkt.LevelReq;
-            AllowedClasses = pkt.AllowedClasses is null ? null : new List<short>(pkt.AllowedClasses);
             NonTradeable = pkt.NonTradeable;
             NonListable = pkt.NonListable;
             NonMailable = pkt.NonMailable;
@@ -244,7 +239,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             SpellNum = SpellNum,
             Power = Power,
             LevelReq = LevelReq,
-            AllowedClasses = AllowedClasses is null ? null : new List<short>(AllowedClasses),
             NonTradeable = NonTradeable,
             NonListable = NonListable,
             NonMailable = NonMailable,
@@ -274,7 +268,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             SpellNum = r.SpellNum,
             Power = r.Power,
             LevelReq = r.LevelReq,
-            AllowedClasses = r.AllowedClasses,
             NonTradeable = r.NonTradeable,
             NonListable = r.NonListable,
             NonMailable = r.NonMailable,
@@ -319,5 +312,4 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
     public bool SpellNumVisible => ItemRecord.UsesSpellNum(Type);
     public bool PowerVisible => ItemRecord.UsesPower(Type);
     public bool LevelReqVisible => ItemRecord.UsesLevelReq(Type);
-    public bool AllowedClassesVisible => ItemRecord.UsesAllowedClasses(Type);
 }

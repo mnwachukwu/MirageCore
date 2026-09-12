@@ -33,12 +33,9 @@ public class ItemDefinitionWireTests
         return state;
     }
 
-    // The class gate carries a real list: the sweep below can only prove a field that was sent as something
-    // other than its blank value, so a null here would exempt the one gate whose absence reads as
-    // "anybody may wear this" rather than as a zero.
     private static SendItemsPacket.ItemData Sword(short levelReq = 40) => new(
         Num: 7, Name: "Iron Sword", Pic: 3, Type: ItemType.Weapon, Durability: 50, VitalAmount: 0,
-        SpellNum: 0, Power: 12, LevelReq: levelReq, AllowedClasses: [2, 3], NonTradeable: false,
+        SpellNum: 0, Power: 12, LevelReq: levelReq, NonTradeable: false,
         NonListable: false, NonMailable: false, DestroyOnDrop: false, NonJunkable: false, Price: 250);
 
     /// <summary>The reported bug: gear is level-gated server-side, but the client dropped the number on
@@ -77,21 +74,7 @@ public class ItemDefinitionWireTests
             Assert.That(it.LevelReq, Is.EqualTo(40));
             Assert.That(it.Durability, Is.EqualTo(50));
             Assert.That(it.Price, Is.EqualTo(250));
-            Assert.That(it.AllowedClasses, Is.EqualTo(new short[] { 2, 3 }),
-                "the class gate drives the tooltip line and the purchase confirm");
         });
-    }
-
-    [Test]
-    public void ALiveEditorSave_CarriesTheClassGateToo()
-    {
-        var state = Apply(HandleUpdateItem, new UpdateItemPacket
-        {
-            ItemNum = 7, Name = "Iron Sword", Pic = 3, Type = ItemType.Weapon,
-            Durability = 50, Power = 12, LevelReq = 40, Price = 250, AllowedClasses = [2, 3],
-        });
-
-        Assert.That(state.Items[7]!.AllowedClasses, Is.EqualTo(new short[] { 2, 3 }));
     }
 
     /// <summary>Every property the wire and the record share by name must actually be copied. Written as a

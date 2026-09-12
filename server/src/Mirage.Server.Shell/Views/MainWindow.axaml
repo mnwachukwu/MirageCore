@@ -154,27 +154,25 @@
             <TextBlock Classes="hint" Text="{Binding PlayersEmpty}" IsVisible="{Binding !HasPlayers}"/>
 
             <StackPanel IsVisible="{Binding HasPlayers}">
-              <Grid ColumnDefinitions="150,140,44,110,60,90,*" Margin="14,0,14,4">
+              <Grid ColumnDefinitions="150,140,44,60,90,*" Margin="14,0,14,4">
                 <TextBlock Grid.Column="0" Classes="hint" Text="{Binding ColName}"/>
                 <TextBlock Grid.Column="1" Classes="hint" Text="{Binding ColAccount}"/>
                 <TextBlock Grid.Column="2" Classes="hint" Text="{Binding ColLevel}"/>
-                <TextBlock Grid.Column="3" Classes="hint" Text="{Binding ColClass}"/>
-                <TextBlock Grid.Column="4" Classes="hint" Text="{Binding ColMap}"/>
-                <TextBlock Grid.Column="5" Classes="hint" Text="{Binding ColAccess}"/>
+                <TextBlock Grid.Column="3" Classes="hint" Text="{Binding ColMap}"/>
+                <TextBlock Grid.Column="4" Classes="hint" Text="{Binding ColAccess}"/>
               </Grid>
 
               <ItemsControl ItemsSource="{Binding Players}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="proto:PlayerSummary">
                     <Border Classes="card">
-                      <Grid ColumnDefinitions="150,140,44,110,60,90,*">
+                      <Grid ColumnDefinitions="150,140,44,60,90,*">
                         <TextBlock Grid.Column="0" Classes="t1" Text="{Binding Name}" VerticalAlignment="Center"/>
                         <TextBlock Grid.Column="1" Classes="t2" Text="{Binding Login}" VerticalAlignment="Center"/>
                         <TextBlock Grid.Column="2" Classes="t2" Text="{Binding Level}" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="3" Classes="t2" Text="{Binding Class}" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="4" Classes="t2" Text="{Binding Map}" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="5" Classes="t2" Text="{Binding Access}" VerticalAlignment="Center"/>
-                        <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right">
+                        <TextBlock Grid.Column="3" Classes="t2" Text="{Binding Map}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="4" Classes="t2" Text="{Binding Access}" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right">
                           <Button Content="{Binding $parent[TabItem].((vm:MainWindowViewModel)DataContext).KickLabel}"
                                   Command="{Binding $parent[TabItem].((vm:MainWindowViewModel)DataContext).KickPlayerCommand}"
                                   CommandParameter="{Binding}"/>

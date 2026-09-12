@@ -74,14 +74,6 @@ public sealed class ItemRecord
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public short LevelReq { get; set; }
 
-    /// <summary>Weapon/Armor/Helmet/Shield: the classes allowed to equip it (1-based ids). Empty or absent
-    /// = every class, which is the usual case. Enforced server-side in ItemSystem's equip path; ask
-    /// <see cref="ClassGate"/> rather than testing the list directly.
-    /// <para>Nullable so an unrestricted item carries no key at all — the serializer's global
-    /// WhenWritingNull does the work, and <see cref="Normalize"/> collapses an empty list to null so
-    /// there is only ever one stored spelling of "anyone".</para></summary>
-    public List<short>? AllowedClasses { get; set; }
-
     /// <summary>Item restriction flags. Each blocks exactly one action; banking is always allowed.
     /// Absent = false, so existing item data is unaffected. All five are enforced server-side:
     /// <see cref="NonTradeable"/> in TradeSystem, <see cref="NonListable"/> in MarketSystem,
@@ -145,7 +137,6 @@ public sealed class ItemRecord
 
     public static bool UsesDurability(ItemType type) => IsEquipment(type);
     public static bool UsesPower(ItemType type) => IsEquipment(type);
-    public static bool UsesAllowedClasses(ItemType type) => IsEquipment(type);
     public static bool UsesVitalAmount(ItemType type) => IsPotion(type);
     public static bool UsesSpellNum(ItemType type) => type is ItemType.Spell;
 
@@ -176,6 +167,5 @@ public sealed class ItemRecord
         if (!UsesSpellNum(Type)) SpellNum = 0;
         if (!UsesPower(Type)) Power = 0;
         if (!UsesLevelReq(Type)) LevelReq = 0;
-        AllowedClasses = UsesAllowedClasses(Type) ? ClassGate.Normalize(AllowedClasses) : null;
     }
 }

@@ -266,7 +266,6 @@ public sealed partial class MainWindowViewModel
             Spells = Slots(SpellEditor.Items, r => r.Index, r => r.ToRecord()),
             Quests = Slots(QuestEditor.Items, r => r.Index, r => r.ToRecord()),
             Conversations = Slots(ConversationEditor.Items, r => r.Index, r => r.ToRecord()),
-            Classes = Slots(ClassEditor.Items, r => r.Index, r => r.ToRecord()),
             GroupExists = groups.Contains,
         };
 
@@ -304,7 +303,6 @@ public sealed partial class MainWindowViewModel
             case WorldRecordKind.Spell: Open("Spells", SpellEditor, num); break;
             case WorldRecordKind.Quest: Open("Quests", QuestEditor, num); break;
             case WorldRecordKind.Conversation: Open("Conversations", ConversationEditor, num); break;
-            case WorldRecordKind.Class: Open("Classes", ClassEditor, num); break;
         }
     }
 
@@ -318,7 +316,7 @@ public sealed partial class MainWindowViewModel
         WorldRecordKind.Spell => SpellEditor.Items.FirstOrDefault(r => r.Index == num)?.DisplayName ?? "",
         WorldRecordKind.Quest => QuestEditor.Items.FirstOrDefault(r => r.Index == num)?.DisplayName ?? "",
         WorldRecordKind.Conversation => ConversationEditor.Items.FirstOrDefault(r => r.Index == num)?.DisplayName ?? "",
-        _ => ClassEditor.Items.FirstOrDefault(r => r.Index == num)?.DisplayName ?? "",
+        _ => "",
     };
 
     private void NotifyWorldChanged()

@@ -65,4 +65,14 @@ public sealed record WorldManifest
         get;
         init => field = value is { Count: > 0 } given ? given : CharacterAppearance.DefaultSet;
     } = CharacterAppearance.DefaultSet;
+
+    /// <summary>What a new character is created holding, in the order the slots are filled.
+    ///
+    /// <para>Empty is the common answer and a valid one — a character who starts with nothing is a
+    /// perfectly good opening. Equipment arrives worn; see <see cref="StartingItem"/>.</para></summary>
+    public IReadOnlyList<StartingItem> StartingItems
+    {
+        get;
+        init => field = StartingLoadout.Normalize(value);
+    } = [];
 }

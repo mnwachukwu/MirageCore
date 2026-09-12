@@ -58,7 +58,6 @@ public static partial class ServerStrings
     public const string EditorAccounts_BagSlotEmpty = nameof(EditorAccounts_BagSlotEmpty);
     public const string EditorAccounts_QuestLevelReq = nameof(EditorAccounts_QuestLevelReq);
     public const string EditorAccounts_QuestStatReq = nameof(EditorAccounts_QuestStatReq);
-    public const string EditorAccounts_QuestWrongClass = nameof(EditorAccounts_QuestWrongClass);
     public const string EditorAccounts_QuestPrereq = nameof(EditorAccounts_QuestPrereq);
     public const string EditorAccounts_QuestNotInLog = nameof(EditorAccounts_QuestNotInLog);
     public const string EditorAccounts_BookSlotEmpty = nameof(EditorAccounts_BookSlotEmpty);

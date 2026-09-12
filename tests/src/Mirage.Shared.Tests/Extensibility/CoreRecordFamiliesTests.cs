@@ -24,7 +24,6 @@ public class CoreRecordFamiliesTests
         (CoreRecordFamilies.Npcs, "npcs", "npc1.json"),
         (CoreRecordFamilies.Shops, "shops", "shop1.json"),
         (CoreRecordFamilies.Spells, "spells", "spell1.json"),
-        (CoreRecordFamilies.Classes, "classes", "class1.json"),
         (CoreRecordFamilies.Quests, "quests", "quest1.json"),
         (CoreRecordFamilies.Conversations, "conversations", "conversation1.json"),
     ];
@@ -74,20 +73,6 @@ public class CoreRecordFamiliesTests
                 Assert.That(family.EffectiveFilePrefix, Is.Not.Empty);
                 Assert.That(family.DefaultLimit, Is.GreaterThan(0), family.Id);
             }
-        });
-    }
-
-    /// <summary>A class number rides in every saved character, so the one family whose ceiling cannot be
-    /// configured says so on its row rather than in a comment somewhere else.</summary>
-    [Test]
-    public void OnlyClassesHasAFixedCeiling()
-    {
-        Assert.Multiple(() =>
-        {
-            Assert.That(CoreRecordFamilies.Get(CoreRecordFamilies.Classes).LimitIsFixed, Is.True);
-            Assert.That(CoreRecordFamilies.Get(CoreRecordFamilies.Classes).DefaultLimit,
-                        Is.EqualTo(Constants.MaxClasses));
-            Assert.That(CoreRecordFamilies.World.Count(f => f.LimitIsFixed), Is.EqualTo(1));
         });
     }
 

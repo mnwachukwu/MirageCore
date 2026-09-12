@@ -81,9 +81,7 @@ public sealed class JoinLeaveSystem : GameSystem
         // sent below, so the player logs in with the returned items already in the bag.
         _trade.RecoverEscrowOnLogin(index);
 
-        // Recalculate max vitals using class stats
-        if (p.Class >= 1 && p.Class < _world.Classes.Length)
-            StatFormulas.RefreshPlayerMaxVitals(p, _world.Classes[p.Class], _world.WeatherOn(p.Map));
+        StatFormulas.RefreshPlayerMaxVitals(p, _world.WeatherOn(p.Map));
 
         // Clamp vitals to max
         p.Hp = Math.Min(p.Hp, p.MaxHp);
@@ -109,9 +107,6 @@ public sealed class JoinLeaveSystem : GameSystem
         CheckEquippedItems(index);
 
         // ── Send all game data ────────────────────────────────────────────────
-
-        // Classes
-        _dispatcher.SendTo(index, PacketBuilder.SendClasses(_world.Classes.Skip(1)));
 
         // Items. Skips unauthored slots, exactly as the NPC and spell builders below do — the client
         // assigns by num into a MaxItems-sized array, so a sparse list lands in the same places a dense
@@ -735,7 +730,6 @@ public sealed class JoinLeaveSystem : GameSystem
                     ReqDef = q.ReqDef,
                     ReqSpd = q.ReqSpd,
                     ReqInt = q.ReqInt,
-                    AllowedClasses = q.AllowedClasses is null ? null : new List<short>(q.AllowedClasses),
                     PrereqQuest = q.PrereqQuest,
                     RewardExp = q.RewardExp,
                     RewardItems = q.RewardItems.Select(r => r.Clone()).ToList(),

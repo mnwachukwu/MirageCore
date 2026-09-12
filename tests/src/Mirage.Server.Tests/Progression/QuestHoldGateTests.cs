@@ -67,22 +67,6 @@ public class QuestHoldGateTests
     }
 
     [Test]
-    public void TheWrongClass_IsRefused()
-    {
-        var (p, q) = Setup();
-        q.AllowedClasses = [7, 8];
-        Assert.That(QuestSystem.CanHold(p, q), Is.EqualTo(QuestSystem.HoldResult.WrongClass));
-    }
-
-    [Test]
-    public void AnUnrestrictedQuest_IsOpenToEveryClass()
-    {
-        var (p, q) = Setup();
-        q.AllowedClasses = null;
-        Assert.That(QuestSystem.CanHold(p, q), Is.EqualTo(QuestSystem.HoldResult.Ok));
-    }
-
-    [Test]
     public void AnUnfinishedPrerequisite_IsRefused()
     {
         var (p, q) = Setup();
@@ -109,15 +93,14 @@ public class QuestHoldGateTests
         Assert.That(QuestSystem.CanHold(p, q), Is.EqualTo(QuestSystem.HoldResult.Ok));
     }
 
-    /// <summary>Level before stats before class before prerequisite — the refusal reported is the first one
-    /// that fails, so the message is stable rather than depending on which gates happen to fail together.</summary>
+    /// <summary>Level before stats before prerequisite — the refusal reported is the first one that fails,
+    /// so the message is stable rather than depending on which gates happen to fail together.</summary>
     [Test]
     public void TheEarliestFailure_IsTheOneReported()
     {
         var (p, q) = Setup();
         p.Level = 1;
         q.ReqStr = 999;
-        q.AllowedClasses = [7];
         q.PrereqQuest = Prereq;
         Assert.That(QuestSystem.CanHold(p, q), Is.EqualTo(QuestSystem.HoldResult.LevelTooLow));
     }

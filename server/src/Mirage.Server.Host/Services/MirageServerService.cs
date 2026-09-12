@@ -215,6 +215,7 @@ public sealed class MirageServerService : IHostedService
         var manifest = await _persistence.LoadWorldManifestAsync();
         _world.WorldName = manifest.Name;
         _world.Appearances = manifest.Appearances;
+        _world.StartingItems = manifest.StartingItems;
         if (manifest.IsNamed)
             LocalizedLog.Info(_logger, ServerStrings.Server_WorldName, ("WorldName", manifest.Name));
 
@@ -229,8 +230,6 @@ public sealed class MirageServerService : IHostedService
         var (shops, shopsPadded) = await _persistence.LoadAllShopsAsync();
         _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_LoadingSpells));
         var (spells, spellsPadded) = await _persistence.LoadAllSpellsAsync();
-        _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_LoadingClasses));
-        var (classes, classesPadded) = await _persistence.LoadAllClassesAsync();
         _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_LoadingQuests));
         var (quests, questsPadded) = await _persistence.LoadAllQuestsAsync();
         _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_LoadingConversations));
@@ -240,7 +239,6 @@ public sealed class MirageServerService : IHostedService
         CopyArray(npcs, _world.Npcs, _world.Limits.Npcs);
         CopyArray(shops, _world.Shops, _world.Limits.Shops);
         CopyArray(spells, _world.Spells, _world.Limits.Spells);
-        CopyArray(classes, _world.Classes, Constants.MaxClasses);
         CopyArray(quests, _world.Quests, _world.Limits.Quests);
         CopyArray(conversations, _world.Conversations, _world.Limits.Conversations);
 
@@ -312,12 +310,12 @@ public sealed class MirageServerService : IHostedService
 
         LocalizedLog.Info(_logger, ServerStrings.Server_LoadedSummary,
             ("Items", items.Length - 1), ("Npcs", npcs.Length - 1), ("Shops", shops.Length - 1),
-            ("Spells", spells.Length - 1), ("Classes", classes.Length - 1),
+            ("Spells", spells.Length - 1),
             ("Quests", quests.Length - 1), ("Conversations", conversations.Length - 1),
             ("Maps", mapsLoaded));
         LocalizedLog.Info(_logger, ServerStrings.Server_PaddedSummary,
             ("Items", itemsPadded), ("Npcs", npcsPadded), ("Shops", shopsPadded),
-            ("Spells", spellsPadded), ("Classes", classesPadded),
+            ("Spells", spellsPadded),
             ("Quests", questsPadded), ("Conversations", conversationsPadded),
             ("Maps", mapsCreated));
     }

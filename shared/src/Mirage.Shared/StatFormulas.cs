@@ -81,35 +81,32 @@ public static class StatFormulas
     public static int GetPlayerMaxSp(int level, int playerSpd, int classSpd) =>
         (int)Math.Round((level + playerSpd * PlayerStatBundleWeight + classSpd) * LinearSpPoolMultiplier, MidpointRounding.AwayFromZero);
 
-    public static int GetPlayerMaxHp(PlayerRecord p, ClassRecord cls) =>
-        GetPlayerMaxHp(p.Level, p.Def, cls.Def);
+    public static int GetPlayerMaxHp(PlayerRecord p) => GetPlayerMaxHp(p.Level, p.Def, 0);
 
-    public static int GetPlayerMaxMp(PlayerRecord p, ClassRecord cls) =>
-        GetPlayerMaxMp(p.Level, p.Int, cls.Int);
+    public static int GetPlayerMaxMp(PlayerRecord p) => GetPlayerMaxMp(p.Level, p.Int, 0);
 
-    public static int GetPlayerMaxSp(PlayerRecord p, ClassRecord cls) =>
-        GetPlayerMaxSp(p.Level, p.Spd, cls.Spd);
+    public static int GetPlayerMaxSp(PlayerRecord p) => GetPlayerMaxSp(p.Level, p.Spd, 0);
 
     /// <summary>Refresh the cached MaxHp/MaxMp/MaxSp fields on <paramref name="p"/> from the
     /// current formulas.  MaxHp/MaxMp/MaxSp are JsonIgnore-marked caches of the formula output —
-    /// they are NEVER the source of truth.  Call this anywhere player level / stats / class
-    /// change so the cache stays aligned with what the formula would produce.  Single seam: every
-    /// callsite that mutates stats routes through here, so no drift is possible.</summary>
-    public static void RefreshPlayerMaxVitals(PlayerRecord p, ClassRecord cls) =>
-        RefreshPlayerMaxVitals(p, cls, WeatherType.Clear);
+    /// they are NEVER the source of truth.  Call this anywhere player level or stats change so the
+    /// cache stays aligned with what the formula would produce.  Single seam: every callsite that
+    /// mutates stats routes through here, so no drift is possible.</summary>
+    public static void RefreshPlayerMaxVitals(PlayerRecord p) =>
+        RefreshPlayerMaxVitals(p, WeatherType.Clear);
 
     /// <summary>Weather-aware refresh: Snow temporarily shrinks the max pools (HP -10%, MP/SP -20%).
     /// The multiplier scales the rounded base max, mirroring the Night NPC HP boost in
     /// <c>GameWorld.EffectiveNpcMaxHp</c>.  Any caller that mutates stats mid-Snow
     /// must pass the live weather so the cache reflects the reduced pool.</summary>
-    public static void RefreshPlayerMaxVitals(PlayerRecord p, ClassRecord cls, WeatherType weather)
+    public static void RefreshPlayerMaxVitals(PlayerRecord p, WeatherType weather)
     {
         double hpM = weather == WeatherType.Snow ? Constants.WeatherSnowMaxHpMultiplier : 1.0;
         double mpM = weather == WeatherType.Snow ? Constants.WeatherSnowMaxMpMultiplier : 1.0;
         double spM = weather == WeatherType.Snow ? Constants.WeatherSnowMaxSpMultiplier : 1.0;
-        p.MaxHp = (int)Math.Round(GetPlayerMaxHp(p, cls) * hpM, MidpointRounding.AwayFromZero);
-        p.MaxMp = (int)Math.Round(GetPlayerMaxMp(p, cls) * mpM, MidpointRounding.AwayFromZero);
-        p.MaxSp = (int)Math.Round(GetPlayerMaxSp(p, cls) * spM, MidpointRounding.AwayFromZero);
+        p.MaxHp = (int)Math.Round(GetPlayerMaxHp(p) * hpM, MidpointRounding.AwayFromZero);
+        p.MaxMp = (int)Math.Round(GetPlayerMaxMp(p) * mpM, MidpointRounding.AwayFromZero);
+        p.MaxSp = (int)Math.Round(GetPlayerMaxSp(p) * spM, MidpointRounding.AwayFromZero);
     }
 
     // ── Sub-potion vital exchange ─────────────────────────────────────────────

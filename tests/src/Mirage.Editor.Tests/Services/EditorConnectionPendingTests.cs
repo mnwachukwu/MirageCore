@@ -166,7 +166,7 @@ public class EditorConnectionPendingTests
             .ToArray();
 
         // A name pattern that matched nothing would make the assertion below pass on an empty set.
-        Assert.That(replies, Has.Length.GreaterThanOrEqualTo(9),
+        Assert.That(replies, Has.Length.GreaterThanOrEqualTo(8),
             "found no bulk replies to check — the packets were renamed and this test now proves nothing");
 
         string[] unrouted = [.. replies

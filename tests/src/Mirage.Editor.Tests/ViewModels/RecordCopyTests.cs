@@ -44,7 +44,6 @@ public class RecordCopyTests
         Power = 12,
         Durability = 40,
         Price = 250,
-        AllowedClasses = [1, 3],
     };
 
     [Test]
@@ -108,29 +107,40 @@ public class RecordCopyTests
             Assert.That(copy.Power, Is.EqualTo(12));
             Assert.That(copy.Durability, Is.EqualTo(40));
             Assert.That(copy.Price, Is.EqualTo(250));
-            Assert.That(copy.AllowedClasses, Is.EqualTo(new List<short> { 1, 3 }));
         });
     }
 
-    /// <summary>A shallow copy would share the class list, so restricting the duplicate would silently
-    /// restrict the original too — and the original is not even dirty, so the change would never be saved
-    /// and would vanish on reload.</summary>
+    /// <summary>A shallow copy would share the drop table, so editing the duplicate's drops would silently
+    /// edit the original's too — and the original is not even dirty, so the change would never be saved and
+    /// would vanish on reload.</summary>
     [Test]
     public void Copy_IsDeep_SoEditingItCannotReachTheOriginal()
     {
-        var vm = ItemsWith(Sword());
-        var source = vm.Items.First(i => i.Index == 1);
-        vm.SelectedItem = source;
+        var data = new EditorDataService();
+        var npcs = new NpcRecord[4];
+        for (int i = 0; i < npcs.Length; i++) npcs[i] = new NpcRecord();
+        npcs[1] = new NpcRecord
+        {
+            Name = "Cave Troll",
+            Str = 20,
+            Drops = [new NpcDrop { ItemNum = 4, Quantity = 1, Chance = 50 }],
+        };
+        typeof(EditorDataService).GetProperty(nameof(EditorDataService.OfflineNpcs))!.SetValue(data, npcs);
+        var vm = new NpcEditorViewModel(data, new EditorConnection());
+        vm.LoadOffline();
+        var source = vm.Npcs.First(n => n.Index == 1);
+        vm.SelectedNpc = source;
+
         vm.CopyCommand.Execute(null);
 
-        var copy = vm.Items.First(i => i.Index == 2);
-        copy.AllowedClasses = [7];
-        copy.Power = 99;
+        var copy = vm.Npcs.First(n => n.Index == 2);
+        copy.Drops[0].ItemNum = 99;
+        copy.Str = 99;
 
         Assert.Multiple(() =>
         {
-            Assert.That(source.AllowedClasses, Is.EqualTo(new List<short> { 1, 3 }));
-            Assert.That(source.Power, Is.EqualTo(12));
+            Assert.That(source.Drops[0].ItemNum, Is.EqualTo(4));
+            Assert.That(source.Str, Is.EqualTo(20));
             Assert.That(source.IsDirty, Is.False, "copying reads the original, it does not edit it");
         });
     }

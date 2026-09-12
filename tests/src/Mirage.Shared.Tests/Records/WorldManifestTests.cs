@@ -75,6 +75,9 @@ public class WorldManifestTests
             Assert.That(back.Appearances[0].Name, Is.EqualTo("Villager"));
             Assert.That(back.Appearances[1].Sprite, Is.EqualTo(17));
             Assert.That(back.Appearances[1].SpriteSheet, Is.EqualTo(2));
+            Assert.That(back.StartingItems, Has.Count.EqualTo(2));
+            Assert.That(back.StartingItems[0].ItemNum, Is.EqualTo(4));
+            Assert.That(back.StartingItems[1].Quantity, Is.EqualTo((short)75));
         });
     }
 
@@ -117,6 +120,7 @@ public class WorldManifestTests
             new CharacterAppearance { Name = "Villager", Sprite = 3, SpriteSheet = 0 },
             new CharacterAppearance { Name = "Sailor", Sprite = 17, SpriteSheet = 2 },
         ],
+        StartingItems = [new StartingItem { ItemNum = 4 }, new StartingItem { ItemNum = 1, Quantity = 75 }],
     };
 
     /// <summary>An absent key has to mean what an absent FILE means, or a partial manifest would answer

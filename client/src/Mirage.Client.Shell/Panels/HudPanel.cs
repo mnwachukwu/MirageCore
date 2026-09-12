@@ -282,9 +282,7 @@ public sealed class HudPanel
         }
         y += NameRowH;
 
-        string className = (me.Class > 0 && me.Class < state.Classes.Length)
-            ? state.Classes[me.Class]?.Name ?? ""
-            : "";
+        const string className = "";
         if (me.Level != _cachedLevel || className != _cachedClassName)
         {
             _cachedLevel = me.Level;

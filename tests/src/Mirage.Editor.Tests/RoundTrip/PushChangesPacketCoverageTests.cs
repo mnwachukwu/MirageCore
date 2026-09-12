@@ -84,7 +84,7 @@ public class PushChangesPacketCoverageTests
     {
         var vm = new ItemRowViewModel(4, new ItemRecord
         {
-            Name = "Bound Blade", Pic = 21, ItemSheet = 3, Type = ItemType.Weapon, Durability = 120, Power = 14, AllowedClasses = [3, 1],
+            Name = "Bound Blade", Pic = 21, ItemSheet = 3, Type = ItemType.Weapon, Durability = 120, Power = 14,
             NonTradeable = true, NonListable = true, NonMailable = true, DestroyOnDrop = true,
         });
 
@@ -99,8 +99,6 @@ public class PushChangesPacketCoverageTests
             Assert.That(pkt.Type, Is.EqualTo(ItemType.Weapon));
             Assert.That(pkt.Durability, Is.EqualTo((short)120));
             Assert.That(pkt.Power, Is.EqualTo((short)14));
-            // Sorted by the save-path normalize, not left in the order it was authored.
-            Assert.That(pkt.AllowedClasses, Is.EqualTo(new short[] { 1, 3 }));
 
             // The four a thinner projection leaves false: pushing a dirty item would make a bound,
             // unlistable, unmailable, destroy-on-drop weapon freely tradeable again.
@@ -108,33 +106,6 @@ public class PushChangesPacketCoverageTests
             Assert.That(pkt.NonListable, Is.True, "a pushed item must keep its no-list restriction");
             Assert.That(pkt.NonMailable, Is.True, "a pushed item must keep its no-mail restriction");
             Assert.That(pkt.DestroyOnDrop, Is.True, "a pushed item must keep its destroy-on-drop flag");
-        });
-    }
-
-    [Test]
-    public void Class_PushedPacket_CarriesEveryField()
-    {
-        var vm = new ClassRowViewModel(2, new ClassRecord
-        {
-            Name = "Ranger", SpriteMale = 17, SpriteFemale = 27,
-            SpriteSheetMale = 4, SpriteSheetFemale = 6,
-            Str = 8, Def = 6, Spd = 9, Int = 4,
-        });
-
-        var pkt = vm.BuildSavePacket();
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(pkt.ClassNum, Is.EqualTo(2));
-            Assert.That(pkt.Name, Is.EqualTo("Ranger"));
-            Assert.That(pkt.SpriteMale, Is.EqualTo(17));
-            Assert.That(pkt.SpriteFemale, Is.EqualTo(27));
-            Assert.That(pkt.SpriteSheetMale, Is.EqualTo(4), "a pushed class must keep the sheet its male sprite is on");
-            Assert.That(pkt.SpriteSheetFemale, Is.EqualTo(6), "and the separate sheet its female sprite is on");
-            Assert.That(pkt.Str, Is.EqualTo(8));
-            Assert.That(pkt.Def, Is.EqualTo(6));
-            Assert.That(pkt.Spd, Is.EqualTo(9));
-            Assert.That(pkt.Int, Is.EqualTo(4));
         });
     }
 
@@ -160,19 +131,6 @@ public class PushChangesPacketCoverageTests
     }
 
     [Test]
-    public void Push_SendsDirtyClass()
-    {
-        var row = new ClassRowViewModel(2, new ClassRecord { Name = "Ranger" });
-        row.Str = 11;
-        Assume.That(row.IsDirty, "precondition: the row is dirty, so the dialog would list it");
-
-        Assert.That(Pushed(row), Is.True,
-            "a dirty class must be pushed like every other record type, not silently skipped");
-    }
-
-    // Control for the mechanism above: a type that always had an online arm must read the same way, so a
-    // passing Push_SendsDirtyClass can't be an artifact of how "was it sent" is detected.
-    [Test]
     public void Push_SendsDirtyNpc()
     {
         var row = new NpcRowViewModel(5, FullNpc());
@@ -189,6 +147,6 @@ public class PushChangesPacketCoverageTests
     public void Push_SkipsUnhandledRowType()
     {
         Assert.That(Pushed(new object()), Is.False,
-            "an unhandled row type is silently skipped — the failure mode the class arm was missing");
+            "an unhandled row type is silently skipped — the shape of the bug this fixture guards");
     }
 }

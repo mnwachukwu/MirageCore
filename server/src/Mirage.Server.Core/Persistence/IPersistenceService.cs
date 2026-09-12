@@ -55,7 +55,6 @@ public interface IPersistenceService
     Task<(NpcRecord[] records, int padded)> LoadAllNpcsAsync();
     Task<(ShopRecord[] records, int padded)> LoadAllShopsAsync();
     Task<(SpellRecord[] records, int padded)> LoadAllSpellsAsync();
-    Task<(ClassRecord[] records, int padded)> LoadAllClassesAsync();
     Task<(QuestRecord[] records, int padded)> LoadAllQuestsAsync();
     Task<(ConversationRecord[] records, int padded)> LoadAllConversationsAsync();
 
@@ -63,7 +62,6 @@ public interface IPersistenceService
     Task SaveNpcAsync(int num, NpcRecord npc);
     Task SaveShopAsync(int num, ShopRecord shop);
     Task SaveSpellAsync(int num, SpellRecord spell);
-    Task SaveClassAsync(int num, ClassRecord cls);
     Task SaveQuestAsync(int num, QuestRecord quest);
     Task SaveConversationAsync(int num, ConversationRecord conversation);
 

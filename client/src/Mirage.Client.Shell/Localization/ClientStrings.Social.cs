@@ -32,7 +32,6 @@ public static partial class ClientStrings
     public const string SocialPanel_ColRank = nameof(SocialPanel_ColRank);
     public const string SocialPanel_ColAccount = nameof(SocialPanel_ColAccount);
     public const string SocialPanel_ColCharacter = nameof(SocialPanel_ColCharacter);
-    public const string SocialPanel_ColClass = nameof(SocialPanel_ColClass);
     public const string SocialPanel_ColLevel = nameof(SocialPanel_ColLevel);
     public const string SocialPanel_ColLastSeen = nameof(SocialPanel_ColLastSeen);
     // Territories table column headers + the unclaimed-owner placeholder.

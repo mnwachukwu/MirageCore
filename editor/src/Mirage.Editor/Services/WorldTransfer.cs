@@ -38,7 +38,7 @@ public static class WorldTransfer
     /// of these, so a difference in the diff is always a difference in the records.</summary>
     public sealed class PacketContext(WorldSnapshot reference)
     {
-        private NamedEntry[]? _items, _npcs, _classes, _quests, _maps;
+        private NamedEntry[]? _items, _npcs, _quests, _maps;
         private HashSet<int>? _currency;
 
         private static NamedEntry[] Entries<T>(T[] arr, Func<T, string> name)
@@ -51,7 +51,6 @@ public static class WorldTransfer
 
         public NamedEntry[] Items => _items ??= Entries(reference.Items, r => r.Name);
         public NamedEntry[] Npcs => _npcs ??= Entries(reference.Npcs, r => r.Name);
-        public NamedEntry[] Classes => _classes ??= Entries(reference.Classes, r => r.Name);
         public NamedEntry[] Quests => _quests ??= Entries(reference.Quests, r => r.Name);
         public NamedEntry[] Maps => _maps ??= Entries(reference.Maps, r => r.Name);
 
@@ -74,9 +73,8 @@ public static class WorldTransfer
         "Shops" => new ShopRowViewModel(num, (ShopRecord)record, () => ctx.Items, () => ctx.Npcs, ctx.IsCurrency)
             .BuildSavePacket(),
         "Spells" => new SpellRowViewModel(num, (SpellRecord)record).BuildSavePacket(),
-        "Classes" => new ClassRowViewModel(num, (ClassRecord)record).BuildSavePacket(),
         "Quests" => new QuestRowViewModel(num, (QuestRecord)record, () => ctx.Npcs, () => ctx.Items,
-            () => ctx.Classes, () => ctx.Quests, ctx.IsCurrency).BuildSavePacket(),
+            () => ctx.Quests, ctx.IsCurrency).BuildSavePacket(),
         "Conversations" => new ConversationRowViewModel(num, (ConversationRecord)record, () => ctx.Npcs)
             .BuildSavePacket(),
         _ => throw new ArgumentOutOfRangeException(nameof(section), section, "Unknown world section."),
@@ -97,7 +95,6 @@ public static class WorldTransfer
         "NPCs" => new NpcRecord(),
         "Shops" => new ShopRecord(),
         "Spells" => new SpellRecord(),
-        "Classes" => new ClassRecord(),
         "Quests" => new QuestRecord(),
         "Conversations" => new ConversationRecord(),
         _ => throw new ArgumentOutOfRangeException(nameof(section), section, "Unknown world section."),
@@ -166,7 +163,6 @@ public static class WorldTransfer
             Npcs = await ReadDirAsync<NpcRecord>(root, "npcs", "npc", limits.Npcs),
             Shops = await ReadDirAsync<ShopRecord>(root, "shops", "shop", limits.Shops),
             Spells = await ReadDirAsync<SpellRecord>(root, "spells", "spell", limits.Spells),
-            Classes = await ReadDirAsync<ClassRecord>(root, "classes", "class", Constants.MaxClasses),
             Quests = await ReadDirAsync<QuestRecord>(root, "quests", "quest", limits.Quests),
             Conversations = await ReadDirAsync<ConversationRecord>(root, "conversations", "conversation", limits.Conversations),
             Maps = await ReadDirAsync<MapRecord>(root, "maps", "map", limits.Maps),
@@ -289,7 +285,6 @@ public static class WorldTransfer
         var npcs = await conn.RequestAllNpcsAsync(ct) ?? throw Refused("npcs");
         var shops = await conn.RequestAllShopsAsync(ct) ?? throw Refused("shops");
         var spells = await conn.RequestAllSpellsAsync(ct) ?? throw Refused("spells");
-        var classes = await conn.RequestAllClassesAsync(ct) ?? throw Refused("classes");
         var quests = await conn.RequestAllQuestsAsync(ct) ?? throw Refused("quests");
         var convs = await conn.RequestAllConversationsAsync(ct) ?? throw Refused("conversations");
         var groups = await conn.RequestAllMapGroupsAsync(ct) ?? throw Refused("map groups");
@@ -334,15 +329,9 @@ public static class WorldTransfer
                 row.ApplyPacket(p);
                 return row.ToRecord();
             }),
-            Classes = Fill(classes.Classes, Constants.MaxClasses, p => p.ClassNum, _ => new ClassRecord(), (n, p) =>
-            {
-                var row = new ClassRowViewModel(n, new ClassRecord(), false);
-                row.ApplyPacket(p);
-                return row.ToRecord();
-            }),
             Quests = Fill(quests.Quests, limits.Quests, p => p.QuestNum, _ => new QuestRecord(), (n, p) =>
             {
-                var row = new QuestRowViewModel(n, new QuestRecord(), Empty, Empty, Empty, Empty, _ => false, false);
+                var row = new QuestRowViewModel(n, new QuestRecord(), Empty, Empty, Empty, _ => false, false);
                 row.ApplyPacket(p);
                 return row.ToRecord();
             }),

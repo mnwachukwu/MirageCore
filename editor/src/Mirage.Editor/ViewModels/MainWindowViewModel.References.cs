@@ -28,7 +28,6 @@ public sealed partial class MainWindowViewModel
         SpellEditor.ResolveInboundRefs = RefsToSpell;
         NpcEditor.ResolveInboundRefs = RefsToNpc;
         QuestEditor.ResolveInboundRefs = RefsToQuest;
-        ClassEditor.ResolveInboundRefs = RefsToClass;
         // Shops and conversations are pointed FROM, never TO: a shop names its keeper, a conversation names
         // its speaker. Nothing in the world names a shop or a conversation, so those two editors get no panel.
         // The map editor gets none either, though plenty points at a map: its own Up/Down/Left/Right fields
@@ -45,7 +44,6 @@ public sealed partial class MainWindowViewModel
         SpellEditor.NotifyInboundRefsChanged();
         NpcEditor.NotifyInboundRefsChanged();
         QuestEditor.NotifyInboundRefsChanged();
-        ClassEditor.NotifyInboundRefsChanged();
     }
 
     // ── Link construction ────────────────────────────────────────────────────
@@ -76,9 +74,6 @@ public sealed partial class MainWindowViewModel
     private IEnumerable<ReferenceLinkViewModel> QuestLinks(Func<QuestRecord, bool> names) =>
         QuestEditor.Items.Where(r => names(r.ToRecord())).Select(r => Link(r.DisplayName, () => Open("Quests", QuestEditor, r.Index)));
 
-    private IEnumerable<ReferenceLinkViewModel> ClassLinks(Func<ClassRecord, bool> names) =>
-        ClassEditor.Items.Where(r => names(r.ToRecord())).Select(r => Link(r.DisplayName, () => Open("Classes", ClassEditor, r.Index)));
-
     private IEnumerable<ReferenceLinkViewModel> ConversationLinks(Func<ConversationRecord, bool> names) =>
         ConversationEditor.Items.Where(r => names(r.ToRecord()))
             .Select(r => Link(r.DisplayName, () => Open("Conversations", ConversationEditor, r.Index)));
@@ -100,8 +95,6 @@ public sealed partial class MainWindowViewModel
                          || q.RepeatRewardItems.Any(r => r.ItemNum == num)
                          || q.Objectives.Any(o => o.Kind is ObjectiveKind.Gather or ObjectiveKind.Fetch && o.Target == num)));
         AddGroup(groups, EditorStrings.References_ReagentFor, SpellLinks(s => s.ItemNum == num));
-        AddGroup(groups, EditorStrings.References_StartingGearFor,
-            ClassLinks(c => c.StartingItems?.Any(i => i.ItemNum == num) == true));
         return groups;
     }
 
@@ -110,8 +103,6 @@ public sealed partial class MainWindowViewModel
         var groups = new List<ReferenceGroupViewModel>();
         AddGroup(groups, EditorStrings.References_TaughtBy,
             ItemLinks(i => i.Type == ItemType.Spell && i.SpellNum == num));
-        AddGroup(groups, EditorStrings.References_StartingSpellFor,
-            ClassLinks(c => c.StartingSpells?.Contains(num) == true));
         return groups;
     }
 
@@ -146,16 +137,6 @@ public sealed partial class MainWindowViewModel
     {
         var groups = new List<ReferenceGroupViewModel>();
         AddGroup(groups, EditorStrings.References_PrerequisiteFor, QuestLinks(q => q.PrereqQuest == num));
-        return groups;
-    }
-
-    private IReadOnlyList<ReferenceGroupViewModel> RefsToClass(int num)
-    {
-        var groups = new List<ReferenceGroupViewModel>();
-        AddGroup(groups, EditorStrings.References_RestrictedItems,
-            ItemLinks(i => i.AllowedClasses is { Count: > 0 } a && a.Contains((short)num)));
-        AddGroup(groups, EditorStrings.References_RestrictedSpells,
-            SpellLinks(s => s.AllowedClasses is { Count: > 0 } a && a.Contains((short)num)));
         return groups;
     }
 

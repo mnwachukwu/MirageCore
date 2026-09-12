@@ -20,7 +20,6 @@ public sealed record SendItemsPacket : IPacket
         [property: JsonPropertyName("spellNum")] short SpellNum,
         [property: JsonPropertyName("power")] short Power,
         [property: JsonPropertyName("levelReq")] short LevelReq,
-        [property: JsonPropertyName("allowedClasses")] List<short>? AllowedClasses,
         // Item restriction flags — drive the client's list/mail/drop-warning gates.
         [property: JsonPropertyName("nonTradeable")] bool NonTradeable,
         [property: JsonPropertyName("nonListable")] bool NonListable,
@@ -51,7 +50,6 @@ public sealed record UpdateItemPacket : IPacket
     [JsonPropertyName("spellNum")] public short SpellNum { get; init; }
     [JsonPropertyName("power")] public short Power { get; init; }
     [JsonPropertyName("levelReq")] public short LevelReq { get; init; }
-    [JsonPropertyName("allowedClasses")] public List<short>? AllowedClasses { get; init; }
     // Item restriction flags. See ItemRecord for behavior.
     [JsonPropertyName("nonTradeable")] public bool NonTradeable { get; init; }
     [JsonPropertyName("nonListable")] public bool NonListable { get; init; }

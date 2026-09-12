@@ -113,9 +113,6 @@ public sealed partial class EditorPacketHandler
                 case EditorRequestMapPacket p:
                     HandleEditorRequestMap(editorIndex, p);
                     break;
-                case EditorRequestClassPacket p:
-                    HandleEditorRequestClass(editorIndex, p);
-                    break;
                 case EditorRequestAllItemsPacket p:
                     HandleEditorRequestAllItems(editorIndex, p);
                     break;
@@ -134,9 +131,6 @@ public sealed partial class EditorPacketHandler
                 case EditorRequestAllSpellsPacket p:
                     HandleEditorRequestAllSpells(editorIndex, p);
                     break;
-                case EditorRequestAllClassesPacket p:
-                    HandleEditorRequestAllClasses(editorIndex, p);
-                    break;
                 case EditorRequestMapGroupPacket p:
                     HandleEditorRequestMapGroup(editorIndex, p);
                     break;
@@ -148,9 +142,6 @@ public sealed partial class EditorPacketHandler
                     break;
                 case EditorSaveMapGroupPacket p:
                     HandleEditorSaveMapGroup(editorIndex, p);
-                    break;
-                case EditorSaveClassPacket p:
-                    HandleEditorSaveClass(editorIndex, p);
                     break;
                 case EditorSaveItemPacket p:
                     HandleEditorSaveItem(editorIndex, p);
@@ -280,10 +271,6 @@ public sealed partial class EditorPacketHandler
             .Select(i => new EditorDataPacket.NameEntry(i, _world.Maps[i].Name))
             .ToArray();
 
-        var classes = Enumerable.Range(1, Constants.MaxClasses)
-            .Select(i => new EditorDataPacket.NameEntry(i, _world.Classes[i].Name))
-            .ToArray();
-
         // MapGroups live in a sparse Dictionary; project the editor's 1-based slot range over it (absent
         // slots → blank name), matching how every other record type presents a fixed slot list.
         var mapGroups = Enumerable.Range(1, _world.Limits.MapGroups)
@@ -302,20 +289,17 @@ public sealed partial class EditorPacketHandler
             .Where(i => _world.Items[i].Type == ItemType.Currency)
             .ToArray();
 
-        // Gate facts for the class editor's starting-loadout tables, from the LIVE world. Only authored
+        // Gate facts the editor's requirement columns read, from the LIVE world. Only authored
         // slots are sent — a blank row has nothing to gate and would just pad the payload.
         var itemGates = Enumerable.Range(1, _world.Limits.Items)
             .Where(i => !string.IsNullOrEmpty(_world.Items[i].Name))
             .Select(i => new EditorDataPacket.ItemGate(i, _world.Items[i].Type, _world.Items[i].Power,
-                _world.Items[i].LevelReq,
-                _world.Items[i].AllowedClasses is null ? null : new List<short>(_world.Items[i].AllowedClasses!),
-                _world.Items[i].Price))
+                _world.Items[i].LevelReq, _world.Items[i].Price))
             .ToArray();
         var spellGates = Enumerable.Range(1, _world.Limits.Spells)
             .Where(i => !string.IsNullOrEmpty(_world.Spells[i].Name))
             .Select(i => new EditorDataPacket.SpellGate(i, _world.Spells[i].Type, _world.Spells[i].VitalAmount,
-                _world.Spells[i].LevelReq,
-                _world.Spells[i].AllowedClasses is null ? null : new List<short>(_world.Spells[i].AllowedClasses!)))
+                _world.Spells[i].LevelReq))
             .ToArray();
 
         var npcSizes = new int[_world.Limits.Npcs + 1];
@@ -328,7 +312,6 @@ public sealed partial class EditorPacketHandler
             Shops = shops,
             Spells = spells,
             Maps = maps,
-            Classes = classes,
             MapGroups = mapGroups,
             Quests = quests,
             Conversations = conversations,
@@ -428,14 +411,6 @@ public sealed partial class EditorPacketHandler
         _dispatcher.SendToEditor(editorIndex, PacketBuilder.SendMap(n, _world.Maps[n], forEditor: true));
     }
 
-    private void HandleEditorRequestClass(int editorIndex, EditorRequestClassPacket p)
-    {
-        if (!RequireAccess(editorIndex, AdminLevel.Mapper)) return;
-        int n = p.ClassNum;
-        if (!SlotValidation.IsValidClassNum(n)) return;
-        _dispatcher.SendToEditor(editorIndex, PacketBuilder.UpdateClass(n, _world.Classes[n]));
-    }
-
     private void HandleEditorRequestAllItems(int editorIndex, EditorRequestAllItemsPacket _)
     {
         if (!RequireAccess(editorIndex, AdminLevel.Mapper)) return;
@@ -476,57 +451,6 @@ public sealed partial class EditorPacketHandler
         });
     }
 
-    private void HandleEditorRequestAllClasses(int editorIndex, EditorRequestAllClassesPacket _)
-    {
-        if (!RequireAccess(editorIndex, AdminLevel.Mapper)) return;
-        _dispatcher.SendToEditor(editorIndex, new EditorAllClassesPacket
-        {
-            Classes = Enumerable.Range(1, Constants.MaxClasses)
-                .Select(n => PacketBuilder.UpdateClass(n, _world.Classes[n])).ToArray(),
-        });
-    }
-
-    private void HandleEditorSaveClass(int editorIndex, EditorSaveClassPacket p)
-    {
-        if (!RequireAccess(editorIndex, AdminLevel.Developer)) return;
-        int n = p.ClassNum;
-        if (!SlotValidation.IsValidClassNum(n)) return;
-        if (LockedByAnother(editorIndex, CoreRecordFamilies.Classes, n)) return;
-
-        var cls = _world.Classes[n];
-        cls.Name = p.Name;
-        cls.Description = p.Description;
-        cls.SpriteMale = p.SpriteMale;
-        cls.SpriteSheetMale = p.SpriteSheetMale;
-        cls.SpriteSheetFemale = p.SpriteSheetFemale;
-        cls.SpriteFemale = p.SpriteFemale;
-        cls.Str = p.Str;
-        cls.Def = p.Def;
-        cls.Spd = p.Spd;
-        cls.Int = p.Int;
-        // Normalized per line on save so a bad state never persists: currency keeps its stack, everything
-        // else is exactly one. Inert lines and duplicate spells are stripped by Normalize below, so what
-        // lands on disk is exactly what character creation will grant.
-        cls.StartingItems = p.StartingItems is null ? null : [.. p.StartingItems.Select(s =>
-        {
-            bool isCurrency = SlotValidation.IsValidItemNum(s.ItemNum, _world.Limits.Items)
-                              && _world.Items[s.ItemNum].Type == ItemType.Currency;
-            return new ClassStartingItem
-            {
-                ItemNum = s.ItemNum,
-                Quantity = isCurrency ? (s.Quantity < 1 ? (short)1 : s.Quantity) : (short)0,
-            };
-        })];
-        cls.StartingSpells = p.StartingSpells is null ? null : [.. p.StartingSpells];
-        cls.Normalize();
-
-        _bg.Run(_persistence.SaveClassAsync(n, cls), nameof(IPersistenceService.SaveClassAsync));
-        _dispatcher.SendToAll(PacketBuilder.UpdateClass(n, cls));
-        // Editors too, or a session that did not make this save keeps showing what it loaded.
-        _dispatcher.SendToAllEditors(PacketBuilder.UpdateClass(n, cls));
-        _logger.LogInformation("Editor saved class #{Num}.", n);
-    }
-
     private void HandleEditorSaveItem(int editorIndex, EditorSaveItemPacket p)
     {
         if (!RequireAccess(editorIndex, AdminLevel.Developer)) return;
@@ -545,7 +469,6 @@ public sealed partial class EditorPacketHandler
         item.SpellNum = p.SpellNum;
         item.Power = p.Power;
         item.LevelReq = p.LevelReq;
-        item.AllowedClasses = p.AllowedClasses;
         item.NonTradeable = p.NonTradeable;
         item.NonListable = p.NonListable;
         item.NonMailable = p.NonMailable;
@@ -723,7 +646,6 @@ public sealed partial class EditorPacketHandler
         quest.ReqInt = p.ReqInt;
         // Same authoritative-normalize rule as items and spells: the server drops ids outside the class
         // table, dedupes and sorts, whatever a client sent.
-        quest.AllowedClasses = ClassGate.Normalize(p.AllowedClasses);
         quest.PrereqQuest = p.PrereqQuest;
         quest.RewardExp = p.RewardExp;
         quest.RewardItems = NormalizeQuestRewards(p.RewardItems, _world.Limits.Items);
@@ -757,7 +679,6 @@ public sealed partial class EditorPacketHandler
             Description = q.Description,
             Objectives = q.Objectives.Select(o => o.Clone()).ToList(),
             ReqLevel = q.ReqLevel, ReqStr = q.ReqStr, ReqDef = q.ReqDef, ReqSpd = q.ReqSpd, ReqInt = q.ReqInt,
-            AllowedClasses = q.AllowedClasses is null ? null : new List<short>(q.AllowedClasses),
             PrereqQuest = q.PrereqQuest,
             RewardExp = q.RewardExp, RewardItems = q.RewardItems.Select(r => r.Clone()).ToList(),
             RepeatRewardExp = q.RepeatRewardExp, RepeatRewardItems = q.RepeatRewardItems.Select(r => r.Clone()).ToList(),
@@ -885,7 +806,6 @@ public sealed partial class EditorPacketHandler
 
         var spell = _world.Spells[n];
         spell.Name = p.Name;
-        spell.AllowedClasses = p.AllowedClasses;
         spell.Type = p.Type;
         spell.VitalAmount = p.VitalAmount;
         spell.ItemNum = p.ItemNum;

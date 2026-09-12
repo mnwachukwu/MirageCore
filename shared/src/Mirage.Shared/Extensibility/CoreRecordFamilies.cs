@@ -28,14 +28,13 @@ public static class CoreRecordFamilies
     public const string Npcs = "NPCs";
     public const string Shops = "Shops";
     public const string Spells = "Spells";
-    public const string Classes = "Classes";
     public const string Quests = "Quests";
     public const string Conversations = "Conversations";
 
     /// <summary>Every family that is part of a world, in the order the editor lists them.
     ///
-    /// <para>A world is what these nine describe: zip the folders they name and you have handed
-    /// somebody the world and nothing else.</para></summary>
+    /// <para>A world is what these describe: zip the folders they name and you have handed somebody the
+    /// world and nothing else.</para></summary>
     public static IReadOnlyList<RecordFamily> World { get; } =
     [
         new()
@@ -87,17 +86,6 @@ public static class CoreRecordFamilies
             Directory = "spells",
             FilePrefix = "spell",
             DefaultLimit = 1000,
-        },
-        new()
-        {
-            Id = Classes,
-            LabelKey = "MainWindow_Section_Classes",
-            Directory = "classes",
-            FilePrefix = "class",
-            // The only family whose ceiling is fixed rather than configured: a character's class rides
-            // in the save format, so changing how many there may be is a data migration.
-            DefaultLimit = Constants.MaxClasses,
-            LimitIsFixed = true,
         },
         new()
         {

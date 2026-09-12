@@ -168,7 +168,6 @@ public static partial class EditorStrings
     public const string MainWindow_Section_Npcs = nameof(MainWindow_Section_Npcs);
     public const string MainWindow_Section_Shops = nameof(MainWindow_Section_Shops);
     public const string MainWindow_Section_Spells = nameof(MainWindow_Section_Spells);
-    public const string MainWindow_Section_Classes = nameof(MainWindow_Section_Classes);
     public const string MainWindow_Section_Quests = nameof(MainWindow_Section_Quests);
     public const string MainWindow_Section_Conversations = nameof(MainWindow_Section_Conversations);
     public const string MainWindow_Section_Accounts = nameof(MainWindow_Section_Accounts);
@@ -255,7 +254,6 @@ public static partial class EditorStrings
     public const string PushChangesDialog_DirtySpell = nameof(PushChangesDialog_DirtySpell);
     public const string PushChangesDialog_DirtyMap = nameof(PushChangesDialog_DirtyMap);
     public const string PushChangesDialog_DirtyMapGroup = nameof(PushChangesDialog_DirtyMapGroup);
-    public const string PushChangesDialog_DirtyClass = nameof(PushChangesDialog_DirtyClass);
     public const string PushChangesDialog_DirtyUnknown = nameof(PushChangesDialog_DirtyUnknown);
 
     // ── Data field labels (shared by Item/Spell row editors) ──────────────────
@@ -271,10 +269,7 @@ public static partial class EditorStrings
     public const string DataLabel_SpDrain = nameof(DataLabel_SpDrain);
     public const string DataLabel_Quantity = nameof(DataLabel_Quantity);
     public const string DataLabel_IntReq = nameof(DataLabel_IntReq);
-    public const string DataLabel_AllowedClasses = nameof(DataLabel_AllowedClasses);
     // The class multi-select shared by the item, spell and quest editors.
-    public const string ClassSelector_AnyClass = nameof(ClassSelector_AnyClass);
-    public const string ClassSelector_Hint = nameof(ClassSelector_Hint);
     // Fallback captions for the two fields whose caption varies by type, shown if a type ever falls
     // outside the switch. Not "Data 1/2/3" any more — there is no numbered slot left to name.
     public const string DataLabel_VitalAmount = nameof(DataLabel_VitalAmount);

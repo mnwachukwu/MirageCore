@@ -125,13 +125,4 @@ public sealed partial class SocialPanel : IGamePanel
     private string RosterSelectedLogin() => _rosterTable.SelectedItem?.Login ?? "";
     private GuildRank RosterSelectedRank() => _rosterTable.SelectedItem?.Rank ?? GuildRank.None;
 
-    // Class name for a roster member's active/last character, from the client's class table (empty until the
-    // server sends it, or for an undefined class). Read live so a late class-data push fills the column in.
-    private string ClassName(int classIndex)
-    {
-        var classes = _state?.Classes;
-        return classes is not null && classIndex > 0 && classIndex < classes.Length
-            ? classes[classIndex]?.Name?.TrimEnd() ?? "" : "";
-    }
-
 }

@@ -86,7 +86,6 @@ public sealed class JsonPersistenceService : IPersistenceService
     private string NpcsPath => WorldDir(CoreRecordFamilies.Npcs);
     private string ShopsPath => WorldDir(CoreRecordFamilies.Shops);
     private string SpellsPath => WorldDir(CoreRecordFamilies.Spells);
-    private string ClassesPath => WorldDir(CoreRecordFamilies.Classes);
     private string MapGroupsPath => WorldDir(CoreRecordFamilies.MapGroups);
 
     // ── This installation: everything the server itself writes ──────────────
@@ -108,7 +107,6 @@ public sealed class JsonPersistenceService : IPersistenceService
     private string NpcFile(int num) => WorldFile(CoreRecordFamilies.Npcs, num);
     private string ShopFile(int num) => WorldFile(CoreRecordFamilies.Shops, num);
     private string SpellFile(int num) => WorldFile(CoreRecordFamilies.Spells, num);
-    private string ClassFile(int num) => WorldFile(CoreRecordFamilies.Classes, num);
     private string GuildFile(int num) => Path.Combine(GuildsPath, $"{GuildRecord.FileStem}{num}.json");
     private string MapGroupFile(int num) => WorldFile(CoreRecordFamilies.MapGroups, num);
     private string MarketListingFile(int id) => Path.Combine(MarketListingsPath, $"{MarketListing.FileStem}{id}.json");
@@ -460,17 +458,6 @@ public sealed class JsonPersistenceService : IPersistenceService
         return (result, padded);
     }
 
-    public async Task<(ClassRecord[] records, int padded)> LoadAllClassesAsync()
-    {
-        var result = new ClassRecord[Constants.MaxClasses + 1];
-        for (int i = 0; i <= Constants.MaxClasses; i++) result[i] = new ClassRecord();
-        int padded = await CheckAndLoadRecordsAsync(result, Constants.MaxClasses, ClassFile);
-        // Canonicalize the starting loadout on load (inert lines out, duplicate spells out, caps applied)
-        // so character creation reads one shape and never has to defend against a malformed list.
-        for (int i = 1; i <= Constants.MaxClasses; i++) result[i].Normalize();
-        return (result, padded);
-    }
-
     public async Task<(QuestRecord[] records, int padded)> LoadAllQuestsAsync()
     {
         var result = new QuestRecord[_limits.Quests + 1];
@@ -535,12 +522,6 @@ public sealed class JsonPersistenceService : IPersistenceService
     {
         if (!SlotValidation.IsValidSpellNum(num, _limits.Spells)) return;
         await File.WriteAllTextAsync(SpellFile(num), JsonSerializer.Serialize(spell, Options));
-    }
-
-    public async Task SaveClassAsync(int num, ClassRecord cls)
-    {
-        if (!SlotValidation.IsValidClassNum(num)) return;
-        await File.WriteAllTextAsync(ClassFile(num), JsonSerializer.Serialize(cls, Options));
     }
 
     public async Task SaveQuestAsync(int num, QuestRecord quest)

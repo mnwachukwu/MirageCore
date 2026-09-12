@@ -295,7 +295,7 @@ public static class HotkeyBarPanel
             {
                 int inv = FindInvSlot(state, hk.Num);
                 Tooltip.NotifyHoverItem(TooltipScope, (TooltipScope, slot), item,
-                    inv > 0 ? me.Inv[inv] : null, me, state.Classes, itemsTex, input.MousePosition,
+                    inv > 0 ? me.Inv[inv] : null, me, itemsTex, input.MousePosition,
                     state.SpellDefs, state.Items, state.Weather);
             }
         }
@@ -304,7 +304,7 @@ public static class HotkeyBarPanel
             // The whole point of the shared book glyph: the tooltip is what says which spell this is.
             if (state.SpellDefs[hk.Num] is { } spell)
                 Tooltip.NotifyHoverSpell(TooltipScope, (TooltipScope, slot), spell,
-                    me, state.Classes, state.Items, state.Weather, input.MousePosition);
+                    me, state.Items, state.Weather, input.MousePosition);
         }
     }
 

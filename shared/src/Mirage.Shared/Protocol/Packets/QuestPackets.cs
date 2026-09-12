@@ -52,7 +52,6 @@ public sealed record SendQuestsPacket : IPacket
         [JsonPropertyName("reqDef")] public int ReqDef { get; init; }
         [JsonPropertyName("reqSpd")] public int ReqSpd { get; init; }
         [JsonPropertyName("reqInt")] public int ReqInt { get; init; }
-        [JsonPropertyName("allowedClasses")] public List<short>? AllowedClasses { get; init; }
         [JsonPropertyName("prereq")] public int PrereqQuest { get; init; }
         [JsonPropertyName("rewExp")] public long RewardExp { get; init; }
         [JsonPropertyName("rewItems")] public List<QuestReward> RewardItems { get; init; } = new();

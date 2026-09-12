@@ -36,9 +36,6 @@ public sealed class ClientPacketSender
 
     // ── Account / pre-login ───────────────────────────────────────────────────
 
-    public void SendGetClasses()
-        => _transport.Send(new GetClassesPacket());
-
     public void SendNewAccount(string username, string password)
         => _transport.Send(new NewAccountPacket
         {

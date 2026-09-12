@@ -414,9 +414,6 @@ public sealed partial class EditorPacketHandler
                 return ServerStrings.ForLocale(locale, ServerStrings.EditorAccounts_QuestLevelReq, ("Level", q.ReqLevel));
             case QuestSystem.HoldResult.StatTooLow:
                 return ServerStrings.ForLocale(locale, ServerStrings.EditorAccounts_QuestStatReq);
-            case QuestSystem.HoldResult.WrongClass:
-                return ServerStrings.ForLocale(locale, ServerStrings.EditorAccounts_QuestWrongClass,
-                    ("Class", ClassGate.Describe(q.AllowedClasses, _world.Classes)));
             case QuestSystem.HoldResult.PrereqNotDone:
                 return ServerStrings.ForLocale(locale, ServerStrings.EditorAccounts_QuestPrereq,
                     ("Name", _world.Quests[q.PrereqQuest].TrimmedName));

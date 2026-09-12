@@ -37,16 +37,6 @@ public class DefinitionPacketFieldTests
         Assert.That(Mismatches(item, packet), Is.Empty);
     }
 
-    [Test]
-    public void UpdateClass_CarriesEveryFieldItSharesWithTheRecord()
-    {
-        var cls = Populated<ClassRecord>();
-        var packet = PacketBuilder.UpdateClass(12, cls);
-
-        Assert.That(packet.ClassNum, Is.EqualTo(12));
-        Assert.That(Mismatches(cls, packet), Is.Empty);
-    }
-
     /// <summary><c>Sales</c> is <c>SalesItem</c> on the record, so the name-matched sweep skips it and it
     /// is asserted here — it is also the field the bulk editor list used to omit, which emptied every
     /// shop's sales list on connect.</summary>

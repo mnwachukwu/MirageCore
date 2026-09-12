@@ -625,7 +625,7 @@ public sealed class MailPanel : IGamePanel
         if (slot is null || slot.Num <= 0 || slot.Num >= state.Items.Length) return;
         var def = state.Items[slot.Num];
         if (def is not null)
-            Tooltip.NotifyHoverItem(TooltipScope, key, def, slot, state.Me, state.Classes, itemsTex, _input.MousePosition,
+            Tooltip.NotifyHoverItem(TooltipScope, key, def, slot, state.Me, itemsTex, _input.MousePosition,
             state.SpellDefs, state.Items, state.Weather);
     }
 
@@ -727,7 +727,7 @@ public sealed class MailPanel : IGamePanel
             {
                 Tooltip.NotifyHoverItem(TooltipScope, (TooltipScope, "read", msg.Id, ai), def,
                     new PlayerInvSlot { Num = a.ItemNum, Quantity = a.Quantity, Dur = a.Dur },
-                    state.Me, state.Classes, itemsTex, _input.MousePosition,
+                    state.Me, itemsTex, _input.MousePosition,
             state.SpellDefs, state.Items, state.Weather);
             }
 

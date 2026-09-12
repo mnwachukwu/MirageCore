@@ -207,9 +207,8 @@ public sealed class WeatherSystem : GameSystem
         {
             if (!_pm[i].IsPlaying) continue;
             var p = _pm[i].Char;
-            if (p.Class < 1 || p.Class >= _world.Classes.Length) continue;
             int oldMaxHp = p.MaxHp, oldMaxMp = p.MaxMp, oldMaxSp = p.MaxSp;
-            StatFormulas.RefreshPlayerMaxVitals(p, _world.Classes[p.Class], newW);
+            StatFormulas.RefreshPlayerMaxVitals(p, newW);
             // HP keeps a >=1 floor (never scale a live player to 0); MP/SP may legitimately sit at 0.
             if (oldMaxHp > 0) p.Hp = Math.Max(1, (int)Math.Round(p.Hp * (double)p.MaxHp / oldMaxHp, MidpointRounding.AwayFromZero));
             p.Hp = Math.Min(p.Hp, p.MaxHp);

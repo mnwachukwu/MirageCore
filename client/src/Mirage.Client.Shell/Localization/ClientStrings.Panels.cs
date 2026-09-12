@@ -105,7 +105,6 @@ public static partial class ClientStrings
     public const string ShopPanel_TradeCost = nameof(ShopPanel_TradeCost);
     public const string ShopPanel_StatRequirement = nameof(ShopPanel_StatRequirement);
     public const string ShopPanel_IntRequirement = nameof(ShopPanel_IntRequirement);
-    public const string ShopPanel_ClassRequirement = nameof(ShopPanel_ClassRequirement);
     public const string ShopPanel_AlreadyKnowSpell = nameof(ShopPanel_AlreadyKnowSpell);
     public const string ShopPanel_RequirementsNotMet = nameof(ShopPanel_RequirementsNotMet);
     public const string ShopPanel_CannotLearnSpell = nameof(ShopPanel_CannotLearnSpell);

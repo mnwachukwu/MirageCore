@@ -56,50 +56,23 @@ public sealed partial class SpellEditorViewModel : EditorViewModelBase<SpellRowV
             OnPropertyChanged(nameof(SelectedGiveItem));
         }
     }
-
-    public NamedEntry[] ClassEntries => _data.LiveClassEntries;
-    /// <summary>Class entries for the FILTER dropdown, dropping the id-0 "(none)" sentinel — filtering
-    /// on "any class" would be the same as no filter at all.</summary>
-    public NamedEntry[] ClassReqFilterEntries => _data.LiveClassEntries.Skip(1).ToArray();
-    [ObservableProperty] private NamedEntry? _classReqFilter;
-    partial void OnClassReqFilterChanged(NamedEntry? value)
-    {
-        OnPropertyChanged(nameof(FilteredItems));
-        OnPropertyChanged(nameof(FilterStatus));
-        OnPropertyChanged(nameof(IsFilterActive));
-    }
-    [RelayCommand] private void ClearClassReqFilter() => ClassReqFilter = null;
-
-    /// <summary>Name filter (inherited) AND the type / class-requirement filters. While either category
-    /// filter is active, unset slots are skipped — they default to AddHp with no magnitude and would
-    /// otherwise flood every type-based result.</summary>
+    /// <summary>Name filter (inherited) AND the type filter. While the type filter is active, unset slots
+    /// are skipped — they default to AddHp with no magnitude and would otherwise flood every result.</summary>
     protected override bool MatchesFilter(SpellRowViewModel row) =>
         base.MatchesFilter(row) &&
-        // When a category filter is active, skip unset slots. "Set" means it carries a magnitude or,
-        // for GiveItem (which has none), an item to hand over — checking VitalAmount alone would hide
-        // every GiveItem spell from a filtered list.
-        ((TypeFilter is null && ClassReqFilter is null)
+        // "Set" means it carries a magnitude or, for GiveItem (which has none), an item to hand over —
+        // checking VitalAmount alone would hide every GiveItem spell from a filtered list.
+        (TypeFilter is null
             || (!string.IsNullOrEmpty(row.Name) && (row.VitalAmount != 0 || row.ItemNum != 0))) &&
-        (TypeFilter is null || row.Type == TypeFilter.Value) &&
-        // With a set rather than a single id, "filter by class" means "shows spells THIS class can learn".
-        // An unrestricted spell matches every class filter, because it really is available to that class.
-        (ClassReqFilter is null || ClassGate.Allows(row.AllowedClasses, ClassReqFilter.Id));
-    public override bool IsFilterActive => base.IsFilterActive || TypeFilter is not null || ClassReqFilter is not null;
+        (TypeFilter is null || row.Type == TypeFilter.Value);
+
+    public override bool IsFilterActive => base.IsFilterActive || TypeFilter is not null;
 
     /// <summary>The class gate: a checkbox per class, none ticked meaning every class. One instance for
     /// the whole list, re-pointed at whichever row is selected.</summary>
-    public ClassSelectionViewModel ClassSelection { get; } = new();
 
     // Set while a checkbox click is writing into the row, so the row's change notification doesn't bounce
     // back and rebuild the checkboxes mid-edit.
-    private bool _applyingClassSelection;
-
-    private void RebuildClassSelection()
-    {
-        if (SelectedSpell is null) ClassSelection.Clear();
-        else ClassSelection.Rebuild(ClassEntries, SelectedSpell.AllowedClasses);
-        ClassSelection.IsActive = SelectedSpell is not null;
-    }
 
     public SpellEditorViewModel(EditorDataService data, EditorConnection conn) : base(data, conn)
     {
@@ -107,16 +80,6 @@ public sealed partial class SpellEditorViewModel : EditorViewModelBase<SpellRowV
         _data.EntriesInvalidated += () =>
         {
             OnPropertyChanged(nameof(ItemEntries));
-            OnPropertyChanged(nameof(ClassEntries));
-            OnPropertyChanged(nameof(ClassReqFilterEntries));
-            RebuildClassSelection();   // a renamed or newly named class must re-label its checkbox
-        };
-        ClassSelection.SelectionChanged += ids =>
-        {
-            if (SelectedSpell is null) return;
-            _applyingClassSelection = true;
-            try { SelectedSpell.AllowedClasses = ids; }
-            finally { _applyingClassSelection = false; }
         };
     }
 
@@ -174,15 +137,12 @@ public sealed partial class SpellEditorViewModel : EditorViewModelBase<SpellRowV
         NotifyDirtyState();
         if (newValue is not null && !newValue.IsLoaded && _data.IsOnline)
             _ = LoadEntityAsync(newValue);
-        RebuildClassSelection();
         OnPropertyChanged(nameof(SelectedGiveItem));
     }
 
     private void OnSpellPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         // Re-tick when the row's list changed from anywhere but the checkboxes (a packet, a discard).
-        if (e.PropertyName is nameof(SpellRowViewModel.AllowedClasses) && !_applyingClassSelection)
-            RebuildClassSelection();
         if (e.PropertyName is nameof(SpellRowViewModel.ItemNum))
             OnPropertyChanged(nameof(SelectedGiveItem));
     }

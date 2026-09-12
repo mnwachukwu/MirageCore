@@ -109,7 +109,6 @@ public sealed record PlayerSummary
     public string Name { get; init; } = "";
     public string Login { get; init; } = "";
     public int Level { get; init; }
-    public string Class { get; init; } = "";
     public int Map { get; init; }
     public string Access { get; init; } = "";
 }

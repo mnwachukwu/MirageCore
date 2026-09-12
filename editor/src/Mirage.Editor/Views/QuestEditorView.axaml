@@ -128,12 +128,6 @@
             <TextBlock x:Name="_reqIntLabel" Grid.Column="2" VerticalAlignment="Center" Margin="8,0,0,0"/>
             <NumericUpDown Grid.Column="3" Value="{Binding SelectedQuest.ReqInt}" Minimum="0" Maximum="255" FormatString="0"/>
           </Grid>
-          <!-- Allowed classes: unlike the level and stat requirements above, this is a set — a quest
-               outside it is invisible to that class, not merely unacceptable. -->
-          <mui:FormRow LabelWidth="110">
-            <TextBlock x:Name="_allowedClassesLabel" Grid.Column="0" VerticalAlignment="Top" Margin="0,2,0,0"/>
-            <controls:ClassSelector Grid.Column="1" DataContext="{Binding ClassSelection}"/>
-          </mui:FormRow>
           <mui:FormRow LabelWidth="110">
             <TextBlock x:Name="_prereqLabel" Grid.Column="0" VerticalAlignment="Center"/>
             <controls:DropdownAutoCompleteBox Grid.Column="1"

@@ -17,93 +17,13 @@ public static class PacketBuilder
     public static AlertMsgPacket Alert(string message, AlertCode code) =>
         new() { Message = message, Code = code };
 
-    public static SendClassesPacket SendClasses(IEnumerable<ClassRecord> classes) =>
-        new()
-        {
-            Classes = classes.Select(c => new SendClassesPacket.ClassData(
-                c.Name, c.SpriteMale, c.SpriteFemale, c.Str, c.Def, c.Spd, c.Int, c.Description,
-                Worn: null, Carried: null, Spells: null,
-                SpriteSheetMale: c.SpriteSheetMale, SpriteSheetFemale: c.SpriteSheetFemale)).ToArray()
-        };
-
-    /// <summary>The class list for the character-create screen, with each class's resolved starting
-    /// loadout and the definitions needed to describe it.
-    ///
-    /// <para><paramref name="classes"/>, <paramref name="items"/> and <paramref name="spells"/> are the
-    /// world's own 1-based tables; index 0 is skipped, so the packet's array is 0-based and class number
-    /// <c>n</c> is at position <c>n-1</c> — the same shape <see cref="SendClasses"/> produces.</para>
-    ///
-    /// <para>Blank class slots are kept rather than filtered: the client picks by list position and
-    /// already skips nameless entries, and dropping them here would renumber every class after the
-    /// gap.</para></summary>
-    public static NewCharClassesPacket NewCharClasses(ClassRecord[] classes, ItemRecord[] items, SpellRecord[] spells)
-    {
-        var data = new SendClassesPacket.ClassData[Math.Max(0, classes.Length - 1)];
-        // Sorted so the catalogs come out in a stable order — a packet that differs only in dictionary
-        // ordering between two runs is a diff nobody wants to read.
-        var itemNums = new SortedSet<int>();
-        var spellNums = new SortedSet<int>();
-
-        for (int n = 1; n < classes.Length; n++)
-        {
-            var c = classes[n];
-            var granted = StartingLoadout.ResolveItems(c, n, items);
-            var known = StartingLoadout.ResolveSpells(c, n, spells);
-
-            var worn = granted.Where(g => g.Worn).Select(g => g.Num).ToArray();
-            var carried = granted.Where(g => !g.Worn)
-                .Select(g => new SendClassesPacket.CarriedItem(g.Num, g.Value)).ToArray();
-
-            foreach (var g in granted) itemNums.Add(g.Num);
-            foreach (int s in known) spellNums.Add(s);
-
-            // Empty groups go out as null (and so off the wire entirely) rather than as []: a class that
-            // starts with no armor is a real design statement the screen shows, but it is the SHAPE of
-            // the loadout that says so, not an empty array in the payload.
-            data[n - 1] = new SendClassesPacket.ClassData(
-                c.Name, c.SpriteMale, c.SpriteFemale, c.Str, c.Def, c.Spd, c.Int, c.Description,
-                worn.Length > 0 ? worn : null,
-                carried.Length > 0 ? carried : null,
-                known.Count > 0 ? [.. known] : null,
-                c.SpriteSheetMale, c.SpriteSheetFemale);
-        }
-
-        // The casting reagent rides along if any starting spell drains HP. It is not granted to anyone —
-        // it is there because that spell's tooltip quotes a per-cast reagent cost BY NAME, and the name
-        // lives on the item record. Without it the very first spell a caster sees reads "?: 3".
-        if (Constants.CastingReagentItemIndex < items.Length
-            && !string.IsNullOrEmpty(items[Constants.CastingReagentItemIndex].Name)
-            && spellNums.Any(s => spells[s].Type == SpellType.SubHp))
-        {
-            itemNums.Add(Constants.CastingReagentItemIndex);
-        }
-
-        return new NewCharClassesPacket
-        {
-            Classes = data,
-            ItemDefs = itemNums.Select(n => ItemDefOf(n, items[n])).ToArray(),
-            SpellDefs = spellNums.Select(n => SpellDefOf(n, spells[n])).ToArray(),
-        };
-    }
-
-    private static NewCharClassesPacket.ItemDef ItemDefOf(int num, ItemRecord it) =>
-        new(num, it.Name, it.Pic, it.Type, it.Durability, it.VitalAmount, it.Power, it.LevelReq,
-            it.AllowedClasses, it.ItemSheet);
-
-    private static NewCharClassesPacket.SpellDef SpellDefOf(int num, SpellRecord sp) =>
-        new(num, sp.Name, sp.Type, sp.VitalAmount, sp.IntReq, sp.LevelReq, sp.AllowedClasses);
-
-    public static SendCharsPacket SendChars(IEnumerable<PlayerRecord?> chars, ClassRecord[] classes) =>
+    public static SendCharsPacket SendChars(IEnumerable<PlayerRecord?> chars) =>
         new()
         {
             Chars = chars.Select(p =>
-            {
-                if (p is null || string.IsNullOrWhiteSpace(p.Name))
-                    return new SendCharsPacket.CharSlot("", 0, 0, 0, "");
-                string cls = p.Class > 0 && p.Class < classes.Length && classes[p.Class]?.Name is { Length: > 0 } n
-                    ? n.Trim() : "";
-                return new SendCharsPacket.CharSlot(p.Name, p.Level, p.Class, p.Sprite, cls, p.SpriteSheet);
-            }).ToArray()
+                p is null || string.IsNullOrWhiteSpace(p.Name)
+                    ? new SendCharsPacket.CharSlot("", 0, 0)
+                    : new SendCharsPacket.CharSlot(p.Name, p.Level, p.Sprite, p.SpriteSheet)).ToArray()
         };
 
     // ── Game state ───────────────────────────────────────────────────────────
@@ -267,8 +187,6 @@ public static class PacketBuilder
             Items = items.Select(x => new SendItemsPacket.ItemData(
                 x.num, x.item.Name, x.item.Pic, x.item.Type,
                 x.item.Durability, x.item.VitalAmount, x.item.SpellNum, x.item.Power, x.item.LevelReq,
-                // Copied, not aliased: a packet outlives this call and the record stays editable.
-                x.item.AllowedClasses is null ? null : new List<short>(x.item.AllowedClasses),
                 x.item.NonTradeable, x.item.NonListable, x.item.NonMailable, x.item.DestroyOnDrop,
                 x.item.NonJunkable, x.item.Price, x.item.ItemSheet)).ToArray()
         };
@@ -286,7 +204,6 @@ public static class PacketBuilder
             SpellNum = item.SpellNum,
             Power = item.Power,
             LevelReq = item.LevelReq,
-            AllowedClasses = item.AllowedClasses is null ? null : new List<short>(item.AllowedClasses),
             NonTradeable = item.NonTradeable,
             NonListable = item.NonListable,
             NonMailable = item.NonMailable,
@@ -305,8 +222,6 @@ public static class PacketBuilder
         {
             SpellNum = spellNum,
             Name = spell.Name,
-            // Copied, not aliased: a packet outlives this call and the record stays editable.
-            AllowedClasses = spell.AllowedClasses is null ? null : new List<short>(spell.AllowedClasses),
             Type = spell.Type,
             VitalAmount = spell.VitalAmount,
             ItemNum = spell.ItemNum,
@@ -361,25 +276,6 @@ public static class PacketBuilder
                     t.GiveItem, t.GiveQuantity, t.GetItem, t.GetQuantity))
                 .ToArray(),
             Sales = [.. shop.SalesItem],
-        };
-
-    /// <summary>The one place a <see cref="ClassRecord"/> becomes an <see cref="UpdateClassPacket"/>.</summary>
-    public static UpdateClassPacket UpdateClass(int classNum, ClassRecord cls) =>
-        new()
-        {
-            ClassNum = classNum,
-            Name = cls.Name,
-            Description = cls.Description,
-            SpriteMale = cls.SpriteMale,
-            SpriteFemale = cls.SpriteFemale,
-            SpriteSheetMale = cls.SpriteSheetMale,
-            SpriteSheetFemale = cls.SpriteSheetFemale,
-            Str = cls.Str,
-            Def = cls.Def,
-            Spd = cls.Spd,
-            Int = cls.Int,
-            StartingItems = cls.StartingItems is null ? null : new List<ClassStartingItem>(cls.StartingItems),
-            StartingSpells = cls.StartingSpells is null ? null : new List<int>(cls.StartingSpells),
         };
 
     // ── Chat ─────────────────────────────────────────────────────────────────

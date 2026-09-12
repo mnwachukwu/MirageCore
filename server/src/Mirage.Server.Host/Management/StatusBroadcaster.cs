@@ -150,7 +150,6 @@ public sealed class StatusBroadcaster : IHostedService, IDisposable
                 Name = c.Name.Trim(),
                 Login = sp.Login,
                 Level = c.Level,
-                Class = ClassName(c.Class),
                 Map = c.Map,
                 Access = c.Access.ToString(),
             });
@@ -203,9 +202,6 @@ public sealed class StatusBroadcaster : IHostedService, IDisposable
 
     private TimeSpan _lastCpuTotal;
     private long _lastCpuStampMs = Environment.TickCount64;
-
-    private string ClassName(int index) =>
-        index >= 0 && index < _world.Classes.Length ? _world.Classes[index].Name.Trim() : "";
 
     public void Dispose()
     {

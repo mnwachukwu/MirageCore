@@ -20,10 +20,6 @@ public sealed class SpellRecord
     [JsonIgnore]
     public string TrimmedName => _trimmedName ??= _name.TrimEnd();
 
-    /// <summary>The classes allowed to learn it (1-based ids). Empty or absent = every class. Ask
-    /// <see cref="ClassGate"/> rather than testing the list directly; <see cref="Normalize"/> collapses
-    /// an empty list to null so an unrestricted spell carries no key.</summary>
-    public List<short>? AllowedClasses { get; set; }
     public SpellType Type { get; set; }
 
     // ── Type-specific fields ──────────────────────────────────────────────────
@@ -86,6 +82,5 @@ public sealed class SpellRecord
         }
         // The class gate applies to every spell type, so unlike the fields above it is never cleared —
         // only canonicalized (deduped, sorted, empty collapsed to null).
-        AllowedClasses = ClassGate.Normalize(AllowedClasses);
     }
 }

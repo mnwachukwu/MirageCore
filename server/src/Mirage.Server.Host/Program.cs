@@ -190,6 +190,7 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<ShopSystem>();
         services.AddSingleton<BankSystem>();
         services.AddSingleton<PlayerSpawnSystem>();
+        services.AddSingleton<DeathSystem>();
         services.AddSingleton<PartySystem>();
         services.AddSingleton<GuildSystem>();
         services.AddSingleton<MailSystem>();

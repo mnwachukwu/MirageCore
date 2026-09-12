@@ -43,12 +43,6 @@ public sealed record EditorRequestMapPacket : IPacket
     [JsonPropertyName("mapNum")] public int MapNum { get; init; }
 }
 
-public sealed record EditorRequestClassPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorRequestClass;
-    [JsonPropertyName("classNum")] public int ClassNum { get; init; }
-}
-
 public sealed record EditorRequestMapGroupPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorRequestMapGroup;
@@ -123,37 +117,9 @@ public sealed record EditorRequestAllSpellsPacket : IPacket
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorRequestAllSpells;
 }
 
-public sealed record EditorRequestAllClassesPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorRequestAllClasses;
-}
-
 public sealed record EditorRequestAllMapGroupsPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorRequestAllMapGroups;
-}
-
-public sealed record EditorSaveClassPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorSaveClass;
-    [JsonPropertyName("classNum")] public int ClassNum { get; init; }
-    [JsonPropertyName("name")] public string Name { get; init; } = "";
-    /// <summary>The short pitch shown on the character-create screen. See <see cref="ClassRecord.Description"/>.</summary>
-    [JsonPropertyName("desc")] public string Description { get; init; } = "";
-    /// <summary>One sprite per sex; the character-create screen previews whichever the player picked.</summary>
-    [JsonPropertyName("spriteMale")] public int SpriteMale { get; init; }
-    [JsonPropertyName("spriteFemale")] public int SpriteFemale { get; init; }
-    [JsonPropertyName("spriteSheetMale")] public int SpriteSheetMale { get; init; }
-    [JsonPropertyName("spriteSheetFemale")] public int SpriteSheetFemale { get; init; }
-    [JsonPropertyName("str")] public int Str { get; init; }
-    [JsonPropertyName("def")] public int Def { get; init; }
-    [JsonPropertyName("spd")] public int Spd { get; init; }
-    [JsonPropertyName("int")] public int Int { get; init; }
-    /// <summary>The class's starting loadout. Carries the record types directly, as the NPC drop table
-    /// does — every field on a starting line is authored, so a parallel DTO would only be a second shape
-    /// to keep in step.</summary>
-    [JsonPropertyName("startingItems")] public List<ClassStartingItem>? StartingItems { get; init; }
-    [JsonPropertyName("startingSpells")] public List<int>? StartingSpells { get; init; }
 }
 
 public sealed record EditorSaveItemPacket : IPacket
@@ -170,7 +136,6 @@ public sealed record EditorSaveItemPacket : IPacket
     [JsonPropertyName("spellNum")] public short SpellNum { get; init; }
     [JsonPropertyName("power")] public short Power { get; init; }
     [JsonPropertyName("levelReq")] public short LevelReq { get; init; }
-    [JsonPropertyName("allowedClasses")] public List<short>? AllowedClasses { get; init; }
     // Item restriction flags. See ItemRecord for behavior.
     [JsonPropertyName("nonTradeable")] public bool NonTradeable { get; init; }
     [JsonPropertyName("nonListable")] public bool NonListable { get; init; }
@@ -236,7 +201,6 @@ public sealed record EditorSaveSpellPacket : IPacket
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorSaveSpell;
     [JsonPropertyName("spellNum")] public int SpellNum { get; init; }
     [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("allowedClasses")] public List<short>? AllowedClasses { get; init; }
     [JsonPropertyName("type")] public SpellType Type { get; init; }
     // Type-specific fields; see SpellRecord for which apply to which SpellType.
     [JsonPropertyName("vitalAmount")] public short VitalAmount { get; init; }
@@ -298,7 +262,6 @@ public sealed record EditorDataPacket : IPacket
     [JsonPropertyName("shops")] public NameEntry[] Shops { get; init; } = [];
     [JsonPropertyName("spells")] public NameEntry[] Spells { get; init; } = [];
     [JsonPropertyName("maps")] public NameEntry[] Maps { get; init; } = [];
-    [JsonPropertyName("classes")] public NameEntry[] Classes { get; init; } = [];
     [JsonPropertyName("mapGroups")] public NameEntry[] MapGroups { get; init; } = [];
     [JsonPropertyName("quests")] public NameEntry[] Quests { get; init; } = [];
     [JsonPropertyName("conversations")] public NameEntry[] Conversations { get; init; } = [];
@@ -331,15 +294,14 @@ public sealed record EditorDataPacket : IPacket
         [property: JsonPropertyName("type")] ItemType Type,
         [property: JsonPropertyName("power")] int Power,
         [property: JsonPropertyName("levelReq")] short LevelReq,
-        [property: JsonPropertyName("allowedClasses")] List<short>? AllowedClasses,
         [property: JsonPropertyName("price")] int Price = 0);
 
     public sealed record SpellGate(
         [property: JsonPropertyName("num")] int Num,
         [property: JsonPropertyName("type")] SpellType Type,
         [property: JsonPropertyName("vitalAmount")] short VitalAmount,
-        [property: JsonPropertyName("levelReq")] short LevelReq,
-        [property: JsonPropertyName("allowedClasses")] List<short>? AllowedClasses);
+        [property: JsonPropertyName("levelReq")] short LevelReq);
+
     /// <summary>NPC footprint sizes (EffectiveSize, 1-based; index 0 unused) so the map editor renders +
     /// validates multi-tile spawn footprints without fetching every full NPC record.</summary>
     [JsonPropertyName("npcSizes")] public int[] NpcSizes { get; init; } = [];
@@ -355,7 +317,6 @@ public sealed record UpdateSpellPacket : IPacket
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.UpdateSpell;
     [JsonPropertyName("spellNum")] public int SpellNum { get; init; }
     [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("allowedClasses")] public List<short>? AllowedClasses { get; init; }
     [JsonPropertyName("type")] public SpellType Type { get; init; }
     // Type-specific fields; see SpellRecord for which apply to which SpellType.
     [JsonPropertyName("vitalAmount")] public short VitalAmount { get; init; }
@@ -376,24 +337,6 @@ public sealed record UpdateShopPacket : IPacket
     [JsonPropertyName("keeper")] public int Keeper { get; init; }
     [JsonPropertyName("barters")] public EditorSaveShopPacket.BarterEntry[] Barters { get; init; } = [];
     [JsonPropertyName("sales")] public int[] Sales { get; init; } = [];
-}
-
-public sealed record UpdateClassPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.UpdateClass;
-    [JsonPropertyName("classNum")] public int ClassNum { get; init; }
-    [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("desc")] public string Description { get; init; } = "";
-    [JsonPropertyName("spriteMale")] public int SpriteMale { get; init; }
-    [JsonPropertyName("spriteFemale")] public int SpriteFemale { get; init; }
-    [JsonPropertyName("spriteSheetMale")] public int SpriteSheetMale { get; init; }
-    [JsonPropertyName("spriteSheetFemale")] public int SpriteSheetFemale { get; init; }
-    [JsonPropertyName("str")] public int Str { get; init; }
-    [JsonPropertyName("def")] public int Def { get; init; }
-    [JsonPropertyName("spd")] public int Spd { get; init; }
-    [JsonPropertyName("int")] public int Int { get; init; }
-    [JsonPropertyName("startingItems")] public List<ClassStartingItem>? StartingItems { get; init; }
-    [JsonPropertyName("startingSpells")] public List<int>? StartingSpells { get; init; }
 }
 
 public sealed record EditorAllItemsPacket : IPacket
@@ -418,12 +361,6 @@ public sealed record EditorAllSpellsPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorAllSpells;
     [JsonPropertyName("spells")] public UpdateSpellPacket[] Spells { get; init; } = [];
-}
-
-public sealed record EditorAllClassesPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorAllClasses;
-    [JsonPropertyName("classes")] public UpdateClassPacket[] Classes { get; init; } = [];
 }
 
 // S→C: one group's full state (RequestMapGroup response). Mirrors the authored fields; ControllingGuild is
@@ -480,7 +417,6 @@ public sealed record EditorSaveQuestPacket : IPacket
     [JsonPropertyName("reqDef")] public int ReqDef { get; init; }
     [JsonPropertyName("reqSpd")] public int ReqSpd { get; init; }
     [JsonPropertyName("reqInt")] public int ReqInt { get; init; }
-    [JsonPropertyName("allowedClasses")] public List<short>? AllowedClasses { get; init; }
     [JsonPropertyName("prereq")] public int PrereqQuest { get; init; }
     [JsonPropertyName("rewExp")] public long RewardExp { get; init; }
     [JsonPropertyName("rewItems")] public List<QuestReward> RewardItems { get; init; } = new();
@@ -507,7 +443,6 @@ public sealed record UpdateQuestPacket : IPacket
     [JsonPropertyName("reqDef")] public int ReqDef { get; init; }
     [JsonPropertyName("reqSpd")] public int ReqSpd { get; init; }
     [JsonPropertyName("reqInt")] public int ReqInt { get; init; }
-    [JsonPropertyName("allowedClasses")] public List<short>? AllowedClasses { get; init; }
     [JsonPropertyName("prereq")] public int PrereqQuest { get; init; }
     [JsonPropertyName("rewExp")] public long RewardExp { get; init; }
     [JsonPropertyName("rewItems")] public List<QuestReward> RewardItems { get; init; } = new();

@@ -42,15 +42,6 @@ public sealed partial class ItemSystem : GameSystem
             }
         }
 
-        // Class gate (equipment only; empty = anyone). Mirrors the spell-learning gate below — both ask
-        // ClassGate, so "may this class use this?" has one answer everywhere.
-        if (ItemRecord.IsEquipment(item.Type) && !ClassGate.Allows(item.AllowedClasses, p.Class))
-        {
-            SendMsg(index, ServerStrings.ItemSystem_WrongClass, GameColor.BrightRed,
-                ("Class", ClassGate.Describe(item.AllowedClasses, _world.Classes)));
-            return;
-        }
-
         // An item worn to 0 durability BREAKS rather than being destroyed: it stays in the bag, unequipped
         // and unusable, until a repair shop restores it. Only the equip direction is blocked here — taking
         // off an already-worn piece is always allowed. A 0-Durability item carries no durability budget, so
@@ -74,9 +65,6 @@ public sealed partial class ItemSystem : GameSystem
             return;
         }
 
-        // Player's class record — drives the class-affinity head-start on the equip/learn gates below
-        // (a class needs proportionally less of its affinity stat to meet a requirement).
-        var cls = _world.Classes[p.Class];
         // ── The drinking cooldown ────────────────────────────────────────────────────────────────
         // Potions run on their own 2s clock, apart from the 1s action beat that attacking and casting
         // share, so a potion never costs a swing and a swing never delays a potion. Heavy Wind doubles
@@ -102,7 +90,7 @@ public sealed partial class ItemSystem : GameSystem
         switch (item.Type)
         {
             case ItemType.Weapon:
-                int weaponStrReq = CombatFormulas.GearStatRequirement(item.Power, cls.Str);
+                int weaponStrReq = CombatFormulas.GearStatRequirement(item.Power, 0);
                 if (p.WeaponSlot != invSlot && p.Str < weaponStrReq)
                 {
                     SendMsg(index, ServerStrings.ItemSystem_WeaponStrReq, GameColor.BrightRed, ("Required", weaponStrReq));
@@ -113,7 +101,7 @@ public sealed partial class ItemSystem : GameSystem
                 break;
 
             case ItemType.Armor:
-                int armorDefReq = CombatFormulas.GearStatRequirement(item.Power, cls.Def);
+                int armorDefReq = CombatFormulas.GearStatRequirement(item.Power, 0);
                 if (p.ArmorSlot != invSlot && p.Def < armorDefReq)
                 {
                     SendMsg(index, ServerStrings.ItemSystem_ArmorDefReq, GameColor.BrightRed, ("Required", armorDefReq));
@@ -124,7 +112,7 @@ public sealed partial class ItemSystem : GameSystem
                 break;
 
             case ItemType.Helmet:
-                int helmetDefReq = CombatFormulas.GearStatRequirement(item.Power, cls.Def);
+                int helmetDefReq = CombatFormulas.GearStatRequirement(item.Power, 0);
                 if (p.HelmetSlot != invSlot && p.Def < helmetDefReq)
                 {
                     SendMsg(index, ServerStrings.ItemSystem_HelmetDefReq, GameColor.BrightRed, ("Required", helmetDefReq));
@@ -135,7 +123,7 @@ public sealed partial class ItemSystem : GameSystem
                 break;
 
             case ItemType.Shield:
-                int shieldDefReq = CombatFormulas.GearStatRequirement(item.Power, cls.Def);
+                int shieldDefReq = CombatFormulas.GearStatRequirement(item.Power, 0);
                 if (p.ShieldSlot != invSlot && p.Def < shieldDefReq)
                 {
                     SendMsg(index, ServerStrings.ItemSystem_ShieldDefReq, GameColor.BrightRed, ("Required", shieldDefReq));

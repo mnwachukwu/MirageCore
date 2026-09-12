@@ -48,19 +48,10 @@ public sealed partial class MainWindowViewModel : ObservableObject
             npcs[row.SpriteSheet] = npcs.GetValueOrDefault(row.SpriteSheet) + 1;
         }
 
-        var classes = new Dictionary<int, int>();
-        foreach (var row in ClassEditor.Classes)
-        {
-            if (!row.IsLoaded || string.IsNullOrWhiteSpace(row.Name)) continue;
-            // One count per sprite, so a class on one sheet counts twice against it.
-            classes[row.SpriteSheetMale] = classes.GetValueOrDefault(row.SpriteSheetMale) + 1;
-            classes[row.SpriteSheetFemale] = classes.GetValueOrDefault(row.SpriteSheetFemale) + 1;
-        }
-
         var text = new Dictionary<int, string>();
-        foreach (int sheet in npcs.Keys.Concat(classes.Keys).Distinct())
+        foreach (int sheet in npcs.Keys)
             text[sheet] = EditorStrings.Format(EditorStrings.AssetManager_UsageSprites,
-                ("Npcs", npcs.GetValueOrDefault(sheet)), ("Classes", classes.GetValueOrDefault(sheet)));
+                ("Npcs", npcs[sheet]));
 
         return new SheetUsageSummary(text, EditorStrings.Get(EditorStrings.AssetManager_UsageNoneRecords));
     }

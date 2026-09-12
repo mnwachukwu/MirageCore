@@ -151,7 +151,7 @@ public sealed class LoginQueueTests
         // gets no reconnect grace, because there is nothing to key one on.
         foreach (string line in new[]
         {
-            PacketSerializer.Serialize(new GetClassesPacket()).TrimEnd('\n'),
+            PacketSerializer.Serialize(new LogoutToCharSelectPacket()).TrimEnd('\n'),
             "{\"cmd\":\"nonsense\"}",
             "not json at all",
         })

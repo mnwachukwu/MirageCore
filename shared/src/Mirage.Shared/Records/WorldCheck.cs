@@ -10,7 +10,6 @@ public enum WorldRecordKind
     Spell,
     Quest,
     Conversation,
-    Class,
 }
 
 /// <summary>What one world-check finding is about. The kind decides the wording; the numbers on the issue
@@ -119,7 +118,6 @@ public sealed record WorldContent
     public SpellRecord?[] Spells { get; init; } = [];
     public QuestRecord?[] Quests { get; init; } = [];
     public ConversationRecord?[] Conversations { get; init; } = [];
-    public ClassRecord?[] Classes { get; init; } = [];
 
     /// <summary>Whether a map-group index is backed by a record. Groups live in a dictionary — only files
     /// that exist are loaded — so they cannot be range-checked like the rest.</summary>
@@ -154,7 +152,6 @@ public static class WorldCheck
         CheckShops(found, world);
         CheckQuests(found, world);
         CheckConversations(found, world);
-        CheckClasses(found, world);
         return found;
     }
 
@@ -176,8 +173,6 @@ public static class WorldCheck
     private static bool HasItem(WorldContent w, int n) => Has(w.Items, n, r => r.Name);
     private static bool HasSpell(WorldContent w, int n) => Has(w.Spells, n, r => r.Name);
     private static bool HasQuest(WorldContent w, int n) => Has(w.Quests, n, r => r.Name);
-    private static bool HasClass(WorldContent w, int n) => Has(w.Classes, n, r => r.Name);
-
     // Every family iterates the same way: 1-based, skipping slots nobody has authored.
     private static IEnumerable<(int Num, T Record)> Authored<T>(T?[] all, Func<T, string> nameOf) where T : class
     {
@@ -191,14 +186,6 @@ public static class WorldCheck
                             WorldRecordKind owner, int ownerNum, string detail)
     {
         if (!present) found.Add(new WorldIssue(kind, owner, ownerNum, -1, -1, detail));
-    }
-
-    private static void Classes(List<WorldIssue> found, WorldContent w, List<short>? gate,
-                                WorldRecordKind owner, int ownerNum)
-    {
-        if (gate is null) return;
-        foreach (short c in gate)
-            Ref(found, HasClass(w, c), WorldIssueKind.ClassMissing, owner, ownerNum, $"{c}");
     }
 
     // ── Maps ─────────────────────────────────────────────────────────────────
@@ -361,8 +348,6 @@ public static class WorldCheck
             // SpellNum only means a spell on a scroll; on every other type the field carries nothing.
             if (item.Type == ItemType.Spell)
                 Ref(found, HasSpell(w, item.SpellNum), WorldIssueKind.SpellMissing, WorldRecordKind.Item, num, $"{item.SpellNum}");
-
-            Classes(found, w, item.AllowedClasses, WorldRecordKind.Item, num);
         }
     }
 
@@ -373,8 +358,6 @@ public static class WorldCheck
             // A GiveItem spell hands over an item; the other types put a magnitude in this field.
             if (spell.Type == SpellType.GiveItem)
                 Ref(found, HasItem(w, spell.ItemNum), WorldIssueKind.ItemMissing, WorldRecordKind.Spell, num, $"{spell.ItemNum}");
-
-            Classes(found, w, spell.AllowedClasses, WorldRecordKind.Spell, num);
         }
     }
 
@@ -431,8 +414,6 @@ public static class WorldCheck
 
             foreach (var r in quest.RewardItems.Concat(quest.RepeatRewardItems))
                 Ref(found, HasItem(w, r.ItemNum), WorldIssueKind.ItemMissing, WorldRecordKind.Quest, num, $"{r.ItemNum}");
-
-            Classes(found, w, quest.AllowedClasses, WorldRecordKind.Quest, num);
 
             if (PrereqLoops(w, num))
                 found.Add(new WorldIssue(WorldIssueKind.QuestPrereqCycle, WorldRecordKind.Quest, num, -1, -1, ""));
@@ -506,15 +487,4 @@ public static class WorldCheck
         }
     }
 
-    private static void CheckClasses(List<WorldIssue> found, WorldContent w)
-    {
-        foreach (var (num, cls) in Authored(w.Classes, r => r.Name))
-        {
-            foreach (var s in cls.StartingItems ?? [])
-                Ref(found, HasItem(w, s.ItemNum), WorldIssueKind.ItemMissing, WorldRecordKind.Class, num, $"{s.ItemNum}");
-
-            foreach (int s in cls.StartingSpells ?? [])
-                Ref(found, HasSpell(w, s), WorldIssueKind.SpellMissing, WorldRecordKind.Class, num, $"{s}");
-        }
-    }
 }

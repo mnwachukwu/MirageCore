@@ -292,7 +292,6 @@ public sealed class QuestSystem : GameSystem
         Ok = 0,
         LevelTooLow,
         StatTooLow,
-        WrongClass,
         PrereqNotDone,
     }
 
@@ -308,7 +307,6 @@ public sealed class QuestSystem : GameSystem
     {
         if (p.Level < q.ReqLevel) return HoldResult.LevelTooLow;
         if (p.Str < q.ReqStr || p.Def < q.ReqDef || p.Spd < q.ReqSpd || p.Int < q.ReqInt) return HoldResult.StatTooLow;
-        if (!ClassGate.Allows(q.AllowedClasses, p.Class)) return HoldResult.WrongClass;
         if (q.PrereqQuest > 0 && FindQuest(p, q.PrereqQuest) is not { Status: QuestStatus.Done })
             return HoldResult.PrereqNotDone;
         return HoldResult.Ok;

@@ -63,7 +63,6 @@ public static class Tooltip
     private static SpellRecord? _spell;
     private static string? _text;   // Kind.Text: the full string a truncated label shows on hover
     private static PlayerRecord? _me;
-    private static ClassRecord?[] _classes = Array.Empty<ClassRecord?>();
     private static IReadOnlyList<Texture2D?> _itemsTex = [];
     private static SpellRecord?[] _spellDefs = Array.Empty<SpellRecord?>();   // spell definitions (for a scroll's spell half)
     private static ItemRecord?[] _itemDefs = Array.Empty<ItemRecord?>();   // item definitions (for the SubHp reagent name)
@@ -84,7 +83,7 @@ public static class Tooltip
     /// alone, which is what it did everywhere before.</para>
     /// </summary>
     public static void NotifyHoverItem(string scope, object key, ItemRecord item, PlayerInvSlot? slot,
-        PlayerRecord? me, ClassRecord?[] classes, IReadOnlyList<Texture2D?> itemsTex, Point mousePos,
+        PlayerRecord? me, IReadOnlyList<Texture2D?> itemsTex, Point mousePos,
         SpellRecord?[]? spellDefs = null, ItemRecord?[]? itemDefs = null, WeatherType weather = default)
     {
         if (_kind != Kind.Item || !Equals(_key, key))
@@ -97,7 +96,6 @@ public static class Tooltip
         _item = item;
         _slot = slot;
         _me = me;
-        _classes = classes;
         _itemsTex = itemsTex;
         // Assigned even when null: these are shared with the spell path, and leaving them behind would
         // price a scroll's reagent line off whatever spell was hovered last.
@@ -110,7 +108,7 @@ public static class Tooltip
 
     /// <summary>Spell counterpart to <see cref="NotifyHoverItem"/>.</summary>
     public static void NotifyHoverSpell(string scope, object key, SpellRecord spell,
-        PlayerRecord? me, ClassRecord?[] classes, ItemRecord?[] itemDefs, WeatherType weather, Point mousePos)
+        PlayerRecord? me, ItemRecord?[] itemDefs, WeatherType weather, Point mousePos)
     {
         if (_kind != Kind.Spell || !Equals(_key, key))
         {
@@ -121,7 +119,6 @@ public static class Tooltip
         }
         _spell = spell;
         _me = me;
-        _classes = classes;
         _itemDefs = itemDefs;
         _weather = weather;
         _item = null;
@@ -230,14 +227,14 @@ public static class Tooltip
         {
             case Kind.Item when _item is not null:
                 header = _item.Name?.TrimEnd() ?? "Unknown";
-                BuildItemLines(_item, _slot, _me, _classes, _spellDefs, _itemDefs, _weather);
+                BuildItemLines(_item, _slot, _me, _spellDefs, _itemDefs, _weather);
                 hasIcon = _item.Pic >= 0 && _itemsTex.Sheet(_item.ItemSheet) is not null;
                 pic = _item.Pic;
                 itemSheet = _item.ItemSheet;
                 break;
             case Kind.Spell when _spell is not null:
                 header = _spell.Name?.TrimEnd() ?? "Unknown";
-                BuildSpellLines(_spell, _me, _classes, _itemDefs, _weather);
+                BuildSpellLines(_spell, _me, _itemDefs, _weather);
                 hasIcon = false;
                 pic = 0;
                 itemSheet = 0;
@@ -316,7 +313,7 @@ public static class Tooltip
     }
 
     private static void BuildItemLines(ItemRecord item, PlayerInvSlot? slot, PlayerRecord? me,
-        ClassRecord?[] classes, SpellRecord?[] spellDefs, ItemRecord?[] itemDefs, WeatherType weather)
+        SpellRecord?[] spellDefs, ItemRecord?[] itemDefs, WeatherType weather)
     {
         bool isEquip = ItemRecord.IsEquipment(item.Type);
 
@@ -332,9 +329,8 @@ public static class Tooltip
 
         int meStr = me?.Str ?? 0;
         int meDef = me?.Def ?? 0;
-        var myClass = me != null && me.Class > 0 && me.Class < classes.Length ? classes[me.Class] : null;
-        int classStr = myClass?.Str ?? 0;
-        int classDef = myClass?.Def ?? 0;
+        const int classStr = 0;
+        const int classDef = 0;
         string hp = ClientStrings.Get(ClientStrings.Stats_Hp);
         string mp = ClientStrings.Get(ClientStrings.Stats_Mp);
         string sp = ClientStrings.Get(ClientStrings.Stats_Sp);
@@ -410,16 +406,6 @@ public static class Tooltip
         if (statReqLabel is not null)
             _lines.Add(new Line(statReqLabel, statReqValue, meetsStatReq ? GoodColor : WarnColor));
 
-        if (isEquip && ClassGate.IsRestricted(item.AllowedClasses))
-        {
-            string names = ClassGate.Describe(item.AllowedClasses, classes);
-            if (names.Length > 0)
-            {
-                bool meetsClass = me != null && ClassGate.Allows(item.AllowedClasses, me.Class);
-                _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_ClassReq), names, meetsClass ? GoodColor : WarnColor));
-            }
-        }
-
         // ── The spell half of a scroll ────────────────────────────────────────
         // A scroll is a delivery mechanism and almost nothing about it is a property of the ITEM: what
         // it teaches, what a cast costs, who may learn it and at what level all live on the spell. Its
@@ -434,7 +420,7 @@ public static class Tooltip
             _lines.Add(new Line(
                 ClientStrings.Format(ClientStrings.Tooltip_Teaches, ("SpellName", taught.TrimmedName)),
                 "", HeaderColor));
-            BuildSpellLines(taught, me, classes, itemDefs, weather);
+            BuildSpellLines(taught, me, itemDefs, weather);
         }
     }
 
@@ -460,13 +446,9 @@ public static class Tooltip
             $"+{gainFirst} {first.Name} / +{gainSecond} {second.Name}", GoodColor));
     }
 
-    private static void BuildSpellLines(SpellRecord spell, PlayerRecord? me, ClassRecord?[] classes, ItemRecord?[] itemDefs, WeatherType weather)
+    private static void BuildSpellLines(SpellRecord spell, PlayerRecord? me, ItemRecord?[] itemDefs, WeatherType weather)
     {
-        ClassRecord? myClass = null;
-        if (me is not null && me.Class > 0 && me.Class < classes.Length)
-            myClass = classes[me.Class];
-
-        int classInt = myClass?.Int ?? 0;
+        const int classInt = 0;
         // SubHp pays the trivial pool-fraction (per the caster resource model); everything else the utility cost.
         // AddMp prices off what it will restore for THIS caster, so it reads me.Int — the player's own Int, as
         // the server does — not the class base used for the INT requirement below.
@@ -539,14 +521,5 @@ public static class Tooltip
         bool meetsInt = me?.Int >= intReq;
         _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_IntReq), UiHelper.FormatRequirement(CombatFormulas.RawSpellRequirement(spell), intReq), meetsInt ? GoodColor : WarnColor));
 
-        if (ClassGate.IsRestricted(spell.AllowedClasses))
-        {
-            string names = ClassGate.Describe(spell.AllowedClasses, classes);
-            if (names.Length > 0)
-            {
-                bool meetsClass = me != null && ClassGate.Allows(spell.AllowedClasses, me.Class);
-                _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_ClassReq), names, meetsClass ? GoodColor : WarnColor));
-            }
-        }
     }
 }

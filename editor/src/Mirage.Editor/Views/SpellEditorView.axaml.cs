@@ -22,14 +22,12 @@ public partial class SpellEditorView : LocalizedUserControl
         _refsHeader.Text = EditorStrings.Get(EditorStrings.References_Header);
         _noRefs.Text = EditorStrings.Get(EditorStrings.References_None);
         _typeFilterCombo.PlaceholderText = EditorStrings.Get(EditorStrings.SpellEditor_AllSpellTypesFilter);
-        _classReqFilterCombo.PlaceholderText = EditorStrings.Get(EditorStrings.SpellEditor_AllClassesFilter);
         _filterTextBox.PlaceholderText = EditorStrings.Get(EditorStrings.Common_FilterByName);
         _giveItemPicker.PlaceholderText = EditorStrings.Get(EditorStrings.SpellEditor_GiveItemSearchPlaceholder);
         _selectPrompt.Text = EditorStrings.Get(EditorStrings.SpellEditor_SelectPrompt);
         _sectionTitle.Text = EditorStrings.Get(EditorStrings.SpellEditor_SectionTitle);
         _nameLabel.Text = EditorStrings.Get(EditorStrings.Common_NameLabel);
         _typeLabel.Text = EditorStrings.Get(EditorStrings.Common_TypeLabel);
-        _allowedClassesLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_AllowedClasses);
         _levelReqLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_LevelReq);
         _maxMpCostLabel.Text = EditorStrings.Get(EditorStrings.SpellEditor_MaxMpCostLabel);
         _reagentCostLabel.Text = EditorStrings.Get(EditorStrings.SpellEditor_ReagentCostLabel);

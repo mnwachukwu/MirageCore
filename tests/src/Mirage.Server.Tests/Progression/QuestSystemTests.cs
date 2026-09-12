@@ -327,28 +327,6 @@ public class QuestSystemTests
         Assert.That(sp.Char.Quests, Has.Count.EqualTo(Constants.MaxActiveQuests), "an 11th in-progress quest is refused");
     }
 
-    // ── Class requirement ─────────────────────────────────────────────────────────
-
-    [Test]
-    public void ClassRequirement_GatesAccept()
-    {
-        var (world, pm, _, quests) = Setup();
-        KillQuest(world, 1).AllowedClasses = [2, 4];
-        var sp = AddPlayer(pm, 1);
-
-        sp.Char.Class = 1;
-        Assert.That(quests.IsEligible(1, 1), Is.False, "a class outside the set can't take it");
-        sp.Char.Class = 2;
-        Assert.That(quests.IsEligible(1, 1), Is.True, "the first allowed class can");
-        sp.Char.Class = 4;
-        Assert.That(quests.IsEligible(1, 1), Is.True, "and so can any other in the set");
-
-        // Empty means everyone, so clearing the gate re-opens it to the class just rejected.
-        KillQuest(world, 1).AllowedClasses = null;
-        sp.Char.Class = 1;
-        Assert.That(quests.IsEligible(1, 1), Is.True, "no gate = every class");
-    }
-
     // ── Repeat rewards + abandon can't farm the first-completion set ───────────────
 
     [Test]
@@ -469,21 +447,6 @@ public class QuestSystemTests
         Kill(objectives, Rat, 1);
 
         Assert.That(quests.HasActionableQuestAt(1, 7), Is.True, "with no explicit turn-in NPC, you turn in at the giver");
-    }
-
-    [Test]
-    public void HasActionableQuestAt_ClassLockedGiver_False()
-    {
-        var (world, pm, _, quests) = Setup();
-        var q = KillQuest(world, 1);
-        q.GiverNpc = 7;
-        q.AllowedClasses = [2];
-        var sp = AddPlayer(pm, 1);
-
-        sp.Char.Class = 1;   // wrong class → the NPC falls through to its other actions
-        Assert.That(quests.HasActionableQuestAt(1, 7), Is.False, "a class-locked quest offers nothing");
-        sp.Char.Class = 2;
-        Assert.That(quests.HasActionableQuestAt(1, 7), Is.True, "the required class can take it");
     }
 
     [Test]

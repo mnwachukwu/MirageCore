@@ -28,40 +28,18 @@ public sealed partial class QuestEditorViewModel : EditorViewModelBase<QuestRowV
         _data.EntriesInvalidated += () =>
         {
             foreach (var q in Quests) q.NotifyEntriesChanged();
-            RebuildClassSelection();   // a renamed or newly named class must re-label its checkbox
-        };
-        ClassSelection.SelectionChanged += ids =>
-        {
-            if (SelectedQuest is null) return;
-            _applyingClassSelection = true;
-            try { SelectedQuest.AllowedClasses = ids; }
-            finally { _applyingClassSelection = false; }
         };
     }
-
-    public Models.NamedEntry[] ClassEntries => _data.LiveClassEntries;
 
     /// <summary>The class gate: a checkbox per class, none ticked meaning every class. Unlike the level
     /// and stat requirements beside it this is a set, and a quest outside it is invisible rather than
     /// merely unacceptable.</summary>
-    public ClassSelectionViewModel ClassSelection { get; } = new();
 
     // Set while a checkbox click is writing into the row, so the row's change notification doesn't bounce
     // back and rebuild the checkboxes mid-edit.
-    private bool _applyingClassSelection;
-
-    private void RebuildClassSelection()
-    {
-        if (SelectedQuest is null) ClassSelection.Clear();
-        else ClassSelection.Rebuild(ClassEntries, SelectedQuest.AllowedClasses);
-        ClassSelection.IsActive = SelectedQuest is not null;
-    }
 
     private void OnQuestPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        // Re-tick when the row's list changed from anywhere but the checkboxes (a packet, a discard).
-        if (e.PropertyName is nameof(QuestRowViewModel.AllowedClasses) && !_applyingClassSelection)
-            RebuildClassSelection();
     }
 
     protected override string SectionId => CoreRecordFamilies.Quests;
@@ -110,7 +88,6 @@ public sealed partial class QuestEditorViewModel : EditorViewModelBase<QuestRowV
         NotifyDirtyState();
         if (newValue is not null && !newValue.IsLoaded && _data.IsOnline)
             _ = LoadEntityAsync(newValue);
-        RebuildClassSelection();
     }
 
     public void LoadOffline()
@@ -137,8 +114,7 @@ public sealed partial class QuestEditorViewModel : EditorViewModelBase<QuestRowV
     // Bind every picker a quest row needs from the live editor caches.
     private QuestRowViewModel NewRow(int index, QuestRecord r, bool isLoaded = true) =>
         new(index, r,
-            () => _data.LiveNpcEntries, () => _data.LiveItemEntries,
-            () => _data.LiveClassEntries, () => _data.LiveQuestEntries,
+            () => _data.LiveNpcEntries, () => _data.LiveItemEntries, () => _data.LiveQuestEntries,
             _data.IsCurrencyItem, isLoaded);
 
     protected override async Task<IPacket?> RequestFromServerAsync(QuestRowViewModel vm)

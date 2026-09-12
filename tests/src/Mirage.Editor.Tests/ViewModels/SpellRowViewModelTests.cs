@@ -14,7 +14,7 @@ public class SpellRowViewModelTests
 {
     static SpellRecord Fireball() => new()
     {
-        Name = "Fireball", AllowedClasses = [2, 6], Type = SpellType.SubHp, VitalAmount = 40,
+        Name = "Fireball", Type = SpellType.SubHp, VitalAmount = 40,
     };
 
     [Test]
@@ -25,7 +25,6 @@ public class SpellRowViewModelTests
         Assert.Multiple(() =>
         {
             Assert.That(r.Name, Is.EqualTo("Fireball"));
-            Assert.That(r.AllowedClasses, Is.EqualTo(new short[] { 2, 6 }));
             Assert.That(r.Type, Is.EqualTo(SpellType.SubHp));
             Assert.That(r.VitalAmount, Is.EqualTo((short)40));
             Assert.That(vm.IsDirty, Is.False);

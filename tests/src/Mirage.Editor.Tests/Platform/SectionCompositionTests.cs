@@ -41,7 +41,7 @@ public class SectionCompositionTests
     {
         Assert.That(Sections(), Is.EqualTo(new[]
         {
-            "Maps", "MapGroups", "Items", "NPCs", "Shops", "Spells", "Classes", "Quests",
+            "Maps", "MapGroups", "Items", "NPCs", "Shops", "Spells", "Quests",
             "Conversations", "Accounts",
         }));
     }

@@ -125,7 +125,6 @@ public static partial class EditorStrings
 
     // ── SpellEditorView ───────────────────────────────────────────────────────
     public const string SpellEditor_AllSpellTypesFilter = nameof(SpellEditor_AllSpellTypesFilter);
-    public const string SpellEditor_AllClassesFilter = nameof(SpellEditor_AllClassesFilter);
     public const string SpellEditor_SelectPrompt = nameof(SpellEditor_SelectPrompt);
     public const string SpellEditor_SectionTitle = nameof(SpellEditor_SectionTitle);
     public const string SpellEditor_MaxMpCostLabel = nameof(SpellEditor_MaxMpCostLabel);
@@ -161,46 +160,6 @@ public static partial class EditorStrings
     public const string SpellEditor_Formula_RangeHeader = nameof(SpellEditor_Formula_RangeHeader);
     public const string SpellEditor_Formula_RangeFormula = nameof(SpellEditor_Formula_RangeFormula);
     public const string SpellEditor_Formula_RangeNote = nameof(SpellEditor_Formula_RangeNote);
-
-    // ── ClassEditorView ───────────────────────────────────────────────────────
-    public const string ClassEditor_SelectPrompt = nameof(ClassEditor_SelectPrompt);
-    public const string ClassEditor_SectionTitle = nameof(ClassEditor_SectionTitle);
-    public const string ClassEditor_DescLabel = nameof(ClassEditor_DescLabel);
-    public const string ClassEditor_DescHint = nameof(ClassEditor_DescHint);
-    public const string ClassEditor_SpriteSheetMaleLabel = nameof(ClassEditor_SpriteSheetMaleLabel);
-    public const string ClassEditor_SpriteSheetFemaleLabel = nameof(ClassEditor_SpriteSheetFemaleLabel);
-    public const string ClassEditor_SpriteMaleLabel = nameof(ClassEditor_SpriteMaleLabel);
-    public const string ClassEditor_SpriteFemaleLabel = nameof(ClassEditor_SpriteFemaleLabel);
-    public const string ClassEditor_StrLabel = nameof(ClassEditor_StrLabel);
-    public const string ClassEditor_DefLabel = nameof(ClassEditor_DefLabel);
-    public const string ClassEditor_SpdLabel = nameof(ClassEditor_SpdLabel);
-    public const string ClassEditor_IntLabel = nameof(ClassEditor_IntLabel);
-    public const string ClassEditor_MaxHpLabel = nameof(ClassEditor_MaxHpLabel);
-    public const string ClassEditor_MaxMpLabel = nameof(ClassEditor_MaxMpLabel);
-    public const string ClassEditor_MaxSpLabel = nameof(ClassEditor_MaxSpLabel);
-    public const string ClassEditor_StartingStatsNote = nameof(ClassEditor_StartingStatsNote);
-    public const string ClassEditor_RegenHeader = nameof(ClassEditor_RegenHeader);
-    public const string ClassEditor_CombatHeader = nameof(ClassEditor_CombatHeader);
-    public const string ClassEditor_HpRegenLabel = nameof(ClassEditor_HpRegenLabel);
-    public const string ClassEditor_MpRegenLabel = nameof(ClassEditor_MpRegenLabel);
-    public const string ClassEditor_SpRegenLabel = nameof(ClassEditor_SpRegenLabel);
-    public const string ClassEditor_SaveClassButton = nameof(ClassEditor_SaveClassButton);
-    public const string ClassEditor_Formula_VitalsHeader = nameof(ClassEditor_Formula_VitalsHeader);
-    public const string ClassEditor_Formula_VitalsMaxHp = nameof(ClassEditor_Formula_VitalsMaxHp);
-    public const string ClassEditor_Formula_VitalsMaxMp = nameof(ClassEditor_Formula_VitalsMaxMp);
-    public const string ClassEditor_Formula_VitalsMaxSp = nameof(ClassEditor_Formula_VitalsMaxSp);
-    public const string ClassEditor_Formula_VitalsNote = nameof(ClassEditor_Formula_VitalsNote);
-    public const string ClassEditor_Formula_RegenHeader = nameof(ClassEditor_Formula_RegenHeader);
-    public const string ClassEditor_Formula_RegenHp = nameof(ClassEditor_Formula_RegenHp);
-    public const string ClassEditor_Formula_RegenMp = nameof(ClassEditor_Formula_RegenMp);
-    public const string ClassEditor_Formula_RegenSp = nameof(ClassEditor_Formula_RegenSp);
-    public const string ClassEditor_Formula_RegenNote = nameof(ClassEditor_Formula_RegenNote);
-    public const string ClassEditor_Formula_CombatHeader = nameof(ClassEditor_Formula_CombatHeader);
-    public const string ClassEditor_Formula_CombatPDmg = nameof(ClassEditor_Formula_CombatPDmg);
-    public const string ClassEditor_Formula_CombatMDmg = nameof(ClassEditor_Formula_CombatMDmg);
-    public const string ClassEditor_Formula_CombatMit = nameof(ClassEditor_Formula_CombatMit);
-    public const string ClassEditor_Formula_CombatNote = nameof(ClassEditor_Formula_CombatNote);
-    public const string ClassEditor_Formula_PreviewNote = nameof(ClassEditor_Formula_PreviewNote);
 
     // ── ShopEditorView ────────────────────────────────────────────────────────
     public const string ShopEditor_SelectPrompt = nameof(ShopEditor_SelectPrompt);
@@ -281,27 +240,11 @@ public static partial class EditorStrings
     public const string NpcEditor_TypeNamePlural = nameof(NpcEditor_TypeNamePlural);    // "NPCs"
     public const string SpellEditor_TypeName = nameof(SpellEditor_TypeName);        // "Spell"
     public const string SpellEditor_TypeNamePlural = nameof(SpellEditor_TypeNamePlural);  // "Spells"
-    public const string ClassEditor_TypeName = nameof(ClassEditor_TypeName);        // "Class"
 
     // ── Starting loadout ─────────────────────────────────────────────────────
     // Character creation SKIPS a starting line the class cannot use, so an unusable row produces a
     // MISSING item and no explanation in-game. The outcome column below is the only place that mistake
     // is ever visible, which is why it is spelled out per row rather than summarized.
-    public const string ClassEditor_StartItemsLabel = nameof(ClassEditor_StartItemsLabel);
-    public const string ClassEditor_StartSpellsLabel = nameof(ClassEditor_StartSpellsLabel);
-    public const string ClassEditor_StartItemPlaceholder = nameof(ClassEditor_StartItemPlaceholder);
-    public const string ClassEditor_StartSpellPlaceholder = nameof(ClassEditor_StartSpellPlaceholder);
-    public const string ClassEditor_AddStartItem = nameof(ClassEditor_AddStartItem);
-    public const string ClassEditor_AddStartSpell = nameof(ClassEditor_AddStartSpell);
-    public const string ClassEditor_StartWorn = nameof(ClassEditor_StartWorn);
-    public const string ClassEditor_StartCarried = nameof(ClassEditor_StartCarried);
-    public const string ClassEditor_StartSkippedClass = nameof(ClassEditor_StartSkippedClass);
-    public const string ClassEditor_StartSkippedStat = nameof(ClassEditor_StartSkippedStat);
-    public const string ClassEditor_StartSkippedLevel = nameof(ClassEditor_StartSkippedLevel);
-    public const string ClassEditor_StartSpellDetail = nameof(ClassEditor_StartSpellDetail);
-    public const string ClassEditor_LoadoutSummary = nameof(ClassEditor_LoadoutSummary);
-    public const string ClassEditor_StartSkippedWarning = nameof(ClassEditor_StartSkippedWarning);
-    public const string ClassEditor_TypeNamePlural = nameof(ClassEditor_TypeNamePlural);  // "Classes"
     public const string ShopEditor_TypeName = nameof(ShopEditor_TypeName);         // "Shop"
     public const string ShopEditor_TypeNamePlural = nameof(ShopEditor_TypeNamePlural);   // "Shops"
     public const string QuestEditor_TypeName = nameof(QuestEditor_TypeName);        // "Quest"
@@ -354,9 +297,7 @@ public static partial class EditorStrings
     public const string References_SoldBy = nameof(References_SoldBy);
     public const string References_RewardedBy = nameof(References_RewardedBy);
     public const string References_ReagentFor = nameof(References_ReagentFor);
-    public const string References_StartingGearFor = nameof(References_StartingGearFor);
     public const string References_TaughtBy = nameof(References_TaughtBy);
-    public const string References_StartingSpellFor = nameof(References_StartingSpellFor);
     public const string References_GivesQuest = nameof(References_GivesQuest);
     public const string References_TakesQuest = nameof(References_TakesQuest);
     public const string References_KilledFor = nameof(References_KilledFor);
@@ -365,8 +306,6 @@ public static partial class EditorStrings
     public const string References_SpawnsOn = nameof(References_SpawnsOn);
     public const string References_GroupedWith = nameof(References_GroupedWith);
     public const string References_PrerequisiteFor = nameof(References_PrerequisiteFor);
-    public const string References_RestrictedItems = nameof(References_RestrictedItems);
-    public const string References_RestrictedSpells = nameof(References_RestrictedSpells);
 
     // ── NpcRowViewModel formatted previews (Drop % and Magic Damage) ──────────
     public const string NpcEditor_DropChanceNever = nameof(NpcEditor_DropChanceNever);   // "0% (never drops)"

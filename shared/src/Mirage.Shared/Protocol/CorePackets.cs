@@ -37,7 +37,6 @@ public static class CorePackets
             withoutIndex: Read<PlayerDirPacket>);
 
         // Account / pre-login
-        builder.Register(PacketNames.GetClasses, Read<GetClassesPacket>);
         builder.Register(PacketNames.NewAccount, Read<NewAccountPacket>);
         builder.Register(PacketNames.DelAccount, Read<DelAccountPacket>);
         builder.Register(PacketNames.ChangePassword, Read<ChangePasswordPacket>);
@@ -219,8 +218,6 @@ public static class CorePackets
         builder.Register(PacketNames.AlertMsg, Read<AlertMsgPacket>);
         builder.Register(PacketNames.ServerHello, Read<ServerHelloPacket>);
         builder.Register(PacketNames.QueueUpdate, Read<QueueUpdatePacket>);
-        builder.Register(PacketNames.SendClasses, Read<SendClassesPacket>);
-        builder.Register(PacketNames.NewCharClasses, Read<NewCharClassesPacket>);
         builder.Register(PacketNames.SendChars, Read<SendCharsPacket>);
         builder.Register(PacketNames.Welcome, Read<WelcomePacket>);
         builder.Register(PacketNames.PlayerInGame, Read<PlayerInGamePacket>);
@@ -283,7 +280,6 @@ public static class CorePackets
         builder.Register(PacketNames.EditorRequestConversation, Read<EditorRequestConversationPacket>);
         builder.Register(PacketNames.EditorRequestSpell, Read<EditorRequestSpellPacket>);
         builder.Register(PacketNames.EditorRequestMap, Read<EditorRequestMapPacket>);
-        builder.Register(PacketNames.EditorRequestClass, Read<EditorRequestClassPacket>);
         builder.Register(PacketNames.EditorLock, Read<EditorLockPacket>);
         builder.Register(PacketNames.EditorUnlock, Read<EditorUnlockPacket>);
         builder.Register(PacketNames.EditorLocks, Read<EditorLocksPacket>);
@@ -293,7 +289,6 @@ public static class CorePackets
         builder.Register(PacketNames.EditorRequestAllQuests, Read<EditorRequestAllQuestsPacket>);
         builder.Register(PacketNames.EditorRequestAllConversations, Read<EditorRequestAllConversationsPacket>);
         builder.Register(PacketNames.EditorRequestAllSpells, Read<EditorRequestAllSpellsPacket>);
-        builder.Register(PacketNames.EditorRequestAllClasses, Read<EditorRequestAllClassesPacket>);
         builder.Register(PacketNames.EditorRequestMapGroup, Read<EditorRequestMapGroupPacket>);
         builder.Register(PacketNames.EditorRequestAllMapGroups, Read<EditorRequestAllMapGroupsPacket>);
         builder.Register(PacketNames.EditorRequestAllMaps, Read<EditorRequestAllMapsPacket>);
@@ -312,8 +307,6 @@ public static class CorePackets
         builder.Register(PacketNames.EditorSetQuestStatus, Read<EditorSetQuestStatusPacket>);
         builder.Register(PacketNames.EditorNotice, Read<EditorNoticePacket>);
         builder.Register(PacketNames.EditorSaveMapGroup, Read<EditorSaveMapGroupPacket>);
-        builder.Register(PacketNames.EditorSaveClass, Read<EditorSaveClassPacket>);
-        builder.Register(PacketNames.UpdateClass, Read<UpdateClassPacket>);
         builder.Register(PacketNames.EditorSaveItem, Read<EditorSaveItemPacket>);
         builder.Register(PacketNames.EditorSaveNpc, Read<EditorSaveNpcPacket>);
         builder.Register(PacketNames.EditorSaveShop, Read<EditorSaveShopPacket>);
@@ -329,7 +322,6 @@ public static class CorePackets
         builder.Register(PacketNames.EditorAllQuests, Read<EditorAllQuestsPacket>);
         builder.Register(PacketNames.EditorAllConversations, Read<EditorAllConversationsPacket>);
         builder.Register(PacketNames.EditorAllSpells, Read<EditorAllSpellsPacket>);
-        builder.Register(PacketNames.EditorAllClasses, Read<EditorAllClassesPacket>);
         builder.Register(PacketNames.UpdateMapGroup, Read<UpdateMapGroupPacket>);
         builder.Register(PacketNames.EditorAllMapGroups, Read<EditorAllMapGroupsPacket>);
         builder.Register(PacketNames.EditorAllMaps, Read<EditorAllMapsPacket>);

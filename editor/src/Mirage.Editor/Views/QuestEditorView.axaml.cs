@@ -36,7 +36,6 @@ public partial class QuestEditorView : LocalizedUserControl
         _reqDefLabel.Text = EditorStrings.Get(EditorStrings.QuestEditor_ReqDefLabel);
         _reqSpdLabel.Text = EditorStrings.Get(EditorStrings.QuestEditor_ReqSpdLabel);
         _reqIntLabel.Text = EditorStrings.Get(EditorStrings.QuestEditor_ReqIntLabel);
-        _allowedClassesLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_AllowedClasses);
         _prereqLabel.Text = EditorStrings.Get(EditorStrings.QuestEditor_PrereqLabel);
         _objectivesHeader.Text = EditorStrings.Get(EditorStrings.QuestEditor_ObjectivesHeader);
         _objColKind.Text = EditorStrings.Get(EditorStrings.QuestEditor_ObjColKind);

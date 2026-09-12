@@ -55,7 +55,6 @@ public static partial class ServerStrings
     public const string ItemSystem_HelmetDefReq = nameof(ItemSystem_HelmetDefReq);
     public const string ItemSystem_ShieldDefReq = nameof(ItemSystem_ShieldDefReq);
     public const string ItemSystem_GearUnequippedDelevel = nameof(ItemSystem_GearUnequippedDelevel);
-    public const string ItemSystem_WrongClass = nameof(ItemSystem_WrongClass);
     public const string ItemSystem_ItemBroken = nameof(ItemSystem_ItemBroken);
     public const string ItemSystem_GearSwapCombat = nameof(ItemSystem_GearSwapCombat);
     public const string ItemSystem_KeyDissolves = nameof(ItemSystem_KeyDissolves);

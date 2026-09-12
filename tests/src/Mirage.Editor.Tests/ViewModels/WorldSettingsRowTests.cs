@@ -87,18 +87,6 @@ public class WorldSettingsRowTests
         });
     }
 
-    /// <summary>A class number rides in every saved character, so its ceiling is not something an
-    /// operator can be offered — and it has to survive the round trip untouched rather than coming back
-    /// as zero.</summary>
-    [Test]
-    public void AFixedCeilingIsNotOfferedAndSurvivesUnchanged()
-    {
-        var vm = Open(Distinct);
-
-        Assert.That(vm.Rows.Any(r => r.FamilyId == CoreRecordFamilies.Classes), Is.False);
-        Assert.That(ConfirmedLimits(vm).For(CoreRecordFamilies.Classes), Is.EqualTo(Constants.MaxClasses));
-    }
-
     [Test]
     public void TheDialogOffersEveryConfigurableFamily()
     {

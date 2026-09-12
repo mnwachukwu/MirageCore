@@ -40,11 +40,6 @@ public sealed class QuestRecord
     public int ReqDef { get; set; }
     public int ReqSpd { get; set; }
     public int ReqInt { get; set; }
-    /// <summary>The classes allowed to accept it (1-based ids). Empty or absent = every class. Unlike the
-    /// scalar requirements above this is a set, not a threshold — a class-locked quest is invisible to
-    /// every other class rather than merely ungrantable. Ask <see cref="ClassGate"/>; the editor's save
-    /// path canonicalizes it through <see cref="ClassGate.Normalize"/>.</summary>
-    public List<short>? AllowedClasses { get; set; }
     /// <summary>A quest number that must be Done before this one can be accepted (0 = none) — enables chains.</summary>
     public int PrereqQuest { get; set; }
 
@@ -90,9 +85,6 @@ public sealed class QuestRecord
     public QuestRecord Clone()
     {
         var c = (QuestRecord)MemberwiseClone();
-        // AllowedClasses is a list too, so the shallow copy would alias it into the snapshot — the exact
-        // bug the objective/reward copies below exist to avoid.
-        c.AllowedClasses = AllowedClasses is null ? null : new List<short>(AllowedClasses);
         c.Objectives = new List<Objective>(Objectives.Count);
         foreach (var o in Objectives) c.Objectives.Add(o.Clone());
         c.RewardItems = new List<QuestReward>(RewardItems.Count);

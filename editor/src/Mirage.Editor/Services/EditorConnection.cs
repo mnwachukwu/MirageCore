@@ -208,9 +208,6 @@ public sealed class EditorConnection : IDisposable
     public Task<EditorAllSpellsPacket?> RequestAllSpellsAsync(CancellationToken ct = default)
         => RequestBulkAsync<EditorAllSpellsPacket>(PacketNames.EditorAllSpells, new EditorRequestAllSpellsPacket(), ct);
 
-    public Task<EditorAllClassesPacket?> RequestAllClassesAsync(CancellationToken ct = default)
-        => RequestBulkAsync<EditorAllClassesPacket>(PacketNames.EditorAllClasses, new EditorRequestAllClassesPacket(), ct);
-
     public Task<EditorAllMapGroupsPacket?> RequestAllMapGroupsAsync(CancellationToken ct = default)
         => RequestBulkAsync<EditorAllMapGroupsPacket>(PacketNames.EditorAllMapGroups, new EditorRequestAllMapGroupsPacket(), ct);
 
@@ -352,11 +349,6 @@ public sealed class EditorConnection : IDisposable
             PacketNames.SendMap, mapNum,
             new EditorRequestMapPacket { MapNum = mapNum }, ct);
 
-    public Task<UpdateClassPacket?> RequestClassAsync(int classNum, CancellationToken ct = default)
-        => RequestAsync<UpdateClassPacket>(
-            PacketNames.UpdateClass, classNum,
-            new EditorRequestClassPacket { ClassNum = classNum }, ct);
-
     public Task<UpdateMapGroupPacket?> RequestMapGroupAsync(int groupNum, CancellationToken ct = default)
         => RequestAsync<UpdateMapGroupPacket>(
             PacketNames.UpdateMapGroup, groupNum,
@@ -494,7 +486,6 @@ public sealed class EditorConnection : IDisposable
         EditorAllQuestsPacket => PacketNames.EditorAllQuests,
         EditorAllConversationsPacket => PacketNames.EditorAllConversations,
         EditorAllSpellsPacket => PacketNames.EditorAllSpells,
-        EditorAllClassesPacket => PacketNames.EditorAllClasses,
         EditorAllMapGroupsPacket => PacketNames.EditorAllMapGroups,
         EditorAllMapsPacket => PacketNames.EditorAllMaps,
         EditorAccountListPacket => PacketNames.EditorAccountList,
@@ -519,7 +510,6 @@ public sealed class EditorConnection : IDisposable
             UpdateConversationPacket p => (PacketNames.UpdateConversation, p.ConvNum),
             UpdateSpellPacket p => (PacketNames.UpdateSpell, p.SpellNum),
             SendMapPacket p => (PacketNames.SendMap, p.MapNum),
-            UpdateClassPacket p => (PacketNames.UpdateClass, p.ClassNum),
             UpdateMapGroupPacket p => (PacketNames.UpdateMapGroup, p.GroupNum),
             _ => ("", 0),
         };

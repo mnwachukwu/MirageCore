@@ -64,7 +64,6 @@ public sealed partial class SpellRowViewModel : ObservableObject, ILockableRow
         Index = index;
         IsLoaded = isLoaded;
         _name = r.Name;
-        _allowedClasses = r.AllowedClasses is null ? null : new List<short>(r.AllowedClasses);
         _type = r.Type;
         _vitalAmount = r.VitalAmount;
         _itemNum = r.ItemNum;
@@ -74,7 +73,6 @@ public sealed partial class SpellRowViewModel : ObservableObject, ILockableRow
     }
 
     partial void OnNameChanged(string value) => MarkDirty();
-    partial void OnAllowedClassesChanged(List<short>? value) => MarkDirty();
 
     // VitalAmount and IntReq are the two gate values, so both re-raise the cost preview; ItemNum and
     // ItemQuantity say what GiveItem hands over and have no bearing on cost.
@@ -144,7 +142,6 @@ public sealed partial class SpellRowViewModel : ObservableObject, ILockableRow
         try
         {
             Name = r.Name;
-            AllowedClasses = r.AllowedClasses is null ? null : new List<short>(r.AllowedClasses);
             Type = r.Type;
             VitalAmount = r.VitalAmount;
             ItemNum = r.ItemNum;
@@ -168,7 +165,6 @@ public sealed partial class SpellRowViewModel : ObservableObject, ILockableRow
         try
         {
             Name = pkt.Name;
-            AllowedClasses = pkt.AllowedClasses is null ? null : new List<short>(pkt.AllowedClasses);
             Type = pkt.Type;
             VitalAmount = pkt.VitalAmount;
             ItemNum = pkt.ItemNum;
@@ -195,7 +191,6 @@ public sealed partial class SpellRowViewModel : ObservableObject, ILockableRow
         var r = new SpellRecord
         {
             Name = Name,
-            AllowedClasses = AllowedClasses is null ? null : new List<short>(AllowedClasses),
             Type = Type,
             VitalAmount = VitalAmount,
             ItemNum = ItemNum,
@@ -217,7 +212,6 @@ public sealed partial class SpellRowViewModel : ObservableObject, ILockableRow
         {
             SpellNum = Index,
             Name = r.Name,
-            AllowedClasses = r.AllowedClasses,
             Type = r.Type,
             VitalAmount = r.VitalAmount,
             ItemNum = r.ItemNum,

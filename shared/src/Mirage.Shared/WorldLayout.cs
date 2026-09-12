@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace Mirage.Shared;
 
 /// <summary>
@@ -16,7 +18,7 @@ public static class WorldLayout
     /// <c>trades</c>, <c>seasons</c> or <c>map_items</c>: those change as the server runs and live beside
     /// it in the data folder.</summary>
     public static readonly string[] WorldFolders =
-        ["maps", "map_groups", "items", "npcs", "shops", "spells", "classes", "quests", "conversations"];
+        [.. Extensibility.CoreRecordFamilies.World.Select(f => f.EffectiveDirectory)];
 
     /// <summary>What a world folder carries besides its records. The MOTD is not among them — it is the
     /// greeting one server gives, and belongs with that installation's state.</summary>

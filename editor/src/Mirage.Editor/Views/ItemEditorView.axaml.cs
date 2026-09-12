@@ -42,7 +42,6 @@ public partial class ItemEditorView : LocalizedUserControl
         // their captions instead, since those two vary by item type.
         _durabilityLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_Durability);
         _levelReqLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_LevelReq);
-        _allowedClassesLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_AllowedClasses);
         _spellNumLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_SpellNumber);
 
         _spellPicker.PlaceholderText = EditorStrings.Get(EditorStrings.ItemEditor_SpellSearchPlaceholder);

@@ -40,7 +40,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public NpcEditorViewModel NpcEditor { get; }
     public ShopEditorViewModel ShopEditor { get; }
     public SpellEditorViewModel SpellEditor { get; }
-    public ClassEditorViewModel ClassEditor { get; }
     public QuestEditorViewModel QuestEditor { get; }
     public ConversationEditorViewModel ConversationEditor { get; }
     /// <summary>Creator-only, and the only section that is online-only — accounts are the server's.</summary>
@@ -152,7 +151,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
         NpcEditor = new NpcEditorViewModel(data, conn);
         ShopEditor = new ShopEditorViewModel(data, conn);
         SpellEditor = new SpellEditorViewModel(data, conn);
-        ClassEditor = new ClassEditorViewModel(data, conn);
         QuestEditor = new QuestEditorViewModel(data, conn);
         ConversationEditor = new ConversationEditorViewModel(data, conn);
         AccountEditor = new AccountEditorViewModel(data, conn);
@@ -169,7 +167,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
             (NpcEditor.LoadOnline,   NpcEditor.LoadOffline),
             (ShopEditor.LoadOnline,  ShopEditor.LoadOffline),
             (SpellEditor.LoadOnline, SpellEditor.LoadOffline),
-            (ClassEditor.LoadOnline, ClassEditor.LoadOffline),
             (QuestEditor.LoadOnline, QuestEditor.LoadOffline),
             (ConversationEditor.LoadOnline, ConversationEditor.LoadOffline),
             (AccountEditor.LoadOnline, AccountEditor.LoadOffline),
@@ -206,10 +203,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
         SpellEditor.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == "HasAnyDirty") _sectionMap["Spells"].HasDirty = SpellEditor.HasAnyDirty;
-        };
-        ClassEditor.PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName == "HasAnyDirty") _sectionMap["Classes"].HasDirty = ClassEditor.HasAnyDirty;
         };
         QuestEditor.PropertyChanged += (_, e) =>
         {
@@ -253,7 +246,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
                     break;
                 case UpdateShopPacket p: ShopEditor.ApplyLiveRecord(p.ShopNum, p); break;
                 case UpdateSpellPacket p: SpellEditor.ApplyLiveRecord(p.SpellNum, p); break;
-                case UpdateClassPacket p: ClassEditor.ApplyLiveRecord(p.ClassNum, p); break;
                 case UpdateQuestPacket p: QuestEditor.ApplyLiveRecord(p.QuestNum, p); break;
                 case UpdateConversationPacket p: ConversationEditor.ApplyLiveRecord(p.ConvNum, p); break;
                 case UpdateMapGroupPacket p: MapGroupEditor.ApplyLiveRecord(p.GroupNum, p); break;
@@ -265,7 +257,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     /// <summary>The eight editors that keep a list of records the lock table can name. Maps are held apart:
     /// the map editor is not one of these and carries its own lock plumbing.</summary>
     private IEnumerable<dynamic> RecordEditors =>
-        [ItemEditor, NpcEditor, ShopEditor, SpellEditor, ClassEditor, QuestEditor, ConversationEditor, MapGroupEditor];
+        [ItemEditor, NpcEditor, ShopEditor, SpellEditor, QuestEditor, ConversationEditor, MapGroupEditor];
 
     /// <summary>First-run startup: read the offline data set, seed and load the editable asset folder,
     /// then open the map editor. Always starts offline — connecting is an explicit user action.</summary>
@@ -302,7 +294,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
         MapEditor.Tilesets = _bitmaps.Tilesets;
         ItemEditor.SetItemSheets(_bitmaps.Items, _bitmaps.ItemNames);
         NpcEditor.SetSpriteSheets(_bitmaps.Sprites, _bitmaps.Sprites64, _bitmaps.Sprites96, _bitmaps.SpriteNames);
-        ClassEditor.SetSpriteSheets(_bitmaps.Sprites, _bitmaps.SpriteNames);
     }
 
     /// <summary>Re-scans every asset folder so sheets added, renamed or removed on disk appear without a
@@ -351,7 +342,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
             "NPCs" => NpcEditor,
             "Shops" => ShopEditor,
             "Spells" => SpellEditor,
-            "Classes" => ClassEditor,
             "Quests" => QuestEditor,
             "Conversations" => ConversationEditor,
             "Accounts" => AccountEditor,
@@ -481,7 +471,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
                 ("NPCs",    c => NpcEditor.EagerLoadAllAsync(c)),
                 ("Shops",   c => ShopEditor.EagerLoadAllAsync(c)),
                 ("Spells",  c => SpellEditor.EagerLoadAllAsync(c)),
-                ("Classes", c => ClassEditor.EagerLoadAllAsync(c)),
                 ("Quests",  c => QuestEditor.EagerLoadAllAsync(c)),
                 ("Conversations", c => ConversationEditor.EagerLoadAllAsync(c)),
             ];
@@ -581,7 +570,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
         foreach (var vm in SpellEditor.GetDirty()) yield return vm;
         foreach (var vm in MapEditor.GetDirty()) yield return vm;
         foreach (var vm in MapGroupEditor.GetDirty()) yield return vm;
-        foreach (var vm in ClassEditor.GetDirty()) yield return vm;
         foreach (var vm in QuestEditor.GetDirty()) yield return vm;
         foreach (var vm in ConversationEditor.GetDirty()) yield return vm;
     }

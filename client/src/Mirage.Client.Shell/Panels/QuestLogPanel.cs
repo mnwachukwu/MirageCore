@@ -219,8 +219,6 @@ public sealed class QuestLogPanel : IGamePanel
         {
             var def = state.QuestDefs[q];
             if (def is null || def.TrimmedName.Length == 0) continue;
-            // Class-locked quests the player can never take are omitted entirely.
-            if (myClass > 0 && !ClassGate.Allows(def.AllowedClasses, myClass)) continue;
             var pq = state.FindQuest(q);
             RowKind kind =
                 pq is { Status: QuestStatus.InProgress or QuestStatus.InProgressRepeat } ? RowKind.InProgress

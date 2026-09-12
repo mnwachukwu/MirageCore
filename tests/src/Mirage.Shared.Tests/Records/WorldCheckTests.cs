@@ -35,7 +35,6 @@ public class WorldCheckTests
             Spells = Family(i => new SpellRecord { Name = $"Spell {i}" }),
             Quests = Family(i => new QuestRecord { Name = $"Quest {i}" }),
             Conversations = Family(i => new ConversationRecord { Name = $"Conv {i}" }),
-            Classes = Family(i => new ClassRecord { Name = $"Class {i}" }),
         };
     }
 
@@ -272,15 +271,6 @@ public class WorldCheckTests
         Assert.That(Kinds(w), Does.Contain(WorldIssueKind.ItemMissing));
     }
 
-    [Test]
-    public void AGateNamingAnUnauthoredClass_IsFound()
-    {
-        var w = World();
-        w.Items[1]!.AllowedClasses = [Absent];
-
-        Assert.That(Kinds(w), Does.Contain(WorldIssueKind.ClassMissing));
-    }
-
     // ── Shops ────────────────────────────────────────────────────────────────
 
     /// <summary>A shop is opened by talking to its keeper and by nothing else, so one with no keeper is a
@@ -503,29 +493,6 @@ public class WorldCheckTests
 
         Assert.That(Kinds(w), Does.Not.Contain(WorldIssueKind.ConversationOpensNoQuests));
     }
-
-    // ── Classes ──────────────────────────────────────────────────────────────
-
-    [Test]
-    public void AClassStartingWithAnUnauthoredItem_IsFound()
-    {
-        var w = World();
-        w.Classes[1]!.StartingItems = [new ClassStartingItem { ItemNum = Absent, Quantity = 1 }];
-
-        var issue = WorldCheck.Run(w).First(i => i.Kind == WorldIssueKind.ItemMissing);
-
-        Assert.That(issue.OwnerKind, Is.EqualTo(WorldRecordKind.Class));
-    }
-
-    [Test]
-    public void AClassStartingWithAnUnauthoredSpell_IsFound()
-    {
-        var w = World();
-        w.Classes[1]!.StartingSpells = [Absent];
-
-        Assert.That(Kinds(w), Does.Contain(WorldIssueKind.SpellMissing));
-    }
-
     // ── What counts as a map being there ─────────────────────────────────────
 
     /// <summary>The case the padded world creates: a warp into one of the hundreds of slots a world is

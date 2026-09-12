@@ -34,7 +34,6 @@ public class ItemLockIndicatorTests
             new ItemRecord { Name = "Oak Shield" }, new ItemRecord { Name = "Ashwood Bow" },
             new ItemRecord { Name = "Bent Stick" },
         });
-        Set(data, nameof(EditorDataService.OfflineClasses), new[] { new ClassRecord() });
         Set(data, nameof(EditorDataService.OfflineSpells), new[] { new SpellRecord() });
 
         var vm = new ItemEditorViewModel(data, new EditorConnection())

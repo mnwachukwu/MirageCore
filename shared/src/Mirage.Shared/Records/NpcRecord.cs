@@ -86,7 +86,7 @@ public sealed class NpcRecord
         // an editor may hold a half-authored row in memory, but a saved file should say what it means.
         Drops.RemoveAll(d => !d.IsLive);
         // An empty list and "no table" are the same thing; collapse so an NPC that drops nothing carries
-        // no key at all, matching how ClassGate collapses an empty AllowedClasses.
+        // no key at all.
         if (Drops.Count == 0) Drops = null;
         // No length cap: a hoard is authored as repeated lines (quantity does not stack off Currency), so
         // truncating here would silently delete payout.

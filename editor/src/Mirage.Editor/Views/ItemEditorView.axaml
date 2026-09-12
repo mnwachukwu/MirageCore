@@ -163,14 +163,6 @@
                            Minimum="0" Maximum="255" FormatString="0"/>
           </mui:FormRow>
 
-          <!-- Allowed classes: equipment only. A multi-select, so one piece can be shared by a whole
-               group (all three Strength classes, say) rather than locked to a single class. -->
-          <mui:FormRow LabelWidth="120"
-                IsVisible="{Binding SelectedItem.AllowedClassesVisible}">
-            <TextBlock x:Name="_allowedClassesLabel" Grid.Column="0" VerticalAlignment="Top" Margin="0,2,0,0"/>
-            <controls:ClassSelector Grid.Column="1" DataContext="{Binding ClassSelection}"/>
-          </mui:FormRow>
-
           <!-- Vital amount: potions only -->
           <mui:FormRow LabelWidth="120"
                 IsVisible="{Binding SelectedItem.VitalAmountVisible}">

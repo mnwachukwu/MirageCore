@@ -72,7 +72,6 @@ public static partial class ClientStrings
     public const string Tooltip_Restores = nameof(Tooltip_Restores);
     public const string Tooltip_Drains = nameof(Tooltip_Drains);
     public const string Tooltip_Quantity = nameof(Tooltip_Quantity);
-    public const string Tooltip_ClassReq = nameof(Tooltip_ClassReq);
     public const string NumberPrompt_OverMax = nameof(NumberPrompt_OverMax);
     public const string Tooltip_LevelReq = nameof(Tooltip_LevelReq);
     public const string Tooltip_Teaches = nameof(Tooltip_Teaches);
