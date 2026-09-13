@@ -325,7 +325,7 @@ public class ScriptedWorldTests
                     game.Heading("Harvest");
                     game.Field("harvest.baskets", "Baskets");
                     game.Meter("harvest.sap", "harvest.sapMax", "Sap");
-                    game.Bar("harvest.sap", "harvest.sapMax", 65280);
+                    game.Bar("harvest.sap", "harvest.sapMax", 0, 255, 0);
                     game.Action("harvest.gather", "Gather here", "Harvest");
                 end function
             end model
@@ -342,6 +342,10 @@ public class ScriptedWorldTests
                 Is.EqualTo(new[] { "Harvest", "Baskets", "Sap" }).AsCollection);
 
             Assert.That(registry.OverheadBars.Count, Is.EqualTo(1));
+
+            // The half a count does not check: three channels have to arrive packed the way the wire
+            // reads them, and nothing between here and the client would notice if they did not.
+            Assert.That(registry.OverheadBars.Bars[0].Rgb, Is.EqualTo(0x00FF00));
             Assert.That(registry.Actions.All.Select(a => a.Id), Does.Contain("harvest.gather"));
             Assert.That(module.Actions, Is.EqualTo(new[] { "harvest.gather" }));
         });

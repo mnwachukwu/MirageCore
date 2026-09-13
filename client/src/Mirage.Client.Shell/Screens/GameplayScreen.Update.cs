@@ -227,26 +227,16 @@ public sealed partial class GameplayScreen : IGameScreen
                 }
             }
 
-            // ── Casting and the action bar ───────────────────────────────────
-            // The two split cleanly along the line the caster resource model already draws: SubHp is the
-            // caster's WEAPON (its own pool-fraction cost plus reagents), and everything else is utility.
-            // So SubHp keeps Q and the prepared slot — one chosen attack spell, swung on the same beat as
-            // a melee swing — and the action bar takes every OTHER spell type plus items. Neither can
-            // reach into the other's half: the server refuses to prepare a non-SubHp spell or to bind a
-            // SubHp one, so "which key casts this" is never ambiguous.
+            // ── The action bar ───────────────────────────────────────────────
             // EITHER trigger opens the bar; which one decides where it points. LT aims at the target, RT at
             // the caster, so the same four face buttons serve both without a two-trigger grip. Holding both
             // aims at the caster — see IsSelfTargetHeld — so aim can be switched without releasing first.
             bool hotkeyModifier = padActive && (input.IsGamePadLeftTriggerDown() || input.IsGamePadRightTriggerDown());
-            // HELD, like the attack key: a prepared spell is the caster's swing, so holding it should keep
-            // swinging. The repeat is paced on the action beat — both the beat the server confirms
-            // and a local one, so a refused cast cannot re-send every frame while the key stays down.
-            if ((kbActive && input.IsKeyDown(Keys.Q)) || (padActive && input.IsGamePadButtonDown(Buttons.Y) && !hotkeyModifier))
 
-            // Each slot answers to the clock its contents keep: a spell to the action beat it shares
-            // with attacking, a potion to the slower drinking clock, anything else to neither. Checked
-            // per slot rather than per row, because the four can hold four different things. Only a
-            // press that did something charges anything — an empty slot or an empty bag costs nothing.
+            // Each slot answers to the clock its contents keep: an item to the slower drinking clock,
+            // anything else to neither. Checked per slot rather than per row, because the four can hold
+            // four different things. Only a press that did something charges anything — an empty slot or
+            // an empty bag costs nothing.
             {
                 int fired = 0;
                 if (kbActive)

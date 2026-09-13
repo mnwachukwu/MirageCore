@@ -54,7 +54,7 @@ Held as a value and never made by a script: the engine hands one over.
 | `Field(string, string)` | — | A sidebar row: a caption, and a key read live off the player. |
 | `Badge(string, string)` | — | The same, drawn as a small tag with no caption. |
 | `Meter(string, string, string)` | — | A sidebar bar, filled by one key against another. |
-| `Bar(string, string, integer)` | — | A bar over every body's head, in a colour written as one number: red * 65536 + green * 256 + blue. |
+| `Bar(string, string, integer, integer, integer)` | — | A bar over every body's head, in a color given as red, green, and blue, each 0 to 255. |
 | `Action(string, string, string)` | — | A verb in the square menu, under a heading of its own. Picking it calls OnAction. |
 
 ## What a module may not reach

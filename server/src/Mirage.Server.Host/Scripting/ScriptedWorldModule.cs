@@ -382,9 +382,11 @@ public sealed class ScriptedWorldModule : ICoreModule, IWorldObserver, ITickWork
             .Action("Meter", [ScriptType.Text, ScriptType.Text, ScriptType.Text],
                 (b, a) => Build(b).Field(DisplayStyle.Meter, a.AsText(0), a.AsText(1), a.AsText(2)),
                 "A sidebar bar, filled by one key against another.")
-            .Action("Bar", [ScriptType.Text, ScriptType.Text, ScriptType.Integer],
-                (b, a) => Build(b).Bar(a.AsText(0), a.AsText(1), (int)a.AsInteger(2)),
-                "A bar over every body's head, in a colour written as one number: red * 65536 + green * 256 + blue.")
+            .Action("Bar",
+                [ScriptType.Text, ScriptType.Text, ScriptType.Integer, ScriptType.Integer, ScriptType.Integer],
+                (b, a) => Build(b).Bar(a.AsText(0), a.AsText(1),
+                    (int)a.AsInteger(2), (int)a.AsInteger(3), (int)a.AsInteger(4)),
+                "A bar over every body's head, in a color given as red, green, and blue, each 0 to 255.")
             .Action("Action", [ScriptType.Text, ScriptType.Text, ScriptType.Text],
                 (b, a) => Build(b).Action(a.AsText(0), a.AsText(1), a.AsText(2)),
                 "A verb in the square menu, under a heading of its own. Picking it calls OnAction.");
@@ -448,14 +450,21 @@ public sealed class ScriptedWorldModule : ICoreModule, IWorldObserver, ITickWork
                 Ordinal = After + _fields++,
             }));
 
-        public object? Bar(string valueKey, string maxKey, int rgb) =>
+        /// <summary>A bar in a color given one channel at a time, which is how a person picks one.
+        ///
+        /// <para>Out-of-range channels are clamped rather than refused, for the same reason a bar past its
+        /// own maximum draws full: losing a whole row over a mistyped digit is a worse answer than drawing
+        /// it slightly wrong.</para></summary>
+        public object? Bar(string valueKey, string maxKey, int red, int green, int blue) =>
             Guard($"the bar on '{valueKey}'", () => builder.AddOverheadBar(new OverheadBar
             {
                 ValueKey = valueKey,
                 MaxKey = maxKey,
-                Rgb = rgb,
+                Rgb = (Channel(red) << 16) | (Channel(green) << 8) | Channel(blue),
                 Ordinal = After + _bars++,
             }));
+
+        private static int Channel(int value) => Math.Clamp(value, 0, 255);
 
         public object? Action(string id, string label, string group) => Guard($"the action '{id}'", () =>
         {
