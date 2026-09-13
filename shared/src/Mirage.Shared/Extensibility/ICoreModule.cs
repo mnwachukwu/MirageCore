@@ -5,9 +5,14 @@ namespace Mirage.Shared.Extensibility;
 /// tick, and what it wants to be told about.
 ///
 /// <para><b>Everything a game declares arrives through one of these.</b> A module is asked to describe
-/// itself once, before the world loads, and is not consulted again — so the registries every subsystem
-/// reads are complete and immutable by the time anything runs, and no part of Core has to cope with a
-/// family or a key appearing halfway through a session.</para>
+/// itself once, before the world loads — so the registries every subsystem reads are complete and
+/// immutable by the time anything runs, and no part of Core has to cope with a family or a key appearing
+/// halfway through a session.</para>
+///
+/// <para><b>Declaring and acting are two phases, and they have to be.</b> What a module declares shapes
+/// the engine that is then built, so nothing exists yet to hand it when <see cref="Configure"/> runs.
+/// <see cref="Start"/> is the other end: the engine is built, the world is loaded, nothing is live yet,
+/// and the module is handed the <see cref="IWorld"/> it will act through.</para>
 ///
 /// <para>Several modules may be loaded, and they are configured in the order given. Two modules
 /// claiming the same family id, attribute key, or packet command is an error at startup rather than a
@@ -18,8 +23,19 @@ public interface ICoreModule
     /// <summary>What this module is called, for logs and for the error that names a collision.</summary>
     string Name { get; }
 
-    /// <summary>Declares everything this module adds.</summary>
+    /// <summary>Declares everything this module adds. Nothing may be called here — what is declared
+    /// decides what gets built.</summary>
     void Configure(ICoreBuilder builder);
+
+    /// <summary>Hands this module the world, once. The engine is built and the world is loaded; the game
+    /// loop has not started and no player is connected, so a module may set anything up without racing
+    /// anything.
+    ///
+    /// <para><b>Keep the reference.</b> It is the only one a module ever gets, and everything a game does
+    /// afterwards — from an observer, from tick work, from a policy — goes through it.</para>
+    ///
+    /// <para>Default is to do nothing, so a module that only declares data implements none of this.</para></summary>
+    void Start(IWorld world) { }
 }
 
 /// <summary>What a module declares into. Handed to <see cref="ICoreModule.Configure"/> and not valid

@@ -25,7 +25,7 @@ public sealed class CoreRegistry
     internal CoreRegistry(RecordSchema schema, AttributeSchema attributes, PacketRegistry packets,
                          TickSchedule tick, EquipSlotSet equipSlots, IReadOnlyList<IWorldObserver> observers,
                          IReadOnlyList<IDeathPolicy> deathPolicies, IReadOnlyList<ILingerPolicy> lingerPolicies,
-                         IReadOnlyList<string> moduleNames)
+                         IReadOnlyList<ICoreModule> modules, IReadOnlyList<string> moduleNames)
     {
         Schema = schema;
         Attributes = attributes;
@@ -35,6 +35,7 @@ public sealed class CoreRegistry
         Observers = observers;
         DeathPolicies = deathPolicies;
         LingerPolicies = lingerPolicies;
+        Modules = modules;
         ModuleNames = moduleNames;
     }
 
@@ -65,7 +66,12 @@ public sealed class CoreRegistry
     /// straight out of the world.</summary>
     public IReadOnlyList<ILingerPolicy> LingerPolicies { get; }
 
-    /// <summary>The modules that were loaded, in the order they were configured, Core first.</summary>
+    /// <summary>The modules that were loaded, in the order they were configured, Core first. Kept so
+    /// the host can hand each one the world once the engine is built — see
+    /// <see cref="ICoreModule.Start"/>.</summary>
+    public IReadOnlyList<ICoreModule> Modules { get; }
+
+    /// <summary>What those modules are called, in the same order.</summary>
     public IReadOnlyList<string> ModuleNames { get; }
 
     /// <inheritdoc cref="Build(IEnumerable{ICoreModule})"/>
@@ -83,6 +89,7 @@ public sealed class CoreRegistry
 
         var builder = new CoreBuilder();
         var names = new List<string>();
+        var loaded = new List<ICoreModule>();
 
         foreach (var module in new[] { (ICoreModule)new CoreModule() }.Concat(modules))
         {
@@ -104,9 +111,10 @@ public sealed class CoreRegistry
             }
 
             names.Add(name);
+            loaded.Add(module);
         }
 
-        return builder.Freeze(names);
+        return builder.Freeze(loaded, names);
     }
 }
 
@@ -252,7 +260,7 @@ internal sealed class CoreBuilder : ICoreBuilder
         _lingerPolicies.Add(policy);
     }
 
-    internal CoreRegistry Freeze(IReadOnlyList<string> moduleNames)
+    internal CoreRegistry Freeze(IReadOnlyList<ICoreModule> modules, IReadOnlyList<string> moduleNames)
     {
         Refuse();
         _frozen = true;
@@ -260,7 +268,7 @@ internal sealed class CoreBuilder : ICoreBuilder
         var schema = new RecordSchema { Families = [.. _families], ChoiceSets = [.. _choices] };
         return new CoreRegistry(schema, Attributes.Build(), Packets.Build(), _tick.Build(),
                                 new EquipSlotSet(_equipSlots), [.. _observers], [.. _deathPolicies],
-                                [.. _lingerPolicies], moduleNames);
+                                [.. _lingerPolicies], modules, moduleNames);
     }
 
     private void Refuse()

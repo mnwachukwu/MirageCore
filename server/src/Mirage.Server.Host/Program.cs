@@ -153,6 +153,9 @@ var host = Host.CreateDefaultBuilder(args)
         // for: a system raises an event into WorldEvents and asks nothing about who is listening, and
         // DeathSystem takes every IDeathPolicy the container holds.
         services.AddSingleton<WorldEvents>();
+        // The other half of the seam: what a game may ASK the world to do. Registered like any other
+        // service so the modules are handed the same instance every system writes through.
+        services.AddSingleton<IWorld, ServerWorld>();
         foreach (var policy in registry.DeathPolicies) services.AddSingleton(policy);
         foreach (var policy in registry.LingerPolicies) services.AddSingleton(policy);
 

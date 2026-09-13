@@ -24,6 +24,7 @@ public sealed class MirageServerService : IHostedService
 {
     private readonly GameWorld _world;
     private readonly CoreRegistry _registry;
+    private readonly IWorld _actions;
     private readonly PlayerManager _pm;
     private readonly IPersistenceService _persistence;
     private readonly IBackgroundPersistence _bg;
@@ -44,6 +45,7 @@ public sealed class MirageServerService : IHostedService
 
     public MirageServerService(
         CoreRegistry registry,
+        IWorld actions,
         GameWorld world,
         PlayerManager pm,
         IPersistenceService persistence,
@@ -64,6 +66,7 @@ public sealed class MirageServerService : IHostedService
         _config = config;
         _world = world;
         _registry = registry;
+        _actions = actions;
         _pm = pm;
         _persistence = persistence;
         _bg = bg;
@@ -137,6 +140,8 @@ public sealed class MirageServerService : IHostedService
         _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_SpawningNpcs));
         _spawn.SpawnAllMapNpcs();
 
+        StartModules();
+
         _gameLoop.Start();
 
         _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -144,6 +149,30 @@ public sealed class MirageServerService : IHostedService
 
         LocalizedLog.Info(_logger, ServerStrings.Server_Ready,
             ("GameName", _config.GameName), ("ElapsedMs", sw.ElapsedMilliseconds));
+    }
+
+    /// <summary>Hands every loaded module the world, once.
+    ///
+    /// <para>Here and not earlier: the engine is built and the world is loaded, so a module setting
+    /// itself up reads what a player would. Here and not later: the loop has not started and the
+    /// acceptor is not listening, so nothing it does can race anything.</para>
+    ///
+    /// <para>A module that throws on the way in stops the server. Unlike a fault on the tick, this one
+    /// happens before a single player is served, and a game whose setup failed is not a game.</para></summary>
+    private void StartModules()
+    {
+        foreach (var module in _registry.Modules)
+        {
+            try
+            {
+                module.Start(_actions);
+            }
+            catch (Exception ex)
+            {
+                throw new CoreModuleException($"Module '{module.Name}' failed while starting: {ex.Message}",
+                                              module.Name, ex);
+            }
+        }
     }
 
     public async Task StopAsync(CancellationToken ct)

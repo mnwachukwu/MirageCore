@@ -73,6 +73,10 @@ public sealed class AttributeSystem : GameSystem
     {
         if (who.IsPlayer)
         {
+            // Against THIS server's roster: an operator sets how many players it holds, and a handle may
+            // carry any number the protocol allows. A well-formed one can still name no slot here.
+            if (who.PlayerIndex < 1 || who.PlayerIndex > _pm.Slots) return null;
+
             var sp = _pm[who.PlayerIndex];
             return sp.IsPlaying ? sp.Char.Attributes : null;
         }

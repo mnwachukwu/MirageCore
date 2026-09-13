@@ -46,6 +46,25 @@ public class GhostLifetimeTests
             "the sweep does not actually clear anything");
     }
 
+    /// <summary>A module is handed the world, or every seam in the engine is unreachable by a game.
+    ///
+    /// <para>This is the same failure as an unswept ghost, one level up: the interface compiles, the
+    /// implementation is registered, and nothing ever calls <c>Start</c>. There is no error — a game
+    /// simply never does anything.</para></summary>
+    [Test]
+    public void EveryModuleIsHandedTheWorld()
+    {
+        string host = Source("server", "src", "Mirage.Server.Host", "Services", "MirageServerService.cs");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(host, Does.Contain("foreach (var module in _registry.Modules)"),
+                "nothing walks the loaded modules");
+            Assert.That(host, Does.Contain("module.Start("),
+                "the modules are walked and never started, so no game can act on anything");
+        });
+    }
+
     /// <summary>Whether a body stays is the game's answer, so the engine must not have one of its own.
     /// A condition here would be a rule Core does not get to have.</summary>
     [Test]
