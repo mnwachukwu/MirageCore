@@ -181,12 +181,12 @@ public sealed partial class NpcAiSystem : GameSystem
     /// carries no line.</summary>
     private void AnnounceNotice(int mapNum, int slot, MapNpcRecord mn, NpcRecord npc, int target)
     {
-        if (mn.LastAttackSayTarget == target || string.IsNullOrWhiteSpace(npc.AttackSay)) return;
-        mn.LastAttackSayTarget = target;
+        if (mn.LastSpokeTo == target || string.IsNullOrWhiteSpace(npc.Says)) return;
+        mn.LastSpokeTo = target;
         _dispatcher.SendLocalizedChatTo(target, ServerStrings.NpcAiSystem_NpcSays,
             new ChatMetadata(GameColor.Npc, ChatChannel.Say),
-            ("NpcName", npc.TrimmedName), ("Say", npc.AttackSay.TrimEnd()));
-        _dispatcher.SendTo(target, PacketBuilder.NpcChatBubble(mapNum, slot, npc.AttackSay.TrimEnd(), kind: 0));
+            ("NpcName", npc.TrimmedName), ("Say", npc.Says.TrimEnd()));
+        _dispatcher.SendTo(target, PacketBuilder.NpcChatBubble(mapNum, slot, npc.Says.TrimEnd(), kind: 0));
     }
 
     // Walk to player-dropped litter and clear it.  Claims one item at a time so two scavengers on the

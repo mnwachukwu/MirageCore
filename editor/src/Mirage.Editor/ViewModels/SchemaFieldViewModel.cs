@@ -38,7 +38,7 @@ public sealed partial class SchemaFieldViewModel : ObservableObject
 
     /// <summary>The caption. Falls back to the field's key: a module's label key is not in this build's
     /// language files, and a form that throws on connect is worse than one that shows a raw key.</summary>
-    public string Label => EditorStrings.GetOrFallback(Descriptor.LabelKey, Descriptor.Key);
+    public string Label => EditorStrings.GameLabel(Descriptor.LabelKey, Descriptor.Key);
 
     /// <summary>The hover text, or null for a field whose caption says enough.</summary>
     public string? Hint => string.IsNullOrEmpty(Descriptor.HintKey)
@@ -59,7 +59,7 @@ public sealed partial class SchemaFieldViewModel : ObservableObject
 
     /// <summary>What a <see cref="FieldKind.Choice"/> field offers, in declared order.</summary>
     public IReadOnlyList<ChoiceOption> Options => _options ??=
-        [.. (_choices?.Members ?? []).Select(m => new ChoiceOption(m.Id, EditorStrings.GetOrFallback(m.LabelKey, m.Id)))];
+        [.. (_choices?.Members ?? []).Select(m => new ChoiceOption(m.Id, EditorStrings.GameLabel(m.LabelKey, m.Id)))];
     private IReadOnlyList<ChoiceOption>? _options;
 
     /// <summary>What a <see cref="FieldKind.RecordRef"/> field offers: the named records of the family

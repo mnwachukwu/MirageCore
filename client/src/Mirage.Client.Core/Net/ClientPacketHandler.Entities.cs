@@ -239,7 +239,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
 
         // Preserve any active chat bubble across the death so "last words" still drift away rather
         // than vanishing in place — common when a one-shot kill on a guard arrives in the same batch
-        // as that guard's AttackSay (or its propagation to a neighboring guard). Head bubble is
+        // as that guard's Says (or its propagation to a neighboring guard). Head bubble is
         // eagerly demoted to a drifter on death; the slot stays in the array with Num=0 so the
         // sprite vanishes, but the tick keeps cleaning drifters and the renderer emits them at the
         // last-known tile position until the float window elapses.
@@ -299,7 +299,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
                 t.Attacking = native.Attacking;
                 t.AttackTimer = native.AttackTimer;
                 // Carry over any active chat bubble across the native→guest seam handoff so an
-                // AttackSay (or any other bubble in flight) stays attached to the same sprite
+                // Says (or any other bubble in flight) stays attached to the same sprite
                 // instead of vanishing the instant the NPC steps over the border.
                 t.ChatBubbleText = native.ChatBubbleText;
                 t.ChatBubbleEndMs = native.ChatBubbleEndMs;

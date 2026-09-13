@@ -8,6 +8,19 @@ public enum ActionSurface : byte
     /// <summary>The right-click menu on a square, under the game's own heading. What a verb that acts on
     /// a PLACE wants — the thing in front of you, the ground you are standing on.</summary>
     Tile = 0,
+
+    /// <summary>The right-click menu on another player, under the game's own heading. Invoking one names
+    /// that player, so a verb here knows who it was used on.</summary>
+    Player = 1,
+
+    /// <summary>The right-click menu on an NPC. Invoking one names that NPC the way every other placed
+    /// body is named — by where it SPAWNS, so a body that has wandered onto the next map is still
+    /// itself.</summary>
+    Npc = 2,
+
+    /// <summary>A button on the HUD, under Core's own. A verb with no target and no place: opening one of
+    /// the game's screens, or telling the server something about nothing in particular.</summary>
+    Hud = 3,
 }
 
 /// <summary>
@@ -40,6 +53,14 @@ public sealed record GameAction
 
     /// <summary>Where it sits among the game's other actions on that surface. Lower shows first.</summary>
     [JsonPropertyName("ordinal")] public int Ordinal { get; init; }
+
+    /// <summary>When it is offered at all, as a question about what the player already carries. The
+    /// default asks nothing, so a verb that says nothing about this is always offered.
+    ///
+    /// <para>Read by the client to grey the entry out and by the server to refuse the invoke, through
+    /// the same <see cref="ActionCondition.Holds"/>. A shortcut bound to a verb whose condition does not
+    /// hold does nothing, for the same reason.</para></summary>
+    [JsonPropertyName("when")] public ActionCondition When { get; init; } = ActionCondition.Always;
 
     /// <summary>A key that invokes this without opening the menu, or blank for one the player has to go
     /// and find. Must be one of <see cref="GameKey.Offered"/>.
@@ -109,8 +130,11 @@ public interface IActionHandler
     /// <summary>The player picked <paramref name="actionId"/>.</summary>
     /// <param name="from">Who picked it.</param>
     /// <param name="actionId">Which of <see cref="Actions"/>.</param>
+    /// <param name="on">The body it was used on, or <see cref="EntityHandle.None"/> for a verb offered
+    /// somewhere with no target — a square, or the HUD. Named rather than resolved: whether that body is
+    /// still in the world is a question for <see cref="IWorld"/> at the moment the handler asks.</param>
     /// <param name="at">The square they picked it on. A client names a place it can see; whether the
     /// player is close enough to act on it is the game's question, because how far a game's own verb
     /// reaches is not something Core could know.</param>
-    void Invoke(EntityHandle from, string actionId, in WorldPlace at);
+    void Invoke(EntityHandle from, string actionId, EntityHandle on, in WorldPlace at);
 }

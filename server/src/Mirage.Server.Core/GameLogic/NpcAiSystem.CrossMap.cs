@@ -100,12 +100,12 @@ public sealed partial class NpcAiSystem : GameSystem
             Layer = crossLayer,
             Moving = MovementType.Walking,
             AttackTimer = mn.AttackTimer,
-            LastAttackSayTarget = mn.LastAttackSayTarget,
+            LastSpokeTo = mn.LastSpokeTo,
             // The noticed-NPC identity rides along, so a pursuit that crosses a seam continues
             // against the same body.
             NpcTargetSpawnMap = mn.NpcTargetSpawnMap,
             NpcTargetSpawnSlot = mn.NpcTargetSpawnSlot,
-            LastAttackSayNpcTarget = mn.LastAttackSayNpcTarget,
+            LastSpokeToNpc = mn.LastSpokeToNpc,
             // Carry the give-up clock across the seam so a chase doesn't get a fresh lease every
             // time it crosses a border.
             LastReachedTargetMs = mn.LastReachedTargetMs,
@@ -146,8 +146,8 @@ public sealed partial class NpcAiSystem : GameSystem
         mn.NpcTargetSpawnMap = 0;
         mn.NpcTargetSpawnSlot = 0;
         mn.IsReservedSlot = true;
-        mn.LastAttackSayTarget = 0;
-        mn.LastAttackSayNpcTarget = 0;
+        mn.LastSpokeTo = 0;
+        mn.LastSpokeToNpc = 0;
         mn.LastReachedTargetMs = 0;
         mn.ChaseTargetKey = 0;   // chase-stall state handed to the guest; clear the vacated home slot
         mn.ResetChaseStall();

@@ -65,6 +65,7 @@ public sealed partial class PacketHandler
     /// <summary>What does the things a game lets the player do. Empty for an engine with no game
     /// loaded, and then an invoke names an action nothing declared and is dropped.</summary>
     private readonly IReadOnlyList<IActionHandler> _actionHandlers;
+    private readonly GameActions _declaredActions;
 
     /// <summary>Now as a Unix second, off the injected clock — used by the ban/mute expiry, playtime
     /// and mail-maturity handlers.</summary>
@@ -103,6 +104,7 @@ public sealed partial class PacketHandler
         var loaded = registry ?? CoreRegistry.CoreOnly;
         _routes = loaded.PacketRoutes;
         _actionHandlers = loaded.ActionHandlers;
+        _declaredActions = loaded.Actions;
         _world = world;
         _pm = pm;
         _dispatcher = dispatcher;

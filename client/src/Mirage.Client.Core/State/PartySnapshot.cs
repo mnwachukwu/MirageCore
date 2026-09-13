@@ -18,6 +18,14 @@ public sealed class PartySnapshot
     // time; the existing IsInCombat(stamp, now) < 10s test in RenderCommandBuilder works as-is.
     public long LastCombatTickMs;
 
+    /// <summary>How full each declared bar is for the partner, in declaration order, as the server read
+    /// them. Empty until the first snapshot arrives, and for a game that declares no bars.
+    ///
+    /// <para>Sent rather than derived: a partner is usually somebody this client cannot see, so it has
+    /// never been told their attributes and computing the rows here would mean reading a body it does
+    /// not hold.</para></summary>
+    public IReadOnlyList<float> Bars = [];
+
     // Animated display values — initialized -1f so the first push snaps rather than lerps from 0.
 
     public bool Active => !string.IsNullOrEmpty(Name);
@@ -29,6 +37,7 @@ public sealed class PartySnapshot
         MapNum = X = Y = 0;
         ShowAsPk = false;
         Access = AdminLevel.Player;
+        Bars = [];
         LastCombatTickMs = 0;
     }
 }

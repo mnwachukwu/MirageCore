@@ -365,7 +365,6 @@
   "Server_LoadingMotd": "Loading Message of the Day...",
   "Server_LoadedSummary": "Loaded {Items} items, {Npcs} NPCs, {Shops} shops, {Conversations} conversations, {Maps} maps.",
   "Server_RuntimeDataSummary": "Loaded {Guilds} guilds, {MapItems} map items.",
-  "Server_PaddedSummary": "Padded {Items} items, {Npcs} NPCs, {Shops} shops, {Conversations} conversations, {Maps} maps.",
   "Server_SpawningMapItems": "Spawning map items...",
   "Server_LoadingDroppedItems": "Loading persisted dropped items...",
   "Server_SpawningNpcs": "Spawning NPCs...",

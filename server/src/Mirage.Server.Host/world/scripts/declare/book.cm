@@ -1,0 +1,50 @@
+# The field book, and every verb this game offers.
+#
+# A verb is declared once and then told what it is offered ON, what key reaches it, and what it needs.
+# Nothing here depends on the line above it: each line names the verb it is about.
+
+shared model Book
+
+    public string Note = "survey.note";
+    public string Identify = "survey.identify";
+    public string Compare = "survey.compare";
+    public string Open = "survey.openbook";
+
+    public string Screen = "survey.fieldbook";
+
+    public function Declare(Builder game)
+        # A screen of this game's own. Its rows go on a surface derived from its id, so the sidebar and
+        # the book can show different amounts of the same thing without either naming a surface.
+        Panel book = game.Panel(Book.Screen, "Field Book", 240, 180);
+        book.Key("B");
+        book.Button("Note this down", Book.Note);
+
+        book.Heading("Field record");
+        book.Field(Surveyor.Rank, "Rank", 200, 200, 160);
+        book.Field(Surveyor.Specimens, "Specimens catalogued", 200, 200, 160);
+        book.Meter(Surveyor.Stamina, Surveyor.StaminaMax, "Stamina", 120, 190, 90);
+
+        # What a surveyor does to a square in front of them. Q reaches it without the menu.
+        Verb note = game.Action(Book.Note, "Note this down", "Survey");
+        note.Key("Q");
+
+        # On the HUD rather than in a square's menu: a book is about the surveyor, not about the ground
+        # they happen to be standing on.
+        Verb open = game.Action(Book.Open, "Field Book", "Survey");
+        open.OnHud();
+        open.Opens(Book.Screen);
+
+        # And a verb about a BODY, which is what a survey is mostly for. Offered on any creature,
+        # including one with nothing else to say — declaring this is what gives a plain creature a menu.
+        Verb name = game.Action(Book.Identify, "Identify", "Survey");
+        name.OnNpc();
+
+        # The same shape aimed at a person, and the one verb here with a CONDITION: comparing notes
+        # needs notes. A surveyor who has written nothing down sees the entry greyed rather than
+        # missing, so they can tell the verb exists and that they are not ready for it.
+        Verb compare = game.Action(Book.Compare, "Compare notes", "Survey");
+        compare.OnPlayer();
+        compare.NeedsAtLeast(Surveyor.Specimens, 1);
+    end function
+
+end model

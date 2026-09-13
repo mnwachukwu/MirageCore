@@ -61,19 +61,19 @@ internal sealed class RecordingPersistence : IPersistenceService
     public Task AddCharNameAsync(string name) => Task.CompletedTask;
     public Task DeleteCharNameAsync(string name) => Task.CompletedTask;
     public Task<MapRecord?> LoadMapAsync(int mapNum) => Task.FromResult<MapRecord?>(null);
-    public Task<(ItemRecord[] records, int padded)> LoadAllItemsAsync() => Task.FromResult((Array.Empty<ItemRecord>(), 0));
-    public Task<(NpcRecord[] records, int padded)> LoadAllNpcsAsync() => Task.FromResult((Array.Empty<NpcRecord>(), 0));
-    public Task<(ShopRecord[] records, int padded)> LoadAllShopsAsync() => Task.FromResult((Array.Empty<ShopRecord>(), 0));
+    public Task<(ItemRecord[] records, int loaded)> LoadAllItemsAsync() => Task.FromResult((Array.Empty<ItemRecord>(), 0));
+    public Task<(NpcRecord[] records, int loaded)> LoadAllNpcsAsync() => Task.FromResult((Array.Empty<NpcRecord>(), 0));
+    public Task<(ShopRecord[] records, int loaded)> LoadAllShopsAsync() => Task.FromResult((Array.Empty<ShopRecord>(), 0));
 
     public readonly List<(string Family, int Num, AttributeBag Record)> SavedModuleRecords = new();
-    public Task<(AttributeBag[] records, int padded)> LoadAllModuleRecordsAsync(RecordFamily family, int limit)
+    public Task<(AttributeBag[] records, int loaded)> LoadAllModuleRecordsAsync(RecordFamily family, int limit)
         => Task.FromResult((Array.Empty<AttributeBag>(), 0));
     public Task SaveModuleRecordAsync(RecordFamily family, int num, AttributeBag record)
     {
         SavedModuleRecords.Add((family.Id, num, record));
         return Task.CompletedTask;
     }
-    public Task<(ConversationRecord[] records, int padded)> LoadAllConversationsAsync() => Task.FromResult((Array.Empty<ConversationRecord>(), 0));
+    public Task<(ConversationRecord[] records, int loaded)> LoadAllConversationsAsync() => Task.FromResult((Array.Empty<ConversationRecord>(), 0));
     public Task SaveConversationAsync(int num, ConversationRecord conversation) => Task.CompletedTask;
     public Task<Dictionary<int, GuildRecord>> LoadAllGuildsAsync() => Task.FromResult(new Dictionary<int, GuildRecord>());
     public Task SaveGuildAsync(int num, GuildRecord guild) => Task.CompletedTask;

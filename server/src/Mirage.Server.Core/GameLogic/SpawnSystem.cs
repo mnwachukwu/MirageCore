@@ -49,8 +49,8 @@ public sealed class SpawnSystem : GameSystem
         mn.JanitorTarget = 0;
         mn.NpcTargetSpawnMap = 0;
         mn.NpcTargetSpawnSlot = 0;
-        mn.LastAttackSayTarget = 0;
-        mn.LastAttackSayNpcTarget = 0;
+        mn.LastSpokeTo = 0;
+        mn.LastSpokeToNpc = 0;
         mn.LastReachedTargetMs = 0;
         mn.ChaseTargetKey = 0;       // fresh slot — drop any stale chase-stall tracking from the prior occupant
         mn.ResetChaseStall();

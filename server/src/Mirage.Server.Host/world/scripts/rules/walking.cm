@@ -1,0 +1,47 @@
+# Walking is tiring, and sometimes it turns something up.
+
+shared model Walking
+
+    # One step in this many turns up something worth writing down.
+    integer FindOneStepIn = 12;
+
+    # Counted rather than rolled: a survey that paid out on a coin flip could not be tested, and a
+    # player could not tell a dry spell from a broken game.
+    integer steps = 0;
+
+    public function Stepped(Player who)
+        Walking.Spend(who);
+
+        Walking.steps = Walking.steps + 1;
+
+        if Walking.steps % Walking.FindOneStepIn == 0
+            Walking.Find(who);
+        end if
+    end function
+
+    function Spend(Player who)
+        integer left = who.Number(Surveyor.Stamina);
+
+        if left <= 0
+            yield;
+        end if
+
+        who.SetNumber(Surveyor.Stamina, left - Surveyor.StepCost);
+
+        if left == 1
+            who.Message("You are too tired to go much further today.");
+        end if
+    end function
+
+    # A tired surveyor finds nothing — which is the only thing stamina is FOR, and the reason it is
+    # worth spending.
+    function Find(Player who)
+        if who.Number(Surveyor.Stamina) <= 0
+            yield;
+        end if
+
+        Surveyor.Catalogued(who, who.Number(Surveyor.Specimens) + 1);
+        who.Message("You spot something worth writing down.");
+    end function
+
+end model

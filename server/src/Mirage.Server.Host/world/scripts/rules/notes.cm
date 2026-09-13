@@ -1,0 +1,70 @@
+# What happens when a surveyor uses one of this game's verbs.
+
+shared model Notes
+
+    public function Did(Player who, string action, string on)
+        if action == Book.Note
+            Notes.Write(who);
+            yield;
+        end if
+
+        if action == Book.Identify
+            Notes.Name(who, on);
+            yield;
+        end if
+
+        if action == Book.Compare
+            Notes.Against(who, on);
+        end if
+
+        # Opening the book reaches here too and does nothing on purpose: the client already holds every
+        # value it shows, so the server has nothing to add.
+    end function
+
+    # Writing something down costs what a step costs, so a surveyor cannot stand still and catalogue
+    # forever.
+    function Write(Player who)
+        integer stamina = who.Number(Surveyor.Stamina);
+
+        if stamina <= 0
+            who.Message("You are too tired to write anything legible.");
+            yield;
+        end if
+
+        who.SetNumber(Surveyor.Stamina, stamina - Surveyor.StepCost);
+        Surveyor.Catalogued(who, who.Number(Surveyor.Specimens) + 1);
+
+        who.Message("You write down what is in front of you.");
+    end function
+
+    # Say what the surveyor is looking at, and count it.
+    function Name(Player who, string on)
+        if on == ""
+            who.Message("There is nothing there to identify.");
+            yield;
+        end if
+
+        who.Message("You note down: " + on + ".");
+        Notes.Write(who);
+    end function
+
+    # Two surveyors comparing counts. Both are told, which is the point of it — and the other body is
+    # reached through the name the verb arrived with.
+    function Against(Player who, string on)
+        Player? them = who.Find(on);
+
+        # Narrowed by the guard: past this line the compiler knows there is a body there, so nothing
+        # below has to ask again.
+        if not them.HasValue()
+            who.Message("There is nobody there to compare notes with.");
+            yield;
+        end if
+
+        integer mine = who.Number(Surveyor.Specimens);
+        integer theirs = them.Number(Surveyor.Specimens);
+
+        who.Message("You compare notes with " + on + ": " + mine + " against " + theirs + ".");
+        them.Message(on + " compares notes with you: " + theirs + " against " + mine + ".");
+    end function
+
+end model

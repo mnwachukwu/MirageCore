@@ -142,7 +142,7 @@ public sealed record EditorSaveNpcPacket : IPacket
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorSaveNpc;
     [JsonPropertyName("npcNum")] public int NpcNum { get; init; }
     [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("attackSay")] public string AttackSay { get; init; } = "";
+    [JsonPropertyName("says")] public string Says { get; init; } = "";
     [JsonPropertyName("sprite")] public int Sprite { get; init; }
     [JsonPropertyName("spriteSheet")] public int SpriteSheet { get; init; }
     [JsonPropertyName("size")] public int Size { get; init; }

@@ -162,7 +162,7 @@ public sealed partial class GameplayScreen : IGameScreen
         TickChatBubbles(_ctx.State);
         // While dead, keep the HUD live ONLY for the Logout (Quit) button so a corpse can still log out; every
         // other HUD button stays inert. Preserve the mouseOverFloating guard in both cases.
-        var hudAction = mouseOverFloating ? HudAction.None : _hud.Update(input);
+        var hudAction = mouseOverFloating ? HudAction.None : _hud.Update(input, _ctx.State);
         if (dead && hudAction != HudAction.Quit) hudAction = HudAction.None;
         switch (hudAction)
         {
@@ -174,6 +174,12 @@ public sealed partial class GameplayScreen : IGameScreen
                 break;
             case HudAction.Quit:
                 _ctx.ShowQuitConfirm();
+                break;
+            case HudAction.GameVerb:
+                // A HUD verb is about nothing in particular, so it carries no target and the square is
+                // the one the player is standing on — the only place a game could reasonably mean.
+                InvokeGameAction(_hud.PickedAction, _hud.PickedOpens,
+                                 _ctx.State.CenterMapNum, _ctx.State.Me.X, _ctx.State.Me.Y);
                 break;
         }
 

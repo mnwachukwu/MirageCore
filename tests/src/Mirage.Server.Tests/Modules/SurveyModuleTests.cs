@@ -14,21 +14,30 @@ namespace Mirage.Server.Tests.Modules;
 /// the first time this module was written: the shape of a choice set, the name an observer has to carry,
 /// and the reference a module is allowed to take were all discovered here rather than designed.</para>
 ///
-/// <para>It is also the specification the Compass host has to meet. Whatever replaces the C# below must
-/// produce a registry that satisfies exactly these assertions.</para>
+/// <para>⚠ <b>This module is built and checked, and the server does not load it.</b> The game it
+/// declares ships as a SCRIPT — see <c>ScriptedSurveyTests</c>, which holds the same registry to the
+/// same bar — and loading both would be one game colliding with itself over every attribute key it
+/// owns. What this fixture is for is the other route: somebody building a game in C# reads
+/// <c>modules/survey/</c>, and a worked example nobody compiles is a worked example that has rotted.</para>
 /// </summary>
 [TestFixture]
 public class SurveyModuleTests
 {
     private static CoreRegistry Loaded() => CoreRegistry.Build(new SurveyModule());
 
+    /// <summary>🔴 The server loads the engine and a world's own scripts, and nothing else.
+    ///
+    /// <para>Pinned rather than assumed: this module and the scripted Survey declare the same attribute
+    /// keys and the same records, so loading both would stop the server at startup over a collision
+    /// nobody wrote on purpose. A project reference added back in the host is what that would look
+    /// like, and this is what would catch it.</para></summary>
     [Test]
-    public void TheServerShipsWithItLoaded()
+    public void TheServerShipsWithTheScriptedRouteAlone()
     {
         var names = CoreRegistry.Build(GameModules.Load("no-such-world")).ModuleNames;
 
-        Assert.That(names, Is.EqualTo(new[] { "Core", "Survey", "Scripts" }),
-            "the host loads this game, and the world's own scripts after it");
+        Assert.That(names, Is.EqualTo(new[] { "Core", "Scripts" }),
+            "the host loads the engine and the world's own rules; a compiled game is opt-in");
     }
 
     [Test]

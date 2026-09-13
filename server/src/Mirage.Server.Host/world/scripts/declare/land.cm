@@ -1,0 +1,35 @@
+# What the world holds: the things there are to find, and where they grow.
+
+# Where a species grows. An enumeration IS a closed set of choices, so a field typed as one becomes a
+# drop-down over these members and nothing has to declare the set.
+enumeration Habitat
+    Shore, Woodland, Meadow
+end enumeration
+
+# A kind of record this game authors. The editor grows a section for it and builds the form from these
+# fields: their names, in this order, in the shapes they hold.
+# Its fields are public because the ENGINE reads them and nothing in these scripts does. A private
+# field nothing names is one Compass will tell you to delete.
+model Species
+    public string name;
+    public Habitat habitat;
+    public string notes;
+end model
+
+shared model Land
+
+    public function Declare(Builder game)
+        Records sp = game.Records("Species", "Species", "Species", 200);
+
+        # The five species that ship with this world are already on disk as species/species1.json, so
+        # this says so. A new game would leave it out and let the model's own name decide.
+        sp.Stored("species", "species");
+
+        sp.Caption("name", "Common name");
+        sp.Length("name", 40);
+
+        sp.Caption("notes", "Field notes");
+        sp.Length("notes", 240);
+    end function
+
+end model

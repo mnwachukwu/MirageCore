@@ -85,6 +85,9 @@ public sealed class LoadedScript : IDisposable
     /// <summary>What to call this module when something in it goes wrong.</summary>
     public string Name { get; }
 
+    /// <summary>The shape of every model this script declares. <inheritdoc cref="CompassScript.Models"/></summary>
+    public IReadOnlyList<ScriptModelInfo> Models { get; private set; } = [];
+
     /// <summary>
     /// Loads a checked module and holds it.
     /// </summary>
@@ -96,7 +99,7 @@ public sealed class LoadedScript : IDisposable
     {
         ArgumentNullException.ThrowIfNull(script);
 
-        return new LoadedScript(script, limits ?? ScriptLimits.Default);
+        return new LoadedScript(script, limits ?? ScriptLimits.Default) { Models = script.Models };
     }
 
     /// <summary>

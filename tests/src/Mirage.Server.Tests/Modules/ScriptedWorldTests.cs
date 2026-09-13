@@ -323,8 +323,8 @@ public class ScriptedWorldTests
                 public function Configure(Builder game)
                     game.Attribute("harvest.baskets", "owner");
                     game.Heading("Harvest");
-                    game.Field("harvest.baskets", "Baskets");
-                    game.Meter("harvest.sap", "harvest.sapMax", "Sap");
+                    game.Field("harvest.baskets", "Baskets", 0, 0, 0);
+                    game.Meter("harvest.sap", "harvest.sapMax", "Sap", 0, 0, 0);
                     game.Bar("harvest.sap", "harvest.sapMax", 0, 255, 0);
                     game.Action("harvest.gather", "Gather here", "Harvest");
                 end function
@@ -362,8 +362,10 @@ public class ScriptedWorldTests
         var (module, registry) = Built("""
             shared model Rules
                 public function Configure(Builder game)
-                    game.KeyAction("harvest.gather", "Gather here", "Harvest", "Q");
-                    game.KeyAction("harvest.run", "Run", "Harvest", "W");
+                    Verb g = game.Action("harvest.gather", "Gather here", "Harvest");
+                    g.Key("Q");
+                    Verb r = game.Action("harvest.run", "Run", "Harvest");
+                    r.Key("W");
                 end function
             end model
             """);
@@ -374,6 +376,496 @@ public class ScriptedWorldTests
         {
             Assert.That(registry.Actions.All.Single().Id, Is.EqualTo("harvest.gather"));
             Assert.That(registry.Actions.All.Single().Key, Is.EqualTo("Q"));
+        });
+    }
+
+    // ── A game's own records ──────────────────────────────────────────────────
+
+    /// <summary>🔴 The seam the whole scripted route was missing: a world's rules declaring a kind of
+    /// record, and getting an editor section for it without a compiler.
+    ///
+    /// <para>The MODEL is the declaration. Its fields, in order, in the shapes they hold, are the rows
+    /// of the form — a field typed as an enumeration is a drop-down over that enumeration's members,
+    /// and one typed as another model is a picker over that model's records. What is left is what a
+    /// model cannot say, and it is said about the records the call handed back.</para>
+    /// </summary>
+    [Test]
+    public void AScriptDeclaresItsOwnRecords()
+    {
+        var (module, registry) = Built("""
+            enumeration Habitat
+                Shore, Woodland
+            end enumeration
+
+            model Species
+                string commonName;
+                Habitat habitat;
+                integer height;
+                boolean protection;
+                real spread;
+                Species nearest;
+            end model
+
+            shared model Rules
+                public function Configure(Builder game)
+                    Records species = game.Records("Species", "Species", "Species", 200);
+
+                    species.Caption("commonName", "Common name");
+                    species.Length("commonName", 60);
+                    species.Range("height", 0, 400);
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        var family = registry.Schema.Families.Single(f => f.Id == "Species");
+        var habitats = registry.Schema.Choices("Species.habitat")!;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+
+            Assert.That(family.LabelKey, Is.EqualTo("Species"));
+            Assert.That(family.DefaultLimit, Is.EqualTo(200));
+
+            // Declaration order, because that is the order the form is drawn in.
+            Assert.That(family.Fields.Select(f => f.Key),
+                Is.EqualTo(new[] { "commonName", "habitat", "height", "protection", "spread", "nearest" })
+                  .AsCollection);
+
+            Assert.That(family.Fields.Select(f => f.Kind), Is.EqualTo(new[]
+            {
+                FieldKind.Text, FieldKind.Choice, FieldKind.Integer,
+                FieldKind.Flag, FieldKind.Real, FieldKind.RecordRef,
+            }).AsCollection);
+
+            // A field says what it is called unless the script says otherwise.
+            Assert.That(family.Fields[0].LabelKey, Is.EqualTo("Common name"), "the caption given");
+            Assert.That(family.Fields[2].LabelKey, Is.EqualTo("Height"), "and the one nobody gave");
+
+            // The parts a kind alone does not carry, and which a form is useless without.
+            Assert.That(family.Fields[0].MaxLength, Is.EqualTo(60));
+            Assert.That(family.Fields[1].ChoiceSetId, Is.EqualTo("Species.habitat"));
+            Assert.That(family.Fields[2].Max, Is.EqualTo(400));
+            Assert.That(family.Fields[5].RecordFamilyId, Is.EqualTo("Species"),
+                "a field typed as a model points at that model's records, unprompted");
+
+            // The enumeration's members ARE the set, and nothing declared one.
+            Assert.That(habitats.Members.Select(m => m.Id),
+                Is.EqualTo(new[] { "Shore", "Woodland" }).AsCollection);
+            Assert.That(habitats.Members[0].LabelKey, Is.EqualTo("Shore"));
+        });
+    }
+
+    /// <summary>A model the script says nothing else about still gets a section, named after itself.</summary>
+    [Test]
+    public void RecordsNothingElseIsSaidAbout_StillGetASection()
+    {
+        var (module, registry) = Built("""
+            model SurveySite
+                string siteName;
+            end model
+
+            shared model Rules
+                public function Configure(Builder game)
+                    game.Records("SurveySite", "", "", 0);
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        var family = registry.Schema.Families.Single(f => f.Id == "SurveySite");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+            Assert.That(family.LabelKey, Is.EqualTo("Survey site"), "the model's own name, as words");
+            Assert.That(family.Fields.Single().LabelKey, Is.EqualTo("Site name"));
+        });
+    }
+
+    /// <summary>🔴 No line depends on the one above it.
+    ///
+    /// <para>Every line names the field it is about, on the records it is about, so a file may be
+    /// written in whatever order reads best and mean the same thing. An order that quietly decided
+    /// which records a line landed on would be invisible: both forms would render, one short a bound
+    /// and one carrying a bound that makes no sense on it.</para></summary>
+    [Test]
+    public void NoLineDependsOnTheOneAboveIt()
+    {
+        var (module, registry) = Built("""
+            model Species
+                integer height;
+            end model
+
+            model Site
+                integer visits;
+            end model
+
+            shared model Rules
+                public function Configure(Builder game)
+                    Records species = game.Records("Species", "Species", "Species", 50);
+                    Records sites = game.Records("Site", "Sites", "Site", 20);
+
+                    sites.Range("visits", 0, 9);
+                    species.Range("height", 0, 400);
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+
+            Assert.That(registry.Schema.Families.Single(f => f.Id == "Site")
+                                .Fields.Single(f => f.Key == "visits").Max, Is.EqualTo(9));
+            Assert.That(registry.Schema.Families.Single(f => f.Id == "Species")
+                                .Fields.Single(f => f.Key == "height").Max, Is.EqualTo(400));
+        });
+    }
+
+    /// <summary>A model nobody declared, a field nothing can edit, and a name a model has not got are
+    /// each refused BY NAME.
+    ///
+    /// <para>Compass has no type values, so the model arrives as text and a typo cannot be a compile
+    /// error. It has to be a message that says which models DO exist — otherwise the editor simply has
+    /// no section, which reads as a broken engine rather than a misspelled word.</para></summary>
+    [Test]
+    public void AModelThatIsNotThere_AFieldThatIsNot_AndOneNothingCanEdit_AreRefusedByName()
+    {
+        var (module, registry) = Built("""
+            model Species
+                string commonName;
+                string[] tags;
+            end model
+
+            shared model Rules
+                public function Configure(Builder game)
+                    game.Records("Speceis", "Species", "Species", 5);
+
+                    Records species = game.Records("Species", "Species", "Species", 5);
+                    species.Caption("commonNmae", "Common name");
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+        string refused = string.Join("\n", module.Problems.Select(p => p.Message));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(refused, Does.Contain("Speceis"), "a model nobody declared says so");
+            Assert.That(refused, Does.Contain("this world has: Species"), "and names the ones that exist");
+            Assert.That(refused, Does.Contain("tags"), "a field no form could edit");
+            Assert.That(refused, Does.Contain("commonNmae"), "and a field the model has not got");
+
+            // And the rest of the file still declared, which is the whole rule for a world's content.
+            Assert.That(registry.Schema.Families.Single(f => f.Id == "Species").Fields.Select(f => f.Key),
+                Is.EqualTo(new[] { "commonName" }).AsCollection,
+                "the field nobody could edit is left out rather than taking the records with it");
+        });
+    }
+
+    /// <summary>🔴 A field typed as a model nobody declared records for is dropped and NAMED.
+    ///
+    /// <para>The picker would otherwise list nothing, which reads as a game holding no records rather
+    /// than as a <c>game.Records</c> line somebody forgot to write. Both halves have to be there and
+    /// only one of them is in the type.</para></summary>
+    [Test]
+    public void AFieldPointingAtRecordsNobodyDeclared_IsDroppedAndNamed()
+    {
+        var (module, registry) = Built("""
+            model Habitat
+                string name;
+            end model
+
+            model Species
+                string commonName;
+                Habitat home;
+            end model
+
+            shared model Rules
+                public function Configure(Builder game)
+                    game.Records("Species", "Species", "Species", 5);
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+        string refused = string.Join("\n", module.Problems.Select(p => p.Message));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(refused, Does.Contain("Species.home"), "the field that points nowhere");
+            Assert.That(refused, Does.Contain("Habitat"), "and what it was pointing at");
+
+            Assert.That(registry.Schema.Families.Single(f => f.Id == "Species").Fields.Select(f => f.Key),
+                Is.EqualTo(new[] { "commonName" }).AsCollection,
+                "the rest of the form still renders");
+        });
+    }
+
+    /// <summary>A model named for something the compiled game already declared is refused on its own,
+    /// like every other declaration a script makes — and saying more about it afterwards is quiet,
+    /// because the one line about what went wrong is the useful one.</summary>
+    [Test]
+    public void RecordsCollidingWithTheCompiledGame_AreRefusedAlone()
+    {
+        var (module, registry) = Built("""
+            model Items
+                string name;
+            end model
+
+            model Mine
+                string name;
+            end model
+
+            shared model Rules
+                public function Configure(Builder game)
+                    Records items = game.Records("Items", "Things", "Thing", 10);
+                    items.Caption("name", "Name");
+
+                    game.Records("Mine", "Mine", "Mine", 10);
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(string.Join("\n", module.Problems.Select(p => p.Message)), Does.Contain("Items"));
+            Assert.That(registry.Schema.Families.Any(f => f.Id == "Mine"), Is.True,
+                "the declaration after the refused one still lands");
+        });
+    }
+
+    // ── Panels, slots, and what a verb is offered on ────────────────────────────────
+
+    /// <summary>A screen of a game's own, its rows, its buttons, and the verb that opens it.
+    ///
+    /// <para>The panel's SURFACE is derived from its id rather than named, so a row cannot land on a
+    /// surface nothing draws — which would take, render nowhere, and say nothing.</para></summary>
+    [Test]
+    public void AScriptDeclaresAPanel_ItsRows_AndTheVerbThatOpensIt()
+    {
+        var (module, registry) = Built("""
+            shared model Rules
+                public function Configure(Builder game)
+                    game.Attribute("harvest.baskets", "owner");
+                    game.Attribute("harvest.sap", "viewport");
+                    game.Attribute("harvest.sapMax", "viewport");
+
+                    Panel book = game.Panel("harvest.book", "Field Book", 240, 180);
+                    book.Key("B");
+                    book.Button("Gather here", "harvest.gather");
+                    book.Heading("Field record");
+                    book.Field("harvest.baskets", "Baskets", 200, 200, 160);
+                    book.Meter("harvest.sap", "harvest.sapMax", "Sap", 0, 0, 0);
+
+                    Verb o = game.Action("harvest.open", "Field Book", "Harvest");
+                    o.OnHud();
+                    o.Opens("harvest.book");
+                    Verb g = game.Action("harvest.gather", "Gather here", "Harvest");
+                    g.Key("Q");
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        var panel = registry.Panels.All.Single(p => p.Id == "harvest.book");
+        var rows = registry.DisplayFields.For(panel.Surface);
+        var opener = registry.Actions.All.Single(a => a.Id == "harvest.open");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+
+            Assert.That(panel.TitleKey, Is.EqualTo("Field Book"));
+            Assert.That(panel.Key, Is.EqualTo("B"));
+            Assert.That(panel.Width, Is.EqualTo(240));
+            Assert.That(panel.Buttons.Single().ActionId, Is.EqualTo("harvest.gather"));
+
+            Assert.That(rows.Select(r => r.LabelKey),
+                Is.EqualTo(new[] { "Field record", "Baskets", "Sap" }).AsCollection,
+                "the panel's rows are on the panel's own surface, and in the order written");
+            Assert.That(rows.Single(r => r.LabelKey == "Baskets").Rgb,
+                Is.EqualTo(GameColor.Pack(200, 200, 160)), "a color said after the row still lands");
+
+            Assert.That(opener.Surface, Is.EqualTo(ActionSurface.Hud));
+            Assert.That(opener.OpensPanel, Is.EqualTo("harvest.book"));
+        });
+    }
+
+    /// <summary>🔴 A verb opening a panel nobody declared is refused BY NAME, and still offered.
+    ///
+    /// <para>The button draws, the player presses it, and nothing happens — which reads as a broken
+    /// client rather than as a panel somebody forgot. Neither half can see the other: the verb compiles
+    /// and the panel's absence is only visible from here.</para></summary>
+    [Test]
+    public void AVerbOpeningAPanelNobodyDeclared_IsRefusedByName()
+    {
+        var (module, registry) = Built("""
+            shared model Rules
+                public function Configure(Builder game)
+                    Verb o = game.Action("harvest.open", "Field Book", "Harvest");
+                    o.OnHud();
+                    o.Opens("harvest.bok");
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+        string refused = string.Join("\n", module.Problems.Select(p => p.Message));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(refused, Does.Contain("harvest.bok"), "the panel that is not there");
+
+            var opener = registry.Actions.All.Single();
+            Assert.That(opener.OpensPanel, Is.Empty, "it opens nothing rather than something absent");
+            Assert.That(opener.Surface, Is.EqualTo(ActionSurface.Hud),
+                "and the verb itself still lands, because a menu entry that does nothing beats one that "
+                + "is missing along with everything after it");
+        });
+    }
+
+    /// <summary>Each surface a verb may be offered on, and the condition that greys one.</summary>
+    [Test]
+    public void AVerbIsOfferedOnTheSurfaceItNames_AndOnlyWhenItsConditionHolds()
+    {
+        var (module, registry) = Built("""
+            shared model Rules
+                public function Configure(Builder game)
+                    game.Attribute("harvest.baskets", "owner");
+
+                    game.Action("harvest.gather", "Gather", "Harvest");
+                    Verb gr = game.Action("harvest.greet", "Greet", "Harvest");
+                    gr.OnPlayer();
+                    Verb nm = game.Action("harvest.name", "Identify", "Harvest");
+                    nm.OnNpc();
+                    Verb cp = game.Action("harvest.compare", "Compare notes", "Harvest");
+                    cp.OnPlayer();
+                    cp.NeedsAtLeast("harvest.baskets", 1);
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        var carrying = new AttributeBag();
+        carrying.Set("harvest.baskets", AttributeValue.From(2));
+
+        var compare = registry.Actions.All.Single(a => a.Id == "harvest.compare");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+
+            Assert.That(registry.Actions.All.Single(a => a.Id == "harvest.gather").Surface,
+                Is.EqualTo(ActionSurface.Tile), "a square, unless the verb says otherwise");
+            Assert.That(registry.Actions.All.Single(a => a.Id == "harvest.greet").Surface,
+                Is.EqualTo(ActionSurface.Player));
+            Assert.That(registry.Actions.All.Single(a => a.Id == "harvest.name").Surface,
+                Is.EqualTo(ActionSurface.Npc));
+
+            Assert.That(compare.When.Holds(carrying), Is.True, "carrying enough");
+            Assert.That(compare.When.Holds(new AttributeBag()), Is.False, "and carrying nothing");
+        });
+    }
+
+    /// <summary>A place on a body something can be worn, and a caption that defaults to the key.</summary>
+    [Test]
+    public void AScriptDeclaresAnEquipSlot()
+    {
+        var (module, registry) = Built("""
+            shared model Rules
+                public function Configure(Builder game)
+                    game.EquipSlot("satchel", "Satchel");
+                    game.EquipSlot("fieldGlass", "");
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+            Assert.That(registry.EquipSlots.Slots.Select(s => s.LabelKey),
+                Is.EqualTo(new[] { "Satchel", "Field glass" }).AsCollection,
+                "a caption left blank becomes the key, as words");
+        });
+    }
+
+    // ── What the rules decide ───────────────────────────────────────────────
+
+    /// <summary>A world where nobody dies, decided by the rules rather than by a compiled policy.</summary>
+    [Test]
+    public void RulesCanRefuseADeath_AndSayHowLongABodyLingers()
+    {
+        var (module, _) = Built("""
+            shared model Rules
+                public function Configure(Builder game)
+                end function
+
+                public string function OnMayDie(Player who, string cause)
+                    if cause == "drowned"
+                        yield "";
+                    end if
+
+                    yield "Nobody dies out here.";
+                end function
+
+                public integer function OnLinger(Player who)
+                    yield 30;
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        var who = EntityHandle.ForPlayer(1);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+
+            Assert.That(scripts.MayDie(new Death(who, EntityHandle.None, "fell")).Allowed, Is.False,
+                "the rules said no");
+            Assert.That(scripts.MayDie(new Death(who, EntityHandle.None, "drowned")).Allowed, Is.True,
+                "and the cause is theirs to read");
+
+            Assert.That(scripts.LingerFor(who).IsSet, Is.True, "a body that stays");
+        });
+    }
+
+    /// <summary>🔴 Rules that write neither policy leave the engine's own answers alone.
+    ///
+    /// <para>A policy registered for a world that never wrote one would put a call into the death path
+    /// for no answer, and a handler that failed would then decide whether people can die.</para></summary>
+    [Test]
+    public void RulesThatDecideNeither_LeaveBothToTheEngine()
+    {
+        var (module, _) = Built("""
+            shared model Rules
+                public function Configure(Builder game)
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(scripts.MayDie(new Death(EntityHandle.ForPlayer(1), EntityHandle.None, "")).Allowed,
+                Is.True);
+            Assert.That(scripts.LingerFor(EntityHandle.ForPlayer(1)).IsSet, Is.False);
         });
     }
 
@@ -410,15 +902,50 @@ public class ScriptedWorldTests
                     game.Action("harvest.gather", "Gather here", "Harvest");
                 end function
 
-                public function OnAction(Player who, string action, integer map, integer x, integer y)
+                public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
                     who.Message(action + " at " + map + ":" + x + "," + y);
                 end function
             end model
             """, world);
 
-        ((IActionHandler)module).Invoke(Someone, "harvest.gather", new WorldPlace(3, 11, 4));
+        ((IActionHandler)module).Invoke(Someone, "harvest.gather", EntityHandle.None,
+                                        new WorldPlace(3, 11, 4));
 
         Assert.That(world.Said, Is.EqualTo(new[] { "harvest.gather at 3:11,4" }));
+    }
+
+    /// <summary>A verb offered ON somebody tells the script who that was.
+    ///
+    /// <para>The name rather than the body, because the boundary cannot carry "somebody, or nobody" —
+    /// and blank is the answer for the square and HUD surfaces, which is most verbs. A script that got
+    /// the argument but never a value would be a seam that looks present and answers nothing.</para>
+    /// </summary>
+    [Test]
+    public void AVerbUsedOnSomebody_TellsTheScriptWho()
+    {
+        var world = new RecordingWorld();
+        using var module = Loaded("""
+            shared model Rules
+                public function Configure(Builder game)
+                    game.Action("harvest.greet", "Greet", "Harvest");
+                end function
+
+                public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+                    if on == ""
+                        who.Message("nobody");
+                        yield;
+                    end if
+
+                    who.Message("greeted " + on);
+                end function
+            end model
+            """, world);
+
+        var handler = (IActionHandler)module;
+        handler.Invoke(Someone, "harvest.greet", Someone, new WorldPlace(1, 1, 1));
+        handler.Invoke(Someone, "harvest.greet", EntityHandle.None, new WorldPlace(1, 1, 1));
+
+        Assert.That(world.Said, Is.EqualTo(new[] { "greeted " + world.NameOf(Someone), "nobody" }));
     }
 
     [Test]
@@ -587,11 +1114,31 @@ public class ScriptedWorldTests
         CoreRegistry.Build(module);
         module.Start(new RecordingWorld());
 
+        // Every `public function` the file declares whose name is one the engine asks for. If the
+        // script wrote it, the engine has to have taken it.
+        string source = string.Join("\n", Directory.GetFiles(
+            Path.Combine(world, ScriptedWorldModule.ScriptsFolder), "*.cm", SearchOption.AllDirectories)
+            .Select(File.ReadAllText));
+
+        var written = ScriptedWorldModule.Handlers
+            .Select(h => h.Name)
+            .Where(name => source.Contains("public function " + name + "(", StringComparison.Ordinal))
+            .ToArray();
+
         Assert.Multiple(() =>
         {
             Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty,
                 "the shipped rules do not compile:\n" + string.Join("\n", module.Problems));
             Assert.That(module.IsLoaded, Is.True);
+
+            Assert.That(written, Is.Not.Empty, "the shipped rules declare no handler at all");
+
+            // \U0001F534 The half compiling does not cover. A handler is matched by NAME AND ARITY, so a
+            // signature that drifts from the table is a function nobody calls: it compiles, it loads,
+            // and the verb it served quietly stops working. That is what changing OnAction's arity did.
+            Assert.That(module.Offered, Is.SupersetOf(written),
+                "the shipped rules declare a handler the engine did not take \u2014 check its arity "
+                + "against ScriptedWorldModule.Handlers");
         });
     }
 
@@ -610,7 +1157,8 @@ public class ScriptedWorldTests
     /// Stands in for the engine, recording what a script asked it to do. The module is what is under
     /// test here; what <c>ServerWorld</c> does with a <c>Tell</c> is pinned by its own tests.
     /// </summary>
-    private sealed class RecordingWorld : IWorld
+    /// <summary>Shared with the scripted-Survey fixture, which needs a world to hand a module.</summary>
+    internal sealed class RecordingWorld : IWorld
     {
         public List<string> Said { get; } = [];
         public AttributeBag Bag { get; } = new();
@@ -654,5 +1202,7 @@ public class ScriptedWorldTests
         public void Stain(WorldPlace at, int size, WorldLayer layer, float amount) { }
         public IReadOnlyList<AttributeBag> RecordsOf(string familyId) => [];
         public AttributeBag? RecordAt(string familyId, int num) => null;
+
+        public string NameOf(EntityHandle who) => who.IsSet ? who.ToString() : string.Empty;
     }
 }

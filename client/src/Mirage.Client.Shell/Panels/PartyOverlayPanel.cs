@@ -6,6 +6,7 @@ using Mirage.Client.Shell.Input;
 using Mirage.Client.Shell.Localization;
 using Mirage.Client.Shell.Ui;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 
 namespace Mirage.Client.Shell.Panels;
 
@@ -23,21 +24,46 @@ public sealed class PartyOverlayPanel
 {
     // Layout — the sidebar's free space, centered under the Logout button. Everything below is measured
     // from (X,Y), so the whole panel and its hit boxes travel together.
-    private static readonly Point Anchor = HudPanel.FreeSpaceAnchor(PanelW);
+    // A property rather than a `static readonly` field: the button block this hangs under grows when a
+    // game declares buttons of its own, and an anchor frozen at type init would draw this on top of them.
+    private static Point Anchor => HudPanel.FreeSpaceAnchor(PanelW);
     private static int X => Anchor.X;
     private static int Y => Anchor.Y;
 
     /// <summary>The panel's outer rectangle, where it is drawn.</summary>
     internal static Rectangle Bounds => new(X, Y, PanelW, PanelH);
 
+    // How many bars the loaded game declared, for the layout that has to answer without a state to ask.
+    // Static for the same reason the HUD's button count is: there is one of these, drawn on one thread.
+    private static int _declaredBars;
+
+    /// <summary>How many bars the layout is currently sized for. Settable so a test can ask what the
+    /// panel would be for a game that declares two, without standing a client up to declare them.</summary>
+    internal static int DeclaredBars
+    {
+        get => _declaredBars;
+        set => _declaredBars = value;
+    }
+
+    /// <summary>The panel's height for what is currently declared. Zero bars is a header and a close
+    /// glyph, which is what Core on its own is: a name, and a way out of the party.</summary>
+    private static int PanelH => HeightFor(_declaredBars);
+
     private const int InnerW = 152;
     private const int HeaderH = 14;
     private const int BarH = 12;
+    private const int BarGap = 1;
     private const int Pad = 4;
     private const int HeaderBarGap = Pad;              // gap between header and bars, matches top/bottom pad
-    private const int BarsH = BarH * 3;                // bars touch, no row gap
     private const int PanelW = InnerW + Pad * 2;
-    private const int PanelH = HeaderH + HeaderBarGap + BarsH + Pad * 2;
+    /// <summary>How tall the panel is for <paramref name="bars"/> declared rows.
+    ///
+    /// <para>Measured rather than fixed: this used to reserve three rows for HP, MP and SP whatever a
+    /// game had to say, so a game declaring one bar got an inch of empty panel under it and a game
+    /// declaring none got the whole block. Core on its own declares none, and then this is a name.</para>
+    /// </summary>
+    private static int HeightFor(int bars)
+        => HeaderH + Pad * 2 + (bars > 0 ? HeaderBarGap + bars * (BarH + BarGap) - BarGap : 0);
 
     // Panel chrome — subtle dark backing with a thin border, both alpha-tinted by proximity.
     private static readonly Color PanelBg = new(15, 15, 25, 200);
@@ -45,15 +71,6 @@ public sealed class PartyOverlayPanel
 
     // ── Animated bar ratios (mirror HudPanel.Tick) ────────────────────────────
     private const float LerpSpeed = 5f;
-
-    // ── Bar slot text cache — recomputed only when current/max changes ────────
-    private struct BarSlot
-    {
-        public readonly string LabelKey;
-        public long Current = -1, Max = -1;
-        public string Text = "";
-        public BarSlot(string labelKey) { LabelKey = labelKey; }
-    }
 
     // ── Leave-party close button + inline confirmation ───────────────────────
     // Showing the × glyph and the "Leave the party?" Yes/No dialog when toggled. The
@@ -115,6 +132,8 @@ public sealed class PartyOverlayPanel
             return;
         }
 
+        _declaredBars = state.OverheadBars.Count;
+
         // Nearby = partner's map is one of the nine this client is observing.
         bool nearby = state.CellForMap(party.MapNum) is not null;
         float alpha = nearby ? 0.7f : 0.4f;
@@ -155,6 +174,50 @@ public sealed class PartyOverlayPanel
         bool closeHover = _closeBtnRect.Contains(input.MousePosition);
         var closeColor = (closeHover ? Color.White : Color.LightGray) * alpha;
         sb.DrawString(font, "x", new Vector2(_closeBtnRect.X + 3, _closeBtnRect.Y - 2), closeColor);
+
+        DrawDeclaredBars(sb, font, state, party, outline, alpha, innerX, headerY);
+    }
+
+    /// <summary>The bars the GAME declared, read off the partner's own attributes.
+    ///
+    /// <para>This used to draw three of its own, hardcoded to HP, MP and SP — in an engine with no
+    /// vitals. It reads <see cref="ClientState.OverheadBars"/> now, which is the same declaration the
+    /// bars over a body's head come from, so a game describes its bars once and both surfaces follow.</para>
+    ///
+    /// <para>🔴 <b>The values arrive with the snapshot; they are not read off a bag here.</b> A
+    /// partner is usually somebody this client cannot see, and a client holds attributes only for bodies
+    /// in its own neighbourhood — so there is no bag to read, and there never will be. The server reads
+    /// the declared bars off the partner and sends what each row draws, every tick, which is how the
+    /// rows follow a partner two maps away.</para>
+    ///
+    /// <para>A row the partner has nothing to say about arrives negative, the same way
+    /// <see cref="OverheadBar.FractionIn"/> says it, and is drawn empty.</para></summary>
+    private static void DrawDeclaredBars(SpriteBatch sb, SpriteFont font, ClientState state,
+        PartySnapshot party, Color outline, float alpha, int innerX, int headerY)
+    {
+        var bars = state.OverheadBars;
+        if (bars.Count == 0) return;
+
+        int y = headerY + HeaderH + HeaderBarGap;
+        var block = new Rectangle(innerX - 1, y - 1, InnerW + 2,
+                                  bars.Count * (BarH + BarGap) - BarGap + 2);
+        UiHelper.DrawBorder(sb, block, outline * alpha);
+
+        for (int i = 0; i < bars.Count; i++)
+        {
+            var bar = bars.At(i);
+            if (bar is null) continue;
+
+            // Absent reads as empty rather than as full, and a snapshot that has not arrived yet is
+            // absent: an overlay drawn full for a partner nobody has heard from would say the opposite
+            // of what it knows.
+            float fill = i < party.Bars.Count ? party.Bars[i] : OverheadBar.Absent;
+            if (fill < 0f) fill = 0f;
+
+            UiHelper.DrawMeter(sb, font, new Rectangle(innerX, y, InnerW, BarH), fill,
+                ChatPanel.GetColor(bar.Rgb) * alpha, Color.Black * alpha, "", Color.White * alpha);
+            y += BarH + BarGap;
+        }
     }
 
     /// <summary>"Party — Leave the party?" confirmation that replaces the bars in-place. Yes

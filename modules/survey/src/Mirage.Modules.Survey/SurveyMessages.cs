@@ -34,6 +34,14 @@ public sealed class SurveyRoute : IPacketRoute, IActionHandler
     /// <summary>The action id a stock client sends back when the player picks "Note this down".</summary>
     public const string NoteAction = "survey.note";
 
+    /// <summary>Naming a creature the surveyor is pointing at. Offered on every NPC, which is what makes
+    /// a plain body worth right-clicking in this game.</summary>
+    public const string IdentifyAction = "survey.identify";
+
+    /// <summary>Comparing findings with another surveyor. Offered on a player rather than on a square,
+    /// so the body it is about arrives with it.</summary>
+    public const string CompareAction = "survey.compare";
+
     private IWorld? _world;
 
     public string Name => "Survey notes";
@@ -44,7 +52,8 @@ public sealed class SurveyRoute : IPacketRoute, IActionHandler
     /// accompanies it from naming a handler nothing declared.</summary>
     public const string OpenBookAction = "survey.openbook";
 
-    public IReadOnlyCollection<string> Actions { get; } = [NoteAction, OpenBookAction];
+    public IReadOnlyCollection<string> Actions { get; } =
+        [NoteAction, OpenBookAction, IdentifyAction, CompareAction];
 
     public void Begin(IWorld world) => _world = world;
 
@@ -57,10 +66,51 @@ public sealed class SurveyRoute : IPacketRoute, IActionHandler
     /// <summary>A stock client picked the menu item. Same outcome, no species named: a client that was
     /// never compiled against this game cannot know one, and a note saying "something, here" is a real
     /// thing to write on a survey.</summary>
-    public void Invoke(EntityHandle from, string actionId, in WorldPlace at)
+    public void Invoke(EntityHandle from, string actionId, EntityHandle on, in WorldPlace at)
     {
         if (actionId == NoteAction) Note(from, species: 0);
+        else if (actionId == IdentifyAction) Identify(from, on);
+        else if (actionId == CompareAction) Compare(from, on);
         // Opening the book does nothing here: the client already holds every value it shows.
+    }
+
+    /// <summary>Say what the surveyor is looking at, and count it.
+    ///
+    /// <para>The body arrives as a handle and is asked its name through <see cref="IWorld"/> — a game
+    /// never receives a slot or an index, so a body that walked off between the click and the read
+    /// answers blank rather than naming whoever took its place.</para></summary>
+    private void Identify(EntityHandle from, EntityHandle on)
+    {
+        if (_world is not { } world) return;
+
+        string name = world.NameOf(on);
+        if (name.Length == 0)
+        {
+            world.Tell(from, "There is nothing there to identify.");
+            return;
+        }
+
+        world.Tell(from, $"You note down: {name}.");
+        Note(from, species: 0);
+    }
+
+    /// <summary>Two surveyors comparing counts. Both are told, which is the point of it.</summary>
+    private void Compare(EntityHandle from, EntityHandle on)
+    {
+        if (_world is not { } world) return;
+
+        string them = world.NameOf(on);
+        if (them.Length == 0)
+        {
+            world.Tell(from, "There is nobody there to compare notes with.");
+            return;
+        }
+
+        long mine = world.AttributesOf(from)?[Survey.Specimens].AsLong() ?? 0;
+        long theirs = world.AttributesOf(on)?[Survey.Specimens].AsLong() ?? 0;
+
+        world.Tell(from, $"You compare notes with {them}: {mine} against {theirs}.");
+        world.Tell(on, $"{world.NameOf(from)} compares notes with you: {theirs} against {mine}.");
     }
 
     private void Note(EntityHandle from, int species)

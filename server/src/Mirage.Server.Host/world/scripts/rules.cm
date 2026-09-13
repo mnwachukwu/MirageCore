@@ -1,73 +1,60 @@
-# The demo world's own rules.
+# Survey — a small game built on Core, written entirely in Compass.
 #
-# Everything here is CONTENT. It travels inside the world folder, it is read when the server starts, and
-# changing it needs an edit and a restart rather than a compiler. The C# module beside it — Survey —
-# declares what a surveyor IS; this decides what happens to one, and adds a little of its own.
+# ⚠ THIS FILE IS THE ENGINE'S DOOR, AND NOTHING ELSE. Every function the engine calls is here, and each
+# one hands the work to the model that owns it. The engine only ever looks at `Rules`, so a game that
+# put its whole self in this file would be a game in one file — the folders beside it are what the
+# organizing looks like:
 #
-# docs/scripting-api.md lists everything a module may name. Two things it cannot tell you twice enough:
-#   * A handler has to be public. The engine calls it and nothing in the module does, so without that
-#     the compiler reports it as a function nobody uses.
-#   * Every handler is optional. Write the one you want; the engine asks before it calls.
+#   declare/    what the game IS, said once before the world exists
+#   rules/      what happens to somebody, said every time it does
+#   ranks.cm    a lookup this game owns and nothing else has an opinion about
+#
+# Every .cm under the scripts folder is one module, however deep it sits, so a folder is an organizing
+# idea rather than a boundary. A model in one file reaches a model in another by name.
 
 shared model Rules
 
-    # Where the last step came from, so a rule can tell a border crossing from an ordinary step.
-    integer lastMap = 0;
-
-    # Declaring runs once, before the world exists — so this is about what the game IS, never about
-    # anybody in it. Asking a player anything here is a mistake the engine will tell you about.
+    # Declaring runs once, before the world exists. Everything it says is about what the game IS, never
+    # about anybody in it — there is nobody in it yet.
     public function Configure(Builder game)
-        game.Attribute("demo.steps", "owner");
+        Surveyor.Declare(game);
+        Land.Declare(game);
+        Book.Declare(game);
 
-        game.Heading("This World");
-        game.Field("demo.steps", "Steps taken");
-
-        # A key reaches it without the menu. Which keys a game may have is a short list the engine
-        # holds, and one already taken — by the C# module or by another line here — is refused
-        # rather than quietly overriding.
-        game.KeyAction("demo.look", "Look around", "This World", "R");
+        # Resting is the half of stamina nothing in the world triggers: it happens as time passes. Once
+        # a second rather than once a tick, because a point a second is the rate this game wants.
+        game.TickEvery(20);
     end function
 
     public function OnPlayerJoined(Player who)
-        who.Message("The survey is yours to run. Everything you read here came out of this world's "
-                + "scripts folder.");
-
-        Rules.lastMap = who.Map;
+        Surveyor.Enrol(who);
     end function
 
-    # Walking counts, and it costs stamina — which the C# module declared and this decides how to spend.
     public function OnPlayerMoved(Player who, integer fromX, integer fromY)
-        who.SetNumber("demo.steps", who.Number("demo.steps") + 1);
-
-        if who.Map != Rules.lastMap
-            who.Message("You cross into a new stretch of the survey.");
-
-            Rules.lastMap = who.Map;
-        end if
-
-        integer left = who.Number("stamina");
-
-        if left <= 0
-            yield;
-        end if
-
-        who.SetNumber("stamina", left - 1);
-
-        if left == 1
-            who.Message("You are too tired to go much further today.");
-        end if
+        Walking.Stepped(who);
     end function
 
-    # The square menu offers "Look around" because Configure said so, and picking it arrives here with
-    # the square the player pointed at — map included, since everything in view is pointable. Pressing R
-    # arrives the same way, carrying the square in front of the player.
-    public function OnAction(Player who, string action, integer map, integer x, integer y)
-        if action != "demo.look"
-            yield;
-        end if
+    # Once for each body in the world, every twentieth tick. This is the only way a script can walk the
+    # roster, which is why resting is written per-player rather than as a sweep.
+    public function OnPlayerTick(Player who)
+        Recovery.Rest(who);
+    end function
 
-        who.Message("You look at " + map + ":" + x + "," + y + " and note it down. That is "
-                + who.Number("demo.steps") + " steps so far.");
+    # `on` names whoever the verb was used on, and is blank for one offered on a square or on the HUD.
+    public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+        Notes.Did(who, action, on);
+    end function
+
+    # Nothing dies on a botanical survey. A refusal is a real answer rather than an absence: Core's
+    # death path exists and works, and this game says it never runs.
+    public string function OnMayDie(Player who, string cause)
+        yield "Nobody dies out here.";
+    end function
+
+    # A dropped line is not a lost afternoon. Long enough that reconnecting puts a surveyor back where
+    # they were, short enough that nobody is left standing in a meadow overnight.
+    public integer function OnLinger(Player who)
+        yield 30;
     end function
 
 end model

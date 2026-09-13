@@ -21,7 +21,15 @@ public sealed class NpcRecord
     [JsonIgnore]
     public string TrimmedName => _trimmedName ??= _name.TrimEnd();
 
-    public string AttackSay { get; set; } = string.Empty;
+    /// <summary>This body's one line, or blank for one that says nothing.
+    ///
+    /// <para>Said on two occasions, which is why it is named for neither: the first time it notices a
+    /// player, and again when a player reaches for a body that has no conversation and no shop to
+    /// offer. Once per player rather than once per encounter.</para>
+    ///
+    /// <para>A greeting, a warning and a threat are the same field. Which one it reads as is a property
+    /// of the game rather than of the engine.</para></summary>
+    public string Says { get; set; } = string.Empty;
     public int Sprite { get; set; }
     /// <summary>Which sprite sheet <see cref="Sprite"/> is a row of.
     ///

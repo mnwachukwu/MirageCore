@@ -113,8 +113,16 @@ public sealed class ClientPacketSender
 
     /// <summary>The player picked one of the game's own actions, on a square. The id came from the
     /// server and goes straight back; this client never knows what it means.</summary>
-    public void SendInvokeAction(string actionId, int mapNum, int x, int y)
-        => _transport.Send(new InvokeActionPacket { Action = actionId, MapNum = mapNum, X = x, Y = y });
+    /// <summary>Picked one of the game's own verbs. <paramref name="targetName"/> and
+    /// <paramref name="npcSlot"/> are what it was used ON, and only one of them is ever set: a verb
+    /// offered on a square or on the HUD carries neither.</summary>
+    public void SendInvokeAction(string actionId, int mapNum, int x, int y,
+                                 string targetName = "", int npcSlot = 0)
+        => _transport.Send(new InvokeActionPacket
+        {
+            Action = actionId, MapNum = mapNum, X = x, Y = y,
+            TargetName = targetName, NpcSlot = npcSlot,
+        });
 
     // The client picks the target opportunistically from the rendered viewport (sprite-pixel
     // hit test) and sends its identity proposal along with the clicked tile.  The server

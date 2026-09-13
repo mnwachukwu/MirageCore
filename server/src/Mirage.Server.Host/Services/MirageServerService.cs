@@ -280,13 +280,13 @@ public sealed class MirageServerService : IHostedService
 
         // Arrays (1-based; index 0 = unused dummy)
         _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_LoadingItems));
-        var (items, itemsPadded) = await _persistence.LoadAllItemsAsync();
+        var (items, itemsLoaded) = await _persistence.LoadAllItemsAsync();
         _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_LoadingNpcs));
-        var (npcs, npcsPadded) = await _persistence.LoadAllNpcsAsync();
+        var (npcs, npcsLoaded) = await _persistence.LoadAllNpcsAsync();
         _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_LoadingShops));
-        var (shops, shopsPadded) = await _persistence.LoadAllShopsAsync();
+        var (shops, shopsLoaded) = await _persistence.LoadAllShopsAsync();
         _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_LoadingConversations));
-        var (conversations, conversationsPadded) = await _persistence.LoadAllConversationsAsync();
+        var (conversations, conversationsLoaded) = await _persistence.LoadAllConversationsAsync();
 
         CopyArray(items, _world.Items, _world.Limits.Items);
         CopyArray(npcs, _world.Npcs, _world.Limits.Npcs);
@@ -301,9 +301,9 @@ public sealed class MirageServerService : IHostedService
             if (CoreRecordFamilies.Find(family.Id) is not null) continue;
 
             int limit = _world.Limits.For(family);
-            var (records, padded) = await _persistence.LoadAllModuleRecordsAsync(family, limit);
+            var (records, loaded) = await _persistence.LoadAllModuleRecordsAsync(family, limit);
             _world.ModuleRecords.Adopt(family, records);
-            _logger.LogInformation("Loaded {Count} {Family} ({Padded} created).", limit, family.Id, padded);
+            _logger.LogInformation("Loaded {Count} {Family} of {Limit} slots.", loaded, family.Id, limit);
         }
 
         // Guilds — runtime-created and unbounded; load every guild file present into the sparse map.
@@ -325,11 +325,16 @@ public sealed class MirageServerService : IHostedService
         var mapGroups = await _persistence.LoadAllMapGroupsAsync();
         foreach (var (index, group) in mapGroups) _world.MapGroups[index] = group;
 
-        // Maps — load all; create an empty file for any that don't exist on disk, at the size this world
-        // says a map is (world.json, read at the top). An authored map is whatever size it was authored at.
+        // Maps — load every one that exists; a slot with no file stands in memory at the size this world
+        // says a map is (world.json, read at the top), and is NOT written out. An authored map is whatever
+        // size it was authored at.
+        //
+        // Writing the blanks used to happen here and cost a file per empty slot, which is most of them: a
+        // four-map world became a thousand files the first time a server opened it. The editor reads the
+        // same folder and has always skipped what is not there.
         var blank = manifest.DefaultMapSize;
         _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_LoadingMaps));
-        int mapsLoaded = 0, mapsCreated = 0;
+        int mapsLoaded = 0;
         for (short i = 1; i <= _world.Limits.Maps; i++)
         {
             ct.ThrowIfCancellationRequested();
@@ -342,8 +347,6 @@ public sealed class MirageServerService : IHostedService
             else
             {
                 _world.Maps[i] = new MapRecord(blank.Width, blank.Height);
-                await _persistence.SaveMapAsync(i, _world.Maps[i]);
-                mapsCreated++;
             }
         }
 
@@ -374,14 +377,12 @@ public sealed class MirageServerService : IHostedService
         _tod.Init(env.TodPositionMs);
         _weather.Init(env.Weather, env.WeatherRemainingMs);
 
+        // What the world actually holds, rather than what its ceilings allow. The second line this used
+        // to print counted the blank files it had just written, and there are none.
         LocalizedLog.Info(_logger, ServerStrings.Server_LoadedSummary,
-            ("Items", items.Length - 1), ("Npcs", npcs.Length - 1), ("Shops", shops.Length - 1),
-            ("Conversations", conversations.Length - 1),
+            ("Items", itemsLoaded), ("Npcs", npcsLoaded), ("Shops", shopsLoaded),
+            ("Conversations", conversationsLoaded),
             ("Maps", mapsLoaded));
-        LocalizedLog.Info(_logger, ServerStrings.Server_PaddedSummary,
-            ("Items", itemsPadded), ("Npcs", npcsPadded), ("Shops", shopsPadded),
-            ("Conversations", conversationsPadded),
-            ("Maps", mapsCreated));
     }
 
     /// <summary>

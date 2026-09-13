@@ -1,9 +1,24 @@
 # Survey
 
 **The worked example of extending the engine by building from source.** A game written in C# against
-`Mirage.Shared.Extensibility`, compiled, and listed in `GameModules.Load()`. The other route — a script,
-with no compiler — is what [modules/README.md](../README.md) describes; this is the one that works today,
-and it is the stronger one for anyone forking the repository to build their own game.
+`Mirage.Shared.Extensibility`, compiled, and ready to be listed in `GameModules.Load()`.
+
+⚠ **It is built and tested, and the server does not load it.** The same game ships as the thing the
+server actually runs, written in Compass, in
+[`server/src/Mirage.Server.Host/world/scripts/`](../../server/src/Mirage.Server.Host/world/scripts/).
+Loading both would be one game colliding with itself over every attribute key it owns, so this one is
+opt-in: add the project reference back and put `new SurveyModule()` in `GameModules.Load()`, with the
+scripts folder emptied or the world pointed elsewhere.
+
+Nothing here has rotted for sitting unloaded. `SurveyModuleTests` builds a registry from it and holds
+that registry to the same assertions `ScriptedSurveyTests` holds the scripted one to — the two routes
+are checked against one specification, which is the only way "either route, same game" stays true.
+
+**Which route to read.** [The C# playbook](../../docs/building-on-core.md) is this one, and it is the
+stronger choice for a large game: the compiler checks every seam, a debugger steps through it, and a
+typed packet of your own is possible. [The Compass playbook](../../docs/scripting-a-game.md) is the
+other, and it is the stronger choice for a game that should ship without a toolchain.
+[Choosing between them](../../docs/implementing-a-game.md) is the honest comparison.
 
 You walk a world writing down what grows in it. Walking is tiring; resting gives it back. Every twelfth
 step turns up something worth cataloguing, and enough of those earn you a rank.
@@ -59,20 +74,28 @@ What that buys is a game with a face of its own on a stock client. What it does 
 panel is a title, a column of declared rows, and a row of buttons, in that order. A game wanting columns,
 a grid, or a list of its own wants a UI toolkit on the wire, which is a much larger thing than this.
 
-## Installing its records
+## Its records
 
-The five species in `world/species/` are authored content, not build output. Copy them into a server's
-world directory:
-
-```bash
-Copy-Item -Recurse -Force "D:\Repos\MirageSourceRemasteredCore\modules\survey\world\species" "D:\Repos\MirageSourceRemasteredCore\server\src\Mirage.Server.Host\world\"
-```
+The five species live in the shipped world, at
+[`server/src/Mirage.Server.Host/world/species/`](../../server/src/Mirage.Server.Host/world/species/),
+because records are authored content rather than part of either module. Both routes declare the same
+family and read the same files; neither owns them.
 
 A world with none of them loads perfectly well — a surveyor then spends stamina and finds nothing, which
 is what a world with nothing in it should do.
 
-## Turning it off
+## Turning it on
 
-One line. Empty `GameModules.Load()` and the server is Core alone: it runs, accepts players, and moves
-them around a world with no game in it. The project reference may stay — an assembly nothing constructs
-costs nothing at runtime.
+Three steps, and the third is the one people forget:
+
+1. Add the project reference to `server/src/Mirage.Server.Host/Mirage.Server.Host.csproj`.
+2. Put `new SurveyModule()` first in `GameModules.Load()`, before the `ScriptedWorldModule`.
+3. **Empty the world's `scripts/` folder**, or point the server at a world without one. Otherwise the
+   scripted Survey declares `stamina` a moment after this one does, and the server stops at startup
+   naming the collision — which is the engine working, not a bug.
+
+## Turning everything off
+
+Empty `GameModules.Load()` and empty the world's `scripts/` folder, and the server is Core alone: it
+runs, accepts players, and moves them around a world with no game in it at all. That is a supported
+configuration and the one to start a new game from.

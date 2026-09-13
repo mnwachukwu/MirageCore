@@ -184,6 +184,22 @@ public sealed class ServerWorld : IWorld
 
     public AttributeBag? RecordAt(string familyId, int num) => _world.ModuleRecords.Get(familyId, num);
 
+    public string NameOf(EntityHandle who)
+    {
+        if (who.IsPlayer)
+        {
+            var player = _pm[who.PlayerIndex];
+            return player.IsPlaying ? player.Char.Name.TrimEnd() : string.Empty;
+        }
+
+        // An NPC's name is on its TEMPLATE, so the body has to be located first to learn which template
+        // it is. A handle whose body has left the world answers blank rather than guessing from the
+        // slot it used to stand in.
+        if (Locate(who) is not { } at || at.Record.Num <= 0) return string.Empty;
+
+        return _world.Npcs[at.Record.Num].TrimmedName;
+    }
+
     /// <summary>Where the NPC a handle names currently is, or null when nothing answers to that
     /// identity any more. A handle outlives the body it was made for, so this is asked rather than
     /// assumed everywhere above — and it resolves rather than indexing, because a chaser away from

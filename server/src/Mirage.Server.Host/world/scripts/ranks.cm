@@ -1,0 +1,28 @@
+# What a count has earned.
+#
+# Deliberately a lookup this GAME owns: Core has no notion of progression, and this is the whole of what
+# this one means by it.
+
+shared model Ranks
+
+    public string function For(integer specimens)
+        if specimens >= 40
+            yield "Botanist";
+        end if
+
+        if specimens >= 20
+            yield "Naturalist";
+        end if
+
+        if specimens >= 8
+            yield "Field Hand";
+        end if
+
+        if specimens >= 1
+            yield "Apprentice";
+        end if
+
+        yield "Unenrolled";
+    end function
+
+end model

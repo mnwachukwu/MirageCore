@@ -28,6 +28,85 @@ public sealed class CompassScript
     /// <summary>Whether it declares a <c>Main</c>, which a game module does not.</summary>
     public bool HasEntryPoint => Model.EntryPoint is not null;
 
+    /// <summary>The shape of every model this module declares, in declaration order.
+    ///
+    /// <para>What a game DESCRIBES with a model — a kind of record, a form — the engine reads from
+    /// here rather than from a line-per-field vocabulary: the model already says which fields there are
+    /// and what they hold, and saying it twice is how the two drift.</para>
+    ///
+    /// <para>Compass's own symbols do not leave this project. This is a description in the engine's
+    /// terms, for the same reason <see cref="ScriptType"/> exists.</para></summary>
+    public IReadOnlyList<ScriptModelInfo> Models => _models ??= ReadModels();
+
+    private IReadOnlyList<ScriptModelInfo>? _models;
+
+    private IReadOnlyList<ScriptModelInfo> ReadModels()
+    {
+        var found = new List<ScriptModelInfo>();
+
+        foreach (TypeSymbol type in Model.AllTypes())
+        {
+            // A model, and one this module declared rather than one the language provides.
+            if (type is not ModelSymbol model || model.Members.Count == 0) continue;
+
+            var fields = new List<ScriptModelField>();
+            foreach (var (_, members) in model.Members)
+            {
+                foreach (Symbol member in members)
+                {
+                    if (member is FieldSymbol field) fields.Add(Describe(field));
+                }
+            }
+
+            if (fields.Count > 0) found.Add(new ScriptModelInfo(model.Name, fields));
+        }
+
+        return found;
+    }
+
+    /// <summary>One field, as something the engine can act on.</summary>
+    private static ScriptModelField Describe(FieldSymbol field)
+    {
+        TypeSymbol type = field.Type;
+
+        // An enumeration IS a closed set of choices, so a field typed as one needs nothing else said
+        // about it. This is what lets a form have a drop-down without the script declaring one.
+        if (type is EnumerationSymbol choices)
+        {
+            var members = new List<string>();
+            foreach (var (_, symbols) in choices.Members)
+            {
+                foreach (Symbol symbol in symbols)
+                {
+                    if (symbol is EnumMemberSymbol value) members.Add(value.Name);
+                }
+            }
+
+            return new ScriptModelField(field.Name, ScriptFieldShape.Choice, type.Display, members);
+        }
+
+        // Another model, which is a field pointing AT one of those rather than holding one. The type
+        // is the whole declaration: nothing else has to say which model it points at.
+        if (type is ModelSymbol other)
+        {
+            return new ScriptModelField(field.Name, ScriptFieldShape.Reference, other.Name, []);
+        }
+
+        ScriptFieldShape shape = type.Display switch
+        {
+            "string" or "character" => ScriptFieldShape.Text,
+            "integer" => ScriptFieldShape.Whole,
+            "real" or "float" or "fraction" => ScriptFieldShape.Fraction,
+            "boolean" => ScriptFieldShape.Truth,
+
+            // A set, an optional, a function. Named rather than dropped, so whatever reads this can
+            // say which field it could not use and why.
+            _ => ScriptFieldShape.Unsupported,
+        };
+
+        return new ScriptModelField(field.Name, shape, type.Display, []);
+    }
+
     internal IReadOnlyList<CompilationUnit> Lowered { get; }
 
     internal SemanticModel Model { get; }

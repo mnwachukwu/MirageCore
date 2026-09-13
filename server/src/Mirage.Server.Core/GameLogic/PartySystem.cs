@@ -2,6 +2,7 @@ using Mirage.Server.Core.Localization;
 using Mirage.Server.Core.Net;
 using Mirage.Server.Core.Players;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 
@@ -10,20 +11,27 @@ namespace Mirage.Server.Core.GameLogic;
 public sealed class PartySystem : GameSystem
 {
     private readonly PlayerManager _pm;
+    private readonly OverheadBarSet _bars;
 
     // Pending party invites expire after this long if not accepted.
     private const long InviteTimeoutMs = 60_000;
 
-    public PartySystem(PlayerManager pm, IPacketDispatcher dispatcher) : base(dispatcher)
+    public PartySystem(PlayerManager pm, IPacketDispatcher dispatcher, CoreRegistry? registry = null)
+        : base(dispatcher)
     {
         _pm = pm;
+
+        // What the loaded game draws over a head is also what the overlay draws for a partner: one
+        // declaration, both surfaces. An engine with no game declares none, and then the overlay is a
+        // name and a way out of the party.
+        _bars = (registry ?? CoreRegistry.CoreOnly).OverheadBars;
     }
 
     /// <summary>
-    /// Pushes a fresh <see cref="PartyVitalsPacket"/> snapshot of <paramref name="playerIndex"/>
+    /// Pushes a fresh <see cref="PartyPartnerPacket"/> snapshot of <paramref name="playerIndex"/>
     /// to that player's partner so their party overlay stays current.  No-op when the player has
-    /// no partner.  Call after any mutation that changes the partner's overlay-visible state:
-    /// HP/MP/SP, level, map/X/Y, combat stamp.
+    /// no partner.  Called every tick for every partnered player, which is what lets the bars follow a
+    /// partner the recipient cannot see.
     /// </summary>
     public void NotifyPartner(int playerIndex)
     {
@@ -31,8 +39,8 @@ public sealed class PartySystem : GameSystem
         int partner = _pm[playerIndex].PartyPlayer;
         if (partner == 0 || !_pm[partner].IsPlaying) return;
         var sp = _pm[playerIndex];
-        _dispatcher.SendTo(partner, PacketBuilder.PartyVitals(
-            playerIndex, sp.Char, sp.CombatExpiresAt, sp.PkGraceUntilUtc,
+        _dispatcher.SendTo(partner, PacketBuilder.PartyPartner(
+            playerIndex, sp.Char, _bars, sp.CombatExpiresAt, sp.PkGraceUntilUtc,
             Environment.TickCount64, 0));
     }
 

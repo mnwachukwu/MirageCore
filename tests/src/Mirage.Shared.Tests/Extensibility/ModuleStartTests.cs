@@ -112,5 +112,7 @@ public class ModuleStartTests
         public void Stain(WorldPlace at, int size, WorldLayer layer, float amount) { }
         public IReadOnlyList<AttributeBag> RecordsOf(string familyId) => [];
         public AttributeBag? RecordAt(string familyId, int num) => null;
+
+        public string NameOf(EntityHandle who) => who.IsSet ? who.ToString() : string.Empty;
     }
 }

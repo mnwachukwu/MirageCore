@@ -239,8 +239,9 @@ public sealed partial class PacketHandler
             case NpcInteractChoice.Talk:
                 OpenNpcConversation(index, npcNum, p.MapNum, p.NpcSlot);
                 return;
-            default:   // Auto — talk-first, then the keeper shop; if neither applies, the NPC at least speaks
-                       // its AttackSay rather than doing nothing.
+            default:   // Auto — talk-first, then the keeper shop; if neither applies, the body at least
+                       // speaks its own line rather than doing nothing. That is the second of the two
+                       // occasions NpcRecord.Says covers.
                 if (_world.ConversationForNpc(npcNum) > 0)
                     OpenNpcConversation(index, npcNum, p.MapNum, p.NpcSlot);
                 else OpenNpcShop(index, npcNum, p.MapNum, p.NpcSlot);
@@ -330,9 +331,19 @@ public sealed partial class PacketHandler
         var handler = _actionHandlers.FirstOrDefault(h => h.Actions.Contains(p.Action, StringComparer.Ordinal));
         if (handler is null) return;   // an id nothing declared: a stale client, or a game that changed
 
+        // 🔴 The verb's own condition is asked HERE as well as on the client. One the client alone
+        // enforced would be a rule any modified client could ignore, and the game would never learn its
+        // own declaration had been skipped. Both ends call the same Holds.
+        // An id a handler owns but nothing DECLARED is refused rather than run: no client could have
+        // offered it, so the only way it arrives is a packet somebody wrote by hand.
+        var declared = _declaredActions.All
+            .FirstOrDefault(a => string.Equals(a.Id, p.Action, StringComparison.Ordinal));
+        if (declared is null || !declared.When.Holds(_pm[index].Char.Attributes)) return;
+
         try
         {
-            handler.Invoke(EntityHandle.ForPlayer(index), p.Action, new WorldPlace(p.MapNum, p.X, p.Y));
+            handler.Invoke(EntityHandle.ForPlayer(index), p.Action, ActionTargetOf(p),
+                           new WorldPlace(p.MapNum, p.X, p.Y));
         }
         catch (Exception ex)
         {
@@ -340,5 +351,36 @@ public sealed partial class PacketHandler
             _logger.LogError(ex, "Action handler {Handler} failed on {Action} for index {Index}",
                              handler.Name, p.Action, index);
         }
+    }
+
+    /// <summary>What the verb was used ON, as a handle, or nobody.
+    ///
+    /// <para>The client names a player by name and an NPC by the slot it OCCUPIES on the map it named.
+    /// Both become an <see cref="EntityHandle"/> here, so a game never sees either.</para>
+    ///
+    /// <para>🔴 The occupied slot is not the identity. A body that has wandered onto the next map
+    /// stands in a slot belonging to that map while its own is reserved, so the slot is asked for its
+    /// spawn identity rather than used as one — otherwise a verb used on a visitor names whichever
+    /// native happens to own that number at home.</para>
+    ///
+    /// <para>A name or slot naming nobody yields <see cref="EntityHandle.None"/> rather than a refusal:
+    /// a target that walked away between the click and the read is an ordinary thing to happen, and what
+    /// the verb should do about it is the game's answer.</para></summary>
+    private EntityHandle ActionTargetOf(InvokeActionPacket p)
+    {
+        if (p.TargetName.Length > 0)
+        {
+            int target = _pm.FindPlayerByName(p.TargetName);
+            return target > 0 ? EntityHandle.ForPlayer(target) : EntityHandle.None;
+        }
+
+        if (p.NpcSlot < 1 || p.NpcSlot > Constants.MaxMapNpcs) return EntityHandle.None;
+        if (p.MapNum < 1 || p.MapNum > _world.Limits.Maps) return EntityHandle.None;
+
+        var body = _world.MapNpcs[p.MapNum, p.NpcSlot];
+        if (body.Num <= 0) return EntityHandle.None;
+
+        var (spawnMap, spawnSlot) = body.GetSpawnIdentity(p.MapNum, p.NpcSlot);
+        return EntityHandle.ForNpc(spawnMap, spawnSlot);
     }
 }

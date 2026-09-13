@@ -30,7 +30,7 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
 
     [ObservableProperty] private string _name = "";
     /// <summary>Line the NPC speaks when it engages a player; blank for silent.</summary>
-    [ObservableProperty] private string _attackSay = "";
+    [ObservableProperty] private string _says = "";
     [ObservableProperty] private int _sprite;
     /// <summary>Which sprite sheet <see cref="Sprite"/> is a row of.</summary>
     [ObservableProperty] private int _spriteSheet;
@@ -212,7 +212,7 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
         Index = index;
         IsLoaded = isLoaded;
         _name = r.Name;
-        _attackSay = r.AttackSay;
+        _says = r.Says;
         _sprite = r.Sprite;
         _spriteSheet = r.SpriteSheet;
         _size = r.EffectiveSize;
@@ -239,7 +239,7 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
         MarkDirty();
         OnPropertyChanged(nameof(LightBlockVisible));
     }
-    partial void OnAttackSayChanged(string value) => MarkDirty();
+    partial void OnSaysChanged(string value) => MarkDirty();
     partial void OnSpriteChanged(int value) => MarkDirty();
     partial void OnSpriteSheetChanged(int value) => MarkDirty();
     partial void OnSizeChanged(int value) => MarkDirty();
@@ -286,7 +286,7 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
         try
         {
             Name = r.Name;
-            AttackSay = r.AttackSay;
+            Says = r.Says;
             Sprite = r.Sprite;
             SpriteSheet = r.SpriteSheet;
             Size = r.EffectiveSize;
@@ -316,7 +316,7 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
         try
         {
             Name = pkt.Name;
-            AttackSay = pkt.AttackSay;
+            Says = pkt.Says;
             Sprite = pkt.Sprite;
             SpriteSheet = pkt.SpriteSheet;
             Size = pkt.Size;
@@ -344,7 +344,7 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
     public NpcRecord ToRecord() => new()
     {
         Name = Name,
-        AttackSay = AttackSay,
+        Says = Says,
         Sprite = Sprite,
         SpriteSheet = SpriteSheet,
         Size = Size,
@@ -365,7 +365,7 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
     {
         NpcNum = Index,
         Name = Name,
-        AttackSay = AttackSay,
+        Says = Says,
         Sprite = Sprite,
         SpriteSheet = SpriteSheet,
         Size = Size,

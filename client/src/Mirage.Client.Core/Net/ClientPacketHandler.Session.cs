@@ -164,7 +164,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
 
     private void HandleGuildBrowse(GuildBrowsePacket p) => _state.SetGuildBrowse(p.Guilds);
 
-    private void HandlePartyVitals(PartyVitalsPacket p)
+    private void HandlePartyPartner(PartyPartnerPacket p)
     {
         var party = _state.Party;
         if (string.IsNullOrEmpty(p.Name))
@@ -180,6 +180,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
         party.Y = p.Y;
         party.ShowAsPk = p.ShowAsPk;
         party.Access = p.Access;
+        party.Bars = p.Bars;
         party.LastCombatTickMs = p.MsSinceCombat == int.MaxValue
             ? 0
             : Environment.TickCount64 - p.MsSinceCombat;

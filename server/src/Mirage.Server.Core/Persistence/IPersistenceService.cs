@@ -52,10 +52,10 @@ public interface IPersistenceService
     Task SaveMapAsync(int mapNum, MapRecord map);
 
     // ── Game data arrays ──────────────────────────────────────────────────────
-    Task<(ItemRecord[] records, int padded)> LoadAllItemsAsync();
-    Task<(NpcRecord[] records, int padded)> LoadAllNpcsAsync();
-    Task<(ShopRecord[] records, int padded)> LoadAllShopsAsync();
-    Task<(ConversationRecord[] records, int padded)> LoadAllConversationsAsync();
+    Task<(ItemRecord[] records, int loaded)> LoadAllItemsAsync();
+    Task<(NpcRecord[] records, int loaded)> LoadAllNpcsAsync();
+    Task<(ShopRecord[] records, int loaded)> LoadAllShopsAsync();
+    Task<(ConversationRecord[] records, int loaded)> LoadAllConversationsAsync();
 
     Task SaveItemAsync(int num, ItemRecord item);
     Task SaveNpcAsync(int num, NpcRecord npc);
@@ -68,7 +68,7 @@ public interface IPersistenceService
     ///
     /// <para>The family carries its own folder and filename, so a game adding a family needs no line
     /// here: the folder is created if it is missing and every slot gets a file.</para></summary>
-    Task<(AttributeBag[] records, int padded)> LoadAllModuleRecordsAsync(RecordFamily family, int limit);
+    Task<(AttributeBag[] records, int loaded)> LoadAllModuleRecordsAsync(RecordFamily family, int limit);
 
     /// <summary>Writes one record of a module's family. The bag replaces the file wholesale, keys the
     /// engine cannot read included.</summary>

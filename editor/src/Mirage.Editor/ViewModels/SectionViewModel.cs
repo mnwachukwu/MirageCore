@@ -14,7 +14,9 @@ public sealed partial class SectionViewModel : ObservableObject
     private readonly string _fallbackLabel;
 
     /// <summary>Localized label shown in the section nav; decoupled from <see cref="Name"/> so the id stays stable.</summary>
-    public string DisplayName => EditorStrings.GetOrFallback(_labelKey, _fallbackLabel);
+    // A section a GAME added carries a caption this build has no translation for and never will, so
+    // a miss shows the caption rather than the family's id — "Species", not "species".
+    public string DisplayName => EditorStrings.GameLabel(_labelKey, _fallbackLabel);
 
     [ObservableProperty] private bool _hasDirty;
 

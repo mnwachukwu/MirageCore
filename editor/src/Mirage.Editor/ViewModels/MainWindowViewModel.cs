@@ -407,7 +407,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     /// <summary>What a section is CALLED, resolved. A family that declares no caption key, or one whose
     /// key this build's language files have never heard of, is called by its ID — a name an author
     /// recognises from their own game, and the only one available.</summary>
-    internal static string SectionLabel(string id) => EditorStrings.GetOrFallback(SectionLabelKey(id), id);
+    internal static string SectionLabel(string id) => EditorStrings.GameLabel(SectionLabelKey(id), id);
 
     /// <summary>The rail row for a section, made once and kept.
     ///

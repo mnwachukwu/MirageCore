@@ -1,3 +1,4 @@
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
 
@@ -170,12 +171,22 @@ public static partial class PacketBuilder
     /// (or in the past) means "not in combat" and lands as int.MaxValue on the wire — the client
     /// converts to its own clock and runs the existing 10 s combat-window check.
     /// </summary>
-    public static PartyVitalsPacket PartyVitals(int index, PlayerRecord p, long combatExpiresAt,
-        long pkGraceUntilUtc, long nowMs, long combatDurationMs)
+    public static PartyPartnerPacket PartyPartner(int index, PlayerRecord p, OverheadBarSet bars,
+        long combatExpiresAt, long pkGraceUntilUtc, long nowMs, long combatDurationMs)
     {
+        ArgumentNullException.ThrowIfNull(p);
+        ArgumentNullException.ThrowIfNull(bars);
+
         long nowUtc = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         bool showAsPk = p.IsPk(nowUtc) && pkGraceUntilUtc <= nowUtc;
         int msSince = MsSinceCombat(combatExpiresAt, nowMs, combatDurationMs);
+
+        // Read here rather than on the client: the recipient is somebody who usually cannot SEE this
+        // body, so they have never been sent its attributes and never will be.
+        var rows = new float[bars.Count];
+        for (int i = 0; i < rows.Length; i++)
+            rows[i] = bars.At(i)?.FractionIn(p.Attributes) ?? OverheadBar.Absent;
+
         return new()
         {
             Index = index,
@@ -184,11 +195,12 @@ public static partial class PacketBuilder
             ShowAsPk = showAsPk,
             Access = p.Access,
             MsSinceCombat = msSince,
+            Bars = rows,
         };
     }
 
     /// <summary>Empty-name notify that tells the recipient to tear down their party overlay.</summary>
-    public static PartyVitalsPacket PartyCleared() => new();
+    public static PartyPartnerPacket PartyCleared() => new();
 
     // ── Items ────────────────────────────────────────────────────────────────
 
@@ -234,7 +246,7 @@ public static partial class PacketBuilder
         {
             NpcNum = npcNum,
             Name = npc.Name,
-            AttackSay = npc.AttackSay,
+            Says = npc.Says,
             Sprite = npc.Sprite,
             SpriteSheet = npc.SpriteSheet,
             Size = npc.EffectiveSize,

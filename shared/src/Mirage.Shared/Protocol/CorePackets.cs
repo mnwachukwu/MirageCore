@@ -263,7 +263,7 @@ public static class CorePackets
         builder.Register(PacketNames.UpdateConversation, Read<UpdateConversationPacket>);
         builder.Register(PacketNames.PlayerHotkeys, Read<PlayerHotkeysPacket>);
         builder.Register(PacketNames.PartyRequest, Read<PartyRequestNotifyPacket>);
-        builder.Register(PacketNames.PartyVitals, Read<PartyVitalsPacket>);
+        builder.Register(PacketNames.PartyPartner, Read<PartyPartnerPacket>);
 
         // World events
         builder.Register(PacketNames.CheckForMap, Read<CheckForMapPacket>);

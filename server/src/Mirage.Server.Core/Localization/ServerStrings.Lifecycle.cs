@@ -22,7 +22,6 @@ public static partial class ServerStrings
     public const string Server_LoadingMotd = nameof(Server_LoadingMotd);
     public const string Server_LoadedSummary = nameof(Server_LoadedSummary);
     public const string Server_RuntimeDataSummary = nameof(Server_RuntimeDataSummary);
-    public const string Server_PaddedSummary = nameof(Server_PaddedSummary);
     public const string Server_SpawningMapItems = nameof(Server_SpawningMapItems);
     public const string Server_LoadingDroppedItems = nameof(Server_LoadingDroppedItems);
     public const string Server_SpawningNpcs = nameof(Server_SpawningNpcs);

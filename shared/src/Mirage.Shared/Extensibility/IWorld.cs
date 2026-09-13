@@ -139,4 +139,11 @@ public interface IWorld
 
     /// <summary>One record of one of this game's own families, or null for a slot that is not there.</summary>
     AttributeBag? RecordAt(string familyId, int num);
+
+    /// <summary>What to call this body — a player's character name, or an NPC's record name. Blank for a
+    /// handle naming nobody, and for one whose body has left the world.
+    ///
+    /// <para>A game is handed handles and has no other way to turn one into something a player can read.
+    /// Trimmed, because a record name is stored fixed-width.</para></summary>
+    string NameOf(EntityHandle who);
 }

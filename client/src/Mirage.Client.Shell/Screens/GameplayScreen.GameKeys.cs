@@ -57,6 +57,11 @@ public sealed partial class GameplayScreen
             if (!GameKeyMap.TryResolve(action.Key, out var actionKey)) continue;
             if (!input.IsKeyPressed(actionKey)) continue;
 
+            // A shortcut obeys the verb's condition, or it would be the way around a greyed-out menu
+            // entry. Silently: there is nothing to grey out on a keyboard.
+            if (!action.When.Holds(
+                _ctx.State.AttributesOf(EntityHandle.ForPlayer(_ctx.State.MyIndex)))) return;
+
             // A verb with nowhere to point still runs: the square is what the server is TOLD, and a game
             // whose rule does not care about the place is an ordinary game. Facing the edge of the world
             // is the only way this fails, and refusing the press there would be a shortcut that stops

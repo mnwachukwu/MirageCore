@@ -281,7 +281,7 @@ public class SeedIntegrityTests
 
     /// <summary>A conversation names its NPC by number, and an unresolvable number is not an error
     /// anywhere in the engine — <c>GameWorld.ConversationForNpc</c> simply finds nothing and the NPC
-    /// says its AttackSay instead. So authored dialogue that can never open is silent, and this is what
+    /// says its Says instead. So authored dialogue that can never open is silent, and this is what
     /// catches it.
     ///
     /// <para>One thing has to hold: it names an NPC that exists. WHICH one is free — where a world puts

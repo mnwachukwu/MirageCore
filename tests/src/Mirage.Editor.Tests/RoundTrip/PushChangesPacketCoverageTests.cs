@@ -28,7 +28,7 @@ public class PushChangesPacketCoverageTests
     // property is caught alongside one that assigns nothing at all.
     private static NpcRecord FullNpc() => new()
     {
-        Name = "Cave Troll", AttackSay = "Rrraagh!", Sprite = 42, SpriteSheet = 2, Size = 3, SpawnSecs = 90,
+        Name = "Cave Troll", Says = "Rrraagh!", Sprite = 42, SpriteSheet = 2, Size = 3, SpawnSecs = 90,
         Behavior = NpcBehavior.Pursue, Group = 7, Range = 5,
         Drops = [new NpcDrop { ItemNum = 12, Quantity = 250, Chance = 35 },
                  new NpcDrop { ItemNum = 7, Chance = 3 }],
@@ -46,7 +46,7 @@ public class PushChangesPacketCoverageTests
         {
             Assert.That(pkt.NpcNum, Is.EqualTo(5));
             Assert.That(pkt.Name, Is.EqualTo("Cave Troll"));
-            Assert.That(pkt.AttackSay, Is.EqualTo("Rrraagh!"));
+            Assert.That(pkt.Says, Is.EqualTo("Rrraagh!"));
             Assert.That(pkt.Sprite, Is.EqualTo(42));
             Assert.That(pkt.SpawnSecs, Is.EqualTo(90));
             Assert.That(pkt.Behavior, Is.EqualTo(NpcBehavior.Pursue));

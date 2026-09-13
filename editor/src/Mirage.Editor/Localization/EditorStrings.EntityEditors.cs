@@ -32,8 +32,8 @@ public static partial class EditorStrings
     public const string ItemEditor_Notes_EquipmentDurability = nameof(ItemEditor_Notes_EquipmentDurability);
     public const string ItemEditor_Notes_EquipmentPower = nameof(ItemEditor_Notes_EquipmentPower);
     public const string ItemEditor_Notes_EquipmentSlot = nameof(ItemEditor_Notes_EquipmentSlot);
-    public const string ItemEditor_Notes_PotionsHeader = nameof(ItemEditor_Notes_PotionsHeader);
-    public const string ItemEditor_Notes_PotionsAmount = nameof(ItemEditor_Notes_PotionsAmount);
+    public const string ItemEditor_Notes_ConsumableHeader = nameof(ItemEditor_Notes_ConsumableHeader);
+    public const string ItemEditor_Notes_ConsumableAmount = nameof(ItemEditor_Notes_ConsumableAmount);
     public const string ItemEditor_Notes_KeyHeader = nameof(ItemEditor_Notes_KeyHeader);
     public const string ItemEditor_Notes_KeyId = nameof(ItemEditor_Notes_KeyId);
     public const string ItemEditor_Notes_CurrencyHeader = nameof(ItemEditor_Notes_CurrencyHeader);
@@ -43,7 +43,7 @@ public static partial class EditorStrings
     public const string NpcEditor_AllBehaviorsFilter = nameof(NpcEditor_AllBehaviorsFilter);
     public const string NpcEditor_SelectPrompt = nameof(NpcEditor_SelectPrompt);
     public const string NpcEditor_SectionTitle = nameof(NpcEditor_SectionTitle);
-    public const string NpcEditor_AttackSayLabel = nameof(NpcEditor_AttackSayLabel);
+    public const string NpcEditor_SaysLabel = nameof(NpcEditor_SaysLabel);
     public const string NpcEditor_SpriteSheetLabel = nameof(NpcEditor_SpriteSheetLabel);
     public const string NpcEditor_SpriteLabel = nameof(NpcEditor_SpriteLabel);
     public const string NpcEditor_SizeLabel = nameof(NpcEditor_SizeLabel);

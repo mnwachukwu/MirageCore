@@ -64,14 +64,39 @@ public class SchemaFormTests
         });
     }
 
-    /// <summary>A module's label key is in no language file this build ships, so the caption falls back to
-    /// the field's own key rather than throwing.</summary>
+    /// <summary>🔴 A module's label is in no language file this build ships, and never can be — so it
+    /// is shown AS WRITTEN rather than replaced by the field's id.
+    ///
+    /// <para>This used to fall back to the id, and the first module ever connected to a running editor
+    /// made that visible: Survey declares "Common name", "Habitat" and "Field notes", and the form drew
+    /// "name", "habitat", "notes". The captions were declared, they travelled, and the editor threw them
+    /// away at the last step.</para>
+    ///
+    /// <para>It is the bargain the whole engine already takes — the client shows a game's caption as
+    /// written too. A game whose players have its language ships loc keys and gets translations, because
+    /// the lookup is still tried first.</para></summary>
     [Test]
-    public void AnUnknownLabelKey_FallsBackToTheFieldKey()
+    public void AModulesLabel_IsShownAsWritten()
     {
-        var family = new RecordFamily { Id = "Species", Fields = [Field("baseHp", FieldKind.Integer)] };
+        var family = new RecordFamily
+        {
+            Id = "Species",
+            Fields =
+            [
+                new FieldDescriptor { Key = "name", Kind = FieldKind.Text, LabelKey = "Common name" },
+                new FieldDescriptor { Key = "baseHp", Kind = FieldKind.Integer },
+            ],
+        };
 
-        Assert.That(Form(family).Fields[0].Label, Is.EqualTo("baseHp"));
+        var form = Form(family);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(form.Fields[0].Label, Is.EqualTo("Common name"));
+            Assert.That(form.Fields[1].Label, Is.EqualTo("baseHp"),
+                "a field that declares no label at all still has to say something, and its key is the "
+                + "only thing left");
+        });
     }
 
     // ── Edits land in the record ──────────────────────────────────────────────

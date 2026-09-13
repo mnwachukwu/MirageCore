@@ -296,8 +296,8 @@ public sealed partial class ClientPacketHandler : IClientEvents
             case GuildOfferNotifyPacket p:
                 HandleGuildOffer(p);
                 break;
-            case PartyVitalsPacket p:
-                HandlePartyVitals(p);
+            case PartyPartnerPacket p:
+                HandlePartyPartner(p);
                 break;
 
             // Mail

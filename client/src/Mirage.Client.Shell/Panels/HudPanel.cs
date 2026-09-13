@@ -9,7 +9,7 @@ using Mirage.Shared.Extensibility;
 
 namespace Mirage.Client.Shell.Panels;
 
-public enum HudAction { None, ToggleInventory, ToggleSocial, Quit }
+public enum HudAction { None, ToggleInventory, ToggleSocial, Quit, GameVerb }
 
 /// <summary>
 /// Right sidebar drawn while in-game.
@@ -106,11 +106,26 @@ public sealed class HudPanel
     private static Rectangle BtnRect(int row) =>
         new(InnerLeft + (InnerWidth - BtnW) / 2, ButtonBaseY + row * (BtnH + 4), BtnW, BtnH);
 
-    // row0=Inventory, row1=Social, row2=Logout.
+    // row0=Inventory, row1=Social, then one row per verb the game declared for this surface, then
+    // Logout last. Logout stays at the bottom of the block whatever a game adds, because it is the one
+    // button a player must always be able to find.
     private readonly Button _invBtn = new();
     private readonly Button _socialBtn = new();
     private readonly Button _quitBtn = new();
     private int _labelsGeneration = -1;
+
+    // What the game declared for the HUD, laid out. Rebuilt only when the declaration changes, which is
+    // once per session: a stock client is told on join and never again.
+    private readonly List<(Button Btn, string Id, string Opens, ActionCondition When)> _gameBtns = [];
+    private int _gameBtnsFor = -1;
+
+    /// <summary>The verb whose button was last clicked. Read when <see cref="Update"/> answers
+    /// <see cref="HudAction.GameVerb"/>, because a click is consumed where it is detected and the caller
+    /// cannot go looking for it a second time.</summary>
+    public string PickedAction { get; private set; } = string.Empty;
+
+    /// <summary><inheritdoc cref="PickedAction"/> The panel it opens, or blank.</summary>
+    public string PickedOpens { get; private set; } = string.Empty;
 
     // ── Bar slot — static config (color/label) + lazy text cache ────────────
     private struct BarSlot
@@ -157,27 +172,87 @@ public sealed class HudPanel
         _quitBtn.Bounds = BtnRect(LogoutRow);
     }
 
-    // The lone Logout button's row, and the top of the empty sidebar below it.
-    private const int LogoutRow = 2;
-    private static int LogoutY => ButtonBaseY + LogoutRow * (BtnH + 4);
+    // Logout's row, which moves down as a game declares buttons above it, and the top of the empty
+    // sidebar below it.
+    //
+    // The count is static because the layout helper below it is, and that one is asked by a panel that
+    // has no HUD to ask. There is one HUD, drawn on one thread, so the shared value is the same value.
+    private static int _declaredButtons;
+    private int LogoutRow => 2 + _gameBtns.Count;
+    private static int LogoutY => ButtonBaseY + (2 + _declaredButtons) * (BtnH + 4);
 
     /// <summary>Where a panel of <paramref name="width"/> sits when it hangs in the sidebar's free space:
     /// centered across the sidebar, one padding gap under the Logout button. The sidebar's layout is private
-    /// to this panel, so anything placed against it asks here rather than restating the arithmetic.</summary>
+    /// to this panel, so anything placed against it asks here rather than restating the arithmetic.
+    ///
+    /// <para>Asked per frame rather than once, because the button block grows: a game declaring three
+    /// buttons pushes Logout down three rows, and anything anchored to a remembered answer would then be
+    /// drawn on top of them.</para></summary>
     public static Point FreeSpaceAnchor(int width) =>
         new(SidebarLeft + (SidebarWidth - width) / 2, LogoutY + BtnH + Pad);
 
     /// <summary>The Logout button's rectangle — the bottom edge of the button block.</summary>
     internal Rectangle LogoutBounds => _quitBtn.Bounds;
 
+    /// <summary>Lay out one button per verb the game declared for the HUD.
+    ///
+    /// <para>Keyed on the declaration's own count and ids, so this does nothing on every frame but the
+    /// one where a game's list arrives.</para></summary>
+    private void SyncGameButtons(ClientState state)
+    {
+        var declared = state.Actions.For(ActionSurface.Hud);
+        int stamp = declared.Count;
+        foreach (var a in declared) stamp = HashCode.Combine(stamp, a.Id);
+        if (stamp == _gameBtnsFor) return;
+
+        _gameBtnsFor = stamp;
+        _gameBtns.Clear();
+        _declaredButtons = declared.Count;
+
+        for (int i = 0; i < declared.Count; i++)
+        {
+            var action = declared[i];
+            string shortcut = action.Key.Length > 0
+                ? action.Key
+                : state.Panels.Find(action.OpensPanel)?.Key ?? string.Empty;
+
+            var button = new Button
+            {
+                Bounds = BtnRect(2 + i),
+                Label = ClientStrings.GetOrFallback(action.LabelKey, action.LabelKey)
+                        + GameKeyMap.Hint(shortcut),
+            };
+            _gameBtns.Add((button, action.Id, action.OpensPanel, action.When));
+        }
+
+        _quitBtn.Bounds = BtnRect(LogoutRow);
+    }
+
     // ── Tick — animation only, called every frame regardless of mouse position ──
 
     // ── Update — button clicks only, skipped when mouse is over a floating panel
 
-    public HudAction Update(InputState input)
+    public HudAction Update(InputState input, ClientState state)
     {
+        SyncGameButtons(state);
+
         if (_invBtn.IsClicked(input)) return HudAction.ToggleInventory;
         if (_socialBtn.IsClicked(input)) return HudAction.ToggleSocial;
+
+        // A button whose condition has stopped holding goes grey rather than away: a button that
+        // vanishes takes every button below it up a row, and the player's aim with it.
+        var mine = state.AttributesOf(EntityHandle.ForPlayer(state.MyIndex));
+        foreach (var (button, _, _, when) in _gameBtns) button.Enabled = when.Holds(mine);
+
+        foreach (var (button, id, opens, _) in _gameBtns)
+        {
+            if (!button.IsClicked(input)) continue;
+
+            PickedAction = id;
+            PickedOpens = opens;
+            return HudAction.GameVerb;
+        }
+
         if (_quitBtn.IsClicked(input)) return HudAction.Quit;
         return HudAction.None;
     }
@@ -276,6 +351,7 @@ public sealed class HudPanel
         // Panel buttons: row0=Inventory, row1=Social, row2=Logout (centered)
         _invBtn.Draw(sb, font, input);
         _socialBtn.Draw(sb, font, input);
+        foreach (var (button, _, _, _) in _gameBtns) button.Draw(sb, font, input);
         _quitBtn.Draw(sb, font, input);
     }
 

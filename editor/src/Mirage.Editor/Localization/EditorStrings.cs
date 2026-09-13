@@ -167,6 +167,19 @@ public static partial class EditorStrings
     public static string GetOrFallback(string key, string fallback)
         => !string.IsNullOrEmpty(key) && _current.TryGetValue(key, out var v) ? v : fallback;
 
+    /// <summary>A caption a GAME supplied, shown as written when this editor has no translation for it.
+    ///
+    /// <para>🔴 A module cannot ship a translation — there is nowhere to put one — so a label it
+    /// declares will never be in this table, and looking it up always misses. Falling back to the
+    /// field's id turns "Common name" into "name" and "Field notes" into "notes", which is what the
+    /// editor drew for the first module ever connected to it.</para>
+    ///
+    /// <para>So a miss shows the label itself, and only a blank label falls back to the id. A game with
+    /// its players' language shipped alongside still gets the translation, because the lookup is tried
+    /// first.</para></summary>
+    public static string GameLabel(string labelKey, string id)
+        => !string.IsNullOrEmpty(labelKey) ? GetOrFallback(labelKey, labelKey) : id;
+
     public static string Get(string key)
     {
         if (_current.TryGetValue(key, out var v)) return v;

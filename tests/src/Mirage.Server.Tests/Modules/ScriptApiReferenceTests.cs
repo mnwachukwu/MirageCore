@@ -85,7 +85,7 @@ public class ScriptApiReferenceTests
 
         foreach (ScriptHandler handler in ScriptedWorldModule.Handlers)
         {
-            md.Append("| `public function ").Append(handler.Signature).Append("` | ")
+            md.Append("| `public ").Append(handler.Signature).Append("` | ")
               .Append(handler.When).Append(" |\n");
         }
 

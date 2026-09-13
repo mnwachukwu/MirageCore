@@ -1,4 +1,3 @@
-using Mirage.Modules.Survey;
 using Mirage.Server.Host.Scripting;
 using Mirage.Shared.Extensibility;
 
@@ -21,14 +20,17 @@ namespace Mirage.Server.Host;
 /// start a new game from — delete the entry below, drop the project reference beside it, and the server
 /// is Core alone.</para>
 ///
-/// <para>What ships here is the Survey module, a small game about cataloguing plants. It is LOADED rather
-/// than merely provided, because a seam only a test has ever run is a seam nobody has run.</para>
+/// <para><b>Nothing ships in this list, and that is the shipped configuration.</b> The game this
+/// source carries — Survey, a small game about cataloguing plants — is a SCRIPT rather than an
+/// assembly: it is content the world folder carries, read by <see cref="ScriptedWorldModule"/>, so it
+/// changes without a rebuild and ships without a toolchain. <c>modules/survey/</c> holds the same game
+/// written the other way, as the worked example for the compiled route; it is built and tested and
+/// deliberately not loaded, because a game declared twice would collide with itself over every
+/// attribute key it owns.</para>
 ///
-/// <para><b>This is the compile-time route, and it is not the only one intended.</b> A module written here
-/// is checked by the compiler and stepped through in a debugger, which is what somebody building a game
-/// from this source wants. A game that is a SCRIPT is not in this list at all: it is content the world
-/// carries, read by <see cref="ScriptedWorldModule"/>, so it changes without a rebuild and ships without
-/// a toolchain. See <c>modules/README.md</c>.</para>
+/// <para><b>Both routes are supported and neither is the poor cousin.</b> A module written here is
+/// checked by the compiler and stepped through in a debugger, which is what somebody building a large
+/// game from this source wants. See <c>modules/README.md</c>.</para>
 /// </summary>
 public static class GameModules
 {
@@ -36,9 +38,7 @@ public static class GameModules
     /// <param name="worldDir">The world being served, whose <c>scripts/</c> folder is a module of its own.</param>
     public static IReadOnlyList<ICoreModule> Load(string worldDir) =>
     [
-        new SurveyModule(),
-
-        // Last, so a world's own rules are told about things after the compiled game has had its say.
+        // Last, so a world's own rules are told about things after any compiled game has had its say.
         // A world with no scripts loads this and it does nothing.
         new ScriptedWorldModule(worldDir),
     ];

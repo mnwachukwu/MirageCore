@@ -399,19 +399,19 @@ public sealed class JsonPersistenceService : IPersistenceService
 
     // ── Game data arrays ──────────────────────────────────────────────────────
 
-    public async Task<(ItemRecord[] records, int padded)> LoadAllItemsAsync()
+    public async Task<(ItemRecord[] records, int loaded)> LoadAllItemsAsync()
     {
         var result = new ItemRecord[_limits.Items + 1];
         for (int i = 0; i <= _limits.Items; i++) result[i] = new ItemRecord();
-        int padded = await CheckAndLoadRecordsAsync(result, _limits.Items, ItemFile);
-        return (result, padded);
+        int loaded = await CheckAndLoadRecordsAsync(result, _limits.Items, ItemFile);
+        return (result, loaded);
     }
 
-    public async Task<(NpcRecord[] records, int padded)> LoadAllNpcsAsync()
+    public async Task<(NpcRecord[] records, int loaded)> LoadAllNpcsAsync()
     {
         var result = new NpcRecord[_limits.Npcs + 1];
         for (int i = 0; i <= _limits.Npcs; i++) result[i] = new NpcRecord();
-        int padded = await CheckAndLoadRecordsAsync(result, _limits.Npcs, NpcFile);
+        int loaded = await CheckAndLoadRecordsAsync(result, _limits.Npcs, NpcFile);
         // Size 0 ("not defined" in a legacy or blank record) normalizes to the 1x1 default so the whole
         // server and the editor see a valid footprint class. Sentinel handling, not a data migration.
         for (int i = 1; i <= _limits.Npcs; i++)
@@ -422,14 +422,14 @@ public sealed class JsonPersistenceService : IPersistenceService
             // because a hand-authored file reaches the server without the editor ever seeing it.
             result[i].Normalize();
         }
-        return (result, padded);
+        return (result, loaded);
     }
 
-    public async Task<(ShopRecord[] records, int padded)> LoadAllShopsAsync()
+    public async Task<(ShopRecord[] records, int loaded)> LoadAllShopsAsync()
     {
         var result = new ShopRecord[_limits.Shops + 1];
         for (int i = 0; i <= _limits.Shops; i++) result[i] = new ShopRecord();
-        int padded = await CheckAndLoadRecordsAsync(result, _limits.Shops, ShopFile);
+        int loaded = await CheckAndLoadRecordsAsync(result, _limits.Shops, ShopFile);
         // Compact each shop's trades: drop the legacy null-at-index-0 and any empty slots so the in-memory
         // list is dense (matching how the editor authors + saves them). Legacy shop JSON stored a fixed
         // 1-based array ([null, slot1..slot8]); this normalizes it on load — no file rewrite required.
@@ -443,41 +443,45 @@ public sealed class JsonPersistenceService : IPersistenceService
             shop.Normalize(_limits.Items);
         }
 
-        return (result, padded);
+        return (result, loaded);
     }
 
-    public async Task<(ConversationRecord[] records, int padded)> LoadAllConversationsAsync()
+    public async Task<(ConversationRecord[] records, int loaded)> LoadAllConversationsAsync()
     {
         var result = new ConversationRecord[_limits.Conversations + 1];
         for (int i = 0; i <= _limits.Conversations; i++) result[i] = new ConversationRecord();
-        int padded = await CheckAndLoadRecordsAsync(result, _limits.Conversations, ConversationFile);
-        return (result, padded);
+        int loaded = await CheckAndLoadRecordsAsync(result, _limits.Conversations, ConversationFile);
+        return (result, loaded);
     }
 
-    // Mirrors the map loop in MirageServerService: loads each slot file if it exists,
-    // creates a blank file if it doesn't. Returns the count of blank files created.
+    /// <summary>Read every slot file a family has, leaving the blanks already in
+    /// <paramref name="result"/> wherever there is no file. Returns how many were actually read.
+    ///
+    /// <para><b>A slot with no file is not written.</b> The array arrives here already filled with blank
+    /// records, so writing one out buys the server nothing and costs a file per empty slot — a world
+    /// holding twenty authored records became some five thousand files the first time a server opened
+    /// it. A world folder is a thing one person hands another, and it should be the handful of files it
+    /// actually is.</para>
+    ///
+    /// <para>The editor reads the same folders and has always skipped what is not there, so a world that
+    /// was materialized by an older build opens exactly the same way as one that was not.</para></summary>
     private async Task<int> CheckAndLoadRecordsAsync<T>(T[] result, int max, Func<int, string> filePath)
     {
-        int created = 0;
+        int loaded = 0;
         for (int i = 1; i <= max; i++)
         {
             string path = filePath(i);
-            if (File.Exists(path))
+            if (!File.Exists(path)) continue;
+
+            try
             {
-                try
-                {
-                    string json = await File.ReadAllTextAsync(path);
-                    result[i] = JsonSerializer.Deserialize<T>(json, Options) ?? result[i];
-                }
-                catch (Exception ex) { _logger.LogWarning(ex, "Failed to load {File}", path); }
+                string json = await File.ReadAllTextAsync(path);
+                result[i] = JsonSerializer.Deserialize<T>(json, Options) ?? result[i];
+                loaded++;
             }
-            else
-            {
-                await File.WriteAllTextAsync(path, JsonSerializer.Serialize(result[i], Options));
-                created++;
-            }
+            catch (Exception ex) { _logger.LogWarning(ex, "Failed to load {File}", path); }
         }
-        return created;
+        return loaded;
     }
 
     public async Task SaveItemAsync(int num, ItemRecord item)
@@ -510,7 +514,7 @@ public sealed class JsonPersistenceService : IPersistenceService
     // serve every family a game will ever add. The records are bags: the engine stores what it is given
     // and hands it back, and the module's own code is what makes any of it mean something.
 
-    public async Task<(AttributeBag[] records, int padded)> LoadAllModuleRecordsAsync(RecordFamily family, int limit)
+    public async Task<(AttributeBag[] records, int loaded)> LoadAllModuleRecordsAsync(RecordFamily family, int limit)
     {
         ArgumentNullException.ThrowIfNull(family);
 
@@ -518,8 +522,8 @@ public sealed class JsonPersistenceService : IPersistenceService
         for (int i = 0; i < result.Length; i++) result[i] = new AttributeBag();
 
         Directory.CreateDirectory(Path.Combine(_worldPath, family.EffectiveDirectory));
-        int padded = await CheckAndLoadRecordsAsync(result, Math.Max(limit, 0), num => ModuleRecordFile(family, num));
-        return (result, padded);
+        int loaded = await CheckAndLoadRecordsAsync(result, Math.Max(limit, 0), num => ModuleRecordFile(family, num));
+        return (result, loaded);
     }
 
     public async Task SaveModuleRecordAsync(RecordFamily family, int num, AttributeBag record)

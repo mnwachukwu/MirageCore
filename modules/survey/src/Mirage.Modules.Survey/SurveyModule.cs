@@ -61,14 +61,44 @@ public sealed class SurveyModule : ICoreModule
             Buttons = [new PanelButton("Note this down", SurveyRoute.NoteAction)],
             Key = "B",
         });
+        // On the HUD rather than in a square's menu: a book is about the surveyor, not about the
+        // ground they happen to be standing on.
         builder.AddAction(new GameAction
         {
-            Id = "survey.openbook",
-            LabelKey = "Open field book",
+            Id = SurveyRoute.OpenBookAction,
+            LabelKey = "Field Book",
             GroupKey = "Survey",
-            Surface = ActionSurface.Tile,
+            Surface = ActionSurface.Hud,
             Ordinal = 1,
             OpensPanel = Survey.FieldBook,
+        });
+
+        // And a verb about a BODY, which is what a survey is mostly for. Offered on any NPC, including
+        // one with nothing else to say — declaring this is what gives a plain creature a menu at all.
+        builder.AddAction(new GameAction
+        {
+            Id = SurveyRoute.IdentifyAction,
+            LabelKey = "Identify",
+            GroupKey = "Survey",
+            Surface = ActionSurface.Npc,
+            Ordinal = 2,
+        });
+
+        // The same verb's shape aimed at a person. One id per surface rather than one id offered on
+        // several: what a game does about a colleague is rarely what it does about a creature, and an id
+        // that meant both would have to ask which it got.
+        //
+        // And the one verb here with a CONDITION: comparing notes needs notes. A surveyor who has written
+        // nothing down sees the entry greyed rather than missing, so they can tell the verb exists and
+        // that they are not ready for it — and it lights up the moment they record something.
+        builder.AddAction(new GameAction
+        {
+            Id = SurveyRoute.CompareAction,
+            LabelKey = "Compare notes",
+            GroupKey = "Survey",
+            Surface = ActionSurface.Player,
+            Ordinal = 3,
+            When = ActionCondition.AtLeast(Survey.Specimens, 1),
         });
 
         builder.AddTickWork(_recovery);

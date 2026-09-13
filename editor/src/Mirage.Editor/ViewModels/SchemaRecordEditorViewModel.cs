@@ -46,7 +46,7 @@ public sealed partial class SchemaRecordEditorViewModel : EditorViewModelBase<Sc
 
     /// <summary>The section heading: the family's own caption, falling back to its id for a label key this
     /// build's language files have never heard of.</summary>
-    public string FamilyLabel => EditorStrings.GetOrFallback(_family.LabelKey, _family.Id);
+    public string FamilyLabel => EditorStrings.GameLabel(_family.LabelKey, _family.Id);
 
     protected override string SectionId => _family.Id;
 

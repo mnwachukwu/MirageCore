@@ -57,7 +57,7 @@ describe itself once, and everything it can say is one of fifteen calls on the b
 | Seam | Answers |
 |---|---|
 | `AddDisplayField` | a value to show, on a named surface, read straight off a body's attributes |
-| `AddOverheadBar` | a row over a body's head, reading two of that body's attributes |
+| `AddOverheadBar` | a row over a body's head, reading two of that body's attributes — and the same rows on the party overlay |
 | `AddEquipSlot` | a place on a character where something can be worn |
 | `AddPanel` | a screen this game paints: a title, a surface, the verbs under it, and the key that opens it |
 
@@ -65,7 +65,7 @@ describe itself once, and everything it can say is one of fifteen calls on the b
 
 | Seam | Answers |
 |---|---|
-| `AddAction` | a verb, its caption, the surface that offers it, and a key that reaches it without the menu |
+| `AddAction` | a verb, its caption, where it is offered — a square, a player, an NPC, or the HUD — a key that reaches it without the menu, and when it applies at all |
 | `AddActionHandler` | what happens when one is picked |
 | `Packets` | a wire command this game can read |
 | `AddPacketRoute` | where a command that was read goes |
@@ -114,6 +114,38 @@ Headings, rows, and menu items are ordered by a number that belongs to the surfa
 that declared it. Two modules both numbering from zero interleave: one's heading lands in the middle of
 the other's rows. Leave room. The world's own scripted rules number from 1000 for exactly this reason,
 so they sit after whatever the compiled game declared.
+
+### A verb is offered somewhere, and that somewhere decides what it knows
+
+A declared action names one of four surfaces, and the surface is what decides whether it arrives with a
+target:
+
+| Surface | Where it appears | What it is told |
+|---|---|---|
+| `Tile` | the right-click menu on a square | the square |
+| `Player` | the right-click menu on another player | that player, and where they are standing |
+| `Npc` | the right-click menu on an NPC | that NPC, by the identity it SPAWNED with |
+| `Hud` | a button on the sidebar, above Logout | nothing but the square the player is on |
+
+**A verb can say when it is offered at all**, as a question about an attribute the player already
+carries: `AtLeast("harvest.baskets", 1)`, `Carrying("harvest.satchel")`, `NotCarrying("harvest.licence")`.
+Core cannot be asked "may they do this" — it has no idea what the verb means — but it can be asked
+whether a number it is already syncing passes a comparison.
+
+🔴 **Both ends ask it, through the same code.** The client greys the entry out and the server refuses
+the invoke. A predicate the client alone enforced would be a rule any modified client could ignore; one
+the server alone enforced would be a menu item that fails when it is picked. It reads the ACTOR, never
+the target — whether the thing they clicked is a valid target is the game's question.
+
+The target reaches a handler as an `EntityHandle`, never as a name or a slot. A client names a player by
+name and an NPC by the slot it occupies; the server turns either into a handle first, so a slot reused
+between the click and the read cannot land a verb on somebody else.
+
+⚠ **A target that is gone is `EntityHandle.None`, not a refusal.** Somebody logging out between the
+click and the read is ordinary, and what the verb should do about it is the game's answer.
+
+⚠ **Declaring an `Npc` verb is what gives a plain creature a menu at all.** Without one, only an NPC
+with a shop or a conversation is worth right-clicking.
 
 ### A key is a game's to claim, from a short list
 
@@ -178,6 +210,40 @@ A rule that does not fit any of the four is usually a rule that wants a seam the
 Say so rather than working around it: a module that grows a second project reference has found a gap.
 
 ---
+
+## Code with no caller is not always dead
+
+Several things in the engine have no in-tree caller, and are meant not to. They are the places a game
+plugs in, and an engine that called them itself would be an engine with an opinion about your game.
+
+**Do not delete these.**
+
+| | |
+|---|---|
+| `GuildSystem.CreditVault` | Pays a group. Core never adds to a vault on its own — what a group earns is a game's rule |
+| `GuildSystem.RecordSpending` | Logs what leaves one, so a game's own economy has an audit trail it did not have to build |
+| `MovementSystem`'s `ignoreNpcAvoid` | Threaded through six signatures and always false today. It is the switch that lets some body cross an NpcAvoid tile, and WHICH body is a game's decision |
+
+The pattern is the same in all three: the engine supplies the mechanism and declines to supply the
+policy. A grep for callers finds nothing, reads as dead code, and deleting it removes a seam rather
+than cleaning one up.
+
+⚠ **The inverse also happens: a seam a game never uses leaves nothing behind.** The demo world ships
+four pieces of equipment naming `head`, `body`, `hand`, and `offhand`, and no module declares any of
+those slots — the bundled game declares one, `satchel`. So the four are carried rather than worn, and
+nothing reports it. A slot exists because a game said so, and an item naming one nobody declared is an
+ordinary item.
+
+### Hold a family of numbers in ratio, not one by one
+
+When a game's numbers are a family — a cost curve, a reward table, a set of tiers — a test that pins
+each one individually catches nothing useful: the numbers are meant to change. What is worth catching
+is one of them being left behind when the rest are rescaled, which produces no error, no crash, and no
+symptom a player could name.
+
+The test that catches it asserts the RATIOS rather than the values. Retuning the family as a unit
+keeps every ratio and passes; changing one member breaks the ratio it is in, and the failure names the
+member that was forgotten.
 
 ## Keeping the game out of the engine
 

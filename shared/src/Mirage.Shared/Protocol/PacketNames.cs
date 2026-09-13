@@ -267,7 +267,7 @@ public static class PacketNames
     public const string NpcChatBubble = "npcchatbubble";
     public const string PlayerInGame = "ingame";
     public const string PartyRequest = "partyrequest";
-    public const string PartyVitals = "partyvitals";
+    public const string PartyPartner = "partypartner";
     public const string PlayersOnline = "playersonline";
 
     // ── S→C: editor session ──────────────────────────────────────────────────

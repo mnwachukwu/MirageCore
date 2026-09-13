@@ -19,6 +19,10 @@
     <ProjectReference Include="..\..\..\server\src\Mirage.Server.Core\Mirage.Server.Core.csproj" />
     <ProjectReference Include="..\..\..\server\src\Mirage.Server.Host\Mirage.Server.Host.csproj" />
     <ProjectReference Include="..\..\..\shared\src\Mirage.Updates\Mirage.Updates.csproj" />
+
+    <!-- The compiled Survey, which the server no longer loads. Referenced here so it still compiles and
+         is still checked: a worked example nobody builds is a worked example that has rotted. -->
+    <ProjectReference Include="..\..\..\modules\survey\src\Mirage.Modules.Survey\Mirage.Modules.Survey.csproj" />
   </ItemGroup>
 
   <!-- Baked in at build time for the checks that read repository FILES rather than the assembly -

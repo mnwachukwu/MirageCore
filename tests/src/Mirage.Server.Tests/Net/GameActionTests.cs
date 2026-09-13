@@ -26,34 +26,38 @@ public class GameActionTests
 
     private sealed class Handler : IActionHandler
     {
-        public List<(EntityHandle From, string Action, WorldPlace At)> Invoked { get; } = [];
+        public List<(EntityHandle From, string Action, EntityHandle On, WorldPlace At)> Invoked { get; } = [];
         public bool Throws { get; init; }
 
         public string Name => "Test actions";
-        public IReadOnlyCollection<string> Actions { get; } = ["test.do"];
+        public IReadOnlyCollection<string> Owns { get; init; } = ["test.do"];
+        public IReadOnlyCollection<string> Actions => Owns;
 
-        public void Invoke(EntityHandle from, string actionId, in WorldPlace at)
+        public void Invoke(EntityHandle from, string actionId, EntityHandle on, in WorldPlace at)
         {
             if (Throws) throw new InvalidOperationException("a game's bug");
-            Invoked.Add((from, actionId, at));
+            Invoked.Add((from, actionId, on, at));
         }
     }
 
-    private sealed class Module(IActionHandler handler) : ICoreModule
+    private sealed class Module(IActionHandler handler, ActionCondition when = default) : ICoreModule
     {
+        public ActionCondition When { get; } = when;
         public string Name => "Test";
 
         public void Configure(ICoreBuilder builder)
         {
             builder.AddAction(new GameAction
             {
-                Id = "test.do", LabelKey = "Do the thing", GroupKey = "Testing", Surface = ActionSurface.Tile,
+                Id = "test.do", LabelKey = "Do the thing", GroupKey = "Testing",
+                Surface = ActionSurface.Tile, When = When,
             });
             builder.AddActionHandler(handler);
         }
     }
 
-    private static (PacketHandler Handler, PlayerManager Pm) Serving(CoreRegistry registry)
+    private static (PacketHandler Handler, PlayerManager Pm, GameWorld World) Serving(
+        CoreRegistry registry)
     {
         var pm = new PlayerManager();
         var sp = pm[Me];
@@ -63,24 +67,39 @@ public class GameActionTests
         sp.Char.Name = "Surveyor";
         sp.Char.Map = Map;
 
+        var world = new GameWorld();
         var handler = new PacketHandler(
-            new GameWorld(), pm, new SilentDispatcher(), persistence: null!, bg: null!, saver: null!,
+            world, pm, new SilentDispatcher(), persistence: null!, bg: null!, saver: null!,
             joinLeave: null!, movement: null!, items: null!, shop: null!, bank: null!, playerSpawn: null!,
             party: null!, guilds: null!, mail: null!, market: null!, trade: null!, conversations: null!,
             social: null!, spawn: null!, tod: null!, weather: null!, gameLoop: null!,
             NullLogger<PacketHandler>.Instance, registry);
 
-        return (handler, pm);
+        return (handler, pm, world);
     }
 
-    private static string Line(string action, int x = 4, int y = 6) =>
-        PacketSerializer.Serialize(new InvokeActionPacket { Action = action, MapNum = Map, X = x, Y = y });
+    /// <summary>Somebody else, standing in the world, for a verb to be used on.</summary>
+    private static void AlsoPlaying(PlayerManager pm, int index, string name)
+    {
+        var them = pm[index];
+        them.IsConnected = true;
+        them.InGame = true;
+        them.CharNum = 1;
+        them.Char.Name = name;
+        them.Char.Map = Map;
+    }
+
+    private static string Line(string action, int x = 4, int y = 6, string on = "", int npcSlot = 0) =>
+        PacketSerializer.Serialize(new InvokeActionPacket
+        {
+            Action = action, MapNum = Map, X = x, Y = y, TargetName = on, NpcSlot = npcSlot,
+        });
 
     [Test]
     public void APickedActionReachesTheGameThatDeclaredIt()
     {
         var game = new Handler();
-        var (handler, _) = Serving(CoreRegistry.Build(new Module(game)));
+        var (handler, _, _) = Serving(CoreRegistry.Build(new Module(game)));
 
         handler.HandlePacket(Me, Line("test.do"));
 
@@ -94,12 +113,91 @@ public class GameActionTests
         });
     }
 
+    /// <summary>A verb used on somebody names them, and one used on nowhere in particular names nobody.
+    ///
+    /// <para>The client sends a NAME and the game receives a handle: a game never handles a roster slot,
+    /// so a slot reused between the click and the read cannot land the verb on a stranger.</para>
+    /// </summary>
+    [Test]
+    public void AVerbUsedOnAPlayer_NamesThem()
+    {
+        var game = new Handler();
+        var (handler, pm, _) = Serving(CoreRegistry.Build(new Module(game)));
+        AlsoPlaying(pm, 2, "Quarry");
+
+        handler.HandlePacket(Me, Line("test.do", on: "Quarry"));
+        handler.HandlePacket(Me, Line("test.do"));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(game.Invoked[0].On, Is.EqualTo(EntityHandle.ForPlayer(2)));
+            Assert.That(game.Invoked[1].On, Is.EqualTo(EntityHandle.None),
+                "a verb offered on a square is used on nobody");
+        });
+    }
+
+    /// <summary>A name nobody answers to is nobody, not a refusal.
+    ///
+    /// <para>A target that logged out between the click and the read is an ordinary thing to happen, and
+    /// what the verb should do about it is the game's answer rather than Core's.</para></summary>
+    [Test]
+    public void AVerbUsedOnSomebodyWhoLeft_StillReachesTheGame()
+    {
+        var game = new Handler();
+        var (handler, _, _) = Serving(CoreRegistry.Build(new Module(game)));
+
+        handler.HandlePacket(Me, Line("test.do", on: "Ghost"));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(game.Invoked, Has.Count.EqualTo(1), "the verb still runs");
+            Assert.That(game.Invoked[0].On, Is.EqualTo(EntityHandle.None));
+        });
+    }
+
+    /// <summary>🔴 The condition is the SERVER's rule, not a hint to the client.
+    ///
+    /// <para>The client greys the entry out, and a client that did not — an old one, a modified one —
+    /// still gets nowhere. A predicate only the client enforced would be a game's own declaration that
+    /// anybody could opt out of, and the game would never learn it had happened.</para></summary>
+    [Test]
+    public void AVerbWhoseConditionDoesNotHold_IsRefusedByTheServer()
+    {
+        var game = new Handler();
+        var (handler, pm, _) = Serving(CoreRegistry.Build(
+            new Module(game, ActionCondition.AtLeast("test.tokens", 1))));
+
+        handler.HandlePacket(Me, Line("test.do"));
+        Assert.That(game.Invoked, Is.Empty, "carrying none of it, so the verb does not run");
+
+        pm[Me].Char.Attributes.Set("test.tokens", 1);
+        handler.HandlePacket(Me, Line("test.do"));
+
+        Assert.That(game.Invoked, Has.Count.EqualTo(1), "and it runs once they are carrying one");
+    }
+
+    /// <summary>An id a handler owns but nothing declared never reaches the game.
+    ///
+    /// <para>No client could have offered it, so the only way it arrives is a hand-written packet — and
+    /// running it would mean a verb with no declaration, and therefore no condition, being the one thing
+    /// that cannot be gated.</para></summary>
+    [Test]
+    public void AnIdWithAHandlerButNoDeclaration_DoesNothing()
+    {
+        var game = new Handler { Owns = ["test.undeclared"] };
+        var (handler, _, _) = Serving(CoreRegistry.Build(new Module(game)));
+
+        handler.HandlePacket(Me, Line("test.undeclared"));
+
+        Assert.That(game.Invoked, Is.Empty);
+    }
+
     /// <summary>A client may name anything; only something a module declared does anything.</summary>
     [Test]
     public void AnIdNothingDeclared_DoesNothing()
     {
         var game = new Handler();
-        var (handler, _) = Serving(CoreRegistry.Build(new Module(game)));
+        var (handler, _, _) = Serving(CoreRegistry.Build(new Module(game)));
 
         handler.HandlePacket(Me, Line("nobody.declared.this"));
 
@@ -110,7 +208,7 @@ public class GameActionTests
     public void SomebodyNotInTheWorld_InvokesNothing()
     {
         var game = new Handler();
-        var (handler, pm) = Serving(CoreRegistry.Build(new Module(game)));
+        var (handler, pm, _) = Serving(CoreRegistry.Build(new Module(game)));
         pm[Me].InGame = false;
 
         handler.HandlePacket(Me, Line("test.do"));
@@ -122,7 +220,7 @@ public class GameActionTests
     public void AHandlerThatThrows_DoesNotTakeTheConnectionWithIt()
     {
         var game = new Handler { Throws = true };
-        var (handler, pm) = Serving(CoreRegistry.Build(new Module(game)));
+        var (handler, pm, _) = Serving(CoreRegistry.Build(new Module(game)));
 
         Assert.DoesNotThrow(() => handler.HandlePacket(Me, Line("test.do")));
         Assert.That(pm[Me].IsConnected, Is.True);

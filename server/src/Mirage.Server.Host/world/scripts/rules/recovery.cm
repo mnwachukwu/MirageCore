@@ -1,0 +1,24 @@
+# Resting gives it back.
+#
+# Slower than walking spends it, so a survey has a shape: range out, find things, come back.
+
+shared model Recovery
+
+    public function Rest(Player who)
+        integer now = who.Number(Surveyor.Stamina);
+        integer ceiling = who.Number(Surveyor.StaminaMax);
+
+        # A body with no ceiling has not been enrolled yet, which is a body to leave alone rather than
+        # one to give a point to.
+        if ceiling <= 0
+            yield;
+        end if
+
+        if now >= ceiling
+            yield;
+        end if
+
+        who.SetNumber(Surveyor.Stamina, now + 1);
+    end function
+
+end model

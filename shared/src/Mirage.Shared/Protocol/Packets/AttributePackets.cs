@@ -132,7 +132,8 @@ public sealed record GameActionsPacket : IPacket
         [property: JsonPropertyName("surface")] ActionSurface Surface,
         [property: JsonPropertyName("group")] string GroupKey,
         [property: JsonPropertyName("opens")] string OpensPanel,
-        [property: JsonPropertyName("key")] string Key);
+        [property: JsonPropertyName("key")] string Key,
+        [property: JsonPropertyName("when")] ActionCondition When);
 }
 
 /// <summary>
@@ -141,6 +142,10 @@ public sealed record GameActionsPacket : IPacket
 /// <para>The square is what the client was pointing at, named the way every other placed thing is. How
 /// far a game's verb reaches is the game's question — Core does not know what the verb is, so it cannot
 /// know what distance would be reasonable for it.</para>
+///
+/// <para>A verb offered ON something carries what it was used on as well: a player by name, an NPC by
+/// the slot it occupies on <see cref="MapNum"/>. The server turns either into an
+/// <see cref="EntityHandle"/> before a game sees it, so a game never handles a name or a slot.</para>
 /// </summary>
 public sealed record InvokeActionPacket : IPacket
 {
@@ -153,6 +158,15 @@ public sealed record InvokeActionPacket : IPacket
     [JsonPropertyName("x")] public int X { get; init; }
 
     [JsonPropertyName("y")] public int Y { get; init; }
+
+    /// <summary>The player it was used on, or blank. Named rather than indexed, the way every other
+    /// player-to-player packet names one, so a slot reused between the click and the read cannot land
+    /// the verb on somebody else.</summary>
+    [JsonPropertyName("who")] public string TargetName { get; init; } = string.Empty;
+
+    /// <summary>The NPC slot on <see cref="MapNum"/> it was used on, or 0. Resolved against the map the
+    /// client named, so a guest visiting from elsewhere resolves to the body it actually is.</summary>
+    [JsonPropertyName("npc")] public int NpcSlot { get; init; }
 }
 
 /// <summary>

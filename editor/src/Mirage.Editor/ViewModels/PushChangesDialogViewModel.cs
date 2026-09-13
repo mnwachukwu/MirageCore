@@ -129,7 +129,7 @@ public sealed partial class PushChangesDialogViewModel : ObservableObject
                 // A game's own record names its family, because the caption cannot be written in advance
                 // for a family this build has never heard of.
                 SchemaRecordRowViewModel vm => EditorStrings.Format(EditorStrings.PushChangesDialog_DirtyRecord,
-                    ("Family", EditorStrings.GetOrFallback(vm.Family.SingularLabelKey, vm.Family.Id)),
+                    ("Family", EditorStrings.GameLabel(vm.Family.SingularLabelKey, vm.Family.Id)),
                     ("Index", vm.Index), ("Name", vm.Name)),
                 _ => item.ToString() ?? EditorStrings.Get(EditorStrings.PushChangesDialog_DirtyUnknown),
             });

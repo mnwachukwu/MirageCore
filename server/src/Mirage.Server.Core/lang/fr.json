@@ -365,7 +365,6 @@
   "Server_LoadingMotd": "Chargement du message du jour...",
   "Server_LoadedSummary": "{Items} objets, {Npcs} PNJ, {Shops} boutiques, {Conversations} conversations, {Maps} cartes chargés.",
   "Server_RuntimeDataSummary": "{Guilds} guildes, {MapItems} objets de carte chargés.",
-  "Server_PaddedSummary": "{Items} objets, {Npcs} PNJ, {Shops} boutiques, {Conversations} conversations, {Maps} cartes complétés.",
   "Server_SpawningMapItems": "Apparition des objets de carte...",
   "Server_LoadingDroppedItems": "Chargement des objets tombés au sol...",
   "Server_SpawningNpcs": "Apparition des PNJ...",

@@ -31,7 +31,7 @@ public static partial class PacketBuilder
         new()
         {
             Actions = [.. actions.All.Select(a => new GameActionsPacket.Row(
-                a.Id, a.LabelKey, a.Surface, a.GroupKey, a.OpensPanel, a.Key))],
+                a.Id, a.LabelKey, a.Surface, a.GroupKey, a.OpensPanel, a.Key, a.When))],
         };
 
     /// <summary>What each surface shows about a body, in draw order. Sent once, beside the numbering:

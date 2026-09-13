@@ -456,7 +456,7 @@ public sealed partial class EditorPacketHandler
 
         var npc = _world.Npcs[n];
         npc.Name = p.Name;
-        npc.AttackSay = p.AttackSay;
+        npc.Says = p.Says;
         npc.Sprite = p.Sprite;
         npc.SpriteSheet = p.SpriteSheet;
         // Clamp to a valid footprint class on save so a malformed packet never persists a bad size

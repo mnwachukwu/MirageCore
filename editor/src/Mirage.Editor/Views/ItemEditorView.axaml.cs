@@ -50,8 +50,8 @@ public partial class ItemEditorView : LocalizedUserControl
         _notesEquipmentPower.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentPower);
         _notesEquipmentSlot.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentSlot);
 
-        _notesPotionsHeader.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_PotionsHeader);
-        _notesPotionsAmount.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_PotionsAmount);
+        _notesConsumableHeader.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_ConsumableHeader);
+        _notesConsumableAmount.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_ConsumableAmount);
 
 
         _notesKeyHeader.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_KeyHeader);

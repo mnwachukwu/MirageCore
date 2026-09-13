@@ -85,8 +85,8 @@ public sealed record ChatBubblePacket : IPacket
     [JsonPropertyName("kind")] public byte Kind { get; init; }
 }
 
-/// <summary>NPC-spoken bubble for AttackSay. Kind: 0=Hostile (red), 1=Friendly/Stationary (green).
-/// Always sent target-only to match the existing AttackSay chat-log scoping.
+/// <summary>The bubble over a body speaking its line. Kind: 0=Hostile (red), 1=Friendly/Stationary (green).
+/// Sent to the one player who was noticed, matching where the line lands in the chat log.
 ///
 /// Addressing: native slot is identified by (<see cref="MapNum"/>, <see cref="NpcSlot"/>); a
 /// traversal guest is identified by (<see cref="SpawnMap"/>, <see cref="SpawnSlot"/>) with

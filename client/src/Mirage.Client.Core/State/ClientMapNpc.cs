@@ -34,7 +34,7 @@ public class ClientMapNpc
     // While Environment.TickCount64 < this, the HP bar holds instead of animating — used to keep the bar
     // in sync with an in-flight spell bolt (hit-timing deferral). 0 = not holding.
 
-    // Chat bubble — AttackSay from this NPC, anchored above its head. Same head+drifter model as
+    // Chat bubble — Says from this NPC, anchored above its head. Same head+drifter model as
     // PlayerRecord; Color is GameColor.BrightRed (hostile) or .BrightGreen (friendly/shopkeeper).
     public string? ChatBubbleText { get; set; }
     public long ChatBubbleEndMs { get; set; }

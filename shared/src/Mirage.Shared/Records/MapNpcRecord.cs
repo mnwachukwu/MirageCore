@@ -250,14 +250,14 @@ public class MapNpcRecord
         }
     }
 
-    // Last player index this NPC said its AttackSay to.  Survives combat-expiry (so a player who
-    // chips away from behind cover doesn't re-trigger the line on every fresh acquisition); cleared
-    // only on respawn/death/border-vacate so a brand-new NPC greets each attacker once.
-    public int LastAttackSayTarget { get; set; }
+    // Last player index this NPC spoke its line to.  Outlives the noticing itself, so a player who
+    // steps in and out of range doesn't hear it again on every fresh acquisition; cleared only on
+    // respawn/death/border-vacate, so a brand-new body speaks to each player once.
+    public int LastSpokeTo { get; set; }
 
     // Parallel dedup for NPC targets — encoded as spawnMap * NpcIdStride + spawnSlot so a single int
-    // suffices.  0 = no NPC AttackSay issued yet.  Same lifecycle as LastAttackSayTarget.
-    public int LastAttackSayNpcTarget { get; set; }
+    // suffices.  0 = nothing said to another body yet.  Same lifecycle as LastSpokeTo.
+    public int LastSpokeToNpc { get; set; }
 
     // Stride is large enough that no (map, slot) pair can collide with another (Constants.MaxMapNpcs
     // is far below 100,000), so the encoded id is unique per identity.  Public so any combat / AI

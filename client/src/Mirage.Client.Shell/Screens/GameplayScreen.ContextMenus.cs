@@ -99,6 +99,18 @@ public sealed partial class GameplayScreen : IGameScreen
             items.Add(new(ClientStrings.Get(ClientStrings.ContextMenu_SetAccess), subItems));
         }
 
+        // Then whatever the loaded game offers ON a player. After Core's items, for the same reason the
+        // square menu puts them last: a player learns one menu, and a game's verbs arriving in the
+        // middle of it would move everything they already knew.
+        //
+        // The square carried is the TARGET's, not the clicker's — a verb used on somebody is about
+        // where they are standing, and a game that does not care can ignore it.
+        if (FindPlayerByName(targetName) is { } them)
+        {
+            items.AddRange(BuildTargetedGameActions(
+                ActionSurface.Player, them.Map, them.X, them.Y, targetName, npcSlot: 0));
+        }
+
         return items;
     }
 
@@ -198,12 +210,24 @@ public sealed partial class GameplayScreen : IGameScreen
         }
     }
 
+    /// <summary>Whether a verb's own condition holds for the local player right now.
+    ///
+    /// <para>Asked per frame rather than when the menu opens, the same way range is: an entry lights up
+    /// as the player picks the thing up, instead of failing when they click it.</para>
+    ///
+    /// <para>The answer is the client's opinion and the server asks again — same code, same attributes,
+    /// so the two agree unless somebody has edited their client, and then the server is what counts.</para>
+    /// </summary>
+    private bool Offered(ActionCondition when)
+        => when.Holds(_ctx.State.AttributesOf(EntityHandle.ForPlayer(_ctx.State.MyIndex)));
+
     /// <summary>Do what a declared action says: open its screen, tell the server, or both.
     ///
     /// <para>A panel opens locally because its contents are attributes this client already holds — a
     /// round trip would buy nothing. An action that also names a handler still sends, which is how a
     /// screen that needs the server to prepare something says so.</para></summary>
-    private void InvokeGameAction(string actionId, string opensPanel, int mapNum, int tileX, int tileY)
+    private void InvokeGameAction(string actionId, string opensPanel, int mapNum, int tileX, int tileY,
+                                  string targetName = "", int npcSlot = 0)
     {
         if (opensPanel.Length > 0)
         {
@@ -211,7 +235,34 @@ public sealed partial class GameplayScreen : IGameScreen
             BringToFront(PanelGame);
         }
 
-        _ctx.Sender.SendInvokeAction(actionId, mapNum, tileX, tileY);
+        _ctx.Sender.SendInvokeAction(actionId, mapNum, tileX, tileY, targetName, npcSlot);
+    }
+
+    /// <summary>The game's verbs for one surface, flat, ready to append to a menu Core already built.
+    ///
+    /// <para>Flat rather than grouped by heading, unlike the square menu: a player's menu is already a
+    /// submenu, and a heading inside it would put a game's verbs three levels down from the click. The
+    /// surface says what they are about, so the heading has nothing left to add.</para></summary>
+    private List<ContextMenu.Item> BuildTargetedGameActions(
+        ActionSurface surface, int mapNum, int tileX, int tileY, string targetName, int npcSlot)
+    {
+        var items = new List<ContextMenu.Item>();
+
+        foreach (var action in _ctx.State.Actions.For(surface))
+        {
+            string id = action.Id, opens = action.OpensPanel;
+            string shortcut = action.Key.Length > 0
+                ? action.Key
+                : _ctx.State.Panels.Find(opens)?.Key ?? string.Empty;
+
+            var when = action.When;
+            items.Add(new ContextMenu.Item(
+                ClientStrings.GetOrFallback(action.LabelKey, action.LabelKey) + GameKeyMap.Hint(shortcut),
+                () => InvokeGameAction(id, opens, mapNum, tileX, tileY, targetName, npcSlot),
+                (Func<bool>)(() => Offered(when))));
+        }
+
+        return items;
     }
 
     /// <summary>The game's own verbs for a square, grouped by the heading each declared.
@@ -246,10 +297,12 @@ public sealed partial class GameplayScreen : IGameScreen
                     ? action.Key
                     : _ctx.State.Panels.Find(opens)?.Key ?? string.Empty;
 
+                var when = action.When;
                 items.Add(new ContextMenu.Item(
                     ClientStrings.GetOrFallback(action.LabelKey, action.LabelKey)
                         + GameKeyMap.Hint(shortcut),
-                    () => InvokeGameAction(id, opens, mapNum, tileX, tileY)));
+                    () => InvokeGameAction(id, opens, mapNum, tileX, tileY),
+                    (Func<bool>)(() => Offered(when))));
             }
 
             if (items.Count > 0) groups.Add((heading, items));
@@ -444,8 +497,11 @@ public sealed partial class GameplayScreen : IGameScreen
         // means the only NPCs that can show Talk are the ones that also sell, and the ones whose entire
         // purpose is being talked to — the ferryman, the chronicler, the locals, the road signs — have
         // no menu at all.
+        // … or something the GAME offers on an NPC. Without this clause a game's verbs would be
+        // reachable on keepers and on nobody else, which is the opposite of what declaring them means.
         if (_ctx.State.NpcKeeperShop[num] == 0
-            && _ctx.State.ConversationForNpc(num) == 0) return null;
+            && _ctx.State.ConversationForNpc(num) == 0
+            && _ctx.State.Actions.For(ActionSurface.Npc).Count == 0) return null;
         name = _ctx.State.NpcDefs[num]?.Name?.Trim() ?? "";
         int npcSize = _ctx.State.NpcDefs[num]?.EffectiveSize ?? 1;   // footprint-aware r=5: an oversize NPC is reachable by its body
         bool InRange()
@@ -479,6 +535,16 @@ public sealed partial class GameplayScreen : IGameScreen
             items.Add(new(label,
                 () => _ctx.Sender.SendNpcInteract(npc.B, npc.A, NpcInteractChoice.Shop),   // B = map, A = slot
                 (Func<bool>)InRange));
+        }
+
+        // Then the game's own verbs for an NPC, last for the same reason they are last everywhere else.
+        // The slot travels as the one this body OCCUPIES on the map the client named; the server turns
+        // that into the identity it spawned with, because a visitor's slot belongs to the map it is
+        // standing on rather than to the body itself.
+        if (ResolveTargetTile(npc, out int nm, out int ntx, out int nty))
+        {
+            items.AddRange(BuildTargetedGameActions(
+                ActionSurface.Npc, nm, ntx, nty, targetName: "", npcSlot: npc.A));
         }
 
         return items.Count > 0 ? items : null;

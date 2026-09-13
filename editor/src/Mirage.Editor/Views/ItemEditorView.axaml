@@ -221,11 +221,11 @@
                 <TextBlock x:Name="_notesEquipmentSlot" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
               </StackPanel>
 
-              <!-- Potions -->
-              <TextBlock x:Name="_notesPotionsHeader"
+              <!-- Consumable -->
+              <TextBlock x:Name="_notesConsumableHeader"
                          FontWeight="SemiBold" Foreground="#99BBDD" FontSize="11" Margin="0,6,0,0"/>
               <StackPanel Margin="8,0,0,0" Spacing="3">
-                <TextBlock x:Name="_notesPotionsAmount" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
+                <TextBlock x:Name="_notesConsumableAmount" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
               </StackPanel>
 
               <!-- Key -->

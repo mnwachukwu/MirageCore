@@ -21,7 +21,6 @@
     <ProjectReference Include="..\..\..\shared\src\Mirage.Updates\Mirage.Updates.csproj" />
     <!-- The game this server loads. A different game replaces this reference and the one line in
          GameModules; nothing else about the host changes. See modules/README.md. -->
-    <ProjectReference Include="..\..\..\modules\survey\src\Mirage.Modules.Survey\Mirage.Modules.Survey.csproj" />
     <!-- The scripting host. A world carries its own rules, so the server that loads a world is the
          thing that reads them - which is what makes Compass a build dependency of the server rather
          than of the solution alone. See docs/scripting.md. -->

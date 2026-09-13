@@ -88,8 +88,8 @@
           </mui:FormRow>
 
           <mui:FormRow LabelWidth="130">
-            <TextBlock x:Name="_attackSayLabel" Grid.Column="0" VerticalAlignment="Center"/>
-            <TextBox   Grid.Column="1" Text="{Binding SelectedNpc.AttackSay}" />
+            <TextBlock x:Name="_saysLabel" Grid.Column="0" VerticalAlignment="Center"/>
+            <TextBox   Grid.Column="1" Text="{Binding SelectedNpc.Says}" />
           </mui:FormRow>
 
           <!-- Which sheet, then which row of it. The number is what the record stores, so the sheet is
