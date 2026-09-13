@@ -43,6 +43,16 @@ public sealed class ScriptCatalog
     internal ExternalCatalog Externals { get; }
 
     /// <summary>
+    /// What this catalog offers, as data.
+    ///
+    /// <para>🔴 <b>The reference a script author reads is generated from here.</b> A member cannot exist
+    /// without appearing in it, and the sentence describing it sits beside the binding that performs it,
+    /// so the two cannot drift. A hand-written page listing the same members would drift the first time
+    /// somebody added one in a hurry, and nothing would report it.</para>
+    /// </summary>
+    public IReadOnlyList<ScriptTypeInfo> Types { get; private init; } = [];
+
+    /// <summary>
     /// Declares a catalog.
     ///
     /// <para>The whole surface is described inside one call because a member's signature usually has to
@@ -66,7 +76,13 @@ public sealed class ScriptCatalog
             [.. declared.Select(t => t.Name)],
             catalog => [.. declared.Select(t => Describe(t, catalog))]);
 
-        return new ScriptCatalog(externals, [.. declared.Select(t => t.Name)]);
+        return new ScriptCatalog(externals, [.. declared.Select(t => t.Name)])
+        {
+            Types = [.. declared.Select(t => new ScriptTypeInfo(
+                t.Name,
+                t.Shared,
+                [.. t.Members.Select(m => new ScriptMemberInfo(m.Name, m.Yields, m.Takes, m.IsValue, m.Note))]))],
+        };
     }
 
     private static BuiltInModelInfo Describe(DeclaredType type, ExternalCatalog catalog) =>
@@ -169,7 +185,8 @@ public sealed class ScriptCatalog
     }
 
     internal sealed record DeclaredMember(
-        string Name, ScriptType Yields, IReadOnlyList<ScriptType> Takes, bool IsValue, ScriptCall Run);
+        string Name, ScriptType Yields, IReadOnlyList<ScriptType> Takes, bool IsValue, ScriptCall Run,
+        string Note);
 
     internal sealed record DeclaredType(string Name, bool Shared, List<DeclaredMember> Members);
 }
@@ -221,27 +238,29 @@ public sealed class ScriptTypeBuilder
     public ScriptType AsType => ScriptType.Of(_type.Name);
 
     /// <summary>Something a script calls, with parentheses.</summary>
-    public ScriptTypeBuilder Function(string name, ScriptType yields, ScriptType[] takes, ScriptCall run)
+    public ScriptTypeBuilder Function(
+        string name, ScriptType yields, ScriptType[] takes, ScriptCall run, string note = "")
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(yields);
         ArgumentNullException.ThrowIfNull(takes);
         ArgumentNullException.ThrowIfNull(run);
 
-        _type.Members.Add(new ScriptCatalog.DeclaredMember(name, yields, [.. takes], IsValue: false, run));
+        _type.Members.Add(new ScriptCatalog.DeclaredMember(
+            name, yields, [.. takes], IsValue: false, run, note ?? string.Empty));
 
         return this;
     }
 
     /// <summary>A call that yields nothing.</summary>
-    public ScriptTypeBuilder Action(string name, ScriptType[] takes, ScriptCall run) =>
-        Function(name, ScriptType.Nothing, takes, run);
+    public ScriptTypeBuilder Action(string name, ScriptType[] takes, ScriptCall run, string note = "") =>
+        Function(name, ScriptType.Nothing, takes, run, note);
 
     /// <summary>
     /// Something a script reads, with no parentheses — <c>who.Name</c>. Writing the parentheses is
     /// reported, the same way it is for the language's own.
     /// </summary>
-    public ScriptTypeBuilder Value(string name, ScriptType yields, ScriptCall read)
+    public ScriptTypeBuilder Value(string name, ScriptType yields, ScriptCall read, string note = "")
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(yields);
@@ -252,7 +271,8 @@ public sealed class ScriptTypeBuilder
             throw new ArgumentException($"'{name}' is a value, so it has to be a value of something.", nameof(yields));
         }
 
-        _type.Members.Add(new ScriptCatalog.DeclaredMember(name, yields, [], IsValue: true, read));
+        _type.Members.Add(new ScriptCatalog.DeclaredMember(
+            name, yields, [], IsValue: true, read, note ?? string.Empty));
 
         return this;
     }
@@ -309,4 +329,25 @@ public static class ScriptValue
     /// <summary>An argument as one of the engine's own values, or null where the script passed none.</summary>
     public static T? As<T>(this IReadOnlyList<object?> arguments, int index) where T : class =>
         arguments[index] as T;
+}
+
+
+/// <summary>One type a script may name, as the reference renders it.</summary>
+/// <param name="Name">What a script writes.</param>
+/// <param name="Shared">True for a type with no instances, whose members are reached through its name.</param>
+/// <param name="Members">What it offers, in the order it was declared.</param>
+public sealed record ScriptTypeInfo(string Name, bool Shared, IReadOnlyList<ScriptMemberInfo> Members);
+
+/// <summary>One member of a registered type.</summary>
+/// <param name="Name">What a script writes.</param>
+/// <param name="Yields">What it hands back, or nothing.</param>
+/// <param name="Takes">What it takes, in order.</param>
+/// <param name="IsValue">True for one read without parentheses.</param>
+/// <param name="Note">What it does, for the reference. Empty where nobody has said yet.</param>
+public sealed record ScriptMemberInfo(
+    string Name, ScriptType Yields, IReadOnlyList<ScriptType> Takes, bool IsValue, string Note)
+{
+    /// <summary>How a script writes this member: a value has no parentheses, a call names its types.</summary>
+    public string Signature =>
+        IsValue ? Name : $"{Name}({string.Join(", ", Takes)})";
 }

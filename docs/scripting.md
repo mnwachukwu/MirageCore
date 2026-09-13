@@ -123,10 +123,15 @@ one function and nothing else.
 
 | Handler | When |
 |---|---|
+| `Configure(Builder game)` | once, before the world exists, so a module can declare |
 | `OnPlayerJoined(Player who)` | a player is in the world and has everything they need |
 | `OnPlayerLeft(Player who)` | they have left, while their record is still readable |
 | `OnPlayerMoved(Player who, integer fromX, integer fromY)` | every accepted step, seam crossings included |
+| `OnAction(Player who, string action, integer map, integer x, integer y)` | the player picked one of this module's own verbs |
 | `OnTick()` | every tick |
+
+**[docs/scripting-api.md](scripting-api.md) is the reference**, and it is generated from the catalog the
+server registers rather than written: a member cannot exist without appearing in it.
 
 ```
 shared model Rules
@@ -140,7 +145,7 @@ shared model Rules
         who.SetNumber("stamina", left - 1);
 
         if left == 1
-            who.Say("You are too tired to go much further today.");
+            who.Message("You are too tired to go much further today.");
         end if
     end function
 end model
@@ -164,7 +169,7 @@ var catalog = ScriptCatalog.Declare(c =>
     var player = c.Type("Player");
 
     player
-        .Action("Say", [ScriptType.Text], (who, a) => { world.Tell(Who(who), a.AsText(0)); return null; })
+        .Action("Message", [ScriptType.Text], (who, a) => { world.Tell(Who(who), a.AsText(0)); return null; })
         .Value("X", ScriptType.Integer, (who, _) => (long)world.PlaceOf(Who(who)).X)
         .Function("Number", ScriptType.Integer, [ScriptType.Text], (who, a) => ...);
 });
@@ -174,6 +179,48 @@ A `Player` carries `Say`, `IsHere`, `Map`, `X`, `Y`, `Has`, `Number`, `Text`, `S
 `WarpTo`, `Give` and `Take` — everything `IWorld` already offered, named the way a script writes it. What
 a game COUNTS lives in the attribute bag, which is why `Number` and `SetNumber` take a key: a C# module
 declares what stamina is and the world's own rules decide what spends it.
+
+## What a script can add
+
+`Configure` is handed a `Builder`, which is the same two-phase shape a C# module has and for the same
+reason: what a module declares shapes the engine that is then built, so it has to be said before anything
+exists to act on.
+
+```
+shared model Rules
+    public function Configure(Builder game)
+        game.Attribute("harvest.baskets", "owner");
+
+        game.Heading("Harvest");
+        game.Field("harvest.baskets", "Baskets");
+
+        game.Action("harvest.gather", "Gather here", "Harvest");
+    end function
+
+    public function OnAction(Player who, string action, integer map, integer x, integer y)
+        who.SetNumber("harvest.baskets", who.Number("harvest.baskets") + 1);
+        who.Message("Gathered. That is " + who.Number("harvest.baskets") + " baskets.");
+    end function
+end model
+```
+
+A stock client then draws a Harvest heading and a Baskets row on the sidebar, and offers "Gather here"
+under a Harvest heading in the square menu — having never heard of any of it. A world's own rows and
+verbs sit AFTER whatever the compiled game declared, because an ordinal is global to its surface and two
+modules both numbering from zero would interleave one's heading into the other's rows.
+
+**An enum cannot cross the boundary**, since a script may name a registered type and nothing else. So a
+visibility is a word — `none`, `owner`, `viewport` — and a word that is not one of them is refused with
+the list rather than falling back to a default nobody chose.
+
+**A declaration that collides with the compiled game is refused on its own**, named in the log, and the
+rest are still made. Two modules claiming one attribute key is an error the engine raises at startup,
+which is right when both are assemblies somebody built and wrong when one of them is a folder a stranger
+handed over: the operator would be left with a server that will not start and a world they did not
+author. What it is not is silent.
+
+**Declaring ends when `Configure` returns.** A script keeping the builder and declaring from a handler is
+declaring into an engine that has already been built around it, and is told so.
 
 **`Say` is the one chat path in the engine that carries text rather than a key.** Everything else the
 server says is looked up per recipient so it arrives in each player's language; a game's words are not in

@@ -2,29 +2,42 @@
 #
 # Everything here is CONTENT. It travels inside the world folder, it is read when the server starts, and
 # changing it needs an edit and a restart rather than a compiler. The C# module beside it — Survey —
-# declares what a surveyor IS; this decides what happens to one.
+# declares what a surveyor IS; this decides what happens to one, and adds a little of its own.
 #
-# Two things a module author cannot guess:
+# docs/scripting-api.md lists everything a module may name. Two things it cannot tell you twice enough:
 #   * A handler has to be public. The engine calls it and nothing in the module does, so without that
 #     the compiler reports it as a function nobody uses.
-#   * A handler is optional. Write the one you want; the engine asks before it calls.
+#   * Every handler is optional. Write the one you want; the engine asks before it calls.
 
 shared model Rules
 
     # Where the last step came from, so a rule can tell a border crossing from an ordinary step.
     integer lastMap = 0;
 
+    # Declaring runs once, before the world exists — so this is about what the game IS, never about
+    # anybody in it. Asking a player anything here is a mistake the engine will tell you about.
+    public function Configure(Builder game)
+        game.Attribute("demo.steps", "owner");
+
+        game.Heading("This World");
+        game.Field("demo.steps", "Steps taken");
+
+        game.Action("demo.look", "Look around", "This World");
+    end function
+
     public function OnPlayerJoined(Player who)
-        who.Say("The survey is yours to run. Everything you read here came out of this world's "
+        who.Message("The survey is yours to run. Everything you read here came out of this world's "
                 + "scripts folder.");
 
         Rules.lastMap = who.Map;
     end function
 
-    # Walking costs stamina, and running out of it is worth saying once rather than on every step.
+    # Walking counts, and it costs stamina — which the C# module declared and this decides how to spend.
     public function OnPlayerMoved(Player who, integer fromX, integer fromY)
+        who.SetNumber("demo.steps", who.Number("demo.steps") + 1);
+
         if who.Map != Rules.lastMap
-            who.Say("You cross into a new stretch of the survey.");
+            who.Message("You cross into a new stretch of the survey.");
 
             Rules.lastMap = who.Map;
         end if
@@ -38,8 +51,19 @@ shared model Rules
         who.SetNumber("stamina", left - 1);
 
         if left == 1
-            who.Say("You are too tired to go much further today.");
+            who.Message("You are too tired to go much further today.");
         end if
+    end function
+
+    # The square menu offers "Look around" because Configure said so, and picking it arrives here with
+    # the square the player pointed at — map included, since everything in view is pointable.
+    public function OnAction(Player who, string action, integer map, integer x, integer y)
+        if action != "demo.look"
+            yield;
+        end if
+
+        who.Message("You look at " + map + ":" + x + "," + y + " and note it down. That is "
+                + who.Number("demo.steps") + " steps so far.");
     end function
 
 end model

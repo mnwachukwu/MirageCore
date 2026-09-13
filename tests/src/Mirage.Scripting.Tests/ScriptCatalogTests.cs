@@ -29,7 +29,7 @@ public class ScriptCatalogTests
 
         player
             .Value("Name", ScriptType.Text, (who, _) => ((Person)who!).Name)
-            .Action("Say", [ScriptType.Text], (who, args) =>
+            .Action("Message", [ScriptType.Text], (who, args) =>
             {
                 ((Person)who!).Heard.Add(args.AsText(0));
                 return null;
@@ -63,7 +63,7 @@ public class ScriptCatalogTests
     public void AScriptCallsAMemberTheEngineRegistered()
     {
         var ada = new Person("Ada");
-        var outcome = Call("        who.Say(\"hello, \" + who.Name);", Catalog(), ada);
+        var outcome = Call("        who.Message(\"hello, \" + who.Name);", Catalog(), ada);
 
         Assert.Multiple(() =>
         {
@@ -88,7 +88,7 @@ public class ScriptCatalogTests
                     if maybe.HasValue()
                         Player who = maybe.Value();
 
-                        who.Say("found " + who.Name);
+                        who.Message("found " + who.Name);
                     end if
             """, Catalog(ada));
 

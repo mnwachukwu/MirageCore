@@ -110,6 +110,9 @@ public sealed record ScriptType
         return IsOptional ? this : new ScriptType(Kind, Name, Element, optional: true);
     }
 
+    /// <summary>True for the result of a call that hands nothing back.</summary>
+    public bool IsNothing => Kind == Shape.Nothing;
+
     /// <summary>How a script would write this type.</summary>
     public override string ToString()
     {
