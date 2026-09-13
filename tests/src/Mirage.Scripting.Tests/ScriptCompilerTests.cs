@@ -25,7 +25,7 @@ public class ScriptCompilerTests
     [Test]
     public void AScriptThatChecks_Runs()
     {
-        var (script, problems) = ScriptCompiler.Compile(Hello, "hello.cm");
+        var (script, problems) = ScriptCompiler.CompileModule(Hello, "hello.cm");
 
         Assert.That(script, Is.Not.Null, "it should have checked: " + string.Join("; ", problems));
         var run = script!.Run();
@@ -44,7 +44,7 @@ public class ScriptCompilerTests
     {
         var before = Console.Out;
 
-        var (script, _) = ScriptCompiler.Compile(Hello, "hello.cm");
+        var (script, _) = ScriptCompiler.CompileModule(Hello, "hello.cm");
         var run = script!.Run();
 
         Assert.Multiple(() =>
@@ -71,7 +71,7 @@ public class ScriptCompilerTests
             end model
             """;
 
-        var (script, problems) = ScriptCompiler.Compile(reads, "reads.cm");
+        var (script, problems) = ScriptCompiler.CompileModule(reads, "reads.cm");
         Assert.That(script, Is.Not.Null, "it should have checked: " + string.Join("; ", problems));
 
         // The assertion is that this RETURNS. A test that hangs here is the bug.
@@ -85,7 +85,7 @@ public class ScriptCompilerTests
     [Test]
     public void AScriptThatDoesNotCheck_ProducesNoProgramAtAll()
     {
-        var (script, problems) = ScriptCompiler.Compile("""
+        var (script, problems) = ScriptCompiler.CompileModule("""
             shared model Program
                 function Main()
                     integer n = "not a number";
@@ -105,7 +105,7 @@ public class ScriptCompilerTests
     [Test]
     public void AProblemNamesTheFileAndThePlace()
     {
-        var (_, problems) = ScriptCompiler.Compile("""
+        var (_, problems) = ScriptCompiler.CompileModule("""
             shared model Program
                 function Main()
                     integer n = "not a number";
@@ -123,21 +123,41 @@ public class ScriptCompilerTests
         });
     }
 
+    private const string NoEntryPoint = """
+        shared model Helper
+            public integer function Twice(integer n)
+                yield n * 2;
+            end function
+        end model
+        """;
+
+    /// <summary>A program is something to run, so one with nothing to run is refused.</summary>
     [Test]
-    public void AFileWithNothingToRun_IsRefused()
+    public void AProgramWithNothingToRun_IsRefused()
     {
-        var (script, problems) = ScriptCompiler.Compile("""
-            shared model Helper
-                public integer function Twice(integer n)
-                    yield n * 2;
-                end function
-            end model
-            """, "library.cm");
+        var (script, problems) = ScriptCompiler.CompileProgram(NoEntryPoint, "library.cm");
 
         Assert.Multiple(() =>
         {
-            Assert.That(script, Is.Null, "a script is a program, and this one has no entry point");
+            Assert.That(script, Is.Null, "a program is a thing to run, and this one has no entry point");
             Assert.That(problems, Is.Not.Empty);
+        });
+    }
+
+    /// <summary>
+    /// 🔴 And the same source is a perfectly good MODULE, which is the difference between the two.
+    /// Nothing the engine calls is <c>Main</c>: a module is a set of handlers, so requiring an entry
+    /// point would make every module carry an empty one and would refuse every real module outright.
+    /// </summary>
+    [Test]
+    public void AModuleWithNoEntryPoint_Checks()
+    {
+        var (script, problems) = ScriptCompiler.CompileModule(NoEntryPoint, "rules.cm");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(script, Is.Not.Null, "it should have checked: " + string.Join("; ", problems));
+            Assert.That(script!.HasEntryPoint, Is.False);
         });
     }
 
@@ -148,7 +168,7 @@ public class ScriptCompilerTests
     [Test]
     public void AScriptThatThrows_ComesBackAsAFailureRatherThanTakingTheProcess()
     {
-        var (script, problems) = ScriptCompiler.Compile("""
+        var (script, problems) = ScriptCompiler.CompileModule("""
             shared model Program
                 function Main()
                     integer zero = 0;
@@ -170,7 +190,7 @@ public class ScriptCompilerTests
     [Test]
     public void AScriptCanBeRunMoreThanOnce()
     {
-        var (script, _) = ScriptCompiler.Compile(Hello, "hello.cm");
+        var (script, _) = ScriptCompiler.CompileModule(Hello, "hello.cm");
 
         // Checking is the expensive half and is done once; running is walking a tree. A host that had to
         // recompile per call could not afford to put a script on a per-step event.

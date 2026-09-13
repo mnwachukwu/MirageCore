@@ -14,7 +14,7 @@ for one.
 | **To change the game** | edit the script, restart the server | edit the source, rebuild, redeploy |
 | **Toolchain needed** | none | the .NET SDK |
 | **Touches Core's source** | no | no, but you build from it |
-| **Status** | the destination; the host is not written yet | works today, and `survey/` is the worked example |
+| **Status** | the destination; the host is built, and a world's own scripts are not loaded yet | works today, and `survey/` is the worked example |
 
 **Scripting is the point.** An engine whose every game needs a compiler is an engine only its own authors
 can extend: a designer cannot try an idea, an operator cannot run a variant, and nothing ships without a

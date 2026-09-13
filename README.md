@@ -28,8 +28,8 @@ There are two ways to write one, and they meet at the same place.
 **A script, with no compiler.** A game is a [Compass](https://github.com/mnwachukwu/Compass) script and a
 folder of records: edit it, restart the server, and that is the whole loop. No toolchain, no rebuild, no
 client to redeploy. This is the intended way and the reason the seams are shaped as they are. *A script
-runs inside the server today; what a script can SAY to the engine is what is being built now* — see
-[docs/scripting.md](docs/scripting.md).
+runs inside the server, calls the types the engine registers, and is refused if it can reach past them;
+loading a world's own scripts is what is being built now* — see [docs/scripting.md](docs/scripting.md).
 
 **A C# module, by building from source.** Fork the repository, write an assembly against
 `Mirage.Shared.Extensibility`, and list it in `GameModules.Load()`. The compiler checks every declaration

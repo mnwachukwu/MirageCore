@@ -61,7 +61,7 @@ public class ScriptModuleTests
     [Test]
     public void SourcesAreCheckedTogether_SoOneReachesAnother()
     {
-        var (script, problems) = ScriptCompiler.Compile(
+        var (script, problems) = ScriptCompiler.CompileModule(
             [new ScriptSource("Greeting.cm", Helper), new ScriptSource("Program.cm", Main)], "demo");
 
         Assert.That(script, Is.Not.Null, string.Join("; ", problems));
@@ -71,7 +71,7 @@ public class ScriptModuleTests
     [Test]
     public void AModuleWithNoSourceAtAll_IsRefused()
     {
-        var (script, problems) = ScriptCompiler.Compile([], "empty");
+        var (script, problems) = ScriptCompiler.CompileModule([], "empty");
 
         Assert.Multiple(() =>
         {
@@ -201,7 +201,7 @@ public class ScriptModuleTests
             list: _ => archive.Keys.OrderBy(k => k, StringComparer.Ordinal),
             read: path => archive[path]);
 
-        var (script, problems) = ScriptCompiler.Compile(sources, "packed");
+        var (script, problems) = ScriptCompiler.CompileModule(sources, "packed");
 
         Assert.That(script, Is.Not.Null, string.Join("; ", problems));
         Assert.That(script!.Run().Output, Does.Contain("Hello, module."));

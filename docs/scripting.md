@@ -7,11 +7,10 @@ The language is [Compass](https://github.com/mnwachukwu/Compass): a small, stati
 that compiles to CIL and runs on .NET, with a type checker, definite-assignment analysis, optionals
 instead of null, and a VS Code extension that gives a `.cm` file diagnostics as you type.
 
-**What works today:** a module — a folder of Compass source, however many files — is checked and run
-inside the server process, with its mistakes returned as data and its output captured.
-
-**What does not yet:** a script cannot call the engine. Everything below the line "What a script can say"
-is the open half.
+A module — a folder of Compass source, however many files — is checked against the types the engine
+registers, refused if it can reach past them, loaded once, and then called into as often as the game
+likes. Its mistakes come back as data, its output is captured, and a handler that will not finish is
+stopped rather than taking the server with it.
 
 ---
 
@@ -33,16 +32,22 @@ include it and are unaffected.
 
 ## What the host does
 
-`ScriptCompiler` drives Compass's own public front end — parse, check, lower — and hands the checked
-program to the interpreter. There is no fork of the compiler and no copy of its internals, and the
-reference list is the same three projects Compass's other embedder uses: the compiler, the interpreter,
-and the runtime they share.
+`ScriptCompiler` drives Compass's own public front end — parse, check, refuse, lower, convert — and hands
+the checked program to the interpreter. There is no fork of the compiler and no copy of its internals,
+and the reference list is the same three projects Compass's other embedder uses: the compiler, the
+interpreter, and the runtime they share.
 
 ```csharp
-var (script, problems) = ScriptCompiler.CompileFolder(@"D:\games\isles\scripts");
-if (script is null) foreach (var p in problems) log.Error("{Problem}", p);
-else log.Information("{Output}", script.Run().Output);
+var (module, problems) = ScriptCompiler.CompileFolder(@"D:\games\isles\scripts", catalog);
+if (module is null) { foreach (var p in problems) log.Error("{Problem}", p); return; }
+
+using var rules = LoadedScript.Load(module);
+if (rules.Offers("Rules", "OnTick", 0)) rules.Call("Rules", "OnTick");
 ```
+
+**`Mirage.Scripting` is the only project that names a Compass type.** A seam declares that a member
+yields a number in this engine's own vocabulary, and nothing about the language reaches the rest of the
+tree — which is what stops the day Compass changes shape from being a day the whole engine is rewritten.
 
 ## What a module is made of
 
@@ -108,30 +113,84 @@ driver. Worth doing when there are two consumers for it; today there is one, and
 
 ## What a script can say
 
-**This is the open design question, and it is the whole remaining job.**
+The engine registers types, and a module names them:
 
-Compass has no host-binding surface. Its built-ins are a closed catalog — a compile-time enum the type
-checker knows, implemented by a switch in the interpreter — with no way for an embedder to register a
-function. So "call `world.Say(...)` from a script" is not something the language can do today.
+```csharp
+var catalog = ScriptCatalog.Declare(c =>
+{
+    var player = c.Type("Player");
+    var world = c.Shared("World");
 
-There are two ways forward, and they are genuinely different bets:
+    player
+        .Value("Name", ScriptType.Text, (who, _) => NameOf(who))
+        .Action("Say", [ScriptType.Text], (who, args) => { Tell(who, args.AsText(0)); return null; });
 
-**Teach Compass to take host functions.** An embedder registers models and members; the checker sees
-them; the interpreter dispatches to a delegate. Scripts then read like ordinary code. The cost is that it
-changes Compass — a finished, shipped teaching language with its own CI, samples and editor extension —
-to carry a general-purpose FFI it was not built for.
+    world.Function("PlayerNamed", player.AsType.OrNothing(), [ScriptType.Text],
+                   (_, args) => Find(args.AsText(0)));
+});
+```
 
-**Keep data travelling, never calls.** A script declares by returning a declaration, and reacts by being
-a pure function: the engine calls it with what it needs to know and applies the effects it returns.
-Nothing is registered and Compass is untouched. The cost is an effect vocabulary to maintain, and scripts
-that describe what should happen rather than making it happen.
+```
+shared model Rules
+    public function OnPlayerMoved(Player who, integer fromX, integer fromY)
+        who.Say("You were at " + fromX + ", " + fromY + ".");
+    end function
+end model
+```
 
-The second is what the rest of this engine already does — a module's `Configure` is pure declaration, a
-client is sent data and never code, and a panel is a description rather than a program. The first is more
-comfortable to write in.
+A registered type is **opaque**: a script holds one, asks it questions, and can never declare, extend, or
+construct one. That is what lets the engine change what a player is without breaking every world built on
+it.
 
-Nothing else is blocked on the answer: the seams a script must reach are the fifteen on `ICoreBuilder`,
-and they are built, tested, and — as of the client runs — seen working.
+**A catalog is built once and shared.** Building a second from the same declarations gives the same name
+two symbol identities, and a `Player` from one will not fit a `Player` from the other — reported as a
+type error on code that is plainly correct. `ScriptCatalog.Declare` is the only way in and settles the
+names before any signature mentions one, so the mistake cannot be made from outside that project.
+
+### What a module may not reach
+
+A world folder is something one person hands to another, and its scripts run inside the server process as
+the server's user. So a module is refused if it uses any part of the language that reaches past the
+program — the filesystem, the machine clock — and refused at **compile** time, because .NET offers no way
+to take a capability away from code already running. The author finds out at deploy rather than mid-game.
+
+**The rule is derived from the language, never transcribed from it.** Compass classifies each of its own
+members by what it touches and adds them up over a checked program; `ScriptSandbox` refuses anything that
+adds up to more than nothing. A hand-written list here of the members that reach outside would keep
+passing while it stopped meaning anything, the moment the language grew one more — and that failure has
+no symptom: the check is green, the module loads, and the thing it was guarding against is allowed.
+
+What the engine itself registers is not counted, because the engine knows what its own bindings do. The
+catalog is the other half of the sandbox: a script reaches exactly what was registered and nothing else.
+
+⚠ Where this stops: it defends a trusted server from a careless or opportunistic module. A genuinely
+hostile one is an operating-system problem — a separate process with restrictions — and that costs the
+in-process embedding and the cheap handles this layer exists to provide.
+
+### Loaded once, called many times
+
+A game module declares no entry point. It is a set of handlers, and the state one call leaves behind is
+what the next one reads, so `LoadedScript` initializes the program once and keeps it.
+
+**Calls run on a thread of its own, and the caller waits.** That is a baton rather than concurrency:
+exactly one of the two threads runs at a time, so a binding reaching world state touches it under the
+same mutual exclusion it always had and nothing in the engine has to become thread-safe. What the thread
+buys is its **stack** — a Compass call costs about 4 KB, the language allows 512 levels of them, and an
+ordinary thread does not have 2 MB to spare. Running out of real stack is not catchable and ends the
+process with every player on it.
+
+**Three ways a handler can fail to hand the thread back**, and each is bounded: it runs forever, it grows
+forever, or it calls itself forever. `ScriptLimits` carries a time, an allocation ceiling and a depth,
+and the failure arrives as a `ScriptFault` naming the file and line — not as an exception through the
+game loop. What none of them bounds is one long statement, which has no back edge to be noticed at.
+
+### Two rules a module author cannot guess
+
+- **A handler has to be `public`.** A function only the host calls is a function nothing in the module
+  calls, which is dead code as far as the compiler can see, so an ordinary `OnTick` is reported as
+  unused.
+- **Nothing a script prints reaches the server's console, and nothing it reads comes from one.** Output
+  is captured per call; input is at end-of-file immediately.
 
 ## Related
 

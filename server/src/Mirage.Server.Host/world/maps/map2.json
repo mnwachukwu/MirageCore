@@ -1,7 +1,7 @@
 {
   "name": "east",
   "displayName": "East Walk",
-  "revision": 1,
+  "revision": 11,
   "up": 0,
   "down": 4,
   "left": 1,
@@ -17,321 +17,1307 @@
   "tile": [
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       },
       {
-        "type": "Blocked"
-      },
-      {},
-      {},
-      {},
-      {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       },
       {
-        "type": "Blocked"
+        "ground": [
+          156
+        ]
       },
       {
-        "type": "Blocked"
+        "ground": [
+          163
+        ]
       },
       {
-        "type": "Blocked"
+        "ground": [
+          170
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113,
+          411
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          156
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          170
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          156
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          170
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113,
+          147
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "Blocked"
+        },
+        "fringe": [
+          219
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "Blocked"
+        },
+        "fringe": [
+          219
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "Blocked"
+        }
+      },
+      {
+        "ground": [
+          156
+        ],
+        "fringeAttr": {
+          "type": "Blocked"
+        }
+      },
+      {
+        "ground": [
+          163
+        ],
+        "fringeAttr": {
+          "type": "Blocked"
+        }
+      },
+      {
+        "ground": [
+          170
+        ],
+        "fringeAttr": {
+          "type": "Blocked"
+        }
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "Blocked"
+        },
+        "fringe": [
+          219
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "Blocked"
+        },
+        "fringe": [
+          219
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "LayerRamp",
+          "rampGroundSide": "Up"
+        },
+        "fringe": [
+          224
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "LayerRamp",
+          "rampGroundSide": "Up"
+        },
+        "fringe": [
+          231
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {},
+        "fringe": [
+          217
+        ]
+      },
+      {
+        "ground": [
+          156
+        ],
+        "fringeAttr": {},
+        "fringe": [
+          217
+        ]
+      },
+      {
+        "ground": [
+          163
+        ],
+        "fringeAttr": {},
+        "fringe": [
+          217
+        ]
+      },
+      {
+        "ground": [
+          170
+        ],
+        "fringeAttr": {},
+        "fringe": [
+          217
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "LayerRamp",
+          "rampGroundSide": "Down"
+        },
+        "fringe": [
+          224
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "LayerRamp",
+          "rampGroundSide": "Down"
+        },
+        "fringe": [
+          231
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "LayerRamp",
+          "rampGroundSide": "Up"
+        },
+        "fringe": [
+          224
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "LayerRamp",
+          "rampGroundSide": "Up"
+        },
+        "fringe": [
+          231
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {},
+        "fringe": [
+          217
+        ]
+      },
+      {
+        "ground": [
+          156
+        ],
+        "fringeAttr": {},
+        "fringe": [
+          217
+        ]
+      },
+      {
+        "ground": [
+          163
+        ],
+        "fringeAttr": {},
+        "fringe": [
+          217
+        ]
+      },
+      {
+        "ground": [
+          170
+        ],
+        "fringeAttr": {},
+        "fringe": [
+          217
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "LayerRamp",
+          "rampGroundSide": "Down"
+        },
+        "fringe": [
+          224
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "LayerRamp",
+          "rampGroundSide": "Down"
+        },
+        "fringe": [
+          231
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "Blocked"
+        },
+        "fringe": [
+          219
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "Blocked"
+        },
+        "fringe": [
+          219
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "Blocked"
+        }
+      },
+      {
+        "ground": [
+          156
+        ],
+        "fringeAttr": {
+          "type": "Blocked"
+        }
+      },
+      {
+        "ground": [
+          163
+        ],
+        "fringeAttr": {
+          "type": "Blocked"
+        }
+      },
+      {
+        "ground": [
+          170
+        ],
+        "fringeAttr": {
+          "type": "Blocked"
+        }
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "Blocked"
+        },
+        "fringe": [
+          219
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "fringeAttr": {
+          "type": "Blocked"
+        },
+        "fringe": [
+          219
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71,
+          16777567,
+          16777568
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {}
-    ],
-    [
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {}
-    ],
-    [
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {}
-    ],
-    [
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          156
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          162
+        ]
+      },
+      {
+        "ground": [
+          162
+        ]
+      },
+      {
+        "ground": [
+          162
+        ]
+      },
+      {
+        "ground": [
+          162
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113,
+          175
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          157
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          157
+        ]
+      },
+      {
+        "ground": [
+          164
+        ]
+      },
+      {
+        "ground": [
+          164
+        ]
+      },
+      {
+        "ground": [
+          164
+        ]
+      },
+      {
+        "ground": [
+          164
+        ]
+      },
+      {
+        "ground": [
+          164
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          137,
+          147
+        ]
+      },
+      {
+        "ground": [
+          144
+        ]
+      },
+      {
+        "ground": [
+          151
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71,
+          16777567,
+          16777568
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          138
+        ]
+      },
+      {
+        "ground": [
+          145
+        ]
+      },
+      {
+        "ground": [
+          152
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "canopy": [
+          134
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "canopy": [
+          141
+        ]
+      },
+      {
+        "ground": [
+          113,
+          147
+        ],
+        "canopy": [
+          148
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
       {
-        "type": "Blocked"
+        "ground": [
+          138
+        ]
       },
       {
-        "type": "Blocked"
+        "ground": [
+          145
+        ]
       },
       {
-        "type": "Blocked"
+        "ground": [
+          152
+        ]
       },
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
       },
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
       },
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
       },
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
       },
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ],
+        "canopy": [
+          135
+        ]
       },
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ],
+        "canopy": [
+          142
+        ]
       },
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ],
+        "canopy": [
+          149
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
+      }
+    ],
+    [
+      {
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
+      },
+      {
+        "ground": [
+          138
+        ]
+      },
+      {
+        "ground": [
+          145
+        ]
+      },
+      {
+        "ground": [
+          152,
+          175
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "canopy": [
+          136
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "canopy": [
+          143
+        ]
+      },
+      {
+        "ground": [
+          113,
+          175
+        ],
+        "canopy": [
+          150
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
+      }
+    ],
+    [
+      {
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
+      },
+      {
+        "ground": [
+          139
+        ]
+      },
+      {
+        "ground": [
+          146
+        ]
+      },
+      {
+        "ground": [
+          153
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113,
+          411
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
+      }
+    ],
+    [
+      {
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71,
+          16777567,
+          16777568
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71,
+          16777567,
+          16777568
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ]
   ],
   "npcs": [],
-  "lights": []
+  "lights": [
+    {
+      "id": "1d0ddf6e-37eb-5d7c-b422-fa318578db76",
+      "x": 6,
+      "y": 11,
+      "light": {
+        "rgb": 11834985,
+        "radius": 3.5,
+        "flicker": "Flame",
+        "intensity": 1.0
+      }
+    },
+    {
+      "id": "5a60c808-4b4f-5613-b168-84c347dd5abf",
+      "x": 10,
+      "y": 11,
+      "light": {
+        "rgb": 11834985,
+        "radius": 3.5,
+        "flicker": "Flame",
+        "intensity": 1.0
+      }
+    },
+    {
+      "id": "cdaa48ff-0ba4-5167-bad0-54cca9755dcc",
+      "x": 15,
+      "y": 5,
+      "light": {
+        "rgb": 11834985,
+        "radius": 3.5,
+        "flicker": "Flame",
+        "intensity": 1.0
+      }
+    },
+    {
+      "id": "8ea81766-9e7f-5b98-91e6-0f8fd44e0e82",
+      "x": 15,
+      "y": 7,
+      "light": {
+        "rgb": 11834985,
+        "radius": 3.5,
+        "flicker": "Flame",
+        "intensity": 1.0
+      }
+    }
+  ]
 }

@@ -1,7 +1,7 @@
 {
   "name": "plaza",
   "displayName": "The Plaza",
-  "revision": 1,
+  "revision": 11,
   "up": 0,
   "down": 3,
   "left": 0,
@@ -17,331 +17,1122 @@
   "tile": [
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          16777567,
+          16777568
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          16777567,
+          16777568
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          137
+        ]
+      },
+      {
+        "ground": [
+          144
+        ]
+      },
+      {
+        "ground": [
+          144
+        ]
+      },
+      {
+        "ground": [
+          151
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113,
+          147
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          138
+        ]
+      },
+      {
+        "ground": [
+          145,
+          147
+        ]
+      },
+      {
+        "ground": [
+          145
+        ]
+      },
+      {
+        "ground": [
+          152
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113,
+          411
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
+      {
+        "ground": [
+          138
+        ]
+      },
+      {
+        "ground": [
+          145
+        ]
+      },
       {
         "type": "Door",
         "keyItemNum": 7,
-        "keyIsConsumed": false
+        "keyIsConsumed": false,
+        "ground": [
+          145,
+          345
+        ]
       },
-      {},
-      {},
+      {
+        "ground": [
+          152
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
       {
         "type": "Plate",
         "doorX": 3,
         "doorY": 3,
-        "doorLayer": "Ground"
+        "doorLayer": "Ground",
+        "ground": [
+          113,
+          4
+        ]
       },
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          138
+        ]
+      },
+      {
+        "ground": [
+          145
+        ]
+      },
+      {
+        "ground": [
+          145
+        ]
+      },
+      {
+        "ground": [
+          152
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113,
+          175
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          139,
+          175
+        ]
+      },
+      {
+        "ground": [
+          146
+        ]
+      },
+      {
+        "ground": [
+          146
+        ]
+      },
+      {
+        "ground": [
+          153
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71,
+          16777567,
+          16777568
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {}
-    ],
-    [
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {}
-    ],
-    [
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {}
-    ],
-    [
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          155
+        ]
+      },
+      {
+        "ground": [
+          162
+        ]
+      },
+      {
+        "ground": [
+          162
+        ]
+      },
+      {
+        "ground": [
+          162
+        ]
+      },
+      {
+        "ground": [
+          162
+        ]
+      },
+      {
+        "ground": [
+          162
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          155
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      }
+    ],
+    [
+      {
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          156
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          164
+        ]
+      },
+      {
+        "ground": [
+          164
+        ]
+      },
+      {
+        "ground": [
+          164
+        ]
+      },
+      {
+        "ground": [
+          164
+        ]
+      }
+    ],
+    [
+      {
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          156
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          170
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71,
+          16777567,
+          16777568
+        ]
+      }
+    ],
+    [
+      {
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "canopy": [
+          134
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "canopy": [
+          141
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "canopy": [
+          148
+        ]
+      },
       {
         "type": "Item",
         "itemNum": 8,
-        "itemQuantity": 1
+        "itemQuantity": 1,
+        "ground": [
+          113
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          156
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          170
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "type": "Blocked",
+        "blocksLight": false,
+        "blocksSight": false,
+        "fringe": [
+          16777579,
+          16777580
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ],
+        "canopy": [
+          135
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "canopy": [
+          142
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "canopy": [
+          149
+        ]
+      },
+      {
+        "ground": [
+          113,
+          411
+        ]
+      },
+      {
+        "ground": [
+          156
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          170
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ],
+        "canopy": [
+          136
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "canopy": [
+          143
+        ]
+      },
+      {
+        "ground": [
+          113
+        ],
+        "canopy": [
+          150
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          156
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          170
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113,
+          147
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
-      {},
       {
-        "type": "Blocked"
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          156
+        ]
+      },
+      {
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          170
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113
+        ]
+      },
+      {
+        "ground": [
+          113,
+          175
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ],
     [
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          78
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       },
       {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       },
       {
-        "type": "Blocked"
-      },
-      {},
-      {},
-      {},
-      {
-        "type": "Blocked"
-      },
-      {
-        "type": "Blocked"
+        "type": "Blocked",
+        "ground": [
+          71,
+          16777567,
+          16777568
+        ]
       },
       {
-        "type": "Blocked"
+        "ground": [
+          156
+        ]
       },
       {
-        "type": "Blocked"
+        "ground": [
+          163
+        ]
+      },
+      {
+        "ground": [
+          170
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71,
+          16777567,
+          16777568
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
+      },
+      {
+        "type": "Blocked",
+        "ground": [
+          71
+        ]
       }
     ]
   ],
@@ -358,5 +1149,83 @@
       "pinY": 7
     }
   ],
-  "lights": []
+  "lights": [
+    {
+      "id": "56a6ea50-420b-54e0-9d8f-090cf29ff266",
+      "x": 11,
+      "y": 8,
+      "light": {
+        "rgb": 16746564,
+        "radius": 4.5,
+        "flicker": "Flame",
+        "intensity": 1.0
+      }
+    },
+    {
+      "id": "48d12653-155e-51f1-85ba-5e9d542246b1",
+      "x": 15,
+      "y": 4,
+      "light": {
+        "rgb": 11834985,
+        "radius": 3.5,
+        "flicker": "Flame",
+        "intensity": 1.0
+      }
+    },
+    {
+      "id": "46704016-6293-55f1-a330-a64918a261e1",
+      "x": 15,
+      "y": 8,
+      "light": {
+        "rgb": 11834985,
+        "radius": 3.5,
+        "flicker": "Flame",
+        "intensity": 1.0
+      }
+    },
+    {
+      "id": "f40fcb8e-06a8-5e55-8c89-aeb980d56cd6",
+      "x": 6,
+      "y": 11,
+      "light": {
+        "rgb": 11834985,
+        "radius": 3.5,
+        "flicker": "Flame",
+        "intensity": 1.0
+      }
+    },
+    {
+      "id": "18daf85c-59a1-5ca8-89cd-784401533f53",
+      "x": 10,
+      "y": 11,
+      "light": {
+        "rgb": 11834985,
+        "radius": 3.5,
+        "flicker": "Flame",
+        "intensity": 1.0
+      }
+    },
+    {
+      "id": "f644670b-a1d2-51cb-a39d-0369d23cd92d",
+      "x": 0,
+      "y": 5,
+      "light": {
+        "rgb": 11834985,
+        "radius": 3.5,
+        "flicker": "Flame",
+        "intensity": 1.0
+      }
+    },
+    {
+      "id": "b2ba5dfb-5a48-5b9f-8e30-3750ffdfdf81",
+      "x": 0,
+      "y": 7,
+      "light": {
+        "rgb": 11834985,
+        "radius": 3.5,
+        "flicker": "Flame",
+        "intensity": 1.0
+      }
+    }
+  ]
 }

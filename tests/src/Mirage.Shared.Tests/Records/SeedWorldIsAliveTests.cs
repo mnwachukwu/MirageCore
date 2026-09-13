@@ -139,4 +139,129 @@ public class SeedWorldIsAliveTests
             }
         });
     }
+
+    /// <summary>
+    /// 🔴 The seed's second walkable plane is reachable, sealed, and has ground underneath it.
+    ///
+    /// <para>A bridge is two halves and either one missing is silent. A deck with no ramp is a surface
+    /// nothing can climb onto; a ramp whose ground side faces the wrong way is a solid block that reads
+    /// as scenery. Neither is malformed — the file loads, the tiles draw, and only walking the movement
+    /// rules says the thing cannot be used.</para>
+    ///
+    /// <para>The third trap is the plane's own shape: the fringe plane is UNIFORM and walkable wherever
+    /// it is not told otherwise, so a deck authored without railings is not a bridge but an invisible
+    /// floor over the whole map. This walks the plane from the ramps and insists every square it reaches
+    /// was authored as part of it.</para>
+    /// </summary>
+    [Test]
+    public void TheSecondPlane_IsReachableSealedAndHasGroundUnderIt()
+    {
+        var layered = Maps().Where(m => Tiles(m.Map).Any(t => t.Tile.FringeAttr is not null)).ToList();
+
+        Assert.That(layered, Is.Not.Empty,
+            "no seed map declares a fringe plane, so the two-plane movement rules ship with nothing "
+            + "standing on them — author a deck and its ramps, or teach this test where they went");
+
+        Assert.Multiple(() =>
+        {
+            foreach (var (file, map) in layered)
+            {
+                var view = new MapView(map);
+                var plane = Tiles(map).Where(t => t.Tile.FringeAttr is not null)
+                                      .Select(t => (t.X, t.Y)).ToHashSet();
+                var ramps = Tiles(map).Where(t => t.Tile.FringeAttr is { Type: TileType.LayerRamp })
+                                      .Select(t => (t.X, t.Y, Side: t.Tile.FringeAttr!.RampGroundSide)).ToList();
+                var deck = Tiles(map).Where(t => t.Tile.FringeAttr is { Type: TileType.Walkable })
+                                     .Select(t => (t.X, t.Y)).ToHashSet();
+
+                Assert.That(ramps, Is.Not.Empty, $"{file} has a fringe plane and no ramp onto it");
+                Assert.That(deck, Is.Not.Empty, $"{file} has ramps that lead to no walkable deck");
+
+                // A ramp is mounted from the ground at its foot, moving up it. Ramps deeper into a block
+                // have another ramp at their foot, which reads Blocked from below — those are interior.
+                var mounted = new HashSet<(int, int)>();
+                foreach (var (x, y, side) in ramps)
+                {
+                    var (dx, dy) = WorldCoordHelper.DirDelta(side);
+                    if (view.At(x + dx, y + dy) is not { } foot) continue;
+                    if (LayerLogic.AttrFor(foot, WorldLayer.Ground).Type != TileType.Walkable) continue;
+
+                    bool climbs = LayerLogic.CanEnter(view, x, y, 1, WorldLayer.Ground, Opposite(side), out var landed)
+                                  && landed == WorldLayer.Fringe;
+                    Assert.That(climbs, Is.True,
+                        $"{file} ramp at {x},{y} faces {side}, and stepping onto it from the ground at "
+                        + $"{x + dx},{y + dy} does not climb — a ramp nobody can mount is scenery");
+                    mounted.Add((x, y));
+                }
+
+                Assert.That(mounted, Is.Not.Empty,
+                    $"{file} has ramps, and every one of them is walled in on its ground side");
+
+                var reached = Reachable(view, mounted);
+
+                Assert.That(deck.Except(reached), Is.Empty,
+                    $"{file} authors deck squares the ramps do not lead to");
+                Assert.That(reached.Except(plane), Is.Empty,
+                    $"{file} lets a walker leave the deck onto squares nobody authored — the fringe plane "
+                    + "is walkable wherever it is not told otherwise, so a deck needs a Blocked fringe "
+                    + "attribute around its edge to be a bridge rather than an invisible floor");
+
+                Assert.That(deck.Any(d => LayerLogic.AttrFor(map.Tile[d.X, d.Y], WorldLayer.Ground).Type
+                                          == TileType.Walkable), Is.True,
+                    $"{file} has a deck with nothing walkable under any of it, which is a floor rather "
+                    + "than a bridge");
+            }
+        });
+    }
+
+    /// <summary>Every square of the fringe plane a walker can reach from the given mount points, by the
+    /// same rules movement uses.</summary>
+    private static HashSet<(int X, int Y)> Reachable(MapView view, IEnumerable<(int, int)> from)
+    {
+        var seen = from.ToHashSet();
+        var queue = new Queue<(int X, int Y)>(seen);
+        while (queue.Count > 0)
+        {
+            var (cx, cy) = queue.Dequeue();
+            foreach (var dir in new[] { Direction.Up, Direction.Down, Direction.Left, Direction.Right })
+            {
+                var (dx, dy) = WorldCoordHelper.DirDelta(dir);
+                int nx = cx + dx, ny = cy + dy;
+                if (seen.Contains((nx, ny)) || view.At(nx, ny) is not { } next) continue;
+                if (!LayerLogic.CanEnter(view, nx, ny, 1, WorldLayer.Fringe, dir, out var layer)) continue;
+                if (layer != WorldLayer.Fringe) continue;
+                // A ramp's own surface is the fringe plane's, so it reads LayerRamp rather than Walkable.
+                if (LayerLogic.AttrFor(next, WorldLayer.Fringe).Type
+                    is not (TileType.Walkable or TileType.LayerRamp)) continue;
+                seen.Add((nx, ny));
+                queue.Enqueue((nx, ny));
+            }
+        }
+        return seen;
+    }
+
+    private static Direction Opposite(Direction d) => d switch
+    {
+        Direction.Up => Direction.Down,
+        Direction.Down => Direction.Up,
+        Direction.Left => Direction.Right,
+        _ => Direction.Left,
+    };
+
+    private static IEnumerable<(int X, int Y, TileRecord Tile)> Tiles(MapRecord map)
+    {
+        for (int x = 0; x < map.Width; x++)
+            for (int y = 0; y < map.Height; y++)
+                yield return (x, y, map.Tile[x, y]);
+    }
+
+    /// <summary>One map as the movement rules read the world: a coordinate off the map is nothing, which
+    /// is what stops a walk at the edge.</summary>
+    private sealed class MapView(MapRecord map) : LayerLogic.IWorldTileView
+    {
+        public TileRecord? At(int worldX, int worldY) =>
+            worldX < 0 || worldY < 0 || worldX >= map.Width || worldY >= map.Height
+                ? null
+                : map.Tile[worldX, worldY];
+    }
 }
