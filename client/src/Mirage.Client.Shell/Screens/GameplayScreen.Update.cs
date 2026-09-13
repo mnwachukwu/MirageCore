@@ -258,6 +258,11 @@ public sealed partial class GameplayScreen : IGameScreen
                 }
                 if (fired > 0 && HotkeySlotReady(fired, nowMs) && TryUseHotkey(fired)) StartHotkeyCooldown(fired, nowMs);
             }
+
+            // Keys a game bound. After the action bar, because the bar's digits are Core's and a game
+            // cannot be offered one — nothing here can take a key out from under the player.
+            if (kbActive) ProcessGameKeys(input);
+
             if (input.IsKeyPressed(Keys.Escape))
                 HandleEscapeKey();
         }
@@ -329,14 +334,16 @@ public sealed partial class GameplayScreen : IGameScreen
             _pickUpLatched = true;
         }
 
-        // Same latch for the attack press. EITHER trigger reserves X — left because it is the bar's own
-        // modifier, right because a self-aimed swing is not a thing and should do nothing rather than attack.
-        if (worldActionInput &&
+        // Same latch for the reach press, and only while no game has taken E for itself: a game that
+        // bound it gets the key outright rather than sharing it with Core's own reaching.
+        // EITHER trigger reserves X — left because it is the bar's own modifier, right because a
+        // self-aimed reach is not a thing and should do nothing rather than act.
+        if (worldActionInput && !GameHoldsInteractKey() &&
             ((kbActive && input.IsKeyPressed(Keys.E)) ||
              (padActive && input.IsGamePadButtonPressed(Buttons.X)
                         && !input.IsGamePadLeftTriggerDown() && !input.IsGamePadRightTriggerDown())))
         {
-            _attackPressLatched = true;
+            _interactPressLatched = true;
         }
 
         if (!worldActionInput)
@@ -344,21 +351,21 @@ public sealed partial class GameplayScreen : IGameScreen
             // The gate closed with a press still latched (chat focus, a blocking panel opened): drop it rather
             // than replaying a stale action the moment the gate reopens.
             _pickUpLatched = false;
-            _attackPressLatched = false;
+            _interactPressLatched = false;
         }
         else
         {
             // Every frame, not only on the tick. The tick gates the ACTION sends inside Process; movement
             // is rate-limited by the slide it is waiting on, and holding it to a tick boundary makes any
             // run faster than one tile per tick finish early and then stand still until the next one.
-            var snapshot = BuildInputSnapshot(input, _pickUpLatched, _attackPressLatched);
+            var snapshot = BuildInputSnapshot(input, _pickUpLatched, _interactPressLatched);
             if (onTick)
             {
                 _pickUpLatched = false;
-                _attackPressLatched = false;
+                _interactPressLatched = false;
             }
             InputProcessor.Process(snapshot, _ctx.State, _ctx.Sender, nowMs, onTick);
-            // Core refused a melee-key interact aimed across the two planes. It owns that decision (it resolves the
+            // Core refused a reach aimed across the two planes. It owns that decision (it resolves the
             // faced NPC) but has no chat, so the refusal is voiced here — drained immediately, never left stale.
             if (_ctx.State.NpcInteractWrongLayer)
             {
@@ -541,7 +548,7 @@ public sealed partial class GameplayScreen : IGameScreen
         return _scrollBounds;
     }
 
-    private InputSnapshot BuildInputSnapshot(InputState input, bool pickUpLatched, bool attackPressLatched)
+    private InputSnapshot BuildInputSnapshot(InputState input, bool pickUpLatched, bool interactPressLatched)
     {
         const float Deadzone = InputState.GamepadStickDeadzone;
         // Whichever device "owns" gameplay this frame; the other device's contributions are
@@ -618,10 +625,8 @@ public sealed partial class GameplayScreen : IGameScreen
             // a co-held Shift must not leak a Running intent that the next non-Ctrl frame inherits.
             Running = (!ctrl && kbActive && input.IsKeyDown(Keys.LeftShift)) || (padActive && input.IsGamePadButtonDown(Buttons.B) && !triggerHeld),
             // The press edge comes from the frame-latch, never from this tick's key state — a press landing on a
-            // non-tick frame would otherwise be gone by the time the snapshot is built (see _attackPressLatched).
-            // A latched press also counts as "attack held" for this tick, so a tap shorter than one tick still acts.
-            Attack = attackPressLatched || (kbActive && input.IsKeyDown(Keys.E)) || (padActive && input.IsGamePadButtonDown(Buttons.X) && !triggerHeld),
-            AttackPressed = attackPressLatched,
+            // non-tick frame would otherwise be gone by the time the snapshot is built (see _interactPressLatched).
+            InteractPressed = interactPressLatched,
             PickUp = pickUpLatched,
             DirFace = dirFace,
         };

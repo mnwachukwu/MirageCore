@@ -238,8 +238,17 @@ public sealed partial class GameplayScreen : IGameScreen
             {
                 string id = action.Id;
                 string opens = action.OpensPanel;
+
+                // The shortcut is shown where the verb is offered, or it is a shortcut nobody finds. An
+                // action that only opens a panel borrows the PANEL's key, since that is the key that
+                // does this menu item's job.
+                string shortcut = action.Key.Length > 0
+                    ? action.Key
+                    : _ctx.State.Panels.Find(opens)?.Key ?? string.Empty;
+
                 items.Add(new ContextMenu.Item(
-                    ClientStrings.GetOrFallback(action.LabelKey, action.LabelKey),
+                    ClientStrings.GetOrFallback(action.LabelKey, action.LabelKey)
+                        + GameKeyMap.Hint(shortcut),
                     () => InvokeGameAction(id, opens, mapNum, tileX, tileY)));
             }
 

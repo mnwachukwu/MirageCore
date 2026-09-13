@@ -147,7 +147,7 @@ public class InputProcessorTests
         s.MapNpcs[1].Y = 6;  // same layer as the player (Ground)
         s.NpcConvGlyph[9] = 2;                                             // has a conversation, but no shop/quest
 
-        InputProcessor.Process(new InputSnapshot { Attack = true, AttackPressed = true }, s, sender, 0);
+        InputProcessor.Process(new InputSnapshot { InteractPressed = true }, s, sender, 0);
 
         Assert.Multiple(() =>
         {
@@ -174,7 +174,7 @@ public class InputProcessorTests
         s.MapNpcs[2].Layer = WorldLayer.Fringe;
         s.NpcKeeperShop[8] = 1;                                            // the keeper is interactable
 
-        InputProcessor.Process(new InputSnapshot { Attack = true, AttackPressed = true }, s, sender, 0);
+        InputProcessor.Process(new InputSnapshot { InteractPressed = true }, s, sender, 0);
 
         var interact = t.Sent.OfType<NpcInteractPacket>().SingleOrDefault();
         Assert.Multiple(() =>
@@ -198,7 +198,7 @@ public class InputProcessorTests
         s.MapNpcs[1].Layer = WorldLayer.Fringe;                            // on the bridge deck above the player
         s.NpcKeeperShop[9] = 1;                                            // it would otherwise open its shop
 
-        InputProcessor.Process(new InputSnapshot { Attack = true, AttackPressed = true }, s, sender, 0);
+        InputProcessor.Process(new InputSnapshot { InteractPressed = true }, s, sender, 0);
 
         Assert.Multiple(() =>
         {
@@ -222,7 +222,7 @@ public class InputProcessorTests
         // The faced tile is a ramp whose ground side faces Up — back toward the player standing at its foot.
         s.Map.EditTile(5, 6, t => t with { FringeAttr = new FringeAttr { Type = TileType.LayerRamp, RampGroundSide = Direction.Up } });
 
-        InputProcessor.Process(new InputSnapshot { Attack = true, AttackPressed = true }, s, sender, 0);
+        InputProcessor.Process(new InputSnapshot { InteractPressed = true }, s, sender, 0);
 
         Assert.Multiple(() =>
         {
@@ -244,9 +244,9 @@ public class InputProcessorTests
         s.MapNpcs[1].Layer = WorldLayer.Fringe;
         s.NpcKeeperShop[9] = 1;
 
-        InputProcessor.Process(new InputSnapshot { Attack = true, AttackPressed = true }, s, sender, 0);
+        InputProcessor.Process(new InputSnapshot { InteractPressed = true }, s, sender, 0);
         s.NpcInteractWrongLayer = false;                                   // the Shell drained it into chat
-        InputProcessor.Process(new InputSnapshot { Attack = true }, s, sender, 0);   // key still held, no new edge
+        InputProcessor.Process(new InputSnapshot(), s, sender, 0);   // key still held, no new edge
 
         Assert.That(s.NpcInteractWrongLayer, Is.False, "a held key repeats neither the interact nor the refusal");
     }
@@ -264,7 +264,7 @@ public class InputProcessorTests
     {
         var (s, t, sender) = Setup(5, 5);
         s.InGame = false;
-        InputProcessor.Process(new InputSnapshot { Move = Direction.Down, Attack = true, PickUp = true }, s, sender, 0);
+        InputProcessor.Process(new InputSnapshot { Move = Direction.Down, InteractPressed = true, PickUp = true }, s, sender, 0);
         Assert.That(t.Sent, Is.Empty);
     }
 

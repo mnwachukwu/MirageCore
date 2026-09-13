@@ -39,6 +39,10 @@ public sealed class GamePanelView : IGamePanel
     private InputState _input = new();
 
     public bool IsOpen { get; private set; }
+
+    /// <summary>The declared panel on show, or blank for none. A key that opens a panel has to know
+    /// whether it is looking at its own panel or somebody else's before it decides to close it.</summary>
+    public string OpenId => IsOpen ? _declared?.Id ?? string.Empty : string.Empty;
     public Rectangle Bounds => _panel.Bounds;
     public bool LayoutChanged => _panel.LayoutChanged;
     public void SetBounds(Rectangle b) => _panel.SetBounds(b);

@@ -95,6 +95,28 @@ public class GameActionsArriveTests
         Assert.That(state.Actions.All[0].Id, Is.EqualTo("Survey.Note_v2 "));
     }
 
+    /// <summary>A shortcut arrives with the verb it reaches, or it is not a shortcut.
+    ///
+    /// <para>The key is the one part of a declaration whose loss the PLAYER meets rather than the author:
+    /// the menu entry still works, so nothing looks broken, and the key simply never does anything.</para>
+    /// </summary>
+    [Test]
+    public void TheKeyAVerbIsBoundTo_ArrivesWithIt()
+    {
+        var (state, handler) = Playing();
+
+        Send(handler,
+            new GameAction { Id = "survey.note", LabelKey = "Note this down", Key = "Q" },
+            new GameAction { Id = "survey.look", LabelKey = "Look around" });
+
+        var offered = state.Actions.For(ActionSurface.Tile);
+        Assert.Multiple(() =>
+        {
+            Assert.That(offered[0].Key, Is.EqualTo("Q"));
+            Assert.That(offered[1].Key, Is.Empty, "a verb with no shortcut carries none");
+        });
+    }
+
     [Test]
     public void TheInvokeCarriesTheIdAndTheSquare()
     {

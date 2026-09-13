@@ -36,6 +36,14 @@ public sealed record GamePanel
     /// <summary>What the player can do from here, in order.</summary>
     [JsonPropertyName("buttons")] public IReadOnlyList<PanelButton> Buttons { get; init; } = [];
 
+    /// <summary>The key that opens and closes it, or blank for a panel reached only through an action.
+    /// Must be one of <see cref="GameKey.Offered"/>.
+    ///
+    /// <para>Opening is entirely the client's: a panel shows attributes it already holds, so a key press
+    /// costs no round trip. Wherever the panel is offered to the player, the key is shown beside its
+    /// name — a shortcut nothing displays is a shortcut nobody finds.</para></summary>
+    [JsonPropertyName("key")] public string Key { get; init; } = string.Empty;
+
     /// <summary>How big it opens, in the client's reference pixels. Zero takes the engine's default,
     /// which is what a game with no opinion about its own window wants.</summary>
     [JsonPropertyName("w")] public int Width { get; init; }

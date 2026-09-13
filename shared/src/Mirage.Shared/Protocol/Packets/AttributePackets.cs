@@ -123,14 +123,16 @@ public sealed record GameActionsPacket : IPacket
     /// <summary>One row per declared action, already in the order they are offered.</summary>
     [JsonPropertyName("actions")] public IReadOnlyList<Row> Actions { get; init; } = [];
 
-    /// <summary>One action as the client needs it: what to call it, where to offer it, and the panel
-    /// picking it opens. <c>OpensPanel</c> is blank for an action that only tells the server.</summary>
+    /// <summary>One action as the client needs it: what to call it, where to offer it, the panel
+    /// picking it opens, and the key that reaches it without the menu. <c>OpensPanel</c> is blank for an
+    /// action that only tells the server, and <c>Key</c> for one with no shortcut.</summary>
     public readonly record struct Row(
         [property: JsonPropertyName("id")] string Id,
         [property: JsonPropertyName("label")] string LabelKey,
         [property: JsonPropertyName("surface")] ActionSurface Surface,
         [property: JsonPropertyName("group")] string GroupKey,
-        [property: JsonPropertyName("opens")] string OpensPanel);
+        [property: JsonPropertyName("opens")] string OpensPanel,
+        [property: JsonPropertyName("key")] string Key);
 }
 
 /// <summary>

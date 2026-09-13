@@ -351,6 +351,32 @@ public class ScriptedWorldTests
         });
     }
 
+    /// <summary>A world's own rules may bind a key, and a key nobody may bind is refused on its own.
+    ///
+    /// <para>Refused on its own rather than stopping the server: a world is a folder somebody hands
+    /// somebody else, and an operator should not be left with a server that will not start over a
+    /// stranger's typo. The rest of the declarations are still made.</para></summary>
+    [Test]
+    public void AScriptBindsAKey_AndIsRefusedOneItMayNotHave()
+    {
+        var (module, registry) = Built("""
+            shared model Rules
+                public function Configure(Builder game)
+                    game.KeyAction("harvest.gather", "Gather here", "Harvest", "Q");
+                    game.KeyAction("harvest.run", "Run", "Harvest", "W");
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(registry.Actions.All.Single().Id, Is.EqualTo("harvest.gather"));
+            Assert.That(registry.Actions.All.Single().Key, Is.EqualTo("Q"));
+        });
+    }
+
     /// <summary>A handler is registered only for a script that declared something to handle.</summary>
     [Test]
     public void AScriptDeclaringNoVerbsIsNotRegisteredAsAHandler()

@@ -388,8 +388,12 @@ public sealed class ScriptedWorldModule : ICoreModule, IWorldObserver, ITickWork
                     (int)a.AsInteger(2), (int)a.AsInteger(3), (int)a.AsInteger(4)),
                 "A bar over every body's head, in a color given as red, green, and blue, each 0 to 255.")
             .Action("Action", [ScriptType.Text, ScriptType.Text, ScriptType.Text],
-                (b, a) => Build(b).Action(a.AsText(0), a.AsText(1), a.AsText(2)),
-                "A verb in the square menu, under a heading of its own. Picking it calls OnAction.");
+                (b, a) => Build(b).Action(a.AsText(0), a.AsText(1), a.AsText(2), string.Empty),
+                "A verb in the square menu, under a heading of its own. Picking it calls OnAction.")
+            .Action("KeyAction", [ScriptType.Text, ScriptType.Text, ScriptType.Text, ScriptType.Text],
+                (b, a) => Build(b).Action(a.AsText(0), a.AsText(1), a.AsText(2), a.AsText(3)),
+                "The same, with a key that reaches it without the menu: B, E, J, K, N, P, Q, R, T, U, Y, "
+                + "or Z. The key acts on the square the player faces.");
     });
 
     private IWorld World =>
@@ -466,7 +470,8 @@ public sealed class ScriptedWorldModule : ICoreModule, IWorldObserver, ITickWork
 
         private static int Channel(int value) => Math.Clamp(value, 0, 255);
 
-        public object? Action(string id, string label, string group) => Guard($"the action '{id}'", () =>
+        public object? Action(string id, string label, string group, string key) =>
+            Guard($"the action '{id}'", () =>
         {
             builder.AddAction(new GameAction
             {
@@ -475,6 +480,7 @@ public sealed class ScriptedWorldModule : ICoreModule, IWorldObserver, ITickWork
                 GroupKey = group,
                 Surface = ActionSurface.Tile,
                 Ordinal = After + _verbs++,
+                Key = key,
             });
 
             actions.Add(id);

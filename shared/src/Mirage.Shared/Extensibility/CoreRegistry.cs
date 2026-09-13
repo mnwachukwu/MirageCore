@@ -335,6 +335,20 @@ internal sealed class CoreBuilder : ICoreBuilder
                 $"Module '{_module}' declared panel '{panel.Id}', which is already declared.", _module);
         }
 
+        if (!GameKey.IsOffered(panel.Key))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' put panel '{panel.Id}' on key '{panel.Key}', which is not a key a "
+                + $"game may bind. Those are: {GameKey.Listed}.", _module);
+        }
+
+        if (Claimed(panel.Key) is { } holder)
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' put panel '{panel.Id}' on key '{panel.Key}', which {holder} already "
+                + "has. One key does one thing.", _module);
+        }
+
         _panels.Add(panel);
     }
 
@@ -352,7 +366,41 @@ internal sealed class CoreBuilder : ICoreBuilder
                 $"Module '{_module}' declared action '{action.Id}', which is already declared.", _module);
         }
 
+        if (!GameKey.IsOffered(action.Key))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' put action '{action.Id}' on key '{action.Key}', which is not a key a "
+                + $"game may bind. Those are: {GameKey.Listed}.", _module);
+        }
+
+        if (Claimed(action.Key) is { } holder)
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' put action '{action.Id}' on key '{action.Key}', which {holder} "
+                + "already has. One key does one thing.", _module);
+        }
+
         _actions.Add(action);
+    }
+
+    /// <summary>What already answers to <paramref name="key"/>, or null for one nothing holds.
+    ///
+    /// <para>Actions and panels share one keyboard, so the check has to look at both. Two things on one
+    /// key is the failure this prevents, and it would otherwise be silent: the client would bind
+    /// whichever it found first, and which one that is depends on declaration order.</para></summary>
+    private string? Claimed(string key)
+    {
+        if (string.IsNullOrEmpty(key)) return null;
+
+        foreach (GameAction action in _actions)
+            if (string.Equals(action.Key, key, StringComparison.Ordinal))
+                return $"action '{action.Id}'";
+
+        foreach (GamePanel panel in _panels)
+            if (string.Equals(panel.Key, key, StringComparison.Ordinal))
+                return $"panel '{panel.Id}'";
+
+        return null;
     }
 
     public void AddActionHandler(IActionHandler handler)

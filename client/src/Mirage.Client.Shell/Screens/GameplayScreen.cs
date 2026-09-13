@@ -69,11 +69,11 @@ public sealed partial class GameplayScreen : IGameScreen
     // if the press happens on a non-tick frame the edge is gone before the snapshot fires.
     // Latch the press across frames and consume it on the next tick.
     private bool _pickUpLatched;
-    // The attack key's PRESS edge needs the same latch. Its held-state survives to the next tick on its own,
-    // but the edge does not — and the edge is the only thing that fires the talk-first NPC interact (shop /
-    // quest / conversation). At 100 ms ticks and 60 fps only ~1 press in 6 landed on a tick frame, so opening
-    // a keeper's menu took several taps. Latched here and consumed on the next tick, exactly like pickup.
-    private bool _attackPressLatched;
+    // The reach key's PRESS edge needs the same latch. The edge is the only thing that fires the
+    // talk-first NPC interact (shop / conversation). At 100 ms ticks and 60 fps only ~1 press in 6 landed
+    // on a tick frame, so opening a keeper's menu took several taps. Latched here and consumed on the next
+    // tick, exactly like pickup.
+    private bool _interactPressLatched;
     // Press-order for the movement keys, so the most-recently-pressed still-held direction wins
     // and releasing it falls back to whatever is still held (an input stack, not a fixed priority).
     private readonly MovementInputStack _moveStack = new();

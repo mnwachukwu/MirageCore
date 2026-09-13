@@ -45,6 +45,7 @@ public sealed class SurveyModule : ICoreModule
             LabelKey = "Note this down",
             GroupKey = "Survey",
             Surface = ActionSurface.Tile,
+            Key = "Q",
         });
         builder.AddActionHandler(_notes);
 
@@ -58,6 +59,7 @@ public sealed class SurveyModule : ICoreModule
             Width = 240,
             Height = 180,
             Buttons = [new PanelButton("Note this down", SurveyRoute.NoteAction)],
+            Key = "B",
         });
         builder.AddAction(new GameAction
         {

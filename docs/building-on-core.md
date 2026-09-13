@@ -59,13 +59,13 @@ describe itself once, and everything it can say is one of fifteen calls on the b
 | `AddDisplayField` | a value to show, on a named surface, read straight off a body's attributes |
 | `AddOverheadBar` | a row over a body's head, reading two of that body's attributes |
 | `AddEquipSlot` | a place on a character where something can be worn |
-| `AddPanel` | a screen this game paints: a title, a surface, and the verbs under it |
+| `AddPanel` | a screen this game paints: a title, a surface, the verbs under it, and the key that opens it |
 
 **What the player does**
 
 | Seam | Answers |
 |---|---|
-| `AddAction` | a verb, its caption, and the surface that offers it |
+| `AddAction` | a verb, its caption, the surface that offers it, and a key that reaches it without the menu |
 | `AddActionHandler` | what happens when one is picked |
 | `Packets` | a wire command this game can read |
 | `AddPacketRoute` | where a command that was read goes |
@@ -84,7 +84,7 @@ coherent game, not a broken one.
 
 ---
 
-## Four rules that hold everywhere
+## Five rules that hold everywhere
 
 ### Data travels, never code
 
@@ -114,6 +114,21 @@ Headings, rows, and menu items are ordered by a number that belongs to the surfa
 that declared it. Two modules both numbering from zero interleave: one's heading lands in the middle of
 the other's rows. Leave room. The world's own scripted rules number from 1000 for exactly this reason,
 so they sit after whatever the compiled game declared.
+
+### A key is a game's to claim, from a short list
+
+A game may bind a key to an action or to a panel, and the engine holds the list of which keys those are.
+Everything else on the keyboard already does something the player learned — moving, running, picking up,
+the action bar, and every window Core opens itself — and a game taking one of those would take it away
+with nothing anywhere reporting a conflict.
+
+So a key outside the list is refused where it is declared, with the list in the message, and so is a
+second thing claiming a key something already holds. Actions and panels share one keyboard and are
+checked against each other, because the client would otherwise bind whichever it found first — and which
+one that is depends on declaration order.
+
+⚠ **E is on the list and is the one Core uses itself**, to reach for whatever the player is facing. A
+game that binds E takes that over, the way declaring anything else replaces what Core would have done.
 
 ### A collision stops the server
 

@@ -22,7 +22,10 @@ shared model Rules
         game.Heading("This World");
         game.Field("demo.steps", "Steps taken");
 
-        game.Action("demo.look", "Look around", "This World");
+        # A key reaches it without the menu. Which keys a game may have is a short list the engine
+        # holds, and one already taken — by the C# module or by another line here — is refused
+        # rather than quietly overriding.
+        game.KeyAction("demo.look", "Look around", "This World", "R");
     end function
 
     public function OnPlayerJoined(Player who)
@@ -56,7 +59,8 @@ shared model Rules
     end function
 
     # The square menu offers "Look around" because Configure said so, and picking it arrives here with
-    # the square the player pointed at — map included, since everything in view is pointable.
+    # the square the player pointed at — map included, since everything in view is pointable. Pressing R
+    # arrives the same way, carrying the square in front of the player.
     public function OnAction(Player who, string action, integer map, integer x, integer y)
         if action != "demo.look"
             yield;

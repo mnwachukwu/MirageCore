@@ -41,6 +41,14 @@ public sealed record GameAction
     /// <summary>Where it sits among the game's other actions on that surface. Lower shows first.</summary>
     [JsonPropertyName("ordinal")] public int Ordinal { get; init; }
 
+    /// <summary>A key that invokes this without opening the menu, or blank for one the player has to go
+    /// and find. Must be one of <see cref="GameKey.Offered"/>.
+    ///
+    /// <para>A bound key acts on the square the player is facing, which is the square the menu would
+    /// have opened on. So the key and the menu item are the same verb reaching the same place, and a
+    /// game declaring both has given the player a shortcut rather than a second feature.</para></summary>
+    [JsonPropertyName("key")] public string Key { get; init; } = string.Empty;
+
     /// <summary>A <see cref="GamePanel.Id"/> this opens, or blank for one that only tells the server.
     ///
     /// <para>Opening happens on the client and costs no round trip — the panel's contents are attributes

@@ -56,6 +56,7 @@ Held as a value and never made by a script: the engine hands one over.
 | `Meter(string, string, string)` | — | A sidebar bar, filled by one key against another. |
 | `Bar(string, string, integer, integer, integer)` | — | A bar over every body's head, in a color given as red, green, and blue, each 0 to 255. |
 | `Action(string, string, string)` | — | A verb in the square menu, under a heading of its own. Picking it calls OnAction. |
+| `KeyAction(string, string, string, string)` | — | The same, with a key that reaches it without the menu: B, E, J, K, N, P, Q, R, T, U, Y, or Z. The key acts on the square the player faces. |
 
 ## What a module may not reach
 

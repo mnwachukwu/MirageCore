@@ -44,7 +44,7 @@ public static class InputProcessor
     /// stale guess costs nothing.</para></summary>
     private static void ProcessInteract(InputSnapshot input, ClientState state, ClientPacketSender sender)
     {
-        if (!input.AttackPressed) return;
+        if (!input.InteractPressed) return;
         if (!TryFindFacingNpc(state, out int map, out int slot, out int num, out bool layerConnects)) return;
 
         // Nothing to open.
@@ -306,7 +306,7 @@ public static class InputProcessor
         return false;
     }
 
-    // ── Attack ────────────────────────────────────────────────────────────────
+    // ── Reaching for what is in front ─────────────────────────────────────────
 
     // The native-slot NPC whose footprint covers the tile directly in FRONT of the local player, or false if
     // none. Cross-map aware: the front tile is resolved in world space so a seam-adjacent NPC on a neighbor map
@@ -388,9 +388,11 @@ public sealed class InputSnapshot
     /// (last-pressed still-held key wins), or null when no movement key is held.</summary>
     public Direction? Move { get; init; }
     public bool Running { get; init; }
-    public bool Attack { get; init; }
-    // Fresh press this frame (edge) — so the melee-key interact fires once per press, not every held frame.
-    public bool AttackPressed { get; init; }
+
+    /// <summary>A fresh press this frame, never a held key: reaching for something opens it, and a held
+    /// key would reopen it every frame.</summary>
+    public bool InteractPressed { get; init; }
+
     public bool PickUp { get; init; }
 
     /// <summary>If the player is facing a direction without moving (for dir-change packets).</summary>

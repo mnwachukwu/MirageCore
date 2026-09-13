@@ -69,12 +69,14 @@ public interface ICoreBuilder
     /// At most <see cref="OverheadBarSet.Max"/>.</summary>
     void AddOverheadBar(OverheadBar bar);
 
-    /// <summary>A screen this game paints: a title, the display surface that fills it, and the verbs
-    /// under it. Declare none and the client shows only Core's own windows.</summary>
+    /// <summary>A screen this game paints: a title, the display surface that fills it, the verbs under
+    /// it, and optionally a key that opens it. Declare none and the client shows only Core's own
+    /// windows.</summary>
     void AddPanel(GamePanel panel);
 
     /// <summary>Something the player may do that this game invented. A stock client offers it by
-    /// caption and sends its id back; <see cref="AddActionHandler"/> is what then does the thing.</summary>
+    /// caption and sends its id back; <see cref="AddActionHandler"/> is what then does the thing. It may
+    /// carry a key from <see cref="GameKey.Offered"/>, which reaches it without opening a menu.</summary>
     void AddAction(GameAction action);
 
     /// <inheritdoc cref="AddAction"/>
