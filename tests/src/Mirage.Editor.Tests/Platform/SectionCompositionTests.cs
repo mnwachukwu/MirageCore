@@ -89,19 +89,32 @@ public class SectionCompositionTests
         });
     }
 
-    /// <summary>🔴 A module's label key is not in any of this editor's language files, by definition.
-    /// <c>EditorStrings.Get</c> throws on an unknown key in DEBUG, so resolving one the normal way would
-    /// crash the editor the moment it connected to a game that declares a family.</summary>
+    /// <summary>
+    /// 🔴 A module's label key is not in any of this editor's language files, by definition — so it is
+    /// resolved with <c>GetOrFallback</c>, and never with <c>Get</c>.
+    ///
+    /// <para>⚠ <b>What <c>Get</c> does with a missing key depends on the build.</b> DEBUG throws; Release
+    /// hands back a bracketed placeholder. Asserting only the throw made this pass on a machine running
+    /// Debug and fail in CI, which builds Release — an assumption about the configuration baked into a
+    /// guard. What is asserted now is the property both share: neither answer is text to put in front of
+    /// a person, so neither is a way to resolve a family the editor was never compiled against.</para>
+    /// </summary>
     [Test]
-    public void AModulesLabelKey_FallsBackInsteadOfThrowing()
+    public void AModulesLabelKey_FallsBackInsteadOfResolving()
     {
+        const string missing = "Pocket_Section_Species";
         EditorStrings.Load(Path.Combine(AppContext.BaseDirectory, "lang"));
+
+        string? resolved = null;
+        Exception? raised = null;
+        try { resolved = EditorStrings.Get(missing); }
+        catch (Exception ex) { raised = ex; }
 
         Assert.Multiple(() =>
         {
-            Assert.That(() => EditorStrings.Get("Pocket_Section_Species"), Throws.Exception,
-                        "the editor's own text still fails loudly on a missing key");
-            Assert.That(EditorStrings.GetOrFallback("Pocket_Section_Species", "Species"), Is.EqualTo("Species"));
+            Assert.That(raised is not null || resolved == $"[{missing}]", Is.True,
+                        $"the editor's own text must not resolve a key it does not have; it gave '{resolved}'");
+            Assert.That(EditorStrings.GetOrFallback(missing, "Species"), Is.EqualTo("Species"));
         });
     }
 

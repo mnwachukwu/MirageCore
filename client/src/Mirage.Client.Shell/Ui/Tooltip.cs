@@ -9,7 +9,7 @@ namespace Mirage.Client.Shell.Ui;
 
 /// <summary>
 /// Hover tooltip for items. Exactly one tooltip is rendered at a time; panels feed
-/// it via <see cref="NotifyHoverItem"/> / <see cref="NotifyHoverSpell"/> while their row is
+/// it via <see cref="NotifyHoverItem"/> while their row is
 /// hovered, and <c>GameplayScreen</c> calls <see cref="TickAndDraw"/> after every panel
 /// has been drawn so the tooltip floats above the rest of the UI.
 ///

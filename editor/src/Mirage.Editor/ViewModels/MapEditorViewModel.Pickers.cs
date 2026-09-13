@@ -123,7 +123,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
             case "MapGroup": SelectedMapGroup = null; break;
         }
     }
-    // (Per-slot NPC-type pickers now live in the MapNpcSlots row collection above — see SetMapNpcSlot.)
+    // (Per-slot NPC-type pickers live in the row collection above.)
 
     // ── Dialog entity pickers (warp/item/key attribute dialogs) ─────────────
     public NamedEntry? SelectedWarpMapEntry

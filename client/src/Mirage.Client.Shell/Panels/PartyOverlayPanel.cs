@@ -115,7 +115,7 @@ public sealed class PartyOverlayPanel
             return;
         }
 
-        // Nearby = partner's map is in our 3×3 ObservableArea — same rule the party EXP bonus uses.
+        // Nearby = partner's map is one of the nine this client is observing.
         bool nearby = state.CellForMap(party.MapNum) is not null;
         float alpha = nearby ? 0.7f : 0.4f;
 

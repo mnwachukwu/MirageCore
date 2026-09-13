@@ -177,7 +177,7 @@ public sealed partial class PacketHandler
         // The one thing a corpse is FOR.
         or RespawnRequestPacket
 
-        // Speech. A corpse may talk; CombatSystem decides what it may do.
+        // Speech. A downed body may still talk; what else it may do is the game's.
         or SayMsgPacket or EmoteMsgPacket or YellMsgPacket or BroadcastMsgPacket or RollPacket
         or NoticeMsgPacket or AdminMsgPacket or PlayerMsgPacket or GuildChatPacket
 

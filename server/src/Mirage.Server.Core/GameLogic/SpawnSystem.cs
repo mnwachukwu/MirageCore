@@ -222,7 +222,7 @@ public sealed class SpawnSystem : GameSystem
 
     /// <summary>Clear every live native NPC on a map and tell observers to remove them — the territory-war
     /// despawn. Mirrors the death-side slot cleanup (Num/Hp zeroed, SpawnWait stamped) but with no
-    /// damage or FX; respawns then stay suppressed by <see cref="GameWorld.IsContestSuppressedMap"/> for the
+    /// damage or FX; respawns then stay suppressed for the
     /// war state, and the contest-end resume calls <see cref="SpawnMapNpcs"/> once suppression lifts. Reserved
     /// slots (a native away chasing as a guest) already read Num = 0, so they are left untouched.</summary>
     public void DespawnMapNpcs(int mapNum)

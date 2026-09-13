@@ -14,7 +14,7 @@ namespace Mirage.Editor.ViewModels;
 /// <para>Beyond the usual row duties (dirty tracking, load, save) this drives the editor's live
 /// stat readout: level, vitals, regen, mitigation, damage, EXP, and the combat chances are all
 /// computed through the shared formula classes, so the preview and the running game can never
-/// disagree. Editing any stat re-raises that whole derived set via <see cref="NotifyLevelDerived"/>.</para>
+/// disagree. Editing one re-raises the whole derived set rather than the field that changed.</para>
 /// </summary>
 public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
 {
@@ -167,7 +167,7 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
 
     private void OnDropRowChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        // Only a row reporting its OWN edit marks the NPC dirty — the same rule ClassRowViewModel uses
+        // Only a row reporting its OWN edit marks the NPC dirty — the same rule every row collection uses
         // for its loadout. NotifyDropDerived re-raises derived state on every row, and it runs on
         // selection, so treating any child raise as an edit made merely OPENING an NPC look modified.
         // The _loading guard does not help here: this fires long after construction.
@@ -220,7 +220,7 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
         _behavior = r.Behavior;
         _group = r.Group;
         _range = r.Range;
-        // Guarded like ClassRowViewModel's loadout: building drop rows subscribes change handlers that
+        // Guarded the way every row collection is: building drop rows subscribes change handlers that
         // land on MarkDirty, so an unguarded load flags every NPC with a drop table as edited on sight.
         _loading = true;
         try { LoadDrops(r.Drops); }

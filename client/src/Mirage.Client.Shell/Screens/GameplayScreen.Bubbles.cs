@@ -56,7 +56,7 @@ public sealed partial class GameplayScreen : IGameScreen
             }
         }
         // Traversal (guest) NPCs live in a separate dict outside the cell arrays — without this
-        // their head bubbles would never demote to drifters and would just blink off at EndMs.
+        // their head bubbles would never demote to drifters and would just blink off when their time was up.
         foreach (var t in state.TraversalNpcs.Values)
             TickOneNpcBubble(t, now);
     }

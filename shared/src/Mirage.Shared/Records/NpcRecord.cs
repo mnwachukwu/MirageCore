@@ -71,7 +71,7 @@ public sealed class NpcRecord
     public int MoveSpeed { get; set; }
 
     /// <summary>Author flag marking this NPC as a BOSS — a deliberate designer classification, NOT inferred from
-    /// HP/Size/stats (a tanky or large mob is not automatically a boss, and <see cref="ExtraHp"/> is a separate
+    /// size and attributes (a large body is not automatically a boss, and what makes one is a separate
     /// tankiness lever). Its only effect today: a guild quest that rolls a boss uses a COMPRESSED kill-count
     /// curve (tens, not hundreds) and a reduced reward, so a boss
     /// target can never become an impossible "kill hundreds of bosses" quest. Otherwise a boss is an ordinary

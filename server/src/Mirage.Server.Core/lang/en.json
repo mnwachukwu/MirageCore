@@ -328,7 +328,6 @@
   "AdminCommand_BootedFor": "{Player} has been booted for ({Reason})",
   "AdminCommand_ConnectionLost": "You have lost your connection with {GameName}.",
   "TimeOfDay_NightFalls": "Night has fallen upon the realm.",
-  "TimeOfDay_NightWarning": "NPCs grow stronger in the darkness.",
   "TimeOfDay_DawnBreaks": "The sun begins to rise over the realm.",
   "TimeOfDay_DayReturns": "The sun shines high over the realm.",
   "TimeOfDay_DuskFalls": "Dusk settles over the realm.",

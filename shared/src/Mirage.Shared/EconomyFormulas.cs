@@ -85,8 +85,8 @@ public static class EconomyFormulas
 
     // The Power a medium-bulk piece carries at its own tier, so pricing can ask "how strong is this piece
     // FOR its tier" — a heavy piece costs 1.25x a medium one at the same tier and a light piece 0.75x, which
-    // falls out of the ratio directly. The ramp below is the budget a tier is worth (Base at tier 1, PerTier
-    // added each rung after) and the share of it a medium piece carries.
+    // falls out of the ratio directly. The ramp below is the budget a tier is worth (a base at tier 1, a
+    // fixed amount added each rung after) and the share of it a medium piece carries.
     private const double ReferencePowerShare = 0.40;
     private const int ReferencePowerBase = 20;
     private const int ReferencePowerPerTier = 3;
@@ -175,8 +175,7 @@ public static class EconomyFormulas
     private const int RepairCapPercentOfPrice = 50;
 
     /// <summary>Gold per durability point on a piece of the given <paramref name="power"/>, BEFORE the
-    /// replacement-cost cap — the one place the repair rate is stated.  Also the anchor a caster's reagent
-    /// bill is matched against (<see cref="CombatFormulas.SubHpReagentCostExact"/>), so the two cannot drift.</summary>
+    /// replacement-cost cap — the one place the repair rate is stated.</summary>
     public static double RepairGoldPerPoint(int power) => Math.Max(power, 0) / RepairPowerDivisor;
 
     /// <summary>Gold to repair <paramref name="durabilityPoints"/> of durability on <paramref name="item"/>,

@@ -10,7 +10,7 @@ using Mirage.Shared.Records;
 namespace Mirage.Client.Core.Net;
 
 
-/// <summary>Payload for <see cref="ClientPacketHandler.EntityDied"/>: a killed entity's target identity +
+/// <summary>Payload for <see cref="ClientPacketHandler.OnEntityDied"/>: a killed entity's target identity +
 /// pre-clear render state, so the shell can hold a delayed-death sprite in place until a killing spell bolt
 /// visibly lands. Works uniformly for NPCs, traversal guests, and (via the server death signal) players.</summary>
 public readonly record struct EntityDeathFx(TargetRef Target, int SpriteRow, int Map, int X, int Y, float XOff, float YOff, Direction Dir, int Size = 1);

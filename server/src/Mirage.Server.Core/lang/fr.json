@@ -328,7 +328,6 @@
   "AdminCommand_BootedFor": "{Player} a été éjecté pour ({Reason})",
   "AdminCommand_ConnectionLost": "Vous avez perdu votre connexion avec {GameName}.",
   "TimeOfDay_NightFalls": "La nuit est tombée sur le royaume.",
-  "TimeOfDay_NightWarning": "Les PNJ gagnent en force dans les ténèbres.",
   "TimeOfDay_DawnBreaks": "Le soleil commence à se lever sur le royaume.",
   "TimeOfDay_DayReturns": "Le soleil brille haut sur le royaume.",
   "TimeOfDay_DuskFalls": "Le crépuscule descend sur le royaume.",

@@ -12,8 +12,6 @@ public static partial class ServerStrings
     public const string MapGreeting_JoinSay = nameof(MapGreeting_JoinSay);
     public const string MapGreeting_LeaveSay = nameof(MapGreeting_LeaveSay);
 
-    // ── SpellSystem ───────────────────────────────────────────────────────────
-
     // ── MovementSystem ────────────────────────────────────────────────────────
     public const string MovementSystem_WarpDestinationMissing = nameof(MovementSystem_WarpDestinationMissing);
 
@@ -43,10 +41,8 @@ public static partial class ServerStrings
     public const string PlayerSpawnSystem_InsufficientGold = nameof(PlayerSpawnSystem_InsufficientGold);
     public const string PlayerSpawnSystem_SpawnSet = nameof(PlayerSpawnSystem_SpawnSet);
 
-    // ── PkExpirySystem ────────────────────────────────────────────────────────
+    // ── PkExpirySystem_* — a marked player's flag lapsing, raised by JoinLeaveSystem ──
     public const string PkExpirySystem_CrimesFaded = nameof(PkExpirySystem_CrimesFaded);
-
-    // ── RegenerationSystem ────────────────────────────────────────────────────
 
     // ── PacketHandler ─────────────────────────────────────────────────────────
     public const string PacketHandler_NotNearShop = nameof(PacketHandler_NotNearShop);
@@ -64,7 +60,7 @@ public static partial class ServerStrings
     public const string PacketHandler_Notice = nameof(PacketHandler_Notice);
     public const string PacketHandler_Admin = nameof(PacketHandler_Admin);
 
-    // ── SearchSystem ──────────────────────────────────────────────────────────
+    // ── SearchSystem_* — looking at a square, raised by PacketHandler.Selection ──
     public const string SearchSystem_TargetNow = nameof(SearchSystem_TargetNow);
     public const string SearchSystem_TargetNowNpc = nameof(SearchSystem_TargetNowNpc);
     public const string SearchSystem_TargetSelf = nameof(SearchSystem_TargetSelf);
@@ -73,7 +69,6 @@ public static partial class ServerStrings
 
     // ── TimeOfDaySystem ───────────────────────────────────────────────────────
     public const string TimeOfDay_NightFalls = nameof(TimeOfDay_NightFalls);
-    public const string TimeOfDay_NightWarning = nameof(TimeOfDay_NightWarning);
     public const string TimeOfDay_DawnBreaks = nameof(TimeOfDay_DawnBreaks);
     public const string TimeOfDay_DayReturns = nameof(TimeOfDay_DayReturns);
     public const string TimeOfDay_DuskFalls = nameof(TimeOfDay_DuskFalls);

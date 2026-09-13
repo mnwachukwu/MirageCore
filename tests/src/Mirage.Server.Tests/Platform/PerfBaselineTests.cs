@@ -96,9 +96,8 @@ public class PerfBaselineTests
 
     // ── Player-slot indexer ───────────────────────────────────────────────────
 
-    // Candidate 2 in the plan: methods that re-index _pm[index] several times instead of hoisting a
-    // local (MarkPlayerCombat does it five times). Worth knowing whether the indexer is actually
-    // expensive before touching call sites all over the combat code.
+    // Methods that re-index _pm[index] several times instead of hoisting a local. Worth knowing
+    // whether the indexer is actually expensive before touching call sites all over the file.
     [Test]
     public void Benchmark_PlayerManagerIndexer_RepeatedVsHoisted()
     {

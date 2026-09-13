@@ -178,7 +178,7 @@ public static class RenderCommandBuilder
 
     // Emits the Fringe layer stack (drawn above entities).  Anim-flagged fringe layers cycle by their
     // own frame too.  A fringe-layer Key door reveals through its topmost Fringe graphic while its FRINGE
-    // door state is open — the deck equivalent of the ground door reveal in EmitTileBelow.
+    // door state is open — the deck equivalent of the ground door reveal.
     private static void EmitTileFringe(ClientState state, RenderFrame frame, Camera camera)
     {
         var b = VisibleTileBounds(camera);

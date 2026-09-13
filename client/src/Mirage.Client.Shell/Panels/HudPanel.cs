@@ -14,7 +14,7 @@ public enum HudAction { None, ToggleInventory, ToggleSocial, Quit }
 /// <summary>
 /// Right sidebar drawn while in-game.
 /// Layout (x=513..800, y=0..600):
-///   Player name → Lv. N ClassName → Map name → HP/MP/SP/EXP bars → panel buttons → Quit.
+///   Player name → whatever rows the game declared → Map name → panel buttons → Quit.
 /// </summary>
 public sealed class HudPanel
 {

@@ -49,11 +49,9 @@ public sealed class TimeOfDaySystem : GameSystem
 
         if (phase == _lastPhase) return;
 
-        var oldPhase = _lastPhase;
         _world.TimePhase = phase;
         _lastPhase = phase;
         _dispatcher.SendToAll(PacketBuilder.TimeOfDay(phase, progress));
-        ApplyNightHpTransition(oldPhase, phase);
 
         // Natural cycle only announces the two major transitions: nightfall (Dusk → Night) and the
         // "night is over" break (Night → Dawn). Dusk and Day arrive quietly.
@@ -69,8 +67,11 @@ public sealed class TimeOfDaySystem : GameSystem
     }
 
     /// <summary>
-    /// Broadcasts the proclamation for <paramref name="phase"/> (yellow), plus the red NPC-strength
-    /// warning when night begins. Shared by the natural cycle and the /tod admin jump.
+    /// Broadcasts the proclamation for <paramref name="phase"/>. Shared by the natural cycle and the
+    /// /tod admin jump.
+    ///
+    /// <para>What the phase MEANS is a game's. The engine says the sun went down and reports the phase
+    /// to whatever is listening; whether that makes anything harder is a rule, and rules are declared.</para>
     /// </summary>
     private void AnnouncePhase(TimePhase phase)
     {
@@ -82,41 +83,6 @@ public sealed class TimeOfDaySystem : GameSystem
             _ => ServerStrings.TimeOfDay_DayReturns,
         };
         _dispatcher.SendLocalizedChatToAll(key, new ChatMetadata(GameColor.Yellow, ChatChannel.Notice));
-        if (phase == TimePhase.Night)
-        {
-            _dispatcher.SendLocalizedChatToAll(ServerStrings.TimeOfDay_NightWarning,
-                new ChatMetadata(GameColor.Warning, ChatChannel.Notice));
-        }
-    }
-
-    /// <summary>
-    /// Re-scales every live NPC's current HP and its damage-contribution ledgers whenever the cycle crosses
-    /// INTO or OUT OF Night — so HP% and contribution/aggro fractions stay constant across the flip (and
-    /// current HP never overshoots the day max). Then re-sends each observed map's NPC snapshot so client HP
-    /// bars re-scale to the boosted/unboosted denominator. Fires only when Night-ness actually changes.
-    /// </summary>
-    private void ApplyNightHpTransition(TimePhase oldPhase, TimePhase newPhase)
-    {
-        bool wasNight = oldPhase == TimePhase.Night;
-        bool isNight = newPhase == TimePhase.Night;
-        if (wasNight == isNight) return;
-        double ratio = isNight ? Constants.NpcNightHpMultiplier : 1.0 / Constants.NpcNightHpMultiplier;
-
-        for (int m = 1; m <= _world.Limits.Maps; m++)
-        {
-            bool anyNative = false;
-            for (int s = 1; s <= Constants.MaxMapNpcs; s++)
-            {
-                var mn = _world.MapNpcs[m, s];
-                if (mn.Num > 0)
-                {
-                    anyNative = true;
-                }
-            }
-            // Re-sync native NPC snapshots for observers (traversal guests self-correct on their next resend).
-            if (anyNative && _world.MapObservers[m].Count > 0)
-                SendToMap(_world, m, JoinLeaveSystem.BuildMapNpcs(_world, m));
-        }
     }
 
     /// <summary>
@@ -134,13 +100,11 @@ public sealed class TimeOfDaySystem : GameSystem
             TimePhase.Dawn => Constants.TodDawnStartMs,
             _ => 0L,
         };
-        var oldPhase = _world.TimePhase;
         _cycleStartMs = Environment.TickCount64 - phaseStartMs;
         _world.TimePhase = phase;
         _world.TimeProgress = 0f;
         _lastPhase = phase;
         _dispatcher.SendToAll(PacketBuilder.TimeOfDay(phase, 0f));
-        ApplyNightHpTransition(oldPhase, phase);
         // Always announce an admin jump as a split pair: a public "something shifted" line to everyone,
         // then a staff-only attribution naming the admin. Then the proclamation for the new phase.
         _dispatcher.SendLocalizedChatToAll(ServerStrings.TimeOfDay_UnnaturalShift,

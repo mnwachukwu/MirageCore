@@ -72,7 +72,7 @@ public sealed record MapNpcsPacket : IPacket
         [property: JsonPropertyName("y")] int Y,
         [property: JsonPropertyName("dir")] Direction Dir,
         // int.MaxValue = not in combat.  Otherwise ms elapsed since the NPC entered combat — see
-        // SendHpPacket.MsSinceCombat for the rationale; lets re-syncing observers see the bar fade
+        // How long since this body was last engaged; lets re-syncing observers see the bar fade
         // at the true server time instead of restarting a 10s window on every region re-sync.
         // Default = int.MaxValue so older servers (no combatMs field) don't deserialize as "combat now".
         [property: JsonPropertyName("combatMs")] int MsSinceCombat = int.MaxValue,
@@ -103,7 +103,7 @@ public sealed record TraversalNpcPacket : IPacket
     // fresh appearance): the client slides the sprite across the seam in Dir instead of popping it.
     [JsonPropertyName("stepped")] public bool Stepped { get; init; }
     // int.MaxValue = not in combat.  Otherwise ms elapsed since the NPC entered combat — see
-    // SendHpPacket.MsSinceCombat for the rationale.
+    // How long since this body was last engaged.
     [JsonPropertyName("combatMs")] public int MsSinceCombat { get; init; } = int.MaxValue;
     [JsonPropertyName("hasTarget")] public bool HasTarget { get; init; }
     [JsonPropertyName("attacking")] public bool Attacking { get; init; }

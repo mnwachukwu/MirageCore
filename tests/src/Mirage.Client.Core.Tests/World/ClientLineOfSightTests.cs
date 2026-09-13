@@ -87,7 +87,7 @@ public class ClientLineOfSightTests
     }
 
     // The arrow grays for a cross-layer target at range, but connects at a ramp foot (the "layer 1.5" reach),
-    // mirroring the server's HasLineOfSight.
+    // mirroring the server's HasClearLineOfSight.
     [Test]
     public void HasClear_CrossLayer_GraysAtRange_ConnectsAtARampFoot()
     {

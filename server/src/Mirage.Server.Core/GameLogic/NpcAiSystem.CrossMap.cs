@@ -113,7 +113,7 @@ public sealed partial class NpcAiSystem : GameSystem
             // the FIRST guest tick instead of re-accumulating ~3 ticks of stall on the guest side.
             // The world-distance metric is re-center-invariant (re-centering is a rigid translation;
             // the cross is the NPC's own 1-tile move), so the carried best-distance stays comparable.
-            // LastStepDir is this very cross's direction, so a reversal (cross straight back) is caught.
+            // ChaseLastStepDir is this very cross's direction, so a reversal (cross straight back) is caught.
             ChaseBestWorldDist = mn.ChaseBestWorldDist,
             ChaseStallTicks = mn.ChaseStallTicks,
             ChaseTargetKey = mn.ChaseTargetKey,

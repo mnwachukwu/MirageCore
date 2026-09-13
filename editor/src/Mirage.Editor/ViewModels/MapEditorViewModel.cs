@@ -157,7 +157,7 @@ public sealed partial class MapEditorViewModel : ObservableObject, IAutoSaveTarg
     // The attribute currently on the ACTIVE logical layer (Ground inline vs FringeAttr; missing fringe = Walkable).
     private TileType ActiveAttrType(TileRecord t) =>
         AttrLayerIsFringe ? (t.FringeAttr?.Type ?? TileType.Walkable) : t.Type;
-    // The full attribute on the ACTIVE logical layer — the read companion to SetActiveAttr, so the dialog
+    // The full attribute on the ACTIVE logical layer — the read companion to WithActiveAttr, so the dialog
     // attributes (Warp/Item/Key/KeyOpen) seed their fields and eligibility from the right plane.
     private TileAttr ActiveAttrData(TileRecord t) =>
         AttrLayerIsFringe

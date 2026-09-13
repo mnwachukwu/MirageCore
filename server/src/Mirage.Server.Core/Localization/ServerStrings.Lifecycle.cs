@@ -92,7 +92,8 @@ public static partial class ServerStrings
     public const string Console_ModerationPenaltyLine = nameof(Console_ModerationPenaltyLine);
     public const string Console_ModerationNone = nameof(Console_ModerationNone);
     public const string Console_ModerationScanned = nameof(Console_ModerationScanned);
-    // Machine bans, from the console. HwBanOffline and HwBanNoKey are both refusals to half-do the job:
+    // Machine bans, from the console. Console_HwBanOffline and Console_HwBanNoKey are
+    // both refusals to half-do the job:
     // the key lives on a live session, so an offline target has nothing to ban.
     public const string Console_HwBanUsage = nameof(Console_HwBanUsage);
     public const string Console_HwBanned = nameof(Console_HwBanned);

@@ -188,7 +188,7 @@ public sealed partial class GameplayScreen : IGameScreen
 
     /// <summary>Spawn a melee swing FX over the attacker's target tile (one step ahead in the facing dir),
     /// world-anchored. <paramref name="sparks"/> is true when the swing connected (crescent + sparks) and
-    /// false on a whiff (crescent only). Driven by <see cref="ClientPacketHandler.MeleeSwing"/>.</summary>
+    /// false on a whiff (crescent only). Driven by <see cref="SpawnMeleeSwing"/>.</summary>
     public void SpawnMeleeSwing(int map, int lx, int ly, float xoff, float yoff, Direction dir, bool sparks)
     {
         if (!TryEntityScreen(map, lx, ly, xoff, yoff, out float sx, out float sy)) return;

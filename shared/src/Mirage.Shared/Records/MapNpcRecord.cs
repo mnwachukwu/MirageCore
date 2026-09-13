@@ -112,7 +112,7 @@ public class MapNpcRecord
     /// <summary>Hand the ENTIRE combat/aggro ledger to <paramref name="dest"/> in one shot — kill-credit
     /// (<see cref="DamageByPlayer"/>), the guard grace tally (<see cref="WarnHitsByPlayer"/>), AND the NPC
     /// contributor list (<see cref="DamageByNpc"/>).  These MUST travel together across a map seam: the guard
-    /// grace-skip in SelectAggroTargetEx weighs a player's DamageByPlayer against their WarnHitsByPlayer, so
+    /// grace-skip in target selection weighs a player's DamageByPlayer against their WarnHitsByPlayer, so
     /// carrying one without the other silently breaks grace — a guard that chased a mob across a border then
     /// aggroed a player who had only spent "Watch it!" warnings on it.  DamageByNpc is reference-transferred
     /// (heap list); a hand-off caller nulls its own afterward so the two records don't share it.</summary>

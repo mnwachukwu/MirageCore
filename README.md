@@ -245,9 +245,11 @@ This file covers what the project is and how to get it running. Everything else 
 
 | Document | What it answers |
 |---|---|
+| [Building a game on Core](docs/building-on-core.md) | What the engine already does, the fifteen seams a game declares through, and the half-built features that fail silently |
 | [Building, publishing, and releasing](docs/building.md) | How a working tree becomes installers, what the version number is bound to, how a tag cuts a release, and which platforms the output runs on |
 | [Icons and shipping your own client](docs/branding.md) | Rebranding a fork: the four icon locations, the MonoGame window-icon trap, and repackaging a client without a compiler |
-| [Scripting](docs/scripting.md) | Writing a game in Compass: the sibling checkout it needs, what the host does today, and the open question of what a script can say |
+| [Scripting](docs/scripting.md) | Writing a game in Compass: the sibling checkout it needs, what the host does, what a script may declare, and what it may not reach |
+| [Scripting API reference](docs/scripting-api.md) | Every type, member, and handler a script can use, generated from the engine itself |
 | [Testing](docs/testing.md) | What the seven suites cover, how to run one on its own, and why the cross-platform matrix exists |
 | [Technical decisions](docs/architecture.md) | Choices that are not obvious from the code, recorded with the reasoning that produced them |
 | [Game data conventions](docs/game-data.md) | Rules the authored content is expected to follow, including music loop points |

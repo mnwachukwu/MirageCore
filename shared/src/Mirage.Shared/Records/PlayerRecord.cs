@@ -3,8 +3,8 @@ using System.Text.Json.Serialization;
 
 namespace Mirage.Shared.Records;
 
-/// <summary>One drifting chat-bubble entry. Sits above the head bubble, rising and fading over
-/// BubbleFloatMs from the moment it was demoted.</summary>
+/// <summary>One drifting chat-bubble entry. Sits above the head bubble, rising and fading from the
+/// moment it was demoted.</summary>
 public readonly record struct ChatBubbleDrifter(string Text, int Color, long DemotedMs);
 
 public sealed class PlayerRecord
@@ -147,7 +147,7 @@ public sealed class PlayerRecord
     // occluded by the ramp/fringe art mid-slide ("sliding out from under the ramp").  Only read while sliding.
     [JsonIgnore] public WorldLayer PrevLayer { get; set; }
 
-    // Spawn point set at an Inn (0 = use server default StartMap/StartX/StartY)
+    // Where this character comes back to, set at an Inn. Zero means the world's own start point.
     public int SpawnMap { get; set; }
     public int SpawnX { get; set; }
     public int SpawnY { get; set; }
@@ -206,7 +206,7 @@ public sealed class PlayerRecord
     /// Wire-fed; never persisted.</summary>
 
     // Chat bubble (client-side render state). Head is anchored above the speaker at full alpha
-    // until ChatBubbleEndMs; the tick pass then demotes it to a drifter (rise + fade over BubbleFloatMs).
+    // until ChatBubbleEndMs; the tick pass then demotes it to a drifter, which rises and fades.
     [JsonIgnore] public string? ChatBubbleText { get; set; }
     [JsonIgnore] public long ChatBubbleEndMs { get; set; }
     [JsonIgnore] public int ChatBubbleColor { get; set; }

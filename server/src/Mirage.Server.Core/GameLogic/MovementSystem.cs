@@ -594,7 +594,7 @@ public sealed class MovementSystem : GameSystem
         // Tile attribute at the RESULTING layer: a fringe railing (Blocked on FringeAttr) stops a
         // fringe-layer walker but not someone underneath.  Door state is per (tile, layer) — open flag AND
         // auto-close clock alike — so a deck door and the ground door beneath it are fully independent
-        // (see TempTileState.DoorOpenedAt).
+        // (see the door state's own open stamp).
         var tile = _world.Maps[destMapNum].Tile[x, y];
         var attrType = LayerLogic.AttrFor(tile, newLayer).Type;
         if (attrType == TileType.Blocked) return false;

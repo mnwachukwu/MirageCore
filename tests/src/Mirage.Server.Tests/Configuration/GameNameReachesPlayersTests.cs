@@ -20,15 +20,24 @@ namespace Mirage.Server.Tests.Configuration;
 public class GameNameReachesPlayersTests
 {
     // Path fragment → why this file may name the engine directly.
+    //
+    // 🔴 Written with FORWARD slashes, and every path compared against them is normalized. A fragment
+    // carrying one platform's separator is a guard that stops matching anywhere else: on Linux this
+    // list excused nothing, so the three legitimate files became offenders and the build went red on
+    // code nobody had touched. The reverse is the dangerous half — a list that excuses nothing on the
+    // platform the rule is enforced on would pass while checking less than it says.
     private static readonly (string File, string Why)[] Allowed =
     [
-        (@"Configuration\ServerConfig.cs",
+        ("Configuration/ServerConfig.cs",
          "the resolver itself — this is where the engine becomes the last answer"),
-        (@"Configuration\ServerPaths.cs",
+        ("Configuration/ServerPaths.cs",
          "a FOLDER name, which must never move when a game is renamed"),
-        (@"Services\ConsoleCommands.cs",
+        ("Services/ConsoleCommands.cs",
          "/credits names the ENGINE and its author, not the game running on it"),
     ];
+
+    /// <summary>A path with one separator, whatever the platform spells it with.</summary>
+    private static string Slashed(string path) => path.Replace('\\', '/');
 
     [Test]
     public void OnlyTheResolverAndThePathsNameTheEngineDirectly()
@@ -42,12 +51,13 @@ public class GameNameReachesPlayersTests
         var offenders = new List<string>();
         foreach (string file in Directory.EnumerateFiles(server, "*.cs", SearchOption.AllDirectories))
         {
-            if (file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}")
-                || file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}")) continue;
+            string path = Slashed(file);
+
+            if (path.Contains("/bin/") || path.Contains("/obj/")) continue;
             // The server SHELL manages installations rather than serving players: its window chrome and
             // its own settings folder are the engine's, and no line of it is addressed to a player.
-            if (file.Contains($"{Path.DirectorySeparatorChar}Mirage.Server.Shell{Path.DirectorySeparatorChar}")) continue;
-            if (Allowed.Any(a => file.EndsWith(a.File, StringComparison.OrdinalIgnoreCase))) continue;
+            if (path.Contains("/Mirage.Server.Shell/")) continue;
+            if (Allowed.Any(a => path.EndsWith(a.File, StringComparison.OrdinalIgnoreCase))) continue;
 
             var lines = File.ReadAllLines(file);
             for (int i = 0; i < lines.Length; i++)
@@ -83,7 +93,7 @@ public class GameNameReachesPlayersTests
         {
             foreach (var (file, why) in Allowed)
             {
-                Assert.That(all.Any(f => f.EndsWith(file, StringComparison.OrdinalIgnoreCase)), Is.True,
+                Assert.That(all.Any(f => Slashed(f).EndsWith(file, StringComparison.OrdinalIgnoreCase)), Is.True,
                     $"the allow list still excuses {file} ({why}), and no such file exists");
             }
         });

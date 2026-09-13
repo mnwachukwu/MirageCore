@@ -164,8 +164,8 @@ public sealed partial class MapEditorViewModel : ObservableObject
             footprint = placeable;
 
             // Uniform two-plane world: every attribute authors EITHER plane via SelectedAttributeLayer — the dialog
-            // attributes (Warp/Item/Key/KeyOpen) through SetActiveAttr/ActiveAttrData, Blocked/NpcAvoid (default
-            // case) through SetActiveAttr.  Per-layer door state (§1b) makes a fringe Key/KeyOpen fire on the deck.
+            // attributes (Warp/Item/Door/Plate) through WithActiveAttr/ActiveAttrData, Blocked/NpcAvoid (default
+            // case) through WithActiveAttr.  Per-layer door state (§1b) makes a fringe Key/KeyOpen fire on the deck.
             switch (SelectedAttribute)
             {
                 case TileType.Warp:
@@ -501,7 +501,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
     }
 
     // Map id behind a neighbor cell. Orthogonal cells read the active map's link directly, so navigation
-    // works even before that neighbor has loaded (online). Diagonal cells mirror the NeighborMap*Diagonal
+    // works even before that neighbor has loaded (online). Diagonal cells mirror the diagonal neighbour ids
     // getters: follow the vertical-then-horizontal hop, else horizontal-then-vertical.
     private int NeighborTargetId(NeighborCell cell) => cell switch
     {
@@ -516,7 +516,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
         _ => 0,
     };
 
-    // Diagonal target id, matching NeighborMap*Diagonal exactly: each hop requires the in-between map to be
+    // Diagonal target id, matching the diagonal neighbour ids exactly: each hop requires the in-between map to be
     // resolved (loaded), so the id is that of the map actually shown in the diagonal cell.
     private int DiagonalTargetId(int firstOrtho, Func<MapRecord, int> firstPick,
                                  int secondOrtho, Func<MapRecord, int> secondPick)

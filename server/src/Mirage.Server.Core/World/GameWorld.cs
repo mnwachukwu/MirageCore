@@ -430,7 +430,7 @@ public sealed class GameWorld
 
     // Seamless scrolling: MapObservers[mapNum] = player indices that can SEE the map (i.e. are
     // standing on it or on one of its 8 neighbors).  Entity broadcasts and NPC AI are driven off
-    // this set so neighbor maps stay live and synced.  Maintained by Add/Remove ObserverMaps.
+    // this set so neighbor maps stay live and synced.
     public HashSet<int>[] MapObservers { get; }
 
     /// <summary>Whether player <paramref name="index"/> can currently SEE <paramref name="mapNum"/> —
@@ -548,7 +548,7 @@ public sealed class GameWorld
     /// <para>🔴 It lives on the WORLD because both halves of a fight ask it and neither owns it: the AI
     /// decides who a mob walks at, and a wide swing's strike strip decides who else that swing catches.
     /// Hanging it off either system gives the other a dependency it has no other reason to hold — routing
-    /// it through <c>CombatSystem</c> broke the AI targeting tests, which construct the brain with a null
+    /// it through a system broke the AI targeting tests, which construct the brain with a null
     /// combat system precisely because targeting has no business needing one.</para></summary>
     public bool AreNpcsKin(int numA, int numB)
     {

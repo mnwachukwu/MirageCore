@@ -52,7 +52,7 @@ public sealed partial class ClientState
 
     /// <summary>
     /// Set by the packet handler when our HP hits 0 (death). Survives within-frame
-    /// packet batches so the HUD can snap bars on respawn even if HP=0 and HP=MaxHp
+    /// packet batches so the HUD can snap a bar on respawn even when its value and its maximum
     /// both arrive before the next Tick().
     /// </summary>
     public bool SnapVitals { get; set; }

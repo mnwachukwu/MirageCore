@@ -91,9 +91,11 @@ public sealed partial class ClientState
     /// <summary>Shortcut to the local player's record.</summary>
     public PlayerRecord Me => Players[MyIndex];
 
-    /// <summary>How long after the last blow a fighter still counts as in combat. Matches the server's
-    /// <c>CombatSystem.CombatDurationMs</c>, which is the authority; this copy is what the client uses to
-    /// gray out what the server would refuse.</summary>
+    /// <summary>How long a body stays engaged after whatever engaged it.
+    ///
+    /// <para>The server is the authority — a game enters the state through <c>IWorld.SetEngaged</c>, which
+    /// takes its own number of seconds. This copy is what the client grays out with, so it is a guess at
+    /// what the server would refuse rather than the rule itself.</para></summary>
     public const long CombatWindowMs = 10_000;
 
     /// <summary>Whether combatant <paramref name="lastCombatMs"/> is still in combat at

@@ -355,7 +355,7 @@ public class NpcPathCacheTests
 
     // Center map with a horizontal wall (open ends), an NpcAvoid ring tile, and a live NPC on the (8,3) ring
     // so both the wall-routing and the attack-slot mask are exercised.  `open:true` gives a bare walkable map
-    // (no walls/blocker) for the benchmark.  FindStep/CachedStep read only _world/_pm, so the other subsystems
+    // (no walls/blocker) for the benchmark.  Step selection reads only _world/_pm, so the other subsystems
     // can be null (as in NpcChaseRoutingTests).
     static (NpcAiSystem ai, GameWorld world) NewWorldWithGeometry(bool open = false)
     {

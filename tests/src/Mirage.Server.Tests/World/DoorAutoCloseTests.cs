@@ -12,7 +12,7 @@ using System.Reflection;
 namespace Mirage.Server.Tests.World;
 
 /// <summary>The Key-door auto-close sweep (NpcAiSystem.CheckDoorAutoClose). Every open door carries its own
-/// TickCount64 stamp in TempTileState.DoorOpenedAt, so each shuts exactly DoorAutoCloseMs after IT opened —
+/// TickCount64 stamp the door state keeps, so each shuts exactly DoorAutoCloseMs after IT opened —
 /// opening a second door neither extends the first's window nor drags it shut early, and the two layers of one
 /// tile keep separate clocks.</summary>
 [TestFixture]
@@ -82,7 +82,7 @@ public class DoorAutoCloseTests
         });
     }
 
-    // §1b per-layer doors: DoorOpenedAt is indexed [x, y, layer], so a deck door and the ground door beneath it
+    // §1b per-layer doors: the stamp is indexed [x, y, layer], so a deck door and the ground door beneath it
     // hold independent clocks as well as independent open flags.
     [Test]
     public void Sweep_SameTileBothLayers_AgeOutIndependently()

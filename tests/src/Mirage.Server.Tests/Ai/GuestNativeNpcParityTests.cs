@@ -18,9 +18,9 @@ namespace Mirage.Server.Tests.Ai;
 // intentional specialization (GetSpawnIdentity → permanent home identity).
 //
 // Scope note: running a full AI + movement TICK and diffing native vs guest outcomes would need the
-// whole CombatSystem/MovementSystem/dispatcher graph wired up (a much heavier harness). The structural
+// whole movement and dispatcher graph wired up (a much heavier harness). The structural
 // guarantees below make the DATA side divergence-proof; the dispatch side (RunMovement iterates natives
-// AND guests; the guest steppers cross seams) is exercised by the CombatSim chase model + playtest.
+// AND guests; the guest steppers cross seams) is exercised by the chase tests and by playing it.
 [TestFixture]
 public class GuestNativeNpcParityTests
 {

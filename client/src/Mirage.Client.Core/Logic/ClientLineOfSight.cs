@@ -4,7 +4,7 @@ using Mirage.Shared;
 namespace Mirage.Client.Core.Logic;
 
 /// <summary>
-/// Client-side spell line-of-sight queries. Mirrors the server's authoritative HasLineOfSight
+/// Client-side line-of-sight queries. Mirrors the server's authoritative HasClearLineOfSight
 /// (same WorldCoordHelper algorithm) so the target-arrow color, tab-target filter, and any other
 /// "can I cast on this?" UI agree with what the server would actually permit.
 ///
@@ -28,7 +28,7 @@ public static class ClientLineOfSight
             new LineOfSightPredicate(state, me.Layer));
     }
 
-    /// <summary>Arrow-feedback form: a full mirror of the server's HasLineOfSight.  The caster and target must
+    /// <summary>Arrow-feedback form: a full mirror of the server's HasClearLineOfSight.  The two ends must
     /// first CONNECT across layers (same layer always; across layers only when one of them is on a ramp — a person
     /// on a ramp can shoot both the ground and the deck); then the obstacle line-of-sight above applies.  So a
     /// gray arrow means the server would actually refuse the cast.</summary>

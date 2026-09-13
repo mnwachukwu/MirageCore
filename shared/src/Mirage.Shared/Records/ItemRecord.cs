@@ -45,19 +45,18 @@ public sealed class ItemRecord
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public short Durability { get; set; }
 
-    /// <summary>The six potion types: how much of the vital the potion moves. Add* restores it; Sub*
-    /// drains that much and restores half as much of each of the other two.</summary>
+    /// <summary>How much of whatever it moves, for an item that moves something. The engine carries the
+    /// number and has no opinion about what it counts — a game reads it and decides.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public short VitalAmount { get; set; }
 
 
-    /// <summary>Weapon/Armor/Helmet/Shield: how good the piece is — one number driving three things.
-    /// On a weapon it is damage (via <c>WeaponContribution</c>); on armor/helmet it is mitigation (via
-    /// <c>GearMitigation</c>); on a shield, mitigation at a quarter weight (<c>ShieldMitigation</c>).
-    /// It doubles as the stat needed to equip the piece — STR for a weapon, DEF for the rest, both
-    /// through <c>GearStatRequirement</c> — and as the repair rate (<c>EconomyFormulas.RepairCost</c>).
-    /// One field rather than separate damage/defense ones precisely because the repair and wear paths
-    /// treat all four types alike.</summary>
+    /// <summary>How good the piece is, as one number.
+    ///
+    /// <para>The engine reads it for exactly one thing: what repairing it costs, through
+    /// <see cref="EconomyFormulas.RepairCost"/>. What it means BESIDES that is a game's — damage, a
+    /// requirement to wear it, a tier, or nothing at all — which is why it is one number rather than a
+    /// field per purpose.</para></summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public short Power { get; set; }
 

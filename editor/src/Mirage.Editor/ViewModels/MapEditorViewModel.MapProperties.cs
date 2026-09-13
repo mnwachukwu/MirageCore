@@ -294,7 +294,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
     // ── Size ──────────────────────────────────────────────────────────────────
 
     /// <summary>The open map's size, for the Properties panel. Read-only here: changing it discards tiles,
-    /// so it goes through a dialog that says what would be lost — see <see cref="ResizeMapCommand"/>.</summary>
+    /// so it goes through a dialog that says what would be lost.</summary>
     public string MapSizeText =>
         EditorStrings.Format(EditorStrings.MapEditor_SizeText, ("Width", MapCols), ("Height", MapRows));
 

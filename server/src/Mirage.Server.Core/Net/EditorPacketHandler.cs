@@ -460,7 +460,7 @@ public sealed partial class EditorPacketHandler
         npc.Sprite = p.Sprite;
         npc.SpriteSheet = p.SpriteSheet;
         // Clamp to a valid footprint class on save so a malformed packet never persists a bad size
-        // (mirrors the DropItemQuantity normalization below).
+        // (mirrors the quantity normalization below).
         npc.Size = Math.Clamp(p.Size, 1, Constants.MaxNpcSize);
         npc.SpawnSecs = p.SpawnSecs;
         npc.Behavior = p.Behavior;
@@ -601,7 +601,7 @@ public sealed partial class EditorPacketHandler
         _logger.LogInformation("Editor saved conversation #{Num}.", n);
     }
 
-    // Full conversation-definition snapshot — the RequestConversation response, an EditorAllConversations element,
+    // Full conversation-definition snapshot — the EditorRequestConversation response, an EditorAllConversations element,
     // and the live save broadcast. The node/choice lists are deep-cloned so the snapshot can't tear.
     private UpdateConversationPacket BuildUpdateConversation(int convNum)
     {

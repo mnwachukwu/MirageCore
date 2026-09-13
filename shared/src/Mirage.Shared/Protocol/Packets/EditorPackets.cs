@@ -195,7 +195,7 @@ public sealed record EditorSaveMapPacket : IPacket
 }
 
 // Editor-authored MapGroup fields. The bools are NULLABLE so a group can
-// decline to provide one (null = inherit downstream). ControllingGuild is runtime state, NOT authored here —
+// decline to provide one (null = inherit downstream).
 // the server preserves it across a save.
 public sealed record EditorSaveMapGroupPacket : IPacket
 {
@@ -327,7 +327,7 @@ public sealed record EditorAllShopsPacket : IPacket
     [JsonPropertyName("shops")] public UpdateShopPacket[] Shops { get; init; } = [];
 }
 
-// S→C: one group's full state (RequestMapGroup response). Mirrors the authored fields; ControllingGuild is
+// S→C: one group's full state (the EditorRequestMapGroup response). Mirrors the authored fields, and is
 // included read-only so the editor can surface who currently holds a territory.
 public sealed record UpdateMapGroupPacket : IPacket
 {
@@ -380,7 +380,7 @@ public sealed record EditorSaveConversationPacket : IPacket
     [JsonPropertyName("nodes")] public List<ConversationNode> Nodes { get; init; } = new();
 }
 
-/// <summary>S→C: one conversation's full definition — the RequestConversation response, an EditorAllConversations
+/// <summary>S→C: one conversation's full definition — the EditorRequestConversation response, an EditorAllConversations
 /// element, AND the live broadcast to game clients on an editor save (so conversation defs + the "..." glyphs
 /// refresh without a reconnect, mirroring the quest live-refresh). Identical field set to EditorSaveConversation.</summary>
 public sealed record UpdateConversationPacket : IPacket

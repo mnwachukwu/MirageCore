@@ -46,7 +46,7 @@ public sealed partial class GameplayScreen : IGameScreen
         {
             if (!WorldCoordHelper.IsInInteractRange(myWX, myWY, 1, worldX, worldY, size)) return;   // footprint-aware (Tab picks a big NPC by its body)
             // Skip targets the player couldn't actually cast on — the FULL layer-aware LoS gate (same-layer or a
-            // ramp bridge, then walls/doors), matching the server's HasLineOfSight. So Tab won't land on a target
+            // ramp bridge, then walls/doors), matching the server's HasClearLineOfSight. So Tab won't land on a target
             // across a plane it can't reach (e.g. up on a bridge you're not on), same as the grayed arrow.
             if (!ClientLineOfSight.HasClearFromLocalPlayer(state, worldX, worldY, layer)) return;
             int dx = worldX - myWX, dy = worldY - myWY;

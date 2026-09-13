@@ -26,7 +26,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
     [ObservableProperty] private ushort _warpX;
     [ObservableProperty] private ushort _warpY;
     // Two-plane world (§1b): the logical layer the warp delivers you onto — Ground (default) or the Fringe deck.
-    // Packed into the warp's Data3 alongside WarpY via WorldTarget (dest coords are well under a byte).
+    // Packed into the warp's destination alongside WarpY (dest coords are well under a byte).
     [ObservableProperty] private WorldLayer _warpDestLayer = WorldLayer.Ground;
 
     [ObservableProperty] private bool _showItemDialog;

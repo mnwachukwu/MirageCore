@@ -43,7 +43,7 @@ public enum ChatChannel : byte
     // the hit-by-hit feed is opt-in.
     //   Combat  — live fight feedback: your hits and hits taken, blocks/dodges/crits, NPC attack
     //             "says" and cast announcements, and the per-victim death-penalty notices. The
-    //             default channel for CombatSystem's SendMsg. "What's happening in the fight."
+    //             the channel a game's blow-by-blow belongs on. "What's happening in the fight."
     //   Rewards — the spoils ledger from a kill: EXP gained/lost (including level-gap gating) and
     //             loot drops/rolls. "What I walked away with."
     Combat,

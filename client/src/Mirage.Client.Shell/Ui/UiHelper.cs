@@ -13,18 +13,6 @@ public static class UiHelper
 {
     private static Texture2D? _pixel;
 
-    // ── Requirement label formatting ───────────────────────────────────────────
-    /// <summary>Render an equip/learn requirement with the class head-start made visible: "27 (-3)"
-    /// when the wearer's class shaves points off the raw requirement, or plain "27" when it doesn't.
-    /// <paramref name="rawReq"/> is the item/spell's authored requirement (an item's Power, a spell's
-    /// VitalAmount or IntReq); <paramref name="effectiveReq"/> is it after the head-start and floor —
-    /// i.e. what the player actually needs.</summary>
-    public static string FormatRequirement(int rawReq, int effectiveReq)
-    {
-        int reduction = rawReq - effectiveReq;
-        return reduction > 0 ? $"{effectiveReq} (-{reduction})" : effectiveReq.ToString();
-    }
-
     // ── OS mouse-cursor request bus ────────────────────────────────────────────
     // Every link/resize-handle widget calls Request*Cursor() during its draw/update if the mouse is
     // over it; the highest-priority request wins (Hand > column-resize > diagonal-resize > Arrow) and
@@ -123,18 +111,14 @@ public static class UiHelper
     public static readonly Color DlgBorderColor = new(60, 80, 200); // medium blue border
     public static readonly Color DlgLabelColor = new(120, 140, 255); // cornflower label
 
-    // Post-cast cooldown timer bar — drawn below a caster's sprite. Light neutral gray: reads as a "cooldown"
-    // status, clearly distinct from every vital color (esp. the amber SP bar it sits near).
+    // The action-cooldown bar, drawn below a body. A light neutral gray, so it reads as a state rather
+    // than as one of the values a game declared — those carry colours of the game's own choosing.
     public static readonly Color CooldownBarColor = new(180, 184, 194);
-    // Unfilled bar background — HudPanel + StatsPanel
+    // Unfilled bar background — HudPanel
     public static readonly Color BarBg = new(20, 20, 20);
     // Confirmation overlay — InventoryPanel + ShopPanel
     public static readonly Color ConfirmOverlayBg = new(20, 20, 40, 220);
     public static readonly Color ConfirmOverlayBorder = new(100, 100, 160);
-    // PK player indicator — HudPanel + StatsPanel
-    public static readonly Color PkNameColor = Color.Red;
-    // Stat/training row strip background — StatsPanel + TrainingPanel
-    public static readonly Color StatRowBg = new(8, 8, 20, 235);
     // Panel title bar — DraggablePanel + ChatPanel
     public static readonly Color PanelTitleBg = new(30, 30, 60);
     public static readonly Color PanelTitleActiveBg = new(55, 55, 110);
@@ -183,9 +167,8 @@ public static class UiHelper
     // Shared white/yellow/red coding for a "current/max" durability readout, used by the equipment
     // paper-doll, the item tooltip, and the shop repair panel so an item's wear reads identically
     // everywhere. Thresholds are percent of max: strictly above Good → white (healthy), strictly
-    // above Warn → yellow (wearing down), at/below Warn → red (needs repair / broken). Kept separate
-    // from CombatFormulas' degrade-chance bands on purpose — this is a display choice, not gameplay
-    // tuning, so retuning one must not silently shift the other.
+    // above Warn → yellow (wearing down), at/below Warn → red (needs repair / broken). A display choice
+    // rather than a rule: what wear MEANS is a game's, and these only decide how the number is drawn.
     public const int DurabilityGoodPct = 75;  // condition strictly above this: white
     public const int DurabilityWarnPct = 25;  // condition strictly above this (and <= Good): yellow; at/below: red
     public static readonly Color DurabilityGoodColor = Color.White;

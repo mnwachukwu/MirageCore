@@ -156,7 +156,7 @@ public static partial class PacketBuilder
     /// <summary>
     /// Converts a server-side <paramref name="combatExpiresAt"/> to wire-format ms elapsed since the
     /// combat window opened.  Returns <see cref="int.MaxValue"/> when not in combat.  Used by every
-    /// sync packet that carries combat state (PartyVitals, SendHp, MapNpcs, TraversalNpc) so the
+    /// sync packet that carries a body's live state (MapNpcs, TraversalNpc) so the
     /// client can compute the right LastCombatMs stamp on its own clock instead of restarting the
     /// 10s window each time it re-observes an entity.
     /// </summary>

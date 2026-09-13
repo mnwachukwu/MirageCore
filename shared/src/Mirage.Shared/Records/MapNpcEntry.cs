@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace Mirage.Shared.Records;
 
 /// <summary>One entry in a map's dense NPC spawn list (<see cref="MapRecord.Npcs"/>): the NPC type to spawn
-/// (<see cref="Npc"/>, 1..MaxNpcs) plus an OPTIONAL fixed spawn tile (<see cref="PinX"/>/<see cref="PinY"/>;
+/// (<see cref="Npc"/>, 1..MaxMapNpcs) plus an OPTIONAL fixed spawn tile (<see cref="PinX"/>/<see cref="PinY"/>;
 /// both null = spawn at a random walkable tile, as before) on a given <see cref="PinLayer"/>. The 0-based list
 /// index maps to the runtime spawn post: entry <c>i</c> drives <c>GameWorld.MapNpcs[map, i + 1]</c>. The pin
 /// rides WITH its entry, so removing a middle row (which slides later entries down to lower posts) keeps each

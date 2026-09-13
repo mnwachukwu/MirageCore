@@ -249,15 +249,6 @@ public static class Constants
     // ── RNG bounds ───────────────────────────────────────────────────────────
     public const int PercentRollSides = 100;  // Random.Shared.Next(100) for % rolls (durability, drops)
 
-    // Single dial for the granularity of block/dodge/crit chances.
-    // 1  = integer percent (caps read as 35% / 25% / 15% / 10%, displayed as "35%").
-    // 10 = tenths-of-a-percent per-mille (the same caps reread as 3.5% / 2.5% / 1.5% / 1.0%).
-    // The chance formulas and caps in CombatFormulas don't change with this dial — only the roll
-    // denominator, display divisor, and decimal precision (CombatFormulas.ChanceDisplayDecimals,
-    // derived as ceil(log10(scale))) scale with it. Drops/durability use the fixed PercentRollSides
-    // above and are NOT affected.
-    public const int ChanceScaleFactor = 1;
-    public const int ChancePercentRollSides = 100 * ChanceScaleFactor;
     public const int NumDirections = 4;       // Up/Down/Left/Right enum cardinality
 
     // ── NPC AI cadence ───────────────────────────────────────────────────────
@@ -390,11 +381,6 @@ public static class Constants
     // Cumulative phase-start offsets within the cycle (used on both server and client).
     public const long TodNightStartMs = TodDayDurationMs + TodDuskDurationMs;
     public const long TodDawnStartMs = TodNightStartMs + TodNightDurationMs;
-
-    // ── NPC night-boost ──────────────────────────────────────────────────────
-    // While TimePhase == Night, NPCs are tougher: HP flows through GameWorld.EffectiveNpcMaxHp plus a
-    // proportional sweep at each Night boundary. Set it to 1.0 to disable the boost.
-    public const double NpcNightHpMultiplier = 1.10;  // effective max HP (tankier)
 
     // ── Weather ──────────────────────────────────────────────────────────────
     // Global weather cycles via two timers (mirrors Time of Day; pauses while offline).

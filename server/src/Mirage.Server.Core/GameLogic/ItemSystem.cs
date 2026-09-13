@@ -217,7 +217,7 @@ private readonly WorldEvents _events;
         for (int i = 0; i < count; i++) TakeItem(index, itemNum, 0);
     }
 
-    /// <summary>Give an item, returning false (after an InventoryFull message) when the bag can't take it,
+    /// <summary>Give an item, returning false (after a Common_InventoryFull message) when the bag can't take it,
     /// so callers that must not lose the item (e.g. mail-attachment claim) can leave it for a later retry.
     /// A <paramref name="dur"/> above 0 overrides the placed durability, used to carry a mailed worn item's
     /// wear across delivery instead of resetting equipment to full.</summary>

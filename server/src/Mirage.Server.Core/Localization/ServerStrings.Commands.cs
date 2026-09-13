@@ -55,7 +55,7 @@ public static partial class ServerStrings
     public const string AdminCommand_NotKicked = nameof(AdminCommand_NotKicked);
     public const string AdminCommand_Unmuted = nameof(AdminCommand_Unmuted);
     public const string AdminCommand_NotMuted = nameof(AdminCommand_NotMuted);
-    // Machine bans. HwBanNoKey is the one that matters: it reports a PARTIAL success, so nobody walks
+    // Machine bans. Console_HwBanNoKey is the one that matters: it reports a PARTIAL success, so nobody walks
     // away believing a machine was blocked when only the account was.
     public const string AdminCommand_HwUnbanned = nameof(AdminCommand_HwUnbanned);
     public const string AdminCommand_NotHwBanned = nameof(AdminCommand_NotHwBanned);

@@ -6,6 +6,10 @@ Everything a game is — its records, its values, its rules, what the player see
 `Mirage.Shared.Extensibility`. Nothing in Core names a module, and no file in Core is edited to make room
 for one.
 
+[Building a game on Core](../docs/building-on-core.md) is the playbook: what the engine already does,
+the fifteen seams, and the features that fail silently when only half of one is declared. This file
+covers how a module is laid out and shipped.
+
 ## Two ways to extend the engine
 
 |  | Scripting | A C# module |
@@ -38,10 +42,10 @@ field by field. "The script says the same thing the C# said" is therefore a test
 
 ## Turning a game off
 
-One line. `GameModules.Load()` in `server/src/Mirage.Server.Host/` lists what loads:
+One line. `GameModules.Load` in `server/src/Mirage.Server.Host/` lists what loads:
 
 ```csharp
-public static IReadOnlyList<ICoreModule> Load() => [];
+public static IReadOnlyList<ICoreModule> Load(string worldDir) => [];
 ```
 
 That is the engine by itself: a server that runs, accepts players, and moves them around a world with no
@@ -81,9 +85,12 @@ is deployed beside the client.
 
 **What a module still cannot do is bring its own screen.** A panel of its own layout, a control Core has
 no name for: those are code, and a seam that shipped code to every player would be a different and much
-worse bargain. A game that needs one either builds its own client, or waits for a script to be able to
-DECLARE as well as react — which is what the scripting host answers next, as content rather than as an
-assembly.
+worse bargain. A game that needs one builds its own client.
+
+What a module CAN bring is a screen assembled from what Core already draws — a title, a display
+surface, and the verbs under it — through `AddPanel`. That crosses the wire as data like everything
+else, so a stock client paints it. A script cannot declare one yet, and that is the next thing the
+scripting host answers.
 
 **The server** loads C# modules at compile time, so deploying one means deploying a server built with it.
 There is no runtime assembly loading and none is planned: it would make a missing module look like a

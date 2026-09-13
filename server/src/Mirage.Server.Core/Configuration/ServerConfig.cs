@@ -246,7 +246,7 @@ public sealed record QueueConfig
 /// rather than one derived from UTC.
 ///
 /// <para>The DAILY guild settlement is deliberately not here: it runs at midnight on the host box and
-/// <c>GuildScheduleSystem</c> walks whole calendar days, which is what makes a slot missed during downtime
+/// <c>GuildSystem</c> walks whole calendar days, which is what makes a slot missed during downtime
 /// replay correctly on the next boot.</para>
 /// </summary>
 public sealed record ScheduleConfig

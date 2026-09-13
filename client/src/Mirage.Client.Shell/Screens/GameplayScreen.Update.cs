@@ -239,7 +239,7 @@ public sealed partial class GameplayScreen : IGameScreen
             // aims at the caster — see IsSelfTargetHeld — so aim can be switched without releasing first.
             bool hotkeyModifier = padActive && (input.IsGamePadLeftTriggerDown() || input.IsGamePadRightTriggerDown());
             // HELD, like the attack key: a prepared spell is the caster's swing, so holding it should keep
-            // swinging. TryCastPrepared paces the repeat on the cast beat — both the beat the server confirms
+            // swinging. The repeat is paced on the action beat — both the beat the server confirms
             // and a local one, so a refused cast cannot re-send every frame while the key stays down.
             if ((kbActive && input.IsKeyDown(Keys.Q)) || (padActive && input.IsGamePadButtonDown(Buttons.Y) && !hotkeyModifier))
 

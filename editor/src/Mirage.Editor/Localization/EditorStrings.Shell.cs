@@ -233,7 +233,7 @@ public static partial class EditorStrings
     public const string DisconnectDialog_ReconnectFailed = nameof(DisconnectDialog_ReconnectFailed);
     public const string DisconnectDialog_ReconnectCanceled = nameof(DisconnectDialog_ReconnectCanceled);
 
-    // ── PushChangesDialog dirty-entry labels (Unsaved*/SaveAnd*/Saving/Pushing keys already exist) ──
+    // ── PushChangesDialog dirty-entry labels ──────────────────────────────────
     public const string PushChangesDialog_DirtyItem = nameof(PushChangesDialog_DirtyItem);
     public const string PushChangesDialog_DirtyNpc = nameof(PushChangesDialog_DirtyNpc);
     public const string PushChangesDialog_DirtyShop = nameof(PushChangesDialog_DirtyShop);

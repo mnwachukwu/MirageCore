@@ -58,9 +58,6 @@ public static partial class EditorStrings
     public const string NpcEditor_RangeLabel = nameof(NpcEditor_RangeLabel);
     public const string NpcEditor_LightingHeader = nameof(NpcEditor_LightingHeader);
     public const string NpcEditor_SaveNpcButton = nameof(NpcEditor_SaveNpcButton);
-    // Formula-notes panel — sub-headers, formula lines, and explanatory paragraphs.
-
-    // ── SpellEditorView ───────────────────────────────────────────────────────
 
     // ── ShopEditorView ────────────────────────────────────────────────────────
     public const string ShopEditor_SelectPrompt = nameof(ShopEditor_SelectPrompt);
@@ -88,8 +85,6 @@ public static partial class EditorStrings
     public const string ShopEditor_GiveItemPlaceholder = nameof(ShopEditor_GiveItemPlaceholder);
     public const string ShopEditor_GetItemPlaceholder = nameof(ShopEditor_GetItemPlaceholder);
     public const string ShopEditor_SaveShopButton = nameof(ShopEditor_SaveShopButton);
-
-    // ── QuestEditor ───────────────────────────────────────────────────────────
 
     // ── Shared entity editor status messages ──────────────────────────────────
     public const string EntityEditor_LoadedOffline = nameof(EntityEditor_LoadedOffline);

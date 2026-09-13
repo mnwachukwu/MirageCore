@@ -48,7 +48,7 @@ public sealed partial class ItemSystem : GameSystem
         // An item worn to 0 durability BREAKS rather than being destroyed: it stays in the bag, unequipped
         // and unusable, until a repair shop restores it. Only the equip direction is blocked here — taking
         // off an already-worn piece is always allowed. A 0-Durability item carries no durability budget, so
-        // it is never "broken" (mirrors CombatSystem.WarnDurability).
+        // it is never "broken".
         if (isEquipment && item.Durability > 0 && p.Inv[invSlot].Dur <= 0 && !p.IsEquipped(invSlot))
         {
             SendMsg(index, ServerStrings.ItemSystem_ItemBroken, GameColor.BrightRed, ("Item", item.TrimmedName));
@@ -103,7 +103,7 @@ public sealed partial class ItemSystem : GameSystem
                 SendToMap(_world, mapNum, new MapKeyPacket { MapNum = mapNum, X = tx, Y = ty, Open = true, Layer = p.Layer });
                 ViewportMsg(index, ServerStrings.Common_DoorUnlocked, GameColor.White);
                 // Read off `key` — the attribute resolved on the PLAYER'S layer — not off the tile's inline
-                // ground attribute. As `tile.Data2` it read the ground tile's flag even when the door being
+                // ground attribute — the flag has to be read on the layer the door being
                 // opened was the fringe one, so a fringe door consumed the key only if the unrelated ground
                 // attribute happened to say so. Naming the field is what made the mismatch visible.
                 if (key.KeyIsConsumed)

@@ -328,7 +328,6 @@
   "AdminCommand_BootedFor": "{Player} ha sido echado por ({Reason})",
   "AdminCommand_ConnectionLost": "Has perdido la conexión con {GameName}.",
   "TimeOfDay_NightFalls": "La noche ha caído sobre el reino.",
-  "TimeOfDay_NightWarning": "Los NPC se vuelven más fuertes en la oscuridad.",
   "TimeOfDay_DawnBreaks": "El sol empieza a salir sobre el reino.",
   "TimeOfDay_DayReturns": "El sol brilla en lo alto sobre el reino.",
   "TimeOfDay_DuskFalls": "El anochecer desciende sobre el reino.",

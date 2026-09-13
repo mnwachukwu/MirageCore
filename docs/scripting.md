@@ -222,7 +222,7 @@ author. What it is not is silent.
 **Declaring ends when `Configure` returns.** A script keeping the builder and declaring from a handler is
 declaring into an engine that has already been built around it, and is told so.
 
-**`Say` is the one chat path in the engine that carries text rather than a key.** Everything else the
+**`Message` is the one chat path in the engine that carries text rather than a key.** Everything else the
 server says is looked up per recipient so it arrives in each player's language; a game's words are not in
 that table and cannot be added to it, so they travel as written.
 
