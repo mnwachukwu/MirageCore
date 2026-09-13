@@ -4,6 +4,7 @@ using Mirage.Server.Core.Persistence;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -13,6 +14,7 @@ namespace Mirage.Server.Core.GameLogic;
 public sealed partial class ItemSystem : GameSystem
 {
     private readonly GameWorld _world;
+private readonly WorldEvents _events;
     private readonly PlayerManager _pm;
     private readonly IPersistenceService _persistence;
     private readonly IBackgroundPersistence _bg;
@@ -33,10 +35,11 @@ public sealed partial class ItemSystem : GameSystem
     private readonly object _saveStatesLock = new();
 
     public ItemSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher,
-                      IPersistenceService persistence, IBackgroundPersistence bg)
+                      IPersistenceService persistence, IBackgroundPersistence bg, WorldEvents? events = null)
         : base(dispatcher)
     {
         _world = world;
+        _events = events ?? WorldEvents.None;
         _pm = pm;
         _persistence = persistence;
         _bg = bg;

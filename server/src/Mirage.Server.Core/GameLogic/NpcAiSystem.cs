@@ -3,6 +3,7 @@ using Mirage.Server.Core.Net;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -15,16 +16,19 @@ namespace Mirage.Server.Core.GameLogic;
 public sealed partial class NpcAiSystem : GameSystem
 {
     private readonly GameWorld _world;
+    private readonly WorldEvents _events;
     private readonly PlayerManager _pm;
     private readonly MovementSystem _movement;
     private readonly SpawnSystem _spawn;
     private readonly ItemSystem _items;
 
     public NpcAiSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher,
-                       MovementSystem movement, SpawnSystem spawn, ItemSystem items, IClock? clock = null, IRandomSource? rng = null)
+                       MovementSystem movement, SpawnSystem spawn, ItemSystem items, IClock? clock = null,
+                       IRandomSource? rng = null, WorldEvents? events = null)
         : base(dispatcher, clock: clock, rng: rng)
     {
         _world = world;
+        _events = events ?? WorldEvents.None;
         _pm = pm;
         _movement = movement;
         _spawn = spawn;
@@ -201,6 +205,23 @@ public sealed partial class NpcAiSystem : GameSystem
     private bool ChaserVacatesRampFor(int mapNum, MapNpcRecord mn, WorldLayer targetLayer)
         => targetLayer == mn.Layer && NpcStandsOnRamp(mapNum, mn);
 
+    /// <summary>A pursuer is in reach of what it was chasing: hold position, stop sprinting, and tell the
+    /// game — once per engagement, not once per tick it stays in reach.
+    ///
+    /// <para><b>Core has nothing to do next.</b> Arriving is the whole of what it knows how to do; an
+    /// attack, a conversation, a battle screen and a mugging are all a game's answer to the same
+    /// event.</para></summary>
+    private void MakeContact(int mapNum, int slot, MapNpcRecord npc, EntityHandle quarry)
+    {
+        bool arriving = !npc.HasMadeContact;
+        npc.HasMadeContact = true;
+        npc.ChaseSprinting = false;
+
+        if (!arriving) return;
+        var (spawnMap, spawnSlot) = npc.GetSpawnIdentity(mapNum, slot);
+        _events.Contact(EntityHandle.ForNpc(spawnMap, spawnSlot), quarry);
+    }
+
     /// <summary>Legs-pass step for a native NPC holding a PLAYER, gated by the per-NPC step-clock.  A fleeing
     /// NPC retreats; a pursuing one holds position when already in reach (facing its quarry) and otherwise closes
     /// at run/walk pace — including across a map seam.  Runs while SP > 0 (draining it per tile), walks
@@ -218,8 +239,7 @@ public sealed partial class NpcAiSystem : GameSystem
         }
         if (_queries.IsWithinReach(mapNum, mn.X, mn.Y, _world.Npcs[mn.Num].EffectiveSize, mn.Layer, vp.Map, vp.X, vp.Y, vp.Layer) && !ChaserVacatesRampFor(mapNum, mn, vp.Layer))
         {
-            mn.HasMadeContact = true;
-            mn.ChaseSprinting = false;
+            MakeContact(mapNum, slot, mn, EntityHandle.ForPlayer(target));
             FaceNpcToward(mapNum, slot, mn, vp.Map, vp.X, vp.Y);
             return;
         }  // in reach — orient toward it now (post-slide); end the sprint (walk-follow until it re-opens the gap). On a ramp with a same-layer body: fall through to step OFF (don't camp the 1-wide mount).
@@ -251,8 +271,7 @@ public sealed partial class NpcAiSystem : GameSystem
         }
         if (_queries.IsWithinReach(mapNum, mn.X, mn.Y, _world.Npcs[mn.Num].EffectiveSize, mn.Layer, victimMap, victimMn.X, victimMn.Y, victimMn.Layer) && !ChaserVacatesRampFor(mapNum, mn, victimMn.Layer))
         {
-            mn.HasMadeContact = true;
-            mn.ChaseSprinting = false;
+            MakeContact(mapNum, slot, mn, EntityHandle.ForNpc(mn.NpcTargetSpawnMap, mn.NpcTargetSpawnSlot));
             FaceNpcToward(mapNum, slot, mn, victimMap, victimMn.X, victimMn.Y);
             return;
         }  // in reach — orient now; end the sprint (but vacate a ramp for a same-layer body)
@@ -288,8 +307,7 @@ public sealed partial class NpcAiSystem : GameSystem
             }
             if (_queries.IsWithinReach(mapNum, t.X, t.Y, _world.Npcs[t.Num].EffectiveSize, t.Layer, vp.Map, vp.X, vp.Y, vp.Layer) && !ChaserVacatesRampFor(mapNum, t, vp.Layer))
             {
-                t.HasMadeContact = true;
-                t.ChaseSprinting = false;
+                MakeContact(mapNum, 0, t, EntityHandle.ForPlayer(t.Target));
                 FaceNpcToward(mapNum, 0, t, vp.Map, vp.X, vp.Y);
                 return;
             }  // in reach — orient now; end the sprint (but vacate a ramp for a same-layer body)
@@ -310,8 +328,7 @@ public sealed partial class NpcAiSystem : GameSystem
             }
             if (_queries.IsWithinReach(mapNum, t.X, t.Y, _world.Npcs[t.Num].EffectiveSize, t.Layer, victimMap, victimMn.X, victimMn.Y, victimMn.Layer) && !ChaserVacatesRampFor(mapNum, t, victimMn.Layer))
             {
-                t.HasMadeContact = true;
-                t.ChaseSprinting = false;
+                MakeContact(mapNum, 0, t, EntityHandle.ForNpc(t.NpcTargetSpawnMap, t.NpcTargetSpawnSlot));
                 FaceNpcToward(mapNum, 0, t, victimMap, victimMn.X, victimMn.Y);
                 return;
             }  // in reach — orient now; end the sprint (but vacate a ramp for a same-layer body)

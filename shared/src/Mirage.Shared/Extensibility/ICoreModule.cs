@@ -1,8 +1,8 @@
 namespace Mirage.Shared.Extensibility;
 
 /// <summary>
-/// What a game hands the engine: its record families, its attribute keys, its packets, and its work on
-/// the tick.
+/// What a game hands the engine: its record families, its attribute keys, its packets, its work on the
+/// tick, and what it wants to be told about.
 ///
 /// <para><b>Everything a game declares arrives through one of these.</b> A module is asked to describe
 /// itself once, before the world loads, and is not consulted again — so the registries every subsystem
@@ -44,4 +44,12 @@ public interface ICoreBuilder
 
     /// <summary>Work this module wants done on the tick.</summary>
     void AddTickWork(ITickWork work);
+
+    /// <summary>Something to be told what happened in the world. Declare none and the engine runs
+    /// exactly as it does now, telling nobody anything.</summary>
+    void AddObserver(IWorldObserver observer);
+
+    /// <summary>What this game says about dying — whether it happens, what it costs, where the body
+    /// comes back. Declare none and <c>DeathSystem.Kill</c> moves the body and takes nothing.</summary>
+    void AddDeathPolicy(IDeathPolicy policy);
 }

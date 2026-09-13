@@ -5,6 +5,7 @@ using Mirage.Server.Core.Net;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -14,13 +15,16 @@ namespace Mirage.Server.Core.GameLogic;
 public sealed class MovementSystem : GameSystem
 {
     private readonly GameWorld _world;
+private readonly WorldEvents _events;
     private readonly PlayerManager _pm;
     private readonly ILogger<MovementSystem> _logger;
 
-    public MovementSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher, IClock? clock = null, ILogger<MovementSystem>? logger = null)
+    public MovementSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher, IClock? clock = null,
+                          ILogger<MovementSystem>? logger = null, WorldEvents? events = null)
         : base(dispatcher, clock: clock)
     {
         _world = world;
+        _events = events ?? WorldEvents.None;
         _pm = pm;
         _logger = logger ?? NullLogger<MovementSystem>.Instance;
     }
@@ -60,6 +64,7 @@ public sealed class MovementSystem : GameSystem
 
         var p = _pm[index].Char;
         p.Dir = dir;
+        var from = new WorldPlace(p.Map, p.X, p.Y);
 
         // WHEN, not only where. Everything below decides whether the destination is legal; this decides
         // whether it is legal YET.
@@ -152,6 +157,10 @@ public sealed class MovementSystem : GameSystem
             _dispatcher.SendTo(index, PacketBuilder.PlayerMove(index, p.X, p.Y, p.Dir, MovementType.Walking, p.Layer));
             return;
         }
+
+        // The step landed. Raised before the destination tile is read, so a game hears about the step
+        // onto a warp tile before it hears about the warp — which is the order they happened in.
+        _events.PlayerMoved(index, from, new WorldPlace(p.Map, p.X, p.Y));
 
         var destTile = _world.Maps[p.Map].Tile[p.X, p.Y];
         // Two-plane world: the post-step attribute is read on the mover's OWN layer — a Warp/door authored on the
@@ -304,6 +313,7 @@ public sealed class MovementSystem : GameSystem
         var p = _pm[index].Char;
         var sp = _pm[index];
 
+        var from = sp.InGame ? new WorldPlace(p.Map, p.X, p.Y) : WorldPlace.Nowhere;
         int oldMap = p.Map;
         var oldMoral = _world.MoralOf(oldMap);
         var newMoral = _world.MoralOf(mapNum);
@@ -402,6 +412,10 @@ public sealed class MovementSystem : GameSystem
             sp.GettingMap = true;
             _dispatcher.SendTo(index, new CheckForMapPacket { MapNum = mapNum, Revision = _world.Maps[mapNum].Revision });
         }
+
+        // A walked seam crossing is a STEP, and PlayerMove raises it as one. Only a body that was PUT
+        // here — a warp tile, a respawn, an admin command, the end of a login — is a warp.
+        if (edgeDir is null) _events.PlayerWarped(index, from, new WorldPlace(mapNum, x, y));
 
         return true;
     }

@@ -149,6 +149,12 @@ var host = Host.CreateDefaultBuilder(args)
         var registry = CoreRegistry.Build(GameModules.Load());
         services.AddSingleton(registry);
 
+        // What the modules asked to be told, and what they say about dying. Registered rather than reached
+        // for: a system raises an event into WorldEvents and asks nothing about who is listening, and
+        // DeathSystem takes every IDeathPolicy the container holds.
+        services.AddSingleton<WorldEvents>();
+        foreach (var policy in registry.DeathPolicies) services.AddSingleton(policy);
+
         // The line decoder is a static, so the table has to be installed rather than injected. Doing it
         // at composition time means a module's packets are readable before the first connection.
         PacketSerializer.Registry = registry.Packets;

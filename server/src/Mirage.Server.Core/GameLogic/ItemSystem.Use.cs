@@ -4,6 +4,7 @@ using Mirage.Server.Core.Persistence;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -114,6 +115,10 @@ public sealed partial class ItemSystem : GameSystem
         }
 
         if (consumed) sp.ConsumableTimer = useNow;
+
+        // Wearing something and opening a door are the engine's; everything else is a game's. Raised for
+        // every use, so an observer sees the equip and the key too and decides for itself what matters.
+        _events.ItemUsed(index, itemNum, invSlot);
     }
 
     /// <summary>Put the item in this bag slot on, or take it off when it is already worn there.

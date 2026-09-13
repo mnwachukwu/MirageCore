@@ -23,13 +23,16 @@ public sealed class CoreRegistry
     public static CoreRegistry CoreOnly { get; } = Build();
 
     internal CoreRegistry(RecordSchema schema, AttributeSchema attributes, PacketRegistry packets,
-                         TickSchedule tick, EquipSlotSet equipSlots, IReadOnlyList<string> moduleNames)
+                         TickSchedule tick, EquipSlotSet equipSlots, IReadOnlyList<IWorldObserver> observers,
+                         IReadOnlyList<IDeathPolicy> deathPolicies, IReadOnlyList<string> moduleNames)
     {
         Schema = schema;
         Attributes = attributes;
         Packets = packets;
         Tick = tick;
         EquipSlots = equipSlots;
+        Observers = observers;
+        DeathPolicies = deathPolicies;
         ModuleNames = moduleNames;
     }
 
@@ -48,6 +51,13 @@ public sealed class CoreRegistry
 
     /// <summary>Where a character may wear something. Empty until a game says otherwise.</summary>
     public EquipSlotSet EquipSlots { get; }
+
+    /// <summary>What is told when something happens in the world, in the order their modules were
+    /// configured. Empty in an engine with no game loaded, which then tells nobody anything.</summary>
+    public IReadOnlyList<IWorldObserver> Observers { get; }
+
+    /// <summary>What this game says about dying, asked in the order their modules were configured.</summary>
+    public IReadOnlyList<IDeathPolicy> DeathPolicies { get; }
 
     /// <summary>The modules that were loaded, in the order they were configured, Core first.</summary>
     public IReadOnlyList<string> ModuleNames { get; }
@@ -139,6 +149,8 @@ internal sealed class CoreBuilder : ICoreBuilder
     private readonly List<ChoiceSet> _choices = [];
     private readonly TickSchedule.Builder _tick = new();
     private readonly List<EquipSlot> _equipSlots = [];
+    private readonly List<IWorldObserver> _observers = [];
+    private readonly List<IDeathPolicy> _deathPolicies = [];
     private string _module = "(none)";
     private bool _frozen;
 
@@ -210,6 +222,22 @@ internal sealed class CoreBuilder : ICoreBuilder
         _tick.Add(work);
     }
 
+    // Neither of these can collide: two modules both wanting to hear about a step, or both having an
+    // opinion about dying, is the ordinary case. They are kept in declaration order and all of them run.
+    public void AddObserver(IWorldObserver observer)
+    {
+        ArgumentNullException.ThrowIfNull(observer);
+        Refuse();
+        _observers.Add(observer);
+    }
+
+    public void AddDeathPolicy(IDeathPolicy policy)
+    {
+        ArgumentNullException.ThrowIfNull(policy);
+        Refuse();
+        _deathPolicies.Add(policy);
+    }
+
     internal CoreRegistry Freeze(IReadOnlyList<string> moduleNames)
     {
         Refuse();
@@ -217,7 +245,8 @@ internal sealed class CoreBuilder : ICoreBuilder
 
         var schema = new RecordSchema { Families = [.. _families], ChoiceSets = [.. _choices] };
         return new CoreRegistry(schema, Attributes.Build(), Packets.Build(), _tick.Build(),
-                                new EquipSlotSet(_equipSlots), moduleNames);
+                                new EquipSlotSet(_equipSlots), [.. _observers], [.. _deathPolicies],
+                                moduleNames);
     }
 
     private void Refuse()

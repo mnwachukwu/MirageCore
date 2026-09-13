@@ -15,6 +15,7 @@ namespace Mirage.Server.Core.GameLogic;
 public sealed class JoinLeaveSystem : GameSystem
 {
     private readonly GameWorld _world;
+    private readonly WorldEvents _events;
     private readonly PlayerManager _pm;
     private readonly PlayerSaver _saver;
     private readonly MovementSystem _movement;
@@ -38,11 +39,13 @@ public sealed class JoinLeaveSystem : GameSystem
                            TimeOfDaySystem tod, WeatherSystem weather, DecalSystem decals,
                            ILogger<JoinLeaveSystem> logger,
                            IClock? clock = null,
-                           Configuration.ServerConfig? config = null)
+                           Configuration.ServerConfig? config = null,
+                           WorldEvents? events = null)
         : base(dispatcher, clock: clock)
     {
         _config = config ?? Configuration.ServerConfig.Default;
         _world = world;
+        _events = events ?? WorldEvents.None;
         _pm = pm;
         _saver = saver;
         _movement = movement;
@@ -204,6 +207,10 @@ public sealed class JoinLeaveSystem : GameSystem
         // Final in-game flag
         _dispatcher.SendTo(index, PacketBuilder.PlayerInGame());
         _dispatcher.SendToAll(PacketBuilder.PlayersOnline(_pm.TotalOnline));
+
+        // Last, so a game hearing about the join can call straight back into an engine that has finished
+        // setting this player up.
+        _events.PlayerJoined(index);
     }
 
     // ── Called when client confirms map is ready (after CheckForMap flow) ────
@@ -415,6 +422,9 @@ public sealed class JoinLeaveSystem : GameSystem
     public void LeftGame(int index)
     {
         var sp = _pm[index];
+        // First, while the record still reads: a game taking something to persist has to take it before
+        // the slot is torn down.
+        if (sp.InGame) _events.PlayerLeft(index);
         _pm.NotifyRosterChanged();
         if (!sp.InGame)
         {
