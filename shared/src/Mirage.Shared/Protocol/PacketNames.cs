@@ -222,6 +222,8 @@ public static class PacketNames
     public const string AttributeSync = "attrsync";
     // Which attributes this game draws over a head, sent once before anything that could fill one.
     public const string OverheadBars = "overheadbars";
+    // Which attributes each surface shows, sent once before anything that could fill a row.
+    public const string DisplayFields = "displayfields";
     public const string AggressorRefresh = "aggressorrefresh";
     public const string SendMap = "sendmap";
     public const string MapItems = "mapitems";

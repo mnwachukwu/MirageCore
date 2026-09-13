@@ -13,7 +13,7 @@ namespace Mirage.Client.Shell.Panels;
 /// Compact party-partner overlay, in the sidebar's free space below the Logout button.  Only drawn while
 /// the local player has a partner — the snapshot lives on <c>state.Party</c> and is pushed by the
 /// server.  Bars share fills and label format with the right-sidebar HUD (via
-/// <see cref="UiHelper.DrawVitalBar"/>) and stack flush against each other inside a panel; a single
+/// <see cref="UiHelper.DrawMeter"/>) and stack flush against each other inside a panel; a single
 /// outline wraps the three-bar block.  Outline picks up the in-world bar treatment: amber while the
 /// partner is in combat, cyan when the local player is targeting them, otherwise white.  Proximity
 /// (partner's map in our 3×3 observable area, same rule the 1.2× party EXP bonus uses) drives a

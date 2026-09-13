@@ -58,6 +58,11 @@ public interface ICoreBuilder
     /// game is equippable, which is a perfectly ordinary thing for a game to be.</summary>
     void AddEquipSlot(EquipSlot slot);
 
+    /// <summary>A value to show the player, read off a body's attributes wherever the named surface is
+    /// drawn. Declare none and every surface stays as Core draws it, which is a game that tells the
+    /// player nothing it invented.</summary>
+    void AddDisplayField(DisplayField field);
+
     /// <summary>A row over a body's head, reading two of that body's attributes. Declare none and
     /// nothing is drawn over anyone, which is what a game with nothing to show at a glance wants.
     /// At most <see cref="OverheadBarSet.Max"/>.</summary>

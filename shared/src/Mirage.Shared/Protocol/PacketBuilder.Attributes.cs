@@ -21,6 +21,15 @@ public static partial class PacketBuilder
                 new AttributeSchemaPacket.Row(d.Ordinal, d.Key, d.Visibility, d.LabelKey))],
         };
 
+    /// <summary>What each surface shows about a body, in draw order. Sent once, beside the numbering:
+    /// a field naming a key the client has no declaration for could never fill.</summary>
+    public static DisplayFieldsPacket DisplayFields(DisplayFieldSet fields) =>
+        new()
+        {
+            Fields = [.. fields.Fields.Select(f => new DisplayFieldsPacket.Row(
+                f.Surface, f.ValueKey, f.MaxKey, f.LabelKey, f.Rgb, f.Style))],
+        };
+
     /// <summary>Which attributes this game draws over a head, in draw order. Sent once, beside the
     /// numbering — a bar naming a key the client has no declaration for could never fill.</summary>
     public static OverheadBarsPacket OverheadBars(OverheadBarSet bars) =>

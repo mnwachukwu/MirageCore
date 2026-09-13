@@ -111,6 +111,10 @@ public sealed class MirageServerService : IHostedService
         // arrive as ordinary syncs, so a bar cannot show a number the attribute does not hold.
         _world.OverheadBars = _registry.OverheadBars;
 
+        // And what the surfaces show. Read-only on the client's side for the same reason: the values
+        // arrive as ordinary syncs, so a row cannot show a number the attribute does not hold.
+        _world.DisplayFields = _registry.DisplayFields;
+
         await LoadWorldDataAsync(ct);
 
         // Wire the level-up → quest-eligibility refresh now that every system exists (can't be done at

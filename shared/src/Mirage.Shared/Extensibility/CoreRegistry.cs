@@ -24,7 +24,7 @@ public sealed class CoreRegistry
 
     internal CoreRegistry(RecordSchema schema, AttributeSchema attributes, PacketRegistry packets,
                          TickSchedule tick, EquipSlotSet equipSlots, OverheadBarSet overheadBars,
-                         IReadOnlyList<IWorldObserver> observers,
+                         DisplayFieldSet displayFields, IReadOnlyList<IWorldObserver> observers,
                          IReadOnlyList<IDeathPolicy> deathPolicies, IReadOnlyList<ILingerPolicy> lingerPolicies,
                          IReadOnlyList<ICoreModule> modules, IReadOnlyList<string> moduleNames)
     {
@@ -34,6 +34,7 @@ public sealed class CoreRegistry
         Tick = tick;
         EquipSlots = equipSlots;
         OverheadBars = overheadBars;
+        DisplayFields = displayFields;
         Observers = observers;
         DeathPolicies = deathPolicies;
         LingerPolicies = lingerPolicies;
@@ -60,6 +61,10 @@ public sealed class CoreRegistry
     /// <summary>What is drawn over a body's head, in draw order. Empty until a game says otherwise,
     /// and then nothing is drawn over anyone.</summary>
     public OverheadBarSet OverheadBars { get; }
+
+    /// <summary>What each surface shows about a body. Empty until a game says otherwise, and then every
+    /// surface draws only what Core itself puts there.</summary>
+    public DisplayFieldSet DisplayFields { get; }
 
     /// <summary>What is told when something happens in the world, in the order their modules were
     /// configured. Empty in an engine with no game loaded, which then tells nobody anything.</summary>
@@ -170,6 +175,7 @@ internal sealed class CoreBuilder : ICoreBuilder
     private readonly TickSchedule.Builder _tick = new();
     private readonly List<EquipSlot> _equipSlots = [];
     private readonly List<OverheadBar> _overheadBars = [];
+    private readonly List<DisplayField> _displayFields = [];
     private readonly List<IWorldObserver> _observers = [];
     private readonly List<IDeathPolicy> _deathPolicies = [];
     private readonly List<ILingerPolicy> _lingerPolicies = [];
@@ -237,6 +243,31 @@ internal sealed class CoreBuilder : ICoreBuilder
         _equipSlots.Add(slot);
     }
 
+    public void AddDisplayField(DisplayField field)
+    {
+        ArgumentNullException.ThrowIfNull(field);
+        Refuse();
+
+        if (string.IsNullOrWhiteSpace(field.Surface))
+            throw new CoreModuleException($"Module '{_module}' declared a display field with no surface.", _module);
+
+        // A heading says something about the rows under it rather than about a value, so it is the one
+        // style that needs no key. Everything else without one would draw a caption and nothing beside it.
+        if (field.Style != DisplayStyle.Heading && string.IsNullOrWhiteSpace(field.ValueKey))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared a display field on surface '{field.Surface}' with no value key.", _module);
+        }
+
+        if (field.Style == DisplayStyle.Meter && string.IsNullOrWhiteSpace(field.MaxKey))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared a meter on '{field.ValueKey}' with no maximum key.", _module);
+        }
+
+        _displayFields.Add(field);
+    }
+
     public void AddOverheadBar(OverheadBar bar)
     {
         ArgumentNullException.ThrowIfNull(bar);
@@ -302,6 +333,7 @@ internal sealed class CoreBuilder : ICoreBuilder
         var schema = new RecordSchema { Families = [.. _families], ChoiceSets = [.. _choices] };
         return new CoreRegistry(schema, Attributes.Build(), Packets.Build(), _tick.Build(),
                                 new EquipSlotSet(_equipSlots), new OverheadBarSet(_overheadBars),
+                                new DisplayFieldSet(_displayFields),
                                 [.. _observers], [.. _deathPolicies],
                                 [.. _lingerPolicies], modules, moduleNames);
     }

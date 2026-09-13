@@ -43,6 +43,10 @@ public sealed class GameWorld
     /// is loaded, and then nothing is drawn over anyone.</summary>
     public OverheadBarSet OverheadBars { get; set; } = OverheadBarSet.Empty;
 
+    /// <summary>What each surface shows about a body, from the compiled modules. Empty when no game
+    /// module is loaded, and then every surface draws only what Core itself puts there.</summary>
+    public DisplayFieldSet DisplayFields { get; set; } = DisplayFieldSet.Empty;
+
     /// <summary>The records of every family a module declared. Empty when no game module is loaded, which
     /// is a world made of Core's own families and nothing else.</summary>
     public ModuleRecords ModuleRecords { get; } = new();

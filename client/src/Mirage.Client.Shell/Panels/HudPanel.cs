@@ -5,6 +5,7 @@ using Mirage.Client.Shell.Input;
 using Mirage.Client.Shell.Localization;
 using Mirage.Client.Shell.Ui;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 
 namespace Mirage.Client.Shell.Panels;
 
@@ -147,6 +148,10 @@ public sealed class HudPanel
     // Vertical spacing between stacked name rows (player name, class+level, map name).
     private const int NameRowH = 18;
 
+    // One declared row. Shorter than a name row: these are read as a block rather than one at a time,
+    // and the block has a fixed ceiling — the buttons below it.
+    private const int DisplayRowH = 14;
+
     public HudPanel()
     {
         _invBtn.Bounds = BtnRect(0, 0, ButtonBaseY);
@@ -266,10 +271,67 @@ public sealed class HudPanel
         UiHelper.DrawLabelCentered(sb, font, todText, SidebarLeft, y, SidebarWidth, UiHelper.WeatherStatusColor);
         y += NameRowH;
 
+        // What the loaded game shows here, read off the local player's own values. Core declares
+        // nothing, so this space belongs to whatever a game put on the HUD surface — and to the buttons
+        // below it when a game put nothing.
+        DrawDisplayRows(sb, font, state, x, ref y, barW);
+
         // Panel buttons: row0=Inventory, row1=Social, row2=Logout (centered)
         _invBtn.Draw(sb, font, input);
         _socialBtn.Draw(sb, font, input);
         _quitBtn.Draw(sb, font, input);
+    }
+
+    /// <summary>The rows a game declared for the HUD, in declaration order, for as many as fit above the
+    /// buttons.
+    ///
+    /// <para><b>The surface decides how much it can show.</b> A game orders its fields and the engine
+    /// takes the prefix that fits, so declaring a tenth row costs the tenth row rather than the buttons
+    /// underneath.</para></summary>
+    private static void DrawDisplayRows(SpriteBatch sb, SpriteFont font, ClientState state,
+                                        int x, ref int y, int width)
+    {
+        var rows = state.DisplayFields.Project(DisplaySurfaces.Hud, state.Me.Attributes).Rows;
+        for (int i = 0; i < rows.Count && y + DisplayRowH <= ButtonBaseY - Pad; i++)
+        {
+            DrawDisplayRow(sb, font, rows[i], x, y, width);
+            y += DisplayRowH;
+        }
+    }
+
+    private static void DrawDisplayRow(SpriteBatch sb, SpriteFont font, DisplayRow row,
+                                       int x, int y, int width)
+    {
+        // A label is a localization key a GAME supplied, so an unknown one shows the key rather than
+        // throwing: a missing translation is a cosmetic fault, and taking the HUD down over one is not.
+        string label = row.LabelKey is { Length: > 0 } key ? ClientStrings.GetOrFallback(key, key) : "";
+        var color = new Color(GameColor.RedOf(row.Color), GameColor.GreenOf(row.Color), GameColor.BlueOf(row.Color));
+
+        switch (row.Style)
+        {
+            case DisplayStyle.Heading:
+                UiHelper.DrawLabelCentered(sb, font, label, SidebarLeft, y, SidebarWidth, UiHelper.DlgLabelColor);
+                break;
+
+            case DisplayStyle.Meter:
+                UiHelper.DrawMeter(sb, font, new Rectangle(x, y, width, DisplayRowH - 2),
+                    (float)row.Fill, color, Color.Black,
+                    label.Length > 0 ? UiHelper.MeterText(label, (long)row.Value, (long)row.Max) : row.Text,
+                    Color.White);
+                break;
+
+            case DisplayStyle.Badge:
+                UiHelper.DrawLabelCentered(sb, font, row.Text, SidebarLeft, y, SidebarWidth, color);
+                break;
+
+            default:
+                // Caption left, value right — the reading a player scans down rather than across.
+                if (label.Length > 0)
+                    UiHelper.DrawLabel(sb, font, label, new Vector2(x, y), UiHelper.DlgLabelColor, width / 2f);
+                float valueW = font.MeasureString(row.Text).X;
+                UiHelper.DrawLabel(sb, font, row.Text, new Vector2(x + width - valueW, y), color, width / 2f);
+                break;
+        }
     }
 
     private static string FormatTodTooltip(ClientState state)

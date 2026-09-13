@@ -455,15 +455,14 @@ public static class UiHelper
     }
 
     /// <summary>
-    /// Draws a horizontal vital bar: <paramref name="bgColor"/> background (defaults to
+    /// Draws a horizontal meter: <paramref name="bgColor"/> background (defaults to
     /// <see cref="BarBg"/>), colored fill clamped to <paramref name="fillRatio"/>, a 1-pixel
-    /// outline in <paramref name="outline"/>, and a centered text label.  Shared by HudPanel,
-    /// StatsPanel, and the party overlay so the rendering stays in one place.  Callers decide
-    /// the text (e.g. "HP 50/100" vs. "50%" on hover) since each panel has its own caching/hover
-    /// rules; the party overlay also passes alpha-tinted colors through every channel for the
-    /// proximity-dim effect.
+    /// outline in <paramref name="outline"/>, and a centered text label. Shared by every surface that
+    /// draws one, so the rendering stays in one place. Callers decide the text since each surface has
+    /// its own caching and hover rules; the party overlay also passes alpha-tinted colors through every
+    /// channel for the proximity-dim effect.
     /// </summary>
-    public static void DrawVitalBar(SpriteBatch sb, SpriteFont font, Rectangle bounds,
+    public static void DrawMeter(SpriteBatch sb, SpriteFont font, Rectangle bounds,
         float fillRatio, Color fill, Color outline, string text, Color textColor,
         int outlineThickness = 1, Color? bgColor = null)
     {
@@ -479,11 +478,10 @@ public static class UiHelper
         }
     }
 
-    /// <summary>Standard vital-bar readout "<paramref name="label"/> current/max" with grouped
-    /// thousands (e.g. "HP 1,250/1,400"). Pure layout — the caller supplies an already-localized
-    /// label and the format itself has no translatable text. Shared by HudPanel, StatsPanel, and
-    /// the party overlay so the bar text reads identically everywhere.</summary>
-    public static string VitalBarText(string label, long current, long max) => $"{label} {current:N0}/{max:N0}";
+    /// <summary>Standard meter readout "<paramref name="label"/> current/max" with grouped thousands
+    /// (e.g. "Fuel 1,250/1,400"). Pure layout — the caller supplies an already-localized label and the
+    /// format itself has no translatable text, so a meter reads identically on every surface.</summary>
+    public static string MeterText(string label, long current, long max) => $"{label} {current:N0}/{max:N0}";
 
     private const float MinFitWidth = 10f;
     private const float CenteredLabelInset = 8f; // total horizontal margin for DrawLabelCentered (4 px each side)

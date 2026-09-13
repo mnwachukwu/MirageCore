@@ -79,3 +79,29 @@ public sealed record OverheadBarsPacket : IPacket
         [property: JsonPropertyName("max")] string MaxKey,
         [property: JsonPropertyName("rgb")] int Rgb);
 }
+
+/// <summary>
+/// S→C, once per session before any attribute can arrive: what each surface shows about a body, and how.
+///
+/// <para><b>The rows are declared, not computed.</b> A client resolves these against the values it
+/// already holds, so a number moving costs an ordinary attribute sync and no display traffic at all —
+/// and a row cannot show something the attribute does not say.</para>
+///
+/// <para>A world whose game declares none sends an empty list, and every surface draws only what Core
+/// itself puts there.</para>
+/// </summary>
+public sealed record DisplayFieldsPacket : IPacket
+{
+    [JsonPropertyName("cmd")] public string Cmd => PacketNames.DisplayFields;
+
+    /// <summary>One row per declared field, already in draw order.</summary>
+    [JsonPropertyName("fields")] public IReadOnlyList<Row> Fields { get; init; } = [];
+
+    public readonly record struct Row(
+        [property: JsonPropertyName("s")] string Surface,
+        [property: JsonPropertyName("v")] string ValueKey,
+        [property: JsonPropertyName("max")] string MaxKey,
+        [property: JsonPropertyName("label")] string? LabelKey,
+        [property: JsonPropertyName("rgb")] int Rgb,
+        [property: JsonPropertyName("style")] DisplayStyle Style);
+}

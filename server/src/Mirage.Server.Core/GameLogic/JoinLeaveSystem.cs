@@ -117,6 +117,9 @@ public sealed class JoinLeaveSystem : GameSystem
         // And which keys are drawn over a head, before any body that might fill one arrives.
         _dispatcher.SendTo(index, PacketBuilder.OverheadBars(_world.OverheadBars));
 
+        // Likewise what each surface shows.
+        _dispatcher.SendTo(index, PacketBuilder.DisplayFields(_world.DisplayFields));
+
         CheckEquippedItems(index);
 
         // ── Send all game data ────────────────────────────────────────────────

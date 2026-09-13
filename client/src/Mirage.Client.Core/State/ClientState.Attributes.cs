@@ -20,6 +20,10 @@ public sealed partial class ClientState
     /// server says otherwise, and empty for good in a world whose game declared none.</summary>
     public OverheadBarSet OverheadBars { get; set; } = OverheadBarSet.Empty;
 
+    /// <summary>What each surface shows about a body, in draw order. Empty until the server says
+    /// otherwise, and empty for good in a world whose game declared none.</summary>
+    public DisplayFieldSet DisplayFields { get; set; } = DisplayFieldSet.Empty;
+
     /// <summary>Bumped whenever any body's attributes change, so a panel can redraw on a change rather
     /// than re-reading every frame.</summary>
     public int AttributeVersion { get; set; }

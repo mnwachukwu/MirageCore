@@ -28,6 +28,22 @@ public sealed partial class ClientPacketHandler
             [.. p.Bars.Select(b => new OverheadBar { ValueKey = b.ValueKey, MaxKey = b.MaxKey, Rgb = b.Rgb })]);
     }
 
+    /// <summary>What each surface shows. Arrives with the numbering for the same reason the bars do:
+    /// a field naming a key this client has no declaration for could never fill.</summary>
+    private void HandleDisplayFields(DisplayFieldsPacket p)
+    {
+        _state.DisplayFields = new DisplayFieldSet(
+            [.. p.Fields.Select(f => new DisplayField
+            {
+                Surface = f.Surface,
+                ValueKey = f.ValueKey,
+                MaxKey = f.MaxKey,
+                LabelKey = f.LabelKey,
+                Rgb = f.Rgb,
+                Style = f.Style,
+            })]);
+    }
+
     private void HandleAttributeSync(AttributeSyncPacket p)
     {
         var bag = _state.BagFor(p.Who);
