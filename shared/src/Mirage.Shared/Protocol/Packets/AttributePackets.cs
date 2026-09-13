@@ -55,3 +55,27 @@ public sealed record AttributeSyncPacket : IPacket
         [property: JsonPropertyName("ord")] int Ordinal,
         [property: JsonPropertyName("v")] AttributeValue Value);
 }
+
+/// <summary>
+/// S→C, once per session before any attribute can arrive: which of this game's attributes are drawn as
+/// rows over a body's head, and in what color.
+///
+/// <para><b>Which bars exist is the loaded game's decision</b>, so a client compiled against a fixed set
+/// could only ever draw one game's. A world whose game declares none sends an empty list, and nothing
+/// is drawn over anyone.</para>
+///
+/// <para>The values themselves travel as ordinary attribute syncs — there is no separate bar traffic, so
+/// a bar cannot disagree with the number it is drawing.</para>
+/// </summary>
+public sealed record OverheadBarsPacket : IPacket
+{
+    [JsonPropertyName("cmd")] public string Cmd => PacketNames.OverheadBars;
+
+    /// <summary>One row per declared bar, already in draw order.</summary>
+    [JsonPropertyName("bars")] public IReadOnlyList<Row> Bars { get; init; } = [];
+
+    public readonly record struct Row(
+        [property: JsonPropertyName("v")] string ValueKey,
+        [property: JsonPropertyName("max")] string MaxKey,
+        [property: JsonPropertyName("rgb")] int Rgb);
+}

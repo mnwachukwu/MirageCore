@@ -110,6 +110,10 @@ public sealed class MirageServerService : IHostedService
         // means every value a module declared is unreadable on the far side.
         _world.Attributes = _registry.Attributes;
 
+        // And which of those keys are drawn over a head. Read-only on the client's side: the values
+        // arrive as ordinary syncs, so a bar cannot show a number the attribute does not hold.
+        _world.OverheadBars = _registry.OverheadBars;
+
         await LoadWorldDataAsync(ct);
 
         // Wire the level-up → quest-eligibility refresh now that every system exists (can't be done at

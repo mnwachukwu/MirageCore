@@ -58,6 +58,11 @@ public interface ICoreBuilder
     /// game is equippable, which is a perfectly ordinary thing for a game to be.</summary>
     void AddEquipSlot(EquipSlot slot);
 
+    /// <summary>A row over a body's head, reading two of that body's attributes. Declare none and
+    /// nothing is drawn over anyone, which is what a game with nothing to show at a glance wants.
+    /// At most <see cref="OverheadBarSet.Max"/>.</summary>
+    void AddOverheadBar(OverheadBar bar);
+
     /// <summary>Work this module wants done on the tick.</summary>
     void AddTickWork(ITickWork work);
 

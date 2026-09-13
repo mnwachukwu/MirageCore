@@ -20,9 +20,17 @@ public sealed partial class ClientPacketHandler
             [.. p.Keys.Select(k => new AttributeDeclaration(k.Key, k.Ordinal, k.Visibility, Persist: false, k.LabelKey))]);
     }
 
+    /// <summary>Which keys are drawn over a head. Arrives with the numbering rather than being inferred
+    /// from it: an attribute is not a bar, and most of them are not.</summary>
+    private void HandleOverheadBars(OverheadBarsPacket p)
+    {
+        _state.OverheadBars = new OverheadBarSet(
+            [.. p.Bars.Select(b => new OverheadBar { ValueKey = b.ValueKey, MaxKey = b.MaxKey, Rgb = b.Rgb })]);
+    }
+
     private void HandleAttributeSync(AttributeSyncPacket p)
     {
-        var bag = _state.AttributesOf(p.Who);
+        var bag = _state.BagFor(p.Who);
         if (bag is null) return;   // a body this client is not tracking
 
         foreach (var entry in p.Set)

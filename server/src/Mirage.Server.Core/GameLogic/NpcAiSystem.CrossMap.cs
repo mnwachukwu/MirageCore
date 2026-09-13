@@ -132,6 +132,9 @@ public sealed partial class NpcAiSystem : GameSystem
             // into one slide and the sprite skips a tile across the seam).  MoveGuestToMap needs no
             // equivalent: RunTraversalAi already stamps LastAiTick before a guest→guest hop.
             LastAiTick = _aiNow,
+            // The game's own values go with the body, not with the slot it vacated. The bag moves
+            // rather than being copied: this is the same NPC, and a copy would let the two drift.
+            Attributes = mn.Attributes,
         };
         // The whole damage ledger crosses atomically — see MapNpcRecord.CopyCombatLedgerTo.
         mn.CopyCombatLedgerTo(t);

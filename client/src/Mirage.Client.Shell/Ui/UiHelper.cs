@@ -123,16 +123,6 @@ public static class UiHelper
     public static readonly Color DlgBorderColor = new(60, 80, 200); // medium blue border
     public static readonly Color DlgLabelColor = new(120, 140, 255); // cornflower label
 
-    // Shared bar/floating-text color for the EXP vital.
-    public static readonly Color ExpBarColor = new(90, 0, 130);
-    // Vital bar fill colors — HudPanel + StatsPanel + in-world overhead bars + party overlay.
-    // Single bright palette across every bar so the right-sidebar HUD, stats screen, overhead
-    // world bars, and the party overlay all read as one visual language.
-    public static readonly Color VitalHpColor = new(220, 40, 40);
-    public static readonly Color VitalMpColor = new(40, 100, 220);
-    // SP is amber-yellow (was green): green is reserved for healing/gain everywhere (float numbers + spell FX),
-    // so SP's identity color moves off green. Feeds every SP bar + potion label via this one constant.
-    public static readonly Color VitalSpColor = new(225, 195, 45);
     // Post-cast cooldown timer bar — drawn below a caster's sprite. Light neutral gray: reads as a "cooldown"
     // status, clearly distinct from every vital color (esp. the amber SP bar it sits near).
     public static readonly Color CooldownBarColor = new(180, 184, 194);

@@ -6,6 +6,7 @@ using Mirage.Shared;
 using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
+using Mirage.Shared.Records;
 using NUnit.Framework;
 
 namespace Mirage.Server.Tests.GameLogic;
@@ -181,6 +182,62 @@ public class AttributeSystemTests
             Assert.That(KeysSentTo(f, Owner), Is.EqualTo(new[] { "hp" }));
             Assert.That(KeysSentTo(f, Onlooker), Is.EqualTo(new[] { "hp" }));
             Assert.That(KeysSentTo(f, Elsewhere), Is.Empty);
+        });
+    }
+
+    /// <summary>A chaser away from home: its home slot is vacated and reserved, and the body itself is a
+    /// guest on another map holding the same bag.</summary>
+    private static TraversalNpcRecord SendNpcVisiting(Fixture f, int homeSlot, int toMap)
+    {
+        var home = f.World.MapNpcs[Map, homeSlot];
+        var guest = new TraversalNpcRecord
+        {
+            SpawnMapNum = Map,
+            SpawnSlot = homeSlot,
+            CurrentMapNum = toMap,
+            Num = home.Num,
+            Attributes = home.Attributes,
+        };
+        home.Num = 0;
+        home.IsReservedSlot = true;
+        f.World.MapTraversalNpcs[toMap].Add(guest);
+        return guest;
+    }
+
+    /// <summary>\U0001F534 An NPC is NAMED by where it spawns and may be standing two maps away, its home slot
+    /// vacated. Indexing that slot finds nothing, so a game's values on a chaser would read as an empty
+    /// body \u2014 a bar that empties when a mob crosses a border, and refills when it goes home.</summary>
+    [Test]
+    public void AChasersValuesAreStillReadable_AfterItLeavesItsHomeMap()
+    {
+        var f = Build();
+        f.World.MapNpcs[Map, 1].Num = 1;
+        f.Attributes.Set(EntityHandle.ForNpc(Map, 1), "hp", 40);
+
+        SendNpcVisiting(f, homeSlot: 1, toMap: 2);
+
+        Assert.That(f.Attributes.BagOf(EntityHandle.ForNpc(Map, 1))?["hp"].AsLong(), Is.EqualTo(40));
+    }
+
+    /// <summary>The onlookers entitled to see a body's values are the ones who can see the BODY. A chaser
+    /// two maps from home is watched by the people it is chasing, not by whoever is standing where it
+    /// spawned.</summary>
+    [Test]
+    public void AChasersChangesReachTheMapItIsStandingOn_NotTheOneItCameFrom()
+    {
+        var f = Build();
+        f.World.MapNpcs[Map, 1].Num = 1;
+        SendNpcVisiting(f, homeSlot: 1, toMap: 2);
+        f.Sent.Clear();
+
+        bool wrote = f.Attributes.Set(EntityHandle.ForNpc(Map, 1), "hp", 12);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(wrote, Is.True);
+            Assert.That(KeysSentTo(f, Elsewhere), Is.EqualTo(new[] { "hp" }), "the player on the map it is visiting");
+            Assert.That(KeysSentTo(f, Owner), Is.Empty, "nobody left behind on its home map can see it");
+            Assert.That(KeysSentTo(f, Onlooker), Is.Empty);
         });
     }
 

@@ -28,6 +28,7 @@ public sealed class ServerWorld : IWorld
     private readonly ItemSystem _items;
     private readonly JoinLeaveSystem _joinLeave;
     private readonly DecalSystem _decals;
+    private readonly WorldQueries _queries;
     private readonly IClock _clock;
 
     public ServerWorld(GameWorld world, PlayerManager pm, AttributeSystem attributes, DeathSystem deaths,
@@ -42,6 +43,7 @@ public sealed class ServerWorld : IWorld
         _items = items;
         _joinLeave = joinLeave;
         _decals = decals;
+        _queries = new WorldQueries(world, pm);
         _clock = clock ?? SystemClock.Instance;
     }
 
@@ -68,7 +70,7 @@ public sealed class ServerWorld : IWorld
 
         // An NPC is NAMED by where it spawns and may be standing somewhere else; the place is where the
         // body is, which is what a game asking "where is it" means.
-        return Npc(who) is { } npc ? new WorldPlace(who.SpawnMap, npc.X, npc.Y) : WorldPlace.Nowhere;
+        return Locate(who) is { } at ? new WorldPlace(at.CurrentMap, at.Record.X, at.Record.Y) : WorldPlace.Nowhere;
     }
 
     // ── What a body carries ───────────────────────────────────────────────────
@@ -167,14 +169,13 @@ public sealed class ServerWorld : IWorld
 
     public AttributeBag? RecordAt(string familyId, int num) => _world.ModuleRecords.Get(familyId, num);
 
-    /// <summary>The NPC a handle names, or null when its slot holds nothing. A handle outlives the body
-    /// it was made for, so this is asked rather than assumed everywhere above.</summary>
-    private Shared.Records.MapNpcRecord? Npc(EntityHandle who)
-    {
-        if (!who.IsNpc || !_world.IsRealMap(who.SpawnMap)) return null;
-        if (!SlotValidation.IsValidNpcSlot(who.SpawnSlot)) return null;
+    /// <summary>Where the NPC a handle names currently is, or null when nothing answers to that
+    /// identity any more. A handle outlives the body it was made for, so this is asked rather than
+    /// assumed everywhere above — and it resolves rather than indexing, because a chaser away from
+    /// home has vacated the slot it is named after.</summary>
+    private WorldQueries.NpcLocation? Locate(EntityHandle who)
+        => who.IsNpc ? _queries.ResolveNpc(who.SpawnMap, who.SpawnSlot) : null;
 
-        var npc = _world.MapNpcs[who.SpawnMap, who.SpawnSlot];
-        return npc.Num > 0 ? npc : null;
-    }
+    /// <summary>The NPC record a handle names, wherever that body currently stands.</summary>
+    private Shared.Records.MapNpcRecord? Npc(EntityHandle who) => Locate(who)?.Record;
 }

@@ -39,6 +39,10 @@ public sealed class GameWorld
     /// module is loaded, and a world with no slots is a world where nothing can be worn.</summary>
     public EquipSlotSet EquipSlots { get; set; } = EquipSlotSet.Empty;
 
+    /// <summary>What is drawn over a body's head, from the compiled modules. Empty when no game module
+    /// is loaded, and then nothing is drawn over anyone.</summary>
+    public OverheadBarSet OverheadBars { get; set; } = OverheadBarSet.Empty;
+
     /// <summary>The records of every family a module declared. Empty when no game module is loaded, which
     /// is a world made of Core's own families and nothing else.</summary>
     public ModuleRecords ModuleRecords { get; } = new();

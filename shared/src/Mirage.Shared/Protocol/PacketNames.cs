@@ -230,6 +230,8 @@ public static class PacketNames
     public const string AttributeSchema = "attrschema";
     // One body's changed attributes, already filtered to what the receiver may see.
     public const string AttributeSync = "attrsync";
+    // Which attributes this game draws over a head, sent once before anything that could fill one.
+    public const string OverheadBars = "overheadbars";
     public const string AggressorRefresh = "aggressorrefresh";
     public const string SendMap = "sendmap";
     public const string MapItems = "mapitems";

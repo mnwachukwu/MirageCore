@@ -1,4 +1,5 @@
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 
 namespace Mirage.Client.Core.Logic;
 
@@ -123,21 +124,49 @@ public readonly record struct TargetArrowCmd(float CenterX, float NameY, bool Na
                                               bool OutOfRange = false, bool NoLineOfSight = false);
 
 /// <summary>
-/// Draw an entity's HP/MP/SP bars — plus, as the bottom row of the same group (one shared outline), the
-/// swing/cast COOLDOWN bar. CenterX is the horizontal center; TopY is the topmost (HP) bar's Y.
-/// Vital fractions are clamped 0..1; -1f means "omit that bar" (e.g. when max is 0).
+/// One row of an overhead bar group: how full, and the color the loaded game declared it in.
+///
+/// <para>The color travels rather than being looked up, because the draw layer has no idea what this row
+/// measures. A constant named for a vital would be one game's answer compiled into every game.</para>
+/// </summary>
+public readonly record struct BarRow(float Frac, int Rgb)
+{
+    /// <summary>A row that is not there: the body carries no value for it, or the game declared fewer
+    /// than three bars.</summary>
+    public static readonly BarRow None = new(OverheadBar.Absent, 0);
+
+    public bool Shown => Frac >= 0f;
+}
+
+/// <summary>
+/// Draw an entity's overhead bars — up to <see cref="OverheadBarSet.Max"/> rows the loaded game declared,
+/// plus, as the bottom row of the same group (one shared outline), the swing/cast COOLDOWN bar. CenterX
+/// is the horizontal center; TopY is the topmost row's Y.
+/// <para>Rows come in the game's declared order, and a row the body has no value for is
+/// <see cref="BarRow.None"/> — the rows below it move up, so a group is always as tall as what it
+/// actually draws.</para>
 /// <see cref="CdFrac"/> is the remaining fraction of the action cooldown (1 = just acted, 0 = ready); < 0
-/// omits the row entirely.
+/// omits the row entirely. It is the engine's own row, not a declared one, so it keeps its own field and
+/// its own color.
 /// </summary>
 public readonly record struct BarDrawCmd(
     float CenterX, float TopY,
-    float HpFrac, float MpFrac, float SpFrac,
+    BarRow Row0, BarRow Row1, BarRow Row2,
     float CdFrac,
     bool ShowCombatBorder,
     bool IsTarget = false,
     bool OutOfRange = false,
     int Size = 1,
-    WorldLayer Layer = WorldLayer.Ground);
+    WorldLayer Layer = WorldLayer.Ground)
+{
+    /// <summary>The declared row at <paramref name="index"/>, for a draw loop that walks the three
+    /// positions rather than naming them.</summary>
+    public BarRow RowAt(int index) => index switch { 0 => Row0, 1 => Row1, _ => Row2 };
+
+    /// <summary>How many rows this group actually draws, the cooldown included.</summary>
+    public int ShownRows =>
+        (Row0.Shown ? 1 : 0) + (Row1.Shown ? 1 : 0) + (Row2.Shown ? 1 : 0) + (CdFrac >= 0 ? 1 : 0);
+}
 
 /// <summary>
 /// Draw a chat bubble: rounded rect with shadow + colored border + white text, centered horizontally

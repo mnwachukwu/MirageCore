@@ -5,6 +5,7 @@ using Mirage.Shared;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
+using Mirage.Shared.Extensibility;
 using System.Text.Json;
 
 namespace Mirage.Client.Core.Net;
@@ -232,13 +233,10 @@ public sealed partial class ClientPacketHandler : IClientEvents
         var npcs = _state.NpcsForMap(p.MapNum);
         if (npcs is null) return;
         var n = npcs[p.NpcSlot];
-        // Death-blow number floats on any observed map; invoked before the slot is cleared so the
-        // handler can still read the NPC's position (the VitalDelta handler runs synchronously).
-        if (n.Num > 0 && p.Damage > 0)
-        // Hand the shell the pre-clear render state so it can hold a delayed-death sprite until a killing bolt lands.
-        if (n.Num > 0 && _state.NpcDefs[n.Num] is { } deadDef)
-        {
-        }
+
+        // Whatever the game hung on this body dies with it: the server respawns the slot as a fresh
+        // NPC, so values kept here would be inherited by a body that never earned them.
+        _state.ForgetAttributes(EntityHandle.ForNpc(p.MapNum, p.NpcSlot));
 
         // Preserve any active chat bubble across the death so "last words" still drift away rather
         // than vanishing in place — common when a one-shot kill on a guard arrives in the same batch
@@ -368,5 +366,9 @@ public sealed partial class ClientPacketHandler : IClientEvents
     // A traversal NPC silently left the world (returned home) — drop it; the native NPC respawns
     // on its home slot via the normal NpcSpawn path.
     private void HandleNpcDespawn(NpcDespawnPacket p)
-        => _state.TraversalNpcs.Remove((p.SpawnMapNum, p.SpawnSlot));
+    {
+        _state.TraversalNpcs.Remove((p.SpawnMapNum, p.SpawnSlot));
+        // The native that respawns at this identity is a new body, so its values start empty.
+        _state.ForgetAttributes(EntityHandle.ForNpc(p.SpawnMapNum, p.SpawnSlot));
+    }
 }

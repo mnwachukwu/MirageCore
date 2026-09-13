@@ -21,6 +21,14 @@ public static partial class PacketBuilder
                 new AttributeSchemaPacket.Row(d.Ordinal, d.Key, d.Visibility, d.LabelKey))],
         };
 
+    /// <summary>Which attributes this game draws over a head, in draw order. Sent once, beside the
+    /// numbering — a bar naming a key the client has no declaration for could never fill.</summary>
+    public static OverheadBarsPacket OverheadBars(OverheadBarSet bars) =>
+        new()
+        {
+            Bars = [.. bars.Bars.Select(b => new OverheadBarsPacket.Row(b.ValueKey, b.MaxKey, b.Rgb))],
+        };
+
     /// <summary>What <paramref name="viewer"/> is told about <paramref name="bag"/>, or null when that
     /// is nothing.
     ///

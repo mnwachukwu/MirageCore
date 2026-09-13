@@ -2,8 +2,7 @@ using Mirage.Shared.Localization;
 
 namespace Mirage.Server.Core.Localization;
 
-/// <summary>Guild membership and progression, and the guild-war lifecycle from declaration
-/// through peace terms.</summary>
+/// <summary>Guild membership: founding, joining, leaving, rank, and the words a guild speaks in.</summary>
 public static partial class ServerStrings
 {
     // ── Guild ─────────────────────────────────────────────────────────────────
@@ -55,28 +54,10 @@ public static partial class ServerStrings
     public const string Guild_StandingOverheadOn = nameof(Guild_StandingOverheadOn);
     public const string Guild_StandingOverheadOff = nameof(Guild_StandingOverheadOff);
     public const string Guild_ColorReserved = nameof(Guild_ColorReserved);
-    // Daily 00:00 settlement notices, carried on the Guild channel.
-    // Guild leveled up (guild XP crossed a level threshold), on the Guild channel.
     // Vault gold donations + manual late tax payment.
     public const string Guild_DonateOk = nameof(Guild_DonateOk);
     public const string Guild_DonateNeedGold = nameof(Guild_DonateNeedGold);
     public const string Guild_DonateAnnounce = nameof(Guild_DonateAnnounce);
-    // Daily income (L5 perk gold; territory income later) credited at the 00:00 settlement.
-    // Territory income credited to the controlling guild's vault at the 00:00 settlement.
-    // Territory war night: challenge registration + war-night resolution.
-    // Live contest (KotH) phase notices to participants + the challenge-during-contest guard.
-    // Non-participant courtesy warning (setup-present + on entering a contested territory).
-    // Guild quests.
-    // ── Guild wars ────────────
-    // Rejections / confirmations to the acting player.
-    // Officer-request nudges + Leader accept/deny outcomes on the Guild Officer channel (leadership only).
-    // Guild-channel notices (declaration made / received, daily upkeep, dropped for non-payment).
-    // Public announcements (grudge declarations / retractions / reciprocation-to-mutual).
-    // Attrition / resolution (mutual wars): bankruptcy warning (guild notice) + the decisive/cold end lines.
-    // Re-declare cooldown + "not at war" rejections.
-    // Peace (concession): rejections + officer request + the private pleas/outcomes + public accept.
-    // Wagers: the matched-ante negotiation notices + rejections, plus the pot payout + forfeit.
-    // Post-death standing readout: both guilds' level + current war score.
     // Guild chat decorators. The *Ranked variants prepend the speaker's rank word (Leader/Officer);
     // the plain variants are for a rank-less Member speaking in the guild channel.
     public const string Guild_ChatSay = nameof(Guild_ChatSay);

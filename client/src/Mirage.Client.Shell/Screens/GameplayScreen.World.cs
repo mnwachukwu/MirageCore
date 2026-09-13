@@ -13,6 +13,7 @@ using Mirage.Client.Shell.Ui;
 using Mirage.Shared;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
+using Mirage.Shared.Extensibility;
 using System.Text;
 
 namespace Mirage.Client.Shell.Screens;
@@ -248,9 +249,7 @@ public sealed partial class GameplayScreen : IGameScreen
             float bx = cmd.CenterX - barW / 2f;
             bx = Math.Clamp(bx, barBorderPad, Camera.ViewW - barW - barBorderPad);
             float by = cmd.TopY;
-            // The cooldown bar (when present) is the group's bottom row, inside the one shared outline.
-            int rows = (cmd.HpFrac >= 0 ? 1 : 0) + (cmd.MpFrac >= 0 ? 1 : 0) + (cmd.SpFrac >= 0 ? 1 : 0) + (cmd.CdFrac >= 0 ? 1 : 0);
-            int actualH = rows * InWorldBarH;
+            int actualH = cmd.ShownRows * InWorldBarH;
             if (actualH > 0)
             {
                 if (cmd.ShowCombatBorder)
@@ -260,18 +259,17 @@ public sealed partial class GameplayScreen : IGameScreen
                 else
                     UiHelper.DrawBorder(sb, bx - 1, by - 1, barW + 2, actualH + 2, Color.White);
             }
-            DrawBar(sb, bx, by, barW, InWorldBarH, cmd.HpFrac, UiHelper.VitalHpColor);
-            if (cmd.HpFrac >= 0) by += InWorldBarH;
-            if (cmd.MpFrac >= 0)
+            // Each declared row in the color the loaded game gave it. Nothing here knows what any of
+            // them measure, and a row the body has no value for simply lets the next one move up.
+            for (int r = 0; r < OverheadBarSet.Max; r++)
             {
-                DrawBar(sb, bx, by, barW, InWorldBarH, cmd.MpFrac, UiHelper.VitalMpColor);
+                var row = cmd.RowAt(r);
+                if (!row.Shown) continue;
+                DrawBar(sb, bx, by, barW, InWorldBarH, row.Frac,
+                    new Color(GameColor.RedOf(row.Rgb), GameColor.GreenOf(row.Rgb), GameColor.BlueOf(row.Rgb)));
                 by += InWorldBarH;
             }
-            if (cmd.SpFrac >= 0)
-            {
-                DrawBar(sb, bx, by, barW, InWorldBarH, cmd.SpFrac, UiHelper.VitalSpColor);
-                by += InWorldBarH;
-            }
+            // The cooldown is the engine's own row, so it keeps the engine's own color.
             if (cmd.CdFrac >= 0)
                 DrawBar(sb, bx, by, barW, InWorldBarH, cmd.CdFrac, UiHelper.CooldownBarColor);
         }

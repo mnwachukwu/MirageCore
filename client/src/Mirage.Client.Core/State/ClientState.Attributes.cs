@@ -16,18 +16,27 @@ public sealed partial class ClientState
     /// empty for good in a world whose game declared nothing.</summary>
     public AttributeSchema Attributes { get; set; } = AttributeSchema.Empty;
 
+    /// <summary>Which of those keys are drawn as rows over a body's head, in draw order. Empty until the
+    /// server says otherwise, and empty for good in a world whose game declared none.</summary>
+    public OverheadBarSet OverheadBars { get; set; } = OverheadBarSet.Empty;
+
     /// <summary>Bumped whenever any body's attributes change, so a panel can redraw on a change rather
     /// than re-reading every frame. The same pattern as <see cref="QuestVersion"/>.</summary>
     public int AttributeVersion { get; set; }
 
     private readonly Dictionary<EntityHandle, AttributeBag> _npcAttributes = [];
 
-    /// <summary>The bag a sync should be applied to, or null when this client is not tracking that body.
+    /// <summary>What this client has been told about a body, or null when it has been told nothing —
+    /// which is every body in a world whose game declares no keys.
     ///
     /// <para>A player's bag hangs on the <c>PlayerRecord</c> the client already keeps, so it arrives and
     /// leaves with them. An NPC's is kept here by handle instead: the client's own NPC slots are a view
     /// of one map and are reused as bodies come and go, so values hung on a slot would be inherited by
-    /// whatever spawned into it next.</para></summary>
+    /// whatever spawned into it next.</para>
+    ///
+    /// <para><b>Reading never creates.</b> This is asked once per visible body per frame by the thing
+    /// that draws overhead bars; a get-or-create here would put an empty bag behind every NPC that ever
+    /// crossed the screen and keep it forever.</para></summary>
     public AttributeBag? AttributesOf(EntityHandle who)
     {
         if (who.IsPlayer)
@@ -37,7 +46,16 @@ public sealed partial class ClientState
                 : null;
         }
 
+        return who.IsNpc && _npcAttributes.TryGetValue(who, out var bag) ? bag : null;
+    }
+
+    /// <summary>The bag a sync should be written into, made if this is the first value for that body,
+    /// or null for a body this client cannot hold values for at all.</summary>
+    public AttributeBag? BagFor(EntityHandle who)
+    {
+        if (who.IsPlayer) return AttributesOf(who);
         if (!who.IsNpc) return null;
+
         if (!_npcAttributes.TryGetValue(who, out var bag)) _npcAttributes[who] = bag = new AttributeBag();
         return bag;
     }

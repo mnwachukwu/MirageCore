@@ -187,6 +187,9 @@ public sealed partial class ClientPacketHandler : IClientEvents
             case AttributeSchemaPacket p:
                 HandleAttributeSchema(p);
                 break;
+            case OverheadBarsPacket p:
+                HandleOverheadBars(p);
+                break;
             case AttributeSyncPacket p:
                 HandleAttributeSync(p);
                 break;

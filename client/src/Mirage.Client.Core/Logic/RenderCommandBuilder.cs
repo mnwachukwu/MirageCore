@@ -2,6 +2,7 @@ using Mirage.Client.Core.State;
 using Mirage.Shared;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
+using Mirage.Shared.Extensibility;
 
 namespace Mirage.Client.Core.Logic;
 
@@ -278,6 +279,24 @@ public static class RenderCommandBuilder
         && screenY > -Constants.PicY - reachPx && screenY < Camera.ViewH + reachPx;
     private static bool LightReaches(float screenX, float screenY) =>
         LightReachesR(screenX, screenY, LightHaloReach);
+
+    /// <summary>The three overhead rows for one body: each bar the loaded game declared, read against
+    /// that body's own values.
+    ///
+    /// <para>A bar a body carries nothing for, and a row past the end of a game that declared fewer than
+    /// three, are both <see cref="BarRow.None"/> — so an NPC with a health bar and a player with a
+    /// health bar and a fuel gauge are described by the same three fields.</para></summary>
+    private static (BarRow, BarRow, BarRow) OverheadRows(ClientState state, EntityHandle who)
+    {
+        var bars = state.OverheadBars;
+        if (bars.Count == 0) return (BarRow.None, BarRow.None, BarRow.None);
+
+        var bag = state.AttributesOf(who);
+        return (RowOf(bars.At(0), bag), RowOf(bars.At(1), bag), RowOf(bars.At(2), bag));
+    }
+
+    private static BarRow RowOf(OverheadBar? bar, AttributeBag? bag)
+        => bar is null ? BarRow.None : new BarRow(bar.FractionIn(bag), bar.Rgb);
 
     // Stable per-light flicker seeds, in separate id ranges so a light's flicker phase never jumps when the
     // Lights list reorders. Players use their index directly; a seed collision merely shares a phase (harmless).
@@ -670,7 +689,8 @@ public static class RenderCommandBuilder
             bool hoveredHere = hovered.Kind == TargetKind.Traversal && hovered.A == t.SpawnMapNum && hovered.B == t.SpawnSlot;
             bool targetHere = target.Kind == TargetKind.Traversal && target.A == t.SpawnMapNum && target.B == t.SpawnSlot;
             EmitOneNpc(state, frame, camera, t, off.Value.offX, off.Value.offY,
-                TraversalLightId(t.SpawnMapNum, t.SpawnSlot), tickNow, alwaysShowBars, hoveredHere, targetHere, showNames, nameLineH);
+                TraversalLightId(t.SpawnMapNum, t.SpawnSlot), EntityHandle.ForNpc(t.SpawnMapNum, t.SpawnSlot),
+                tickNow, alwaysShowBars, hoveredHere, targetHere, showNames, nameLineH);
         }
     }
 
@@ -691,7 +711,10 @@ public static class RenderCommandBuilder
             }
             bool hoveredHere = hovered.Kind == TargetKind.Npc && hovered.A == i && hovered.B == cellMapNum;
             bool targetHere = target.Kind == TargetKind.Npc && target.A == i && target.B == cellMapNum;
-            EmitOneNpc(state, frame, camera, n, offX, offY, NpcLightId(cellMapNum, i), tickNow, alwaysShowBars,
+            // A body in a map's own slot array spawned there; one visiting from elsewhere is in the
+            // traversal list instead, carrying the spawn identity it is named by.
+            EmitOneNpc(state, frame, camera, n, offX, offY, NpcLightId(cellMapNum, i),
+                EntityHandle.ForNpc(cellMapNum, i), tickNow, alwaysShowBars,
                 hoveredHere, targetHere, showNames, nameLineH);
         }
     }
@@ -731,7 +754,7 @@ public static class RenderCommandBuilder
     // Renders one NPC (native slot or traversal guest) at world-tile origin (offX,offY).
     // Targeting/hover UI is supplied as resolved flags so it works for both addressing schemes.
     private static void EmitOneNpc(ClientState state, RenderFrame frame, Camera camera, ClientMapNpc n,
-        int offX, int offY, int lightId, long tickNow, bool alwaysShowBars,
+        int offX, int offY, int lightId, EntityHandle who, long tickNow, bool alwaysShowBars,
         bool hoveredHere, bool targetHere, bool showNames, float nameLineH)
     {
         if (n.Num == 0 || n.Num > state.Limits.Npcs) return;
@@ -777,7 +800,7 @@ public static class RenderCommandBuilder
         frame.Npcs.Add(new SpriteDrawCmd(screenX, screenY, spriteRow, animFrame, n.Dir, size,
             SlideRenderLayer(n.Layer, n.PrevLayer, n.XOffset, n.YOffset), def.SpriteSheet));
 
-        // Vital bars belong to NPCs that react to you at all; one that only ambles never shows them
+        // Overhead bars belong to NPCs that react to you at all; one that only ambles never shows them
         // unless you are pointing at it.
         bool reacts = def.Behavior is NpcBehavior.Pursue or NpcBehavior.Flee;
         bool showBars = reacts && (alwaysShowBars
@@ -786,10 +809,9 @@ public static class RenderCommandBuilder
             || hoveredHere
             || targetHere);
 
-        // -1 omits the row. A game that wants a bar over a head feeds one from its own attributes.
-        const float npcHpFrac = -1f, npcMpFrac = -1f, npcSpFrac = -1f;
+        var (npcRow0, npcRow1, npcRow2) = OverheadRows(state, who);
 
-        // Cooldown bar, folded into the vital group as its bottom row (shares the group outline): NPCs get the
+        // Cooldown bar, folded into the group as its bottom row (shares the group outline): NPCs get the
         // same swing/cast cooldown bar as players. npcCdFrac < 0 omits the row.
         long npcCdMs = Constants.NpcAttackCooldownMs * (state.Weather == WeatherType.HeavyWind ? Constants.WeatherHeavyWindCooldownMultiplier : 1L);
         long npcActionElapsed = tickNow - n.AttackTimer;
@@ -797,8 +819,9 @@ public static class RenderCommandBuilder
         bool npcCdShown = _showOtherCooldownBars && n.AttackTimer > 0 && npcActionElapsed < npcCdMs;
         float npcCdFrac = npcCdShown ? Math.Clamp(1f - npcActionElapsed / (float)npcCdMs, 0f, 1f) : -1f;
 
-        // Group height = vital rows + the cooldown row (when shown); the whole group sits above/below the sprite.
-        int npcActualBarH = ((npcHpFrac >= 0 ? 1 : 0) + (npcMpFrac >= 0 ? 1 : 0) + (npcSpFrac >= 0 ? 1 : 0) + (npcCdShown ? 1 : 0)) * BarH;
+        // Group height = the declared rows this body fills + the cooldown row (when shown); the whole group
+        // sits above/below the sprite.
+        int npcActualBarH = ((npcRow0.Shown ? 1 : 0) + (npcRow1.Shown ? 1 : 0) + (npcRow2.Shown ? 1 : 0) + (npcCdShown ? 1 : 0)) * BarH;
 
         bool npcBelow = screenY < BelowSpriteThreshold;
         float npcBarTopY, npcNameY;
@@ -869,7 +892,7 @@ public static class RenderCommandBuilder
             frame.Bars.Add(new BarDrawCmd(
                 centerX,
                 npcBarTopY,
-                npcHpFrac, npcMpFrac, npcSpFrac,
+                npcRow0, npcRow1, npcRow2,
                 npcCdFrac,
                 alwaysShowBars && IsInCombat(n.LastCombatMs, tickNow),
                 IsTarget: alwaysShowBars && targetHere,
@@ -1045,9 +1068,9 @@ public static class RenderCommandBuilder
         bool plrTargetHere = target.Kind == TargetKind.Player && target.A == i;
         bool showBars = alwaysShowBars || IsInCombat(p.LastCombatMs, tickNow) || hoveredHere || plrTargetHere;
 
-        const float plrHpFrac = -1f, plrMpFrac = -1f, plrSpFrac = -1f;
+        var (plrRow0, plrRow1, plrRow2) = OverheadRows(state, EntityHandle.ForPlayer(i));
 
-        // Cooldown bar, folded into the vital group as its bottom row (shares the group's one outline): spans the
+        // Cooldown bar, folded into the group as its bottom row (shares the group's one outline): spans the
         // swing/cast cooldown (doubled by Heavy Wind) so the downtime cadence is readable.
         // plrCdFrac < 0 omits the row. `elapsed` = tickNow - AttackTimer.
         long cdMs = Constants.PlayerAttackCooldownMs * (state.Weather == WeatherType.HeavyWind ? Constants.WeatherHeavyWindCooldownMultiplier : 1L);
@@ -1057,8 +1080,9 @@ public static class RenderCommandBuilder
             && (i == myIndex ? _showCooldownBar : _showOtherCooldownBars);
         float plrCdFrac = cdShown ? Math.Clamp(1f - elapsed / (float)cdMs, 0f, 1f) : -1f;
 
-        // Group height = vital rows + the cooldown row (when shown); the whole group sits above/below the sprite.
-        int plrActualBarH = ((plrHpFrac >= 0 ? 1 : 0) + (plrMpFrac >= 0 ? 1 : 0) + (plrSpFrac >= 0 ? 1 : 0) + (cdShown ? 1 : 0)) * BarH;
+        // Group height = the declared rows this body fills + the cooldown row (when shown); the whole group
+        // sits above/below the sprite.
+        int plrActualBarH = ((plrRow0.Shown ? 1 : 0) + (plrRow1.Shown ? 1 : 0) + (plrRow2.Shown ? 1 : 0) + (cdShown ? 1 : 0)) * BarH;
 
         bool plrBelow = screenY < BelowSpriteThreshold;
         float plrBarTopY, plrNameY;
@@ -1108,7 +1132,7 @@ public static class RenderCommandBuilder
             frame.Bars.Add(new BarDrawCmd(
                 screenX + Constants.PicX / 2,
                 plrBarTopY,
-                plrHpFrac, plrMpFrac, plrSpFrac,
+                plrRow0, plrRow1, plrRow2,
                 plrCdFrac,
                 alwaysShowBars && IsInCombat(p.LastCombatMs, tickNow),
                 IsTarget: alwaysShowBars && plrTargetHere,

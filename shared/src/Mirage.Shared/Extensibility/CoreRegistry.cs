@@ -23,7 +23,8 @@ public sealed class CoreRegistry
     public static CoreRegistry CoreOnly { get; } = Build();
 
     internal CoreRegistry(RecordSchema schema, AttributeSchema attributes, PacketRegistry packets,
-                         TickSchedule tick, EquipSlotSet equipSlots, IReadOnlyList<IWorldObserver> observers,
+                         TickSchedule tick, EquipSlotSet equipSlots, OverheadBarSet overheadBars,
+                         IReadOnlyList<IWorldObserver> observers,
                          IReadOnlyList<IDeathPolicy> deathPolicies, IReadOnlyList<ILingerPolicy> lingerPolicies,
                          IReadOnlyList<ICoreModule> modules, IReadOnlyList<string> moduleNames)
     {
@@ -32,6 +33,7 @@ public sealed class CoreRegistry
         Packets = packets;
         Tick = tick;
         EquipSlots = equipSlots;
+        OverheadBars = overheadBars;
         Observers = observers;
         DeathPolicies = deathPolicies;
         LingerPolicies = lingerPolicies;
@@ -54,6 +56,10 @@ public sealed class CoreRegistry
 
     /// <summary>Where a character may wear something. Empty until a game says otherwise.</summary>
     public EquipSlotSet EquipSlots { get; }
+
+    /// <summary>What is drawn over a body's head, in draw order. Empty until a game says otherwise,
+    /// and then nothing is drawn over anyone.</summary>
+    public OverheadBarSet OverheadBars { get; }
 
     /// <summary>What is told when something happens in the world, in the order their modules were
     /// configured. Empty in an engine with no game loaded, which then tells nobody anything.</summary>
@@ -163,6 +169,7 @@ internal sealed class CoreBuilder : ICoreBuilder
     private readonly List<ChoiceSet> _choices = [];
     private readonly TickSchedule.Builder _tick = new();
     private readonly List<EquipSlot> _equipSlots = [];
+    private readonly List<OverheadBar> _overheadBars = [];
     private readonly List<IWorldObserver> _observers = [];
     private readonly List<IDeathPolicy> _deathPolicies = [];
     private readonly List<ILingerPolicy> _lingerPolicies = [];
@@ -230,6 +237,33 @@ internal sealed class CoreBuilder : ICoreBuilder
         _equipSlots.Add(slot);
     }
 
+    public void AddOverheadBar(OverheadBar bar)
+    {
+        ArgumentNullException.ThrowIfNull(bar);
+        Refuse();
+
+        if (string.IsNullOrWhiteSpace(bar.ValueKey) || string.IsNullOrWhiteSpace(bar.MaxKey))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared an overhead bar without both a value key and a maximum key.", _module);
+        }
+
+        if (_overheadBars.Any(b => string.Equals(b.ValueKey, bar.ValueKey, StringComparison.Ordinal)))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared an overhead bar on '{bar.ValueKey}', which already has one.", _module);
+        }
+
+        if (_overheadBars.Count == OverheadBarSet.Max)
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared overhead bar '{bar.ValueKey}', which is one more than the "
+                + $"{OverheadBarSet.Max} a head has room for.", _module);
+        }
+
+        _overheadBars.Add(bar);
+    }
+
     public void AddTickWork(ITickWork work)
     {
         ArgumentNullException.ThrowIfNull(work);
@@ -267,7 +301,8 @@ internal sealed class CoreBuilder : ICoreBuilder
 
         var schema = new RecordSchema { Families = [.. _families], ChoiceSets = [.. _choices] };
         return new CoreRegistry(schema, Attributes.Build(), Packets.Build(), _tick.Build(),
-                                new EquipSlotSet(_equipSlots), [.. _observers], [.. _deathPolicies],
+                                new EquipSlotSet(_equipSlots), new OverheadBarSet(_overheadBars),
+                                [.. _observers], [.. _deathPolicies],
                                 [.. _lingerPolicies], modules, moduleNames);
     }
 

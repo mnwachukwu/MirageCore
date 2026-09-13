@@ -80,6 +80,7 @@ public sealed partial class ClientState
         MapItems.Clear();
         for (int i = 1; i <= Constants.MaxMapNpcs; i++) MapNpcs[i] = new ClientMapNpc();
         TraversalNpcs.Clear();
+        ClearNpcAttributes();
         TempTile.Clear();
         DecalsByMap.Clear();
         // Drop stale neighbor maps, their map numbers, and their entities; the server

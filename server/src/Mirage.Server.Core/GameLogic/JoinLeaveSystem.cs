@@ -116,6 +116,9 @@ public sealed class JoinLeaveSystem : GameSystem
         // Likewise the slot list, before the worn set that names those slots.
         _dispatcher.SendTo(index, PacketBuilder.EquipSlots(_world.EquipSlots));
 
+        // And which keys are drawn over a head, before any body that might fill one arrives.
+        _dispatcher.SendTo(index, PacketBuilder.OverheadBars(_world.OverheadBars));
+
         CheckEquippedItems(index);
 
         // ── Send all game data ────────────────────────────────────────────────
@@ -241,6 +244,35 @@ public sealed class JoinLeaveSystem : GameSystem
         if (packet is not null) _dispatcher.SendTo(toIndex, packet);
     }
 
+    /// <summary>Sends what one viewer may see of every NPC standing on a map, natives and visitors
+    /// alike.
+    ///
+    /// <para>A body's values otherwise reach a client only when one of them CHANGES, so a player
+    /// walking onto a map would see nothing hung on anything standing still — an overhead bar that
+    /// fills the first time the thing is hit, and is blank until then.</para></summary>
+    private void SendMapNpcAttributes(int toIndex, int mapNum)
+    {
+        if (_world.Attributes.Declarations.Count == 0) return;   // nothing is declared; there is nothing to send
+
+        for (int slot = 1; slot <= Constants.MaxMapNpcs; slot++)
+        {
+            var mn = _world.MapNpcs[mapNum, slot];
+            if (mn.Num > 0 && !mn.IsReservedSlot)
+                SendAttributes(toIndex, EntityHandle.ForNpc(mapNum, slot), mn.Attributes, AttributeVisibility.Viewport);
+        }
+
+        var guests = _world.MapTraversalNpcs[mapNum];
+        for (int i = 0; i < guests.Count; i++)
+        {
+            var t = guests[i];
+            if (t.Num > 0)
+            {
+                SendAttributes(toIndex, EntityHandle.ForNpc(t.SpawnMapNum, t.SpawnSlot), t.Attributes,
+                               AttributeVisibility.Viewport);
+            }
+        }
+    }
+
     /// <summary>
     /// Syncs the player's whole observable region to their client: every observable player (both
     /// directions), the center map's entities, and the 8 neighbor maps (cache-aware) with their
@@ -288,6 +320,7 @@ public sealed class JoinLeaveSystem : GameSystem
         _decals.SendSnapshot(index, p.Map);
         _dispatcher.SendTo(index, BuildMapNpcs(_world, p.Map));
         SendTraversalNpcs(index, p.Map);
+        SendMapNpcAttributes(index, p.Map);
         SendOpenDoors(index, p.Map);
 
         _world.PlayersOnMap[p.Map] = true;
@@ -349,6 +382,7 @@ public sealed class JoinLeaveSystem : GameSystem
             SendMapItemsSnapshot(i, editedMapNum);
             _dispatcher.SendTo(i, BuildMapNpcs(_world, editedMapNum));
             SendTraversalNpcs(i, editedMapNum);
+            SendMapNpcAttributes(i, editedMapNum);
             SendOpenDoors(i, editedMapNum);
         }
     }
@@ -383,6 +417,7 @@ public sealed class JoinLeaveSystem : GameSystem
                 _decals.SendSnapshot(index, mapNum);
                 _dispatcher.SendTo(index, BuildMapNpcs(_world, mapNum));
                 SendTraversalNpcs(index, mapNum);
+                SendMapNpcAttributes(index, mapNum);
                 SendOpenDoors(index, mapNum);
             }
         }

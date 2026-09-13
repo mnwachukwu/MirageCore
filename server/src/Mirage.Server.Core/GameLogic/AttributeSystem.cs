@@ -25,12 +25,14 @@ public sealed class AttributeSystem : GameSystem
 {
     private readonly GameWorld _world;
     private readonly PlayerManager _pm;
+    private readonly WorldQueries _queries;
 
     public AttributeSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher)
         : base(dispatcher)
     {
         _world = world;
         _pm = pm;
+        _queries = new WorldQueries(world, pm);
     }
 
     /// <summary>Writes one key on a body and syncs it. Returns false when the body is not in the world,
@@ -81,12 +83,10 @@ public sealed class AttributeSystem : GameSystem
             return sp.IsPlaying ? sp.Char.Attributes : null;
         }
 
-        if (!who.IsNpc) return null;
-        if (!_world.IsRealMap(who.SpawnMap)) return null;
-        if (who.SpawnSlot < 1 || who.SpawnSlot > Constants.MaxMapNpcs) return null;
-
-        var mn = _world.MapNpcs[who.SpawnMap, who.SpawnSlot];
-        return mn.Num > 0 ? mn.Attributes : null;
+        // An NPC is NAMED by where it spawns and may be standing two maps away, its home slot vacated
+        // and reserved. Resolving the identity rather than indexing the slot is what keeps a game's
+        // values readable on a body that is chasing somebody across the world.
+        return who.IsNpc ? _queries.ResolveNpc(who.SpawnMap, who.SpawnSlot)?.Record.Attributes : null;
     }
 
     /// <summary>Ships <paramref name="keys"/> (or everything visible, when null) to everyone entitled:
@@ -126,8 +126,8 @@ public sealed class AttributeSystem : GameSystem
             return sp.IsPlaying ? sp.Char.Map : 0;
         }
 
-        // An NPC is NAMED by where it spawns and may be standing somewhere else entirely — a chaser two
-        // maps from home is still addressed by its spawn slot. Its own map is where the onlookers are.
-        return who.IsNpc && _world.IsRealMap(who.SpawnMap) ? who.SpawnMap : 0;
+        // Where the body is, not where it is named after: the onlookers entitled to see a chaser's
+        // values are the ones on the map it is actually standing on.
+        return who.IsNpc ? _queries.ResolveNpc(who.SpawnMap, who.SpawnSlot)?.CurrentMap ?? 0 : 0;
     }
 }
