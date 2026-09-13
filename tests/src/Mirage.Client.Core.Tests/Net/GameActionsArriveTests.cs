@@ -109,4 +109,28 @@ public class GameActionsArriveTests
             Assert.That((back.MapNum, back.X, back.Y), Is.EqualTo((3, 7, 9)));
         });
     }
+
+    /// <summary>
+    /// The panel a verb opens arrives with it, or the verb opens nothing.
+    ///
+    /// <para>The client opens a declared screen by this id and never by anything else, so an action that
+    /// reaches it with a blank one is a menu entry that quietly does half its job: it still sends, and no
+    /// window ever appears.</para>
+    /// </summary>
+    [Test]
+    public void TheScreenAnActionOpens_ArrivesWithIt()
+    {
+        var (state, handler) = Playing();
+
+        Send(handler,
+            new GameAction { Id = "survey.openbook", LabelKey = "Open field book", OpensPanel = "survey.fieldbook" },
+            new GameAction { Id = "survey.note", LabelKey = "Note this down" });
+
+        var offered = state.Actions.For(ActionSurface.Tile);
+        Assert.Multiple(() =>
+        {
+            Assert.That(offered[0].OpensPanel, Is.EqualTo("survey.fieldbook"));
+            Assert.That(offered[1].OpensPanel, Is.Empty, "a verb that only tells the server opens nothing");
+        });
+    }
 }

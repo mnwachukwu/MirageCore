@@ -123,11 +123,14 @@ public sealed record GameActionsPacket : IPacket
     /// <summary>One row per declared action, already in the order they are offered.</summary>
     [JsonPropertyName("actions")] public IReadOnlyList<Row> Actions { get; init; } = [];
 
+    /// <summary>One action as the client needs it: what to call it, where to offer it, and the panel
+    /// picking it opens. <c>OpensPanel</c> is blank for an action that only tells the server.</summary>
     public readonly record struct Row(
         [property: JsonPropertyName("id")] string Id,
         [property: JsonPropertyName("label")] string LabelKey,
         [property: JsonPropertyName("surface")] ActionSurface Surface,
-        [property: JsonPropertyName("group")] string GroupKey);
+        [property: JsonPropertyName("group")] string GroupKey,
+        [property: JsonPropertyName("opens")] string OpensPanel);
 }
 
 /// <summary>

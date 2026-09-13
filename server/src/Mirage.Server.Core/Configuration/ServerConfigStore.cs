@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace Mirage.Server.Core.Configuration;
@@ -69,7 +70,7 @@ public static class ServerConfigStore
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             string temp = path + ".tmp";
-            File.WriteAllText(temp, JsonSerializer.Serialize(config, Options));
+            File.WriteAllText(temp, Serialize(config));
             File.Move(temp, path, overwrite: true);
             return null;
         }
@@ -77,5 +78,21 @@ public static class ServerConfigStore
         {
             return $"Could not write {path} ({ex.Message}).";
         }
+    }
+
+    /// <summary>The config as JSON, with <see cref="ServerConfig.GameName"/> omitted when it is only the
+    /// engine's own name.
+    ///
+    /// <para>🔴 An operator who never named their game must not have a name written on their behalf.
+    /// <see cref="ServerConfig.GameName"/> reads blank as "whatever this engine is called", so a file
+    /// that omits it follows a rename and a file that states it does not. Writing the resolved default
+    /// freezes the engine's name into the config of every server that never chose one: rename the
+    /// engine, and a stock server goes on announcing the name it had when somebody last opened the
+    /// settings — to every client, which brands itself from the pre-login hello.</para></summary>
+    private static string Serialize(ServerConfig config)
+    {
+        var node = JsonSerializer.SerializeToNode(config, Options)!.AsObject();
+        if (config.GameName == Mirage.Shared.Constants.GameName) node.Remove("gameName");
+        return node.ToJsonString(Options);
     }
 }

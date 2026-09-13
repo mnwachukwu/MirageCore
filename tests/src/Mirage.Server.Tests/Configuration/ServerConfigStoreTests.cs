@@ -348,4 +348,77 @@ public class ServerConfigStoreTests
         Assert.That(ServerConfigStore.ShippedPath,
             Is.EqualTo(Path.Combine(AppContext.BaseDirectory, ServerConfigStore.FileName)));
     }
+
+    // ── The game's name ───────────────────────────────────────────────────────
+
+    /// <summary>
+    /// 🔴 A server whose operator never named their game must not get a name written on its behalf.
+    ///
+    /// <para>GameName reads blank as "whatever this engine is called", so a file that omits it follows
+    /// the engine and a file that states it does not. A stock server therefore has to omit it: a name
+    /// written on the operator's behalf is a name that outlives the engine identity it was copied from,
+    /// and every client brands itself from what the server announces in the pre-login hello. Saving
+    /// happens whenever an operator touches any other setting, so one visit to the settings decides
+    /// this for good.</para>
+    /// </summary>
+    [Test]
+    public void AStockServer_SavesNoGameNameAtAll()
+    {
+        string path = Path_("stock.json");
+
+        Assert.That(ServerConfigStore.Save(path, ServerConfig.Default), Is.Null);
+
+        Assert.That(File.ReadAllText(path), Does.Not.Contain("gameName"),
+            "the engine's own name was written into the config, which is what pins it across a rename");
+    }
+
+    [Test]
+    public void AStockServerReadsBackAsTheEnginesOwnName()
+    {
+        string path = Path_("stock.json");
+        ServerConfigStore.Save(path, ServerConfig.Default);
+
+        var (config, error) = ServerConfigStore.Load(path);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(error, Is.Null);
+            Assert.That(config.GameName, Is.EqualTo(Mirage.Shared.Constants.GameName));
+        });
+    }
+
+    /// <summary>A name an operator CHOSE is theirs and survives every save, even one that happens to
+    /// match nothing in particular.</summary>
+    [Test]
+    public void AChosenNameIsKept()
+    {
+        string path = Path_("named.json");
+        ServerConfigStore.Save(path, ServerConfig.Default with { GameName = "Wandering Isles" });
+
+        var (config, _) = ServerConfigStore.Load(path);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(File.ReadAllText(path), Does.Contain("gameName"));
+            Assert.That(config.GameName, Is.EqualTo("Wandering Isles"));
+        });
+    }
+
+    /// <summary>Saving does not quietly drop everything else while dropping the name.</summary>
+    [Test]
+    public void TheRestOfTheConfigSurvivesTheSave()
+    {
+        string path = Path_("round.json");
+        var saved = ServerConfig.Default with { Port = 4321, Language = "fr" };
+        ServerConfigStore.Save(path, saved);
+
+        var (config, _) = ServerConfigStore.Load(path);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(config.Port, Is.EqualTo(4321));
+            Assert.That(config.Language, Is.EqualTo("fr"));
+            Assert.That(config.Spawn.Map, Is.EqualTo(saved.Spawn.Map), "a nested section still round-trips");
+        });
+    }
 }

@@ -128,13 +128,31 @@ public class GamePanelTests
         });
     }
 
-    /// <summary>An action that opens a screen and an action that tells the server are the same kind of
-    /// thing, and one may be both.</summary>
+    /// <summary>
+    /// 🔴 The panel a verb opens has to REACH the client, which is the half that is easy to miss.
+    ///
+    /// <para>An action is projected into a wire row by hand rather than travelling whole, so a field
+    /// added to <see cref="GameAction"/> is not on the wire until the projection is taught about it.
+    /// A declaration that never arrives is silent: the menu still lists the verb, the click still sends
+    /// the id, and the window simply never appears.</para>
+    /// </summary>
     [Test]
-    public void AnActionCanNameThePanelItOpens()
+    public void ThePanelAnActionOpens_SurvivesTheWire()
     {
-        var action = new GameAction { Id = "open", LabelKey = "Open it", OpensPanel = "book" };
+        var declared = new GameActions([
+            new GameAction { Id = "open", LabelKey = "Open it", GroupKey = "Survey", OpensPanel = "book" },
+            new GameAction { Id = "note", LabelKey = "Note it" },
+        ]);
 
-        Assert.That(action.OpensPanel, Is.EqualTo("book"));
+        var back = (Mirage.Shared.Protocol.Packets.GameActionsPacket)
+            PacketSerializer.TryDeserialize(PacketSerializer.Serialize(PacketBuilder.GameActions(declared)))!;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(back.Actions[0].OpensPanel, Is.EqualTo("book"),
+                "the client opens a panel by this id, so losing it here loses the whole screen");
+            Assert.That(back.Actions[1].OpensPanel, Is.Empty, "a verb that only tells the server opens nothing");
+            Assert.That(back.Actions[0].GroupKey, Is.EqualTo("Survey"), "the rest of the row still travels");
+        });
     }
 }

@@ -55,6 +55,7 @@ public sealed partial class ClientPacketHandler
                 LabelKey = a.LabelKey,
                 Surface = a.Surface,
                 GroupKey = a.GroupKey,
+                OpensPanel = a.OpensPanel,
             })]);
     }
 
