@@ -212,7 +212,7 @@
   "HelpDialog_Attr_DoorDesc": "Blocks movement until a player possessing the required item interacts with the tile. Once unlocked, all players on the map can pass through. The door re-locks after 5 seconds. If 'Take key on use' is checked, the key item is consumed on unlock.",
   "HelpDialog_Attr_DoorRevealDesc": "Door reveal: paint the door's top graphic on the highest Ground layer, with a floor or base on the layers below it, then mark the tile Door. When the door is open only the topmost populated Ground layer is hidden (revealing what sits beneath); use the toolbar Doors toggle to preview the open state in the editor.",
   "HelpDialog_Attr_DoorData": "Data: Key Item · Take on use (0 = keep, 1 = consume)",
-  "HelpDialog_Attr_Plate": "{Name} (Pressure Plate)",
+  "HelpDialog_Attr_Plate": "{Name}",
   "HelpDialog_Attr_PlateDesc": "A trigger tile. Stepping on it automatically unlocks the Door tile at the specified coordinates — no item required.",
   "HelpDialog_Attr_PlateData": "Data: Door Tile X · Door Tile Y (coordinates of the Door tile on this map)",
   "HelpDialog_Attr_NpcSpawnDesc": "Pins a map NPC slot to this tile so it always spawns here instead of a random walkable tile. Click an eligible (non-empty, unpinned) slot in the NPC Slots list to place it; right-click a pinned tile to clear it.",

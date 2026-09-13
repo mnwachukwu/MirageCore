@@ -212,7 +212,7 @@
   "HelpDialog_Attr_DoorDesc": "Bloqueia o movimento até que um jogador com o item necessário interaja com o tile. Uma vez destrancada, todos os jogadores do mapa podem passar. A porta tranca de novo após 5 segundos. Se 'Consumir a chave ao usar' estiver marcado, o item chave é consumido ao destrancar.",
   "HelpDialog_Attr_DoorRevealDesc": "Revelação da porta: pinte o gráfico do topo da porta na camada Ground mais alta, com um piso ou base nas camadas abaixo, e depois marque o tile como Door. Quando a porta está aberta, apenas a camada Ground preenchida mais alta é escondida (revelando o que está embaixo); use o botão Portas na barra de ferramentas para prever o estado aberto no editor.",
   "HelpDialog_Attr_DoorData": "Dados: item chave · consumir ao usar (0 = manter, 1 = consumir)",
-  "HelpDialog_Attr_Plate": "{Name} (placa de pressão)",
+  "HelpDialog_Attr_Plate": "{Name}",
   "HelpDialog_Attr_PlateDesc": "Um tile de gatilho. Pisar nele destranca automaticamente o tile Porta nas coordenadas indicadas — nenhum item é necessário.",
   "HelpDialog_Attr_PlateData": "Dados: X do tile Porta · Y do tile Porta (coordenadas do tile Porta neste mapa)",
   "HelpDialog_Attr_NpcSpawnDesc": "Fixa um espaço de NPC do mapa neste tile para que ele sempre apareça aqui em vez de em um tile andável aleatório. Clique em um espaço elegível (não vazio, não fixado) na lista de espaços de NPC para posicioná-lo; clique com o botão direito em um tile fixado para limpá-lo.",

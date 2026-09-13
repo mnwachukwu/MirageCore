@@ -212,7 +212,7 @@
   "HelpDialog_Attr_DoorDesc": "Bloque le passage jusqu'à ce qu'un joueur possédant l'objet requis interagisse avec la tuile. Une fois déverrouillée, tous les joueurs de la carte peuvent passer. La porte se reverrouille après 5 secondes. Si « Prendre la clé à l'usage » est coché, l'objet clé est consommé au déverrouillage.",
   "HelpDialog_Attr_DoorRevealDesc": "Ouverture de la porte : peignez le graphisme du haut de la porte sur la couche Ground la plus haute, avec un plancher ou une base sur les couches inférieures, puis marquez la tuile comme Door. Quand la porte est ouverte, seule la couche Ground peuplée la plus haute est masquée (révélant ce qui se trouve dessous); utilisez le bouton Portes de la barre d'outils pour prévisualiser l'état ouvert dans l'éditeur.",
   "HelpDialog_Attr_DoorData": "Données : objet clé · prendre à l'usage (0 = garder, 1 = consommer)",
-  "HelpDialog_Attr_Plate": "{Name} (plaque de pression)",
+  "HelpDialog_Attr_Plate": "{Name}",
   "HelpDialog_Attr_PlateDesc": "Une tuile déclencheur. Marcher dessus déverrouille automatiquement la tuile Porte aux coordonnées indiquées — aucun objet requis.",
   "HelpDialog_Attr_PlateData": "Données : X de la tuile Porte · Y de la tuile Porte (coordonnées de la tuile Porte sur cette carte)",
   "HelpDialog_Attr_NpcSpawnDesc": "Épingle un emplacement de PNJ de la carte sur cette tuile pour qu'il apparaisse toujours ici plutôt que sur une tuile praticable au hasard. Cliquez un emplacement admissible (non vide, non épinglé) dans la liste des emplacements de PNJ pour le poser; clic droit sur une tuile épinglée pour l'effacer.",

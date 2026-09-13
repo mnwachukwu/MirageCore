@@ -212,7 +212,7 @@
   "HelpDialog_Attr_DoorDesc": "Bloquea el paso hasta que un jugador con el objeto necesario interactúa con el tile. Una vez abierta, todos los jugadores del mapa pueden pasar. La puerta se vuelve a cerrar a los 5 segundos. Si «Consumir la llave al usar» está marcado, el objeto llave se gasta al abrir.",
   "HelpDialog_Attr_DoorRevealDesc": "Apertura de la puerta: pinta el gráfico superior de la puerta en la capa Ground más alta, con un piso o base en las capas de abajo, y marca el tile como Door. Cuando la puerta está abierta solo se oculta la capa Ground poblada más alta (revelando lo que hay debajo); usa el botón Puertas de la barra de herramientas para previsualizar el estado abierto en el editor.",
   "HelpDialog_Attr_DoorData": "Datos: objeto llave · consumir al usar (0 = conservar, 1 = gastar)",
-  "HelpDialog_Attr_Plate": "{Name} (placa de presión)",
+  "HelpDialog_Attr_Plate": "{Name}",
   "HelpDialog_Attr_PlateDesc": "Un tile disparador. Pisarlo abre automáticamente el tile Puerta en las coordenadas indicadas, sin necesidad de objeto.",
   "HelpDialog_Attr_PlateData": "Datos: X del tile Puerta · Y del tile Puerta (coordenadas del tile Puerta en este mapa)",
   "HelpDialog_Attr_NpcSpawnDesc": "Fija un espacio de NPC del mapa en este tile para que siempre aparezca aquí en vez de en un tile transitable al azar. Haz clic en un espacio elegible (no vacío y sin fijar) de la lista de espacios de NPC para colocarlo; haz clic derecho en un tile fijado para limpiarlo.",
