@@ -220,6 +220,9 @@ public static class CorePackets
         builder.Register(PacketNames.EquipSlots, Read<EquipSlotsPacket>);
         builder.Register(PacketNames.OverheadBars, Read<OverheadBarsPacket>);
         builder.Register(PacketNames.DisplayFields, Read<DisplayFieldsPacket>);
+        builder.Register(PacketNames.GameActions, Read<GameActionsPacket>);
+        builder.Register(PacketNames.GamePanels, Read<GamePanelsPacket>);
+        builder.Register(PacketNames.InvokeAction, Read<InvokeActionPacket>);
         builder.Register(PacketNames.EditorRequestRecord, Read<EditorRequestRecordPacket>);
         builder.Register(PacketNames.EditorRequestAllRecords, Read<EditorRequestAllRecordsPacket>);
         builder.Register(PacketNames.EditorSaveRecord, Read<EditorSaveRecordPacket>);

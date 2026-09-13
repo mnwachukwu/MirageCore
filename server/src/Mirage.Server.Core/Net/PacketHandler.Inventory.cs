@@ -4,7 +4,8 @@ using Mirage.Server.Core.Localization;
 using Mirage.Server.Core.Persistence;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
-using Mirage.Shared;
+using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -313,5 +314,31 @@ public sealed partial class PacketHandler
         if (!_pm[index].IsPlaying) return;
         if (_pm[index].Char.Dead) return;  // a corpse can't repair at a shop
         _shop.FixItem(index, p.InvSlot);
+    }
+
+    /// <summary>The player picked one of the game's own actions.
+    ///
+    /// <para><b>Core checks that somebody declared it, and nothing else.</b> Whether the player is close
+    /// enough, whether they are allowed, whether the square is the right kind — every one of those is a
+    /// question about a verb Core has no name for, so every one of them belongs to the game. What is
+    /// checked here is the part Core does know: that the sender is in the world, and that the id names
+    /// something this server was told about.</para></summary>
+    private void HandleInvokeAction(int index, InvokeActionPacket p)
+    {
+        if (!_pm[index].IsPlaying) return;
+
+        var handler = _actionHandlers.FirstOrDefault(h => h.Actions.Contains(p.Action, StringComparer.Ordinal));
+        if (handler is null) return;   // an id nothing declared: a stale client, or a game that changed
+
+        try
+        {
+            handler.Invoke(EntityHandle.ForPlayer(index), p.Action, new WorldPlace(p.MapNum, p.X, p.Y));
+        }
+        catch (Exception ex)
+        {
+            // A game's bug loses its own action, not the player holding it.
+            _logger.LogError(ex, "Action handler {Handler} failed on {Action} for index {Index}",
+                             handler.Name, p.Action, index);
+        }
     }
 }

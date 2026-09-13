@@ -188,6 +188,8 @@ public class PanelPolicyTests
             Assert.That(P(PanelSlots.Shop).PlayerToggleable, Is.False, "a keybind must not open a shop");
             Assert.That(P(PanelSlots.Trade).PlayerToggleable, Is.False, "a keybind must not open a trade");
             Assert.That(P(PanelSlots.Conversation).PlayerToggleable, Is.False);
+            Assert.That(P(PanelSlots.GamePanel).PlayerToggleable, Is.False,
+                        "a declared panel is opened by a game's own action, so no keybind reaches it");
 
             Assert.That(P(PanelSlots.Social).PlayerToggleable, Is.True,
                         "the quest LOG is player-opened (J) — it was once missing from the toggle "
@@ -242,6 +244,7 @@ public class PanelPolicyTests
             PanelSlots.Bank, PanelSlots.Inn, PanelSlots.Mail, PanelSlots.Social,
             PanelSlots.Market, PanelSlots.Trade,
             PanelSlots.Conversation, PanelSlots.Moderation,
+            PanelSlots.GamePanel,
         ];
 
         Assert.Multiple(() =>

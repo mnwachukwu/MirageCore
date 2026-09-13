@@ -25,6 +25,8 @@ public sealed class CoreRegistry
     internal CoreRegistry(RecordSchema schema, AttributeSchema attributes, PacketRegistry packets,
                          TickSchedule tick, EquipSlotSet equipSlots, OverheadBarSet overheadBars,
                          DisplayFieldSet displayFields, PacketRoutes packetRoutes,
+                         GameActions actions, IReadOnlyList<IActionHandler> actionHandlers,
+                         GamePanels panels,
                          IReadOnlyList<IWorldObserver> observers,
                          IReadOnlyList<IDeathPolicy> deathPolicies, IReadOnlyList<ILingerPolicy> lingerPolicies,
                          IReadOnlyList<ICoreModule> modules, IReadOnlyList<string> moduleNames)
@@ -37,6 +39,9 @@ public sealed class CoreRegistry
         OverheadBars = overheadBars;
         DisplayFields = displayFields;
         PacketRoutes = packetRoutes;
+        Actions = actions;
+        ActionHandlers = actionHandlers;
+        Panels = panels;
         Observers = observers;
         DeathPolicies = deathPolicies;
         LingerPolicies = lingerPolicies;
@@ -71,6 +76,17 @@ public sealed class CoreRegistry
     /// <summary>Where a module's own packets go, indexed by command. Empty in an engine with no game
     /// loaded, and then every command belongs to Core's own handler.</summary>
     public PacketRoutes PacketRoutes { get; }
+
+    /// <summary>What a game lets the player do, grouped by the surface that offers it. Empty in an
+    /// engine with no game loaded, and then every menu holds only Core's own items.</summary>
+    public GameActions Actions { get; }
+
+    /// <summary>What does those things, in the order their modules were configured.</summary>
+    public IReadOnlyList<IActionHandler> ActionHandlers { get; }
+
+    /// <summary>The screens this game paints, by the id that opens one. Empty in an engine with no game
+    /// loaded, and then the client shows only Core's own windows.</summary>
+    public GamePanels Panels { get; }
 
     /// <summary>What is told when something happens in the world, in the order their modules were
     /// configured. Empty in an engine with no game loaded, which then tells nobody anything.</summary>
@@ -183,6 +199,9 @@ internal sealed class CoreBuilder : ICoreBuilder
     private readonly List<OverheadBar> _overheadBars = [];
     private readonly List<DisplayField> _displayFields = [];
     private readonly List<IPacketRoute> _packetRoutes = [];
+    private readonly List<GameAction> _actions = [];
+    private readonly List<GamePanel> _panels = [];
+    private readonly List<IActionHandler> _actionHandlers = [];
     private readonly List<IWorldObserver> _observers = [];
     private readonly List<IDeathPolicy> _deathPolicies = [];
     private readonly List<ILingerPolicy> _lingerPolicies = [];
@@ -302,6 +321,65 @@ internal sealed class CoreBuilder : ICoreBuilder
         _overheadBars.Add(bar);
     }
 
+    public void AddPanel(GamePanel panel)
+    {
+        ArgumentNullException.ThrowIfNull(panel);
+        Refuse();
+
+        if (string.IsNullOrWhiteSpace(panel.Id))
+            throw new CoreModuleException($"Module '{_module}' declared a panel with no id.", _module);
+
+        if (_panels.Any(p => string.Equals(p.Id, panel.Id, StringComparison.Ordinal)))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared panel '{panel.Id}', which is already declared.", _module);
+        }
+
+        _panels.Add(panel);
+    }
+
+    public void AddAction(GameAction action)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        Refuse();
+
+        if (string.IsNullOrWhiteSpace(action.Id))
+            throw new CoreModuleException($"Module '{_module}' declared an action with no id.", _module);
+
+        if (_actions.Any(a => string.Equals(a.Id, action.Id, StringComparison.Ordinal)))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared action '{action.Id}', which is already declared.", _module);
+        }
+
+        _actions.Add(action);
+    }
+
+    public void AddActionHandler(IActionHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        Refuse();
+
+        if (handler.Actions.Count == 0)
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared action handler '{handler.Name}', which owns no actions.", _module);
+        }
+
+        foreach (string id in handler.Actions)
+        {
+            var clash = _actionHandlers.FirstOrDefault(h => h.Actions.Contains(id, StringComparer.Ordinal));
+            if (clash is not null)
+            {
+                throw new CoreModuleException(
+                    $"Module '{_module}' declared handler '{handler.Name}' for action '{id}', "
+                    + $"which '{clash.Name}' already owns.", _module);
+            }
+        }
+
+        _actionHandlers.Add(handler);
+    }
+
     public void AddPacketRoute(IPacketRoute route)
     {
         ArgumentNullException.ThrowIfNull(route);
@@ -371,6 +449,7 @@ internal sealed class CoreBuilder : ICoreBuilder
         return new CoreRegistry(schema, Attributes.Build(), Packets.Build(), _tick.Build(),
                                 new EquipSlotSet(_equipSlots), new OverheadBarSet(_overheadBars),
                                 new DisplayFieldSet(_displayFields), new PacketRoutes([.. _packetRoutes]),
+                                new GameActions(_actions), [.. _actionHandlers], new GamePanels([.. _panels]),
                                 [.. _observers], [.. _deathPolicies],
                                 [.. _lingerPolicies], modules, moduleNames);
     }

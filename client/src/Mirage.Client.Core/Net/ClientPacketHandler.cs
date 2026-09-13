@@ -186,6 +186,12 @@ public sealed partial class ClientPacketHandler : IClientEvents
             case DisplayFieldsPacket p:
                 HandleDisplayFields(p);
                 break;
+            case GameActionsPacket p:
+                HandleGameActions(p);
+                break;
+            case GamePanelsPacket p:
+                HandleGamePanels(p);
+                break;
             case AttributeSyncPacket p:
                 HandleAttributeSync(p);
                 break;

@@ -97,5 +97,13 @@ public sealed class ConversationChoice
     /// <summary>A terminal hand-off into the NPC's other roles, or None for pure text navigation.</summary>
     public ConversationAction Action { get; set; }
 
+    /// <summary>A game's own verb, by the id it declared. Blank for a choice that only navigates.
+    ///
+    /// <para><b>This is how a conversation reaches something Core has no name for.</b> The engine's own
+    /// hand-offs are a closed set because Core knows exactly two roles an NPC can have; a game has as
+    /// many as it declares, so a choice names one by id the same way a menu item does. Picking it invokes
+    /// the action at the speaker's square and ends the conversation.</para></summary>
+    public string ActionId { get; set; } = "";
+
     public ConversationChoice Clone() => (ConversationChoice)MemberwiseClone();
 }

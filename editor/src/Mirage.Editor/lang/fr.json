@@ -604,6 +604,7 @@
   "ConversationEditor_NodeTextPlaceholder": "Ce que dit le PNJ...",
   "ConversationEditor_ChoiceLabelPlaceholder": "Texte du choix...",
   "ConversationEditor_ChoiceNextPlaceholder": "Aller à...",
+  "ConversationEditor_ChoiceActionIdPlaceholder": "Id d'action du jeu",
   "ConversationEditor_SaveButton": "Enregistrer la conversation",
   "ConversationEditor_ViewText": "Texte",
   "ConversationEditor_ViewGraph": "Graphe",

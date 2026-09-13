@@ -93,6 +93,7 @@ public sealed partial class GameplayScreen : IGameScreen
     private readonly MailPanel _mail = new();
     private readonly SocialPanel _social = new();
     private readonly ConversationPanel _conversation = new();
+    private readonly GamePanelView _gamePanel = new();
     private readonly DeathPanel _death = new();   // uncloseable death overlay
     private readonly ModerationPanel _moderation = new();   // Creator only; gated in the panel and again on the server
     private bool _wasDead;                          // alive→dead edge, to close open panels once on death
@@ -114,6 +115,7 @@ public sealed partial class GameplayScreen : IGameScreen
     private const int PanelMarket = PanelSlots.Market;
     private const int PanelTrade = PanelSlots.Trade;
     private const int PanelConversation = PanelSlots.Conversation;
+    private const int PanelGame = PanelSlots.GamePanel;
     private const int PanelModeration = PanelSlots.Moderation;
 
     // ── Panel registry ────────────────────────────────────────────────────────
@@ -219,6 +221,13 @@ public sealed partial class GameplayScreen : IGameScreen
             (sb, font, _, active, _) => _conversation.Draw(sb, font, _ctx.State, active),
             () => _conversation.Close());
 
+        // Whichever screen the loaded game has open. Registered like any other panel: Core knows it has
+        // one, and knows nothing about what is in it.
+        _panels[PanelGame] = new(PanelGame, _gamePanel,
+            (input, _) => _gamePanel.Update(input, _ctx.State, _ctx.Sender),
+            (sb, font, _, active, _) => _gamePanel.Draw(sb, font, _ctx.State, active),
+            () => _gamePanel.Close());
+
         // Toggling asks the server for a fresh report as it opens, so the panel is never up with nothing
         // in it — see ModerationPanel.Open.
         _panels[PanelModeration] = new(PanelModeration, _moderation,
@@ -242,7 +251,7 @@ public sealed partial class GameplayScreen : IGameScreen
     {
         PanelInventory, PanelShop,
         PanelOptions, PanelHelp, PanelControls, PanelBank, PanelInn, PanelMail, PanelSocial, PanelMarket, PanelTrade,
-        PanelConversation
+        PanelConversation, PanelGame
     };
 
     // Keyboard focus tracking. _panelFocused is set when a panel is clicked or opened

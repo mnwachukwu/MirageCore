@@ -9,7 +9,8 @@ using System.Linq;
 namespace Mirage.Editor.ViewModels;
 
 /// <summary>One authored dialogue choice: a label, the next node to go to (a picker of the conversation's own
-/// nodes; "(End)" = end the conversation), and an optional hand-off Action. Mirrors the other row models,
+/// nodes; "(End)" = end the conversation), an optional hand-off Action, and an optional game action id.
+/// Mirrors the other row models,
 /// but the NextNode picker is SELF-REFERENTIAL to the conversation (its node ids can have gaps, so it's a linear
 /// find, not an id-indexed array). An empty row (blank label) is dropped on save.</summary>
 public sealed partial class ConversationChoiceRowViewModel : ObservableObject
@@ -23,10 +24,15 @@ public sealed partial class ConversationChoiceRowViewModel : ObservableObject
     // Localized placeholders bound inside the choice DataTemplate.
     public string LabelPlaceholder => EditorStrings.Get(EditorStrings.ConversationEditor_ChoiceLabelPlaceholder);
     public string NextPlaceholder => EditorStrings.Get(EditorStrings.ConversationEditor_ChoiceNextPlaceholder);
+    public string ActionIdPlaceholder => EditorStrings.Get(EditorStrings.ConversationEditor_ChoiceActionIdPlaceholder);
 
     [ObservableProperty] private string _label = "";
     [ObservableProperty] private int _nextNodeId;
     [ObservableProperty] private ConversationAction _action;
+
+    /// <summary>A game's own verb, by id. Free text rather than a picker: the actions a world has are
+    /// the loaded module's, and an editor authoring a world offline has no module to ask.</summary>
+    [ObservableProperty] private string _actionId = "";
 
     public bool IsDirty { get; private set; }
 
@@ -54,6 +60,7 @@ public sealed partial class ConversationChoiceRowViewModel : ObservableObject
         _label = c.Label;
         _nextNodeId = c.NextNodeId;
         _action = c.Action;
+        _actionId = c.ActionId;
     }
 
     partial void OnLabelChanged(string value) => IsDirty = true;
@@ -63,6 +70,7 @@ public sealed partial class ConversationChoiceRowViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectedNextNode));
     }
     partial void OnActionChanged(ConversationAction value) => IsDirty = true;
+    partial void OnActionIdChanged(string value) => IsDirty = true;
 
     /// <summary>An unused choice row — blank label. Dropped when the conversation is saved.</summary>
     public bool IsEmpty => string.IsNullOrWhiteSpace(Label);
@@ -75,5 +83,6 @@ public sealed partial class ConversationChoiceRowViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectedNextNode));
     }
 
-    public ConversationChoice ToRecord() => new() { Label = Label, NextNodeId = NextNodeId, Action = Action };
+    public ConversationChoice ToRecord() =>
+        new() { Label = Label, NextNodeId = NextNodeId, Action = Action, ActionId = ActionId.Trim() };
 }

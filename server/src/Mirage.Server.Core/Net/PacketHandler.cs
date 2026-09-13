@@ -62,6 +62,10 @@ public sealed partial class PacketHandler
     /// every command below belongs to Core.</summary>
     private readonly PacketRoutes _routes;
 
+    /// <summary>What does the things a game lets the player do. Empty for an engine with no game
+    /// loaded, and then an invoke names an action nothing declared and is dropped.</summary>
+    private readonly IReadOnlyList<IActionHandler> _actionHandlers;
+
     /// <summary>Now as a Unix second, off the injected clock — used by the ban/mute expiry, playtime
     /// and mail-maturity handlers.</summary>
     private long NowUtc => _clock.UtcNowUnix;
@@ -96,7 +100,9 @@ public sealed partial class PacketHandler
         CoreRegistry? registry = null,
         IClock? clock = null, IRandomSource? rng = null, ServerConfig? config = null)
     {
-        _routes = (registry ?? CoreRegistry.CoreOnly).PacketRoutes;
+        var loaded = registry ?? CoreRegistry.CoreOnly;
+        _routes = loaded.PacketRoutes;
+        _actionHandlers = loaded.ActionHandlers;
         _world = world;
         _pm = pm;
         _dispatcher = dispatcher;
@@ -277,6 +283,9 @@ public sealed partial class PacketHandler
         {
             switch (packet)
             {
+                case InvokeActionPacket p:
+                    HandleInvokeAction(index, p);
+                    break;
                 // ── Pre-login ────────────────────────────────────────────────
                 case NewAccountPacket p:
                     HandleNewAccount(index, p);

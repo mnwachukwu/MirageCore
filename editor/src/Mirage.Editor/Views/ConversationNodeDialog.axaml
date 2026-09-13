@@ -5,7 +5,7 @@
         xmlns:vm="using:Mirage.Editor.ViewModels"
         x:DataType="vm:ConversationNodeRowViewModel"
         x:Class="Mirage.Editor.Views.ConversationNodeDialog"
-        Width="620" Height="540" MinWidth="460" MinHeight="360"
+        Width="760" Height="540" MinWidth="600" MinHeight="360"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False">
 
@@ -30,7 +30,7 @@
         <ItemsControl ItemsSource="{Binding Choices}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:ConversationChoiceRowViewModel">
-              <Grid ColumnDefinitions="2*,2*,*,34" HorizontalAlignment="Stretch" Margin="0,0,0,4">
+              <Grid ColumnDefinitions="2*,2*,*,*,34" HorizontalAlignment="Stretch" Margin="0,0,0,4">
                 <TextBox Grid.Column="0" Text="{Binding Label}" PlaceholderText="{Binding LabelPlaceholder}"/>
                 <controls:DropdownAutoCompleteBox Grid.Column="1" Margin="4,0,0,0"
                                  ItemsSource="{Binding NextNodeEntries}"
@@ -40,7 +40,9 @@
                                  PlaceholderText="{Binding NextPlaceholder}"/>
                 <ComboBox Grid.Column="2" Margin="4,0,0,0" ItemsSource="{Binding Actions}"
                           SelectedItem="{Binding Action}" HorizontalAlignment="Stretch"/>
-                <Button Grid.Column="3" Content="-" FontWeight="Bold"
+                <TextBox Grid.Column="3" Margin="4,0,0,0" Text="{Binding ActionId}"
+                         PlaceholderText="{Binding ActionIdPlaceholder}"/>
+                <Button Grid.Column="4" Content="-" FontWeight="Bold"
                         Command="{Binding $parent[ItemsControl].((vm:ConversationNodeRowViewModel)DataContext).RemoveChoiceCommand}"
                         CommandParameter="{Binding}"
                         Classes="glyph" Margin="4,0,0,0"

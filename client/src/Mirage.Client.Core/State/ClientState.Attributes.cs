@@ -24,6 +24,14 @@ public sealed partial class ClientState
     /// otherwise, and empty for good in a world whose game declared none.</summary>
     public DisplayFieldSet DisplayFields { get; set; } = DisplayFieldSet.Empty;
 
+    /// <summary>What this game lets the player do, grouped by the surface that offers it. Empty until
+    /// the server says otherwise, and empty for good in a world whose game declared none.</summary>
+    public GameActions Actions { get; set; } = GameActions.Empty;
+
+    /// <summary>The screens this game paints, by the id that opens one. Empty until the server says
+    /// otherwise, and empty for good in a world whose game declared none.</summary>
+    public GamePanels Panels { get; set; } = GamePanels.Empty;
+
     /// <summary>Bumped whenever any body's attributes change, so a panel can redraw on a change rather
     /// than re-reading every frame.</summary>
     public int AttributeVersion { get; set; }

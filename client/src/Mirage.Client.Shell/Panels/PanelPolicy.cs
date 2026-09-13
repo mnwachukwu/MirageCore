@@ -19,8 +19,12 @@ public static class PanelSlots
     public const int Conversation = 11;
     public const int Moderation = 12;
 
+    /// <summary>Whichever screen the loaded game has open. One slot rather than one per declared panel:
+    /// a game that could stack windows on a client it does not control could bury the player's own.</summary>
+    public const int GamePanel = 13;
+
     /// <summary>Number of slots — the registry and the policy table are both this long.</summary>
-    public const int Count = Moderation + 1;
+    public const int Count = GamePanel + 1;
 }
 
 /// <summary>
@@ -97,6 +101,10 @@ public static class PanelPolicies
         // them behind its back.
         t[PanelSlots.Shop] = new("Shop", PlayerToggleable: false, BlocksMovement: true, ClosesOnLeave: true, CountsAsOpenForEscape: true);
         t[PanelSlots.Market] = new("Market", PlayerToggleable: true, BlocksMovement: true, ClosesOnLeave: false, CountsAsOpenForEscape: true);
+        // A declared panel is opened by a game's own action, never by a key, so there is no toggle entry
+        // point for a keybind to reach. Escape still closes it, and it closes on leaving because its
+        // contents are this character's own values.
+        t[PanelSlots.GamePanel] = new(null, PlayerToggleable: false, BlocksMovement: false, ClosesOnLeave: true, CountsAsOpenForEscape: true);
         t[PanelSlots.Conversation] = new(null, PlayerToggleable: false, BlocksMovement: true, ClosesOnLeave: true, CountsAsOpenForEscape: true);
 
         // Trade is handled ahead of the generic Escape path (Escape CANCELS the trade rather than

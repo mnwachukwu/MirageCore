@@ -111,6 +111,11 @@ public sealed class ClientPacketSender
     public void SendNpcInteract(int map, int slot, NpcInteractChoice choice = NpcInteractChoice.Auto)
         => _transport.Send(new NpcInteractPacket { MapNum = map, NpcSlot = slot, Choice = choice });
 
+    /// <summary>The player picked one of the game's own actions, on a square. The id came from the
+    /// server and goes straight back; this client never knows what it means.</summary>
+    public void SendInvokeAction(string actionId, int mapNum, int x, int y)
+        => _transport.Send(new InvokeActionPacket { Action = actionId, MapNum = mapNum, X = x, Y = y });
+
     // The client picks the target opportunistically from the rendered viewport (sprite-pixel
     // hit test) and sends its identity proposal along with the clicked tile.  The server
     // validates the proposal by identity (not by tile), so a moving entity mid-step is still

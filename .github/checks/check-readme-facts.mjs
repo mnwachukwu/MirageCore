@@ -74,6 +74,21 @@ facts.push({
   files: ['README.md', 'docs/testing.md'],
 });
 
+// How many declaration seams ICoreBuilder offers. modules/README.md claims the demo game uses all of
+// them, which is a claim about two files at once: adding a seam and not using it in survey/ makes that
+// sentence false, and nothing else would say so.
+const coreModule = readFileSync(join(root, 'shared/src/Mirage.Shared/Extensibility/ICoreModule.cs'), 'utf8');
+const builderBody = coreModule.match(/interface ICoreBuilder\s*\{([\s\S]*?)\n\}/);
+const seams = builderBody
+  ? (builderBody[1].match(/^\s*(?:void Add\w+\(|[\w.]+(?:<[\w.]+>)?\s+\w+\s*\{\s*get;)/gm) ?? []).length
+  : null;
+facts.push({
+  what: 'declaration seams on ICoreBuilder',
+  actual: seams,
+  phrase: n => `all ${NUMBER_WORDS[n] ?? n} seams`,
+  files: ['modules/README.md'],
+});
+
 const problems = [];
 const passed = [];
 

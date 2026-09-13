@@ -105,3 +105,61 @@ public sealed record DisplayFieldsPacket : IPacket
         [property: JsonPropertyName("rgb")] int Rgb,
         [property: JsonPropertyName("style")] DisplayStyle Style);
 }
+
+/// <summary>
+/// S→C, once per session: what this game lets the player do.
+///
+/// <para><b>A caption and an id, and nothing else.</b> The client offers the label where the surface
+/// says and sends the id back when it is picked. No behaviour crosses the wire, which is what lets a
+/// stock client offer a verb it has never heard of without anything being deployed beside it.</para>
+///
+/// <para>A world whose game declares none sends an empty list, and every menu holds only Core's own
+/// items.</para>
+/// </summary>
+public sealed record GameActionsPacket : IPacket
+{
+    [JsonPropertyName("cmd")] public string Cmd => PacketNames.GameActions;
+
+    /// <summary>One row per declared action, already in the order they are offered.</summary>
+    [JsonPropertyName("actions")] public IReadOnlyList<Row> Actions { get; init; } = [];
+
+    public readonly record struct Row(
+        [property: JsonPropertyName("id")] string Id,
+        [property: JsonPropertyName("label")] string LabelKey,
+        [property: JsonPropertyName("surface")] ActionSurface Surface,
+        [property: JsonPropertyName("group")] string GroupKey);
+}
+
+/// <summary>
+/// C→S: the player picked one of the game's own actions.
+///
+/// <para>The square is what the client was pointing at, named the way every other placed thing is. How
+/// far a game's verb reaches is the game's question — Core does not know what the verb is, so it cannot
+/// know what distance would be reasonable for it.</para>
+/// </summary>
+public sealed record InvokeActionPacket : IPacket
+{
+    [JsonPropertyName("cmd")] public string Cmd => PacketNames.InvokeAction;
+
+    [JsonPropertyName("action")] public string Action { get; init; } = string.Empty;
+
+    [JsonPropertyName("map")] public int MapNum { get; init; }
+
+    [JsonPropertyName("x")] public int X { get; init; }
+
+    [JsonPropertyName("y")] public int Y { get; init; }
+}
+
+/// <summary>
+/// S→C, once per session: the screens this game paints.
+///
+/// <para>A title, the display surface that fills the body, and the verbs under it. Everything a panel
+/// SHOWS the client already holds as attributes, and everything it DOES is an action id — so a window a
+/// client was never compiled against costs one declaration and no code.</para>
+/// </summary>
+public sealed record GamePanelsPacket : IPacket
+{
+    [JsonPropertyName("cmd")] public string Cmd => PacketNames.GamePanels;
+
+    [JsonPropertyName("panels")] public IReadOnlyList<GamePanel> Panels { get; init; } = [];
+}

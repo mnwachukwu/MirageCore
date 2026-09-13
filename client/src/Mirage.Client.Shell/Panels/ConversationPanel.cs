@@ -94,7 +94,15 @@ public sealed class ConversationPanel : IGamePanel
                 return;
             }  // the synthesized "Leave"
             var ch = node.Choices[i];
-            if (ch.Action == ConversationAction.OpenShop)
+            if (ch.ActionId.Length > 0)
+            {
+                // The game's own verb, at the speaker's square. This client does not know what it does —
+                // it carries the id it was given and the place the conversation is happening.
+                var (x, y) = SpeakerTile(state);
+                sender.SendInvokeAction(ch.ActionId, _map, x, y);
+                IsOpen = false;
+            }
+            else if (ch.Action == ConversationAction.OpenShop)
             {
                 sender.SendNpcInteract(_map, _slot, NpcInteractChoice.Shop);
                 IsOpen = false;
@@ -109,6 +117,18 @@ public sealed class ConversationPanel : IGamePanel
             }
             return;   // one click per frame; the button bounds are stale after a node change
         }
+    }
+
+    /// <summary>Where the speaker is standing. A conversation happens at an NPC, so that is the square a
+    /// verb picked out of it acts on. An NPC the client has lost track of falls back to the player's own
+    /// tile rather than sending a square that names nothing.</summary>
+    private (int X, int Y) SpeakerTile(ClientState state)
+    {
+        var npcs = state.NpcsForMap(_map);
+        if (npcs is not null && SlotValidation.IsValidNpcSlot(_slot) && npcs[_slot].Num > 0)
+            return (npcs[_slot].X, npcs[_slot].Y);
+
+        return (state.Me.X, state.Me.Y);
     }
 
     private void LayoutChoiceButtons(Rectangle content, int count)

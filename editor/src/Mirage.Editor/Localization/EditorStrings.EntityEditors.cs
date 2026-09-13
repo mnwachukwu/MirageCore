@@ -135,6 +135,7 @@ public static partial class EditorStrings
     public const string ConversationEditor_NodeTextPlaceholder = nameof(ConversationEditor_NodeTextPlaceholder);
     public const string ConversationEditor_ChoiceLabelPlaceholder = nameof(ConversationEditor_ChoiceLabelPlaceholder);
     public const string ConversationEditor_ChoiceNextPlaceholder = nameof(ConversationEditor_ChoiceNextPlaceholder);
+    public const string ConversationEditor_ChoiceActionIdPlaceholder = nameof(ConversationEditor_ChoiceActionIdPlaceholder);
     public const string ConversationEditor_SaveButton = nameof(ConversationEditor_SaveButton);
     // The visual tree: the view picker, the canvas legend, and the node dialog a click opens.
     public const string ConversationEditor_ViewText = nameof(ConversationEditor_ViewText);

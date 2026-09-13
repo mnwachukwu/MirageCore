@@ -44,6 +44,24 @@ public sealed partial class ClientPacketHandler
             })]);
     }
 
+    /// <summary>What this game lets the player do. A caption and an id: the menus offer the first and
+    /// send back the second, and what the verb DOES never reaches here.</summary>
+    private void HandleGameActions(GameActionsPacket p)
+    {
+        _state.Actions = new GameActions(
+            [.. p.Actions.Select(a => new GameAction
+            {
+                Id = a.Id,
+                LabelKey = a.LabelKey,
+                Surface = a.Surface,
+                GroupKey = a.GroupKey,
+            })]);
+    }
+
+    /// <summary>The screens this game paints. Names and numbers all the way down, which is why the
+    /// declaration travels whole rather than being projected into a wire shape of its own.</summary>
+    private void HandleGamePanels(GamePanelsPacket p) => _state.Panels = new GamePanels([.. p.Panels]);
+
     private void HandleAttributeSync(AttributeSyncPacket p)
     {
         var bag = _state.BagFor(p.Who);

@@ -604,6 +604,7 @@
   "ConversationEditor_NodeTextPlaceholder": "What the NPC says...",
   "ConversationEditor_ChoiceLabelPlaceholder": "Choice text...",
   "ConversationEditor_ChoiceNextPlaceholder": "Go to...",
+  "ConversationEditor_ChoiceActionIdPlaceholder": "Game action id",
   "ConversationEditor_SaveButton": "Save Conversation",
   "ConversationEditor_ViewText": "Text",
   "ConversationEditor_ViewGraph": "Graph",

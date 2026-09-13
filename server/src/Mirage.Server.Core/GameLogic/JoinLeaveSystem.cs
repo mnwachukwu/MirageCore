@@ -120,6 +120,10 @@ public sealed class JoinLeaveSystem : GameSystem
         // Likewise what each surface shows.
         _dispatcher.SendTo(index, PacketBuilder.DisplayFields(_world.DisplayFields));
 
+        // And what this game lets the player do, so the menus can offer it.
+        _dispatcher.SendTo(index, PacketBuilder.GameActions(_world.Actions));
+        _dispatcher.SendTo(index, PacketBuilder.GamePanels(_world.Panels));
+
         CheckEquippedItems(index);
 
         // ── Send all game data ────────────────────────────────────────────────

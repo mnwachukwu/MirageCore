@@ -224,6 +224,12 @@ public static class PacketNames
     public const string OverheadBars = "overheadbars";
     // Which attributes each surface shows, sent once before anything that could fill a row.
     public const string DisplayFields = "displayfields";
+    // What a game lets the player do, sent once so a stock client can offer it.
+    public const string GameActions = "gameactions";
+    // The screens a game paints, sent once so a stock client can open one.
+    public const string GamePanels = "gamepanels";
+    // C→S: the player picked one of them.
+    public const string InvokeAction = "invokeaction";
     public const string AggressorRefresh = "aggressorrefresh";
     public const string SendMap = "sendmap";
     public const string MapItems = "mapitems";

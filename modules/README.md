@@ -35,7 +35,7 @@ hope.
 
 | Module | What it is | Seams it uses |
 |---|---|---|
-| [`survey/`](survey/) | Cataloguing plants. Deliberately not an RPG. | all twelve |
+| [`survey/`](survey/) | Cataloguing plants. Deliberately not an RPG. | all fifteen seams |
 
 ## Turning a game off
 
@@ -75,9 +75,15 @@ Everything a module declares reaches the client as *data* on join — the attrib
 slots, the overhead bars, the display fields. A stock client renders a game it has never heard of, and
 nothing is deployed alongside it.
 
-That holds while a module stays inside the declarative seams. A module wanting client *code* — a panel of
-its own, a conversation hand-off into something Core has no name for — cannot be deployed at all. That is
-the known gap, and closing it is part of what the scripting host is for.
+That includes what the player DOES, not only what they read. A game declares an action — an id, a caption,
+and where it is offered — and a stock client puts it in the menu and sends the id back when it is picked.
+The rule behind the verb runs on the server, so nothing about the behaviour crosses the wire and nothing
+is deployed beside the client.
+
+**What a module still cannot do is bring its own screen.** A panel of its own layout, a control Core has
+no name for: those are code, and a seam that shipped code to every player would be a different and much
+worse bargain. A game that needs one either builds its own client, or waits for the scripting host to
+answer it as content rather than as an assembly.
 
 **The server** loads C# modules at compile time, so deploying one means deploying a server built with it.
 There is no runtime assembly loading and none is planned: it would make a missing module look like a

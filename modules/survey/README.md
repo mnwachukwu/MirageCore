@@ -36,15 +36,28 @@ opposite reason, no change to Core.
 | `AddObserver` | joining enrols a surveyor; stepping spends stamina and sometimes finds something |
 | `AddDeathPolicy` | refuses every death |
 | `AddLingerPolicy` | the body stays half a minute after a dropped connection |
-| `Packets` + `AddPacketRoute` | `survey.note` — a surveyor writing down what is in front of them |
+| `Packets` + `AddPacketRoute` | `survey.note` — the typed message a client compiled against this game sends |
+| `AddAction` + `AddActionHandler` | "Note this down" in a square's menu, and "Open field book" beside it |
+| `AddPanel` | the Field Book — a window of this game's own, painted by a client that never heard of it |
 | `Start(IWorld)` | reads the authored species once, and keeps the world everything acts through |
 
 That is every seam `ICoreBuilder` offers.
 
-**Nothing sends `survey.note` yet.** A stock client has no button for a command Core has never heard of,
-so the route is reachable from a fork that ships its own client, and from a test. The server half is
-complete either way: the line deserializes into the module's own type and arrives at the module that owns
-it, with the sender's handle.
+Two ways in, one outcome. **Right-click a square and "Note this down" is there**, under a Survey heading,
+in a client that was never compiled against this module — it was told the caption and the id on join and
+sends the id back. A client that DID compile this module can send `SurveyNotePacket` instead and name the
+species it thinks it found, which a stock client cannot know.
+
+## The Field Book
+
+The second action in that menu opens a window rather than sending a verb, and the window is two things
+this module already declared. Its body is the display fields it put on the `survey.book` surface — the
+same four values the sidebar shows, at more length — and its one button carries `survey.note`, the same
+id the menu item carries. So a screen costs a declaration, not a client.
+
+What that buys is a game with a face of its own on a stock client. What it does not buy is layout: a
+panel is a title, a column of declared rows, and a row of buttons, in that order. A game wanting columns,
+a grid, or a list of its own wants a UI toolkit on the wire, which is a much larger thing than this.
 
 ## Installing its records
 

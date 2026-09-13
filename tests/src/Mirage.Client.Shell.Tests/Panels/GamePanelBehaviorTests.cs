@@ -36,6 +36,7 @@ public class GamePanelBehaviorTests
         yield return new MarketPanel();
         yield return new TradePanel();
         yield return new ConversationPanel();
+        yield return new GamePanelView();
         yield return new ModerationPanel();
         // Owned by MirageGame rather than the GameplayScreen registry — backtick opens it on every
         // screen — but it is a DraggablePanel like the rest and answers the contract the same way.

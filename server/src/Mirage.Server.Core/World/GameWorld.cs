@@ -47,6 +47,14 @@ public sealed class GameWorld
     /// module is loaded, and then every surface draws only what Core itself puts there.</summary>
     public DisplayFieldSet DisplayFields { get; set; } = DisplayFieldSet.Empty;
 
+    /// <summary>What this game lets the player do, from the compiled modules. Empty when no game module
+    /// is loaded, and then every menu holds only Core's own items.</summary>
+    public GameActions Actions { get; set; } = GameActions.Empty;
+
+    /// <summary>The screens this game paints, from the compiled modules. Empty when no game module is
+    /// loaded, and then the client shows only Core's own windows.</summary>
+    public GamePanels Panels { get; set; } = GamePanels.Empty;
+
     /// <summary>The records of every family a module declared. Empty when no game module is loaded, which
     /// is a world made of Core's own families and nothing else.</summary>
     public ModuleRecords ModuleRecords { get; } = new();

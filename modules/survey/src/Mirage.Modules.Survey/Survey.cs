@@ -39,6 +39,13 @@ public static class Survey
     /// <summary>The one place a surveyor can carry something.</summary>
     public const string Satchel = "satchel";
 
+    /// <summary>The field book: the screen a surveyor reads their own record in.</summary>
+    public const string FieldBook = "survey.fieldbook";
+
+    /// <summary>The display surface that fills it. Its own, so the sidebar and the book can show
+    /// different amounts of the same thing.</summary>
+    public const string BookSurface = "survey.book";
+
     // ── Tuning ────────────────────────────────────────────────────────────────
 
     /// <summary>What a rested surveyor starts the day with.</summary>

@@ -21,6 +21,19 @@ public static partial class PacketBuilder
                 new AttributeSchemaPacket.Row(d.Ordinal, d.Key, d.Visibility, d.LabelKey))],
         };
 
+    /// <summary>The screens this game paints. The declaration travels whole: it is already nothing but
+    /// names and numbers.</summary>
+    public static GamePanelsPacket GamePanels(GamePanels panels) => new() { Panels = panels.All };
+
+    /// <summary>What this game lets the player do. Sent once, like the rest of what a client has to be
+    /// told before it can draw a game it was not compiled against.</summary>
+    public static GameActionsPacket GameActions(GameActions actions) =>
+        new()
+        {
+            Actions = [.. actions.All.Select(a => new GameActionsPacket.Row(
+                a.Id, a.LabelKey, a.Surface, a.GroupKey))],
+        };
+
     /// <summary>What each surface shows about a body, in draw order. Sent once, beside the numbering:
     /// a field naming a key the client has no declaration for could never fill.</summary>
     public static DisplayFieldsPacket DisplayFields(DisplayFieldSet fields) =>

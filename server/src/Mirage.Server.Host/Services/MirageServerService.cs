@@ -115,6 +115,11 @@ public sealed class MirageServerService : IHostedService
         // arrive as ordinary syncs, so a row cannot show a number the attribute does not hold.
         _world.DisplayFields = _registry.DisplayFields;
 
+        // And the verbs it offers. The client is sent these on join and sends an id back; what the verb
+        // DOES stays here, which is why nothing has to be deployed beside the client.
+        _world.Actions = _registry.Actions;
+        _world.Panels = _registry.Panels;
+
         await LoadWorldDataAsync(ct);
 
         // Wire the level-up → quest-eligibility refresh now that every system exists (can't be done at

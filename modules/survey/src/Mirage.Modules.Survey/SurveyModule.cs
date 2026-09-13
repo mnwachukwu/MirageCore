@@ -37,6 +37,38 @@ public sealed class SurveyModule : ICoreModule
         builder.Packets.Register<SurveyNotePacket>(SurveyNotePacket.Command);
         builder.AddPacketRoute(_notes);
 
+        // The same thing a stock client can offer, with no packet type to compile against: a caption in
+        // the square's menu, and the id it sends back.
+        builder.AddAction(new GameAction
+        {
+            Id = SurveyRoute.NoteAction,
+            LabelKey = "Note this down",
+            GroupKey = "Survey",
+            Surface = ActionSurface.Tile,
+        });
+        builder.AddActionHandler(_notes);
+
+        // A screen of this game's own, opened from the same menu. It costs a declaration: the body is
+        // display fields on its own surface, the button is an action that already exists.
+        builder.AddPanel(new GamePanel
+        {
+            Id = Survey.FieldBook,
+            TitleKey = "Field Book",
+            Surface = Survey.BookSurface,
+            Width = 240,
+            Height = 180,
+            Buttons = [new PanelButton("Note this down", SurveyRoute.NoteAction)],
+        });
+        builder.AddAction(new GameAction
+        {
+            Id = "survey.openbook",
+            LabelKey = "Open field book",
+            GroupKey = "Survey",
+            Surface = ActionSurface.Tile,
+            Ordinal = 1,
+            OpensPanel = Survey.FieldBook,
+        });
+
         builder.AddTickWork(_recovery);
         builder.AddObserver(_observer);
         builder.AddDeathPolicy(new NothingDiesHere());
@@ -155,6 +187,29 @@ public sealed class SurveyModule : ICoreModule
         {
             ValueKey = Survey.Stamina, MaxKey = Survey.StaminaMax, LabelKey = "Stamina",
             Style = DisplayStyle.Meter, Ordinal = 3, Rgb = GameColor.Pack(120, 190, 90),
+        });
+
+        // The field book shows the same values at more length, on a surface of its own. One declaration
+        // per row, exactly as the sidebar takes — a surface is a name, not a kind of thing.
+        builder.AddDisplayField(new DisplayField
+        {
+            Surface = Survey.BookSurface, LabelKey = "Field record", Style = DisplayStyle.Heading, Ordinal = 0,
+        });
+        builder.AddDisplayField(new DisplayField
+        {
+            Surface = Survey.BookSurface, ValueKey = Survey.Rank, LabelKey = "Rank", Ordinal = 1,
+            Rgb = GameColor.Pack(200, 200, 160),
+        });
+        builder.AddDisplayField(new DisplayField
+        {
+            Surface = Survey.BookSurface, ValueKey = Survey.Specimens, LabelKey = "Specimens catalogued",
+            Ordinal = 2, Rgb = GameColor.Pack(200, 200, 160),
+        });
+        builder.AddDisplayField(new DisplayField
+        {
+            Surface = Survey.BookSurface, ValueKey = Survey.Stamina, MaxKey = Survey.StaminaMax,
+            LabelKey = "Stamina", Style = DisplayStyle.Meter, Ordinal = 3,
+            Rgb = GameColor.Pack(120, 190, 90),
         });
     }
 }

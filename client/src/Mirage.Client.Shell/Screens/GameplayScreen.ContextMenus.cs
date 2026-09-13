@@ -10,7 +10,8 @@ using Mirage.Client.Shell.Localization;
 using Mirage.Client.Shell.Panels;
 using Mirage.Client.Shell.Rendering;
 using Mirage.Client.Shell.Ui;
-using Mirage.Shared;
+using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
 using System.Text;
@@ -176,6 +177,12 @@ public sealed partial class GameplayScreen : IGameScreen
         if (BuildTileLootItems(mapNum, tileX, tileY, wtx, wty) is { } loot)
             groups.Add((ClientStrings.Get(ClientStrings.ContextMenu_TileGround), loot));
 
+        // Then whatever the loaded game offers on a square, under its own heading. Below Core's items
+        // rather than above them: a player learns one menu, and a game's verbs arriving in the middle of
+        // it would move everything they already knew.
+        foreach (var (heading, items) in BuildGameActionGroups(mapNum, tileX, tileY))
+            groups.Add((heading, items));
+
         if (groups.Count == 0) return;
 
         var screen = new Rectangle(0, 0, UiHelper.RefW, UiHelper.RefH);
@@ -189,6 +196,57 @@ public sealed partial class GameplayScreen : IGameScreen
             foreach (var g in groups) top.Add(new ContextMenu.Item(g.Name, g.Items));
             _contextMenu.Open(at, "", top, screen, _gameFont);
         }
+    }
+
+    /// <summary>Do what a declared action says: open its screen, tell the server, or both.
+    ///
+    /// <para>A panel opens locally because its contents are attributes this client already holds — a
+    /// round trip would buy nothing. An action that also names a handler still sends, which is how a
+    /// screen that needs the server to prepare something says so.</para></summary>
+    private void InvokeGameAction(string actionId, string opensPanel, int mapNum, int tileX, int tileY)
+    {
+        if (opensPanel.Length > 0)
+        {
+            _gamePanel.Open(_ctx.State, opensPanel);
+            BringToFront(PanelGame);
+        }
+
+        _ctx.Sender.SendInvokeAction(actionId, mapNum, tileX, tileY);
+    }
+
+    /// <summary>The game's own verbs for a square, grouped by the heading each declared.
+    ///
+    /// <para><b>The client does not know what any of them mean.</b> It draws the caption it was given and
+    /// sends the id back with the square; the rule that follows runs on the server, where the game is.
+    /// That is what lets a stock client offer a verb it was never compiled against.</para></summary>
+    private List<(string Heading, List<ContextMenu.Item> Items)> BuildGameActionGroups(int mapNum, int tileX, int tileY)
+    {
+        var groups = new List<(string, List<ContextMenu.Item>)>();
+        var actions = _ctx.State.Actions.For(ActionSurface.Tile);
+        if (actions.Count == 0) return groups;
+
+        foreach (var byHeading in actions.GroupBy(a => a.GroupKey, StringComparer.Ordinal))
+        {
+            // A caption is a key a GAME supplied, so an unknown one shows the key rather than throwing:
+            // a missing translation is cosmetic, and taking the menu down over one is not.
+            string heading = byHeading.Key.Length > 0
+                ? ClientStrings.GetOrFallback(byHeading.Key, byHeading.Key)
+                : _ctx.State.GameName;
+
+            var items = new List<ContextMenu.Item>();
+            foreach (var action in byHeading)
+            {
+                string id = action.Id;
+                string opens = action.OpensPanel;
+                items.Add(new ContextMenu.Item(
+                    ClientStrings.GetOrFallback(action.LabelKey, action.LabelKey),
+                    () => InvokeGameAction(id, opens, mapNum, tileX, tileY)));
+            }
+
+            if (items.Count > 0) groups.Add((heading, items));
+        }
+
+        return groups;
     }
 
     /// <summary>
