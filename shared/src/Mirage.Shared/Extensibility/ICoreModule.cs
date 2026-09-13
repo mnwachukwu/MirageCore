@@ -52,4 +52,8 @@ public interface ICoreBuilder
     /// <summary>What this game says about dying — whether it happens, what it costs, where the body
     /// comes back. Declare none and <c>DeathSystem.Kill</c> moves the body and takes nothing.</summary>
     void AddDeathPolicy(IDeathPolicy policy);
+
+    /// <summary>What this game says about a dropped connection — how long the body stays in the world
+    /// before it is taken out. Declare none and a disconnect removes the player at once.</summary>
+    void AddLingerPolicy(ILingerPolicy policy);
 }

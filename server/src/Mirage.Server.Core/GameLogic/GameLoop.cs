@@ -33,6 +33,7 @@ public sealed class GameLoop : IDisposable
     private readonly TradeSystem _trade;
     private readonly DecalSystem _decals;
     private readonly TickSchedule _modules;
+    private readonly JoinLeaveSystem _joinLeave;
 
     /// <summary>Ticks since the loop started — the clock <see cref="DeadlineClock.Tick"/>
     /// deadlines are counted against. Read from the game thread.</summary>
@@ -74,7 +75,8 @@ public sealed class GameLoop : IDisposable
     public GameLoopMetrics Metrics { get; } = new();
 
     public GameLoop(GameWorld world, PlayerManager pm, NpcAiSystem npcAi, PartySystem party,
-                    ItemSystem items, PlayerSaver saver, TimeOfDaySystem tod, WeatherSystem weather,
+                    ItemSystem items, PlayerSaver saver, JoinLeaveSystem joinLeave,
+                    TimeOfDaySystem tod, WeatherSystem weather,
                     MailSystem mail, MarketSystem market, TradeSystem trade, DecalSystem decals,
                     IPersistenceService persistence, IBackgroundPersistence bg, ILogger<GameLoop> logger,
                     IClock? clock = null, CoreRegistry? registry = null)
@@ -85,6 +87,7 @@ public sealed class GameLoop : IDisposable
         _party = party;
         _items = items;
         _saver = saver;
+        _joinLeave = joinLeave;
         _tod = tod;
         _weather = weather;
         _mail = mail;
@@ -265,6 +268,9 @@ public sealed class GameLoop : IDisposable
     {
         long now = Environment.TickCount64;
         _npcAi.RunForAllMaps(now);
+        // A body a game asked to keep after a disconnect stops being kept here, so the game does not have
+        // to come back for it. Nothing to do in an engine where no policy ever asked for one.
+        _joinLeave.SweepGhosts();
         _party.Tick(now);
         _trade.Tick();          // cancel trades whose parties drifted out of range + expire stale invites
         _tod.Tick();

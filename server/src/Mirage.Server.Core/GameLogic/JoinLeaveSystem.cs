@@ -15,6 +15,7 @@ namespace Mirage.Server.Core.GameLogic;
 public sealed class JoinLeaveSystem : GameSystem
 {
     private readonly GameWorld _world;
+    private readonly IReadOnlyList<ILingerPolicy> _lingerPolicies;
     private readonly WorldEvents _events;
     private readonly PlayerManager _pm;
     private readonly PlayerSaver _saver;
@@ -40,10 +41,12 @@ public sealed class JoinLeaveSystem : GameSystem
                            ILogger<JoinLeaveSystem> logger,
                            IClock? clock = null,
                            Configuration.ServerConfig? config = null,
-                           WorldEvents? events = null)
+                           WorldEvents? events = null,
+                           IEnumerable<ILingerPolicy>? lingerPolicies = null)
         : base(dispatcher, clock: clock)
     {
         _config = config ?? Configuration.ServerConfig.Default;
+        _lingerPolicies = lingerPolicies is null ? [] : [.. lingerPolicies];
         _world = world;
         _events = events ?? WorldEvents.None;
         _pm = pm;
@@ -441,15 +444,12 @@ public sealed class JoinLeaveSystem : GameSystem
         // still a disconnected account, so either way this is the moment the member was last seen.
         _guilds.StampMemberLastSeen(index);
 
-        // If the player disconnects while in combat, leave a ghost in the world — UNLESS they're dead. A corpse
-        // never becomes a combat ghost: it always takes the normal-leave path below so the dead state (Dead +
-        // RespawnReadyUtc) is persisted and the body is removed via LeaveMap, and a relogin re-opens the death
-        // panel. A dead ghost would be uncleanable — RegenerationSystem skips Dead players, so its combat timer
-        // never expires to trigger ClearGhost — which is also what let a corpse re-stamped into combat block logout.
-        long now = Environment.TickCount64;
-        if (sp.IsInCombat(now) && !sp.Char.Dead)
+        // Whether the body stays behind is the loaded game's rule, and Core has none — so with no policy
+        // declared every disconnect takes the player straight out and none of the ghost path below runs.
+        var linger = LingerFor(index);
+        if (linger.IsSet)
         {
-            BecomeGhost(index);
+            BecomeGhost(index, linger);
             return;
         }
 
@@ -528,10 +528,42 @@ public sealed class JoinLeaveSystem : GameSystem
 
     // ── Ghost management ──────────────────────────────────────────────────────
 
-    private void BecomeGhost(int index)
+    // Leaving a body in the world after its connection goes is engine work — the roster, the viewport
+    // and the save path are the same ones every other departure uses. WHETHER to is a game's rule, and
+    // Core has none: with no policy declared, LeftGame never reaches any of this.
+
+    /// <summary>How long this player's body stays behind, from the loaded game. The first policy naming a
+    /// deadline wins; none of them naming one means the player leaves at once.</summary>
+    private Deadline LingerFor(int index)
+    {
+        if (_lingerPolicies.Count == 0) return Deadline.None;
+
+        var who = EntityHandle.ForPlayer(index);
+        foreach (var policy in _lingerPolicies)
+        {
+            var until = policy.LingerFor(who);
+            if (until.IsSet) return until;
+        }
+        return Deadline.None;
+    }
+
+    /// <summary>Takes every ghost whose time is up out of the world. Driven by the game loop, because a
+    /// body a game asked to keep has to stop being kept without the game coming back for it.</summary>
+    public void SweepGhosts()
+    {
+        long nowUtc = NowUtc;
+        for (int i = 1; i <= _pm.Slots; i++)
+        {
+            var sp = _pm[i];
+            if (sp.IsGhost && sp.GhostUntil.HasPassed(nowUtc, DeadlineClock.Utc)) ClearGhost(i);
+        }
+    }
+
+    private void BecomeGhost(int index, Deadline until)
     {
         var sp = _pm[index];
         var p = sp.Char;
+        sp.GhostUntil = until;
 
         _party.DisbandParty(index);
 
@@ -596,6 +628,7 @@ public sealed class JoinLeaveSystem : GameSystem
         sp.PartyPlayer = 0;
         sp.InParty = false;
         sp.PartyStarter = false;
+        sp.GhostUntil = Deadline.None;
         sp.CombatExpiresAt = 0;
         sp.WasInCombat = false;
         sp.AttackTimer = 0;

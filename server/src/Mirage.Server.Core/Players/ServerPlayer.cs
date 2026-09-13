@@ -1,5 +1,6 @@
 using Mirage.Server.Core.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Records;
 
 namespace Mirage.Server.Core.Players;
@@ -100,6 +101,10 @@ public sealed class ServerPlayer
     /// clamps how far behind it may fall, so a pause restores exactly one window's worth however long
     /// it lasted — and a slot that has never moved (0) starts full without being initialized.</para></summary>
     public long MoveAllowedAt { get; set; }
+
+    /// <summary>When this ghost's body comes out of the world, or <see cref="Deadline.None"/> for a
+    /// player who is not one. Set from what a game's <see cref="ILingerPolicy"/> asked for.</summary>
+    public Deadline GhostUntil { get; set; }
 
     public long CombatExpiresAt { get; set; }
     public bool WasInCombat { get; set; }

@@ -154,6 +154,7 @@ var host = Host.CreateDefaultBuilder(args)
         // DeathSystem takes every IDeathPolicy the container holds.
         services.AddSingleton<WorldEvents>();
         foreach (var policy in registry.DeathPolicies) services.AddSingleton(policy);
+        foreach (var policy in registry.LingerPolicies) services.AddSingleton(policy);
 
         // The line decoder is a static, so the table has to be installed rather than injected. Doing it
         // at composition time means a module's packets are readable before the first connection.

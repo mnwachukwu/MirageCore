@@ -47,7 +47,7 @@ public class ModuleTickTests
     // Same shape as the other loop tests: a constructor argument is not a dependency of every method.
     private static GameLoop Loop(CoreRegistry registry) =>
         new(null!, null!, null!, null!, null!, null!, null!, null!, null!, null!, null!, null!,
-            null!, null!, NullLogger<GameLoop>.Instance, clock: null, registry: registry);
+            null!, null!, null!, NullLogger<GameLoop>.Instance, clock: null, registry: registry);
 
     [Test]
     public void TheTickNumber_StartsAtZeroAndAdvancesByOne()

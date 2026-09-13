@@ -5,6 +5,7 @@ using Mirage.Server.Core.Persistence;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -507,6 +508,7 @@ public sealed partial class PacketHandler
 
         // Copy character state from ghost to the new connection slot.
         sp.Chars[charSlot] = ghost.Chars[charSlot];
+        sp.GhostUntil = Deadline.None;   // reclaimed: the body is a player again, and stops counting down
         sp.CombatExpiresAt = ghost.CombatExpiresAt;
         sp.WasInCombat = ghost.WasInCombat;
 

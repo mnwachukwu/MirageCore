@@ -11,7 +11,7 @@
 
 ## Overview
 
-This is a C# reimplementation (a remastering, if you will) of [Mirage Online v3.0.3](https://github.com/mnwachukwu/mirage-source-v3.0.3) — whose [original site](https://miragesource.net/) is still standing — a 2D tile-based MMORPG engine originally written in Visual Basic 6. The original's mechanics, formulas, and systems are the foundation, but combat, progression, and the economy have been substantially reworked and rebalanced (see [Changes from the VB6 original](docs/changes-from-vb6.md)) — so this is better described as *inspired by* Mirage Online than a faithful reproduction of it. It's a handwritten .NET 10 codebase built on [MonoGame](https://monogame.net/), [Avalonia](https://avaloniaui.net/), and [Serilog](https://serilog.net/) — no VB6 runtime, no transpilation, no auto-conversion tools. The client's game logic carries no MonoGame dependency, so another shell such as [Godot](https://godotengine.org/) could consume `Mirage.Client.Core` unchanged; MonoGame is the shell shipped here.
+This is a C# reimplementation (a remastering, if you will) of [Mirage Online v3.0.3](https://github.com/mnwachukwu/mirage-source-v3.0.3) — whose [original site](https://miragesource.net/) is still standing — a 2D tile-based MMORPG engine originally written in Visual Basic 6. The original's world model — tile maps, a seamless grid of them, records authored in an editor — is the foundation; the rules that made it one particular game are a module's, which is what lets a different game be built on the same engine. It's a handwritten .NET 10 codebase built on [MonoGame](https://monogame.net/), [Avalonia](https://avaloniaui.net/), and [Serilog](https://serilog.net/) — no VB6 runtime, no transpilation, no auto-conversion tools. The client's game logic carries no MonoGame dependency, so another shell such as [Godot](https://godotengine.org/) could consume `Mirage.Client.Core` unchanged; MonoGame is the shell shipped here.
 
 I don't know why I did this.
 
@@ -209,6 +209,5 @@ This file covers what the project is and how to get it running. Everything else 
 | [Testing](docs/testing.md) | What the six suites cover, how to run one on its own, and why the cross-platform matrix exists |
 | [Technical decisions](docs/architecture.md) | Choices that are not obvious from the code, recorded with the reasoning that produced them |
 | [Game data conventions](docs/game-data.md) | Rules the authored content is expected to follow, including music loop points |
-| [Changes from the VB6 original](docs/changes-from-vb6.md) | Additions, rebalances, bug fixes carried across, and the two features excluded by design |
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/mnwachukwu/tip)

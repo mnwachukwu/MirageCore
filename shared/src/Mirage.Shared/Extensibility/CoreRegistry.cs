@@ -24,7 +24,8 @@ public sealed class CoreRegistry
 
     internal CoreRegistry(RecordSchema schema, AttributeSchema attributes, PacketRegistry packets,
                          TickSchedule tick, EquipSlotSet equipSlots, IReadOnlyList<IWorldObserver> observers,
-                         IReadOnlyList<IDeathPolicy> deathPolicies, IReadOnlyList<string> moduleNames)
+                         IReadOnlyList<IDeathPolicy> deathPolicies, IReadOnlyList<ILingerPolicy> lingerPolicies,
+                         IReadOnlyList<string> moduleNames)
     {
         Schema = schema;
         Attributes = attributes;
@@ -33,6 +34,7 @@ public sealed class CoreRegistry
         EquipSlots = equipSlots;
         Observers = observers;
         DeathPolicies = deathPolicies;
+        LingerPolicies = lingerPolicies;
         ModuleNames = moduleNames;
     }
 
@@ -58,6 +60,10 @@ public sealed class CoreRegistry
 
     /// <summary>What this game says about dying, asked in the order their modules were configured.</summary>
     public IReadOnlyList<IDeathPolicy> DeathPolicies { get; }
+
+    /// <summary>What this game says about a dropped connection. Empty means a disconnect takes the player
+    /// straight out of the world.</summary>
+    public IReadOnlyList<ILingerPolicy> LingerPolicies { get; }
 
     /// <summary>The modules that were loaded, in the order they were configured, Core first.</summary>
     public IReadOnlyList<string> ModuleNames { get; }
@@ -151,6 +157,7 @@ internal sealed class CoreBuilder : ICoreBuilder
     private readonly List<EquipSlot> _equipSlots = [];
     private readonly List<IWorldObserver> _observers = [];
     private readonly List<IDeathPolicy> _deathPolicies = [];
+    private readonly List<ILingerPolicy> _lingerPolicies = [];
     private string _module = "(none)";
     private bool _frozen;
 
@@ -238,6 +245,13 @@ internal sealed class CoreBuilder : ICoreBuilder
         _deathPolicies.Add(policy);
     }
 
+    public void AddLingerPolicy(ILingerPolicy policy)
+    {
+        ArgumentNullException.ThrowIfNull(policy);
+        Refuse();
+        _lingerPolicies.Add(policy);
+    }
+
     internal CoreRegistry Freeze(IReadOnlyList<string> moduleNames)
     {
         Refuse();
@@ -246,7 +260,7 @@ internal sealed class CoreBuilder : ICoreBuilder
         var schema = new RecordSchema { Families = [.. _families], ChoiceSets = [.. _choices] };
         return new CoreRegistry(schema, Attributes.Build(), Packets.Build(), _tick.Build(),
                                 new EquipSlotSet(_equipSlots), [.. _observers], [.. _deathPolicies],
-                                moduleNames);
+                                [.. _lingerPolicies], moduleNames);
     }
 
     private void Refuse()
