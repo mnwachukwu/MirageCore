@@ -5,7 +5,8 @@ using Mirage.Server.Core.Localization;
 using Mirage.Server.Core.Persistence;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
-using Mirage.Shared;
+using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -57,6 +58,10 @@ public sealed partial class PacketHandler
     private readonly IRandomSource _rng;
     private readonly ServerConfig _config;
 
+    /// <summary>Where a module's own commands go. Empty for an engine with no game loaded, and then
+    /// every command below belongs to Core.</summary>
+    private readonly PacketRoutes _routes;
+
     /// <summary>Now as a Unix second, off the injected clock — used by the ban/mute expiry, playtime
     /// and mail-maturity handlers.</summary>
     private long NowUtc => _clock.UtcNowUnix;
@@ -88,8 +93,10 @@ public sealed partial class PacketHandler
         JoinLeaveSystem joinLeave, MovementSystem movement, ItemSystem items, ShopSystem shop, BankSystem bank, PlayerSpawnSystem playerSpawn,
         PartySystem party, GuildSystem guilds, MailSystem mail, MarketSystem market, TradeSystem trade, ConversationSystem conversations, SocialSystem social, SpawnSystem spawn, TimeOfDaySystem tod, WeatherSystem weather, GameLoop gameLoop,
         ILogger<PacketHandler> logger,
+        CoreRegistry? registry = null,
         IClock? clock = null, IRandomSource? rng = null, ServerConfig? config = null)
     {
+        _routes = (registry ?? CoreRegistry.CoreOnly).PacketRoutes;
         _world = world;
         _pm = pm;
         _dispatcher = dispatcher;
@@ -239,6 +246,26 @@ public sealed partial class PacketHandler
 
         IPacket? packet = PacketSerializer.TryDeserialize(jsonLine);
         if (packet is null) return;
+
+        // A module's own command, if this is one. Looked up rather than switched on, because the type
+        // is not one this assembly compiled — and checked BEFORE Core's switch because the two can never
+        // collide: a command is registered once, and a second registration stops the server at startup.
+        if (_routes.For(packet.Cmd) is { } route)
+        {
+            if (_pm[index].IsPlaying && _pm[index].Char.Dead && !route.AllowedWhileDead) return;
+
+            try
+            {
+                route.Handle(EntityHandle.ForPlayer(index), packet);
+            }
+            catch (Exception ex)
+            {
+                // A game's bug drops its own packet, not the player holding it.
+                _logger.LogError(ex, "Packet route {Route} failed on {Cmd} for index {Index}",
+                                 route.Name, packet.Cmd, index);
+            }
+            return;
+        }
 
         // The corpse gate. Everything a dead player may still have delivered is named in
         // AllowedWhileDead; anything else stops here, so a handler added later is refused by default.

@@ -36,10 +36,15 @@ opposite reason, no change to Core.
 | `AddObserver` | joining enrols a surveyor; stepping spends stamina and sometimes finds something |
 | `AddDeathPolicy` | refuses every death |
 | `AddLingerPolicy` | the body stays half a minute after a dropped connection |
+| `Packets` + `AddPacketRoute` | `survey.note` — a surveyor writing down what is in front of them |
 | `Start(IWorld)` | reads the authored species once, and keeps the world everything acts through |
 
-That is every seam `ICoreBuilder` offers except `Packets`, which registers a command a module can *read*
-and has nowhere to route it — the server's handler switch is closed over Core's own types.
+That is every seam `ICoreBuilder` offers.
+
+**Nothing sends `survey.note` yet.** A stock client has no button for a command Core has never heard of,
+so the route is reachable from a fork that ships its own client, and from a test. The server half is
+complete either way: the line deserializes into the module's own type and arrives at the module that owns
+it, with the sender's handle.
 
 ## Installing its records
 

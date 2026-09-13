@@ -20,6 +20,7 @@ public sealed class SurveyModule : ICoreModule
 {
     private readonly SurveyObserver _observer = new();
     private readonly SurveyTick _recovery = new();
+    private readonly SurveyRoute _notes = new();
 
     public string Name => "Survey";
 
@@ -30,6 +31,11 @@ public sealed class SurveyModule : ICoreModule
         DeclareWhatASurveyorCarries(builder);
         DeclareWhatTheWorldHolds(builder);
         DeclareWhatThePlayerSees(builder);
+
+        // Both halves of a module's own message: the command so a line naming it deserializes, and the
+        // route so the packet it becomes reaches this game rather than nobody.
+        builder.Packets.Register<SurveyNotePacket>(SurveyNotePacket.Command);
+        builder.AddPacketRoute(_notes);
 
         builder.AddTickWork(_recovery);
         builder.AddObserver(_observer);
@@ -52,6 +58,7 @@ public sealed class SurveyModule : ICoreModule
 
         _observer.Begin(world, catalogue);
         _recovery.Begin(world);
+        _notes.Begin(world);
     }
 
     // ── What a surveyor carries ───────────────────────────────────────────────

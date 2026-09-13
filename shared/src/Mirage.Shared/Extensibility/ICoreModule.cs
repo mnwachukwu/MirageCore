@@ -45,7 +45,8 @@ public interface ICoreBuilder
     /// <summary>Attribute keys this module wants synced or labeled.</summary>
     AttributeSchema.Builder Attributes { get; }
 
-    /// <summary>Packet commands this module can read.</summary>
+    /// <summary>Packet commands this module can read. Registering one makes a line naming it
+    /// deserialize; <see cref="AddPacketRoute"/> is what then delivers it somewhere.</summary>
     PacketRegistry.Builder Packets { get; }
 
     /// <summary>Record families this module adds, and the choice sets their fields draw from.</summary>
@@ -67,6 +68,10 @@ public interface ICoreBuilder
     /// nothing is drawn over anyone, which is what a game with nothing to show at a glance wants.
     /// At most <see cref="OverheadBarSet.Max"/>.</summary>
     void AddOverheadBar(OverheadBar bar);
+
+    /// <summary>Where this module's own packets go. Declare none and a command registered above
+    /// deserializes and is delivered to nobody.</summary>
+    void AddPacketRoute(IPacketRoute route);
 
     /// <summary>Work this module wants done on the tick.</summary>
     void AddTickWork(ITickWork work);

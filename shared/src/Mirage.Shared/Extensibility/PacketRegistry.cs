@@ -1,4 +1,5 @@
 using Mirage.Shared.Protocol;
+using System.Text.Json;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Mirage.Shared.Extensibility;
@@ -70,6 +71,27 @@ public sealed class PacketRegistry
         /// the line carries a top-level <c>index</c>.</summary>
         public Builder Register(string command, Parse withIndex, Parse withoutIndex)
             => Register(command, (json, hasIndex) => hasIndex ? withIndex(json, hasIndex) : withoutIndex(json, hasIndex));
+
+        /// <summary>Registers a command whose line is simply this type.
+        ///
+        /// <para>The common case, and the whole of what most packets need: read the line as
+        /// <typeparamref name="T"/> under the wire options, and answer null for one that does not fit
+        /// rather than throwing at the reader. A command that reads two different shapes depending on
+        /// whether the line carries an index takes the two-parse overload above instead.</para></summary>
+        public Builder Register<T>(string command) where T : IPacket
+            => Register(command, (json, _) =>
+            {
+                try
+                {
+                    return JsonSerializer.Deserialize<T>(json, PacketSerializer.Options);
+                }
+                catch (JsonException)
+                {
+                    // A malformed line is a line, not a crash: the reader answers null and the caller
+                    // drops it, which is what every other parse here does.
+                    return default;
+                }
+            });
 
         [SuppressMessage("Design", "CA1024:Use properties where appropriate",
             Justification = "Builds a new table on each call rather than exposing stored state.")]

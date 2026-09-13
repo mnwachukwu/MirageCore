@@ -24,7 +24,8 @@ public sealed class CoreRegistry
 
     internal CoreRegistry(RecordSchema schema, AttributeSchema attributes, PacketRegistry packets,
                          TickSchedule tick, EquipSlotSet equipSlots, OverheadBarSet overheadBars,
-                         DisplayFieldSet displayFields, IReadOnlyList<IWorldObserver> observers,
+                         DisplayFieldSet displayFields, PacketRoutes packetRoutes,
+                         IReadOnlyList<IWorldObserver> observers,
                          IReadOnlyList<IDeathPolicy> deathPolicies, IReadOnlyList<ILingerPolicy> lingerPolicies,
                          IReadOnlyList<ICoreModule> modules, IReadOnlyList<string> moduleNames)
     {
@@ -35,6 +36,7 @@ public sealed class CoreRegistry
         EquipSlots = equipSlots;
         OverheadBars = overheadBars;
         DisplayFields = displayFields;
+        PacketRoutes = packetRoutes;
         Observers = observers;
         DeathPolicies = deathPolicies;
         LingerPolicies = lingerPolicies;
@@ -65,6 +67,10 @@ public sealed class CoreRegistry
     /// <summary>What each surface shows about a body. Empty until a game says otherwise, and then every
     /// surface draws only what Core itself puts there.</summary>
     public DisplayFieldSet DisplayFields { get; }
+
+    /// <summary>Where a module's own packets go, indexed by command. Empty in an engine with no game
+    /// loaded, and then every command belongs to Core's own handler.</summary>
+    public PacketRoutes PacketRoutes { get; }
 
     /// <summary>What is told when something happens in the world, in the order their modules were
     /// configured. Empty in an engine with no game loaded, which then tells nobody anything.</summary>
@@ -176,6 +182,7 @@ internal sealed class CoreBuilder : ICoreBuilder
     private readonly List<EquipSlot> _equipSlots = [];
     private readonly List<OverheadBar> _overheadBars = [];
     private readonly List<DisplayField> _displayFields = [];
+    private readonly List<IPacketRoute> _packetRoutes = [];
     private readonly List<IWorldObserver> _observers = [];
     private readonly List<IDeathPolicy> _deathPolicies = [];
     private readonly List<ILingerPolicy> _lingerPolicies = [];
@@ -295,6 +302,36 @@ internal sealed class CoreBuilder : ICoreBuilder
         _overheadBars.Add(bar);
     }
 
+    public void AddPacketRoute(IPacketRoute route)
+    {
+        ArgumentNullException.ThrowIfNull(route);
+        Refuse();
+
+        if (route.Commands.Count == 0)
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared packet route '{route.Name}', which owns no commands.", _module);
+        }
+
+        foreach (string command in route.Commands)
+        {
+            if (string.IsNullOrWhiteSpace(command))
+                throw new CoreModuleException($"Module '{_module}' declared a packet route with a blank command.", _module);
+
+            // Two routes half-handling one command is a coin toss at runtime rather than an error, so it
+            // is an error here instead.
+            var clash = _packetRoutes.FirstOrDefault(r => r.Commands.Contains(command, StringComparer.Ordinal));
+            if (clash is not null)
+            {
+                throw new CoreModuleException(
+                    $"Module '{_module}' declared packet route '{route.Name}' for command '{command}', "
+                    + $"which '{clash.Name}' already owns.", _module);
+            }
+        }
+
+        _packetRoutes.Add(route);
+    }
+
     public void AddTickWork(ITickWork work)
     {
         ArgumentNullException.ThrowIfNull(work);
@@ -333,7 +370,7 @@ internal sealed class CoreBuilder : ICoreBuilder
         var schema = new RecordSchema { Families = [.. _families], ChoiceSets = [.. _choices] };
         return new CoreRegistry(schema, Attributes.Build(), Packets.Build(), _tick.Build(),
                                 new EquipSlotSet(_equipSlots), new OverheadBarSet(_overheadBars),
-                                new DisplayFieldSet(_displayFields),
+                                new DisplayFieldSet(_displayFields), new PacketRoutes([.. _packetRoutes]),
                                 [.. _observers], [.. _deathPolicies],
                                 [.. _lingerPolicies], modules, moduleNames);
     }

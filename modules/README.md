@@ -35,7 +35,7 @@ hope.
 
 | Module | What it is | Seams it uses |
 |---|---|---|
-| [`survey/`](survey/) | Cataloguing plants. Deliberately not an RPG. | every one but `Packets` |
+| [`survey/`](survey/) | Cataloguing plants. Deliberately not an RPG. | all twelve |
 
 ## Turning a game off
 
