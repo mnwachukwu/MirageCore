@@ -84,12 +84,15 @@ public sealed partial class SchemaRecordEditorViewModel : EditorViewModelBase<Sc
             ("Count", Records.Count), ("EntityType", TypeNamePlural));
     }
 
-    /// <summary>Rebuild as blank placeholders. A module's family has no name index in the login handshake,
-    /// so the list starts as slot numbers and each row fills in when it is selected, or sooner through
-    /// <see cref="EagerLoadAllAsync"/>.</summary>
+    /// <summary>Rebuild from whatever the bulk fetch brought down after connecting. A section opened
+    /// before that finished gets slot numbers, and each row fills in when it is selected.</summary>
     public void LoadOnline()
     {
-        Rebuild(_data.Limits.For(_family), _ => new AttributeBag(), isLoaded: false);
+        var fetched = _data.OnlineModuleRecords(_family);
+        bool haveThem = fetched.Length > 0;
+        Rebuild(_data.Limits.For(_family),
+                num => haveThem && num < fetched.Length ? fetched[num] : new AttributeBag(),
+                isLoaded: haveThem);
         StatusMessage = EditorStrings.Format(EditorStrings.EntityEditor_LoadedOnline,
             ("Count", Records.Count), ("EntityType", TypeNamePlural));
     }
@@ -115,6 +118,10 @@ public sealed partial class SchemaRecordEditorViewModel : EditorViewModelBase<Sc
 
         var bulk = await _conn.RequestAllRecordsAsync(_family.Id, ct);
         if (bulk is null) return;
+
+        // Kept on the data service as well as in the rows: a RecordRef field on ANOTHER family's form
+        // lists these by name, and that form has no way to reach this section's rows.
+        _data.AdoptOnlineModuleRecords(_family, bulk.Records.Select(r => (r.Num, r.Fields)));
 
         foreach (var entry in bulk.Records)
         {

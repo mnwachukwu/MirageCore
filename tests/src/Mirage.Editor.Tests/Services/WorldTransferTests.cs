@@ -1,5 +1,6 @@
 using Mirage.Editor.Services;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Records;
 using NUnit.Framework;
 
@@ -239,5 +240,147 @@ public class WorldTransferTests
             Assert.That(diff.OverCeiling, Is.Zero);
             Assert.That(diff.IsEmpty, Is.True);
         });
+    }
+
+    // ── A game's own families ─────────────────────────────────────────────────
+    //
+    // A world is what its folder holds, and a game's families are part of that. A transfer that carried
+    // only Core's would hand somebody half a world and report it as a complete one.
+
+    private static readonly RecordFamily Species = new()
+    {
+        Id = "Species",
+        Directory = "species",
+        FilePrefix = "species",
+        DefaultLimit = 3,
+        LimitIsFixed = true,
+        NameFieldKey = "name",
+        Fields = [new FieldDescriptor { Key = "name", Kind = FieldKind.Text }],
+    };
+
+    /// <summary>A world that also has a game's family, with one record authored in it.</summary>
+    private static WorldSnapshot WithSpecies(bool authored = true)
+    {
+        var slots = new AttributeBag[Species.DefaultLimit + 1];
+        for (int i = 0; i < slots.Length; i++) slots[i] = new AttributeBag();
+        if (authored) slots[2] = new AttributeBag().Set("name", "Vulpine").Set("baseSpeed", 65);
+
+        var blank = Blank();
+        return new WorldSnapshot
+        {
+            Limits = blank.Limits,
+            Items = blank.Items,
+            Npcs = blank.Npcs,
+            Shops = blank.Shops,
+            Quests = blank.Quests,
+            Conversations = blank.Conversations,
+            Maps = blank.Maps,
+            MapGroups = blank.MapGroups,
+            Families = [.. CoreRecordFamilies.World, Species],
+            ModuleRecords = new Dictionary<string, AttributeBag[]>(StringComparer.Ordinal)
+            {
+                [Species.Id] = slots,
+            },
+        };
+    }
+
+    [Test]
+    public async Task AGamesRecord_IsWrittenToTheFolderItsFamilyNames()
+    {
+        await WorldTransfer.WriteFolderAsync(_dir, WithSpecies());
+
+        Assert.That(File.Exists(Path.Combine(_dir, "species", "species2.json")), Is.True);
+    }
+
+    /// <summary>The manifest has to record the family too. Without it the folder reads back as a world of
+    /// Core's families with an unexplained directory beside it, and the records are silently lost.</summary>
+    [Test]
+    public async Task ADownloadedFolder_RecordsTheFamiliesItWasWrittenWith()
+    {
+        await WorldTransfer.WriteFolderAsync(_dir, WithSpecies());
+
+        var back = await WorldTransfer.ReadFolderAsync(_dir);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(back.FamilyOf("Species"), Is.Not.Null);
+            Assert.That(back.At("Species", 2), Is.TypeOf<AttributeBag>());
+            Assert.That(((AttributeBag)back.At("Species", 2)!)["name"].AsText(), Is.EqualTo("Vulpine"));
+        });
+    }
+
+    [Test]
+    public async Task WriteThenRead_LeavesNothingToUpload_WithAGamesFamily()
+    {
+        var world = WithSpecies();
+        await WorldTransfer.WriteFolderAsync(_dir, world);
+        var back = await WorldTransfer.ReadFolderAsync(_dir);
+
+        var diff = WorldTransfer.Compare(back, world);
+        Assert.Multiple(() =>
+        {
+            Assert.That(diff.Changes, Is.Empty,
+                "a world written and read back differs from itself: "
+                + string.Join(", ", diff.Changes.Select(c => $"{c.Section}#{c.Num} {c.Kind}")));
+            Assert.That(diff.OverCeiling, Is.Zero);
+        });
+    }
+
+    [Test]
+    public void AGamesRecordTheServerDoesNotHaveYet_ReadsAsAnAddition()
+    {
+        var diff = WorldTransfer.Compare(WithSpecies(), WithSpecies(authored: false));
+
+        var change = diff.Changes.Single();
+        Assert.Multiple(() =>
+        {
+            Assert.That(change.Section, Is.EqualTo("Species"));
+            Assert.That(change.Num, Is.EqualTo(2));
+            Assert.That(change.Kind, Is.EqualTo(WorldChangeKind.Added));
+            Assert.That(change.Name, Is.EqualTo("Vulpine"), "named by the field its family nominated");
+        });
+    }
+
+    /// <summary>A family the server does not have at all is the ceiling case: there is nowhere to put the
+    /// records, so they are reported as left behind rather than offered as changes that would fail.</summary>
+    [Test]
+    public void AFamilyTheServerDoesNotHave_LeavesItsRecordsBehind()
+    {
+        var diff = WorldTransfer.Compare(WithSpecies(), Blank());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(diff.Changes, Is.Empty);
+            Assert.That(diff.OverCeiling, Is.EqualTo(1));
+            Assert.That(diff.IsEmpty, Is.False, "something was left behind, so there is still news to give");
+        });
+    }
+
+    /// <summary>The other way round: the folder has no such family, the server does and has records in it.
+    /// Uploading the folder would blank them, and the diff says so before it happens.</summary>
+    [Test]
+    public void AFamilyOnlyTheServerHas_ReadsAsARemoval()
+    {
+        var diff = WorldTransfer.Compare(Blank(), WithSpecies());
+
+        var change = diff.Changes.Single();
+        Assert.Multiple(() =>
+        {
+            Assert.That(change.Section, Is.EqualTo("Species"));
+            Assert.That(change.Kind, Is.EqualTo(WorldChangeKind.Removed));
+            Assert.That(change.Name, Is.EqualTo("Vulpine"), "a removal is named after what is being lost");
+        });
+    }
+
+    // A key no field describes still travels: an older editor moving a world must not strip what a newer
+    // build of the game authored.
+    [Test]
+    public async Task AKeyTheFamilyDoesNotDescribe_SurvivesTheRoundTrip()
+    {
+        await WorldTransfer.WriteFolderAsync(_dir, WithSpecies());
+
+        var back = await WorldTransfer.ReadFolderAsync(_dir);
+
+        Assert.That(((AttributeBag)back.At("Species", 2)!)["baseSpeed"].AsLong(), Is.EqualTo(65));
     }
 }

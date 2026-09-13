@@ -62,8 +62,12 @@ public static class WorldTransfer
         }
     }
 
-    /// <summary>What an upload would send for one record.</summary>
-    public static IPacket SavePacketFor(string section, int num, object record, PacketContext ctx) => section switch
+    /// <summary>What an upload would send for one record.
+    ///
+    /// <para>Core's families each go through their own row view-model, so an upload writes exactly what an
+    /// author saving that record by hand would write. A game's family has no row to go through and needs
+    /// none: its record IS the bag the save packet carries.</para></summary>
+    public static IPacket SavePacketFor(RecordFamily family, int num, object record, PacketContext ctx) => family.Id switch
     {
         "Maps" => ZeroRevision(EditorDataService.BuildSaveMapPacket(num, (MapRecord)record)),
         "MapGroups" => new MapGroupRowViewModel(num, (MapGroupRecord)record, () => ctx.Maps, isLoaded: true)
@@ -76,7 +80,7 @@ public static class WorldTransfer
             () => ctx.Quests, ctx.IsCurrency).BuildSavePacket(),
         "Conversations" => new ConversationRowViewModel(num, (ConversationRecord)record, () => ctx.Npcs)
             .BuildSavePacket(),
-        _ => throw new ArgumentOutOfRangeException(nameof(section), section, "Unknown world section."),
+        _ => new EditorSaveRecordPacket { Family = family.Id, Num = num, Fields = (AttributeBag)record },
     };
 
     // The server stamps its own revision on save, so the one on the wire is dead data. Left in, every map
@@ -84,9 +88,9 @@ public static class WorldTransfer
     private static EditorSaveMapPacket ZeroRevision(EditorSaveMapPacket p) =>
         p with { Map = p.Map with { Revision = 0 } };
 
-    /// <summary>An empty record of the section's type. What a slot holds when nothing was authored in
+    /// <summary>An empty record of the family's type. What a slot holds when nothing was authored in
     /// it.</summary>
-    public static object Blank(string section, int num) => section switch
+    public static object Blank(RecordFamily family, int num) => family.Id switch
     {
         "Maps" => new MapRecord(),
         "MapGroups" => new MapGroupRecord { Index = num },
@@ -95,11 +99,11 @@ public static class WorldTransfer
         "Shops" => new ShopRecord(),
         "Quests" => new QuestRecord(),
         "Conversations" => new ConversationRecord(),
-        _ => throw new ArgumentOutOfRangeException(nameof(section), section, "Unknown world section."),
+        _ => new AttributeBag(),
     };
 
-    private static string Canon(string section, int num, object record, PacketContext ctx) =>
-        PacketSerializer.Serialize(SavePacketFor(section, num, record, ctx));
+    private static string Canon(RecordFamily family, int num, object record, PacketContext ctx) =>
+        PacketSerializer.Serialize(SavePacketFor(family, num, record, ctx));
 
     // ── Compare ──────────────────────────────────────────────────────────────
 
@@ -110,8 +114,11 @@ public static class WorldTransfer
         var changes = new List<WorldChange>();
         int overCeiling = 0;
 
-        foreach (string section in WorldSnapshot.Sections)
+        // Both sides' families, not this build's: a folder may carry a family the server does not have,
+        // and that is a thing to report rather than a section to skip.
+        foreach (var family in FamilyUnion(folder, server))
         {
+            string section = family.Id;
             int serverMax = server.CountOf(section);
             int folderMax = folder.CountOf(section);
 
@@ -122,22 +129,23 @@ public static class WorldTransfer
 
                 if (num > serverMax)
                 {
-                    // Nowhere on the server to put it. Only worth reporting when something is actually there.
-                    if (inFolder is not null && !IsBlank(section, num, inFolder, ctx)) overCeiling++;
+                    // Nowhere on the server to put it — above its ceiling, or a family it does not have at
+                    // all. Only worth reporting when something is actually there.
+                    if (inFolder is not null && !IsBlank(family, num, inFolder, ctx)) overCeiling++;
                     continue;
                 }
 
-                var blank = Blank(section, num);
-                string folderCanon = Canon(section, num, inFolder ?? blank, ctx);
-                string serverCanon = Canon(section, num, onServer ?? blank, ctx);
+                var blank = Blank(family, num);
+                string folderCanon = Canon(family, num, inFolder ?? blank, ctx);
+                string serverCanon = Canon(family, num, onServer ?? blank, ctx);
                 if (folderCanon == serverCanon) continue;
 
-                string blankCanon = Canon(section, num, blank, ctx);
+                string blankCanon = Canon(family, num, blank, ctx);
                 var kind = serverCanon == blankCanon ? WorldChangeKind.Added
                     : folderCanon == blankCanon ? WorldChangeKind.Removed
                     : WorldChangeKind.Changed;
                 // A removal is named after what is being lost, which is the server's copy.
-                string name = WorldSnapshot.NameOf(kind == WorldChangeKind.Removed ? onServer : inFolder);
+                string name = WorldSnapshot.NameOf(family, kind == WorldChangeKind.Removed ? onServer : inFolder);
                 changes.Add(new WorldChange(section, num, name, kind));
             }
         }
@@ -145,18 +153,39 @@ public static class WorldTransfer
         return new WorldDiff(changes, overCeiling);
     }
 
-    private static bool IsBlank(string section, int num, object record, PacketContext ctx) =>
-        Canon(section, num, record, ctx) == Canon(section, num, Blank(section, num), ctx);
+    /// <summary>Every family either side holds, the folder's order first. A family only the server has is
+    /// still walked: its authored records read as removals, which is what uploading a folder without them
+    /// would do.</summary>
+    private static IEnumerable<RecordFamily> FamilyUnion(WorldSnapshot folder, WorldSnapshot server) =>
+        [.. folder.Families,
+         .. server.Families.Where(f => folder.FamilyOf(f.Id) is null)];
+
+    private static bool IsBlank(RecordFamily family, int num, object record, PacketContext ctx) =>
+        Canon(family, num, record, ctx) == Canon(family, num, Blank(family, num), ctx);
 
     // ── Read a folder ────────────────────────────────────────────────────────
 
     /// <summary>Reads a world folder without touching the editor's open one.</summary>
     public static async Task<WorldSnapshot> ReadFolderAsync(string root)
     {
-        var limits = (await EditorDataService.LoadManifestAsync(root)).Records;
+        var manifest = await EditorDataService.LoadManifestAsync(root);
+        var limits = manifest.Records;
+        var families = manifest.Schema.Families;
+
+        // A game's families, read out of the folders their own declarations name. A folder written by a
+        // server running a game carries them; one written by a stock server has none.
+        var moduleRecords = new Dictionary<string, AttributeBag[]>(StringComparer.Ordinal);
+        foreach (var family in families.Where(f => CoreRecordFamilies.Find(f.Id) is null))
+        {
+            moduleRecords[family.Id] = await ReadDirAsync<AttributeBag>(
+                root, family.EffectiveDirectory, family.EffectiveFilePrefix, limits.For(family));
+        }
+
         return new WorldSnapshot
         {
             Limits = limits,
+            Families = families,
+            ModuleRecords = moduleRecords,
             Items = await ReadDirAsync<ItemRecord>(root, "items", "item", limits.Items),
             Npcs = await ReadDirAsync<NpcRecord>(root, "npcs", "npc", limits.Npcs),
             Shops = await ReadDirAsync<ShopRecord>(root, "shops", "shop", limits.Shops),
@@ -227,26 +256,32 @@ public static class WorldTransfer
         // The folder's own name and default map size are kept: a download states the SERVER's ceilings,
         // and says nothing about what the folder receiving them is called.
         var manifest = await EditorDataService.LoadManifestAsync(root);
-        await EditorDataService.SaveManifestAsync(root, manifest with { Records = world.Limits });
+        // The families as well as the ceilings: a folder that did not record them would read back as a
+        // world of Core's families with some unexplained directories beside it.
+        await EditorDataService.SaveManifestAsync(root, manifest with
+        {
+            Records = world.Limits,
+            Families = [.. world.Families.Where(f => CoreRecordFamilies.Find(f.Id) is null)],
+        });
 
         var ctx = new PacketContext(world);
         int written = 0;
-        int total = WorldSnapshot.Sections.Sum(world.CountOf);
+        int total = world.Sections.Sum(world.CountOf);
         int seen = 0;
 
-        foreach (string section in WorldSnapshot.Sections)
+        foreach (var family in world.Families)
         {
-            string dir = Path.Combine(root, DirectoryOf(section));
+            string dir = Path.Combine(root, family.EffectiveDirectory);
             Directory.CreateDirectory(dir);
-            int max = world.CountOf(section);
+            int max = world.CountOf(family.Id);
             for (int num = 1; num <= max; num++)
             {
                 ct.ThrowIfCancellationRequested();
                 seen++;
-                if (seen % 100 == 0) progress?.Report(new WorldTransferProgress(section, seen, total));
-                object? record = world.At(section, num);
-                if (record is null || IsBlank(section, num, record, ctx)) continue;
-                await WriteJsonAsync(Path.Combine(dir, $"{FileStemOf(section)}{num}.json"), record);
+                if (seen % 100 == 0) progress?.Report(new WorldTransferProgress(family.Id, seen, total));
+                object? record = world.At(family.Id, num);
+                if (record is null || IsBlank(family, num, record, ctx)) continue;
+                await WriteJsonAsync(Path.Combine(dir, family.FileNameFor(num)), record);
                 written++;
             }
         }
@@ -254,12 +289,6 @@ public static class WorldTransfer
         progress?.Report(new WorldTransferProgress("", total, total));
         return written;
     }
-
-    // Folder and filename both come off the family row, so a folder written here and a folder the server
-    // reads are the same string by construction rather than by two lists agreeing.
-    private static string DirectoryOf(string section) => CoreRecordFamilies.Get(section).EffectiveDirectory;
-
-    private static string FileStemOf(string section) => CoreRecordFamilies.Get(section).EffectiveFilePrefix;
 
     private static async Task WriteJsonAsync(string path, object value)
     {
@@ -277,6 +306,19 @@ public static class WorldTransfer
         IProgress<WorldTransferProgress>? progress = null, CancellationToken ct = default)
     {
         progress?.Report(new WorldTransferProgress("", 0, 0));
+
+        // What families this server has, from the schema it sent on login. One bulk fetch each, the same
+        // as Core's own — there is no line here per family, and a stock server adds no round-trips.
+        var families = WorldFamilies.All;
+        var moduleRecords = new Dictionary<string, AttributeBag[]>(StringComparer.Ordinal);
+        foreach (var family in families.Where(f => CoreRecordFamilies.Find(f.Id) is null))
+        {
+            ct.ThrowIfCancellationRequested();
+            progress?.Report(new WorldTransferProgress(family.Id, 0, 0));
+            var bulk = await conn.RequestAllRecordsAsync(family.Id, ct) ?? throw Refused(family.Id);
+            moduleRecords[family.Id] = Fill(bulk.Records, limits.For(family), r => r.Num,
+                _ => new AttributeBag(), (_, r) => r.Fields);
+        }
 
         var items = await conn.RequestAllItemsAsync(ct) ?? throw Refused("items");
         var npcs = await conn.RequestAllNpcsAsync(ct) ?? throw Refused("npcs");
@@ -301,6 +343,8 @@ public static class WorldTransfer
         return new WorldSnapshot
         {
             Limits = limits,
+            Families = families,
+            ModuleRecords = moduleRecords,
             Items = Fill(items.Items, limits.Items, p => p.ItemNum, _ => new ItemRecord(), (n, p) =>
             {
                 var row = new ItemRowViewModel(n, new ItemRecord(), false);
@@ -376,9 +420,11 @@ public static class WorldTransfer
         foreach (var change in changes)
         {
             ct.ThrowIfCancellationRequested();
+            // A change can only name a family the folder holds, because that is where the diff walked it.
+            if (folder.FamilyOf(change.Section) is not { } family) continue;
             // A removal blanks the server's slot, which is the folder's own content for that slot.
-            object record = folder.At(change.Section, change.Num) ?? Blank(change.Section, change.Num);
-            await conn.SendSaveAsync(SavePacketFor(change.Section, change.Num, record, ctx));
+            object record = folder.At(change.Section, change.Num) ?? Blank(family, change.Num);
+            await conn.SendSaveAsync(SavePacketFor(family, change.Num, record, ctx));
             done++;
             if (done % 10 == 0 || done == changes.Count)
                 progress?.Report(new WorldTransferProgress(change.Section, done, changes.Count));

@@ -4,7 +4,12 @@ using Mirage.Shared.Records;
 
 namespace Mirage.Editor.Services;
 
-/// <summary>What one side of a transfer holds: every record family, indexed by slot number.</summary>
+/// <summary>What one side of a transfer holds: every record family, indexed by slot number.
+///
+/// <para><b>Which families those are is a property of the side, not of the build.</b> A folder states them
+/// in its manifest and a server states them on the login response, so two sides can disagree about what
+/// families exist at all — which is exactly the case a transfer has to report rather than skip.</para>
+/// </summary>
 public sealed class WorldSnapshot
 {
     /// <summary>The ceilings this side runs on. A folder states them in its manifest; a server states them
@@ -19,13 +24,26 @@ public sealed class WorldSnapshot
     public MapGroupRecord[] MapGroups { get; init; } = [];
     public MapRecord[] Maps { get; init; } = [];
 
-    /// <summary>The section ids the transfer walks, in the order a reader sees them. The same ids the lock
-    /// table and the nav rail use, so labels and log lines come from one place.</summary>
-    public static readonly string[] Sections = [.. CoreRecordFamilies.World.Select(f => f.Id)];
+    /// <summary>The records of every family a MODULE declared, by family id and 1-based slot. Empty for a
+    /// world made of Core's own families and nothing else.</summary>
+    public IReadOnlyDictionary<string, AttributeBag[]> ModuleRecords { get; init; } =
+        new Dictionary<string, AttributeBag[]>(StringComparer.Ordinal);
+
+    /// <summary>Every family this side holds, in the order a reader sees them. Core's own unless a game
+    /// declared more.</summary>
+    public IReadOnlyList<RecordFamily> Families { get; init; } = CoreRecordFamilies.World;
+
+    /// <summary>The section ids the transfer walks. The same ids the lock table and the nav rail use, so
+    /// labels and log lines come from one place.</summary>
+    public IEnumerable<string> Sections => Families.Select(f => f.Id);
+
+    /// <summary>The family behind a section id, or null for one this side does not hold.</summary>
+    public RecordFamily? FamilyOf(string section) =>
+        Families.FirstOrDefault(f => string.Equals(f.Id, section, StringComparison.Ordinal));
 
     /// <summary>How many slots this side holds for <paramref name="section"/>. A section this side does
     /// not know holds none, so a transfer skips it rather than walking a ceiling it cannot fill.</summary>
-    public int CountOf(string section) => Limits.For(section);
+    public int CountOf(string section) => FamilyOf(section) is { } family ? Limits.For(family) : 0;
 
     /// <summary>The record in a slot, or null when the slot is past this side's ceiling.</summary>
     public object? At(string section, int num)
@@ -40,12 +58,15 @@ public sealed class WorldSnapshot
             "Shops" => num < Shops.Length ? Shops[num] : null,
             "Quests" => num < Quests.Length ? Quests[num] : null,
             "Conversations" => num < Conversations.Length ? Conversations[num] : null,
-            _ => null,
+            _ => ModuleRecords.TryGetValue(section, out var records) && num < records.Length
+                ? records[num]
+                : null,
         };
     }
 
-    /// <summary>The record's own name, for the diff list.</summary>
-    public static string NameOf(object? record) => record switch
+    /// <summary>The record's own name, for the diff list. A game's record is named by whichever field its
+    /// family nominated, which is the only thing the engine reads out of one.</summary>
+    public static string NameOf(RecordFamily? family, object? record) => record switch
     {
         MapRecord m => m.Name.Length > 0 ? m.Name : m.DisplayName,
         MapGroupRecord g => g.Name.Length > 0 ? g.Name : g.DisplayName,
@@ -54,6 +75,7 @@ public sealed class WorldSnapshot
         ShopRecord s => s.Name,
         QuestRecord q => q.Name,
         ConversationRecord c => c.Name,
+        AttributeBag bag when family is { NameFieldKey.Length: > 0 } => bag[family.NameFieldKey].AsText(),
         _ => "",
     };
 }
@@ -75,9 +97,10 @@ public sealed record WorldChange(string Section, int Num, string Name, WorldChan
 /// <summary>
 /// Everything an upload would do, and the one thing it cannot.
 ///
-/// <para><see cref="OverCeiling"/> counts authored folder records sitting above the server's ceiling for
-/// their family. They are not changes and cannot become any: the server has no slot to put them in. Stated
-/// rather than dropped, since a silently skipped record reads as a successful upload.</para>
+/// <para><see cref="OverCeiling"/> counts authored folder records the server has nowhere to put: above its
+/// ceiling for their family, or belonging to a family it does not have at all. They are not changes and
+/// cannot become any. Stated rather than dropped, since a silently skipped record reads as a successful
+/// upload.</para>
 /// </summary>
 public sealed record WorldDiff(IReadOnlyList<WorldChange> Changes, int OverCeiling)
 {

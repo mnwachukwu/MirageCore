@@ -547,10 +547,10 @@ public sealed partial class MainWindowViewModel : ObservableObject
                 ("Shops",   c => ShopEditor.EagerLoadAllAsync(c)),
                 ("Quests",  c => QuestEditor.EagerLoadAllAsync(c)),
                 ("Conversations", c => ConversationEditor.EagerLoadAllAsync(c)),
-                // Every family a module declared, each pulled down the same way. A section nobody has
-                // opened has no editor yet and is fetched when it is.
-                .. ModuleEditors.Select(ed =>
-                    (ed.Family.Id, (Func<CancellationToken, Task>)(c => ed.EagerLoadAllAsync(c)))),
+                // Every family a module declared, opened or not — see FetchModuleFamilyAsync.
+                .. WorldFamilies.All
+                    .Where(f => CoreRecordFamilies.Find(f.Id) is null)
+                    .Select(f => (f.Id, (Func<CancellationToken, Task>)(c => FetchModuleFamilyAsync(f, c)))),
             ];
             var currentSection = SelectedSection?.Name ?? "";
             foreach (var (label, loader) in steps.OrderBy(s => s.Label == currentSection ? 0 : 1))
@@ -570,6 +570,25 @@ public sealed partial class MainWindowViewModel : ObservableObject
             // Also runs on cancel, so a half-finished load still shows what it did get.
             RefreshReferences();
         }
+    }
+
+    /// <summary>Pulls one of a game's families down after connecting.
+    ///
+    /// <para>Fetched whether or not its section has been opened: a <c>RecordRef</c> field on one family's
+    /// form lists another family's records BY NAME, and the form has no way to reach a section that does
+    /// not exist yet. The records land on the data service either way; an open section fills its rows from
+    /// the same fetch.</para></summary>
+    private async Task FetchModuleFamilyAsync(RecordFamily family, CancellationToken ct)
+    {
+        if (_moduleEditors.TryGetValue(family.Id, out var editor))
+        {
+            await editor.EagerLoadAllAsync(ct);
+            return;
+        }
+
+        var bulk = await _conn.RequestAllRecordsAsync(family.Id, ct);
+        if (bulk is not null)
+            _data.AdoptOnlineModuleRecords(family, bulk.Records.Select(r => (r.Num, r.Fields)));
     }
 
     // The single teardown path — every disconnect route ends here so nothing is left half-online.

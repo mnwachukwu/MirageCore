@@ -189,6 +189,8 @@ public sealed class EditorDataService
         OfflineMaps = [];
         OfflineMapGroups = [];
         _moduleRecords.Clear();
+        _onlineModuleRecords.Clear();
+        _moduleFamilies.Clear();
         Limits = RecordLimits.Default;
         ClearEntryCache();
         RaiseEntriesInvalidated();
@@ -230,6 +232,10 @@ public sealed class EditorDataService
     // ── A game's own families ───────────────────────────────────────────────────────
 
     private readonly Dictionary<string, AttributeBag[]> _moduleRecords = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, AttributeBag[]> _onlineModuleRecords = new(StringComparer.Ordinal);
+    // The declaration behind each id. Every path that puts records in already holds the family, so a
+    // picker asking about one by id does not have to go back to the world for it.
+    private readonly Dictionary<string, RecordFamily> _moduleFamilies = new(StringComparer.Ordinal);
 
     /// <summary>The on-disk records of one family a module declared, 1-based. Empty for a family this
     /// folder holds nothing for — which is also what an online session answers, since there the records
@@ -255,12 +261,43 @@ public sealed class EditorDataService
         await WriteJsonAsync(Path.Combine(dir, family.FileNameFor(index)), record);
     }
 
+    /// <summary>What the SERVER holds for a game's family, from the one bulk fetch made after connecting.
+    /// Empty for a family nothing has fetched yet, which reads as a world with no records in it.</summary>
+    public AttributeBag[] OnlineModuleRecords(RecordFamily family)
+    {
+        ArgumentNullException.ThrowIfNull(family);
+        return _onlineModuleRecords.TryGetValue(family.Id, out var records) ? records : [];
+    }
+
+    /// <summary>Takes what a bulk fetch reported for a game's family, 1-based and padded to this world's
+    /// ceiling.</summary>
+    public void AdoptOnlineModuleRecords(RecordFamily family, IEnumerable<(int Num, AttributeBag Fields)> records)
+    {
+        ArgumentNullException.ThrowIfNull(family);
+        ArgumentNullException.ThrowIfNull(records);
+
+        var slots = new AttributeBag[Limits.For(family) + 1];
+        for (int i = 0; i < slots.Length; i++) slots[i] = new AttributeBag();
+        foreach (var (num, fields) in records)
+        {
+            if (num >= 1 && num < slots.Length) slots[num] = fields;
+        }
+
+        _moduleFamilies[family.Id] = family;
+        _onlineModuleRecords[family.Id] = slots;
+        RaiseEntriesInvalidated();
+    }
+
+    /// <summary>The records of a game's family, from wherever this session gets them.</summary>
+    public AttributeBag[] ModuleRecordsFor(RecordFamily family) =>
+        IsOnline ? OnlineModuleRecords(family) : OfflineModuleRecords(family);
+
     /// <summary>The picker list for a <see cref="FieldKind.RecordRef"/> field, by the family it points at.
     ///
-    /// <para>Core's families answer from their own name index. A family a module declared answers from the
-    /// records this folder holds, and answers empty online — the login handshake carries a name index for
-    /// Core's families only, so there is nothing to build one from. A field whose picker is empty is still
-    /// settable by slot number.</para></summary>
+    /// <para>Core's families answer from their own name index. A game's family answers from the records
+    /// this session holds for it — the folder's offline, the server's bulk fetch online — so an author
+    /// picks a name in both. A family nothing has fetched yet offers none, and the field is still settable
+    /// by slot number beside the picker.</para></summary>
     public IReadOnlyList<NamedEntry> EntriesFor(string? familyId) => familyId switch
     {
         CoreRecordFamilies.Items => LiveItemEntries,
@@ -275,8 +312,8 @@ public sealed class EditorDataService
 
     private IReadOnlyList<NamedEntry> ModuleEntries(string familyId)
     {
-        if (WorldFamilies.Find(familyId) is not { } family) return [];
-        var records = OfflineModuleRecords(family);
+        if (!_moduleFamilies.TryGetValue(familyId, out var family)) return [];
+        var records = ModuleRecordsFor(family);
         if (records.Length == 0) return [];
 
         string nameKey = family.NameFieldKey;
@@ -284,8 +321,11 @@ public sealed class EditorDataService
         result[0] = new NamedEntry(0, "(none)");
         for (int i = 1; i < records.Length; i++)
         {
-            string name = string.IsNullOrEmpty(nameKey) ? "" : records[i][nameKey].AsText();
-            result[i] = new NamedEntry(i, name);
+            // TryGet rather than the indexer: an absent key reads as the zero Integer, and an unauthored
+            // slot would be offered as "0" instead of as the blank it is.
+            result[i] = new NamedEntry(i, !string.IsNullOrEmpty(nameKey) && records[i].TryGet(nameKey, out var value)
+                ? value.AsText()
+                : "");
         }
         return result;
     }
@@ -293,9 +333,11 @@ public sealed class EditorDataService
     private async Task LoadModuleRecordsAsync(string dataPath)
     {
         _moduleRecords.Clear();
+        _moduleFamilies.Clear();
         foreach (var family in WorldFamilies.All)
         {
             if (CoreRecordFamilies.Find(family.Id) is not null) continue;
+            _moduleFamilies[family.Id] = family;
             _moduleRecords[family.Id] = await LoadAllFromDirAsync<AttributeBag>(
                 Path.Combine(dataPath, family.EffectiveDirectory),
                 family.EffectiveFilePrefix,
