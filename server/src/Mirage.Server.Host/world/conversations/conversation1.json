@@ -8,12 +8,12 @@
       "text": "Everything here is an example of a record format. Take a look around.",
       "choices": [
         {
-          "text": "Let me see your goods.",
+          "label": "Let me see your goods.",
           "action": "OpenShop",
           "nextNodeId": 0
         },
         {
-          "text": "Nothing, thanks.",
+          "label": "Nothing, thanks.",
           "action": "None",
           "nextNodeId": 0
         }

@@ -76,6 +76,10 @@ public sealed class SpawnSystem : GameSystem
             mn.X = entry.PinX.Value;
             mn.Y = entry.PinY.Value;
             mn.Layer = entry.PinLayer;   // spawn on the pinned plane (Ground, or up on the bridge Fringe)
+            // An authored facing, for anything that stays where it is put: a shopkeeper behind a counter
+            // faces the counter. Only applied on the pin, because an NPC that reached its tile by the
+            // random search is not standing anywhere its author chose a direction for.
+            if (entry.PinDir is { } facing) mn.Dir = facing;
             spawned = true;
         }
 

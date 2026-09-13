@@ -202,4 +202,58 @@ public class NpcSpawnPlacementTests
         public void GracefulDisconnect(int index) { }
         public void GracefulDisconnectEditor(int editorIndex) { }
     }
+
+    // ── Which way it faces ───────────────────────────────────────
+
+    /// <summary>An authored facing is what the NPC spawns with. Worth having for anything that stays put:
+    /// a shopkeeper behind a counter faces the counter, and a guard at a gate faces out.</summary>
+    [TestCase(Direction.Up)]
+    [TestCase(Direction.Down)]
+    [TestCase(Direction.Left)]
+    [TestCase(Direction.Right)]
+    public void PinnedEntry_FacesTheWayItWasAuthored(Direction facing)
+    {
+        var world = new GameWorld();
+        var pm = new PlayerManager();
+        DefineNpc(world);
+        world.Maps[Map].Npcs.Add(new MapNpcEntry(NpcNum, PinX: 9, PinY: 4, PinLayer: WorldLayer.Ground, PinDir: facing));
+
+        NewSpawn(world, pm).SpawnNpc(1, Map);
+
+        Assert.That(world.MapNpcs[Map, 1].Dir, Is.EqualTo(facing));
+    }
+
+    /// <summary>🔴 A facing survives a RESPAWN, or a stationary NPC faces its counter until the first
+    /// time anything resets it and then stands the wrong way for the rest of the server's life.</summary>
+    [Test]
+    public void APinnedFacingIsRestoredOnEveryRespawn()
+    {
+        var world = new GameWorld();
+        var pm = new PlayerManager();
+        DefineNpc(world);
+        world.Maps[Map].Npcs.Add(new MapNpcEntry(NpcNum, PinX: 9, PinY: 4, PinLayer: WorldLayer.Ground, PinDir: Direction.Left));
+        var spawn = NewSpawn(world, pm);
+
+        spawn.SpawnNpc(1, Map);
+        world.MapNpcs[Map, 1].Dir = Direction.Right;   // it turned, or something else moved it
+        spawn.SpawnNpc(1, Map);
+
+        Assert.That(world.MapNpcs[Map, 1].Dir, Is.EqualTo(Direction.Left));
+    }
+
+    /// <summary>A placement that names no facing keeps the engine's own answer, so a map full of
+    /// unauthored NPCs does not stand to attention in one direction.</summary>
+    [Test]
+    public void APlacementWithNoAuthoredFacing_IsLeftToTheEngine()
+    {
+        var world = new GameWorld();
+        var pm = new PlayerManager();
+        DefineNpc(world);
+        world.Maps[Map].Npcs.Add(new MapNpcEntry(NpcNum, PinX: 9, PinY: 4));
+
+        NewSpawn(world, pm).SpawnNpc(1, Map);
+
+        Assert.That(System.Enum.IsDefined(world.MapNpcs[Map, 1].Dir), Is.True,
+            "whatever it chose, it is a real direction");
+    }
 }

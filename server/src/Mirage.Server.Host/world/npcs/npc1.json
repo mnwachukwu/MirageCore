@@ -1,7 +1,7 @@
 {
   "name": "Keeper",
   "attackSay": "",
-  "sprite": 0,
+  "sprite": 1,
   "spriteSheet": 0,
   "size": 1,
   "spawnSecs": 0,

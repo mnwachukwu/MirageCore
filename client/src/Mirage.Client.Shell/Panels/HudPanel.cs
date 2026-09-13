@@ -100,15 +100,13 @@ public sealed class HudPanel
     // Button grid (2 columns)
     private static int BtnW => (InnerWidth - Pad) / 2;
 
-    private static Rectangle BtnRect(int col, int row, int baseY)
-    {
-        int x = InnerLeft + col * (BtnW + Pad);
-        int y = baseY + row * (BtnH + 4);
-        return new Rectangle(x, y, BtnW, BtnH);
-    }
+    // One button in the stack, centered across the sidebar. Half the inner width because that is a
+    // comfortable size for a caption, and centered because there is one column: a button pinned to the
+    // left of a two-column grid sits off to one side once the grid has one column in it.
+    private static Rectangle BtnRect(int row) =>
+        new(InnerLeft + (InnerWidth - BtnW) / 2, ButtonBaseY + row * (BtnH + 4), BtnW, BtnH);
 
-    // row0=Inventory, row1=Social, row2=Logout (lone, centered).
-    // Shop/Inn buttons retired (shops open by interacting with their keeper NPC now).
+    // row0=Inventory, row1=Social, row2=Logout.
     private readonly Button _invBtn = new();
     private readonly Button _socialBtn = new();
     private readonly Button _quitBtn = new();
@@ -154,10 +152,9 @@ public sealed class HudPanel
 
     public HudPanel()
     {
-        _invBtn.Bounds = BtnRect(0, 0, ButtonBaseY);
-        _socialBtn.Bounds = BtnRect(0, 1, ButtonBaseY);
-        // Logout sits alone on row 3, centered across the two columns.
-        _quitBtn.Bounds = new Rectangle(InnerLeft + (InnerWidth - BtnW) / 2, LogoutY, BtnW, BtnH);
+        _invBtn.Bounds = BtnRect(0);
+        _socialBtn.Bounds = BtnRect(1);
+        _quitBtn.Bounds = BtnRect(LogoutRow);
     }
 
     // The lone Logout button's row, and the top of the empty sidebar below it.

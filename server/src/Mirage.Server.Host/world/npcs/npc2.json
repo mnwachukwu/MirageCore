@@ -1,7 +1,7 @@
 {
   "name": "Wanderer",
   "attackSay": "",
-  "sprite": 0,
+  "sprite": 2,
   "spriteSheet": 0,
   "size": 1,
   "spawnSecs": 30,

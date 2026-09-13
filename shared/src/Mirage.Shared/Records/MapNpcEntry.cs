@@ -18,9 +18,21 @@ public readonly record struct MapNpcEntry(
     [property: JsonPropertyName("npc")] int Npc,
     [property: JsonPropertyName("pinX")] int? PinX,
     [property: JsonPropertyName("pinY")] int? PinY,
-    [property: JsonPropertyName("pinLayer"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] WorldLayer PinLayer = WorldLayer.Ground)
+    [property: JsonPropertyName("pinLayer"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] WorldLayer PinLayer = WorldLayer.Ground,
+    [property: JsonPropertyName("pinDir"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] Direction? PinDir = null)
 {
     /// <summary>True when this entry pins a fixed spawn tile (both coordinates set).</summary>
     [JsonIgnore]
     public bool HasPin => PinX is not null && PinY is not null;
+
+    /// <summary>Which way this NPC is facing when it spawns, or null to face a random way.
+    ///
+    /// <para>Worth authoring for anything that stays put: a shopkeeper behind a counter, a guard at a gate,
+    /// a speaker at the front of a room. A wanderer turns as it walks and forgets this immediately, so it
+    /// only stays true for an NPC that does not move.</para>
+    ///
+    /// <para>Null rather than a default member, so "face north" and "face wherever" are different
+    /// statements — a default would make every unauthored NPC on a map line up facing the same way.</para></summary>
+    [JsonIgnore]
+    public bool HasPinnedFacing => PinDir is not null;
 }

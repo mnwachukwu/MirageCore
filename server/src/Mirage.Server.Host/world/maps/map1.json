@@ -347,14 +347,15 @@
   ],
   "npcs": [
     {
-      "npcNum": 1,
-      "x": 5,
-      "y": 5
+      "npc": 1,
+      "pinX": 5,
+      "pinY": 5,
+      "pinDir": "Down"
     },
     {
-      "npcNum": 2,
-      "x": 9,
-      "y": 7
+      "npc": 2,
+      "pinX": 9,
+      "pinY": 7
     }
   ],
   "lights": []
