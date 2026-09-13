@@ -14,7 +14,7 @@ for one.
 | **To change the game** | edit the script, restart the server | edit the source, rebuild, redeploy |
 | **Toolchain needed** | none | the .NET SDK |
 | **Touches Core's source** | no | no, but you build from it |
-| **Status** | the destination; the host is built, and a world's own scripts are not loaded yet | works today, and `survey/` is the worked example |
+| **Status** | works today; the demo world's `scripts/` folder is the worked example | works today, and `survey/` is the worked example |
 
 **Scripting is the point.** An engine whose every game needs a compiler is an engine only its own authors
 can extend: a designer cannot try an idea, an operator cannot run a variant, and nothing ships without a
@@ -28,8 +28,7 @@ is what `survey/` demonstrates, and why it is kept rather than treated as scaffo
 
 The two are not in competition, because they meet at the same place: both produce a `CoreRegistry`, and
 [`SurveyModuleTests`](../tests/src/Mirage.Server.Tests/Modules/SurveyModuleTests.cs) asserts that registry
-field by field. When the host exists, "the script says the same thing the C# said" is a test rather than a
-hope.
+field by field. "The script says the same thing the C# said" is therefore a test rather than a hope.
 
 ## What is here
 
@@ -82,8 +81,9 @@ is deployed beside the client.
 
 **What a module still cannot do is bring its own screen.** A panel of its own layout, a control Core has
 no name for: those are code, and a seam that shipped code to every player would be a different and much
-worse bargain. A game that needs one either builds its own client, or waits for the scripting host to
-answer it as content rather than as an assembly.
+worse bargain. A game that needs one either builds its own client, or waits for a script to be able to
+DECLARE as well as react — which is what the scripting host answers next, as content rather than as an
+assembly.
 
 **The server** loads C# modules at compile time, so deploying one means deploying a server built with it.
 There is no runtime assembly loading and none is planned: it would make a missing module look like a

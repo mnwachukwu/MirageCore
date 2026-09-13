@@ -1,4 +1,5 @@
 using Mirage.Shared.Extensibility;
+using Mirage.Shared.Protocol;
 using NUnit.Framework;
 
 namespace Mirage.Shared.Tests.Extensibility;
@@ -93,6 +94,7 @@ public class ModuleStartTests
     {
         public bool IsInWorld(EntityHandle who) => false;
         public WorldPlace PlaceOf(EntityHandle who) => WorldPlace.Nowhere;
+        public void Tell(EntityHandle who, string text, ChatChannel channel, int color) { }
         public AttributeBag? AttributesOf(EntityHandle who) => null;
         public bool SetAttribute(EntityHandle who, string key, AttributeValue value) => false;
         public bool SetAttributes(EntityHandle who, IReadOnlyCollection<KeyValuePair<string, AttributeValue>> values) => false;

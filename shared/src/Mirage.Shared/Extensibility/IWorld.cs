@@ -1,3 +1,5 @@
+using Mirage.Shared.Protocol;
+
 namespace Mirage.Shared.Extensibility;
 
 /// <summary>
@@ -33,6 +35,28 @@ public interface IWorld
 
     /// <summary>Where that body is, or <see cref="WorldPlace.Nowhere"/> when it is not in the world.</summary>
     WorldPlace PlaceOf(EntityHandle who);
+
+    // ── What a game says ──────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Says something to one player, in the game's own words.
+    ///
+    /// <para><b>Literal text, and the only path here that is.</b> Everything else the server says is a
+    /// KEY looked up per recipient, so the engine's own lines arrive in each player's language. A game's
+    /// words are not in that table and cannot be added to it — the table is the engine's vocabulary, and
+    /// a module that could write into it would be able to change what the engine says. So what a game
+    /// says travels as it was written, and a game wanting several languages keeps its own table and picks
+    /// the line before calling this.</para>
+    ///
+    /// <para>Does nothing for a body that is not a player in the world, like everything else here.</para>
+    /// </summary>
+    /// <param name="who">The player to say it to.</param>
+    /// <param name="text">What to say, already in the words the player will read.</param>
+    /// <param name="channel">Which of the client's chat filters it belongs under. The default is the one
+    /// for feedback about your own character, which is what a rule reacting to what you just did is.</param>
+    /// <param name="color">What color to draw it, from <see cref="GameColor"/>.</param>
+    void Tell(EntityHandle who, string text,
+              ChatChannel channel = ChatChannel.System, int color = GameColor.White);
 
     // ── What a body carries ───────────────────────────────────────────────────
 

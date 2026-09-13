@@ -5,6 +5,7 @@ using Mirage.Server.Core.World;
 using Mirage.Shared;
 using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
+using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
 using NUnit.Framework;
 
@@ -25,6 +26,12 @@ public class WorldActionTests
     const int Idx = 1, Map = 1;
 
     private static (IWorld World, GameWorld Game, PlayerManager Pm) Build()
+    {
+        var (world, game, pm, _) = BuildHeard();
+        return (world, game, pm);
+    }
+
+    private static (IWorld World, GameWorld Game, PlayerManager Pm, NoOpDispatcher Sent) BuildHeard()
     {
         var world = new GameWorld();
         var pm = new PlayerManager();
@@ -49,8 +56,8 @@ public class WorldActionTests
         sp.Char.Y = 5;
 
         var actions = new ServerWorld(world, pm, attributes, deaths, movement, items,
-                                      joinLeave: null!, decals);
-        return (actions, world, pm);
+                                      joinLeave: null!, decals, dispatcher);
+        return (actions, world, pm, dispatcher);
     }
 
     private static EntityHandle Me => EntityHandle.ForPlayer(Idx);
@@ -260,11 +267,66 @@ public class WorldActionTests
         });
     }
 
+    /// <summary>
+    /// 🔴 The one chat path that carries text rather than a key.
+    ///
+    /// <para>Every other line the server says is looked up per recipient, so the engine's own words
+    /// arrive in each player's language. A game's words are not in that table and cannot be added to it,
+    /// so they travel as written — which is what makes a rule able to say anything at all.</para>
+    /// </summary>
+    [Test]
+    public void AGameCanSaySomethingToOnePlayer()
+    {
+        var (world, _, _, sent) = BuildHeard();
+
+        world.Tell(Me, "You are too tired to go on.");
+
+        var said = sent.Sent.Select(s => s.Packet).OfType<ChatMsgPacket>().ToList();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(said, Has.Count.EqualTo(1));
+            Assert.That(said[0].Msg, Is.EqualTo("You are too tired to go on."));
+            Assert.That(sent.Sent[0].Index, Is.EqualTo(Idx), "to that player and nobody else");
+        });
+    }
+
+    [Test]
+    public void AGameChoosesTheChannelAndTheColor()
+    {
+        var (world, _, _, sent) = BuildHeard();
+
+        world.Tell(Me, "A storm is coming.", ChatChannel.Notice, GameColor.BrightCyan);
+
+        var said = sent.Sent.Select(s => s.Packet).OfType<ChatMsgPacket>().Single();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(said.Channel, Is.EqualTo(ChatChannel.Notice));
+            Assert.That(said.Color, Is.EqualTo(GameColor.BrightCyan));
+        });
+    }
+
+    /// <summary>Like everything else here, saying something to a body that is not there does nothing.</summary>
+    [Test]
+    public void SayingSomethingToNobody_DoesNothing()
+    {
+        var (world, _, _, sent) = BuildHeard();
+
+        world.Tell(Nobody, "Are you there?");
+        world.Tell(Me, "");
+
+        Assert.That(sent.Sent, Is.Empty);
+    }
+
     // ── Harness ──────────────────────────────────────────────────────────────
 
     private sealed class NoOpDispatcher : IPacketDispatcher
     {
-        public void SendTo(int index, IPacket packet) { }
+        /// <summary>What was sent to whom, so a test can read back what a player was told.</summary>
+        public List<(int Index, IPacket Packet)> Sent { get; } = [];
+
+        public void SendTo(int index, IPacket packet) => Sent.Add((index, packet));
         public void SendToAll(IPacket packet) { }
         public void SendToAllBut(int exclude, IPacket packet) { }
         public void SendToObservers(IReadOnlyCollection<int> observers, IPacket packet) { }

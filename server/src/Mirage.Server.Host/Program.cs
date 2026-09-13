@@ -157,7 +157,7 @@ var host = Host.CreateDefaultBuilder(args)
         // What game this is. Modules are configured once, here, before anything reads a registry — so
         // every subsystem downstream treats its families, attribute keys and packet table as complete.
         // An engine with no modules is a valid server: it serves Core's own world and nothing else.
-        var registry = CoreRegistry.Build(GameModules.Load());
+        var registry = CoreRegistry.Build(GameModules.Load(worldDir));
         services.AddSingleton(registry);
 
         // What the modules asked to be told, and what they say about dying. Registered rather than reached

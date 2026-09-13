@@ -1,0 +1,45 @@
+# The demo world's own rules.
+#
+# Everything here is CONTENT. It travels inside the world folder, it is read when the server starts, and
+# changing it needs an edit and a restart rather than a compiler. The C# module beside it — Survey —
+# declares what a surveyor IS; this decides what happens to one.
+#
+# Two things a module author cannot guess:
+#   * A handler has to be public. The engine calls it and nothing in the module does, so without that
+#     the compiler reports it as a function nobody uses.
+#   * A handler is optional. Write the one you want; the engine asks before it calls.
+
+shared model Rules
+
+    # Where the last step came from, so a rule can tell a border crossing from an ordinary step.
+    integer lastMap = 0;
+
+    public function OnPlayerJoined(Player who)
+        who.Say("The survey is yours to run. Everything you read here came out of this world's "
+                + "scripts folder.");
+
+        Rules.lastMap = who.Map;
+    end function
+
+    # Walking costs stamina, and running out of it is worth saying once rather than on every step.
+    public function OnPlayerMoved(Player who, integer fromX, integer fromY)
+        if who.Map != Rules.lastMap
+            who.Say("You cross into a new stretch of the survey.");
+
+            Rules.lastMap = who.Map;
+        end if
+
+        integer left = who.Number("stamina");
+
+        if left <= 0
+            yield;
+        end if
+
+        who.SetNumber("stamina", left - 1);
+
+        if left == 1
+            who.Say("You are too tired to go much further today.");
+        end if
+    end function
+
+end model

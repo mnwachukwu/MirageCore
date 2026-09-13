@@ -1,7 +1,9 @@
+using Mirage.Server.Core.Net;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Shared;
 using Mirage.Shared.Extensibility;
+using Mirage.Shared.Protocol;
 
 namespace Mirage.Server.Core.GameLogic;
 
@@ -29,12 +31,14 @@ public sealed class ServerWorld : IWorld
     private readonly JoinLeaveSystem _joinLeave;
     private readonly DecalSystem _decals;
     private readonly WorldQueries _queries;
+    private readonly IPacketDispatcher _dispatcher;
     private readonly IClock _clock;
 
     public ServerWorld(GameWorld world, PlayerManager pm, AttributeSystem attributes, DeathSystem deaths,
                        MovementSystem movement, ItemSystem items, JoinLeaveSystem joinLeave,
-                       DecalSystem decals, IClock? clock = null)
+                       DecalSystem decals, IPacketDispatcher dispatcher, IClock? clock = null)
     {
+        _dispatcher = dispatcher;
         _world = world;
         _pm = pm;
         _attributes = attributes;
@@ -71,6 +75,17 @@ public sealed class ServerWorld : IWorld
         // An NPC is NAMED by where it spawns and may be standing somewhere else; the place is where the
         // body is, which is what a game asking "where is it" means.
         return Locate(who) is { } at ? new WorldPlace(at.CurrentMap, at.Record.X, at.Record.Y) : WorldPlace.Nowhere;
+    }
+
+    // ── What a game says ──────────────────────────────────────────────────────
+
+    /// <summary>The one chat path that carries text rather than a key: a game's words are its own, so
+    /// there is nothing to look up per recipient.</summary>
+    public void Tell(EntityHandle who, string text, ChatChannel channel, int color)
+    {
+        if (!who.IsPlayer || !IsInWorld(who) || string.IsNullOrEmpty(text)) return;
+
+        _dispatcher.SendTo(who.PlayerIndex, PacketBuilder.ChatMsg(text, color, channel));
     }
 
     // ── What a body carries ───────────────────────────────────────────────────

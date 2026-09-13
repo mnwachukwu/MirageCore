@@ -25,10 +25,10 @@ public class SurveyModuleTests
     [Test]
     public void TheServerShipsWithItLoaded()
     {
-        var names = CoreRegistry.Build(GameModules.Load()).ModuleNames;
+        var names = CoreRegistry.Build(GameModules.Load("no-such-world")).ModuleNames;
 
-        Assert.That(names, Is.EqualTo(new[] { "Core", "Survey" }),
-            "the host loads no game, so every seam runs only in tests");
+        Assert.That(names, Is.EqualTo(new[] { "Core", "Survey", "Scripts" }),
+            "the host loads this game, and the world's own scripts after it");
     }
 
     [Test]

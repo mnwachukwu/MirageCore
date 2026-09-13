@@ -7,10 +7,10 @@ The language is [Compass](https://github.com/mnwachukwu/Compass): a small, stati
 that compiles to CIL and runs on .NET, with a type checker, definite-assignment analysis, optionals
 instead of null, and a VS Code extension that gives a `.cm` file diagnostics as you type.
 
-A module — a folder of Compass source, however many files — is checked against the types the engine
-registers, refused if it can reach past them, loaded once, and then called into as often as the game
-likes. Its mistakes come back as data, its output is captured, and a handler that will not finish is
-stopped rather than taking the server with it.
+**A world carries its own rules in a `scripts/` folder**, and the server reads them when it starts. They
+are checked against the types the engine registers, refused if they can reach past them, loaded once, and
+then called into as the game runs. A world whose rules are broken is reported and runs unscripted; a
+handler that will not finish is stopped rather than taking the server with it.
 
 ---
 
@@ -26,9 +26,10 @@ D:\Repos\
   MirageSourceRemasteredCore\
 ```
 
-Clone Compass beside this repository and everything builds. Without it, `Mirage.Scripting` and the whole
-solution fail to restore; the satellite `.slnx` files for `server/`, `client/` and `editor/` do not
-include it and are unaffected.
+Clone Compass beside this repository and everything builds. Without it, `Mirage.Scripting` and anything
+that reaches it fail to restore — and that now includes the **server**, because a world carries its own
+rules and the thing that loads a world is the thing that reads them. The client and the editor are
+unaffected.
 
 ## What the host does
 
@@ -74,7 +75,7 @@ same module loads out of an archive, a database, or an editor holding something 
 
 ```csharp
 var sources = ScriptModule.Read("pack://isles", list: pack.Names, read: pack.Text);
-var (script, problems) = ScriptCompiler.Compile(sources, "isles");
+var (script, problems) = ScriptCompiler.CompileModule(sources, "isles");
 ```
 
 ### What about `.cmp`?
@@ -111,32 +112,72 @@ driver. Worth doing when there are two consumers for it; today there is one, and
   immediately. The interpreter's default reader is `Console.In`, so a script asking for a line would
   otherwise freeze every player on a console nobody is typing at.
 
+## Where a world's rules live
+
+`<world>/scripts/`, every `.cm` under it, checked together. `ScriptedWorldModule` reads it, and every
+server loads that module — a world with no scripts folder loads it and it does nothing.
+
+What a module writes is a shared model called `Rules` with public handlers on it. Each is optional: the
+engine asks whether one is offered before it calls it, so a world that only cares about movement writes
+one function and nothing else.
+
+| Handler | When |
+|---|---|
+| `OnPlayerJoined(Player who)` | a player is in the world and has everything they need |
+| `OnPlayerLeft(Player who)` | they have left, while their record is still readable |
+| `OnPlayerMoved(Player who, integer fromX, integer fromY)` | every accepted step, seam crossings included |
+| `OnTick()` | every tick |
+
+```
+shared model Rules
+    public function OnPlayerMoved(Player who, integer fromX, integer fromY)
+        integer left = who.Number("stamina");
+
+        if left <= 0
+            yield;
+        end if
+
+        who.SetNumber("stamina", left - 1);
+
+        if left == 1
+            who.Say("You are too tired to go much further today.");
+        end if
+    end function
+end model
+```
+
+**A world whose rules do not compile still runs.** The problems are logged against it and the game runs
+unscripted, because a server that refused to start over a typo in somebody's rules is a server an
+operator cannot recover without an editor.
+
+The worked example is [`server/src/Mirage.Server.Host/world/scripts/`](../server/src/Mirage.Server.Host/world/scripts),
+which ships loaded — a seam only a test has ever run is a seam nobody has run.
+
 ## What a script can say
 
-The engine registers types, and a module names them:
+The engine registers types, and a module names them. `ScriptedWorldModule.Catalog` is what the shipped
+server registers:
 
 ```csharp
 var catalog = ScriptCatalog.Declare(c =>
 {
     var player = c.Type("Player");
-    var world = c.Shared("World");
 
     player
-        .Value("Name", ScriptType.Text, (who, _) => NameOf(who))
-        .Action("Say", [ScriptType.Text], (who, args) => { Tell(who, args.AsText(0)); return null; });
-
-    world.Function("PlayerNamed", player.AsType.OrNothing(), [ScriptType.Text],
-                   (_, args) => Find(args.AsText(0)));
+        .Action("Say", [ScriptType.Text], (who, a) => { world.Tell(Who(who), a.AsText(0)); return null; })
+        .Value("X", ScriptType.Integer, (who, _) => (long)world.PlaceOf(Who(who)).X)
+        .Function("Number", ScriptType.Integer, [ScriptType.Text], (who, a) => ...);
 });
 ```
 
-```
-shared model Rules
-    public function OnPlayerMoved(Player who, integer fromX, integer fromY)
-        who.Say("You were at " + fromX + ", " + fromY + ".");
-    end function
-end model
-```
+A `Player` carries `Say`, `IsHere`, `Map`, `X`, `Y`, `Has`, `Number`, `Text`, `SetNumber`, `SetText`,
+`WarpTo`, `Give` and `Take` — everything `IWorld` already offered, named the way a script writes it. What
+a game COUNTS lives in the attribute bag, which is why `Number` and `SetNumber` take a key: a C# module
+declares what stamina is and the world's own rules decide what spends it.
+
+**`Say` is the one chat path in the engine that carries text rather than a key.** Everything else the
+server says is looked up per recipient so it arrives in each player's language; a game's words are not in
+that table and cannot be added to it, so they travel as written.
 
 A registered type is **opaque**: a script holds one, asks it questions, and can never declare, extend, or
 construct one. That is what lets the engine change what a player is without breaking every world built on

@@ -1,4 +1,5 @@
 using Mirage.Modules.Survey;
+using Mirage.Server.Host.Scripting;
 using Mirage.Shared.Extensibility;
 
 namespace Mirage.Server.Host;
@@ -25,11 +26,20 @@ namespace Mirage.Server.Host;
 ///
 /// <para><b>This is the compile-time route, and it is not the only one intended.</b> A module written here
 /// is checked by the compiler and stepped through in a debugger, which is what somebody building a game
-/// from this source wants. A game that is a SCRIPT needs none of this list: it is content the host reads,
-/// so it changes without a rebuild and ships without a toolchain. See <c>modules/README.md</c>.</para>
+/// from this source wants. A game that is a SCRIPT is not in this list at all: it is content the world
+/// carries, read by <see cref="ScriptedWorldModule"/>, so it changes without a rebuild and ships without
+/// a toolchain. See <c>modules/README.md</c>.</para>
 /// </summary>
 public static class GameModules
 {
     /// <summary>The modules to load, in order.</summary>
-    public static IReadOnlyList<ICoreModule> Load() => [new SurveyModule()];
+    /// <param name="worldDir">The world being served, whose <c>scripts/</c> folder is a module of its own.</param>
+    public static IReadOnlyList<ICoreModule> Load(string worldDir) =>
+    [
+        new SurveyModule(),
+
+        // Last, so a world's own rules are told about things after the compiled game has had its say.
+        // A world with no scripts loads this and it does nothing.
+        new ScriptedWorldModule(worldDir),
+    ];
 }
