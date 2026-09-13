@@ -4,7 +4,6 @@ using Compass.Compiler.Parsing;
 using Compass.Compiler.Semantics;
 using Compass.Compiler.Ast;
 using Compass.Compiler.Text;
-using Compass.Cli;
 
 namespace Mirage.Scripting;
 
@@ -78,15 +77,13 @@ public sealed record ScriptRun(int ExitCode, string Output, string? Failure)
 /// program at all, so a game cannot half-load: every name resolves, every expression has a type, and
 /// nothing is read before it holds a value, or there is nothing to run.</para>
 ///
-/// <para>This is deliberately the whole of the embedding. Compass is a finished language with its own
-/// repository, and reaching into it would make this engine a fork of somebody's compiler; everything
-/// here is its ordinary public front end, driven in the order its own command-line tool drives it.</para>
+/// <para>This is deliberately the whole of the embedding: parse, check, lower, run, against Compass's
+/// ordinary public front end. Reaching into its internals would make this engine a fork of somebody's
+/// compiler, and the thing that would break first is the editor — a module that compiles in VS Code and
+/// not on the server is worse than one that compiles nowhere.</para>
 /// </summary>
 public static class ScriptCompiler
 {
-    /// <summary>The extension a Compass source file carries.</summary>
-    public const string Extension = ".cm";
-
     /// <summary>
     /// Checks one piece of source and hands back a runnable script, or null with the reasons.
     /// </summary>
@@ -96,65 +93,68 @@ public static class ScriptCompiler
         string source, string name = "<script>")
     {
         ArgumentNullException.ThrowIfNull(source);
+        return Compile([new ScriptSource(name, source)], name);
+    }
 
-        var text = new SourceText(source, name);
+    /// <summary>
+    /// Checks a whole module — however many sources it is made of — and hands back one runnable script.
+    ///
+    /// <para>🔴 <b>A game module is not one file, and this is where that is true.</b> The sources are
+    /// checked TOGETHER, so a model declared in one is reachable from another and the namespaces,
+    /// imports and qualified names Compass offers all work across a module the way they do in any other
+    /// Compass program. A host that compiled each file alone would reject the second line of any module
+    /// worth writing.</para>
+    ///
+    /// <para>Where these came from is not asked. A folder on disk is one answer and
+    /// <see cref="ScriptModule.Read"/> gives it; an archive or an editor's unsaved buffer are others,
+    /// and neither needs anything here to change.</para>
+    /// </summary>
+    /// <param name="sources">The module's sources. Empty is refused: nothing to run is not a program.</param>
+    /// <param name="name">What to call the module as a whole.</param>
+    public static (CompassScript? Script, IReadOnlyList<ScriptProblem> Problems) Compile(
+        IEnumerable<ScriptSource> sources, string name)
+    {
+        ArgumentNullException.ThrowIfNull(sources);
+
         var diagnostics = new DiagnosticBag();
+        var units = new List<CompilationUnit>();
 
-        CompilationUnit unit = Parser.Parse(text, diagnostics);
-        // requireEntryPoint: a script IS a program, and one with nothing to run is a file somebody
+        foreach (var (file, text) in sources)
+        {
+            units.Add(Parser.Parse(new SourceText(text, file), diagnostics));
+        }
+
+        if (units.Count == 0)
+        {
+            return (null, [new ScriptProblem(
+                "MS0001", ScriptSeverity.Error, "This module holds no Compass source.", name, 0, 0)]);
+        }
+
+        // requireEntryPoint: a module IS a program, and one with nothing to run is a folder somebody
         // forgot to finish rather than a library this engine has any use for.
-        SemanticModel model = FrontEnd.Check([unit], diagnostics, requireEntryPoint: true);
+        SemanticModel model = FrontEnd.Check(units, diagnostics, requireEntryPoint: true);
 
         var problems = Describe(diagnostics);
         if (diagnostics.HasErrors) return (null, problems);
 
         // Lowering is not optional and not part of checking: the interpreter is written against the
         // simplified tree and meets shapes it deliberately does not handle if it is given the raw one.
-        var lowered = Lowering.Lower([unit], model);
+        var lowered = Lowering.Lower(units, model);
         return (new CompassScript(lowered, model, name), problems);
     }
 
-    /// <summary>The extension a Compass PROJECT carries — the file that says what a build is made of.</summary>
-    public const string ProjectExtension = ".cmp";
-
-    /// <summary>
-    /// Checks whatever <paramref name="path"/> names: one <c>.cm</c> file, a <c>.cmp</c> project, or the
-    /// folder either sits in.
-    ///
-    /// <para>🔴 <b>A game module is not one file.</b> Compass has folders, imports, namespaces and
-    /// projects that reference other projects, and a module worth writing will use them — the demo game
-    /// is already five C# files. So the unit a game declares itself in is whatever Compass says a build
-    /// is, which means this defers to Compass's own reader rather than deciding for itself: a second
-    /// reader of somebody else's project format is a reader that drifts from the one their tool uses,
-    /// and the first sign of it would be a module that builds in their editor and not on this server.</para>
-    ///
-    /// <para>A project may name its own entry point; a folder is one program by construction.</para>
-    /// </summary>
-    public static (CompassScript? Script, IReadOnlyList<ScriptProblem> Problems) CompileAt(string path)
+    /// <summary>Checks the module in a folder on disk, named after the folder.</summary>
+    public static (CompassScript? Script, IReadOnlyList<ScriptProblem> Problems) CompileFolder(string root)
     {
-        ArgumentNullException.ThrowIfNull(path);
+        ArgumentNullException.ThrowIfNull(root);
 
-        var diagnostics = new DiagnosticBag();
-
-        if (SourceDiscovery.Locate(path, out string problem) is not { } target)
+        if (!Directory.Exists(root))
         {
-            return (null, [new ScriptProblem("CM0000", ScriptSeverity.Error, problem, path, 0, 0)]);
+            return (null, [new ScriptProblem(
+                "MS0002", ScriptSeverity.Error, "There is no module folder here.", root, 0, 0)]);
         }
 
-        if (SourceDiscovery.Gather(target.Path, diagnostics) is not { } compilation)
-        {
-            return (null, Describe(diagnostics));
-        }
-
-        SemanticModel model = FrontEnd.Check(
-            compilation.Units, diagnostics, requireEntryPoint: true,
-            compilation.Projects, compilation.EntryPoint);
-
-        var problems = Describe(diagnostics);
-        if (diagnostics.HasErrors) return (null, problems);
-
-        var lowered = Lowering.Lower(compilation.Units, model);
-        return (new CompassScript(lowered, model, compilation.Label), problems);
+        return Compile(ScriptModule.Read(root), new DirectoryInfo(root).Name);
     }
 
     private static List<ScriptProblem> Describe(DiagnosticBag diagnostics)

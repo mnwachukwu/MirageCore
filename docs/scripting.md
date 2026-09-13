@@ -7,8 +7,8 @@ The language is [Compass](https://github.com/mnwachukwu/Compass): a small, stati
 that compiles to CIL and runs on .NET, with a type checker, definite-assignment analysis, optionals
 instead of null, and a VS Code extension that gives a `.cm` file diagnostics as you type.
 
-**What works today:** a Compass program — one file, a folder of them, or a `.cmp` project — is checked
-and run inside the server process, with its mistakes returned as data and its output captured.
+**What works today:** a module — a folder of Compass source, however many files — is checked and run
+inside the server process, with its mistakes returned as data and its output captured.
 
 **What does not yet:** a script cannot call the engine. Everything below the line "What a script can say"
 is the open half.
@@ -33,20 +33,66 @@ include it and are unaffected.
 
 ## What the host does
 
-`ScriptCompiler` drives Compass's own public front end in the order its command-line tool drives it —
-parse, check, lower — and hands the checked program to the interpreter. There is no fork of the compiler
-and no copy of its internals.
+`ScriptCompiler` drives Compass's own public front end — parse, check, lower — and hands the checked
+program to the interpreter. There is no fork of the compiler and no copy of its internals, and the
+reference list is the same three projects Compass's other embedder uses: the compiler, the interpreter,
+and the runtime they share.
 
 ```csharp
-var (script, problems) = ScriptCompiler.CompileAt(@"D:\games\isles\Game.cmp");
+var (script, problems) = ScriptCompiler.CompileFolder(@"D:\games\isles\scripts");
 if (script is null) foreach (var p in problems) log.Error("{Problem}", p);
 else log.Information("{Output}", script.Run().Output);
 ```
 
-`CompileAt` takes one `.cm` file, a folder of them, or a `.cmp` project, and defers to Compass's own
-`SourceDiscovery` to decide what a build is made of. That matters: a module worth writing uses folders,
-imports and namespaces, and a second reader of somebody else's project format is one that drifts — the
-first sign of which would be a module that builds in the editor and not on the server.
+## What a module is made of
+
+**A module is a folder, and every `.cm` under it belongs to it** — recursively, with no manifest.
+
+That decision is this engine's, not the compiler's. Compass is handed a set of sources and has no
+opinion about where they came from; its own command-line tool keeps the question in its driver for the
+same reason. A build tool is right to make an author list their sources, because what a release contains
+should be readable off one file. A game module is the opposite case: it is authored by somebody
+arranging their own folder, it ships as that folder, and asking them to maintain a second list of files
+they can already see is the bookkeeping this engine exists to remove. Records already work this way —
+drop one in the world folder and it is there.
+
+The sources are checked **together**, so a model declared in one file is reachable from another and
+Compass's namespaces, imports and qualified names all work across a module the way they do in any other
+Compass program.
+
+### Reading is a delegate
+
+`ScriptModule.Read` takes a lister and a reader, defaulting to the disk. That is load-bearing rather
+than tidy: a world folder is the thing somebody zips up and hands to another machine, and wiring this to
+`File.ReadAllText` would tie a game's rules to loose files on a disk forever. Behind the delegate, the
+same module loads out of an archive, a database, or an editor holding something not yet saved.
+
+```csharp
+var sources = ScriptModule.Read("pack://isles", list: pack.Names, read: pack.Text);
+var (script, problems) = ScriptCompiler.Compile(sources, "isles");
+```
+
+### What about `.cmp`?
+
+Compass has project files, which name sources, references to other projects, an entry point and an
+output folder. This engine reads none of that, and the reasons are worth stating because the question
+comes up:
+
+- **Most of a `.cmp` is build-tool policy a game has no use for.** Nothing here publishes, so `output`
+  is meaningless; the engine decides what a module's entry point is, not the author.
+- **What an author actually wanted from it — folders, imports, namespaces — are language features**, and
+  they work already. They come from checking the sources together, not from the project file.
+- **A `.cmp` reader here would be a second reader of somebody else's format.** The first sign of it
+  drifting would be a module that builds in VS Code and not on the server.
+
+Compass's own reader lives in its command-line driver, which is an executable; referencing that to reach
+two types would drag the language server and debug adapter along with it.
+
+The case that would change this is an author who keeps a real `.cmp` project — because they work in the
+editor and their game references a shared library of their own — and wants to drop that folder into a
+world verbatim. The answer then is not to read `.cmp` here, nor to move those types into the compiler
+where they do not belong, but to ask Compass for a small workspace library between the compiler and the
+driver. Worth doing when there are two consumers for it; today there is one, and it does not need it.
 
 ### Four things a server needs that a command-line tool does not
 

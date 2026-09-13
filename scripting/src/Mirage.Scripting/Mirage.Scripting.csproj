@@ -13,15 +13,14 @@
 
        Counted from this file: Mirage.Scripting -> src -> scripting -> the repository -> the folder both
        checkouts sit in. -->
+  <!-- The compiler, the interpreter, and the runtime they share. Nothing else: deciding WHICH files make
+       up a program is a host's business, not the compiler's, and this host has its own answer — see
+       ScriptModule. Compass's own command-line tool keeps that decision in its driver for the same
+       reason, and its other embedder (the Wasm playground) references exactly these three. -->
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Compass\src\Compass.Compiler\Compass.Compiler.csproj" />
     <ProjectReference Include="..\..\..\..\Compass\src\Compass.Interpreter\Compass.Interpreter.csproj" />
-    <!-- Compass.Cli is an executable, and referencing it is deliberate: SourceDiscovery and ProjectFile
-         are public, and they are where a .cmp project, its references, and a folder of sources are read.
-         Re-implementing that here would be a second reader of somebody else's file format, drifting from
-         the one their own tool uses. Its entry point is inert to a library that references it.
-         See docs/scripting.md for the tidier arrangement this is waiting on. -->
-    <ProjectReference Include="..\..\..\..\Compass\src\Compass.Cli\Compass.Cli.csproj" />
+    <ProjectReference Include="..\..\..\..\Compass\src\Compass.Runtime\Compass.Runtime.csproj" />
   </ItemGroup>
 
   <ItemGroup>
