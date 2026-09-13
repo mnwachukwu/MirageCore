@@ -2,7 +2,7 @@
 
   <!-- Thin delegator — the test-side mirror of Mirage.Publish.csproj.
        Right-click → Build (or `dotnet msbuild tests/Mirage.Test.csproj -t:TestAll`, or a bare
-       `dotnet msbuild tests/Mirage.Test.csproj`) runs all six suites in one shot and fails if any fails.
+       `dotnet msbuild tests/Mirage.Test.csproj`) runs all seven suites in one shot and fails if any fails.
        Lives in tests/, one level above the suites it drives. -->
 
   <PropertyGroup>
@@ -13,7 +13,8 @@
     <_ClientShellTests>$(MSBuildThisFileDirectory)src/Mirage.Client.Shell.Tests/Mirage.Client.Shell.Tests.csproj</_ClientShellTests>
     <_EditorTests>$(MSBuildThisFileDirectory)src/Mirage.Editor.Tests/Mirage.Editor.Tests.csproj</_EditorTests>
     <_ServerShellTests>$(MSBuildThisFileDirectory)src/Mirage.Server.Shell.Tests/Mirage.Server.Shell.Tests.csproj</_ServerShellTests>
-    <_AllTests>$(_SharedTests);$(_ServerTests);$(_ClientCoreTests);$(_ClientShellTests);$(_EditorTests);$(_ServerShellTests)</_AllTests>
+    <_ScriptingTests>$(MSBuildThisFileDirectory)src/Mirage.Scripting.Tests/Mirage.Scripting.Tests.csproj</_ScriptingTests>
+    <_AllTests>$(_SharedTests);$(_ServerTests);$(_ClientCoreTests);$(_ClientShellTests);$(_EditorTests);$(_ServerShellTests);$(_ScriptingTests)</_AllTests>
   </PropertyGroup>
 
   <!-- Build the suites through the MSBuild task rather than letting each `dotnet test` build its own.
@@ -75,6 +76,11 @@
       <Output TaskParameter="ExitCode" PropertyName="_ServerShellExit" />
     </Exec>
 
+    <Message Text="── Scripting ──" Importance="High" />
+    <Exec Command="dotnet test &quot;$(_ScriptingTests)&quot; --no-build --configuration $(Configuration) --nologo" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="_ScriptingExit" />
+    </Exec>
+
     <!-- The same guards CI runs over what no compiler reads: seed counts, README facts, relative
          links, and the committed content against its sources. They live outside the test suites because
          none of them checks code, and running them here is what stops such a change from passing
@@ -97,8 +103,8 @@
       <Output TaskParameter="ExitCode" PropertyName="_DocsExit" />
     </Exec>
 
-    <Error Condition="'$(_SharedExit)$(_ServerExit)$(_ClientCoreExit)$(_ClientShellExit)$(_EditorExit)$(_ServerShellExit)$(_ContentExit)$(_DocsExit)' != '00000000'"
-           Text="Test suites failed — Shared=$(_SharedExit) Server=$(_ServerExit) Client.Core=$(_ClientCoreExit) Client.Shell=$(_ClientShellExit) Editor=$(_EditorExit) Server.Shell=$(_ServerShellExit) Content=$(_ContentExit) Docs=$(_DocsExit)." />
+    <Error Condition="'$(_SharedExit)$(_ServerExit)$(_ClientCoreExit)$(_ClientShellExit)$(_EditorExit)$(_ServerShellExit)$(_ScriptingExit)$(_ContentExit)$(_DocsExit)' != '000000000'"
+           Text="Test suites failed — Shared=$(_SharedExit) Server=$(_ServerExit) Client.Core=$(_ClientCoreExit) Client.Shell=$(_ClientShellExit) Editor=$(_EditorExit) Server.Shell=$(_ServerShellExit) Scripting=$(_ScriptingExit) Content=$(_ContentExit) Docs=$(_DocsExit)." />
     <Message Text="═══ All test suites passed ═══" Importance="High" />
   </Target>
 

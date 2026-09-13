@@ -27,8 +27,9 @@ There are two ways to write one, and they meet at the same place.
 
 **A script, with no compiler.** A game is a [Compass](https://github.com/mnwachukwu/Compass) script and a
 folder of records: edit it, restart the server, and that is the whole loop. No toolchain, no rebuild, no
-client to redeploy. This is the intended way and the reason the seams are shaped as they are. *The host is
-not written yet.*
+client to redeploy. This is the intended way and the reason the seams are shaped as they are. *A script
+runs inside the server today; what a script can SAY to the engine is what is being built now* — see
+[docs/scripting.md](docs/scripting.md).
 
 **A C# module, by building from source.** Fork the repository, write an assembly against
 `Mirage.Shared.Extensibility`, and list it in `GameModules.Load()`. The compiler checks every declaration
@@ -74,7 +75,7 @@ of the tree is not source: `tests/` holds the suites in `src/` and their drivers
 the packaging drivers, `modules/` holds the games built on the engine, and `assets/`, `docs/`, `tools/`,
 and `.github/checks/` hold what is neither.
 
-The root `Mirage.slnx` ties all twenty-five projects together, and the split is lopsided on purpose: **ten of the twenty-five are the engine and the game on it. The other fifteen exist to test and publish those ten.**
+The root `Mirage.slnx` ties all 27 projects together, and the split is lopsided on purpose: **eleven of the twenty-seven are the engine and the game on it. The other sixteen exist to test and publish those eleven.**
 
 | | Count | What |
 |---|---|---|
@@ -83,13 +84,14 @@ The root `Mirage.slnx` ties all twenty-five projects together, and the split is 
 | | 2 | client — `Mirage.Client.Core`, `.Shell` |
 | | 1 | editor — `Mirage.Editor` |
 | | 1 | the loaded game — `Mirage.Modules.Survey`, in `modules/` |
-| **Scaffolding** | 6 | test suites, one per source portion, in `tests/src/` |
-| | 5 | test drivers in `tests/` — one per area, plus a root that runs all six suites |
+| | 1 | the scripting host — `Mirage.Scripting`, in `scripting/` |
+| **Scaffolding** | 7 | test suites, one per source portion, in `tests/src/` |
+| | 5 | test drivers in `tests/` — one per area, plus a root that runs all seven suites |
 | | 4 | publish drivers in `publish/` — one per deliverable, plus a root that runs all three |
 
-Only the first ten compile into anything a player or a developer runs; a fork that never publishes and never runs the six test suites needs none of the other fifteen.
+Only the first eleven compile into anything a player or a developer runs; a fork that never publishes and never runs the seven test suites needs none of the other sixteen.
 
-The tenth is the odd one out and is meant to be: `modules/` holds games built ON the engine rather than part of it. A module references `Mirage.Shared` and nothing else, and the server loads it in one line — see [modules/README.md](modules/README.md).
+The last two are the odd ones out and are meant to be. `modules/` holds games built ON the engine rather than part of it. A module references `Mirage.Shared` and nothing else, and the server loads it in one line — see [modules/README.md](modules/README.md). `scripting/` holds the Compass host, which is the only project here that needs a checkout beside this one — see [docs/scripting.md](docs/scripting.md).
 
 The suites split the way the code does: a **core** and a **shell** get separate suites wherever the shell can be swapped. `Mirage.Client.Core` carries no MonoGame and `Mirage.Server.Core` no Avalonia, and neither points back at a shell — the renderer and the management window are both replaceable, and separate suites are what keeps that so. A core suite builds without a shell on its reference path, so logic that reached for one would fail to compile rather than quietly tie the core to one front end.
 
@@ -245,7 +247,8 @@ This file covers what the project is and how to get it running. Everything else 
 |---|---|
 | [Building, publishing, and releasing](docs/building.md) | How a working tree becomes installers, what the version number is bound to, how a tag cuts a release, and which platforms the output runs on |
 | [Icons and shipping your own client](docs/branding.md) | Rebranding a fork: the four icon locations, the MonoGame window-icon trap, and repackaging a client without a compiler |
-| [Testing](docs/testing.md) | What the six suites cover, how to run one on its own, and why the cross-platform matrix exists |
+| [Scripting](docs/scripting.md) | Writing a game in Compass: the sibling checkout it needs, what the host does today, and the open question of what a script can say |
+| [Testing](docs/testing.md) | What the seven suites cover, how to run one on its own, and why the cross-platform matrix exists |
 | [Technical decisions](docs/architecture.md) | Choices that are not obvious from the code, recorded with the reasoning that produced them |
 | [Game data conventions](docs/game-data.md) | Rules the authored content is expected to follow, including music loop points |
 

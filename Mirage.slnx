@@ -16,6 +16,9 @@
   <Folder Name="/Modules/">
     <Project Path="modules/survey/src/Mirage.Modules.Survey/Mirage.Modules.Survey.csproj" />
   </Folder>
+  <Folder Name="/Scripting/">
+    <Project Path="scripting/src/Mirage.Scripting/Mirage.Scripting.csproj" />
+  </Folder>
   <Folder Name="/Editor/">
     <Project Path="editor/src/Mirage.Editor/Mirage.Editor.csproj" />
   </Folder>
@@ -33,6 +36,7 @@
     <Project Path="tests/src/Mirage.Client.Core.Tests/Mirage.Client.Core.Tests.csproj" />
     <Project Path="tests/src/Mirage.Client.Shell.Tests/Mirage.Client.Shell.Tests.csproj" />
     <Project Path="tests/src/Mirage.Editor.Tests/Mirage.Editor.Tests.csproj" />
+    <Project Path="tests/src/Mirage.Scripting.Tests/Mirage.Scripting.Tests.csproj" />
   </Folder>
   <Folder Name="/Publish/">
     <Project Path="publish/Mirage.Publish.csproj" />

@@ -2,7 +2,7 @@
 
 What the suites cover, how to run one, and why the cross-platform matrix exists.
 
-The six test suites are one **NUnit** project per source portion, each named for the code it exercises; the root `Mirage.slnx` groups them under a `/Tests/src/` solution folder, with the drivers that run them in `/Tests/` above.
+The seven test suites are one **NUnit** project per source portion, each named for the code it exercises; the root `Mirage.slnx` groups them under a `/Tests/src/` solution folder, with the drivers that run them in `/Tests/` above.
 
 Eleven of the solution's twenty-four projects are testing — the six suites plus five drivers — against nine that are the game itself. That ratio is what the rest of this page is about: the suites are split so a shell can be swapped without the core noticing, and each split costs a project.
 

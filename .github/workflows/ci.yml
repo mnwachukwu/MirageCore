@@ -116,20 +116,40 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
+    defaults:
+      run:
+        working-directory: MirageSourceRemasteredCore
+
     steps:
+      # ⚠ Checked out into a SUBDIRECTORY, with Compass beside it. Mirage.Scripting consumes Compass
+      # the way this fleet consumes shared code — a ProjectReference counted back to a sibling checkout —
+      # and the default layout puts this repository at the workspace root, which leaves nowhere for a
+      # sibling to go and resolves every relative path to nothing. `defaults.run.working-directory` below
+      # then puts every step back where it expects to be; action INPUTS are not affected by it, so the
+      # two paths handed to actions are spelled out from the workspace root.
+      #
+      # Compass names no `ref:`, so this builds against its default branch: a break there breaks this.
       - name: Check out
         uses: actions/checkout@v7
+        with:
+          path: MirageSourceRemasteredCore
+
+      - name: Check out Compass
+        uses: actions/checkout@v7
+        with:
+          repository: mnwachukwu/Compass
+          path: Compass
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
-          global-json-file: global.json
+          global-json-file: MirageSourceRemasteredCore/global.json
 
       - name: Cache NuGet packages
         uses: actions/cache@v6
         with:
           path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('MirageSourceRemasteredCore/**/*.csproj', 'MirageSourceRemasteredCore/Directory.Build.props') }}
           restore-keys: nuget-${{ runner.os }}-
 
       # Named individually rather than through Mirage.Test.csproj, so the content build can be turned
@@ -163,6 +183,11 @@ jobs:
       - name: Test — editor
         run: dotnet test tests/src/Mirage.Editor.Tests/Mirage.Editor.Tests.csproj -c Release --nologo
 
+      # The only suite that reaches outside this repository: it compiles and runs Compass programs
+      # through the checkout above.
+      - name: Test — scripting
+        run: dotnet test tests/src/Mirage.Scripting.Tests/Mirage.Scripting.Tests.csproj -c Release --nologo
+
       # The suites above reach the client only as a project reference. This builds the SHIPPED thing on
       # each platform — apphost and all — which is the check on what the README promises: that a
       # from-source build needs the .NET SDK and nothing else, on any of the three. It is only true
@@ -177,22 +202,42 @@ jobs:
     name: Full solution
     runs-on: windows-latest
 
+    defaults:
+      run:
+        working-directory: MirageSourceRemasteredCore
+
     steps:
+      # ⚠ Checked out into a SUBDIRECTORY, with Compass beside it. Mirage.Scripting consumes Compass
+      # the way this fleet consumes shared code — a ProjectReference counted back to a sibling checkout —
+      # and the default layout puts this repository at the workspace root, which leaves nowhere for a
+      # sibling to go and resolves every relative path to nothing. `defaults.run.working-directory` below
+      # then puts every step back where it expects to be; action INPUTS are not affected by it, so the
+      # two paths handed to actions are spelled out from the workspace root.
+      #
+      # Compass names no `ref:`, so this builds against its default branch: a break there breaks this.
       - name: Check out
         uses: actions/checkout@v7
+        with:
+          path: MirageSourceRemasteredCore
+
+      - name: Check out Compass
+        uses: actions/checkout@v7
+        with:
+          repository: mnwachukwu/Compass
+          path: Compass
 
       # global.json pins 10.0.302 with rollForward: latestFeature, so this installs what the repo
       # asks for rather than whatever the image happens to ship.
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
-          global-json-file: global.json
+          global-json-file: MirageSourceRemasteredCore/global.json
 
       - name: Cache NuGet packages
         uses: actions/cache@v6
         with:
           path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props', '**/dotnet-tools.json') }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('MirageSourceRemasteredCore/**/*.csproj', 'MirageSourceRemasteredCore/Directory.Build.props', 'MirageSourceRemasteredCore/**/dotnet-tools.json') }}
           restore-keys: nuget-${{ runner.os }}-
 
       # Two manifests, and the second is not redundant. The root one declares vpk (which does the
