@@ -102,21 +102,6 @@ public sealed record EditorCharRow
     /// reason as <see cref="Inv"/>.</summary>
     /// <summary>The character's quest log. Sent S→C and never read back, for the same reason as
     /// <see cref="Inv"/>.</summary>
-    [JsonPropertyName("quests")] public List<EditorQuestRow> Quests { get; init; } = new();
-}
-
-/// <summary>One row of a character's quest log.</summary>
-public sealed record EditorQuestRow
-{
-    [JsonPropertyName("num")] public int QuestNum { get; init; }
-    [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("status")] public QuestStatus Status { get; init; }
-    /// <summary>Objective progress as "2/5, 0/3", already read against the quest's own objective counts.
-    /// Empty for a quest with nothing to track.</summary>
-    [JsonPropertyName("progress")] public string Progress { get; init; } = "";
-    /// <summary>Whether the character meets what the quest asks of them. False rows are shown, because
-    /// seeing a quest somebody should not be holding is the point of showing the log at all.</summary>
-    [JsonPropertyName("eligible")] public bool Eligible { get; init; }
 }
 
 
@@ -207,22 +192,6 @@ public sealed record EditorBankTakePacket : IPacket
     /// <summary>1-based vault slot.</summary>
     [JsonPropertyName("bankSlot")] public int BankSlot { get; init; }
     [JsonPropertyName("quantity")] public int Quantity { get; init; }
-}
-
-/// <summary>C→S: put one quest of a character's log into a given state. A status of
-/// <see cref="QuestStatus.NotStarted"/> takes the quest out of the log entirely, which is what that state
-/// means — "never accepted, no entry".
-/// <para>Refused unless the character meets what the quest asks (level, stats, class, prerequisite), the same
-/// gate accepting one goes through: the editor should not be able to put a quest somewhere the game
-/// would not.</para></summary>
-public sealed record EditorSetQuestStatusPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorSetQuestStatus;
-    [JsonPropertyName("login")] public string Login { get; init; } = "";
-    /// <summary>1-based character slot on the account.</summary>
-    [JsonPropertyName("slot")] public int Slot { get; init; }
-    [JsonPropertyName("questNum")] public int QuestNum { get; init; }
-    [JsonPropertyName("status")] public QuestStatus Status { get; init; }
 }
 
 /// <summary>S→C: what came of an editor operation that can be refused. The message is resolved in the

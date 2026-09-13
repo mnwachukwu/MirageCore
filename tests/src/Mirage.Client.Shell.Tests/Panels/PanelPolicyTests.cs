@@ -119,7 +119,7 @@ public class PanelPolicyTests
         int[] expected =
         [
             PanelSlots.Shop, PanelSlots.Bank, PanelSlots.Inn, PanelSlots.Mail,
-            PanelSlots.Market, PanelSlots.Trade, PanelSlots.QuestLog, PanelSlots.QuestDialog,
+            PanelSlots.Market, PanelSlots.Trade,
             PanelSlots.Conversation,
         ];
 
@@ -165,7 +165,7 @@ public class PanelPolicyTests
     {
         Assert.Multiple(() =>
         {
-            foreach (int slot in new[] { PanelSlots.QuestLog, PanelSlots.QuestDialog,
+            foreach (int slot in new[] {
                                          PanelSlots.Conversation, PanelSlots.Options })
             {
                 Assert.That(P(slot).ConfigKey, Is.Null,
@@ -187,10 +187,9 @@ public class PanelPolicyTests
         {
             Assert.That(P(PanelSlots.Shop).PlayerToggleable, Is.False, "a keybind must not open a shop");
             Assert.That(P(PanelSlots.Trade).PlayerToggleable, Is.False, "a keybind must not open a trade");
-            Assert.That(P(PanelSlots.QuestDialog).PlayerToggleable, Is.False);
             Assert.That(P(PanelSlots.Conversation).PlayerToggleable, Is.False);
 
-            Assert.That(P(PanelSlots.QuestLog).PlayerToggleable, Is.True,
+            Assert.That(P(PanelSlots.Social).PlayerToggleable, Is.True,
                         "the quest LOG is player-opened (J) — it was once missing from the toggle "
                         + "dispatch, which made the key appear to do nothing");
         });
@@ -241,7 +240,7 @@ public class PanelPolicyTests
             PanelSlots.Inventory, PanelSlots.Shop,
             PanelSlots.Options, PanelSlots.Help, PanelSlots.Controls,
             PanelSlots.Bank, PanelSlots.Inn, PanelSlots.Mail, PanelSlots.Social,
-            PanelSlots.Market, PanelSlots.Trade, PanelSlots.QuestLog, PanelSlots.QuestDialog,
+            PanelSlots.Market, PanelSlots.Trade,
             PanelSlots.Conversation, PanelSlots.Moderation,
         ];
 

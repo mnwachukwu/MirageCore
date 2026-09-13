@@ -231,7 +231,7 @@ public class EditorModuleRecordTests
             Editors.GetSession(Editor)!.AdminLevel = access;
             _handler = new EditorPacketHandler(
                 World, Pm, Editors, Locks, Dispatcher, Persistence, new NoOpBackground(),
-                items: null!, joinLeave: null!, quests: null!, spawn: null!,
+                items: null!, joinLeave: null!, spawn: null!,
                 saver: null!, gameLoop: null!,
                 NullLogger<EditorPacketHandler>.Instance, registry);
         }

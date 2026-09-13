@@ -240,7 +240,6 @@ public static class ShellStrings
     public const string Records_Items = nameof(Records_Items);
     public const string Records_Npcs = nameof(Records_Npcs);
     public const string Records_Shops = nameof(Records_Shops);
-    public const string Records_Quests = nameof(Records_Quests);
     public const string Records_Conversations = nameof(Records_Conversations);
     public const string Records_Maps = nameof(Records_Maps);
     public const string Records_MapGroups = nameof(Records_MapGroups);

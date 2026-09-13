@@ -364,8 +364,6 @@ public sealed partial class MirageGame : Game
         _handler.OpenInn += () =>
             (_screens.Current as GameplayScreen)?.OpenInnPanel();
 
-        _handler.OpenNpcQuestMenu += (map, slot) =>
-            (_screens.Current as GameplayScreen)?.OpenNpcQuestMenuAt(map, slot);
 
         _handler.OpenNpcConversation += (map, slot, conv) =>
             (_screens.Current as GameplayScreen)?.OpenConversationAt(map, slot, conv);

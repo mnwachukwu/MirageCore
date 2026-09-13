@@ -36,7 +36,6 @@ public sealed class MirageServerService : IHostedService
     private readonly WeatherSystem _weather;
     private readonly GuildSystem _guilds;
     private readonly TradeSystem _trade;
-    private readonly QuestSystem _quests;
     private readonly TcpConnectionAcceptor _acceptor;
     private readonly ILogger<MirageServerService> _logger;
     private readonly ServerConfig _config;
@@ -58,7 +57,6 @@ public sealed class MirageServerService : IHostedService
         WeatherSystem weather,
         GuildSystem guilds,
         TradeSystem trade,
-        QuestSystem quests,
         TcpConnectionAcceptor acceptor,
         ServerConfig config,
         ILogger<MirageServerService> logger)
@@ -78,7 +76,6 @@ public sealed class MirageServerService : IHostedService
         _weather = weather;
         _guilds = guilds;
         _trade = trade;
-        _quests = quests;
         _acceptor = acceptor;
         _logger = logger;
     }
@@ -279,15 +276,12 @@ public sealed class MirageServerService : IHostedService
         var (npcs, npcsPadded) = await _persistence.LoadAllNpcsAsync();
         _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_LoadingShops));
         var (shops, shopsPadded) = await _persistence.LoadAllShopsAsync();
-        _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_LoadingQuests));
-        var (quests, questsPadded) = await _persistence.LoadAllQuestsAsync();
         _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_LoadingConversations));
         var (conversations, conversationsPadded) = await _persistence.LoadAllConversationsAsync();
 
         CopyArray(items, _world.Items, _world.Limits.Items);
         CopyArray(npcs, _world.Npcs, _world.Limits.Npcs);
         CopyArray(shops, _world.Shops, _world.Limits.Shops);
-        CopyArray(quests, _world.Quests, _world.Limits.Quests);
         CopyArray(conversations, _world.Conversations, _world.Limits.Conversations);
 
         // Whatever families the modules added. Core knows nothing about their contents, so each one is
@@ -371,11 +365,11 @@ public sealed class MirageServerService : IHostedService
 
         LocalizedLog.Info(_logger, ServerStrings.Server_LoadedSummary,
             ("Items", items.Length - 1), ("Npcs", npcs.Length - 1), ("Shops", shops.Length - 1),
-            ("Quests", quests.Length - 1), ("Conversations", conversations.Length - 1),
+            ("Conversations", conversations.Length - 1),
             ("Maps", mapsLoaded));
         LocalizedLog.Info(_logger, ServerStrings.Server_PaddedSummary,
             ("Items", itemsPadded), ("Npcs", npcsPadded), ("Shops", shopsPadded),
-            ("Quests", questsPadded), ("Conversations", conversationsPadded),
+            ("Conversations", conversationsPadded),
             ("Maps", mapsCreated));
     }
 

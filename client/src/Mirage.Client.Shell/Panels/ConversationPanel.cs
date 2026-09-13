@@ -99,11 +99,6 @@ public sealed class ConversationPanel : IGamePanel
                 sender.SendNpcInteract(_map, _slot, NpcInteractChoice.Shop);
                 IsOpen = false;
             }
-            else if (ch.Action == ConversationAction.OpenQuests)
-            {
-                sender.SendNpcInteract(_map, _slot, NpcInteractChoice.Quest);
-                IsOpen = false;
-            }
             else if (ch.NextNodeId <= 0 || def.NodeById(ch.NextNodeId) is null)
             {
                 IsOpen = false;   // end of conversation

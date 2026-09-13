@@ -73,7 +73,7 @@ public sealed class NpcRecord
     /// <summary>Author flag marking this NPC as a BOSS — a deliberate designer classification, NOT inferred from
     /// HP/Size/stats (a tanky or large mob is not automatically a boss, and <see cref="ExtraHp"/> is a separate
     /// tankiness lever). Its only effect today: a guild quest that rolls a boss uses a COMPRESSED kill-count
-    /// curve (tens, not hundreds — see <see cref="GuildQuests.KillCount"/>) and a reduced reward, so a boss
+    /// curve (tens, not hundreds) and a reduced reward, so a boss
     /// target can never become an impossible "kill hundreds of bosses" quest. Otherwise a boss is an ordinary
     /// NPC in every system (spawn, combat, war despawn). Defaults false.</summary>
     public bool IsBoss { get; set; }

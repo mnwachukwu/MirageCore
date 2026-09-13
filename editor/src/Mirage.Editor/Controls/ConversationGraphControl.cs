@@ -470,7 +470,6 @@ public sealed class ConversationGraphControl : Control
             var ink = ending.Kind switch
             {
                 ConversationEndKind.OpensShop => OkBrush,
-                ConversationEndKind.OpensQuests => WarnBrush,
                 _ => FaintBrush,
             };
             ctx.DrawRectangle(BoxBrush, new Pen(ink, hot ? 1.4 : 1.0), chip, EndH / 2, EndH / 2);
@@ -478,7 +477,6 @@ public sealed class ConversationGraphControl : Control
             string label = EditorStrings.Get(ending.Kind switch
             {
                 ConversationEndKind.OpensShop => EditorStrings.ConversationEditor_GraphOpensShop,
-                ConversationEndKind.OpensQuests => EditorStrings.ConversationEditor_GraphOpensQuests,
                 _ => EditorStrings.ConversationEditor_GraphEnds,
             });
             if (ending.Count > 1) label = $"{label} ×{ending.Count}";

@@ -19,7 +19,6 @@ public sealed class EditorDataService
     public NpcRecord[] OfflineNpcs { get; private set; } = [];
     public ShopRecord[] OfflineShops { get; private set; } = [];
     public MapGroupRecord[] OfflineMapGroups { get; private set; } = [];
-    public QuestRecord[] OfflineQuests { get; private set; } = [];
     public ConversationRecord[] OfflineConversations { get; private set; } = [];
 
     // offline maps: index = map number (1-based)
@@ -31,14 +30,12 @@ public sealed class EditorDataService
     private NamedEntry[]? _mapEntries;
     private NamedEntry[]? _shopEntries;
     private NamedEntry[]? _mapGroupEntries;
-    private NamedEntry[]? _questEntries;
 
     public NamedEntry[] ItemEntries => _itemEntries ??= BuildEntries(OfflineItems, r => r.Name);
     public NamedEntry[] NpcEntries => _npcEntries ??= BuildEntries(OfflineNpcs, r => r.Name);
     public NamedEntry[] MapEntries => _mapEntries ??= BuildEntries(OfflineMaps, r => r.Name);
     public NamedEntry[] ShopEntries => _shopEntries ??= BuildEntries(OfflineShops, r => r.Name);
     public NamedEntry[] MapGroupEntries => _mapGroupEntries ??= BuildEntries(OfflineMapGroups, r => r.Name);
-    public NamedEntry[] QuestEntries => _questEntries ??= BuildEntries(OfflineQuests, r => r.Name);
 
     // When online the server's name list takes precedence; offline JSON may have blank names
     // for entities that were never edited in this editor.
@@ -47,7 +44,6 @@ public sealed class EditorDataService
     public NamedEntry[] LiveMapEntries => OnlineMaps is not null ? BuildEntriesFromLive(OnlineMaps) : MapEntries;
     public NamedEntry[] LiveShopEntries => OnlineShops is not null ? BuildEntriesFromLive(OnlineShops) : ShopEntries;
     public NamedEntry[] LiveMapGroupEntries => OnlineMapGroups is not null ? BuildEntriesFromLive(OnlineMapGroups) : MapGroupEntries;
-    public NamedEntry[] LiveQuestEntries => OnlineQuests is not null ? BuildEntriesFromLive(OnlineQuests) : QuestEntries;
 
     /// <summary>Builds a picker list over the SERVER's slot range, sized from the live list. The offline
     /// folder is a different world with its own ceiling and cannot bound this one.</summary>
@@ -79,7 +75,7 @@ public sealed class EditorDataService
     private void RaiseEntriesInvalidated() => EntriesInvalidated?.Invoke();
 
     private void ClearEntryCache() =>
-        _itemEntries = _npcEntries = _mapEntries = _shopEntries = _mapGroupEntries = _questEntries = null;
+        _itemEntries = _npcEntries = _mapEntries = _shopEntries = _mapGroupEntries = null;
 
     // ── Online data pushed by server ──────────────────────────────────────────
     // null when not in online mode; only names are stored — full records are fetched on demand
@@ -109,7 +105,6 @@ public sealed class EditorDataService
     public EditorDataPacket.NameEntry[]? OnlineShops { get; private set; }
     public EditorDataPacket.NameEntry[]? OnlineMaps { get; private set; }
     public EditorDataPacket.NameEntry[]? OnlineMapGroups { get; private set; }
-    public EditorDataPacket.NameEntry[]? OnlineQuests { get; private set; }
     public EditorDataPacket.NameEntry[]? OnlineConversations { get; private set; }
     // Server-sent set of currency-type item indices (for drop-quantity validation); null when offline.
     private HashSet<int>? _onlineCurrencyItems;
@@ -184,7 +179,6 @@ public sealed class EditorDataService
         OfflineItems = [];
         OfflineNpcs = [];
         OfflineShops = [];
-        OfflineQuests = [];
         OfflineConversations = [];
         OfflineMaps = [];
         OfflineMapGroups = [];
@@ -219,7 +213,6 @@ public sealed class EditorDataService
         OfflineItems = await LoadAllFromDirAsync<ItemRecord>(Path.Combine(dataPath, "items"), "item", Limits.Items);
         OfflineNpcs = await LoadAllFromDirAsync<NpcRecord>(Path.Combine(dataPath, "npcs"), "npc", Limits.Npcs);
         OfflineShops = await LoadAllFromDirAsync<ShopRecord>(Path.Combine(dataPath, "shops"), "shop", Limits.Shops);
-        OfflineQuests = await LoadAllFromDirAsync<QuestRecord>(Path.Combine(dataPath, "quests"), "quest", Limits.Quests);
         OfflineConversations = await LoadAllFromDirAsync<ConversationRecord>(Path.Combine(dataPath, "conversations"), "conversation", Limits.Conversations);
         OfflineMaps = await LoadAllMapsAsync(dataPath, Limits.Maps, Manifest.DefaultMapSize);
         OfflineMapGroups = await LoadAllMapGroupsAsync(dataPath, Limits.MapGroups);
@@ -305,7 +298,6 @@ public sealed class EditorDataService
         CoreRecordFamilies.Maps => LiveMapEntries,
         CoreRecordFamilies.Shops => LiveShopEntries,
         CoreRecordFamilies.MapGroups => LiveMapGroupEntries,
-        CoreRecordFamilies.Quests => LiveQuestEntries,
         null => [],
         _ => ModuleEntries(familyId),
     };
@@ -478,7 +470,6 @@ public sealed class EditorDataService
         OnlineShops = pkt.Shops;
         OnlineMaps = pkt.Maps;
         OnlineMapGroups = pkt.MapGroups;
-        OnlineQuests = pkt.Quests;
         OnlineConversations = pkt.Conversations;
         _onlineCurrencyItems = new HashSet<int>(pkt.CurrencyItems);
         _onlineItemGates = pkt.ItemGates.ToDictionary(g => g.Num);
@@ -494,7 +485,6 @@ public sealed class EditorDataService
         OnlineShops = null;
         OnlineMaps = null;
         OnlineMapGroups = null;
-        OnlineQuests = null;
         OnlineConversations = null;
         _onlineCurrencyItems = null;
         _onlineItemGates = null;
@@ -513,7 +503,6 @@ public sealed class EditorDataService
         PatchAndNotify(OnlineItems, index, name);
     }
     public void PatchOnlineShopName(int index, string name) => PatchAndNotify(OnlineShops, index, name);
-    public void PatchOnlineQuestName(int index, string name) => PatchAndNotify(OnlineQuests, index, name);
     public void PatchOnlineConversationName(int index, string name) => PatchAndNotify(OnlineConversations, index, name);
     public void PatchOnlineMapGroupName(int index, string name) => PatchAndNotify(OnlineMapGroups, index, name);
 
@@ -555,14 +544,6 @@ public sealed class EditorDataService
         OfflineShops[index] = record;
         _shopEntries = null;
         await WriteJsonAsync(Path.Combine(EditorPaths.Data, "shops", $"shop{index}.json"), record);
-        RaiseEntriesInvalidated();
-    }
-
-    public async Task SaveOfflineQuestAsync(int index, QuestRecord record)
-    {
-        OfflineQuests[index] = record;
-        _questEntries = null;
-        await WriteJsonAsync(Path.Combine(EditorPaths.Data, "quests", $"quest{index}.json"), record);
         RaiseEntriesInvalidated();
     }
 

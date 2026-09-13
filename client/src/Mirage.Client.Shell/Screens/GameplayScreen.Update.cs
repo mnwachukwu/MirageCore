@@ -169,9 +169,6 @@ public sealed partial class GameplayScreen : IGameScreen
             case HudAction.ToggleInventory:
                 ActivatePanel(PanelInventory);
                 break;
-            case HudAction.ToggleQuestLog:
-                ActivatePanel(PanelQuestLog);
-                break;
             case HudAction.ToggleSocial:
                 ActivatePanel(PanelSocial);
                 break;
@@ -205,7 +202,6 @@ public sealed partial class GameplayScreen : IGameScreen
             if (input.IsKeyPressed(Keys.H)) ActivateHelpPanel();
             if (input.IsKeyPressed(Keys.M)) ActivatePanel(PanelMail);
             if (input.IsKeyPressed(Keys.G)) ActivatePanel(PanelSocial);
-            if (input.IsKeyPressed(Keys.J)) ActivatePanel(PanelQuestLog);
             if (kbActive && input.IsKeyPressed(Keys.Tab))
             {
                 if (ctrl) TargetSelf();
@@ -459,7 +455,7 @@ public sealed partial class GameplayScreen : IGameScreen
         }
 
         // Persist layout the moment a drag or resize completes, so config survives crashes.
-        if (_inv.LayoutChanged || _shop.LayoutChanged || _bank.LayoutChanged || _inn.LayoutChanged || _help.LayoutChanged || _controls.LayoutChanged || _mail.LayoutChanged || _mail.ColumnsChanged || _market.LayoutChanged || _market.ColumnsChanged || _trade.LayoutChanged || _social.LayoutChanged || _social.TabChanged || _social.ColumnsChanged || _questLog.ColumnsChanged || _death.LayoutChanged)
+        if (_inv.LayoutChanged || _shop.LayoutChanged || _bank.LayoutChanged || _inn.LayoutChanged || _help.LayoutChanged || _controls.LayoutChanged || _mail.LayoutChanged || _mail.ColumnsChanged || _market.LayoutChanged || _market.ColumnsChanged || _trade.LayoutChanged || _social.LayoutChanged || _social.TabChanged || _social.ColumnsChanged || _death.LayoutChanged)
             SavePanelConfig();
         if (_ctx.OptionsPanel.LayoutChanged) _ctx.SaveSettings();
 

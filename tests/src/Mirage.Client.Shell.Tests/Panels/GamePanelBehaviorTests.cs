@@ -35,8 +35,6 @@ public class GamePanelBehaviorTests
         yield return new SocialPanel();
         yield return new MarketPanel();
         yield return new TradePanel();
-        yield return new QuestLogPanel();
-        yield return new QuestDialogPanel();
         yield return new ConversationPanel();
         yield return new ModerationPanel();
         // Owned by MirageGame rather than the GameplayScreen registry — backtick opens it on every

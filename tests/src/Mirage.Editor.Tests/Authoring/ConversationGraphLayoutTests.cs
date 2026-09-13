@@ -11,7 +11,6 @@ public class ConversationGraphLayoutTests
     private static ConversationGraphBranch To(int nodeId) => new(nodeId, ConversationEndKind.None);
     private static ConversationGraphBranch Ends() => new(0, ConversationEndKind.None);
     private static ConversationGraphBranch Shop() => new(0, ConversationEndKind.OpensShop);
-    private static ConversationGraphBranch Quests() => new(0, ConversationEndKind.OpensQuests);
 
     private static ConversationGraphNode Node(int id, params ConversationGraphBranch[] branches) => new(id, branches);
     private static ConversationGraphNode Leads(int id, params int[] targets) =>
@@ -193,10 +192,10 @@ public class ConversationGraphLayoutTests
     [Test]
     public void EachKindOfExitGetsItsOwnMarker_InAFixedOrder()
     {
-        var g = ConversationGraphLayout.Build([Node(1, Quests(), Shop(), Ends())], rootNodeId: 1);
+        var g = ConversationGraphLayout.Build([Node(1, Shop(), Ends())], rootNodeId: 1);
         Assert.That(g.Terminals.Single().Endings.Select(e => e.Kind), Is.EqualTo(new[]
         {
-            ConversationEndKind.Ends, ConversationEndKind.OpensShop, ConversationEndKind.OpensQuests,
+            ConversationEndKind.Ends, ConversationEndKind.OpensShop,
         }));
     }
 
@@ -418,7 +417,7 @@ public class ConversationGraphLayoutTests
     public void NoMarkerSharesASlotWithAnythingElse()
     {
         var g = ConversationGraphLayout.Build(
-            [Node(1, To(2), Ends()), Node(2, Shop(), To(3)), Node(3, Ends(), Quests())], rootNodeId: 1);
+            [Node(1, To(2), Ends()), Node(2, Shop(), To(3)), Node(3, Ends(), Shop())], rootNodeId: 1);
 
         var slots = g.Nodes.Select(n => (n.Column, n.Row))
             .Concat(g.Terminals.Select(t => (t.Column, t.Row)))

@@ -77,8 +77,6 @@ public static partial class ClientStrings
     public const string ContextMenu_PickUpAll = nameof(ContextMenu_PickUpAll);
     public const string ContextMenu_LootHeldBy = nameof(ContextMenu_LootHeldBy);
     public const string ContextMenu_TileGround = nameof(ContextMenu_TileGround);
-    public const string ContextMenu_QuestAccept = nameof(ContextMenu_QuestAccept);
-    public const string ContextMenu_QuestTurnIn = nameof(ContextMenu_QuestTurnIn);
     public const string ContextMenu_Trade = nameof(ContextMenu_Trade);
     public const string ContextMenu_GuildInvite = nameof(ContextMenu_GuildInvite);
     public const string ContextMenu_GuildRequest = nameof(ContextMenu_GuildRequest);
@@ -107,32 +105,8 @@ public static partial class ClientStrings
     public const string ContextMenu_Unequip = nameof(ContextMenu_Unequip);
 
     // ── Quests: accept/turn-in dialog + quest log ───────────────────────────────
-    public const string QuestDialog_AcceptButton = nameof(QuestDialog_AcceptButton);
-    public const string QuestDialog_TurnInButton = nameof(QuestDialog_TurnInButton);
-    public const string QuestDialog_ObjectivesHeader = nameof(QuestDialog_ObjectivesHeader);
-    public const string QuestDialog_ObjectiveNone = nameof(QuestDialog_ObjectiveNone);
-    public const string QuestDialog_ObjectiveKill = nameof(QuestDialog_ObjectiveKill);
-    public const string QuestDialog_RewardsHeader = nameof(QuestDialog_RewardsHeader);
-    public const string QuestDialog_RewardItem = nameof(QuestDialog_RewardItem);
-    public const string QuestPanel_Title = nameof(QuestPanel_Title);
-    public const string QuestPanel_Empty = nameof(QuestPanel_Empty);
-    public const string QuestPanel_AbandonButton = nameof(QuestPanel_AbandonButton);
-    public const string QuestPanel_AbandonConfirm = nameof(QuestPanel_AbandonConfirm);
-    public const string QuestPanel_StateInProgress = nameof(QuestPanel_StateInProgress);
-    public const string QuestPanel_StateAvailable = nameof(QuestPanel_StateAvailable);
-    public const string QuestPanel_StateIneligible = nameof(QuestPanel_StateIneligible);
-    public const string QuestPanel_StateComplete = nameof(QuestPanel_StateComplete);
-    public const string QuestPanel_StateRepeatable = nameof(QuestPanel_StateRepeatable);
-    public const string QuestPanel_ColQuest = nameof(QuestPanel_ColQuest);
-    public const string QuestPanel_ColStatus = nameof(QuestPanel_ColStatus);
-    public const string QuestPanel_ReqHeader = nameof(QuestPanel_ReqHeader);
-    public const string QuestPanel_ReqPrereq = nameof(QuestPanel_ReqPrereq);
     // A repeatable quest already finished this period — one line per cadence, so each language words its own
     // "already done this <period>" naturally rather than interpolating a period noun.
-    public const string QuestPanel_ReqDoneAlready = nameof(QuestPanel_ReqDoneAlready);
-    public const string QuestPanel_ReqDoneToday = nameof(QuestPanel_ReqDoneToday);
-    public const string QuestPanel_ReqDoneThisWeek = nameof(QuestPanel_ReqDoneThisWeek);
-    public const string QuestPanel_ReqDoneThisMonth = nameof(QuestPanel_ReqDoneThisMonth);
 
     // ── NPC conversations (dialogue panel) ─────────────────────────────────────
     public const string ConversationPanel_Title = nameof(ConversationPanel_Title);

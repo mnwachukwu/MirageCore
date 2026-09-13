@@ -52,7 +52,6 @@ public sealed class GameWorld
     public ItemRecord[] Items { get; }
     public NpcRecord[] Npcs { get; }
     public ShopRecord[] Shops { get; }
-    public QuestRecord[] Quests { get; }
     public ConversationRecord[] Conversations { get; }
 
     // Guilds are runtime-created and UNBOUNDED (no cap): a sparse map keyed by guild Index (like
@@ -446,7 +445,6 @@ public sealed class GameWorld
         Items = Fill<ItemRecord>(Limits.Items);
         Npcs = Fill<NpcRecord>(Limits.Npcs);
         Shops = Fill<ShopRecord>(Limits.Shops);
-        Quests = Fill<QuestRecord>(Limits.Quests);
         Conversations = Fill<ConversationRecord>(Limits.Conversations);
 
         MapItems = Fill<List<MapItemRecord>>(Limits.Maps);

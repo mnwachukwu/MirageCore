@@ -27,7 +27,6 @@ public static class CoreRecordFamilies
     public const string Items = "Items";
     public const string Npcs = "NPCs";
     public const string Shops = "Shops";
-    public const string Quests = "Quests";
     public const string Conversations = "Conversations";
 
     /// <summary>Every family that is part of a world, in the order the editor lists them.
@@ -76,14 +75,6 @@ public static class CoreRecordFamilies
             LabelKey = "MainWindow_Section_Shops",
             Directory = "shops",
             FilePrefix = "shop",
-            DefaultLimit = 1000,
-        },
-        new()
-        {
-            Id = Quests,
-            LabelKey = "MainWindow_Section_Quests",
-            Directory = "quests",
-            FilePrefix = "quest",
             DefaultLimit = 1000,
         },
         new()

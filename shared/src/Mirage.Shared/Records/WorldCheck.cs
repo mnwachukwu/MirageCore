@@ -7,7 +7,6 @@ public enum WorldRecordKind
     Item,
     Npc,
     Shop,
-    Quest,
     Conversation,
 }
 
@@ -60,8 +59,6 @@ public enum WorldIssueKind
     ItemMissing,
 
 
-    /// <summary>Something names a quest that is not there.</summary>
-    QuestMissing,
 
     /// <summary>Something restricts itself to a class that is not there.</summary>
     ClassMissing,
@@ -79,11 +76,7 @@ public enum WorldIssueKind
     /// <summary>A conversation offers to open a shop, but its speaker keeps none.</summary>
     ConversationOpensNoShop,
 
-    /// <summary>A conversation offers to open a quest menu, but its speaker neither gives nor takes one.</summary>
-    ConversationOpensNoQuests,
 
-    /// <summary>A quest's prerequisite chain loops, so no player can ever accept it.</summary>
-    QuestPrereqCycle,
 }
 
 /// <summary>One finding. <see cref="OwnerKind"/> and <see cref="OwnerNum"/> name the record it was found on;
@@ -112,7 +105,6 @@ public sealed record WorldContent
     public ItemRecord?[] Items { get; init; } = [];
     public NpcRecord?[] Npcs { get; init; } = [];
     public ShopRecord?[] Shops { get; init; } = [];
-    public QuestRecord?[] Quests { get; init; } = [];
     public ConversationRecord?[] Conversations { get; init; } = [];
 
     /// <summary>Whether a map-group index is backed by a record. Groups live in a dictionary — only files
@@ -145,7 +137,6 @@ public static class WorldCheck
         CheckNpcs(found, world);
         CheckItems(found, world);
         CheckShops(found, world);
-        CheckQuests(found, world);
         CheckConversations(found, world);
         return found;
     }
@@ -166,7 +157,6 @@ public static class WorldCheck
 
     private static bool HasNpc(WorldContent w, int n) => Has(w.Npcs, n, r => r.Name);
     private static bool HasItem(WorldContent w, int n) => Has(w.Items, n, r => r.Name);
-    private static bool HasQuest(WorldContent w, int n) => Has(w.Quests, n, r => r.Name);
     // Every family iterates the same way: 1-based, skipping slots nobody has authored.
     private static IEnumerable<(int Num, T Record)> Authored<T>(T?[] all, Func<T, string> nameOf) where T : class
     {
@@ -363,61 +353,6 @@ public static class WorldCheck
         }
     }
 
-    private static void CheckQuests(List<WorldIssue> found, WorldContent w)
-    {
-        foreach (var (num, quest) in Authored(w.Quests, r => r.Name))
-        {
-            if (quest.GiverNpc != 0)
-                Ref(found, HasNpc(w, quest.GiverNpc), WorldIssueKind.NpcMissing, WorldRecordKind.Quest, num, $"{quest.GiverNpc}");
-            if (quest.TurnInNpc != 0)
-                Ref(found, HasNpc(w, quest.TurnInNpc), WorldIssueKind.NpcMissing, WorldRecordKind.Quest, num, $"{quest.TurnInNpc}");
-            if (quest.PrereqQuest != 0)
-                Ref(found, HasQuest(w, quest.PrereqQuest), WorldIssueKind.QuestMissing, WorldRecordKind.Quest, num, $"{quest.PrereqQuest}");
-
-            foreach (var o in quest.Objectives)
-            {
-                // Target 0 is a wildcard — "any target of this kind" — and names nothing to check.
-                if (o.Target == 0) continue;
-                switch (o.Kind)
-                {
-                    case ObjectiveKind.Kill:
-                        Ref(found, HasNpc(w, o.Target), WorldIssueKind.NpcMissing, WorldRecordKind.Quest, num, $"{o.Target}");
-                        break;
-                    case ObjectiveKind.Fetch:
-                    case ObjectiveKind.Gather:
-                        Ref(found, HasItem(w, o.Target), WorldIssueKind.ItemMissing, WorldRecordKind.Quest, num, $"{o.Target}");
-                        break;
-                    case ObjectiveKind.Explore:
-                        Ref(found, w.Maps.ElementAtOrDefault(o.Target) is { IsBlank: false },
-                            WorldIssueKind.WarpMapMissing, WorldRecordKind.Quest, num, $"{o.Target}");
-                        break;
-                }
-            }
-
-            foreach (var r in quest.RewardItems.Concat(quest.RepeatRewardItems))
-                Ref(found, HasItem(w, r.ItemNum), WorldIssueKind.ItemMissing, WorldRecordKind.Quest, num, $"{r.ItemNum}");
-
-            if (PrereqLoops(w, num))
-                found.Add(new WorldIssue(WorldIssueKind.QuestPrereqCycle, WorldRecordKind.Quest, num, -1, -1, ""));
-        }
-    }
-
-    // Walks the prerequisite chain from one quest. A quest that requires itself, directly or through any
-    // number of steps, can never be accepted by anyone.
-    private static bool PrereqLoops(WorldContent w, int start)
-    {
-        var seen = new HashSet<int> { start };
-        int at = start;
-        while (true)
-        {
-            var q = at >= 1 && at < w.Quests.Length ? w.Quests[at] : null;
-            int next = q?.PrereqQuest ?? 0;
-            if (next == 0) return false;
-            if (!seen.Add(next)) return true;
-            at = next;
-        }
-    }
-
     private static void CheckConversations(List<WorldIssue> found, WorldContent w)
     {
         foreach (var (num, conv) in Authored(w.Conversations, r => r.Name))
@@ -435,7 +370,7 @@ public static class WorldCheck
                     num, -1, -1, $"{conv.RootNodeId}"));
             }
 
-            bool opensShop = false, opensQuests = false;
+            bool opensShop = false;
             foreach (var node in conv.Nodes)
             {
                 foreach (var choice in node.Choices)
@@ -448,22 +383,14 @@ public static class WorldCheck
                     }
 
                     opensShop |= choice.Action == ConversationAction.OpenShop;
-                    opensQuests |= choice.Action == ConversationAction.OpenQuests;
                 }
             }
 
-            // Both actions hand off to a role the SPEAKER holds, so a speaker without that role leaves the
+            // The action hands off to a role the SPEAKER holds, so a speaker without that role leaves the
             // choice doing nothing when a player picks it.
             if (opensShop && !Authored(w.Shops, r => r.Name).Any(s => s.Record.Keeper == conv.SpeakerNpc))
             {
                 found.Add(new WorldIssue(WorldIssueKind.ConversationOpensNoShop, WorldRecordKind.Conversation,
-                    num, -1, -1, $"{conv.SpeakerNpc}"));
-            }
-
-            if (opensQuests && !Authored(w.Quests, r => r.Name)
-                    .Any(q => q.Record.GiverNpc == conv.SpeakerNpc || q.Record.EffectiveTurnInNpc == conv.SpeakerNpc))
-            {
-                found.Add(new WorldIssue(WorldIssueKind.ConversationOpensNoQuests, WorldRecordKind.Conversation,
                     num, -1, -1, $"{conv.SpeakerNpc}"));
             }
         }

@@ -36,7 +36,6 @@ public sealed partial class MainWindowViewModel : ObservableObject
         "Items" => ItemEditor,
         "NPCs" => NpcEditor,
         "Shops" => ShopEditor,
-        "Quests" => QuestEditor,
         "Conversations" => ConversationEditor,
         // A game's family auto-saves like any other section, but only once its section has been opened:
         // nothing is dirty in one nobody has looked at.

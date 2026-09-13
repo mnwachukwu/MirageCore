@@ -106,9 +106,6 @@
     <DataTemplate DataType="{x:Type vm:MapGroupEditorViewModel}">
       <views:MapGroupEditorView />
     </DataTemplate>
-    <DataTemplate DataType="{x:Type vm:QuestEditorViewModel}">
-      <views:QuestEditorView />
-    </DataTemplate>
     <DataTemplate DataType="{x:Type vm:ConversationEditorViewModel}">
       <views:ConversationEditorView />
     </DataTemplate>

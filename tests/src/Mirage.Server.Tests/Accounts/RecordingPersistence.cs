@@ -64,8 +64,6 @@ internal sealed class RecordingPersistence : IPersistenceService
     public Task<(ItemRecord[] records, int padded)> LoadAllItemsAsync() => Task.FromResult((Array.Empty<ItemRecord>(), 0));
     public Task<(NpcRecord[] records, int padded)> LoadAllNpcsAsync() => Task.FromResult((Array.Empty<NpcRecord>(), 0));
     public Task<(ShopRecord[] records, int padded)> LoadAllShopsAsync() => Task.FromResult((Array.Empty<ShopRecord>(), 0));
-    public Task<(QuestRecord[] records, int padded)> LoadAllQuestsAsync() => Task.FromResult((Array.Empty<QuestRecord>(), 0));
-    public Task SaveQuestAsync(int num, QuestRecord quest) => Task.CompletedTask;
 
     public readonly List<(string Family, int Num, AttributeBag Record)> SavedModuleRecords = new();
     public Task<(AttributeBag[] records, int padded)> LoadAllModuleRecordsAsync(RecordFamily family, int limit)

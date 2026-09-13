@@ -163,7 +163,7 @@ public class AutoSaveScheduleTests
         Assert.Multiple(() =>
         {
             Assert.That(MainWindowViewModel.AutoSaveSections, Does.Not.Contain("Accounts"));
-            Assert.That(MainWindowViewModel.AutoSaveSections, Has.Length.EqualTo(7));
+            Assert.That(MainWindowViewModel.AutoSaveSections, Has.Length.EqualTo(6));
         });
     }
 

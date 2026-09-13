@@ -40,7 +40,6 @@ public sealed partial class EditorPacketHandler
     private readonly IBackgroundPersistence _bg;
     private readonly ItemSystem _items;
     private readonly JoinLeaveSystem _joinLeave;
-    private readonly QuestSystem _quests;
     private readonly SpawnSystem _spawn;
     // The account browser's two: every account write goes through the one per-login chain, and reading
     // the roster or touching a live player has to hop onto the loop. See the .Accounts partial.
@@ -52,7 +51,7 @@ public sealed partial class EditorPacketHandler
         GameWorld world, PlayerManager pm, EditorSessionManager editors, EditorLockRegistry locks,
         IPacketDispatcher dispatcher,
         IPersistenceService persistence, IBackgroundPersistence bg, ItemSystem items,
-        JoinLeaveSystem joinLeave, QuestSystem quests, SpawnSystem spawn,
+        JoinLeaveSystem joinLeave, SpawnSystem spawn,
         PlayerSaver saver, GameLoop gameLoop,
         ILogger<EditorPacketHandler> logger,
         CoreRegistry? registry = null)
@@ -69,7 +68,6 @@ public sealed partial class EditorPacketHandler
         _bg = bg;
         _items = items;
         _joinLeave = joinLeave;
-        _quests = quests;
         _spawn = spawn;
         _logger = logger;
     }
@@ -104,9 +102,6 @@ public sealed partial class EditorPacketHandler
                 case EditorRequestShopPacket p:
                     HandleEditorRequestShop(editorIndex, p);
                     break;
-                case EditorRequestQuestPacket p:
-                    HandleEditorRequestQuest(editorIndex, p);
-                    break;
                 case EditorRequestConversationPacket p:
                     HandleEditorRequestConversation(editorIndex, p);
                     break;
@@ -121,9 +116,6 @@ public sealed partial class EditorPacketHandler
                     break;
                 case EditorRequestAllShopsPacket p:
                     HandleEditorRequestAllShops(editorIndex, p);
-                    break;
-                case EditorRequestAllQuestsPacket p:
-                    HandleEditorRequestAllQuests(editorIndex, p);
                     break;
                 case EditorRequestAllConversationsPacket p:
                     HandleEditorRequestAllConversations(editorIndex, p);
@@ -148,9 +140,6 @@ public sealed partial class EditorPacketHandler
                     break;
                 case EditorSaveShopPacket p:
                     HandleEditorSaveShop(editorIndex, p);
-                    break;
-                case EditorSaveQuestPacket p:
-                    HandleEditorSaveQuest(editorIndex, p);
                     break;
                 case EditorSaveConversationPacket p:
                     HandleEditorSaveConversation(editorIndex, p);
@@ -192,9 +181,6 @@ public sealed partial class EditorPacketHandler
                     break;
                 case EditorBankTakePacket p:
                     HandleEditorBankTake(editorIndex, p);
-                    break;
-                case EditorSetQuestStatusPacket p:
-                    HandleEditorSetQuestStatus(editorIndex, p);
                     break;
             }
         }
@@ -280,10 +266,6 @@ public sealed partial class EditorPacketHandler
             .Select(i => new EditorDataPacket.NameEntry(i, _world.MapGroups.GetValueOrDefault(i)?.Name ?? ""))
             .ToArray();
 
-        var quests = Enumerable.Range(1, _world.Limits.Quests)
-            .Select(i => new EditorDataPacket.NameEntry(i, _world.Quests[i].Name))
-            .ToArray();
-
         var conversations = Enumerable.Range(1, _world.Limits.Conversations)
             .Select(i => new EditorDataPacket.NameEntry(i, _world.Conversations[i].Name))
             .ToArray();
@@ -310,7 +292,6 @@ public sealed partial class EditorPacketHandler
             Shops = shops,
             Maps = maps,
             MapGroups = mapGroups,
-            Quests = quests,
             Conversations = conversations,
             CurrencyItems = currencyItems,
             ItemGates = itemGates,
@@ -580,99 +561,6 @@ public sealed partial class EditorPacketHandler
         _logger.LogInformation("Editor saved shop #{Num}.", n);
     }
 
-    // ── Quest editor ───────────────────────────────────────────────────────────
-
-    private void HandleEditorRequestQuest(int editorIndex, EditorRequestQuestPacket p)
-    {
-        if (!RequireAccess(editorIndex, AdminLevel.Mapper)) return;
-        if (!SlotValidation.IsValidQuestNum(p.QuestNum, _world.Limits.Quests)) return;
-        _dispatcher.SendToEditor(editorIndex, BuildUpdateQuest(p.QuestNum));
-    }
-
-    private void HandleEditorRequestAllQuests(int editorIndex, EditorRequestAllQuestsPacket _)
-    {
-        if (!RequireAccess(editorIndex, AdminLevel.Mapper)) return;
-        _dispatcher.SendToEditor(editorIndex, new EditorAllQuestsPacket
-        {
-            Quests = Enumerable.Range(1, _world.Limits.Quests).Select(BuildUpdateQuest).ToArray(),
-        });
-    }
-
-    private void HandleEditorSaveQuest(int editorIndex, EditorSaveQuestPacket p)
-    {
-        if (!RequireAccess(editorIndex, AdminLevel.Developer)) return;
-        int n = p.QuestNum;
-        if (!SlotValidation.IsValidQuestNum(n, _world.Limits.Quests)) return;
-        if (LockedByAnother(editorIndex, CoreRecordFamilies.Quests, n)) return;
-
-        var quest = _world.Quests[n];
-        quest.Name = p.Name;
-        quest.Description = p.Description;
-        // Drop degenerate/empty authored rows + cap to the shared limits so a bad state never persists (mirrors
-        // the shop barter-quantity normalization). The editor sends fixed-slot lists that include empties.
-        quest.Objectives = NormalizeQuestObjectives(p.Objectives);
-        quest.PrereqQuest = p.PrereqQuest;
-        quest.RewardItems = NormalizeQuestRewards(p.RewardItems, _world.Limits.Items);
-        quest.RepeatRewardItems = NormalizeQuestRewards(p.RepeatRewardItems, _world.Limits.Items);
-        quest.GiverNpc = p.GiverNpc;
-        quest.TurnInNpc = p.TurnInNpc;
-        quest.Repeatable = p.Repeatable;
-        quest.Cadence = p.Cadence;
-
-        _bg.Run(_persistence.SaveQuestAsync(n, quest), nameof(IPersistenceService.SaveQuestAsync));
-        // Live-refresh: game clients rebuild this quest's def (the ?/! glyph + dialog/log read it). A def change
-        // can also change who's eligible (requirements) or where the glyph sits (giver/turn-in), so re-push every
-        // online player's quest log + eligible set too — mirrors the shop-keeper live-refresh.
-        _dispatcher.SendToAll(BuildUpdateQuest(n));
-        _dispatcher.SendToAllEditors(BuildUpdateQuest(n));
-        for (int i = 1; i <= _pm.Slots; i++)
-            if (_pm[i].IsPlaying) _quests.RefreshEligibility(i);
-        _logger.LogInformation("Editor saved quest #{Num}.", n);
-    }
-
-    // Full quest-definition snapshot — the RequestQuest response, an EditorAllQuests element, and the live save
-    // broadcast. Lists are deep-cloned so the serialized snapshot can't tear if the game thread re-authors a def.
-    private UpdateQuestPacket BuildUpdateQuest(int questNum)
-    {
-        var q = _world.Quests[questNum];
-        return new UpdateQuestPacket
-        {
-            QuestNum = questNum,
-            Name = q.Name,
-            Description = q.Description,
-            Objectives = q.Objectives.Select(o => o.Clone()).ToList(),
-            PrereqQuest = q.PrereqQuest,
-            RewardItems = q.RewardItems.Select(r => r.Clone()).ToList(),
-            RepeatRewardItems = q.RepeatRewardItems.Select(r => r.Clone()).ToList(),
-            GiverNpc = q.GiverNpc, TurnInNpc = q.TurnInNpc, Repeatable = q.Repeatable, Cadence = q.Cadence,
-        };
-    }
-
-    // Keep only real objectives (a set Kind + positive Count), capped at the shared objective limit.
-    private static List<Objective> NormalizeQuestObjectives(List<Objective> src)
-    {
-        var list = new List<Objective>();
-        foreach (var o in src)
-        {
-            if (o.Kind == ObjectiveKind.None || o.Count <= 0) continue;
-            list.Add(new Objective { Kind = o.Kind, Target = o.Target, Count = o.Count });
-            if (list.Count >= Constants.MaxQuestObjectives) break;
-        }
-        return list;
-    }
-
-    // Keep only real rewards (a valid item + positive value); gold is item #1 like everywhere else.
-    private static List<QuestReward> NormalizeQuestRewards(List<QuestReward> src, int maxItems)
-    {
-        var list = new List<QuestReward>();
-        foreach (var r in src)
-        {
-            if (r.ItemNum > 0 && r.ItemNum <= maxItems && r.Quantity > 0)
-                list.Add(new QuestReward { ItemNum = r.ItemNum, Quantity = r.Quantity });
-        }
-
-        return list;
-    }
 
     // ── Conversation editor ──────────────────────────────────────────────────
 

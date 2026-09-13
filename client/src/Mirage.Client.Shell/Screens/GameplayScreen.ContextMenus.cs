@@ -361,7 +361,7 @@ public sealed partial class GameplayScreen : IGameScreen
             _ctx.State, off.Value.ox + nx, off.Value.oy + ny, npcs[npc.A].Layer);
     }
 
-    /// <summary>Builds the Talk/Shop/Quest actions for ONE npc (each range-gated), or null if it has no right-click
+    /// <summary>Builds the Talk/Shop actions for ONE npc (each range-gated), or null if it has no right-click
     /// menu. <paramref name="name"/> is its display name (menu title / per-NPC label when stacked).</summary>
     private List<ContextMenu.Item>? BuildNpcMenuItems(TargetRef npc, out string name)
     {
@@ -370,15 +370,14 @@ public sealed partial class GameplayScreen : IGameScreen
         var npcs = _ctx.State.NpcsForMap(npc.B);
         int num = npcs is not null && SlotValidation.IsValidNpcSlot(npc.A) ? npcs[npc.A].Num : 0;
         if (num <= 0) return null;
-        // An NPC needs something to offer: a shop, a quest, or a conversation. A plain mob has none of
-        // the three and is handled by the melee key rather than this menu.
+        // An NPC needs something to offer: a shop or a conversation. A plain mob has neither and is
+        // handled by the melee key rather than this menu.
         //
-        // The conversation clause is what makes the Talk item below reachable. Gating on shop-or-quest
-        // alone means the only NPCs that can show Talk are the ones that also sell or hire, and the
-        // fourteen whose entire purpose is being talked to — the ferryman, the chronicler, the locals,
-        // the road signs — have no menu at all.
+        // The conversation clause is what makes the Talk item below reachable. Gating on the shop alone
+        // means the only NPCs that can show Talk are the ones that also sell, and the ones whose entire
+        // purpose is being talked to — the ferryman, the chronicler, the locals, the road signs — have
+        // no menu at all.
         if (_ctx.State.NpcKeeperShop[num] == 0
-            && _ctx.State.NpcQuestGlyph[num] == 0
             && _ctx.State.ConversationForNpc(num) == 0) return null;
         name = _ctx.State.NpcDefs[num]?.Name?.Trim() ?? "";
         int npcSize = _ctx.State.NpcDefs[num]?.EffectiveSize ?? 1;   // footprint-aware r=5: an oversize NPC is reachable by its body
@@ -415,67 +414,7 @@ public sealed partial class GameplayScreen : IGameScreen
                 (Func<bool>)InRange));
         }
 
-        // Actionable quests: a "Quest:" / "Turn in:" item per quest → the offer dialog. Only quests the player can
-        // accept or turn in right now, so the menu matches the overhead glyph instead of listing every quest the
-        // NPC will ever hold.
-        foreach (var (questNum, action) in _ctx.State.ActionableQuestsAt(num))
-        {
-            string qname = _ctx.State.QuestDefs[questNum]?.TrimmedName ?? "";
-            string label = action == ClientState.QuestAction.Accept
-                ? ClientStrings.Format(ClientStrings.ContextMenu_QuestAccept, ("Name", qname))
-                : ClientStrings.Format(ClientStrings.ContextMenu_QuestTurnIn, ("Name", qname));
-            int qn = questNum, map = npc.B, slot = npc.A;
-            var act = action;
-            // Claim the NPC before the offer opens. Accept and turn-in name only the quest — the giver comes
-            // from the NPC the SERVER has recorded — so an offer opened without this is refused.
-            items.Add(new(label, () =>
-            {
-                _ctx.Sender.SendNpcInteract(map, slot, NpcInteractChoice.QuestOffer);
-                OpenQuestDialog(qn, act);
-            }, (Func<bool>)InRange));
-        }
-
         return items.Count > 0 ? items : null;
-    }
-
-    // Open the accept/turn-in offer for a quest at the given NPC (from the NPC menu). It's a panel, so it joins
-    // the normal z-order / focus flow (mirrors OpenShop / OpenInnPanel).
-    private void OpenQuestDialog(int questNum, ClientState.QuestAction action)
-    {
-        _questDialog.Open(questNum, action);
-        BringToFront(PanelQuestDialog);
-        _panelFocused = true;
-    }
-
-    /// <summary>Server reply to a talk-first interact that resolved to a quest (melee key, or a conversation's
-    /// "ask about quests" hand-off). Opens the quest OFFER panel directly for the common single-quest case — the
-    /// melee key has no cursor, and funnelling one quest through a one-item menu is the "opening a quest opens a
-    /// menu" wart. Only when several quests are actionable at once does it fall back to the centered NPC menu so
-    /// the player can pick which. (map, slot) identify the NPC.</summary>
-    public void OpenNpcQuestMenuAt(int map, int slot)
-    {
-        if (_gameFont is null) return;
-        var npcs = _ctx.State.NpcsForMap(map);
-        int num = npcs is not null && SlotValidation.IsValidNpcSlot(slot) ? npcs[slot].Num : 0;
-        if (num <= 0) return;
-
-        int firstQuest = 0;
-        var firstAction = ClientState.QuestAction.Accept;
-        int actionable = 0;
-        foreach (var (questNum, action) in _ctx.State.ActionableQuestsAt(num))
-        {
-            actionable++;
-            if (actionable == 1)
-            {
-                firstQuest = questNum;
-                firstAction = action;
-            }
-        }
-
-        if (actionable == 1)
-            OpenQuestDialog(firstQuest, firstAction);
-        else
-            OpenNpcContextMenu(new TargetRef(TargetKind.Npc, slot, map), new Point(UiHelper.RefW / 2, UiHelper.RefH / 2));
     }
 
     /// <summary>Server reply to an interact that resolved to a conversation (OpenNpcConversation) — open the

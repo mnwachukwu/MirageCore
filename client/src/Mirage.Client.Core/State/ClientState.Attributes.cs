@@ -21,7 +21,7 @@ public sealed partial class ClientState
     public OverheadBarSet OverheadBars { get; set; } = OverheadBarSet.Empty;
 
     /// <summary>Bumped whenever any body's attributes change, so a panel can redraw on a change rather
-    /// than re-reading every frame. The same pattern as <see cref="QuestVersion"/>.</summary>
+    /// than re-reading every frame.</summary>
     public int AttributeVersion { get; set; }
 
     private readonly Dictionary<EntityHandle, AttributeBag> _npcAttributes = [];

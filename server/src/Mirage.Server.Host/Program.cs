@@ -220,8 +220,6 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<MailSystem>();
         services.AddSingleton<MarketSystem>();
         services.AddSingleton<TradeSystem>();
-        services.AddSingleton<ObjectiveSystem>();
-        services.AddSingleton<QuestSystem>();
         services.AddSingleton<ConversationSystem>();
         services.AddSingleton<SocialSystem>();
         services.AddSingleton<SpawnSystem>();

@@ -164,7 +164,6 @@ public static partial class EditorStrings
     public const string MainWindow_Section_Items = nameof(MainWindow_Section_Items);
     public const string MainWindow_Section_Npcs = nameof(MainWindow_Section_Npcs);
     public const string MainWindow_Section_Shops = nameof(MainWindow_Section_Shops);
-    public const string MainWindow_Section_Quests = nameof(MainWindow_Section_Quests);
     public const string MainWindow_Section_Conversations = nameof(MainWindow_Section_Conversations);
     public const string MainWindow_Section_Accounts = nameof(MainWindow_Section_Accounts);
 
@@ -200,8 +199,6 @@ public static partial class EditorStrings
     public const string AccountEditor_VaultEmpty = nameof(AccountEditor_VaultEmpty);
     public const string AccountEditor_LogHeader = nameof(AccountEditor_LogHeader);
     public const string AccountEditor_LogEmpty = nameof(AccountEditor_LogEmpty);
-    public const string AccountEditor_SetQuest = nameof(AccountEditor_SetQuest);
-    public const string AccountEditor_QuestPlaceholder = nameof(AccountEditor_QuestPlaceholder);
     public const string AccountEditor_Ineligible = nameof(AccountEditor_Ineligible);
     public const string MainWindow_StatusOffline = nameof(MainWindow_StatusOffline);
     public const string MainWindow_StatusOnline = nameof(MainWindow_StatusOnline);
@@ -240,7 +237,6 @@ public static partial class EditorStrings
     public const string PushChangesDialog_DirtyItem = nameof(PushChangesDialog_DirtyItem);
     public const string PushChangesDialog_DirtyNpc = nameof(PushChangesDialog_DirtyNpc);
     public const string PushChangesDialog_DirtyShop = nameof(PushChangesDialog_DirtyShop);
-    public const string PushChangesDialog_DirtyQuest = nameof(PushChangesDialog_DirtyQuest);
     public const string PushChangesDialog_DirtyConversation = nameof(PushChangesDialog_DirtyConversation);
     public const string PushChangesDialog_DirtyMap = nameof(PushChangesDialog_DirtyMap);
     public const string PushChangesDialog_DirtyMapGroup = nameof(PushChangesDialog_DirtyMapGroup);
@@ -494,19 +490,15 @@ public static partial class EditorStrings
     public const string WorldCheck_KindItem = nameof(WorldCheck_KindItem);
     public const string WorldCheck_KindNpc = nameof(WorldCheck_KindNpc);
     public const string WorldCheck_KindShop = nameof(WorldCheck_KindShop);
-    public const string WorldCheck_KindQuest = nameof(WorldCheck_KindQuest);
     public const string WorldCheck_KindConversation = nameof(WorldCheck_KindConversation);
     public const string WorldCheck_WarpMapMissing = nameof(WorldCheck_WarpMapMissing);
     public const string WorldCheck_ExitMapMissing = nameof(WorldCheck_ExitMapMissing);
     public const string WorldCheck_NpcMissing = nameof(WorldCheck_NpcMissing);
     public const string WorldCheck_ItemMissing = nameof(WorldCheck_ItemMissing);
-    public const string WorldCheck_QuestMissing = nameof(WorldCheck_QuestMissing);
     public const string WorldCheck_ClassMissing = nameof(WorldCheck_ClassMissing);
     public const string WorldCheck_ConversationNodeMissing = nameof(WorldCheck_ConversationNodeMissing);
     public const string WorldCheck_ShopHasNoKeeper = nameof(WorldCheck_ShopHasNoKeeper);
     public const string WorldCheck_ConversationOpensNoShop = nameof(WorldCheck_ConversationOpensNoShop);
-    public const string WorldCheck_ConversationOpensNoQuests = nameof(WorldCheck_ConversationOpensNoQuests);
-    public const string WorldCheck_QuestPrereqCycle = nameof(WorldCheck_QuestPrereqCycle);
     public const string WorldCheck_WhereTile = nameof(WorldCheck_WhereTile);
     public const string WorldCheck_LinkSizeMismatch = nameof(WorldCheck_LinkSizeMismatch);
     public const string WorldCheck_LinkNotReciprocal = nameof(WorldCheck_LinkNotReciprocal);

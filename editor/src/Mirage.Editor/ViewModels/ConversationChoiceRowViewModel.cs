@@ -9,7 +9,7 @@ using System.Linq;
 namespace Mirage.Editor.ViewModels;
 
 /// <summary>One authored dialogue choice: a label, the next node to go to (a picker of the conversation's own
-/// nodes; "(End)" = end the conversation), and an optional hand-off Action. Mirrors QuestObjectiveRowViewModel,
+/// nodes; "(End)" = end the conversation), and an optional hand-off Action. Mirrors the other row models,
 /// but the NextNode picker is SELF-REFERENTIAL to the conversation (its node ids can have gaps, so it's a linear
 /// find, not an id-indexed array). An empty row (blank label) is dropped on save.</summary>
 public sealed partial class ConversationChoiceRowViewModel : ObservableObject

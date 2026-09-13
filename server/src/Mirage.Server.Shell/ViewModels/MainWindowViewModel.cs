@@ -1135,7 +1135,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     public string RecordItemsLabel => ShellStrings.Get(ShellStrings.Records_Items);
     public string RecordNpcsLabel => ShellStrings.Get(ShellStrings.Records_Npcs);
     public string RecordShopsLabel => ShellStrings.Get(ShellStrings.Records_Shops);
-    public string RecordQuestsLabel => ShellStrings.Get(ShellStrings.Records_Quests);
     public string RecordConversationsLabel => ShellStrings.Get(ShellStrings.Records_Conversations);
     public string RecordMapsLabel => ShellStrings.Get(ShellStrings.Records_Maps);
     public string RecordMapGroupsLabel => ShellStrings.Get(ShellStrings.Records_MapGroups);
@@ -1147,7 +1146,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [ObservableProperty] public partial decimal RecordItems { get; set; } = RecordLimits.Default.Items;
     [ObservableProperty] public partial decimal RecordNpcs { get; set; } = RecordLimits.Default.Npcs;
     [ObservableProperty] public partial decimal RecordShops { get; set; } = RecordLimits.Default.Shops;
-    [ObservableProperty] public partial decimal RecordQuests { get; set; } = RecordLimits.Default.Quests;
     [ObservableProperty] public partial decimal RecordConversations { get; set; } = RecordLimits.Default.Conversations;
     [ObservableProperty] public partial decimal RecordMaps { get; set; } = RecordLimits.Default.Maps;
     [ObservableProperty] public partial decimal RecordMapGroups { get; set; } = RecordLimits.Default.MapGroups;
@@ -1318,7 +1316,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 Items = (int)RecordItems,
                 Npcs = (int)RecordNpcs,
                 Shops = (int)RecordShops,
-                Quests = (int)RecordQuests,
                 Conversations = (int)RecordConversations,
                 Maps = (int)RecordMaps,
                 MapGroups = (int)RecordMapGroups,
@@ -1429,7 +1426,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         RecordItems = config.Records.Items;
         RecordNpcs = config.Records.Npcs;
         RecordShops = config.Records.Shops;
-        RecordQuests = config.Records.Quests;
         RecordConversations = config.Records.Conversations;
         RecordMaps = config.Records.Maps;
         RecordMapGroups = config.Records.MapGroups;

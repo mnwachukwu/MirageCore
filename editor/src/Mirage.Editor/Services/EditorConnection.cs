@@ -204,9 +204,6 @@ public sealed class EditorConnection : IDisposable
     public Task<EditorAllShopsPacket?> RequestAllShopsAsync(CancellationToken ct = default)
         => RequestBulkAsync<EditorAllShopsPacket>(PacketNames.EditorAllShops, new EditorRequestAllShopsPacket(), ct);
 
-    public Task<EditorAllQuestsPacket?> RequestAllQuestsAsync(CancellationToken ct = default)
-        => RequestBulkAsync<EditorAllQuestsPacket>(PacketNames.EditorAllQuests, new EditorRequestAllQuestsPacket(), ct);
-
     public Task<EditorAllConversationsPacket?> RequestAllConversationsAsync(CancellationToken ct = default)
         => RequestBulkAsync<EditorAllConversationsPacket>(PacketNames.EditorAllConversations, new EditorRequestAllConversationsPacket(), ct);
 
@@ -276,13 +273,6 @@ public sealed class EditorConnection : IDisposable
         => RequestBulkAsync<EditorNoticePacket>(PacketNames.EditorNotice,
             new EditorBankTakePacket { Login = login, BankSlot = bankSlot, Quantity = quantity }, ct);
 
-    /// <summary>Puts one quest of a character's log into a state. <see cref="QuestStatus.NotStarted"/> takes
-    /// it out of the log, which is what that state means.</summary>
-    public Task<EditorNoticePacket?> SetQuestStatusAsync(string login, int slot, int questNum, QuestStatus status,
-        CancellationToken ct = default)
-        => RequestBulkAsync<EditorNoticePacket>(PacketNames.EditorNotice,
-            new EditorSetQuestStatusPacket { Login = login, Slot = slot, QuestNum = questNum, Status = status }, ct);
-
     private async Task<T?> RequestBulkAsync<T>(string responseCmd, IPacket request,
                                                 CancellationToken ct) where T : class, IPacket
     {
@@ -330,11 +320,6 @@ public sealed class EditorConnection : IDisposable
         => RequestAsync<UpdateShopPacket>(
             PacketNames.UpdateShop, shopNum,
             new EditorRequestShopPacket { ShopNum = shopNum }, ct);
-
-    public Task<UpdateQuestPacket?> RequestQuestAsync(int questNum, CancellationToken ct = default)
-        => RequestAsync<UpdateQuestPacket>(
-            PacketNames.UpdateQuest, questNum,
-            new EditorRequestQuestPacket { QuestNum = questNum }, ct);
 
     public Task<UpdateConversationPacket?> RequestConversationAsync(int convNum, CancellationToken ct = default)
         => RequestAsync<UpdateConversationPacket>(
@@ -498,7 +483,6 @@ public sealed class EditorConnection : IDisposable
         EditorAllItemsPacket => PacketNames.EditorAllItems,
         EditorAllNpcsPacket => PacketNames.EditorAllNpcs,
         EditorAllShopsPacket => PacketNames.EditorAllShops,
-        EditorAllQuestsPacket => PacketNames.EditorAllQuests,
         EditorAllConversationsPacket => PacketNames.EditorAllConversations,
         EditorAllMapGroupsPacket => PacketNames.EditorAllMapGroups,
         EditorAllMapsPacket => PacketNames.EditorAllMaps,
@@ -521,7 +505,6 @@ public sealed class EditorConnection : IDisposable
             UpdateItemPacket p => (PacketNames.UpdateItem, p.ItemNum),
             UpdateNpcPacket p => (PacketNames.UpdateNpc, p.NpcNum),
             UpdateShopPacket p => (PacketNames.UpdateShop, p.ShopNum),
-            UpdateQuestPacket p => (PacketNames.UpdateQuest, p.QuestNum),
             UpdateConversationPacket p => (PacketNames.UpdateConversation, p.ConvNum),
             SendMapPacket p => (PacketNames.SendMap, p.MapNum),
             UpdateMapGroupPacket p => (PacketNames.UpdateMapGroup, p.GroupNum),

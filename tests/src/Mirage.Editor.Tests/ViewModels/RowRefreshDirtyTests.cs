@@ -78,38 +78,8 @@ public class RowRefreshDirtyTests
         });
     }
 
-    // ── Quest reward rows ─────────────────────────────────────────────────────
-    // Rule: no item → 0; non-currency → exactly 1; currency → at least 1.
-
-    [Test]
-    public void QuestReward_RefreshNormalizingAuthoredQuantity_DoesNotDirty()
-    {
-        var row = new QuestRewardRowViewModel(1, new QuestReward { ItemNum = Sword, Quantity = 5 }, Entries, IsCurrency);
-        Assert.That(row.IsDirty, Is.False);
-
-        row.NotifyEntriesChanged();
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(row.Value, Is.EqualTo(1), "a non-currency reward never stacks");
-            Assert.That(row.IsDirty, Is.False);
-        });
-    }
-
-    [Test]
-    public void QuestReward_AuthorEditingQuantity_StillDirties()
-    {
-        var row = new QuestRewardRowViewModel(1, new QuestReward { ItemNum = Gold, Quantity = 100 }, Entries, IsCurrency);
-        row.NotifyEntriesChanged();
-        Assert.That(row.IsDirty, Is.False, "precondition: opening is clean");
-
-        row.Value = 250;
-
-        Assert.That(row.IsDirty, Is.True);
-    }
-
     // ── Shop trade rows ───────────────────────────────────────────────────────
-    // Same rule as a quest reward, applied to both sides of the trade.
+    // No item → 0; non-currency → exactly 1; currency → at least 1, on both sides of the trade.
 
     [Test]
     public void Trade_RefreshNormalizingAuthoredQuantity_DoesNotDirty()

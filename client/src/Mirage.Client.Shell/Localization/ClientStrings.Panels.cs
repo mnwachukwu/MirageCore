@@ -125,7 +125,6 @@ public static partial class ClientStrings
 
     // ── HudPanel ──────────────────────────────────────────────────────────────
     public const string HudPanel_InventoryButton = nameof(HudPanel_InventoryButton);
-    public const string HudPanel_QuestLogButton = nameof(HudPanel_QuestLogButton);
     public const string HudPanel_SocialButton = nameof(HudPanel_SocialButton);
     public const string HudPanel_LogoutButton = nameof(HudPanel_LogoutButton);
     public const string HudPanel_OptionsLinkInGame = nameof(HudPanel_OptionsLinkInGame);

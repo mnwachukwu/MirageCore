@@ -126,10 +126,7 @@ public sealed class PlayerRecord
     // NUMBER, never by bag/book position — see PlayerHotkey. Load through PlayerHotkey.Normalize so a
     // character saved before the bar existed (or at a different width) comes back the right length.
     public PlayerHotkey[] Hotkeys { get; set; } = PlayerHotkey.NewBar();
-    // Player-quest state: InProgress + Done entries only (a never-touched quest has no entry). QuestSystem
-    // owns the runtime ObjectiveSystem.Track handles; this is the persisted per-character record it re-tracks
     // from on login. Empty for a questless character.
-    public List<PlayerQuest> Quests { get; set; } = new();
     // NPC conversations this character has spoken to (opened at least once) — a per-character visited-set that
     // colors the overhead "..." glyph (yellow = unspoken, gray = spoken). Just conversation numbers, no state.
     public List<int> ConversationsSpoken { get; set; } = new();
@@ -245,9 +242,6 @@ public sealed class PlayerRecord
         c.TradeOffer = new List<PlayerInvSlot>(TradeOffer.Count);
         foreach (var s in TradeOffer)
             c.TradeOffer.Add(new PlayerInvSlot { Num = s.Num, Quantity = s.Quantity, Dur = s.Dur });
-        // Deep-copy quest state (QuestSystem mutates Progress live as kills land while this snapshot writes).
-        c.Quests = new List<PlayerQuest>(Quests.Count);
-        foreach (var q in Quests) c.Quests.Add(q.Clone());
         c.ConversationsSpoken = new List<int>(ConversationsSpoken);
         return c;
     }

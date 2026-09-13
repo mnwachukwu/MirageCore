@@ -35,7 +35,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
     public event Action<int>? MapNpcChanged;
     public event Action<int>? ShopOpened;
     public event Action? OpenInn;
-    public event Action<int, int>? OpenNpcQuestMenu;
     public event Action<int, int, int>? OpenNpcConversation;   // map, slot, conversation number
     public event Action<string, int>? PartyRequest;
     public event Action<GuildOfferNotifyPacket>? GuildOffer;
@@ -134,9 +133,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
             case SendMapGroupsPacket p:
                 HandleSendMapGroups(p);
                 break;
-            case SendQuestsPacket p:
-                HandleSendQuests(p);
-                break;
             case SendConversationsPacket p:
                 HandleSendConversations(p);
                 break;
@@ -150,9 +146,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
                 break;
             case UpdateShopPacket p:
                 HandleUpdateShop(p);
-                break;
-            case UpdateQuestPacket p:
-                HandleUpdateQuest(p);
                 break;
             case UpdateConversationPacket p:
                 HandleUpdateConversation(p);
@@ -278,13 +271,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
                 HandleOpenInn(p);
                 break;
 
-            // Quests (per-player log + the melee-key gossip-menu trigger)
-            case QuestLogPacket p:
-                HandleQuestLog(p);
-                break;
-            case OpenNpcQuestMenuPacket p:
-                OpenNpcQuestMenu?.Invoke(p.MapNum, p.NpcSlot);
-                break;
 
             // NPC conversations (defs at join, the character's spoken-set, and the open-panel trigger)
             case ConversationLogPacket p:

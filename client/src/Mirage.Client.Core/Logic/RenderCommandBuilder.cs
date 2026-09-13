@@ -852,33 +852,14 @@ public static class RenderCommandBuilder
         if (state.NpcKeeperShop[n.Num] != 0)
             frame.Names.Add(new TextDrawCmd(centerX, npcNameY, "$", GameColor.Yellow, nameAlignBottom, LineOffset: 1, Layer: n.Layer));
 
-        // Quest marker: a "?" (accept one here) or "!" (turn one in here) glyph above the name — colored when the
-        // player can act, gray for a quest already accepted and still running. Stacks a line higher when the NPC is
-        // also a keeper so it doesn't collide with the "$".
-        int questGlyph = state.NpcQuestGlyph[n.Num];
-        if (questGlyph != ClientState.QuestGlyphNone)
-        {
-            (string glyph, int color) = questGlyph switch
-            {
-                ClientState.QuestGlyphYellowBang => ("!", GameColor.Yellow),
-                ClientState.QuestGlyphBlueBang => ("!", GameColor.BrightBlue),
-                ClientState.QuestGlyphYellowQuestion => ("?", GameColor.Yellow),
-                ClientState.QuestGlyphBlueQuestion => ("?", GameColor.BrightBlue),
-                _ => ("!", GameColor.Gray),   // QuestGlyphGrayBang
-            };
-            int questLine = state.NpcKeeperShop[n.Num] != 0 ? 2 : 1;
-            frame.Names.Add(new TextDrawCmd(centerX, npcNameY, glyph, color, nameAlignBottom, LineOffset: questLine, Layer: n.Layer));
-        }
-
         // Conversation marker: a literal "..." above the name for an NPC that has a dialogue tree — yellow when
         // this character hasn't spoken to it yet, gray once spoken (per-character visited-log). Stacks above the
-        // "$" and quest glyphs so all three can show at once.
+        // "$" so both can show at once.
         int convGlyph = state.NpcConvGlyph[n.Num];
         if (convGlyph != ClientState.ConvGlyphNone)
         {
             int convColor = convGlyph == ClientState.ConvGlyphUnspoken ? GameColor.Yellow : GameColor.Gray;
-            int convLine = 1 + (state.NpcKeeperShop[n.Num] != 0 ? 1 : 0)
-                             + (state.NpcQuestGlyph[n.Num] != ClientState.QuestGlyphNone ? 1 : 0);
+            int convLine = 1 + (state.NpcKeeperShop[n.Num] != 0 ? 1 : 0);
             frame.Names.Add(new TextDrawCmd(centerX, npcNameY, "...", convColor, nameAlignBottom, LineOffset: convLine, Layer: n.Layer));
         }
 

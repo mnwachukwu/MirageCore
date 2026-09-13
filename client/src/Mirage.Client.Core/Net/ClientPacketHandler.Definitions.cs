@@ -68,61 +68,9 @@ public sealed partial class ClientPacketHandler : IClientEvents
         OpenInn?.Invoke();
     }
 
-    // ── Quests ────────────────────────────────────────────────────────────────
-    // Defs arrive once at join (like items/npcs); the per-player log + eligible set arrive via QuestLog on join
-    // and after every change. The overhead ?/! glyphs + the interaction menu are derived in ClientState.
-
-    private void HandleSendQuests(SendQuestsPacket p)
-    {
-        var defs = new List<(int, QuestRecord)>(p.Quests.Count);
-        foreach (var q in p.Quests)
-        {
-            if (!SlotValidation.IsValidQuestNum(q.Num, _state.Limits.Quests)) continue;
-            defs.Add((q.Num, ToQuestRecord(q)));
-        }
-        _state.SetQuestDefs(defs);
-    }
-
-    private static QuestRecord ToQuestRecord(SendQuestsPacket.QuestData q) => new()
-    {
-        Name = q.Name,
-        Description = q.Description,
-        Objectives = q.Objectives,   // fresh off the wire — no sharing to guard against
-        RewardItems = q.RewardItems,
-        RepeatRewardItems = q.RepeatRewardItems,
-        GiverNpc = q.GiverNpc, TurnInNpc = q.TurnInNpc, Repeatable = q.Repeatable, Cadence = q.Cadence,
-    };
-
-    private void HandleQuestLog(QuestLogPacket p)
-    {
-        var quests = new List<PlayerQuest>(p.Quests.Count);
-        foreach (var e in p.Quests)
-        {
-            if (!SlotValidation.IsValidQuestNum(e.QuestNum, _state.Limits.Quests)) continue;
-            quests.Add(new PlayerQuest { QuestNum = e.QuestNum, Status = e.Status, Progress = new List<int>(e.Progress) });
-        }
-        _state.SetQuests(quests, p.EligibleQuests, p.CooldownQuests);
-    }
-
-    // Live editor edit of one quest DEF (broadcast on an editor save) — refresh the cached def + the ?/! glyphs.
-    private void HandleUpdateQuest(UpdateQuestPacket p)
-    {
-        if (!SlotValidation.IsValidQuestNum(p.QuestNum, _state.Limits.Quests)) return;
-        _state.SetQuestDef(p.QuestNum, ToQuestRecord(p));
-    }
-
-    private static QuestRecord ToQuestRecord(UpdateQuestPacket q) => new()
-    {
-        Name = q.Name,
-        Description = q.Description,
-        Objectives = q.Objectives,   // fresh off the wire — no sharing to guard against
-        RewardItems = q.RewardItems,
-        RepeatRewardItems = q.RepeatRewardItems,
-        GiverNpc = q.GiverNpc, TurnInNpc = q.TurnInNpc, Repeatable = q.Repeatable, Cadence = q.Cadence,
-    };
 
     // ── NPC conversations ─────────────────────────────────────────────────────
-    // Defs arrive once at join (like quests); the character's spoken-set arrives via ConversationLog on join and
+    // Defs arrive once at join (like items and NPCs); the character's spoken-set arrives via ConversationLog on join and
     // whenever a new conversation is opened. The overhead "..." glyphs are derived in ClientState.
 
     private void HandleSendConversations(SendConversationsPacket p)

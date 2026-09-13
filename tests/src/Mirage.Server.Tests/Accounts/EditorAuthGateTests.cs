@@ -140,7 +140,7 @@ public class EditorAuthGateTests
         public Harness() =>
             _handler = new EditorPacketHandler(
                 World, Pm, Editors, Locks, Dispatcher, persistence: null!, bg: new NoOpBackground(),
-                items: null!, joinLeave: null!, quests: null!, spawn: null!,
+                items: null!, joinLeave: null!, spawn: null!,
                 saver: null!, gameLoop: null!,
                 NullLogger<EditorPacketHandler>.Instance);
 

@@ -34,7 +34,6 @@ public static class SlotValidation
     public static bool IsValidItemNum(int num, int maxItems) => num >= 1 && num <= maxItems;
     public static bool IsValidNpcNum(int num, int maxNpcs) => num >= 1 && num <= maxNpcs;
     public static bool IsValidShopNum(int num, int maxShops) => num >= 1 && num <= maxShops;
-    public static bool IsValidQuestNum(int num, int maxQuests) => num >= 1 && num <= maxQuests;
     public static bool IsValidConversationNum(int num, int maxConversations) => num >= 1 && num <= maxConversations;
     public static bool IsValidMapGroupNum(int num, int maxMapGroups) => num >= 1 && num <= maxMapGroups;
 

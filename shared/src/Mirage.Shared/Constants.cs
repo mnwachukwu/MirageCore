@@ -52,7 +52,6 @@ public static class Constants
     // how many objectives a quest carries, how many nodes a dialogue tree has — which is a content and
     // UI concern rather than a catalog size, and they are the same everywhere.
     public const int MaxQuestObjectives = 255;   // safety ceiling on objectives per quest (editor authors as many as needed; bounds the per-character progress list)
-    public const int MaxActiveQuests = 10;   // how many quests a character can have IN PROGRESS at once
     public const int MaxConversationNodes = 64;    // dialogue nodes per conversation (editor add-row cap)
     public const int MaxConversationChoices = 8;   // player choices per node (menu size; panel-render sane)
     // NO CAP ON DROP-TABLE LENGTH — deliberately. There was one (8), justified as a backstop against a

@@ -38,7 +38,6 @@ public static class WorldTransfer
     /// of these, so a difference in the diff is always a difference in the records.</summary>
     public sealed class PacketContext(WorldSnapshot reference)
     {
-        private NamedEntry[]? _items, _npcs, _quests, _maps;
         private HashSet<int>? _currency;
 
         private static NamedEntry[] Entries<T>(T[] arr, Func<T, string> name)
@@ -49,9 +48,10 @@ public static class WorldTransfer
             return result;
         }
 
+        private NamedEntry[]? _items, _npcs, _maps;
+
         public NamedEntry[] Items => _items ??= Entries(reference.Items, r => r.Name);
         public NamedEntry[] Npcs => _npcs ??= Entries(reference.Npcs, r => r.Name);
-        public NamedEntry[] Quests => _quests ??= Entries(reference.Quests, r => r.Name);
         public NamedEntry[] Maps => _maps ??= Entries(reference.Maps, r => r.Name);
 
         public bool IsCurrency(int num)
@@ -76,8 +76,6 @@ public static class WorldTransfer
         "NPCs" => new NpcRowViewModel(num, (NpcRecord)record).BuildSavePacket(),
         "Shops" => new ShopRowViewModel(num, (ShopRecord)record, () => ctx.Items, () => ctx.Npcs, ctx.IsCurrency)
             .BuildSavePacket(),
-        "Quests" => new QuestRowViewModel(num, (QuestRecord)record, () => ctx.Npcs, () => ctx.Items,
-            () => ctx.Quests, ctx.IsCurrency).BuildSavePacket(),
         "Conversations" => new ConversationRowViewModel(num, (ConversationRecord)record, () => ctx.Npcs)
             .BuildSavePacket(),
         _ => new EditorSaveRecordPacket { Family = family.Id, Num = num, Fields = (AttributeBag)record },
@@ -97,7 +95,6 @@ public static class WorldTransfer
         "Items" => new ItemRecord(),
         "NPCs" => new NpcRecord(),
         "Shops" => new ShopRecord(),
-        "Quests" => new QuestRecord(),
         "Conversations" => new ConversationRecord(),
         _ => new AttributeBag(),
     };
@@ -189,7 +186,6 @@ public static class WorldTransfer
             Items = await ReadDirAsync<ItemRecord>(root, "items", "item", limits.Items),
             Npcs = await ReadDirAsync<NpcRecord>(root, "npcs", "npc", limits.Npcs),
             Shops = await ReadDirAsync<ShopRecord>(root, "shops", "shop", limits.Shops),
-            Quests = await ReadDirAsync<QuestRecord>(root, "quests", "quest", limits.Quests),
             Conversations = await ReadDirAsync<ConversationRecord>(root, "conversations", "conversation", limits.Conversations),
             Maps = await ReadDirAsync<MapRecord>(root, "maps", "map", limits.Maps),
             MapGroups = await ReadGroupsAsync(root, limits.MapGroups),
@@ -323,7 +319,6 @@ public static class WorldTransfer
         var items = await conn.RequestAllItemsAsync(ct) ?? throw Refused("items");
         var npcs = await conn.RequestAllNpcsAsync(ct) ?? throw Refused("npcs");
         var shops = await conn.RequestAllShopsAsync(ct) ?? throw Refused("shops");
-        var quests = await conn.RequestAllQuestsAsync(ct) ?? throw Refused("quests");
         var convs = await conn.RequestAllConversationsAsync(ct) ?? throw Refused("conversations");
         var groups = await conn.RequestAllMapGroupsAsync(ct) ?? throw Refused("map groups");
 
@@ -360,12 +355,6 @@ public static class WorldTransfer
             Shops = Fill(shops.Shops, limits.Shops, p => p.ShopNum, _ => new ShopRecord(), (n, p) =>
             {
                 var row = new ShopRowViewModel(n, new ShopRecord(), Empty, Empty, _ => false, null, false);
-                row.ApplyPacket(p);
-                return row.ToRecord();
-            }),
-            Quests = Fill(quests.Quests, limits.Quests, p => p.QuestNum, _ => new QuestRecord(), (n, p) =>
-            {
-                var row = new QuestRowViewModel(n, new QuestRecord(), Empty, Empty, Empty, _ => false, false);
                 row.ApplyPacket(p);
                 return row.ToRecord();
             }),

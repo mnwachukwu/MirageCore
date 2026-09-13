@@ -48,7 +48,7 @@ public static class InputProcessor
         if (!TryFindFacingNpc(state, out int map, out int slot, out int num, out bool layerConnects)) return;
 
         // Nothing to open.
-        if (state.NpcKeeperShop[num] == 0 && state.NpcQuestGlyph[num] == 0 && state.NpcConvGlyph[num] == 0)
+        if (state.NpcKeeperShop[num] == 0 && state.NpcConvGlyph[num] == 0)
         {
             return;
         }

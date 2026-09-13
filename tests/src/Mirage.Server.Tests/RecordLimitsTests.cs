@@ -22,7 +22,7 @@ public sealed class RecordLimitsTests
         var world = new GameWorld(Config(new RecordLimits
         {
             Items = 40, Npcs = 30, Shops = 12,
-            Quests = 8, Conversations = 9, Maps = 20, MapGroups = 6,
+            Conversations = 9, Maps = 20, MapGroups = 6,
         }));
 
         Assert.Multiple(() =>
@@ -31,7 +31,6 @@ public sealed class RecordLimitsTests
             Assert.That(world.Items, Has.Length.EqualTo(41));
             Assert.That(world.Npcs, Has.Length.EqualTo(31));
             Assert.That(world.Shops, Has.Length.EqualTo(13));
-            Assert.That(world.Quests, Has.Length.EqualTo(9));
             Assert.That(world.Conversations, Has.Length.EqualTo(10));
             Assert.That(world.Maps, Has.Length.EqualTo(21));
         });

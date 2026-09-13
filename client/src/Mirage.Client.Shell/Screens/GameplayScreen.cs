@@ -92,8 +92,6 @@ public sealed partial class GameplayScreen : IGameScreen
     private readonly ControlsPanel _controls;
     private readonly MailPanel _mail = new();
     private readonly SocialPanel _social = new();
-    private readonly QuestLogPanel _questLog = new();
-    private readonly QuestDialogPanel _questDialog = new();
     private readonly ConversationPanel _conversation = new();
     private readonly DeathPanel _death = new();   // uncloseable death overlay
     private readonly ModerationPanel _moderation = new();   // Creator only; gated in the panel and again on the server
@@ -115,8 +113,6 @@ public sealed partial class GameplayScreen : IGameScreen
     private const int PanelSocial = PanelSlots.Social;
     private const int PanelMarket = PanelSlots.Market;
     private const int PanelTrade = PanelSlots.Trade;
-    private const int PanelQuestLog = PanelSlots.QuestLog;
-    private const int PanelQuestDialog = PanelSlots.QuestDialog;
     private const int PanelConversation = PanelSlots.Conversation;
     private const int PanelModeration = PanelSlots.Moderation;
 
@@ -218,16 +214,6 @@ public sealed partial class GameplayScreen : IGameScreen
             (sb, font, _, active, hover) => _trade.Draw(sb, font, _ctx.State, _items, active, hover),
             () => _trade.Close(), Capturing: () => _trade.IsCapturingInput);
 
-        _panels[PanelQuestLog] = new(PanelQuestLog, _questLog,
-            (input, active) => _questLog.Update(input, _ctx.State, _ctx.Sender, active),
-            (sb, font, _, active, _) => _questLog.Draw(sb, font, _ctx.State, active),
-            () => _questLog.Toggle(), () => _questLog.Toggle());
-
-        _panels[PanelQuestDialog] = new(PanelQuestDialog, _questDialog,
-            (input, _) => _questDialog.Update(input, _ctx.State, _ctx.Sender),
-            (sb, font, _, active, _) => _questDialog.Draw(sb, font, _ctx.State, active),
-            () => _questDialog.Toggle());
-
         _panels[PanelConversation] = new(PanelConversation, _conversation,
             (input, _) => _conversation.Update(input, _ctx.State, _ctx.Sender),
             (sb, font, _, active, _) => _conversation.Draw(sb, font, _ctx.State, active),
@@ -256,7 +242,7 @@ public sealed partial class GameplayScreen : IGameScreen
     {
         PanelInventory, PanelShop,
         PanelOptions, PanelHelp, PanelControls, PanelBank, PanelInn, PanelMail, PanelSocial, PanelMarket, PanelTrade,
-        PanelQuestLog, PanelQuestDialog, PanelConversation
+        PanelConversation
     };
 
     // Keyboard focus tracking. _panelFocused is set when a panel is clicked or opened

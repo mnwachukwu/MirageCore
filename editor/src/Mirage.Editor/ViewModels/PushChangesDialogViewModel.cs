@@ -123,7 +123,6 @@ public sealed partial class PushChangesDialogViewModel : ObservableObject
                 ItemRowViewModel vm => EditorStrings.Format(EditorStrings.PushChangesDialog_DirtyItem, ("Index", vm.Index), ("Name", vm.Name)),
                 NpcRowViewModel vm => EditorStrings.Format(EditorStrings.PushChangesDialog_DirtyNpc, ("Index", vm.Index), ("Name", vm.Name)),
                 ShopRowViewModel vm => EditorStrings.Format(EditorStrings.PushChangesDialog_DirtyShop, ("Index", vm.Index), ("Name", vm.Name)),
-                QuestRowViewModel vm => EditorStrings.Format(EditorStrings.PushChangesDialog_DirtyQuest, ("Index", vm.Index), ("Name", vm.Name)),
                 ConversationRowViewModel vm => EditorStrings.Format(EditorStrings.PushChangesDialog_DirtyConversation, ("Index", vm.Index), ("Name", vm.Name)),
                 MapRowViewModel vm => EditorStrings.Format(EditorStrings.PushChangesDialog_DirtyMap, ("Index", vm.Index), ("Name", vm.Record.Name)),
                 MapGroupRowViewModel vm => EditorStrings.Format(EditorStrings.PushChangesDialog_DirtyMapGroup, ("Index", vm.Index), ("Name", vm.Name)),
@@ -168,11 +167,6 @@ public sealed partial class PushChangesDialogViewModel : ObservableObject
                         break;
                     case ShopRowViewModel vm:
                         if (_commitsToDisk) await _data.SaveOfflineShopAsync(vm.Index, vm.ToRecord());
-                        else await _conn.SendSaveAsync(vm.BuildSavePacket());
-                        vm.ClearDirty();
-                        break;
-                    case QuestRowViewModel vm:
-                        if (_commitsToDisk) await _data.SaveOfflineQuestAsync(vm.Index, vm.ToRecord());
                         else await _conn.SendSaveAsync(vm.BuildSavePacket());
                         vm.ClearDirty();
                         break;

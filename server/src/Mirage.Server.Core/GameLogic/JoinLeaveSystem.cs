@@ -25,7 +25,6 @@ public sealed class JoinLeaveSystem : GameSystem
     private readonly MailSystem _mail;
     private readonly SocialSystem _social;
     private readonly TradeSystem _trade;
-    private readonly QuestSystem _quests;
     private readonly ConversationSystem _conversations;
     private readonly TimeOfDaySystem _tod;
     private readonly WeatherSystem _weather;
@@ -35,7 +34,7 @@ public sealed class JoinLeaveSystem : GameSystem
 
     public JoinLeaveSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher,
                            PlayerSaver saver, MovementSystem movement,
-                           PartySystem party, GuildSystem guilds, MailSystem mail, SocialSystem social, TradeSystem trade, QuestSystem quests,
+                           PartySystem party, GuildSystem guilds, MailSystem mail, SocialSystem social, TradeSystem trade,
                            ConversationSystem conversations,
                            TimeOfDaySystem tod, WeatherSystem weather, DecalSystem decals,
                            ILogger<JoinLeaveSystem> logger,
@@ -57,7 +56,6 @@ public sealed class JoinLeaveSystem : GameSystem
         _mail = mail;
         _social = social;
         _trade = trade;
-        _quests = quests;
         _conversations = conversations;
         _tod = tod;
         _weather = weather;
@@ -138,8 +136,6 @@ public sealed class JoinLeaveSystem : GameSystem
         // Shops
         _dispatcher.SendTo(index, BuildSendShops());
 
-        // Quests (definitions — like items/npcs; the per-player quest LOG follows via _quests.OnPlayerJoin below)
-        _dispatcher.SendTo(index, BuildSendQuests());
 
         // Conversations (definitions — like quests; the per-character spoken-log follows via _conversations.OnPlayerJoin)
         _dispatcher.SendTo(index, BuildSendConversations());
@@ -189,7 +185,6 @@ public sealed class JoinLeaveSystem : GameSystem
         SendWelcome(index);
 
         // Re-establish kernel tracking for in-progress quests and push the quest log (after the client's set up).
-        _quests.OnPlayerJoin(index);
 
         // Push the character's spoken-conversation set (colors the overhead "..." glyphs yellow/gray).
         _conversations.OnPlayerJoin(index);
@@ -472,7 +467,6 @@ public sealed class JoinLeaveSystem : GameSystem
 
         // Cancel any live trade / pending invite and return escrowed items before the ghost branch or save.
         _trade.OnPlayerGone(index);
-        _quests.OnPlayerGone(index);   // stop kernel tracking; the persisted quest state carries progress
         sp.ViewingMarket = false;   // a disconnect / ghost isn't a live market browser
 
         // Stamp the guild roster's last-seen before the ghost branch can return: a combat ghost is
@@ -791,35 +785,6 @@ public sealed class JoinLeaveSystem : GameSystem
                 _world.Shops[i].AllowBanking))
             .ToArray();
         return new SendShopsPacket { Shops = shops };
-    }
-
-    // Quest DEFINITIONS the client caches (like items/npcs) to render the log/dialog + drive the ?/! glyphs. Only
-    // non-empty quests are sent; the lists are deep-cloned so the serialized snapshot can't tear if the game
-    // thread re-authors a def. TurnInNpc is the RAW value (0 = same as giver); the client resolves the effective.
-    private SendQuestsPacket BuildSendQuests()
-    {
-        var quests = Enumerable.Range(1, _world.Limits.Quests)
-            .Where(i => _world.Quests[i].TrimmedName.Length > 0)
-            .Select(i =>
-            {
-                var q = _world.Quests[i];
-                return new SendQuestsPacket.QuestData
-                {
-                    Num = i,
-                    Name = q.Name,
-                    Description = q.Description,
-                    Objectives = q.Objectives.Select(o => o.Clone()).ToList(),
-                    PrereqQuest = q.PrereqQuest,
-                    RewardItems = q.RewardItems.Select(r => r.Clone()).ToList(),
-                    RepeatRewardItems = q.RepeatRewardItems.Select(r => r.Clone()).ToList(),
-                    GiverNpc = q.GiverNpc,
-                    TurnInNpc = q.TurnInNpc,
-                    Repeatable = q.Repeatable,
-                    Cadence = q.Cadence,
-                };
-            })
-            .ToList();
-        return new SendQuestsPacket { Quests = quests };
     }
 
     // Conversation DEFINITIONS the client caches (like quests) to walk a dialogue tree locally + color the "..."

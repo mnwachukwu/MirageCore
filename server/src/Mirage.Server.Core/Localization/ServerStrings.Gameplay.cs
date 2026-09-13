@@ -102,17 +102,4 @@ public static partial class ServerStrings
     public const string Weather_UnnaturalShift = nameof(Weather_UnnaturalShift);
     public const string Weather_UnnaturalShiftBy = nameof(Weather_UnnaturalShiftBy);
 
-    public const string Quest_Sender = nameof(Quest_Sender);
-    public const string Quest_Accepted = nameof(Quest_Accepted);
-    public const string Quest_ReadyToTurnIn = nameof(Quest_ReadyToTurnIn);
-    public const string Quest_Complete = nameof(Quest_Complete);
-    public const string Quest_Abandoned = nameof(Quest_Abandoned);
-    public const string Quest_ObjectiveProgress = nameof(Quest_ObjectiveProgress);
-    public const string Quest_AnyTarget = nameof(Quest_AnyTarget);
-    public const string Quest_NotEligible = nameof(Quest_NotEligible);
-    public const string Quest_NoGiverOpen = nameof(Quest_NoGiverOpen);
-    public const string Quest_NotComplete = nameof(Quest_NotComplete);
-    public const string Quest_TooMany = nameof(Quest_TooMany);
-    public const string Quest_RewardMailSubject = nameof(Quest_RewardMailSubject);
-    public const string Quest_RewardMailBody = nameof(Quest_RewardMailBody);
 }

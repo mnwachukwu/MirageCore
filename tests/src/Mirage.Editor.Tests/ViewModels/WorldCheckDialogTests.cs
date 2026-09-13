@@ -80,7 +80,7 @@ public class WorldCheckDialogTests
     [Test]
     public void FollowingARow_NavigatesAndCloses()
     {
-        var vm = Vm(OnRecord(WorldIssueKind.QuestPrereqCycle, WorldRecordKind.Quest, 12));
+        var vm = Vm(OnRecord(WorldIssueKind.MapGroupMissing, WorldRecordKind.Map, 12));
         (WorldRecordKind Kind, int Num)? went = null;
         bool closed = false;
         vm.Navigate += (k, n) => went = (k, n);
@@ -90,7 +90,7 @@ public class WorldCheckDialogTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(went, Is.EqualTo((WorldRecordKind.Quest, 12)));
+            Assert.That(went, Is.EqualTo((WorldRecordKind.Map, 12)));
             Assert.That(closed, Is.True);
         });
     }

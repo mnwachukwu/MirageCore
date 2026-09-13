@@ -90,26 +90,6 @@ public static partial class EditorStrings
     public const string ShopEditor_SaveShopButton = nameof(ShopEditor_SaveShopButton);
 
     // ── QuestEditor ───────────────────────────────────────────────────────────
-    public const string QuestEditor_SelectPrompt = nameof(QuestEditor_SelectPrompt);
-    public const string QuestEditor_SectionTitle = nameof(QuestEditor_SectionTitle);
-    public const string QuestEditor_DescriptionLabel = nameof(QuestEditor_DescriptionLabel);
-    public const string QuestEditor_GiverLabel = nameof(QuestEditor_GiverLabel);
-    public const string QuestEditor_TurnInLabel = nameof(QuestEditor_TurnInLabel);
-    public const string QuestEditor_RepeatableLabel = nameof(QuestEditor_RepeatableLabel);
-    public const string QuestEditor_CadenceLabel = nameof(QuestEditor_CadenceLabel);
-    public const string QuestEditor_RequirementsHeader = nameof(QuestEditor_RequirementsHeader);
-    public const string QuestEditor_PrereqLabel = nameof(QuestEditor_PrereqLabel);
-    public const string QuestEditor_ObjectivesHeader = nameof(QuestEditor_ObjectivesHeader);
-    public const string QuestEditor_ObjColKind = nameof(QuestEditor_ObjColKind);
-    public const string QuestEditor_ObjColTarget = nameof(QuestEditor_ObjColTarget);
-    public const string QuestEditor_ObjColCount = nameof(QuestEditor_ObjColCount);
-    public const string QuestEditor_RewardsHeader = nameof(QuestEditor_RewardsHeader);
-    public const string QuestEditor_RepeatRewardsHeader = nameof(QuestEditor_RepeatRewardsHeader);
-    public const string QuestEditor_RewardColItem = nameof(QuestEditor_RewardColItem);
-    public const string QuestEditor_RewardColQty = nameof(QuestEditor_RewardColQty);
-    public const string QuestEditor_ItemPlaceholder = nameof(QuestEditor_ItemPlaceholder);
-    public const string QuestEditor_TargetPlaceholder = nameof(QuestEditor_TargetPlaceholder);
-    public const string QuestEditor_SaveQuestButton = nameof(QuestEditor_SaveQuestButton);
 
     // ── Shared entity editor status messages ──────────────────────────────────
     public const string EntityEditor_LoadedOffline = nameof(EntityEditor_LoadedOffline);
@@ -139,8 +119,6 @@ public static partial class EditorStrings
     // is ever visible, which is why it is spelled out per row rather than summarized.
     public const string ShopEditor_TypeName = nameof(ShopEditor_TypeName);         // "Shop"
     public const string ShopEditor_TypeNamePlural = nameof(ShopEditor_TypeNamePlural);   // "Shops"
-    public const string QuestEditor_TypeName = nameof(QuestEditor_TypeName);        // "Quest"
-    public const string QuestEditor_TypeNamePlural = nameof(QuestEditor_TypeNamePlural);  // "Quests"
 
     // ── Conversation editor (NPC conversations) ────────────────────────────────
     public const string ConversationEditor_TypeName = nameof(ConversationEditor_TypeName);
@@ -166,7 +144,6 @@ public static partial class EditorStrings
     public const string ConversationEditor_GraphUnreachable = nameof(ConversationEditor_GraphUnreachable);
     public const string ConversationEditor_GraphEnds = nameof(ConversationEditor_GraphEnds);
     public const string ConversationEditor_GraphOpensShop = nameof(ConversationEditor_GraphOpensShop);
-    public const string ConversationEditor_GraphOpensQuests = nameof(ConversationEditor_GraphOpensQuests);
     public const string ConversationEditor_GraphChoiceCount = nameof(ConversationEditor_GraphChoiceCount);
     public const string ConversationEditor_NodeDialogTitle = nameof(ConversationEditor_NodeDialogTitle);
     public const string ConversationEditor_DeleteNode = nameof(ConversationEditor_DeleteNode);
@@ -188,8 +165,6 @@ public static partial class EditorStrings
     public const string References_DroppedBy = nameof(References_DroppedBy);
     public const string References_SoldBy = nameof(References_SoldBy);
     public const string References_RewardedBy = nameof(References_RewardedBy);
-    public const string References_GivesQuest = nameof(References_GivesQuest);
-    public const string References_TakesQuest = nameof(References_TakesQuest);
     public const string References_KilledFor = nameof(References_KilledFor);
     public const string References_KeepsShop = nameof(References_KeepsShop);
     public const string References_Speaks = nameof(References_Speaks);

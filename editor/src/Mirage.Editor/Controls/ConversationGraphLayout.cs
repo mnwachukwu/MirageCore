@@ -9,7 +9,6 @@ public enum ConversationEndKind
     None = 0,
     Ends,
     OpensShop,
-    OpensQuests,
 }
 
 /// <summary>One choice as the layout sees it: the node it leads to, or the way it leaves the conversation.
@@ -103,7 +102,7 @@ public static class ConversationGraphLayout
 
     /// <summary>The order endings are listed in a node's terminal slot.</summary>
     private static readonly ConversationEndKind[] EndOrder =
-        [ConversationEndKind.Ends, ConversationEndKind.OpensShop, ConversationEndKind.OpensQuests];
+        [ConversationEndKind.Ends, ConversationEndKind.OpensShop];
 
     // A slot on the grid: a node, or the gathered endings of one.
     private readonly record struct Slot(int NodeId, bool IsTerminal);

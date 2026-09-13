@@ -44,7 +44,6 @@ public sealed partial class GameplayScreen : IGameScreen
         foreach (var kv in _social.ColumnTables) yield return kv;
         foreach (var kv in _mail.ColumnTables) yield return kv;
         foreach (var kv in _market.ColumnTables) yield return kv;
-        foreach (var kv in _questLog.ColumnTables) yield return kv;
     }
 
     /// <summary>Push a set of per-character display preferences into the screen fields, the options panel

@@ -19,7 +19,6 @@ public sealed class WorldSnapshot
     public ItemRecord[] Items { get; init; } = [];
     public NpcRecord[] Npcs { get; init; } = [];
     public ShopRecord[] Shops { get; init; } = [];
-    public QuestRecord[] Quests { get; init; } = [];
     public ConversationRecord[] Conversations { get; init; } = [];
     public MapGroupRecord[] MapGroups { get; init; } = [];
     public MapRecord[] Maps { get; init; } = [];
@@ -56,7 +55,6 @@ public sealed class WorldSnapshot
             "Items" => num < Items.Length ? Items[num] : null,
             "NPCs" => num < Npcs.Length ? Npcs[num] : null,
             "Shops" => num < Shops.Length ? Shops[num] : null,
-            "Quests" => num < Quests.Length ? Quests[num] : null,
             "Conversations" => num < Conversations.Length ? Conversations[num] : null,
             _ => ModuleRecords.TryGetValue(section, out var records) && num < records.Length
                 ? records[num]
@@ -73,7 +71,6 @@ public sealed class WorldSnapshot
         ItemRecord i => i.Name,
         NpcRecord n => n.Name,
         ShopRecord s => s.Name,
-        QuestRecord q => q.Name,
         ConversationRecord c => c.Name,
         AttributeBag bag when family is { NameFieldKey.Length: > 0 } => bag[family.NameFieldKey].AsText(),
         _ => "",

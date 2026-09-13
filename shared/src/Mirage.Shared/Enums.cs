@@ -153,50 +153,19 @@ public enum GuildLabel : byte
     VeteranFocused = 9,
 }
 
-/// <summary>What action a shared-kernel <see cref="Records.Objective"/> tracks. Only <see cref="Kill"/>
-/// is wired in v1 (the mob-kill hook); <see cref="Fetch"/>/<see cref="Gather"/>/<see cref="Explore"/>
-/// are declared plumbing for later objective kinds. 0 = unset (an empty objective).</summary>
-public enum ObjectiveKind : byte
-{
-    None = 0,
-    Kill = 1,
-    Fetch = 2,
-    Gather = 3,
-    Explore = 4,
-}
-
-/// <summary>Per-character lifetime state of a player quest, from first acquisition through infinite repeats.
-/// NotStarted (0) is never stored — a never-touched quest simply has no entry in
-/// <see cref="Records.PlayerQuest"/>. The <c>InProgress</c> vs <c>InProgressRepeat</c> distinction is what the
-/// abandon + repeat-reward logic keys off, so no completion counter is needed.</summary>
-public enum QuestStatus : byte
-{
-    NotStarted = 0,        // never accepted — no entry
-    InProgress = 1,        // accepted, NEVER completed before → abandon DROPS it; turn-in pays the MAIN rewards
-    InProgressRepeat = 2,  // re-accepted after a prior completion → abandon reverts to Done; turn-in pays REPEAT rewards
-    Done = 3,              // completed at least once, not currently active
-}
-
-/// <summary>How often a Repeatable quest re-opens. Eligibility is a LAZY per-character period-key compare
-/// (no scheduler): a Done repeatable quest re-lights when the current period's key differs from the key
-/// stored at last completion. None = not repeatable (Done is permanent).</summary>
-public enum QuestCadence : byte
-{
-    None = 0,
-    Daily = 1,
-    Weekly = 2,
-    Monthly = 3,
-}
-
 /// <summary>What a dialogue choice does when picked (NPC conversations). None = pure text navigation (follow
-/// the choice's NextNodeId; 0 = end). OpenShop / OpenQuests are terminal HAND-OFFS into the NPC's existing
-/// roles — they close the conversation and re-issue an NpcInteract so the server opens the keeper shop/inn or
-/// the quest menu (re-validating r=5). No economy mutation lives in a conversation.</summary>
+/// the choice's NextNodeId; 0 = end). OpenShop is a terminal HAND-OFF into the NPC's other role — it closes
+/// the conversation and re-issues an NpcInteract so the server opens the keeper shop (re-validating r=5).
+/// No economy mutation lives in a conversation.
+///
+/// <para><b>The hand-off list is Core's, and it is short on purpose.</b> A game that adds a role an NPC can
+/// have wants a choice that opens it, and that needs the client to know what opening it MEANS — which is
+/// code rather than data, so it waits on the client module seam. Until then a game's own role is reached by
+/// ending the conversation and acting on what the player did.</para></summary>
 public enum ConversationAction : byte
 {
     None = 0,
     OpenShop = 1,
-    OpenQuests = 2,
 }
 
 public enum WeatherType : byte
@@ -241,19 +210,16 @@ public enum ShopType : byte
     Inn = 1,
 }
 
-/// <summary>How a client wants an NpcInteract resolved (conversations added later). Auto (the
-/// melee-key default) lets the server pick the NPC's best role — TALK-FIRST: a conversation if the NPC has one,
-/// else a quest menu if it has an actionable quest for this player, else its keeper shop/inn. Shop / Talk / Quest
-/// each FORCE one role — the context-menu items, and the conversation's terminal hand-off choices — so a forced
-/// open can't loop back into a different menu.</summary>
+/// <summary>How a client wants an NpcInteract resolved. Auto (the melee-key default) lets the server pick
+/// the NPC's best role — TALK-FIRST: a conversation if the NPC has one, else its keeper shop. Shop and Talk
+/// each FORCE one role — the context-menu items, and the conversation's terminal hand-off choice — so a
+/// forced open can't loop back into a different menu.
+///
+/// <para>The numbering has gaps where a role left Core. They are not reused: a client and a server that
+/// disagree about what 3 means open the wrong menu, and nothing about that reads as a version mismatch.</para></summary>
 public enum NpcInteractChoice : byte
 {
     Auto = 0,
     Shop = 1,
     Talk = 2,
-    Quest = 3,
-    /// <summary>The player is opening ONE quest's offer, picked by name from the NPC's menu. Claims the NPC
-    /// so accept and turn-in can resolve it, and sends nothing back — a quest menu pushed in reply would land
-    /// on top of the offer they already have open.</summary>
-    QuestOffer = 4,
 }

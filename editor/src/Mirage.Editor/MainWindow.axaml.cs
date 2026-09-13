@@ -211,7 +211,6 @@ public partial class MainWindow : FAAppWindow
         this.FindDescendantOfType<ItemEditorView>()?.SavePanelState();
         this.FindDescendantOfType<NpcEditorView>()?.SavePanelState();
         this.FindDescendantOfType<ShopEditorView>()?.SavePanelState();
-        this.FindDescendantOfType<QuestEditorView>()?.SavePanelState();
         this.FindDescendantOfType<ConversationEditorView>()?.SavePanelState();
         var settings = AppSettings.Current;
         if (WindowState == WindowState.Normal)

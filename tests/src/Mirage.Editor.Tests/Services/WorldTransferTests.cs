@@ -50,7 +50,6 @@ public class WorldTransferTests
             Items = Fill<ItemRecord>(l.Items),
             Npcs = Fill<NpcRecord>(l.Npcs),
             Shops = Fill<ShopRecord>(l.Shops),
-            Quests = Fill<QuestRecord>(l.Quests),
             Conversations = Fill<ConversationRecord>(l.Conversations),
             Maps = Fill<MapRecord>(l.Maps),
             MapGroups = [.. Enumerable.Range(0, l.MapGroups + 1).Select(i => new MapGroupRecord { Index = i })]
@@ -67,7 +66,6 @@ public class WorldTransferTests
         w.Items[2] = new ItemRecord { Name = "Gold", Type = ItemType.Currency, Pic = 9 };
         w.Npcs[1] = new NpcRecord { Name = "Cave Troll", Sprite = 42, Behavior = NpcBehavior.Pursue };
         w.Shops[1] = new ShopRecord { Name = "Smithy", Keeper = 1 };
-        w.Quests[1] = new QuestRecord { Name = "The Missing Cart" };
         w.Conversations[1] = new ConversationRecord { Name = "Innkeeper", SpeakerNpc = 1 };
         w.MapGroups[1] = new MapGroupRecord { Index = 1, Name = "harbour", DisplayName = "The Harbour", Music = 4 };
 
@@ -122,7 +120,7 @@ public class WorldTransferTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(written, Is.EqualTo(8), "one record per authored slot, and no others");
+            Assert.That(written, Is.EqualTo(7), "one record per authored slot, and no others");
             Assert.That(Directory.GetFiles(Path.Combine(_dir, "items")), Has.Length.EqualTo(2));
             Assert.That(Directory.GetFiles(Path.Combine(_dir, "maps")), Has.Length.EqualTo(1));
             Assert.That(File.Exists(Path.Combine(_dir, "items", "item3.json")), Is.False);
@@ -189,7 +187,7 @@ public class WorldTransferTests
         {
             Assert.That(diff.Count(WorldChangeKind.Added), Is.Zero);
             Assert.That(diff.Count(WorldChangeKind.Changed), Is.Zero);
-            Assert.That(removed, Has.Count.EqualTo(8));
+            Assert.That(removed, Has.Count.EqualTo(7));
             Assert.That(removed.First(c => c.Section == "NPCs").Name, Is.EqualTo("Cave Troll"));
         });
     }
@@ -272,7 +270,6 @@ public class WorldTransferTests
             Items = blank.Items,
             Npcs = blank.Npcs,
             Shops = blank.Shops,
-            Quests = blank.Quests,
             Conversations = blank.Conversations,
             Maps = blank.Maps,
             MapGroups = blank.MapGroups,

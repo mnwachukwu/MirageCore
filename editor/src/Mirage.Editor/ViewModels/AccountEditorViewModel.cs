@@ -269,7 +269,7 @@ public sealed partial class AccountEditorViewModel : ObservableObject
         ClearChars();
         foreach (var c in record.Chars)
         {
-            var row = new AccountCharRowViewModel(c, () => _data.LiveItemEntries, () => _data.LiveQuestEntries);
+            var row = new AccountCharRowViewModel(c, () => _data.LiveItemEntries);
             Chars.Add(row);
         }
         OnPropertyChanged(nameof(GuildText));
@@ -393,23 +393,6 @@ public sealed partial class AccountEditorViewModel : ObservableObject
             ? RunCharOpAsync(() => _conn.GiveItemAsync(Login, row.Slot, pick.Id, row.GiveQuantity))
             : Task.CompletedTask;
 
-    /// <summary>Set one quest's state. The same control adds a quest that is not in the log yet — the state
-    /// IS the operation, so there is nothing separate to add first.</summary>
-    [RelayCommand]
-    private Task SetQuestStatusAsync(AccountCharRowViewModel? row) =>
-        row is { CanSetQuest: true, QuestToSet: { } pick }
-            ? RunCharOpAsync(() => _conn.SetQuestStatusAsync(Login, row.Slot, pick.Id, row.QuestStatusToSet))
-            : Task.CompletedTask;
-
-    /// <summary>Take a quest out of the log, which is what NotStarted means.</summary>
-    [RelayCommand]
-    private Task ClearQuestAsync(EditorQuestRow? quest)
-    {
-        var row = quest is null ? null : Chars.FirstOrDefault(c => c.Quests.Contains(quest));
-        return row is null ? Task.CompletedTask
-            : RunCharOpAsync(() => _conn.SetQuestStatusAsync(Login, row.Slot, quest!.QuestNum, QuestStatus.NotStarted));
-    }
-
     [RelayCommand]
     private Task GiveToBankAsync() =>
         BankItem is { Id: > 0 } pick
@@ -496,13 +479,10 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
     private readonly int _slot;
     private string _name;
 
-    public AccountCharRowViewModel(EditorCharRow row, Func<NamedEntry[]> itemEntriesProvider,
-        Func<NamedEntry[]> questEntriesProvider)
+    public AccountCharRowViewModel(EditorCharRow row, Func<NamedEntry[]> itemEntriesProvider)
     {
         _itemEntriesProvider = itemEntriesProvider;
-        _questEntriesProvider = questEntriesProvider;
         foreach (var s in row.Inv) Inv.Add(s);
-        foreach (var q in row.Quests) Quests.Add(q);
         _slot = row.Slot;
         _name = row.Name;
         _map = row.Map;
@@ -540,25 +520,12 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
     public NamedEntry[] ItemEntries => _itemEntriesProvider();
 
 
-    private readonly Func<NamedEntry[]> _questEntriesProvider;
 
     /// <summary>The character's quest log, as the server last described it.</summary>
-    public ObservableCollection<EditorQuestRow> Quests { get; } = [];
 
-    public bool HasNoQuests => Quests.Count == 0;
 
-    public NamedEntry[] QuestEntries => _questEntriesProvider();
 
     /// <summary>Every state a quest can be put into, including NotStarted — which takes it out of the log.</summary>
-    public static IReadOnlyList<QuestStatus> QuestStatuses { get; } = Enum.GetValues<QuestStatus>();
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanSetQuest))]
-    private NamedEntry? _questToSet;
-
-    [ObservableProperty] private QuestStatus _questStatusToSet = QuestStatus.InProgress;
-
-    public bool CanSetQuest => QuestToSet is { Id: > 0 };
 
     /// <summary>The item to hand over. Null until one is picked, which is what keeps Give greyed out.</summary>
     [ObservableProperty]
@@ -580,14 +547,11 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
     public string ItemPlaceholder => EditorStrings.Get(EditorStrings.AccountEditor_ItemPlaceholder);
     public string LogHeader => EditorStrings.Get(EditorStrings.AccountEditor_LogHeader);
     public string LogEmpty => EditorStrings.Get(EditorStrings.AccountEditor_LogEmpty);
-    public string SetLabel => EditorStrings.Get(EditorStrings.AccountEditor_SetQuest);
-    public string QuestPlaceholder => EditorStrings.Get(EditorStrings.AccountEditor_QuestPlaceholder);
     public string IneligibleLabel => EditorStrings.Get(EditorStrings.AccountEditor_Ineligible);
 
     internal void NotifyItemEntriesChanged()
     {
         OnPropertyChanged(nameof(ItemEntries));
-        OnPropertyChanged(nameof(QuestEntries));
     }
 
     internal void NotifyLanguageChanged()
@@ -601,8 +565,6 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
         OnPropertyChanged(nameof(ItemPlaceholder));
         OnPropertyChanged(nameof(LogHeader));
         OnPropertyChanged(nameof(LogEmpty));
-        OnPropertyChanged(nameof(SetLabel));
-        OnPropertyChanged(nameof(QuestPlaceholder));
         OnPropertyChanged(nameof(IneligibleLabel));
     }
 
@@ -623,9 +585,7 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
         }
 
         Refill(Inv, row.Inv);
-        Refill(Quests, row.Quests);
         OnPropertyChanged(nameof(HasNoInv));
-        OnPropertyChanged(nameof(HasNoQuests));
     }
 
     private static void Refill<T>(ObservableCollection<T> target, List<T> source)

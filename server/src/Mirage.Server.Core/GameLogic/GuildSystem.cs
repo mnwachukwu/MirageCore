@@ -28,7 +28,6 @@ public sealed partial class GuildSystem : GameSystem
     private readonly PlayerSaver _saver;
     private readonly ItemSystem _items;
     private readonly MailSystem _mail;
-    private readonly ObjectiveSystem _objectives;
     private readonly ILogger<GuildSystem> _logger;
 
     // Per-guild-index chain of pending file writes so two saves of the same guild file never race.
@@ -40,12 +39,10 @@ public sealed partial class GuildSystem : GameSystem
     // Live objective-kernel handle for each guild's active quest (keyed by guild index), so an abandon or expiry
     // can Stop tracking before completion. A guild has at most one quest at a time → at most one handle; a
     // completed quest auto-untracks (the kernel sweeps it), so an entry here only needs an explicit Stop for an
-    // early cancel. Runtime-only — rebuilt at boot from the persisted quests by ReTrackActiveQuests.
-    private readonly Dictionary<int, ObjectiveSystem.Handle> _questHandles = new();
 
     public GuildSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher,
                        IPersistenceService persistence, IBackgroundPersistence bg, PlayerSaver saver,
-                       ItemSystem items, MailSystem mail, ObjectiveSystem objectives, ILogger<GuildSystem> logger,
+                       ItemSystem items, MailSystem mail, ILogger<GuildSystem> logger,
                        IClock? clock = null, IRandomSource? rng = null)
         : base(dispatcher, clock: clock, rng: rng)
     {
@@ -56,7 +53,6 @@ public sealed partial class GuildSystem : GameSystem
         _saver = saver;
         _items = items;
         _mail = mail;
-        _objectives = objectives;
         _logger = logger;
     }
 

@@ -310,11 +310,6 @@ public sealed partial class EditorPacketHandler
                 if (live.Length == 0)
                 {
                     _pm.MarkDirty(i);
-                    // A quest edit leaves the objective kernel tracking whatever the log used to say, so the
-                    // handles are torn down and rebuilt from what it says NOW — the same pair login uses.
-                    // Wasted work for a bag edit; the alternative is a caller remembering to ask for it.
-                    _quests.OnPlayerGone(i);
-                    _quests.OnPlayerJoin(i);
                     _joinLeave.SendJoinData(i);
                 }
                 return live;
@@ -351,65 +346,6 @@ public sealed partial class EditorPacketHandler
     private const string NotOnline = "(offline)";
 
     // ── The quest log ─────────────────────────────────────────────────────────
-
-    private void HandleEditorSetQuestStatus(int editorIndex, EditorSetQuestStatusPacket p)
-    {
-        if (!RequireAccess(editorIndex, AdminLevel.Creator)) return;
-        string login = p.Login.Trim();
-        if (login.Length == 0 || p.Slot < 1 || p.Slot > Constants.MaxChars) return;
-        if (!SlotValidation.IsValidQuestNum(p.QuestNum, _world.Limits.Quests)) return;
-        if (!Enum.IsDefined(p.Status)) return;
-
-        var session = _editors.GetSession(editorIndex);
-        string locale = session?.Locale ?? "";
-        RunAsync(EditCharAsync(editorIndex, login, p.Slot, session?.Login ?? "", locale,
-            c => SetQuestStatus(c, p.QuestNum, p.Status, locale),
-            $"set quest {p.QuestNum} to {p.Status} for"), nameof(EditCharAsync));
-    }
-
-    /// <summary>
-    /// Put one quest into a given state, through the same requirement gate accepting one goes through
-    /// (<see cref="QuestSystem.CanHold"/>) — the editor should not be able to put a quest somewhere the game
-    /// would not.
-    ///
-    /// <para><see cref="QuestStatus.NotStarted"/> removes the row, which is what that state means. An active
-    /// state gets a progress list sized to the quest's objectives, and Done clears it, exactly as accepting
-    /// and turning in do. <c>PeriodKey</c> is left alone: an empty one reads as a permanent cooldown on a
-    /// non-repeatable quest and as "available again now" on a repeatable, which are both the right
-    /// answers.</para>
-    /// </summary>
-    private string SetQuestStatus(PlayerRecord c, int questNum, QuestStatus status, string locale)
-    {
-        var q = _world.Quests[questNum];
-        if (q.TrimmedName.Length == 0) return ServerStrings.ForLocale(locale, ServerStrings.EditorAccounts_QuestNotInLog);
-
-        var existing = QuestSystem.FindQuest(c, questNum);
-        if (status == QuestStatus.NotStarted)
-        {
-            if (existing is null) return ServerStrings.ForLocale(locale, ServerStrings.EditorAccounts_QuestNotInLog);
-            c.Quests.Remove(existing);
-            return "";
-        }
-
-        switch (QuestSystem.CanHold(c, q))
-        {
-            case QuestSystem.HoldResult.PrereqNotDone:
-                return ServerStrings.ForLocale(locale, ServerStrings.EditorAccounts_QuestPrereq,
-                    ("Name", _world.Quests[q.PrereqQuest].TrimmedName));
-        }
-
-        var pq = existing;
-        if (pq is null)
-        {
-            pq = new PlayerQuest { QuestNum = questNum };
-            c.Quests.Add(pq);
-        }
-        pq.Status = status;
-        pq.Progress = status == QuestStatus.Done
-            ? new List<int>()
-            : new List<int>(new int[q.Objectives.Count]);
-        return "";
-    }
 
     // ── The vault ─────────────────────────────────────────────────────────────
 
@@ -521,7 +457,6 @@ public sealed partial class EditorPacketHandler
                 X = c.X,
                 Y = c.Y,
                 Inv = BagOf(c),
-                Quests = LogOf(c),
             });
         }
         return rows;
@@ -548,36 +483,6 @@ public sealed partial class EditorPacketHandler
             });
         }
         return bag;
-    }
-
-    /// <summary>One character's quest log, with the objective counts read against the quest's own
-    /// definition so the operator sees "2/5" rather than a bare number.</summary>
-    private List<EditorQuestRow> LogOf(PlayerRecord c)
-    {
-        var log = new List<EditorQuestRow>();
-        foreach (var pq in c.Quests)
-        {
-            if (!SlotValidation.IsValidQuestNum(pq.QuestNum, _world.Limits.Quests)) continue;
-            var q = _world.Quests[pq.QuestNum];
-            if (q.TrimmedName.Length == 0) continue;
-
-            var parts = new List<string>(q.Objectives.Count);
-            for (int k = 0; k < q.Objectives.Count; k++)
-            {
-                int done = k < pq.Progress.Count ? pq.Progress[k] : 0;
-                parts.Add($"{done}/{q.Objectives[k].Count}");
-            }
-
-            log.Add(new EditorQuestRow
-            {
-                QuestNum = pq.QuestNum,
-                Name = q.TrimmedName,
-                Status = pq.Status,
-                Progress = string.Join(", ", parts),
-                Eligible = QuestSystem.CanHold(c, q) == QuestSystem.HoldResult.Ok,
-            });
-        }
-        return log;
     }
 
     /// <summary>The occupied slots of the account vault. Nothing is worn out of a vault, so every row here

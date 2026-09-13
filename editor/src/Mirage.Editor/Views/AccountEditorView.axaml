@@ -246,58 +246,6 @@
                                 CommandParameter="{Binding}"/>
                       </Grid>
 
-                      <!-- The quest log. A row whose requirements the character does not meet is flagged in
-                           place: seeing a quest somebody should not have is why the log is here. -->
-                      <TextBlock Text="{Binding LogHeader}" FontWeight="SemiBold" FontSize="11"
-                                 Margin="0,6,0,0" Foreground="{DynamicResource MirageMutedBrush}"/>
-                      <TextBlock Text="{Binding LogEmpty}" FontSize="11" FontStyle="Italic"
-                                 IsVisible="{Binding HasNoQuests}"
-                                 Foreground="{DynamicResource MirageFaintBrush}"/>
-                      <ScrollViewer MaxHeight="260" HorizontalScrollBarVisibility="Disabled">
-                      <ItemsControl ItemsSource="{Binding Quests}">
-                        <ItemsControl.ItemTemplate>
-                          <DataTemplate DataType="proto:EditorQuestRow">
-                            <Grid ColumnDefinitions="*,110,90,80,Auto" Height="24" Margin="0,0,0,2">
-                              <TextBlock Grid.Column="0" Text="{Binding Name}" FontSize="11"
-                                         VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                              <TextBlock Grid.Column="1" Text="{Binding Status}" FontSize="11"
-                                         VerticalAlignment="Center"
-                                         Foreground="{DynamicResource MirageMutedBrush}"/>
-                              <TextBlock Grid.Column="2" Text="{Binding Progress}" FontSize="11"
-                                         VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                                         Foreground="{DynamicResource MirageFaintBrush}"/>
-                              <TextBlock Grid.Column="3" FontSize="10" VerticalAlignment="Center"
-                                         Text="{Binding $parent[ItemsControl].((vm:AccountCharRowViewModel)DataContext).IneligibleLabel}"
-                                         IsVisible="{Binding !Eligible}"
-                                         Foreground="{DynamicResource MirageBadBrush}"/>
-                              <Button Grid.Column="4" Content="-" FontWeight="Bold" Classes="glyph"
-                                      Margin="6,0,0,0"
-                                      Command="{Binding $parent[UserControl].DataContext.ClearQuestCommand}"
-                                      CommandParameter="{Binding}"/>
-                            </Grid>
-                          </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                      </ItemsControl>
-                      </ScrollViewer>
-
-                      <!-- One control for both jobs: the state IS the operation, so setting a state on a
-                           quest that is not in the log yet is what adds it. -->
-                      <Grid ColumnDefinitions="*,130,Auto" Margin="0,4,0,0">
-                        <controls:DropdownAutoCompleteBox Grid.Column="0"
-                                         ItemsSource="{Binding QuestEntries}"
-                                         SelectedItem="{Binding QuestToSet, Mode=TwoWay}"
-                                         ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
-                                         FilterMode="Custom" MinimumPrefixLength="0"
-                                         PlaceholderText="{Binding QuestPlaceholder}"/>
-                        <ComboBox Grid.Column="1" Margin="6,0,0,0" HorizontalAlignment="Stretch"
-                                  ItemsSource="{Binding QuestStatuses}"
-                                  SelectedItem="{Binding QuestStatusToSet, Mode=TwoWay}"/>
-                        <Button Grid.Column="2" Margin="6,0,0,0" Padding="10,3"
-                                Content="{Binding SetLabel}"
-                                IsEnabled="{Binding CanSetQuest}"
-                                Command="{Binding $parent[UserControl].DataContext.SetQuestStatusCommand}"
-                                CommandParameter="{Binding}"/>
-                      </Grid>
                     </StackPanel>
                   </Border>
                 </DataTemplate>

@@ -44,10 +44,6 @@ public interface IClientEvents
     /// <summary>An NPC interact opened a keeper's inn — raise the (client-local) Inn panel.</summary>
     event Action? OpenInn;
 
-    /// <summary>A melee-key NPC interact hit a quest-giver/turn-in — open the client-built quest menu for the NPC
-    /// at (mapNum, npcSlot). The client already holds the quest defs + log, so it builds the menu locally.</summary>
-    event Action<int, int>? OpenNpcQuestMenu;
-
     /// <summary>An NPC interact resolved to a conversation — open the conversation panel for the NPC at
     /// (mapNum, npcSlot) on conversation (convNum). The client holds the cached tree and walks it locally.</summary>
     event Action<int, int, int>? OpenNpcConversation;

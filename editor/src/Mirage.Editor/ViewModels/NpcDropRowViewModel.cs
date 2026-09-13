@@ -5,7 +5,7 @@ using Mirage.Shared.Records;
 namespace Mirage.Editor.ViewModels;
 
 /// <summary>One line of an NPC's drop table: an item, how many, and how often. Mirrors
-/// <see cref="QuestRewardRowViewModel"/> — item-picker facade, currency-aware quantity bounds, dirty
+/// Item-picker facade, currency-aware quantity bounds, dirty
 /// tracking — because it is the same authoring shape and should feel identical to use.
 ///
 /// <para>The one thing it adds is <see cref="Chance"/>, and the one thing worth knowing while authoring

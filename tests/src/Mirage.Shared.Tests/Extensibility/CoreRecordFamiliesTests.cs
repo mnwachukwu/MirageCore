@@ -23,7 +23,6 @@ public class CoreRecordFamiliesTests
         (CoreRecordFamilies.Items, "items", "item1.json"),
         (CoreRecordFamilies.Npcs, "npcs", "npc1.json"),
         (CoreRecordFamilies.Shops, "shops", "shop1.json"),
-        (CoreRecordFamilies.Quests, "quests", "quest1.json"),
         (CoreRecordFamilies.Conversations, "conversations", "conversation1.json"),
     ];
 

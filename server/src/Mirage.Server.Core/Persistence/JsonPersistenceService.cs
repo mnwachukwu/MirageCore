@@ -81,7 +81,6 @@ public sealed class JsonPersistenceService : IPersistenceService
 
     private string MapsPath => WorldDir(CoreRecordFamilies.Maps);
     private string ItemsPath => WorldDir(CoreRecordFamilies.Items);
-    private string QuestsPath => WorldDir(CoreRecordFamilies.Quests);
     private string ConversationsPath => WorldDir(CoreRecordFamilies.Conversations);
     private string NpcsPath => WorldDir(CoreRecordFamilies.Npcs);
     private string ShopsPath => WorldDir(CoreRecordFamilies.Shops);
@@ -101,7 +100,6 @@ public sealed class JsonPersistenceService : IPersistenceService
         Path.Combine(MapItemsPath, $"map{mapNum}.json");
 
     private string ItemFile(int num) => WorldFile(CoreRecordFamilies.Items, num);
-    private string QuestFile(int num) => WorldFile(CoreRecordFamilies.Quests, num);
     private string ConversationFile(int num) => WorldFile(CoreRecordFamilies.Conversations, num);
     private string NpcFile(int num) => WorldFile(CoreRecordFamilies.Npcs, num);
     private string ShopFile(int num) => WorldFile(CoreRecordFamilies.Shops, num);
@@ -448,14 +446,6 @@ public sealed class JsonPersistenceService : IPersistenceService
         return (result, padded);
     }
 
-    public async Task<(QuestRecord[] records, int padded)> LoadAllQuestsAsync()
-    {
-        var result = new QuestRecord[_limits.Quests + 1];
-        for (int i = 0; i <= _limits.Quests; i++) result[i] = new QuestRecord();
-        int padded = await CheckAndLoadRecordsAsync(result, _limits.Quests, QuestFile);
-        return (result, padded);
-    }
-
     public async Task<(ConversationRecord[] records, int padded)> LoadAllConversationsAsync()
     {
         var result = new ConversationRecord[_limits.Conversations + 1];
@@ -506,12 +496,6 @@ public sealed class JsonPersistenceService : IPersistenceService
     {
         if (!SlotValidation.IsValidShopNum(num, _limits.Shops)) return;
         await File.WriteAllTextAsync(ShopFile(num), JsonSerializer.Serialize(shop, Options));
-    }
-
-    public async Task SaveQuestAsync(int num, QuestRecord quest)
-    {
-        if (!SlotValidation.IsValidQuestNum(num, _limits.Quests)) return;
-        await File.WriteAllTextAsync(QuestFile(num), JsonSerializer.Serialize(quest, Options));
     }
 
     public async Task SaveConversationAsync(int num, ConversationRecord conversation)

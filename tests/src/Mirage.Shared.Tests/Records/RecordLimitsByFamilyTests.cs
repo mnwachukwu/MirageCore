@@ -18,7 +18,6 @@ public class RecordLimitsByFamilyTests
         Items = 13,
         Npcs = 14,
         Shops = 15,
-        Quests = 17,
         Conversations = 18,
     };
 
@@ -32,7 +31,6 @@ public class RecordLimitsByFamilyTests
             Assert.That(Configured.For(CoreRecordFamilies.Items), Is.EqualTo(13));
             Assert.That(Configured.For(CoreRecordFamilies.Npcs), Is.EqualTo(14));
             Assert.That(Configured.For(CoreRecordFamilies.Shops), Is.EqualTo(15));
-            Assert.That(Configured.For(CoreRecordFamilies.Quests), Is.EqualTo(17));
             Assert.That(Configured.For(CoreRecordFamilies.Conversations), Is.EqualTo(18));
         });
     }

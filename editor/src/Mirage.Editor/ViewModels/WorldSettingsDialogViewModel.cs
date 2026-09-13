@@ -133,7 +133,6 @@ public sealed partial class WorldSettingsDialogViewModel : ObservableObject
             Items = Of(CoreRecordFamilies.Items, _limits.Items),
             Npcs = Of(CoreRecordFamilies.Npcs, _limits.Npcs),
             Shops = Of(CoreRecordFamilies.Shops, _limits.Shops),
-            Quests = Of(CoreRecordFamilies.Quests, _limits.Quests),
             Conversations = Of(CoreRecordFamilies.Conversations, _limits.Conversations),
             Maps = Of(CoreRecordFamilies.Maps, _limits.Maps),
             MapGroups = Of(CoreRecordFamilies.MapGroups, _limits.MapGroups),

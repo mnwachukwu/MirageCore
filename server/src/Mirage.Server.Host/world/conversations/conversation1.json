@@ -8,11 +8,6 @@
       "text": "Everything here is an example of a record format. Take a look around.",
       "choices": [
         {
-          "text": "What needs doing?",
-          "action": "OpenQuests",
-          "nextNodeId": 0
-        },
-        {
           "text": "Let me see your goods.",
           "action": "OpenShop",
           "nextNodeId": 0

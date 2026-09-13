@@ -53,7 +53,6 @@ public sealed class SectionIconConverter : IValueConverter
             "NPCs" => Person,
             "Shops" => Shop,
             "Classes" => Shield,
-            "Quests" => List,
             "Conversations" => Bubble,
             "Accounts" => Key,
             _ => Quads,

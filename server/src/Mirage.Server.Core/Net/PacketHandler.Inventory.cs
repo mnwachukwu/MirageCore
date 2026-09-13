@@ -238,29 +238,10 @@ public sealed partial class PacketHandler
             case NpcInteractChoice.Talk:
                 OpenNpcConversation(index, npcNum, p.MapNum, p.NpcSlot);
                 return;
-            case NpcInteractChoice.Quest:
-                if (_quests.HasActionableQuestAt(index, npcNum))
-                {
-                    _pm[index].SetActiveQuestNpc(p.MapNum, p.NpcSlot);
-                    _dispatcher.SendTo(index, new OpenNpcQuestMenuPacket { MapNum = p.MapNum, NpcSlot = p.NpcSlot });
-                }
-                return;
-            // The player picked one quest by name and their client has the offer open. Same claim, no menu
-            // pushed back — accept and turn-in read the NPC from the claim, so an offer opened without one
-            // is refused.
-            case NpcInteractChoice.QuestOffer:
-                if (_quests.HasActionableQuestAt(index, npcNum))
-                    _pm[index].SetActiveQuestNpc(p.MapNum, p.NpcSlot);
-                return;
-            default:   // Auto — talk-first, then a quest the player can accept or turn in right now, then the keeper
-                       // shop; if none apply, the NPC at least speaks its AttackSay rather than doing nothing.
+            default:   // Auto — talk-first, then the keeper shop; if neither applies, the NPC at least speaks
+                       // its AttackSay rather than doing nothing.
                 if (_world.ConversationForNpc(npcNum) > 0)
                     OpenNpcConversation(index, npcNum, p.MapNum, p.NpcSlot);
-                else if (_quests.HasActionableQuestAt(index, npcNum))
-                {
-                    _pm[index].SetActiveQuestNpc(p.MapNum, p.NpcSlot);
-                    _dispatcher.SendTo(index, new OpenNpcQuestMenuPacket { MapNum = p.MapNum, NpcSlot = p.NpcSlot });
-                }
                 else OpenNpcShop(index, npcNum, p.MapNum, p.NpcSlot);
                 return;
         }

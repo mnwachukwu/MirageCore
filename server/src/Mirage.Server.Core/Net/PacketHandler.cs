@@ -40,7 +40,6 @@ public sealed partial class PacketHandler
     private readonly MailSystem _mail;
     private readonly MarketSystem _market;
     private readonly TradeSystem _trade;
-    private readonly QuestSystem _quests;
     private readonly ConversationSystem _conversations;
     private readonly SocialSystem _social;
     private readonly SpawnSystem _spawn;
@@ -87,7 +86,7 @@ public sealed partial class PacketHandler
         GameWorld world, PlayerManager pm,
         IPacketDispatcher dispatcher, IPersistenceService persistence, IBackgroundPersistence bg, PlayerSaver saver,
         JoinLeaveSystem joinLeave, MovementSystem movement, ItemSystem items, ShopSystem shop, BankSystem bank, PlayerSpawnSystem playerSpawn,
-        PartySystem party, GuildSystem guilds, MailSystem mail, MarketSystem market, TradeSystem trade, QuestSystem quests, ConversationSystem conversations, SocialSystem social, SpawnSystem spawn, TimeOfDaySystem tod, WeatherSystem weather, GameLoop gameLoop,
+        PartySystem party, GuildSystem guilds, MailSystem mail, MarketSystem market, TradeSystem trade, ConversationSystem conversations, SocialSystem social, SpawnSystem spawn, TimeOfDaySystem tod, WeatherSystem weather, GameLoop gameLoop,
         ILogger<PacketHandler> logger,
         IClock? clock = null, IRandomSource? rng = null, ServerConfig? config = null)
     {
@@ -108,7 +107,6 @@ public sealed partial class PacketHandler
         _mail = mail;
         _market = market;
         _trade = trade;
-        _quests = quests;
         _conversations = conversations;
         _social = social;
         _spawn = spawn;
@@ -435,16 +433,6 @@ public sealed partial class PacketHandler
                     break;
                 case TradeCancelPacket:
                     HandleTradeCancel(index);
-                    break;
-
-                case QuestAcceptPacket p:
-                    HandleQuestAccept(index, p);
-                    break;
-                case QuestTurnInPacket p:
-                    HandleQuestTurnIn(index, p);
-                    break;
-                case QuestAbandonPacket p:
-                    HandleQuestAbandon(index, p);
                     break;
 
                 case GuildInfoRequestPacket:

@@ -67,20 +67,11 @@ public class ConversationGraphSourceTests
     }
 
     [Test]
-    public void AQuestHandOffProjectsAsTheQuestExit()
-    {
-        var c = Conv(Record(Node(1, Go("quests", 0))));
-        c.Nodes[0].Choices[0].Action = ConversationAction.OpenQuests;
-
-        Assert.That(c.GraphNodes()[0].Branches.Single().End, Is.EqualTo(ConversationEndKind.OpensQuests));
-    }
-
-    [Test]
     public void ClearingTheHandOffBringsTheBranchBack()
     {
-        var c = Conv(Record(Node(1, Go("quests", 2)), Node(2)));
-        c.Nodes[0].Choices[0].Action = ConversationAction.OpenQuests;
-        Assume.That(c.GraphNodes()[0].Branches.Single().End, Is.EqualTo(ConversationEndKind.OpensQuests));
+        var c = Conv(Record(Node(1, Go("shop", 2)), Node(2)));
+        c.Nodes[0].Choices[0].Action = ConversationAction.OpenShop;
+        Assume.That(c.GraphNodes()[0].Branches.Single().End, Is.EqualTo(ConversationEndKind.OpensShop));
 
         c.Nodes[0].Choices[0].Action = ConversationAction.None;
         var branch = c.GraphNodes()[0].Branches.Single();

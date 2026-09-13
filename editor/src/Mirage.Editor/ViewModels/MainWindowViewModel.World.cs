@@ -263,7 +263,6 @@ public sealed partial class MainWindowViewModel
             Items = Slots(ItemEditor.Items, r => r.Index, r => r.ToRecord()),
             Npcs = Slots(NpcEditor.Items, r => r.Index, r => r.ToRecord()),
             Shops = Slots(ShopEditor.Items, r => r.Index, r => r.ToRecord()),
-            Quests = Slots(QuestEditor.Items, r => r.Index, r => r.ToRecord()),
             Conversations = Slots(ConversationEditor.Items, r => r.Index, r => r.ToRecord()),
             GroupExists = groups.Contains,
         };
@@ -299,7 +298,6 @@ public sealed partial class MainWindowViewModel
             case WorldRecordKind.Item: Open("Items", ItemEditor, num); break;
             case WorldRecordKind.Npc: Open("NPCs", NpcEditor, num); break;
             case WorldRecordKind.Shop: Open("Shops", ShopEditor, num); break;
-            case WorldRecordKind.Quest: Open("Quests", QuestEditor, num); break;
             case WorldRecordKind.Conversation: Open("Conversations", ConversationEditor, num); break;
         }
     }
@@ -311,7 +309,6 @@ public sealed partial class MainWindowViewModel
         WorldRecordKind.Item => ItemEditor.Items.FirstOrDefault(r => r.Index == num)?.DisplayName ?? "",
         WorldRecordKind.Npc => NpcEditor.Items.FirstOrDefault(r => r.Index == num)?.DisplayName ?? "",
         WorldRecordKind.Shop => ShopEditor.Items.FirstOrDefault(r => r.Index == num)?.DisplayName ?? "",
-        WorldRecordKind.Quest => QuestEditor.Items.FirstOrDefault(r => r.Index == num)?.DisplayName ?? "",
         WorldRecordKind.Conversation => ConversationEditor.Items.FirstOrDefault(r => r.Index == num)?.DisplayName ?? "",
         _ => "",
     };

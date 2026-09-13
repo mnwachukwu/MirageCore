@@ -175,7 +175,7 @@ public class ItemLockRoundTripTests
             Sign(Other, otherLogin, otherSession);
             _handler = new EditorPacketHandler(
                 World, new PlayerManager(), _editors, _locks, Dispatcher, new RecordingPersistence(), new NoOpBackground(),
-                items: null!, joinLeave: null!, quests: null!, spawn: null!,
+                items: null!, joinLeave: null!, spawn: null!,
                 saver: null!, gameLoop: null!,
                 NullLogger<EditorPacketHandler>.Instance);
         }

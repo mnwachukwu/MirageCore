@@ -49,7 +49,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
         player.RespawnReadyUtc = p.RespawnReadyUtc;
         // The overhead quest-glyph class filter keys off the LOCAL player's class — relight the glyphs when it
         // (re)loads, in case player data arrives after the quest push.
-        if (p.Index == _state.MyIndex) _state.RefreshQuestGlyphs();
     }
 
     // Slim per-hit refresh of the aggressor expiry. The full SendPlayerData carries the off→on

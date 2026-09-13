@@ -32,7 +32,6 @@ public class WorldCheckTests
             Items = Family(i => new ItemRecord { Name = $"Item {i}" }),
             Npcs = Family(i => new NpcRecord { Name = $"Npc {i}" }),
             Shops = Family(i => new ShopRecord { Name = $"Shop {i}", Keeper = 1 }),
-            Quests = Family(i => new QuestRecord { Name = $"Quest {i}" }),
             Conversations = Family(i => new ConversationRecord { Name = $"Conv {i}" }),
         };
     }
@@ -273,76 +272,6 @@ public class WorldCheckTests
         Assert.That(WorldCheck.Run(w).Count(i => i.Kind == WorldIssueKind.ItemMissing), Is.EqualTo(2));
     }
 
-    // ── Quests ───────────────────────────────────────────────────────────────
-
-    [Test]
-    public void AQuestNamingUnauthoredNpcs_IsFound()
-    {
-        var w = World();
-        w.Quests[1]!.GiverNpc = Absent;
-
-        Assert.That(Kinds(w), Does.Contain(WorldIssueKind.NpcMissing));
-    }
-
-    [Test]
-    public void AKillObjectiveNamingAnUnauthoredNpc_IsFound()
-    {
-        var w = World();
-        w.Quests[1]!.Objectives.Add(new Objective { Kind = ObjectiveKind.Kill, Target = Absent, Count = 1 });
-
-        Assert.That(Kinds(w), Does.Contain(WorldIssueKind.NpcMissing));
-    }
-
-    /// <summary>Target 0 is the wildcard — "any target of this kind" — and names nothing to check.</summary>
-    [Test]
-    public void AWildcardObjective_IsNotAReference()
-    {
-        var w = World();
-        w.Quests[1]!.Objectives.Add(new Objective { Kind = ObjectiveKind.Kill, Target = 0, Count = 1 });
-
-        Assert.That(WorldCheck.Run(w), Is.Empty);
-    }
-
-    [Test]
-    public void AQuestRewardingAnUnauthoredItem_IsFound()
-    {
-        var w = World();
-        w.Quests[1]!.RewardItems.Add(new QuestReward { ItemNum = Absent, Quantity = 1 });
-
-        Assert.That(Kinds(w), Does.Contain(WorldIssueKind.ItemMissing));
-    }
-
-    [Test]
-    public void AQuestRequiringAnUnauthoredQuest_IsFound()
-    {
-        var w = World();
-        w.Quests[1]!.PrereqQuest = Absent;
-
-        Assert.That(Kinds(w), Does.Contain(WorldIssueKind.QuestMissing));
-    }
-
-    /// <summary>A quest that requires itself, directly or around a loop, can never be accepted by anyone.</summary>
-    [TestCase(1, 1)]
-    [TestCase(2, 3)]
-    public void APrerequisiteLoop_IsFound(int a, int b)
-    {
-        var w = World();
-        w.Quests[a]!.PrereqQuest = b;
-        w.Quests[b]!.PrereqQuest = a;
-
-        Assert.That(Kinds(w), Does.Contain(WorldIssueKind.QuestPrereqCycle));
-    }
-
-    [Test]
-    public void AChainOfPrerequisitesThatEnds_IsNotACycle()
-    {
-        var w = World();
-        w.Quests[3]!.PrereqQuest = 2;
-        w.Quests[2]!.PrereqQuest = 1;
-
-        Assert.That(Kinds(w), Does.Not.Contain(WorldIssueKind.QuestPrereqCycle));
-    }
-
     // ── Conversations ────────────────────────────────────────────────────────
 
     [Test]
@@ -430,44 +359,6 @@ public class WorldCheckTests
         Assert.That(Kinds(w), Does.Not.Contain(WorldIssueKind.ConversationOpensNoShop));
     }
 
-    [Test]
-    public void AChoiceOpeningQuestsFromAnNpcWithNone_IsFound()
-    {
-        var w = World();
-        var conv = w.Conversations[1]!;
-        conv.SpeakerNpc = 2;
-        conv.RootNodeId = 1;
-        conv.Nodes.Add(new ConversationNode
-        {
-            Id = 1,
-            Choices = [new ConversationChoice { Label = "quests", Action = ConversationAction.OpenQuests }],
-        });
-
-        Assert.That(Kinds(w), Does.Contain(WorldIssueKind.ConversationOpensNoQuests));
-    }
-
-    /// <summary>A quest names its turn-in NPC, or falls back to its giver when it names none.</summary>
-    [Test]
-    public void AChoiceOpeningQuestsFromTheirGiver_IsFine()
-    {
-        var w = World();
-        w.Quests[1]!.GiverNpc = 2;
-        var conv = w.Conversations[1]!;
-        conv.SpeakerNpc = 2;
-        conv.RootNodeId = 1;
-        conv.Nodes.Add(new ConversationNode
-        {
-            Id = 1,
-            Choices = [new ConversationChoice { Label = "quests", Action = ConversationAction.OpenQuests }],
-        });
-
-        Assert.That(Kinds(w), Does.Not.Contain(WorldIssueKind.ConversationOpensNoQuests));
-    }
-    // ── What counts as a map being there ─────────────────────────────────────
-
-    /// <summary>The case the padded world creates: a warp into one of the hundreds of slots a world is
-    /// padded out to. The slot exists, so a range check passes it; nothing is there, so a player who steps
-    /// on the tile arrives nowhere.</summary>
     [Test]
     public void AWarpIntoABlankPaddedSlot_IsFound()
     {

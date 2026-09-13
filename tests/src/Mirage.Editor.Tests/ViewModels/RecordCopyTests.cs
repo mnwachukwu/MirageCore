@@ -195,28 +195,6 @@ public class RecordCopyTests
     }
 
     [Test]
-    public void CopiedQuest_ArrivesWithNoGiverOrTurnIn()
-    {
-        var data = new EditorDataService();
-        var quests = new QuestRecord[4];
-        for (int i = 0; i < quests.Length; i++) quests[i] = new QuestRecord();
-        quests[1] = new QuestRecord { Name = "Sellswords", GiverNpc = 140, TurnInNpc = 141 };
-        typeof(EditorDataService).GetProperty(nameof(EditorDataService.OfflineQuests))!.SetValue(data, quests);
-        var vm = new QuestEditorViewModel(data, new EditorConnection());
-        vm.LoadOffline();
-        vm.SelectedQuest = vm.Quests.First(q => q.Index == 1);
-
-        vm.CopyCommand.Execute(null);
-
-        var copy = vm.Quests.First(q => q.Index == 2);
-        Assert.Multiple(() =>
-        {
-            Assert.That(copy.GiverNpc, Is.Zero);
-            Assert.That(copy.TurnInNpc, Is.Zero);
-        });
-    }
-
-    [Test]
     public void CopiedConversation_ArrivesWithNoSpeaker()
     {
         var data = new EditorDataService();

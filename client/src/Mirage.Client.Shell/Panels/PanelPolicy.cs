@@ -16,10 +16,8 @@ public static class PanelSlots
     public const int Social = 8;
     public const int Market = 9;
     public const int Trade = 10;
-    public const int QuestLog = 11;
-    public const int QuestDialog = 12;
-    public const int Conversation = 13;
-    public const int Moderation = 14;
+    public const int Conversation = 11;
+    public const int Moderation = 12;
 
     /// <summary>Number of slots — the registry and the policy table are both this long.</summary>
     public const int Count = Moderation + 1;
@@ -36,7 +34,7 @@ public static class PanelSlots
 /// <param name="ConfigKey">Stable key its position persists under, or null when the panel's position
 /// is not saved (the server-driven dialogs, which appear where the game puts them).</param>
 /// <param name="PlayerToggleable">Whether a keybind or chat command may open/close it. False for the
-/// server-driven panels — shop, trade, quest dialog, conversation — which appear only when the server
+/// server-driven panels — shop, trade, conversation — which appear only when the server
 /// says so, and therefore have no toggle entry point.</param>
 /// <param name="BlocksMovement">Whether world movement is locked while it is open.</param>
 /// <param name="ClosesOnLeave">Whether leaving the screen closes it. False for the server-driven
@@ -92,7 +90,6 @@ public static class PanelPolicies
         t[PanelSlots.Bank] = new("Bank", PlayerToggleable: true, BlocksMovement: true, ClosesOnLeave: true, CountsAsOpenForEscape: true);
         t[PanelSlots.Inn] = new("Inn", PlayerToggleable: true, BlocksMovement: true, ClosesOnLeave: true, CountsAsOpenForEscape: true);
         t[PanelSlots.Mail] = new("Mail", PlayerToggleable: true, BlocksMovement: true, ClosesOnLeave: true, CountsAsOpenForEscape: true);
-        t[PanelSlots.QuestLog] = new(null, PlayerToggleable: true, BlocksMovement: true, ClosesOnLeave: true, CountsAsOpenForEscape: true);
 
         // ── Server-driven ─────────────────────────────────────────────────────
         // Opened by the server pushing state, so no player toggle. Shop closes on leave; Market and
@@ -100,7 +97,6 @@ public static class PanelPolicies
         // them behind its back.
         t[PanelSlots.Shop] = new("Shop", PlayerToggleable: false, BlocksMovement: true, ClosesOnLeave: true, CountsAsOpenForEscape: true);
         t[PanelSlots.Market] = new("Market", PlayerToggleable: true, BlocksMovement: true, ClosesOnLeave: false, CountsAsOpenForEscape: true);
-        t[PanelSlots.QuestDialog] = new(null, PlayerToggleable: false, BlocksMovement: true, ClosesOnLeave: true, CountsAsOpenForEscape: true);
         t[PanelSlots.Conversation] = new(null, PlayerToggleable: false, BlocksMovement: true, ClosesOnLeave: true, CountsAsOpenForEscape: true);
 
         // Trade is handled ahead of the generic Escape path (Escape CANCELS the trade rather than

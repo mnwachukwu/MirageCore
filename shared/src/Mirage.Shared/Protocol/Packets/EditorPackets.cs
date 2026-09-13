@@ -254,7 +254,6 @@ public sealed record EditorDataPacket : IPacket
     [JsonPropertyName("shops")] public NameEntry[] Shops { get; init; } = [];
     [JsonPropertyName("maps")] public NameEntry[] Maps { get; init; } = [];
     [JsonPropertyName("mapGroups")] public NameEntry[] MapGroups { get; init; } = [];
-    [JsonPropertyName("quests")] public NameEntry[] Quests { get; init; } = [];
     [JsonPropertyName("conversations")] public NameEntry[] Conversations { get; init; } = [];
     /// <summary>Indices of the currency-type items, so the editor can validate drop quantities
     /// (currency needs a quantity; other item types ignore it) without fetching every full record.</summary>
@@ -355,75 +354,6 @@ public sealed record EditorAllMapGroupsPacket : IPacket
     [JsonPropertyName("mapGroups")] public UpdateMapGroupPacket[] MapGroups { get; init; } = [];
 }
 
-// ── Quest editor ─────────────────────────────────────────────────────────────
-
-public sealed record EditorRequestQuestPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorRequestQuest;
-    [JsonPropertyName("questNum")] public int QuestNum { get; init; }
-}
-
-public sealed record EditorRequestAllQuestsPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorRequestAllQuests;
-}
-
-/// <summary>C→S: save an authored quest. Objectives/rewards ride the shared <see cref="Objective"/> /
-/// <see cref="QuestReward"/> records (only non-empty entries are sent). Mirrors EditorSaveShopPacket.</summary>
-public sealed record EditorSaveQuestPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorSaveQuest;
-    [JsonPropertyName("questNum")] public int QuestNum { get; init; }
-    [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("desc")] public string Description { get; init; } = "";
-    [JsonPropertyName("obj")] public List<Objective> Objectives { get; init; } = new();
-    [JsonPropertyName("reqLvl")] public int ReqLevel { get; init; }
-    [JsonPropertyName("reqStr")] public int ReqStr { get; init; }
-    [JsonPropertyName("reqDef")] public int ReqDef { get; init; }
-    [JsonPropertyName("reqSpd")] public int ReqSpd { get; init; }
-    [JsonPropertyName("reqInt")] public int ReqInt { get; init; }
-    [JsonPropertyName("prereq")] public int PrereqQuest { get; init; }
-    [JsonPropertyName("rewExp")] public long RewardExp { get; init; }
-    [JsonPropertyName("rewItems")] public List<QuestReward> RewardItems { get; init; } = new();
-    [JsonPropertyName("repExp")] public long RepeatRewardExp { get; init; }
-    [JsonPropertyName("repItems")] public List<QuestReward> RepeatRewardItems { get; init; } = new();
-    [JsonPropertyName("giver")] public int GiverNpc { get; init; }
-    [JsonPropertyName("turnIn")] public int TurnInNpc { get; init; }
-    [JsonPropertyName("repeat")] public bool Repeatable { get; init; }
-    [JsonPropertyName("cadence")] public QuestCadence Cadence { get; init; }
-}
-
-/// <summary>S→C: one quest's full definition — the RequestQuest response, an EditorAllQuests element, AND the
-/// live broadcast to game clients on an editor save (so quest defs refresh without a reconnect, mirroring
-/// the shop-keeper live-refresh). Identical field set to EditorSaveQuestPacket.</summary>
-public sealed record UpdateQuestPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.UpdateQuest;
-    [JsonPropertyName("questNum")] public int QuestNum { get; init; }
-    [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("desc")] public string Description { get; init; } = "";
-    [JsonPropertyName("obj")] public List<Objective> Objectives { get; init; } = new();
-    [JsonPropertyName("reqLvl")] public int ReqLevel { get; init; }
-    [JsonPropertyName("reqStr")] public int ReqStr { get; init; }
-    [JsonPropertyName("reqDef")] public int ReqDef { get; init; }
-    [JsonPropertyName("reqSpd")] public int ReqSpd { get; init; }
-    [JsonPropertyName("reqInt")] public int ReqInt { get; init; }
-    [JsonPropertyName("prereq")] public int PrereqQuest { get; init; }
-    [JsonPropertyName("rewExp")] public long RewardExp { get; init; }
-    [JsonPropertyName("rewItems")] public List<QuestReward> RewardItems { get; init; } = new();
-    [JsonPropertyName("repExp")] public long RepeatRewardExp { get; init; }
-    [JsonPropertyName("repItems")] public List<QuestReward> RepeatRewardItems { get; init; } = new();
-    [JsonPropertyName("giver")] public int GiverNpc { get; init; }
-    [JsonPropertyName("turnIn")] public int TurnInNpc { get; init; }
-    [JsonPropertyName("repeat")] public bool Repeatable { get; init; }
-    [JsonPropertyName("cadence")] public QuestCadence Cadence { get; init; }
-}
-
-public sealed record EditorAllQuestsPacket : IPacket
-{
-    [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorAllQuests;
-    [JsonPropertyName("quests")] public UpdateQuestPacket[] Quests { get; init; } = [];
-}
 
 // ── Conversation editor (NPC conversations) ──────────────────────────────────
 
@@ -439,7 +369,7 @@ public sealed record EditorRequestAllConversationsPacket : IPacket
 }
 
 /// <summary>C→S: save an authored conversation. The node tree (each node's choices) rides the shared
-/// <see cref="ConversationNode"/> records (only non-empty entries are sent). Mirrors EditorSaveQuestPacket.</summary>
+/// <see cref="ConversationNode"/> records (only non-empty entries are sent). Mirrors EditorSaveShopPacket.</summary>
 public sealed record EditorSaveConversationPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorSaveConversation;

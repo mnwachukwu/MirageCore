@@ -26,7 +26,6 @@ public sealed partial class MainWindowViewModel
 
         ItemEditor.ResolveInboundRefs = RefsToItem;
         NpcEditor.ResolveInboundRefs = RefsToNpc;
-        QuestEditor.ResolveInboundRefs = RefsToQuest;
         // Shops and conversations are pointed FROM, never TO: a shop names its keeper, a conversation names
         // its speaker. Nothing in the world names a shop or a conversation, so those two editors get no panel.
         // The map editor gets none either, though plenty points at a map: its own Up/Down/Left/Right fields
@@ -41,7 +40,6 @@ public sealed partial class MainWindowViewModel
         MapGroupEditor.NotifyGroupMapsChanged();
         ItemEditor.NotifyInboundRefsChanged();
         NpcEditor.NotifyInboundRefsChanged();
-        QuestEditor.NotifyInboundRefsChanged();
     }
 
     // ── Link construction ────────────────────────────────────────────────────
@@ -66,9 +64,6 @@ public sealed partial class MainWindowViewModel
     private IEnumerable<ReferenceLinkViewModel> ShopLinks(Func<ShopRecord, bool> names) =>
         ShopEditor.Items.Where(r => names(r.ToRecord())).Select(r => Link(r.DisplayName, () => Open("Shops", ShopEditor, r.Index)));
 
-    private IEnumerable<ReferenceLinkViewModel> QuestLinks(Func<QuestRecord, bool> names) =>
-        QuestEditor.Items.Where(r => names(r.ToRecord())).Select(r => Link(r.DisplayName, () => Open("Quests", QuestEditor, r.Index)));
-
     private IEnumerable<ReferenceLinkViewModel> ConversationLinks(Func<ConversationRecord, bool> names) =>
         ConversationEditor.Items.Where(r => names(r.ToRecord()))
             .Select(r => Link(r.DisplayName, () => Open("Conversations", ConversationEditor, r.Index)));
@@ -85,21 +80,12 @@ public sealed partial class MainWindowViewModel
             NpcLinks(n => n.Drops?.Any(d => d.ItemNum == num) ?? false));
         AddGroup(groups, EditorStrings.References_SoldBy,
             ShopLinks(s => s.SalesItem.Contains(num) || s.BarterItem.Any(b => b.GiveItem == num || b.GetItem == num)));
-        AddGroup(groups, EditorStrings.References_RewardedBy,
-            QuestLinks(q => q.RewardItems.Any(r => r.ItemNum == num)
-                         || q.RepeatRewardItems.Any(r => r.ItemNum == num)
-                         || q.Objectives.Any(o => o.Kind is ObjectiveKind.Gather or ObjectiveKind.Fetch && o.Target == num)));
         return groups;
     }
 
     private IReadOnlyList<ReferenceGroupViewModel> RefsToNpc(int num)
     {
         var groups = new List<ReferenceGroupViewModel>();
-        AddGroup(groups, EditorStrings.References_GivesQuest, QuestLinks(q => q.GiverNpc == num));
-        AddGroup(groups, EditorStrings.References_TakesQuest,
-            QuestLinks(q => q.EffectiveTurnInNpc == num && q.GiverNpc != num));
-        AddGroup(groups, EditorStrings.References_KilledFor,
-            QuestLinks(q => q.Objectives.Any(o => o.Kind == ObjectiveKind.Kill && o.Target == num)));
         AddGroup(groups, EditorStrings.References_KeepsShop, ShopLinks(s => s.Keeper == num));
         AddGroup(groups, EditorStrings.References_Speaks, ConversationLinks(c => c.SpeakerNpc == num));
         AddGroup(groups, EditorStrings.References_SpawnsOn, MapLinks(m => m.Npcs.Any(e => e.Npc == num)));
@@ -117,13 +103,6 @@ public sealed partial class MainWindowViewModel
         return NpcEditor.Items
             .Where(r => r.Index != num && r.Group == group)
             .Select(r => Link(r.DisplayName, () => Open("NPCs", NpcEditor, r.Index)));
-    }
-
-    private IReadOnlyList<ReferenceGroupViewModel> RefsToQuest(int num)
-    {
-        var groups = new List<ReferenceGroupViewModel>();
-        AddGroup(groups, EditorStrings.References_PrerequisiteFor, QuestLinks(q => q.PrereqQuest == num));
-        return groups;
     }
 
     // ── Following a link ─────────────────────────────────────────────────────

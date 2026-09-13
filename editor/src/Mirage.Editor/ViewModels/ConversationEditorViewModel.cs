@@ -10,7 +10,7 @@ using System.Collections.ObjectModel;
 
 namespace Mirage.Editor.ViewModels;
 
-/// <summary>The conversation editor — clones QuestEditorViewModel over the EditorViewModelBase online/offline flow.
+/// <summary>The conversation editor, over the EditorViewModelBase online/offline flow.
 /// A conversation row needs the live NPC picker list (its SpeakerNpc) from EditorDataService; the node/choice
 /// pickers are self-sourced from the conversation's own nodes.</summary>
 public sealed partial class ConversationEditorViewModel : EditorViewModelBase<ConversationRowViewModel>

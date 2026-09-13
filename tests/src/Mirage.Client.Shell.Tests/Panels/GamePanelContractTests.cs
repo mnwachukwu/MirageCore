@@ -24,7 +24,7 @@ public class GamePanelContractTests
     [
         "InventoryPanel", "ShopPanel", "OptionsPanel",
         "HelpPanel", "ControlsPanel", "BankPanel", "InnPanel", "MailPanel", "SocialPanel",
-        "MarketPanel", "TradePanel", "QuestLogPanel", "QuestDialogPanel", "ConversationPanel",
+        "MarketPanel", "TradePanel", "ConversationPanel",
     ];
 
     [Test]

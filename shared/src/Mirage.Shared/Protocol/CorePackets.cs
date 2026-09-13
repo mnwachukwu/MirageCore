@@ -117,12 +117,6 @@ public static class CorePackets
         builder.Register(PacketNames.TradeWindow, Read<TradeWindowPacket>);
 
         // Player quests
-        builder.Register(PacketNames.QuestLog, Read<QuestLogPacket>);
-        builder.Register(PacketNames.QuestAccept, Read<QuestAcceptPacket>);
-        builder.Register(PacketNames.QuestTurnIn, Read<QuestTurnInPacket>);
-        builder.Register(PacketNames.QuestAbandon, Read<QuestAbandonPacket>);
-        builder.Register(PacketNames.SendQuests, Read<SendQuestsPacket>);
-        builder.Register(PacketNames.OpenNpcQuestMenu, Read<OpenNpcQuestMenuPacket>);
 
         // NPC conversations
         builder.Register(PacketNames.SendConversations, Read<SendConversationsPacket>);
@@ -262,7 +256,6 @@ public static class CorePackets
         builder.Register(PacketNames.ShopContents, Read<ShopContentsPacket>);
         builder.Register(PacketNames.OpenInn, Read<OpenInnPacket>);
         builder.Register(PacketNames.UpdateShop, Read<UpdateShopPacket>);
-        builder.Register(PacketNames.UpdateQuest, Read<UpdateQuestPacket>);
         builder.Register(PacketNames.UpdateConversation, Read<UpdateConversationPacket>);
         builder.Register(PacketNames.PlayerHotkeys, Read<PlayerHotkeysPacket>);
         builder.Register(PacketNames.PartyRequest, Read<PartyRequestNotifyPacket>);
@@ -284,7 +277,6 @@ public static class CorePackets
         builder.Register(PacketNames.EditorRequestItem, Read<EditorRequestItemPacket>);
         builder.Register(PacketNames.EditorRequestNpc, Read<EditorRequestNpcPacket>);
         builder.Register(PacketNames.EditorRequestShop, Read<EditorRequestShopPacket>);
-        builder.Register(PacketNames.EditorRequestQuest, Read<EditorRequestQuestPacket>);
         builder.Register(PacketNames.EditorRequestConversation, Read<EditorRequestConversationPacket>);
         builder.Register(PacketNames.EditorRequestMap, Read<EditorRequestMapPacket>);
         builder.Register(PacketNames.EditorLock, Read<EditorLockPacket>);
@@ -293,7 +285,6 @@ public static class CorePackets
         builder.Register(PacketNames.EditorRequestAllItems, Read<EditorRequestAllItemsPacket>);
         builder.Register(PacketNames.EditorRequestAllNpcs, Read<EditorRequestAllNpcsPacket>);
         builder.Register(PacketNames.EditorRequestAllShops, Read<EditorRequestAllShopsPacket>);
-        builder.Register(PacketNames.EditorRequestAllQuests, Read<EditorRequestAllQuestsPacket>);
         builder.Register(PacketNames.EditorRequestAllConversations, Read<EditorRequestAllConversationsPacket>);
         builder.Register(PacketNames.EditorRequestMapGroup, Read<EditorRequestMapGroupPacket>);
         builder.Register(PacketNames.EditorRequestAllMapGroups, Read<EditorRequestAllMapGroupsPacket>);
@@ -309,13 +300,11 @@ public static class CorePackets
 
         builder.Register(PacketNames.EditorBankGive, Read<EditorBankGivePacket>);
         builder.Register(PacketNames.EditorBankTake, Read<EditorBankTakePacket>);
-        builder.Register(PacketNames.EditorSetQuestStatus, Read<EditorSetQuestStatusPacket>);
         builder.Register(PacketNames.EditorNotice, Read<EditorNoticePacket>);
         builder.Register(PacketNames.EditorSaveMapGroup, Read<EditorSaveMapGroupPacket>);
         builder.Register(PacketNames.EditorSaveItem, Read<EditorSaveItemPacket>);
         builder.Register(PacketNames.EditorSaveNpc, Read<EditorSaveNpcPacket>);
         builder.Register(PacketNames.EditorSaveShop, Read<EditorSaveShopPacket>);
-        builder.Register(PacketNames.EditorSaveQuest, Read<EditorSaveQuestPacket>);
         builder.Register(PacketNames.EditorSaveConversation, Read<EditorSaveConversationPacket>);
         builder.Register(PacketNames.EditorSaveMap, Read<EditorSaveMapPacket>);
         builder.Register(PacketNames.EditorLoginResponse, Read<EditorLoginResponsePacket>);
@@ -323,7 +312,6 @@ public static class CorePackets
         builder.Register(PacketNames.EditorAllItems, Read<EditorAllItemsPacket>);
         builder.Register(PacketNames.EditorAllNpcs, Read<EditorAllNpcsPacket>);
         builder.Register(PacketNames.EditorAllShops, Read<EditorAllShopsPacket>);
-        builder.Register(PacketNames.EditorAllQuests, Read<EditorAllQuestsPacket>);
         builder.Register(PacketNames.EditorAllConversations, Read<EditorAllConversationsPacket>);
         builder.Register(PacketNames.UpdateMapGroup, Read<UpdateMapGroupPacket>);
         builder.Register(PacketNames.EditorAllMapGroups, Read<EditorAllMapGroupsPacket>);

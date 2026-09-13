@@ -14,7 +14,7 @@ using System.ComponentModel;
 using System.Linq;
 namespace Mirage.Editor.ViewModels;
 
-/// <summary>The conversation-editor row — clones QuestRowViewModel, extended ONE level: it owns a dynamic list of
+/// <summary>The conversation-editor row, extended ONE level: it owns a dynamic list of
 /// dialogue NODES, and each node owns its own dynamic list of CHOICES. A choice's "next node" picker is
 /// self-referential (the conversation's own nodes). Stable node ids are assigned on add and never reused, so a
 /// choice keeps pointing at the right node across edits. Dirty aggregates the node (and choice) rows.</summary>
@@ -56,7 +56,6 @@ public sealed partial class ConversationRowViewModel : ObservableObject, ILockab
     private static ConversationGraphBranch BranchFor(ConversationChoiceRowViewModel choice) => choice.Action switch
     {
         ConversationAction.OpenShop => new ConversationGraphBranch(0, ConversationEndKind.OpensShop),
-        ConversationAction.OpenQuests => new ConversationGraphBranch(0, ConversationEndKind.OpensQuests),
         // A target naming no node is a goodbye, which the layout decides — it holds the id index.
         _ => new ConversationGraphBranch(choice.NextNodeId, ConversationEndKind.None),
     };

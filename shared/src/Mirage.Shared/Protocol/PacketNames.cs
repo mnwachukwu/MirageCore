@@ -116,12 +116,6 @@ public static class PacketNames
     public const string TradeInviteNotify = "tradeinvitenotify";   // S→C: incoming invite prompt
     public const string TradeWindow = "tradewindow";               // S→C: live trade window state
 
-    public const string QuestLog = "questlog";                     // S→C: player's quest state (log + overhead)
-    public const string QuestAccept = "questaccept";               // C→S: accept a quest
-    public const string QuestTurnIn = "questturnin";               // C→S: turn in a completed quest
-    public const string QuestAbandon = "questabandon";             // C→S: abandon an in-progress quest
-    public const string SendQuests = "sendquests";                 // S→C: quest DEFINITIONS (at join, like items/npcs)
-    public const string OpenNpcQuestMenu = "npcquestmenu";         // S→C: open the client quest/context menu for an NPC
 
     public const string SendConversations = "sendconvs";           // S→C: conversation DEFINITIONS (at join, like quests)
     public const string ConversationLog = "convlog";               // S→C: this character's spoken-conversation set
@@ -168,13 +162,11 @@ public static class PacketNames
     public const string EditorSaveItem = "editorsaveitem";
     public const string EditorSaveNpc = "editorsavenpc";
     public const string EditorSaveShop = "editorsaveshop";
-    public const string EditorSaveQuest = "editorsavequest";
     public const string EditorSaveConversation = "editorsaveconv";
     public const string EditorSaveMap = "editorsavemap";
     public const string EditorRequestItem = "editorreqitem";
     public const string EditorRequestNpc = "editorreqnpc";
     public const string EditorRequestShop = "editorreqshop";
-    public const string EditorRequestQuest = "editorreqquest";
     public const string EditorRequestConversation = "editorreqconv";
     public const string EditorRequestMap = "editorreqmap";
     public const string EditorLock = "editorlock";
@@ -182,7 +174,6 @@ public static class PacketNames
     public const string EditorRequestAllItems = "editorreqallitems";
     public const string EditorRequestAllNpcs = "editorreqallnpcs";
     public const string EditorRequestAllShops = "editorreqallshops";
-    public const string EditorRequestAllQuests = "editorreqallquests";
     public const string EditorRequestAllConversations = "editorreqallconvs";
     public const string EditorSaveMapGroup = "editorsavemapgroup";
     public const string EditorRequestMapGroup = "editorreqmapgroup";
@@ -208,7 +199,6 @@ public static class PacketNames
 
     public const string EditorBankGive = "editorbankgive";
     public const string EditorBankTake = "editorbanktake";
-    public const string EditorSetQuestStatus = "editorsetqueststatus";
     public const string EditorNotice = "editornotice";
     public const string EditorLocks = "editorlocks";
 
@@ -251,7 +241,6 @@ public static class PacketNames
     public const string UpdateNpc = "updatenpc";
     public const string SendShops = "sendshops";
     public const string UpdateShop = "updateshop";
-    public const string UpdateQuest = "updatequest";
     public const string UpdateConversation = "updateconv";
     public const string ShopContents = "shopcontents";             // S→C: an open shop's barter rows AND its sales list
     public const string OpenInn = "openinn";                       // S→C: raise the client-local Inn panel (from an NPC interact)
@@ -279,7 +268,6 @@ public static class PacketNames
     public const string EditorAllItems = "editorallitems";
     public const string EditorAllNpcs = "editorallnpcs";
     public const string EditorAllShops = "editorallshops";
-    public const string EditorAllQuests = "editorallquests";
     public const string EditorAllConversations = "editorallconvs";
     public const string UpdateMapGroup = "updatemapgroup";
     public const string EditorAllMapGroups = "editorallmapgroups";
