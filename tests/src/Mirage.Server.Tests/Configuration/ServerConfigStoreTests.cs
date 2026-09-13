@@ -354,12 +354,11 @@ public class ServerConfigStoreTests
     /// <summary>
     /// 🔴 A server whose operator never named their game must not get a name written on its behalf.
     ///
-    /// <para>GameName reads blank as "whatever this engine is called", so a file that omits it follows
-    /// the engine and a file that states it does not. A stock server therefore has to omit it: a name
-    /// written on the operator's behalf is a name that outlives the engine identity it was copied from,
-    /// and every client brands itself from what the server announces in the pre-login hello. Saving
-    /// happens whenever an operator touches any other setting, so one visit to the settings decides
-    /// this for good.</para>
+    /// <para>An absent key means "whatever the game and the engine say", so a file that omits it follows
+    /// them both and a file that states one overrides them both for good. A stock server therefore has to
+    /// omit it: a name written on an operator's behalf outlives whatever it was copied from, and every
+    /// client brands itself from what the server announces in the pre-login hello. Saving happens
+    /// whenever an operator touches any other setting, so one visit to the settings decides this.</para>
     /// </summary>
     [Test]
     public void AStockServer_SavesNoGameNameAtAll()
@@ -369,7 +368,7 @@ public class ServerConfigStoreTests
         Assert.That(ServerConfigStore.Save(path, ServerConfig.Default), Is.Null);
 
         Assert.That(File.ReadAllText(path), Does.Not.Contain("gameName"),
-            "the engine's own name was written into the config, which is what pins it across a rename");
+            "a name was written into the config that the operator never chose, which pins it for good");
     }
 
     [Test]
@@ -393,7 +392,7 @@ public class ServerConfigStoreTests
     public void AChosenNameIsKept()
     {
         string path = Path_("named.json");
-        ServerConfigStore.Save(path, ServerConfig.Default with { GameName = "Wandering Isles" });
+        ServerConfigStore.Save(path, ServerConfig.Default with { ChosenGameName = "Wandering Isles" });
 
         var (config, _) = ServerConfigStore.Load(path);
 
@@ -419,6 +418,70 @@ public class ServerConfigStoreTests
             Assert.That(config.Port, Is.EqualTo(4321));
             Assert.That(config.Language, Is.EqualTo("fr"));
             Assert.That(config.Spawn.Map, Is.EqualTo(saved.Spawn.Map), "a nested section still round-trips");
+        });
+    }
+
+    // ── The three layers ──────────────────────────────────────────
+
+    /// <summary>
+    /// 🔴 What a game is called is answered by three different people, and each blank one defers.
+    ///
+    /// <para>The operator runs an installation, the game maker authored the world, and somebody built the
+    /// engine. Collapsing any pair of them loses a real case: a test shard of somebody else's game, a
+    /// game that names itself without a compiler, and an engine running nothing in particular.</para>
+    /// </summary>
+    [Test]
+    public void AnOperatorsOwnNameWinsOverEverything()
+    {
+        var config = ServerConfig.Default with
+        {
+            ChosenGameName = "Bob's Test Shard", WorldGameName = "Wandering Isles",
+        };
+
+        Assert.That(config.GameName, Is.EqualTo("Bob's Test Shard"));
+    }
+
+    [Test]
+    public void TheWorldNamesTheGame_WhenTheOperatorHasNotChosen()
+    {
+        var config = ServerConfig.Default with { WorldGameName = "Wandering Isles" };
+
+        Assert.That(config.GameName, Is.EqualTo("Wandering Isles"),
+            "a game names itself in its world folder, which needs no compiler");
+    }
+
+    [Test]
+    public void TheEngineNamesIt_WhenNobodyElseDoes()
+    {
+        Assert.That(ServerConfig.Default.GameName, Is.EqualTo(Mirage.Shared.Constants.GameName));
+    }
+
+    /// <summary>Blank and whitespace are the same statement, or a stray space in a settings box quietly
+    /// becomes a game with no name at all.</summary>
+    [TestCase("")]
+    [TestCase("   ")]
+    public void AnEmptyChoiceDefers(string chosen)
+    {
+        var config = ServerConfig.Default with { ChosenGameName = chosen, WorldGameName = "Wandering Isles" };
+
+        Assert.That(config.GameName, Is.EqualTo("Wandering Isles"));
+    }
+
+    /// <summary>The world's name belongs to the WORLD, so it never reaches this file: a config copied to
+    /// another machine must not carry the name of a world that machine does not have.</summary>
+    [Test]
+    public void TheWorldsNameIsNeverWrittenToTheOperatorsConfig()
+    {
+        string path = Path_("world-named.json");
+
+        ServerConfigStore.Save(path, ServerConfig.Default with { WorldGameName = "Wandering Isles" });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(File.ReadAllText(path), Does.Not.Contain("Wandering Isles"));
+            var (back, _) = ServerConfigStore.Load(path);
+            Assert.That(back.GameName, Is.EqualTo(Mirage.Shared.Constants.GameName),
+                "and it is the world, not the file, that puts the name back on the next boot");
         });
     }
 }

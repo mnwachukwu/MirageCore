@@ -183,7 +183,7 @@
   "Hosting_Heading": "Port et dossier du monde",
   "Hosting_Blurb": "Où les joueurs se connectent, et où ce serveur conserve son monde.",
   "Hosting_GameName": "Nom du jeu",
-  "Hosting_GameNameHint": "Le nom que les joueurs verront pour votre jeu, dans le titre de la fenêtre, les menus et l'ATH. Un client n'a pas de nom propre : il porte celui du moteur jusqu'à ce qu'un serveur lui donne celui-ci à la connexion. Laissez vide pour garder le nom du moteur. Sans effet sur les noms de fichiers ou de dossiers.",
+  "Hosting_GameNameHint": "Le nom que les joueurs verront pour votre jeu, dans le titre de la fenêtre, les menus et l'ATH. Un client n'a pas de nom propre : il porte celui du moteur jusqu'à ce qu'un serveur lui donne celui-ci à la connexion. Laissez vide et le dossier du monde donne le nom, à défaut celui du moteur ; ne le remplissez que pour appeler CETTE installation autrement. Sans effet sur les noms de fichiers ou de dossiers.",
   "Hosting_GamePort": "Port du jeu",
   "Hosting_GamePortHint": "Le port que les joueurs saisissent dans leur client. Ne l'ouvrez sur votre routeur que s'ils sont hors de votre réseau.",
   "Hosting_DataDir": "Dossier du monde",

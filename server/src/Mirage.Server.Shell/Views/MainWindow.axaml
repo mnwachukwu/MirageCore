@@ -594,7 +594,8 @@
             <TextBlock Classes="hint" Text="{Binding HostingBlurb}"/>
 
             <TextBlock Text="{Binding GameNameLabel}" Margin="0,8,0,0"/>
-            <TextBox Text="{Binding GameName}" Margin="0,4,0,0" MaxWidth="320" HorizontalAlignment="Left"/>
+            <TextBox Text="{Binding GameName}" Watermark="{Binding GameNamePlaceholder}"
+                     Margin="0,4,0,0" MaxWidth="320" HorizontalAlignment="Left"/>
             <TextBlock Classes="hint" Text="{Binding GameNameHint}"/>
 
             <Grid ColumnDefinitions="Auto,Auto" Margin="0,10,0,0">

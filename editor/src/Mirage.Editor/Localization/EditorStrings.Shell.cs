@@ -516,6 +516,8 @@ public static partial class EditorStrings
     // The world's name and the size new maps start at, both stored in world.json beside the ceilings.
     public const string WorldSettings_NameLabel = nameof(WorldSettings_NameLabel);
     public const string WorldSettings_NameHint = nameof(WorldSettings_NameHint);
+    public const string WorldSettings_GameNameLabel = nameof(WorldSettings_GameNameLabel);
+    public const string WorldSettings_GameNameHint = nameof(WorldSettings_GameNameHint);
     public const string WorldSettings_DefaultMapSizeLabel = nameof(WorldSettings_DefaultMapSizeLabel);
     public const string WorldSettings_DefaultMapSizeHint = nameof(WorldSettings_DefaultMapSizeHint);
     public const string WorldSettings_MapSizeSoftCapWarning = nameof(WorldSettings_MapSizeSoftCapWarning);   // "{Cap}"

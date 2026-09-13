@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Mirage.Server.Core.Configuration;
 
 /// <summary>
@@ -16,20 +18,46 @@ public sealed record ServerConfig
     /// share, because the whole graph is immutable.</summary>
     public static readonly ServerConfig Default = new();
 
-    /// <summary>What this game is called.
+    /// <summary>What THIS OPERATOR calls the game they are running, or blank to take the game's own name.
     ///
-    /// <para>Defaults to the ENGINE's name, which is what an operator who has not renamed anything gets.
-    /// A client has no game identity of its own: it is branded with the engine name until a server tells
-    /// it this, in the pre-login hello, and shows this from then on.</para>
-    ///
-    /// <para><b>Never use it for a file path.</b> The executable names, the shell's settings folder and a
-    /// player's own settings folder all stay on <c>Constants.GameName</c> — a rename must not move
-    /// anybody's files, or relocate the server binary the shell launches.</para></summary>
-    public string GameName
+    /// <para>The override, not the answer: it exists so one installation can be announced as something
+    /// other than what the world says — a test shard, a variant, a private server of somebody else's
+    /// game. Read <see cref="GameName"/> for what to actually show.</para></summary>
+    [JsonPropertyName("gameName")]
+    public string ChosenGameName
     {
         get;
-        init => field = value.Trim() is { Length: > 0 } named ? named : Mirage.Shared.Constants.GameName;
-    } = Mirage.Shared.Constants.GameName;
+        init => field = value?.Trim() ?? "";
+    } = "";
+
+    /// <summary>What the loaded world calls its game, or blank when it names none.
+    ///
+    /// <para>Resolved at startup from the world folder's manifest and never read from or written to this
+    /// file — it is the world's statement, not the operator's, and belongs in the world folder that can be
+    /// handed to somebody else whole.</para></summary>
+    [JsonIgnore]
+    public string WorldGameName
+    {
+        get;
+        init => field = value?.Trim() ?? "";
+    } = "";
+
+    /// <summary>What this game is called: the operator's own choice, else what the world declares, else
+    /// the engine's name.
+    ///
+    /// <para>🔴 <b>Three layers, each blank one deferring to the next.</b> They belong to three different
+    /// people: an operator running an installation, the game maker who authored the world, and whoever
+    /// built the engine. A client has no game identity of its own — it is branded with the engine name
+    /// until a server tells it this in the pre-login hello, and shows this from then on.</para>
+    ///
+    /// <para><b>Never use it for a file path.</b> The executable names, the shell's settings folder and a
+    /// player's own settings folder all stay on <c>Constants.GameName</c> — naming a game must not move
+    /// anybody's files, or relocate the server binary the shell launches.</para></summary>
+    [JsonIgnore]
+    public string GameName =>
+        ChosenGameName.Length > 0 ? ChosenGameName
+        : WorldGameName.Length > 0 ? WorldGameName
+        : Mirage.Shared.Constants.GameName;
 
     /// <summary>The TCP port the game listens on.</summary>
     public int Port { get; init; } = Mirage.Shared.Constants.GamePort;

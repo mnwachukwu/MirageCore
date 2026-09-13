@@ -154,9 +154,11 @@ from source there is no bundled copy, so the first Open is yours to aim.
 
 > **Importing VB6 world data:** [MirageSourceRemasteredConverter](https://github.com/mnwachukwu/MirageSourceRemastered.Tools.Public) turns an original VB6 server directory into this JSON format in one pass — all binary `.dat` maps and INI data files, with account passwords hashed on the way through and the source files never modified, so a run costs nothing if the result is not what you wanted. See [Authoring content](#authoring-content).
 
-> **`world.json`** at a world folder's root is what the folder says about itself: its **name**, the **size new maps are created at**, and its record ceilings. Set them in the editor under **World → World Settings**. The file is optional — a folder without one runs on the stock answers.
+> **`world.json`** at a world folder's root is what the folder says about itself: its **name**, the **name of the game built on it**, the **size new maps are created at**, and its record ceilings. Set them in the editor under **World → World Settings**. The file is optional — a folder without one runs on the stock answers.
 >
 > **The world name and the game name are different things, and only one of them is public.** The *game* name is what a player sees — the window title, the login screen, the chat greeting. The *world* name identifies one set of records, and exists so an operator can tell a live world from a test copy of it in the editor's title bar, the server window, and the logs. **It never reaches a player**, so there is no reason to make it presentable and no harm in calling a folder "friday-rollback-test".
+>
+> **Naming your game takes no build.** A game is a world folder plus the modules that give it rules, so the name lives with them: fill in **Game name** under World Settings and every server that opens the folder announces it. Three people can have a say, and each blank one defers to the next — an **operator** may override it for their own installation, else the **world** names it, else it carries the **engine's** name. None of them affects a file or folder name.
 >
 > **Map size.** A map is 16×12 tiles unless it says otherwise; `world.json` sets what a *new* map starts at, and any map can be resized in its properties. Maps joined by an edge must all be the same size — world coordinates run continuously across a seam, so a mismatch would make a step across one land somewhere other than where it looks — and the editor refuses to resize a linked map rather than letting that happen. **Resizing cannot be undone**: shrinking discards the tiles outside the new bounds and nothing writes them anywhere first, so the editor itemizes exactly what would go and tells you to copy the folder first.
 >
@@ -224,8 +226,10 @@ Two things deliberately do **not** follow the server's name:
 - **The executables.** Server and client filenames are fixed, which is what lets the management window
   find the server it ships beside.
 
-Operators set their game's name in the server window under **Configuration → This server → Game name**,
-or as `gameName` in `serverconfig.json`. Leaving it empty keeps the engine's name.
+A game names itself in its world folder — **World → World Settings → Game name** in the editor. An
+operator who wants one installation called something else overrides it in the server window under
+**Configuration → This server → Game name**, or as `gameName` in `serverconfig.json`; leaving that empty
+takes the world's name, and a world that names none carries the engine's.
 
 If you want a client that carries your own name and icon from the moment it launches, that is a rebuild
 rather than a setting — see [Icons and shipping your own client](docs/branding.md).

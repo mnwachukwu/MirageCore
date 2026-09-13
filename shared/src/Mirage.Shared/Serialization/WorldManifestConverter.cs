@@ -32,6 +32,10 @@ public sealed class WorldManifestConverter : JsonConverter<WorldManifest>
             {
                 result = result with { Name = p.Value.GetString() ?? "" };
             }
+            else if (p.NameEquals("gameName"))
+            {
+                result = result with { GameName = p.Value.GetString() ?? "" };
+            }
             else if (p.NameEquals("records"))
             {
                 var limits = p.Value.Deserialize<RecordLimits>(options);
@@ -85,6 +89,11 @@ public sealed class WorldManifestConverter : JsonConverter<WorldManifest>
         if (value.IsNamed)
         {
             writer.WriteString("name", value.Name);
+        }
+
+        if (value.GameName.Length > 0)
+        {
+            writer.WriteString("gameName", value.GameName);
         }
 
         if (value.DefaultMapSize != stock.DefaultMapSize)

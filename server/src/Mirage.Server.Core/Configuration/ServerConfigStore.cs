@@ -80,19 +80,17 @@ public static class ServerConfigStore
         }
     }
 
-    /// <summary>The config as JSON, with <see cref="ServerConfig.GameName"/> omitted when it is only the
-    /// engine's own name.
+    /// <summary>The config as JSON, with <see cref="ServerConfig.ChosenGameName"/> omitted when the
+    /// operator has chosen nothing.
     ///
-    /// <para>🔴 An operator who never named their game must not have a name written on their behalf.
-    /// <see cref="ServerConfig.GameName"/> reads blank as "whatever this engine is called", so a file
-    /// that omits it follows a rename and a file that states it does not. Writing the resolved default
-    /// freezes the engine's name into the config of every server that never chose one: rename the
-    /// engine, and a stock server goes on announcing the name it had when somebody last opened the
-    /// settings — to every client, which brands itself from the pre-login hello.</para></summary>
+    /// <para>🔴 A name must never be written on an operator's behalf. An absent key means "whatever the
+    /// game and the engine say", so a file that omits it follows them both, and a file that states one
+    /// overrides them both for good. Writing an empty string would say the same thing today and read as
+    /// deliberate tomorrow.</para></summary>
     private static string Serialize(ServerConfig config)
     {
         var node = JsonSerializer.SerializeToNode(config, Options)!.AsObject();
-        if (config.GameName == Mirage.Shared.Constants.GameName) node.Remove("gameName");
+        if (config.ChosenGameName.Length == 0) node.Remove("gameName");
         return node.ToJsonString(Options);
     }
 }

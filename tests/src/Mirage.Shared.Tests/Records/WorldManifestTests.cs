@@ -120,6 +120,10 @@ public class WorldManifestTests
     private static WorldManifest FullyAuthored() => new()
     {
         Name = "Demo Landia",
+        // Deliberately unlike Name: one is what the FOLDER is called for whoever holds it, the other is
+        // what the GAME is called for whoever plays it, and a fixture that gave them the same string
+        // would pass just as happily with the two of them crossed.
+        GameName = "Isles of Demo",
         DefaultMapSize = new MapSize(24, 20),
         Records = new RecordLimits { Items = 2000, Maps = 300 },
         Appearances =
@@ -220,5 +224,80 @@ public class WorldManifestTests
             Assert.That(m.DefaultMapSize.Height, Is.EqualTo(MapSize.HardMax));
             Assert.That(m.Records.Items, Is.EqualTo(1));
         });
+    }
+
+    // ── The game's own name ─────────────────────────────────────
+
+    /// <summary>
+    /// 🔴 A world names the GAME and names ITSELF, and the two are different strings for different
+    /// readers. The holder's name reaches an editor title bar and a log; the game's name reaches every
+    /// player. Crossing them publishes whatever somebody called their working copy.
+    /// </summary>
+    [Test]
+    public void TheGamesNameAndTheWorldsOwnNameAreSeparate()
+    {
+        var authored = new WorldManifest { Name = "live-copy", GameName = "Isles of Demo" };
+
+        var back = Read(Write(authored));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(back.Name, Is.EqualTo("live-copy"));
+            Assert.That(back.GameName, Is.EqualTo("Isles of Demo"));
+        });
+    }
+
+    [Test]
+    public void AWorldThatNamesNoGame_WritesNoGameName()
+    {
+        Assert.That(Write(new WorldManifest { Name = "Demo Landia" }), Does.Not.Contain("gameName"));
+    }
+
+    [Test]
+    public void AWorldNamingNoGame_ReadsBackBlankSoTheNextLayerAnswers()
+    {
+        Assert.That(Read("{}").GameName, Is.Empty);
+    }
+
+    // ── Reading it on its own ─────────────────────────────────
+
+    /// <summary>
+    /// 🔴 A server settles the game's name before it has built anything that could load a world, so
+    /// the name is read on its own. That is a SECOND reader of the same key, and the two agreeing is what
+    /// stops a server announcing one name while the editor shows another.
+    /// </summary>
+    [Test]
+    public void ReadingTheGameNameAlone_AgreesWithLoadingTheWholeManifest()
+    {
+        string dir = Path.Combine(Path.GetTempPath(), "mirage-world-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        try
+        {
+            var authored = FullyAuthored();
+            File.WriteAllText(Path.Combine(dir, WorldManifest.FileName), Write(authored));
+
+            Assert.That(WorldManifest.GameNameIn(dir), Is.EqualTo(authored.GameName));
+        }
+        finally { Directory.Delete(dir, recursive: true); }
+    }
+
+    /// <summary>A folder with no manifest, no game name in it, or an unreadable one all say the same
+    /// thing: nothing. A server that threw here could not boot against a blank world.</summary>
+    [TestCase(null, TestName = "ReadingTheGameNameAlone_NoFileAtAll")]
+    [TestCase("{}", TestName = "ReadingTheGameNameAlone_FileNamingNoGame")]
+    [TestCase("{ \"gameName\": ", TestName = "ReadingTheGameNameAlone_UnreadableFile")]
+    [TestCase("{ \"gameName\": 7 }", TestName = "ReadingTheGameNameAlone_WrongType")]
+    [TestCase("{ \"gameName\": \"   \" }", TestName = "ReadingTheGameNameAlone_Whitespace")]
+    public void ReadingTheGameNameAlone_IsBlankWhenTheWorldSaysNothingUsable(string? contents)
+    {
+        string dir = Path.Combine(Path.GetTempPath(), "mirage-world-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        try
+        {
+            if (contents is not null) File.WriteAllText(Path.Combine(dir, WorldManifest.FileName), contents);
+
+            Assert.That(WorldManifest.GameNameIn(dir), Is.Empty);
+        }
+        finally { Directory.Delete(dir, recursive: true); }
     }
 }

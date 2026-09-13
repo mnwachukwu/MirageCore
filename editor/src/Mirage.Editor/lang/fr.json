@@ -760,6 +760,8 @@
   "WorldSettings_Intro": "Combien d'enregistrements de chaque type ce monde peut contenir. Baisser un nombre masque les emplacements au-dessus ; rien n'est supprimé, et le remonter les ramène.",
   "WorldSettings_NameLabel": "Nom du monde :",
   "WorldSettings_NameHint": "Comment nommer cet ensemble d'enregistrements. Affiché dans l'éditeur et la fenêtre du serveur, jamais à un joueur.",
+  "WorldSettings_GameNameLabel": "Nom du jeu :",
+  "WorldSettings_GameNameHint": "Le nom que les joueurs verront pour ce jeu, dans le titre de la fenêtre, les menus et l'ATH. Laissez vide et ils verront celui du moteur. Un opérateur peut le remplacer pour sa propre installation. Sans effet sur les noms de fichiers ou de dossiers.",
   "WorldSettings_DefaultMapSizeLabel": "Taille des nouvelles cartes :",
   "WorldSettings_DefaultMapSizeHint": "La taille d'une nouvelle carte, en cases. Toute carte peut être redimensionnée ensuite dans ses propriétés.",
   "WorldSettings_MapSizeSoftCapWarning": "Au-delà de {Cap} cases sur un axe. Rien ne casse : les grandes cartes coûtent seulement du temps de chargement et de la mémoire, et toutes les cartes d'une zone liée doivent correspondre. Franchir une bordure charge trois cartes et un PNJ perdu fouille les neuf, donc les deux grandissent avec la carte.",

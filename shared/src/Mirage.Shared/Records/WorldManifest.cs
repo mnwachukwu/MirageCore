@@ -19,6 +19,32 @@ public sealed record WorldManifest
     [JsonIgnore]
     public const string FileName = "world.json";
 
+    /// <summary>The game name a world folder declares, read on its own, or blank for a folder that
+    /// declares none — including one with no manifest at all, or an unreadable one.
+    ///
+    /// <para>A server has to answer "what is this game called" before it has built anything that could
+    /// load a world, because the answer is settled once and injected everywhere that renders it. This
+    /// reads the single string rather than the whole manifest, so it needs no serializer options and
+    /// cannot disagree with a full load about a nested setting it never looked at.</para></summary>
+    public static string GameNameIn(string worldDir)
+    {
+        string path = Path.Combine(worldDir, FileName);
+        if (!File.Exists(path)) return "";
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(path));
+            return doc.RootElement.TryGetProperty("gameName", out var name)
+                   && name.ValueKind == System.Text.Json.JsonValueKind.String
+                ? name.GetString()?.Trim() ?? ""
+                : "";
+        }
+        catch (Exception ex) when (ex is System.Text.Json.JsonException or IOException or UnauthorizedAccessException)
+        {
+            // A folder that cannot say what it is still runs, under whatever name the next layer gives it.
+            return "";
+        }
+    }
+
     /// <summary>How many of each record family this world has room for. Clamped on read, so a hand-edited
     /// file cannot ask for a zero-length family or an allocation measured in gigabytes.</summary>
     public RecordLimits Records
@@ -30,10 +56,10 @@ public sealed record WorldManifest
     /// <summary>What this world calls itself, for whoever is HOLDING it — the editor's title bar and
     /// recent-worlds list, the server window, the logs.
     ///
-    /// <para>It never reaches a player. A player sees the GAME's name (<see cref="Constants.GameName"/>),
-    /// which is a different thing: one identifies a set of records an operator is working on, the other
-    /// identifies the game they are all part of. An operator running a live world and a test copy of it
-    /// tells them apart by this, and by nothing else.</para>
+    /// <para>It never reaches a player. A player sees <see cref="GameName"/>, which is a different thing:
+    /// one identifies a set of records an operator is working on, the other identifies the game they are
+    /// all part of. An operator running a live world and a test copy of it tells them apart by this, and
+    /// by nothing else.</para>
     ///
     /// <para>Blank is the stored form of "unnamed", and stays blank: what to CALL an unnamed world is a
     /// question for whoever is showing it, and each app answers it in its own language.</para></summary>
@@ -42,6 +68,21 @@ public sealed record WorldManifest
     /// <summary>True when this world has a name of its own rather than running on the stock answer.</summary>
     [JsonIgnore]
     public bool IsNamed => !string.IsNullOrWhiteSpace(Name);
+
+    /// <summary>What the GAME built on this world is called — the name a player sees, on the menu, in the
+    /// window title and in every message the server addresses to them.
+    ///
+    /// <para>🔴 <b>This is where a game names itself, and it needs no compiler.</b> A game is a world
+    /// folder plus the modules that give it rules; both are things somebody authors, so the name belongs
+    /// with them rather than in a build property that only a fork rebuilding the engine can reach.</para>
+    ///
+    /// <para>Blank defers. A server resolves what to announce as the operator's own choice first, then
+    /// this, then the engine's name — so a world that says nothing is published under whatever engine is
+    /// running it, and an operator can always override a name for their own installation.</para>
+    ///
+    /// <para><b>Never use it for a file path.</b> Executable names and every per-user folder stay on
+    /// <see cref="Constants.GameName"/>: naming a game must not move anybody's files.</para></summary>
+    public string GameName { get; init; } = string.Empty;
 
     /// <summary>The size a NEW map in this world is created at, and what a blank map slot is padded to.
     /// A map may then be any size it likes — this is the starting point, not a rule.

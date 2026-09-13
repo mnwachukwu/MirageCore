@@ -359,7 +359,9 @@ public sealed class MirageServerService : IHostedService
         string motd = await _persistence.LoadMotdAsync();
         if (string.IsNullOrWhiteSpace(motd))
         {
-            _world.Motd = ServerStrings.Format(ServerStrings.Server_DefaultMotd, ("GameName", Constants.GameName));
+            // The resolved name, not the engine constant: this greeting is addressed to PLAYERS, and they
+            // are playing whatever the operator and the world between them decided this game is called.
+            _world.Motd = ServerStrings.Format(ServerStrings.Server_DefaultMotd, ("GameName", _config.GameName));
             _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_NoMotdHint));
         }
         else

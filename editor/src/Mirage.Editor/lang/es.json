@@ -760,6 +760,8 @@
   "WorldSettings_Intro": "Cuántos registros de cada tipo caben en este mundo. Bajar un número oculta las ranuras superiores; no se borra nada, y al subirlo vuelven a aparecer.",
   "WorldSettings_NameLabel": "Nombre del mundo:",
   "WorldSettings_NameHint": "Cómo llamar a este conjunto de registros. Se muestra en el editor y en la ventana del servidor, nunca a un jugador.",
+  "WorldSettings_GameNameLabel": "Nombre del juego:",
+  "WorldSettings_GameNameHint": "El nombre con el que los jugadores verán este juego, en el título de la ventana, los menús y la interfaz. Déjalo vacío y verán el nombre del motor. Quien gestione un servidor puede cambiarlo para su propia instalación. No afecta a nombres de archivos ni carpetas.",
   "WorldSettings_DefaultMapSizeLabel": "Tamaño de mapa nuevo:",
   "WorldSettings_DefaultMapSizeHint": "El tamaño con el que empieza un mapa nuevo, en casillas. Cualquier mapa puede redimensionarse después en sus propiedades.",
   "WorldSettings_MapSizeSoftCapWarning": "Por encima de {Cap} casillas en un eje. No se rompe nada: los mapas grandes solo cuestan tiempo de carga y memoria, y todos los mapas de una zona enlazada deben coincidir. Cruzar un borde carga tres mapas y un NPC perdido busca en los nueve, así que ambos crecen con el mapa.",

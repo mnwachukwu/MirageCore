@@ -90,7 +90,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     /// <summary>Named after the GAME this server runs, not the engine — an operator running Brightwater
     /// wants a window that says Brightwater. The executable and this window's settings folder stay on the
     /// engine name; see <see cref="ServerConfig.GameName"/>.</summary>
-    public string Title => ShellStrings.Format(ShellStrings.Window_Title, ("GameName", GameName));
+    // Falls back the way a server does, so an operator who has named nothing sees a real title rather
+    // than a blank where the name goes.
+    public string Title => ShellStrings.Format(ShellStrings.Window_Title,
+        ("GameName", GameName.Trim() is { Length: > 0 } named ? named : Constants.GameName));
     public string ConsoleTabHeader => ShellStrings.Get(ShellStrings.Tab_Console);
     public string HelpMenuHeader => ShellStrings.Get(ShellStrings.Help_Menu);
     public string HelpAboutHeader => ShellStrings.Get(ShellStrings.Help_About);
@@ -1107,11 +1110,17 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     public string GameNameLabel => ShellStrings.Get(ShellStrings.Hosting_GameName);
     public string GameNameHint => ShellStrings.Get(ShellStrings.Hosting_GameNameHint);
 
-    /// <summary>What players will see this world called. Blank falls back to the engine's name, which is
-    /// what the setter on <see cref="ServerConfig.GameName"/> does with it on save.</summary>
+    /// <summary>THIS OPERATOR's name for the game, and blank is the ordinary state: a game names itself
+    /// in its world folder, and this overrides that for one installation. See
+    /// <see cref="ServerConfig.ChosenGameName"/>.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Title))]
-    public partial string GameName { get; set; } = Constants.GameName;
+    public partial string GameName { get; set; } = "";
+
+    /// <summary>What the field shows when nothing is typed in it. The engine's name rather than the
+    /// world's: the shell configures a server, and which world that server will open is a setting on the
+    /// same form that has not been applied yet.</summary>
+    public string GameNamePlaceholder => Constants.GameName;
 
     public string MaxPlayersLabel => ShellStrings.Get(ShellStrings.Hosting_MaxPlayers);
     public string MaxPlayersHint => ShellStrings.Get(ShellStrings.Hosting_MaxPlayersHint);
@@ -1305,7 +1314,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         var (existing, _) = ServerConfigStore.Load(_configPath);
         var config = existing with
         {
-            GameName = GameName,
+            ChosenGameName = GameName,
             Port = (int)GamePort,
             // Trimmed, because a path with a stray space is a world folder that silently does not exist.
             DataDir = DataDir.Trim(),
@@ -1418,7 +1427,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private void LoadConfig()
     {
         var (config, error) = ServerConfigStore.Load(_configPath);
-        GameName = config.GameName;
+        GameName = config.ChosenGameName;
         GamePort = config.Port;
         DataDir = config.DataDir;
         MaxPlayers = config.MaxPlayers;

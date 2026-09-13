@@ -183,7 +183,7 @@
   "Hosting_Heading": "Port and world folder",
   "Hosting_Blurb": "Where players connect, and where this server keeps its world.",
   "Hosting_GameName": "Game name",
-  "Hosting_GameNameHint": "What players see your game called, in their window title, menus, and HUD. A client ships with no name of its own — it wears the engine's until a server tells it this on connect. Leave it empty to keep the engine's name. It never affects file or folder names.",
+  "Hosting_GameNameHint": "What players see your game called, in their window title, menus, and HUD. A client ships with no name of its own — it wears the engine's until a server tells it this on connect. Leave it empty and the game's world folder names itself, falling back to the engine; fill it in only to call THIS installation something else. It never affects file or folder names.",
   "Hosting_GamePort": "Game port",
   "Hosting_GamePortHint": "The port players type into their client. Only forward it on your router if they are outside your network.",
   "Hosting_DataDir": "World folder",

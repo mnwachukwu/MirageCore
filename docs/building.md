@@ -88,7 +88,9 @@ git tag -f v1.0.0 && git push --force origin v1.0.0
 
 ## Output naming
 
-`GameName` and its slug `GameNameSlug` in [`Directory.Build.props`](../Directory.Build.props) drive all executable and installer filenames. The same string is declared as `Constants.GameName` in [`Mirage.Shared/Constants.cs`](../shared/src/Mirage.Shared/Constants.cs) for in-game UI (window title, chat, HUD). **Keep the two in sync manually** — renaming the game requires updating both.
+`GameName` and its slug `GameNameSlug` in [`Directory.Build.props`](../Directory.Build.props) drive all executable and installer filenames, and every per-user settings folder. The same string is declared as `Constants.GameName` in [`Mirage.Shared/Constants.cs`](../shared/src/Mirage.Shared/Constants.cs). **Keep the two in sync manually** — renaming the ENGINE requires updating both.
+
+This is the engine's identity, not the game's. What a player sees is resolved at runtime — the operator's own choice, else what the world declares, else this — so naming a game needs no build at all; see [Naming your game](../README.md#authoring-content). Rebuild with a new `GameName` only when shipping your own branded executables, which also moves everybody's settings folder.
 
 ## Platform support
 

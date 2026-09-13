@@ -37,6 +37,12 @@
       <TextBlock Text="{Binding NameHint}" TextWrapping="Wrap" Margin="0,3,0,0"
                  Foreground="{DynamicResource MirageMutedBrush}" FontSize="11"/>
 
+      <TextBlock Text="{Binding GameNameLabel}" Margin="0,12,0,3"/>
+      <TextBox Text="{Binding GameName, Mode=TwoWay}" MaxLength="60"
+               PlaceholderText="{Binding GameNamePlaceholder}"/>
+      <TextBlock Text="{Binding GameNameHint}" TextWrapping="Wrap" Margin="0,3,0,0"
+                 Foreground="{DynamicResource MirageMutedBrush}" FontSize="11"/>
+
       <TextBlock Text="{Binding DefaultMapSizeLabel}" Margin="0,12,0,3"/>
       <StackPanel Orientation="Horizontal" Spacing="8">
         <NumericUpDown Width="120" Minimum="1" Maximum="4096" Increment="1" FormatString="0"

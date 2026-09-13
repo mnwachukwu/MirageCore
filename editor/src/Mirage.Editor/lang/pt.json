@@ -760,6 +760,8 @@
   "WorldSettings_Intro": "Quantos registos de cada tipo cabem neste mundo. Baixar um número esconde as ranhuras acima; nada é apagado, e voltar a subi-lo traz-nas de volta.",
   "WorldSettings_NameLabel": "Nome do mundo:",
   "WorldSettings_NameHint": "Como chamar este conjunto de registos. Mostrado no editor e na janela do servidor, nunca a um jogador.",
+  "WorldSettings_GameNameLabel": "Nome do jogo:",
+  "WorldSettings_GameNameHint": "O nome com que os jogadores verão este jogo, no título da janela, nos menus e na interface. Deixe vazio e verão o nome do motor. Quem gere um servidor pode substituí-lo na sua própria instalação. Não afeta nomes de ficheiros ou pastas.",
   "WorldSettings_DefaultMapSizeLabel": "Tamanho de mapa novo:",
   "WorldSettings_DefaultMapSizeHint": "O tamanho com que um mapa novo começa, em casas. Qualquer mapa pode ser redimensionado depois nas suas propriedades.",
   "WorldSettings_MapSizeSoftCapWarning": "Acima de {Cap} casas num eixo. Nada se parte: mapas grandes só custam tempo de carregamento e memória, e todos os mapas de uma zona ligada têm de coincidir. Atravessar uma fronteira carrega três mapas e um NPC perdido procura nos nove, por isso ambos crescem com o mapa.",

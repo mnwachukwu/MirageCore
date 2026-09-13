@@ -760,6 +760,8 @@
   "WorldSettings_Intro": "How many of each record this world has room for. Lowering a number hides the slots above it; nothing is deleted, and raising it again brings them back.",
   "WorldSettings_NameLabel": "World name:",
   "WorldSettings_NameHint": "What to call this set of records. Shown in the editor and the server window - never to a player.",
+  "WorldSettings_GameNameLabel": "Game name:",
+  "WorldSettings_GameNameHint": "What players see this game called, in their window title, menus and HUD. Leave it empty and players see the engine's name. An operator running a server may override it for their own installation. It never affects file or folder names.",
   "WorldSettings_DefaultMapSizeLabel": "New map size:",
   "WorldSettings_DefaultMapSizeHint": "The size a new map starts at, in tiles. Any map can be resized afterwards in its properties.",
   "WorldSettings_MapSizeSoftCapWarning": "Past {Cap} tiles on an axis. Nothing breaks - larger maps just cost load time and memory, and every map in a linked zone has to match. Crossing a seam loads three maps and a lost NPC searches all nine, so both grow with the map.",

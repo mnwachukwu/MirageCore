@@ -18,6 +18,7 @@ using Mirage.Server.Host.Services;
 using Mirage.Shared;
 using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
+using Mirage.Shared.Records;
 using Serilog;
 using Serilog.Expressions;
 using Serilog.Settings.Configuration;
@@ -109,6 +110,16 @@ if (seededWorld > 0)
 int seededData = SeedDeploy.SeedIfAbsent(Path.Combine(AppContext.BaseDirectory, "seed-data"), dataDir);
 if (seededData > 0)
     Log.Information("Nothing at {DataDir}; laid down the shipped defaults ({Count} files).", dataDir, seededData);
+
+// ── What this game is called ──────────────────────────────────────────────────
+// 🔴 Settled HERE, once, before the host is built. The resolved config is registered as a singleton and
+// injected into everything that renders a name, so the answer has to be complete by then — a value
+// filled in later would reach the copy nothing holds.
+//
+// Three layers, each blank one deferring to the next: the operator's own choice for this installation,
+// then what the world declares, then the engine. Read after seeding, so a first run resolves against the
+// world it was just given rather than against a folder that did not exist a moment ago.
+serverConfig = serverConfig with { WorldGameName = WorldManifest.GameNameIn(worldDir) };
 
 // ── Build and run the host ────────────────────────────────────────────────────
 
