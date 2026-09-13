@@ -17,6 +17,37 @@ I don't know why I did this.
 
 ---
 
+## Building a game on it
+
+The engine has no genre. Everything that would make it one particular game — what a character is, what
+there is to find, what a value means, what the player reads on the sidebar — is a **module's**, declared
+through one interface and loaded by name.
+
+There are two ways to write one, and they meet at the same place.
+
+**A script, with no compiler.** A game is a [Compass](https://github.com/mnwachukwu/Compass) script and a
+folder of records: edit it, restart the server, and that is the whole loop. No toolchain, no rebuild, no
+client to redeploy. This is the intended way and the reason the seams are shaped as they are. *The host is
+not written yet.*
+
+**A C# module, by building from source.** Fork the repository, write an assembly against
+`Mirage.Shared.Extensibility`, and list it in `GameModules.Load()`. The compiler checks every declaration
+and the debugger steps through your rules. This works today, and
+[`modules/survey/`](modules/README.md) is a complete worked example — a small game about cataloguing
+plants, shipped loaded, using every seam the engine offers.
+
+Both produce the same thing: a registry the engine reads once at startup. Neither edits a file in Core.
+
+**A stock client renders a game it has never heard of.** Everything a module declares — the attribute
+numbering, equipment slots, overhead bars, sidebar fields — reaches the client as data when a player
+joins. Nothing is deployed alongside it.
+
+Deleting the one line in `GameModules.Load()` leaves the engine by itself: a server that runs, accepts
+players, and moves them around a world with no game rules in it at all. See
+[modules/README.md](modules/README.md).
+
+---
+
 ## Project Structure
 
 VB6 kept its source in `client/` and `server/`, with the editor forms — `frmItemEditor`, `frmNpcEditor`,
@@ -40,9 +71,10 @@ editor.
 
 `server/`, `client/`, and `editor/` each carry a satellite `.slnx` for working on one area alone. The rest
 of the tree is not source: `tests/` holds the suites in `src/` and their drivers above, `publish/` holds
-the packaging drivers, and `assets/`, `docs/`, `tools/`, and `.github/checks/` hold what is neither.
+the packaging drivers, `modules/` holds the games built on the engine, and `assets/`, `docs/`, `tools/`,
+and `.github/checks/` hold what is neither.
 
-The root `Mirage.slnx` ties all twenty-four projects together, and the split is lopsided on purpose: **nine of the twenty-four are the game. The other fifteen exist to test and publish those nine.**
+The root `Mirage.slnx` ties all twenty-five projects together, and the split is lopsided on purpose: **ten of the twenty-five are the engine and the game on it. The other fifteen exist to test and publish those ten.**
 
 | | Count | What |
 |---|---|---|
@@ -50,11 +82,14 @@ The root `Mirage.slnx` ties all twenty-four projects together, and the split is 
 | | 3 | server — `Mirage.Server.Core`, `.Host`, `.Shell` |
 | | 2 | client — `Mirage.Client.Core`, `.Shell` |
 | | 1 | editor — `Mirage.Editor` |
+| | 1 | the loaded game — `Mirage.Modules.Survey`, in `modules/` |
 | **Scaffolding** | 6 | test suites, one per source portion, in `tests/src/` |
 | | 5 | test drivers in `tests/` — one per area, plus a root that runs all six suites |
 | | 4 | publish drivers in `publish/` — one per deliverable, plus a root that runs all three |
 
-Only the first nine compile into anything a player or a developer runs; a fork that never publishes and never runs the six test suites needs none of the other fifteen.
+Only the first ten compile into anything a player or a developer runs; a fork that never publishes and never runs the six test suites needs none of the other fifteen.
+
+The tenth is the odd one out and is meant to be: `modules/` holds games built ON the engine rather than part of it. A module references `Mirage.Shared` and nothing else, and the server loads it in one line — see [modules/README.md](modules/README.md).
 
 The suites split the way the code does: a **core** and a **shell** get separate suites wherever the shell can be swapped. `Mirage.Client.Core` carries no MonoGame and `Mirage.Server.Core` no Avalonia, and neither points back at a shell — the renderer and the management window are both replaceable, and separate suites are what keeps that so. A core suite builds without a shell on its reference path, so logic that reached for one would fail to compile rather than quietly tie the core to one front end.
 
@@ -135,7 +170,7 @@ from source there is no bundled copy, so the first Open is yours to aim.
 >
 > Both are set independently, `WorldDir` and `DataDir`, and both default to a per-user folder — `%LocalAppData%\Mirage Source Remastered Server\` on Windows, `~/.local/share/mirage-source-remastered-server/` on Linux, `~/Library/Application Support/` on macOS. Not beside the executable: an installed server runs out of a folder the updater replaces wholesale, so a world and a set of accounts kept there would last exactly one update.
 >
-> **Seed data:** `server/src/Mirage.Server.Host/world/` holds a demo world — 4 maps, 8 items, 2 NPCs, 1 conversation, 1 quest, and 1 shop. Any collection you leave out is created empty and written on first save, so a partial world folder boots fine.
+> **Seed data:** `server/src/Mirage.Server.Host/world/` holds a demo world — 4 maps, 8 items, 2 NPCs, 1 conversation, 1 shop, and the 5 species the loaded game reads. Any collection you leave out is created empty and written on first save, so a partial world folder boots fine.
 >
 > Those counts are checked against the folder by `.github/checks/check-seed-counts.mjs`, which CI runs — they have gone stale twice.
 >

@@ -1,0 +1,153 @@
+using Mirage.Shared;
+using Mirage.Shared.Extensibility;
+
+namespace Mirage.Modules.Survey;
+
+/// <summary>
+/// A small game built on Core, and the worked example of how one is built.
+///
+/// <para><b>It is deliberately not an RPG.</b> Nothing fights, nothing levels, nothing dies. You walk a
+/// world writing down what grows there, and walking is tiring. The point of choosing that is to make the
+/// engine's neutrality checkable rather than claimed: every seam below is one Core offers, and none of
+/// them had to be bent to describe a game about plants.</para>
+///
+/// <para><b>Everything this game is, is declared in <see cref="Configure"/>.</b> Nothing in Core names
+/// this module, nothing in Core was edited to make room for it, and this assembly references
+/// <c>Mirage.Shared</c> and nothing else — not the server it runs inside, not the client that draws it,
+/// not the editor that authors its records.</para>
+/// </summary>
+public sealed class SurveyModule : ICoreModule
+{
+    private readonly SurveyObserver _observer = new();
+    private readonly SurveyTick _recovery = new();
+
+    public string Name => "Survey";
+
+    public void Configure(ICoreBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        DeclareWhatASurveyorCarries(builder);
+        DeclareWhatTheWorldHolds(builder);
+        DeclareWhatThePlayerSees(builder);
+
+        builder.AddTickWork(_recovery);
+        builder.AddObserver(_observer);
+        builder.AddDeathPolicy(new NothingDiesHere());
+        builder.AddLingerPolicy(new StayWhileSurveying());
+    }
+
+    /// <summary>The engine is built and the world is loaded. This is where the module stops describing
+    /// itself and starts holding the thing it acts through.</summary>
+    public void Start(IWorld world)
+    {
+        ArgumentNullException.ThrowIfNull(world);
+
+        // The authored species, read once. They are AttributeBags rather than a type this assembly
+        // compiled, because the editor that wrote them never referenced this assembly either.
+        var catalogue = world.RecordsOf(Survey.Species)
+            .Select(r => r.TryGet("name", out var n) ? n.AsText() : "")
+            .Where(n => n.Length > 0)
+            .ToArray();
+
+        _observer.Begin(world, catalogue);
+        _recovery.Begin(world);
+    }
+
+    // ── What a surveyor carries ───────────────────────────────────────────────
+
+    private static void DeclareWhatASurveyorCarries(ICoreBuilder builder)
+    {
+        // Viewport: an onlooker sees how tired somebody is and what they have earned, because both are
+        // drawn over their head or beside their name. Owner would hide them from everyone but the
+        // player themselves, which is the right answer for a purse and the wrong one for these.
+        builder.Attributes
+            .Declare(Survey.Stamina, AttributeVisibility.Viewport)
+            .Declare(Survey.StaminaMax, AttributeVisibility.Viewport)
+            .Declare(Survey.Rank, AttributeVisibility.Viewport)
+            .Declare(Survey.Specimens, AttributeVisibility.Owner);
+
+        builder.AddEquipSlot(new EquipSlot { Key = Survey.Satchel, LabelKey = "Satchel", Ordinal = 0 });
+    }
+
+    // ── What the world holds ──────────────────────────────────────────────────
+
+    private static void DeclareWhatTheWorldHolds(ICoreBuilder builder)
+    {
+        builder.AddChoiceSet(new ChoiceSet
+        {
+            Id = Survey.Habitats,
+            Members =
+            [
+                new KindDescriptor { Id = "shore", LabelKey = "Shore" },
+                new KindDescriptor { Id = "wood", LabelKey = "Woodland" },
+                new KindDescriptor { Id = "meadow", LabelKey = "Meadow" },
+            ],
+        });
+
+        // One registration buys the folder on disk, the blank padding, load and save, the editor's rail
+        // section and list, row locking, hot reload, world transfer and the world check — for a family
+        // whose name Core will never contain.
+        builder.AddFamily(new RecordFamily
+        {
+            Id = Survey.Species,
+            Directory = "species",
+            FilePrefix = "species",
+            LabelKey = "Species",
+            SingularLabelKey = "Species",
+            DefaultLimit = 200,
+            Fields =
+            [
+                new FieldDescriptor
+                {
+                    Key = "name", LabelKey = "Common name", Kind = FieldKind.Text,
+                    MaxLength = 40, Required = true,
+                },
+                new FieldDescriptor
+                {
+                    Key = "habitat", LabelKey = "Habitat", Kind = FieldKind.Choice,
+                    ChoiceSetId = Survey.Habitats,
+                },
+                new FieldDescriptor
+                {
+                    Key = "notes", LabelKey = "Field notes", Kind = FieldKind.Text, MaxLength = 240,
+                    HintKey = "What to look for. Shown to nobody yet; authored so it is there when something reads it.",
+                },
+            ],
+        });
+    }
+
+    // ── What the player sees ──────────────────────────────────────────────────
+
+    private static void DeclareWhatThePlayerSees(ICoreBuilder builder)
+    {
+        builder.AddOverheadBar(new OverheadBar
+        {
+            ValueKey = Survey.Stamina,
+            MaxKey = Survey.StaminaMax,
+            Rgb = GameColor.Pack(120, 190, 90),
+        });
+
+        // The sidebar, in order. Each row reads an attribute this module declared above, so a number
+        // changing is the whole of what it takes to change what the player reads.
+        builder.AddDisplayField(new DisplayField
+        {
+            LabelKey = "Survey", Style = DisplayStyle.Heading, Ordinal = 0,
+        });
+        builder.AddDisplayField(new DisplayField
+        {
+            ValueKey = Survey.Rank, LabelKey = "Rank", Ordinal = 1,
+            Rgb = GameColor.Pack(200, 200, 160),
+        });
+        builder.AddDisplayField(new DisplayField
+        {
+            ValueKey = Survey.Specimens, LabelKey = "Specimens", Ordinal = 2,
+            Rgb = GameColor.Pack(200, 200, 160),
+        });
+        builder.AddDisplayField(new DisplayField
+        {
+            ValueKey = Survey.Stamina, MaxKey = Survey.StaminaMax, LabelKey = "Stamina",
+            Style = DisplayStyle.Meter, Ordinal = 3, Rgb = GameColor.Pack(120, 190, 90),
+        });
+    }
+}

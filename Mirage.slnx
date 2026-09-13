@@ -13,6 +13,9 @@
     <Project Path="client/src/Mirage.Client.Core/Mirage.Client.Core.csproj" />
     <Project Path="client/src/Mirage.Client.Shell/Mirage.Client.Shell.csproj" />
   </Folder>
+  <Folder Name="/Modules/">
+    <Project Path="modules/survey/src/Mirage.Modules.Survey/Mirage.Modules.Survey.csproj" />
+  </Folder>
   <Folder Name="/Editor/">
     <Project Path="editor/src/Mirage.Editor/Mirage.Editor.csproj" />
   </Folder>

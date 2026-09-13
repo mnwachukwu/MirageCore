@@ -42,12 +42,12 @@ const readmePath = join(repoRoot, 'README.md');
 // actually mentions it, so adding a collection to world/ never fails this on its own.
 const COLLECTIONS = {
   maps: 'maps',
-  classes: 'classes',
   items: 'items',
   npcs: 'npcs',
   conversations: 'conversations',
-  quests: 'quests',
   shops: 'shops',
+  // A family a loaded module declares, counted like any other. The README names it, so it is checked.
+  species: 'species',
 };
 
 const readme = readFileSync(readmePath, 'utf8');

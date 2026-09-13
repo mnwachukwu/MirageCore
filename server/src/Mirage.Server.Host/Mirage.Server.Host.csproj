@@ -19,6 +19,9 @@
     <ProjectReference Include="..\..\..\shared\src\Mirage.Shared\Mirage.Shared.csproj" />
     <ProjectReference Include="..\Mirage.Server.Core\Mirage.Server.Core.csproj" />
     <ProjectReference Include="..\..\..\shared\src\Mirage.Updates\Mirage.Updates.csproj" />
+    <!-- The game this server loads. A different game replaces this reference and the one line in
+         GameModules; nothing else about the host changes. See modules/README.md. -->
+    <ProjectReference Include="..\..\..\modules\survey\src\Mirage.Modules.Survey\Mirage.Modules.Survey.csproj" />
   </ItemGroup>
 
   <!-- The tracked world, listed so the IDE shows it. Not copied anywhere: the installers ship it as
