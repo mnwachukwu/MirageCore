@@ -133,7 +133,7 @@ public sealed partial class ItemSystem : GameSystem
     /// <summary>
     /// Death-path drop: bypasses the voluntary cap so a corpse always sheds its loot, and tags the
     /// item with <see cref="ItemSource.PlayerDeathDropped"/> so guard janitors leave the corpse
-    /// alone — the victim (and other players) get a real window to recover/loot it in a safe zone.
+    /// alone — the victim (and other players) get a real window to recover or loot it.
     /// </summary>
     public void PlayerMapDropItemForDeath(int index, int invSlot, int amount)
     {

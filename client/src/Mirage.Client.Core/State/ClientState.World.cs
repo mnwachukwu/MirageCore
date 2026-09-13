@@ -231,7 +231,7 @@ public sealed partial class ClientState
     // Effective inheritable map values — resolve the map's own value over its group's over the hard default via
     // the shared MapGroupResolve, mirroring GameWorld.*Of on the server. Null-map-safe so render/predict sites can
     // pass an unloaded neighbor cell without a guard.
-    public MapMoral MoralOf(MapRecord? map) => map is null ? MapMoral.None : MapGroupResolve.Moral(map, GroupOf(map));
+    public bool PlayersPassThroughOn(MapRecord? map) => map is not null && MapGroupResolve.PlayersPassThrough(map, GroupOf(map));
     public int MusicOf(MapRecord? map) => map is null ? 0 : MapGroupResolve.Music(map, GroupOf(map));
     public bool IndoorsOf(MapRecord? map) => map is not null && MapGroupResolve.Indoors(map, GroupOf(map));
     /// <summary>How this map treats the day/night cycle. One answer rather than two flags: AlwaysLit and

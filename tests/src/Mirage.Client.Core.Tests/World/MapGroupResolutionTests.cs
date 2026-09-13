@@ -31,12 +31,12 @@ public class MapGroupResolutionTests
     public void InheritsFromGroup_WhenMapLeavesValueUnset()
     {
         var state = new ClientState();
-        state.MapGroups[3] = new MapGroupRecord { Index = 3, Moral = MapMoral.Safe, Music = 9, Indoors = true, AlwaysDark = true };
-        var map = new MapRecord { MapGroup = 3 };   // Moral null, Music 0, bools null → all inherit
+        state.MapGroups[3] = new MapGroupRecord { Index = 3, PlayersPassThrough = true, Music = 9, Indoors = true, AlwaysDark = true };
+        var map = new MapRecord { MapGroup = 3 };   // PlayersPassThrough null, Music 0, bools null → all inherit
 
         Assert.Multiple(() =>
         {
-            Assert.That(state.MoralOf(map), Is.EqualTo(MapMoral.Safe));
+            Assert.That(state.PlayersPassThroughOn(map), Is.True);
             Assert.That(state.MusicOf(map), Is.EqualTo(9));
             Assert.That(state.IndoorsOf(map), Is.True);
             Assert.That(state.LightingOf(map), Is.EqualTo(MapLighting.AlwaysDark));
@@ -47,13 +47,13 @@ public class MapGroupResolutionTests
     public void MapOwnValueOverridesGroup()
     {
         var state = new ClientState();
-        state.MapGroups[3] = new MapGroupRecord { Index = 3, Moral = MapMoral.Safe, Music = 9 };
-        // Explicit own values (MapMoral.None is a real value, not "unset"; a non-zero Music is an override).
-        var map = new MapRecord { MapGroup = 3, Moral = MapMoral.None, Music = 4 };
+        state.MapGroups[3] = new MapGroupRecord { Index = 3, PlayersPassThrough = true, Music = 9 };
+        // Explicit own values (false is a real value, not "unset"; a non-zero Music is an override).
+        var map = new MapRecord { MapGroup = 3, PlayersPassThrough = false, Music = 4 };
 
         Assert.Multiple(() =>
         {
-            Assert.That(state.MoralOf(map), Is.EqualTo(MapMoral.None), "an explicit Moral overrides the group");
+            Assert.That(state.PlayersPassThroughOn(map), Is.False, "an explicit value overrides the group");
             Assert.That(state.MusicOf(map), Is.EqualTo(4), "an explicit Music overrides the group");
         });
     }
@@ -68,9 +68,9 @@ public class MapGroupResolutionTests
         Assert.Multiple(() =>
         {
             Assert.That(state.MusicOf(groupless), Is.EqualTo(2), "no group -> the map's own value");
-            Assert.That(state.MoralOf(groupless), Is.EqualTo(MapMoral.None), "no group + unset -> hard default");
-            Assert.That(state.MoralOf(dangling), Is.EqualTo(MapMoral.None), "an unknown group resolves to the default");
-            Assert.That(state.MoralOf(null), Is.EqualTo(MapMoral.None), "a null map (unloaded neighbor cell) is safe");
+            Assert.That(state.PlayersPassThroughOn(groupless), Is.False, "no group + unset -> hard default");
+            Assert.That(state.PlayersPassThroughOn(dangling), Is.False, "an unknown group resolves to the default");
+            Assert.That(state.PlayersPassThroughOn(null), Is.False, "a null map (unloaded neighbor cell) is safe");
         });
     }
 
@@ -84,21 +84,21 @@ public class MapGroupResolutionTests
         // never touched again — mirroring a client that has the map cached.
         Apply(state, HandleSend, new SendMapGroupsPacket
         {
-            Groups = new[] { new SendMapGroupsPacket.GroupData(3, "Old", MapMoral.Safe, 9, null, null, null, 0, 0, 0) },
+            Groups = new[] { new SendMapGroupsPacket.GroupData(3, "Old", 9, null, null, null, true, 0, 0, 0) },
         });
         var map = new MapRecord { MapGroup = 3 };
-        Assert.That(state.MoralOf(map), Is.EqualTo(MapMoral.Safe), "map inherits the joined group state");
+        Assert.That(state.PlayersPassThroughOn(map), Is.True, "map inherits the joined group state");
         Assert.That(state.MusicOf(map), Is.EqualTo(9));
 
         // A live editor save arrives for the same group — now non-safe with different music. The SAME cached map
         // must resolve to the new values immediately, with no map packet involved.
         Apply(state, HandleUpdate, new UpdateMapGroupPacket
         {
-            GroupNum = 3, DisplayName = "New", Moral = MapMoral.None, Music = 4,
+            GroupNum = 3, DisplayName = "New", PlayersPassThrough = false, Music = 4,
         });
         Assert.Multiple(() =>
         {
-            Assert.That(state.MoralOf(map), Is.EqualTo(MapMoral.None), "the group edit re-resolves the member map live");
+            Assert.That(state.PlayersPassThroughOn(map), Is.False, "the group edit re-resolves the member map live");
             Assert.That(state.MusicOf(map), Is.EqualTo(4));
             Assert.That(state.MapGroups[3]!.DisplayName, Is.EqualTo("New"));
         });
@@ -111,7 +111,7 @@ public class MapGroupResolutionTests
         state.MapGroups[2] = new MapGroupRecord { Index = 2, Music = 1 };   // a group from a prior snapshot
         Apply(state, HandleSend, new SendMapGroupsPacket
         {
-            Groups = new[] { new SendMapGroupsPacket.GroupData(3, "G3", null, 0, null, null, null, 0, 0, 0) },
+            Groups = new[] { new SendMapGroupsPacket.GroupData(3, "G3", 0, null, null, null, null, 0, 0, 0) },
         });
         Assert.Multiple(() =>
         {

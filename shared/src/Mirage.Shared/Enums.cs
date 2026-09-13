@@ -225,24 +225,13 @@ public enum FlickerStyle : byte
     Pulse = 2,
 }
 
-public enum MapMoral : byte
-{
-    None = 0,
-    Safe = 1,
-    // Consequence-free PvP: behaves like an open (None) map for every mechanic (collision, grace,
-    // regen, PvP permitted), but player-vs-player kills carry no stakes — no EXP loss, no drops, no
-    // PK/aggressor flag, no reward — whenever either party is on an Arena map. Arena↔Safe combat is
-    // still blocked exactly like None↔Safe.
-    Arena = 2,
-}
-
 public enum ItemSource : byte
 {
     TileDefined = 0,
     PlayerDropped = 1,
     NpcDropped = 2,
     // Items shed by a dying player. Behaves like PlayerDropped for pickup/persistence but is
-    // exempt from the guard janitor sweep so a corpse in a safe zone stays lootable.
+    // exempt from the guard janitor sweep, so a corpse stays lootable for its full window.
     PlayerDeathDropped = 3,
 }
 

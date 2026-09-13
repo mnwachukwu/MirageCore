@@ -96,9 +96,9 @@
               <ColumnDefinition Width="Auto" SharedSizeGroup="GroupPropLabel"/>
               <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock x:Name="_moralLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
-            <ComboBox  Grid.Column="1" ItemsSource="{Binding SelectedMapGroup.MoralOptions}"
-                       SelectedItem="{Binding SelectedMapGroup.SelectedMoral, Mode=TwoWay}"
+            <TextBlock x:Name="_passThroughLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <CheckBox  Grid.Column="1" IsThreeState="True"
+                       IsChecked="{Binding SelectedMapGroup.PlayersPassThrough}"
                        HorizontalAlignment="Stretch"/>
           </Grid>
 
@@ -146,10 +146,10 @@
                   <ColumnDefinition Width="Auto" SharedSizeGroup="GroupPropLabel"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock x:Name="_bootMapLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <controls:DropdownAutoCompleteBox x:Name="_searchBootMap" Grid.Column="1"
+                <TextBlock x:Name="_exitMapLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <controls:DropdownAutoCompleteBox x:Name="_searchExitMap" Grid.Column="1"
                                  ItemsSource="{Binding MapEntries}"
-                                 SelectedItem="{Binding SelectedMapGroup.SelectedBootMap, Mode=TwoWay}"
+                                 SelectedItem="{Binding SelectedMapGroup.SelectedExitMap, Mode=TwoWay}"
                                  ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
                                  FilterMode="Custom" MinimumPrefixLength="0"/>
               </Grid>
@@ -159,8 +159,8 @@
                   <ColumnDefinition Width="Auto" SharedSizeGroup="GroupPropLabel"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock x:Name="_bootXLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <NumericUpDown Grid.Column="1" Value="{Binding SelectedMapGroup.BootX, Mode=TwoWay}"
+                <TextBlock x:Name="_exitXLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <NumericUpDown Grid.Column="1" Value="{Binding SelectedMapGroup.ExitX, Mode=TwoWay}"
                                Minimum="0" Maximum="15" FormatString="0"/>
               </Grid>
 
@@ -169,8 +169,8 @@
                   <ColumnDefinition Width="Auto" SharedSizeGroup="GroupPropLabel"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock x:Name="_bootYLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <NumericUpDown Grid.Column="1" Value="{Binding SelectedMapGroup.BootY, Mode=TwoWay}"
+                <TextBlock x:Name="_exitYLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <NumericUpDown Grid.Column="1" Value="{Binding SelectedMapGroup.ExitY, Mode=TwoWay}"
                                Minimum="0" Maximum="11" FormatString="0"/>
               </Grid>
             </StackPanel>

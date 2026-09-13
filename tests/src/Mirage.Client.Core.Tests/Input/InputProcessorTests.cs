@@ -76,37 +76,37 @@ public class InputProcessorTests
         });
     }
 
-    // In a safe zone players pass through each other (unless PK).
+    // A map can say players walk through each other.
     [Test]
-    public void Process_SafeZone_PlayersPassThrough()
+    public void Process_PassThroughMap_PlayersPassThrough()
     {
         var (s, t, sender) = Setup(5, 5);
-        s.Map.Moral = MapMoral.Safe;
+        s.Map.PlayersPassThrough = true;
         var other = s.Players[2];
         other.Name = "Blocker";
         other.Map = 1;
         other.X = 5;
         other.Y = 6;
         InputProcessor.Process(new InputSnapshot { Move = Direction.Down }, s, sender, 0);
-        Assert.That(s.Me.Y, Is.EqualTo(6), "in a safe zone players pass through each other");
+        Assert.That(s.Me.Y, Is.EqualTo(6), "a map that says so lets players through each other");
     }
 
-    // A safe zone INHERITED from the map's group (map's own Moral unset) must be honored by collision prediction
-    // too — the client resolves effective Moral via its cached group (ClientState.MoralOf), so a group-defined
-    // safe zone lets players pass through exactly like a map-defined one. Guards the group-resolve swap here.
+    // Pass-through INHERITED from the map's group (the map's own value unset) must be honored by collision
+    // prediction too — the client resolves the effective value via its cached group
+    // (ClientState.PlayersPassThroughOn), so a group-defined answer behaves exactly like a map-defined one.
     [Test]
-    public void Process_SafeZone_InheritedFromGroup_PlayersPassThrough()
+    public void Process_PassThroughInheritedFromGroup_PlayersPassThrough()
     {
         var (s, t, sender) = Setup(5, 5);
-        s.Map.MapGroup = 5;                                          // map's own Moral stays null → inherit
-        s.MapGroups[5] = new MapGroupRecord { Index = 5, Moral = MapMoral.Safe };
+        s.Map.MapGroup = 5;                                          // the map's own value stays null → inherit
+        s.MapGroups[5] = new MapGroupRecord { Index = 5, PlayersPassThrough = true };
         var other = s.Players[2];
         other.Name = "Blocker";
         other.Map = 1;
         other.X = 5;
         other.Y = 6;
         InputProcessor.Process(new InputSnapshot { Move = Direction.Down }, s, sender, 0);
-        Assert.That(s.Me.Y, Is.EqualTo(6), "a group-inherited safe zone also lets players pass through");
+        Assert.That(s.Me.Y, Is.EqualTo(6), "a group-inherited answer also lets players pass through");
     }
 
     // A live NPC on the destination tile blocks (safe zone or not).

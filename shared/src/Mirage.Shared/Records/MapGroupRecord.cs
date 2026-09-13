@@ -32,18 +32,18 @@ public sealed class MapGroupRecord
     public string DisplayName { get; set; } = "";
 
     // ── Map-like fallbacks (used only where the map leaves its own unset; the map always wins) ──────────
-    // The int fields use 0 as the "the group doesn't provide this" sentinel. Moral + the bools are NULLABLE so
-    // a group can decline to provide one (null) — MapMoral.None / false are real values, not spare sentinels;
+    // The int fields use 0 as the "the group doesn't provide this" sentinel. The bools are NULLABLE so
+    // a group can decline to provide one (null) — false is a real value, not a spare sentinel;
     // null on both map + group resolves to the hard default (None / false).
     public int Music { get; set; }
-    public MapMoral? Moral { get; set; }
     public bool? Indoors { get; set; }
+    public bool? PlayersPassThrough { get; set; }
     // Mutually exclusive with each other, and resolved as a pair — see MapGroupResolve.Lighting.
     public bool? AlwaysLit { get; set; }
     public bool? AlwaysDark { get; set; }
-    public int BootMap { get; set; }
-    public int BootX { get; set; }
-    public int BootY { get; set; }
+    public int ExitMap { get; set; }
+    public int ExitX { get; set; }
+    public int ExitY { get; set; }
 
     // Map-enter/leave greeting fallback: a map inherits any greeting field it leaves blank
     // from its group, so a multi-map building can define one greeting once at the group level.

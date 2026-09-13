@@ -93,10 +93,10 @@ public sealed partial class MapEditorViewModel : ObservableObject
                 _ = HandleDirectionChangeAsync(MapDirection.Right, newId, oldId);
         }
     }
-    public NamedEntry? SelectedMapBootMap
+    public NamedEntry? SelectedMapExitMap
     {
-        get => EntryFor(_data.LiveMapEntries, MapBootMap);
-        set => SetMapEntityField(id => SelectedMap!.Record.BootMap = id, MapBootMap, value, nameof(SelectedMapBootMap));
+        get => EntryFor(_data.LiveMapEntries, MapExitMap);
+        set => SetMapEntityField(id => SelectedMap!.Record.ExitMap = id, MapExitMap, value, nameof(SelectedMapExitMap));
     }
     public NamedEntry? SelectedMapGroup
     {
@@ -119,7 +119,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
             case "Down": SelectedMapDown = null; break;
             case "Left": SelectedMapLeft = null; break;
             case "Right": SelectedMapRight = null; break;
-            case "BootMap": SelectedMapBootMap = null; break;
+            case "ExitMap": SelectedMapExitMap = null; break;
             case "MapGroup": SelectedMapGroup = null; break;
         }
     }

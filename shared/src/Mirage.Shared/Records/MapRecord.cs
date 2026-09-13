@@ -30,28 +30,33 @@ public sealed class MapRecord
 
     // ── MapGroup-inheritable properties ──────────────────────────────────────────
     // ALWAYS read these through MapGroupResolve / the GameWorld.*Of(mapNum) helpers so the group fallback is
-    // honored — a raw read returns the map's own value only. The int fields (Music/Boot) use 0 as the
+    // honored — a raw read returns the map's own value only. The int fields (Music/Exit) use 0 as the
     // "not set → inherit the group" sentinel (0 == absent, with no distinct meaning apart from "unset").
-    // Moral and the environment bools are NULLABLE instead — MapMoral.None and false are real, meaningful
-    // values with no spare sentinel: null = "not set → inherit", an explicit value overrides the group, and
-    // null on both map+group resolves to the hard default (None / false). The greeting strings use "" (blank)
-    // as their inherit sentinel and resolve per-field (map's own wins if non-blank, else the group's).
-    public MapMoral? Moral { get; set; }
+    // The bools are NULLABLE instead — false is a real, meaningful value with no spare sentinel: null =
+    // "not set → inherit", an explicit value overrides the group, and null on both map+group resolves to
+    // the hard default. The greeting strings use "" (blank) as their inherit sentinel and resolve per-field
+    // (map's own wins if non-blank, else the group's).
     public int Music { get; set; }
 
-    /// <summary>Where this map puts a player who leaves it other than by walking: they die here, or they log
-    /// out here. 0 = inherit the MapGroup's, so a whole dungeon can name one exit once.
+    /// <summary>Where this map puts a player who leaves it other than by walking — most often, where they
+    /// log out and come back. 0 = inherit the MapGroup's, so a whole dungeon can name one exit once.
     ///
-    /// <para>It outranks the player's own Inn-purchased respawn point. What dying in a place costs is the
-    /// map author's call, not something a player can buy their way out of.</para></summary>
-    public int BootMap { get; set; }
-    public int BootX { get; set; }
-    public int BootY { get; set; }
+    /// <para>It outranks any return point the player chose for themselves. Where leaving a place puts you
+    /// is the map author's call.</para></summary>
+    public int ExitMap { get; set; }
+    public int ExitX { get; set; }
+    public int ExitY { get; set; }
     public bool? Indoors { get; set; }
 
+    /// <summary>Whether players walk THROUGH each other here rather than colliding. Null = inherit the
+    /// MapGroup's, and null on both means they collide.
+    ///
+    /// <para>A crowd standing on the one tile everybody has to cross is a problem in any game with more
+    /// than a few players in a room, and it is the map author who knows which rooms those are.</para></summary>
+    public bool? PlayersPassThrough { get; set; }
+
     // The two lighting overrides are MUTUALLY EXCLUSIVE — a map cannot be both — and are resolved together by
-    // MapGroupResolve.Lighting rather than read directly, so the exclusivity survives inheritance. Independent
-    // of Moral: whether you can be attacked here and whether you can see here are separate claims.
+    // MapGroupResolve.Lighting rather than read directly, so the exclusivity survives inheritance.
     public bool? AlwaysLit { get; set; }
     public bool? AlwaysDark { get; set; }
 
@@ -97,10 +102,10 @@ public sealed class MapRecord
             if (!string.IsNullOrWhiteSpace(Name) || !string.IsNullOrWhiteSpace(DisplayName)) return false;
             if (Npcs.Count > 0 || Lights.Count > 0) return false;
             if (Up != 0 || Down != 0 || Left != 0 || Right != 0) return false;
-            if (MapGroup != 0 || Music != 0 || BootMap != 0 || BootX != 0 || BootY != 0) return false;
-            // All four are nullable on purpose: null is "unset", and None / false are real answers a map
+            if (MapGroup != 0 || Music != 0 || ExitMap != 0 || ExitX != 0 || ExitY != 0) return false;
+            // All four are nullable on purpose: null is "unset", and false is a real answer a map
             // can give. Setting any of them is authoring.
-            if (Moral is not null || Indoors is not null || AlwaysLit is not null || AlwaysDark is not null) return false;
+            if (PlayersPassThrough is not null || Indoors is not null || AlwaysLit is not null || AlwaysDark is not null) return false;
             if (!string.IsNullOrWhiteSpace(GreetingSpeaker) || !string.IsNullOrWhiteSpace(JoinSay)
                 || !string.IsNullOrWhiteSpace(LeaveSay))
             {

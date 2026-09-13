@@ -77,7 +77,7 @@ public sealed class GameWorld
     public Dictionary<int, MapGroupRecord> MapGroups { get; } = new();
 
     // ── Effective map properties ─────────────────────────────────────────────────
-    // A map's inheritable properties (Moral/Music/Shop/Indoors/lighting/Boot) are nullable: null = inherit
+    // A map's inheritable properties (Music/Shop/Indoors/lighting/Exit/PlayersPassThrough) are nullable: null = inherit
     // from the map's MapGroup. ALWAYS resolve them through these helpers, never a raw Maps[n].X read, so the
     // group fallback is honored everywhere. Group-less maps take the fast path (GroupOf returns null).
     public MapGroupRecord? GroupOf(int mapNum)
@@ -85,7 +85,7 @@ public sealed class GameWorld
         int gid = Maps[mapNum].MapGroup;
         return gid > 0 ? MapGroups.GetValueOrDefault(gid) : null;
     }
-    public MapMoral MoralOf(int mapNum) => MapGroupResolve.Moral(Maps[mapNum], GroupOf(mapNum));
+    public bool PlayersPassThroughOn(int mapNum) => MapGroupResolve.PlayersPassThrough(Maps[mapNum], GroupOf(mapNum));
     public int MusicOf(int mapNum) => MapGroupResolve.Music(Maps[mapNum], GroupOf(mapNum));
 
     /// <summary>The EFFECTIVE map-enter/leave greeting for <paramref name="mapNum"/>,
@@ -202,9 +202,9 @@ public sealed class GameWorld
     /// <summary>How this map treats the day/night cycle. ONE answer, because the two authored flags are
     /// mutually exclusive and only mean something as a pair. See MapGroupResolve.Lighting.</summary>
     public MapLighting LightingOf(int mapNum) => MapGroupResolve.Lighting(Maps[mapNum], GroupOf(mapNum));
-    public int BootMapOf(int mapNum) => MapGroupResolve.BootMap(Maps[mapNum], GroupOf(mapNum));
-    public int BootXOf(int mapNum) => MapGroupResolve.BootX(Maps[mapNum], GroupOf(mapNum));
-    public int BootYOf(int mapNum) => MapGroupResolve.BootY(Maps[mapNum], GroupOf(mapNum));
+    public int ExitMapOf(int mapNum) => MapGroupResolve.ExitMap(Maps[mapNum], GroupOf(mapNum));
+    public int ExitXOf(int mapNum) => MapGroupResolve.ExitX(Maps[mapNum], GroupOf(mapNum));
+    public int ExitYOf(int mapNum) => MapGroupResolve.ExitY(Maps[mapNum], GroupOf(mapNum));
 
     public bool IsRealMap(int mapNum) => mapNum > 0 && mapNum <= Limits.Maps;
 

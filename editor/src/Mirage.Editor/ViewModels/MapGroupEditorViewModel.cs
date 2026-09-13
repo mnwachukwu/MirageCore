@@ -21,7 +21,7 @@ public sealed partial class MapGroupEditorViewModel : EditorViewModelBase<MapGro
     public override ObservableCollection<MapGroupRowViewModel> Items => MapGroups;
     protected override string GetFilterText(MapGroupRowViewModel row) => row.DisplayName;
 
-    // Type-ahead source for the group's BootMap picker (the view's DataContext is this VM).
+    // Type-ahead source for the group's ExitMap picker (the view's DataContext is this VM).
     public NamedEntry[] MapEntries => _data.LiveMapEntries;
 
     /// <summary>Supplies the maps whose <c>MapGroup</c> names the given group. Assigned by
@@ -55,7 +55,6 @@ public sealed partial class MapGroupEditorViewModel : EditorViewModelBase<MapGro
             OnPropertyChanged(nameof(MapEntries));
             foreach (var g in MapGroups) g.NotifyEntriesChanged();
         };
-        EditorStrings.LanguageChanged += () => { foreach (var g in MapGroups) g.RefreshMoralOptions(); };
     }
 
     protected override string SectionId => CoreRecordFamilies.MapGroups;

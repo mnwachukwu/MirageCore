@@ -5,11 +5,11 @@ namespace Mirage.Shared;
 /// <summary>Resolves a map's EFFECTIVE property when it belongs to a MapGroup: the map's own value
 /// wins, and the group fills in only what the map leaves unset. Two flavors of "unset":
 /// <list type="bullet">
-/// <item>The int fields (Music/Shop/Boot) use 0 as the sentinel — a non-zero map value wins, else a non-zero
+/// <item>The int fields (Music/Shop/Exit) use 0 as the sentinel — a non-zero map value wins, else a non-zero
 /// group value, else 0. Explicit 0 can't override to "on" (0 == absent), which is fine: 0 has no meaning
 /// distinct from "unset" for these.</item>
-/// <item>Moral and the environment bools (Indoors/AlwaysLit/AlwaysDark) are NULLABLE on both map and group,
-/// because MapMoral.None / false are real, meaningful values with no spare sentinel: <c>map ?? group ?? default</c>
+/// <item>The bools (Indoors/AlwaysLit/AlwaysDark/PlayersPassThrough) are NULLABLE on both map and group,
+/// because false is a real, meaningful value with no spare sentinel: <c>map ?? group ?? default</c>
 /// — an explicit value on the map overrides the group, null inherits, and null on both (incl. a null group)
 /// resolves safely to the default (None / false). The two lighting flags are the exception: they mean one
 /// three-valued thing, so they resolve as a pair — see <see cref="Lighting"/>.</item>
@@ -18,11 +18,15 @@ namespace Mirage.Shared;
 /// <c>GameWorld.*Of(mapNum)</c> helpers + the client resolve-on-send.</summary>
 public static class MapGroupResolve
 {
-    public static MapMoral Moral(MapRecord map, MapGroupRecord? g) => map.Moral ?? g?.Moral ?? MapMoral.None;
     public static int Music(MapRecord map, MapGroupRecord? g) => map.Music != 0 ? map.Music : g?.Music ?? 0;
 
     // Nullable bools: explicit value wins, else inherit the group, else false (also covers a null group).
     public static bool Indoors(MapRecord map, MapGroupRecord? g) => map.Indoors ?? g?.Indoors ?? false;
+
+    /// <summary>Whether players walk through each other here. Default false: bodies collide unless a map
+    /// says otherwise.</summary>
+    public static bool PlayersPassThrough(MapRecord map, MapGroupRecord? g)
+        => map.PlayersPassThrough ?? g?.PlayersPassThrough ?? false;
 
     /// <summary>The map's effective lighting override. AlwaysLit and AlwaysDark are stored as two nullable
     /// bools but mean one three-valued thing, so they resolve TOGETHER: reading each with the usual
@@ -50,11 +54,11 @@ public static class MapGroupResolve
     /// <summary>Convenience for the render paths that only ask "is this cell held bright".</summary>
     public static bool AlwaysLit(MapRecord map, MapGroupRecord? g) => Lighting(map, g) == MapLighting.AlwaysLit;
 
-    // The boot map + X + Y travel as a set keyed on BootMap (0 = unset): if the map sets its own boot map, its
-    // own X/Y accompany it; otherwise the whole boot destination inherits from the group.
-    public static int BootMap(MapRecord map, MapGroupRecord? g) => map.BootMap != 0 ? map.BootMap : g?.BootMap ?? 0;
-    public static int BootX(MapRecord map, MapGroupRecord? g) => map.BootMap != 0 ? map.BootX : g?.BootX ?? 0;
-    public static int BootY(MapRecord map, MapGroupRecord? g) => map.BootMap != 0 ? map.BootY : g?.BootY ?? 0;
+    // The exit map + X + Y travel as a set keyed on ExitMap (0 = unset): if the map sets its own exit map, its
+    // own X/Y accompany it; otherwise the whole exit destination inherits from the group.
+    public static int ExitMap(MapRecord map, MapGroupRecord? g) => map.ExitMap != 0 ? map.ExitMap : g?.ExitMap ?? 0;
+    public static int ExitX(MapRecord map, MapGroupRecord? g) => map.ExitMap != 0 ? map.ExitX : g?.ExitX ?? 0;
+    public static int ExitY(MapRecord map, MapGroupRecord? g) => map.ExitMap != 0 ? map.ExitY : g?.ExitY ?? 0;
 
     /// <summary>The player-facing display name chain: map DisplayName → group DisplayName →
     /// map Name → "" (the caller supplies the final "Map N" fallback). Names use "" (blank) as their unset

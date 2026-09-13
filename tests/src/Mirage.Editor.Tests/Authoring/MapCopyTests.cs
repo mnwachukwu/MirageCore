@@ -40,7 +40,7 @@ public class MapCopyTests
         DisplayName = "Fenn's Clearing",
         Revision = 4,
         Up = 3, Down = 5, Left = 6, Right = 7,
-        BootMap = 12, BootX = 4, BootY = 5,
+        ExitMap = 12, ExitX = 4, ExitY = 5,
         MapGroup = 2,
         Music = 9,
     };
@@ -76,7 +76,7 @@ public class MapCopyTests
     /// <summary>Everything that is a PROPERTY of the map rather than an edge of the neighbor graph comes
     /// along — otherwise the copy is not a starting point, it is a blank with a name.</summary>
     [Test]
-    public void CopiedMap_KeepsItsBootPointGroupAndContent()
+    public void CopiedMap_KeepsItsExitPointGroupAndContent()
     {
         var vm = BuildOffline(World(Authored()));
         vm.SelectedMap = Row(vm, 1);
@@ -88,9 +88,9 @@ public class MapCopyTests
         {
             Assert.That(copy.Name, Is.EqualTo("Fenn's Clearing (Copy)"));
             Assert.That(copy.DisplayName, Is.EqualTo("Fenn's Clearing"));
-            Assert.That(copy.BootMap, Is.EqualTo(12));
-            Assert.That(copy.BootX, Is.EqualTo(4));
-            Assert.That(copy.BootY, Is.EqualTo(5));
+            Assert.That(copy.ExitMap, Is.EqualTo(12));
+            Assert.That(copy.ExitX, Is.EqualTo(4));
+            Assert.That(copy.ExitY, Is.EqualTo(5));
             Assert.That(copy.MapGroup, Is.EqualTo(2));
             Assert.That(copy.Music, Is.EqualTo(9));
         });

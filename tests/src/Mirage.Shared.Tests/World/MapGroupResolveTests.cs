@@ -39,14 +39,14 @@ public class MapGroupResolveTests
     }
 
     [Test]
-    public void Moral_ExplicitOverrides_NullInherits_BothNullIsNone()
+    public void PlayersPassThrough_ExplicitOverrides_NullInherits_BothNullCollides()
     {
-        var g = new MapGroupRecord { Moral = MapMoral.Safe };
-        Assert.That(MapGroupResolve.Moral(new MapRecord { Moral = MapMoral.Arena }, g), Is.EqualTo(MapMoral.Arena)); // map explicit wins
-        Assert.That(MapGroupResolve.Moral(new MapRecord { Moral = null }, g), Is.EqualTo(MapMoral.Safe));            // null inherits group
-        Assert.That(MapGroupResolve.Moral(new MapRecord { Moral = MapMoral.None }, g), Is.EqualTo(MapMoral.None));   // explicit None OVERRIDES Safe (why Moral is nullable)
-        Assert.That(MapGroupResolve.Moral(new MapRecord { Moral = null }, new MapGroupRecord { Moral = null }), Is.EqualTo(MapMoral.None)); // both null → None
-        Assert.That(MapGroupResolve.Moral(new MapRecord { Moral = null }, null), Is.EqualTo(MapMoral.None));         // null group safe
+        var g = new MapGroupRecord { PlayersPassThrough = true };
+        Assert.That(MapGroupResolve.PlayersPassThrough(new MapRecord { PlayersPassThrough = true }, g), Is.True);   // map explicit wins
+        Assert.That(MapGroupResolve.PlayersPassThrough(new MapRecord { PlayersPassThrough = null }, g), Is.True);   // null inherits group
+        Assert.That(MapGroupResolve.PlayersPassThrough(new MapRecord { PlayersPassThrough = false }, g), Is.False); // explicit false OVERRIDES the group (why it is nullable)
+        Assert.That(MapGroupResolve.PlayersPassThrough(new MapRecord { PlayersPassThrough = null }, new MapGroupRecord { PlayersPassThrough = null }), Is.False); // both null → collide
+        Assert.That(MapGroupResolve.PlayersPassThrough(new MapRecord { PlayersPassThrough = null }, null), Is.False); // null group safe
     }
 
     [Test]
@@ -61,17 +61,17 @@ public class MapGroupResolveTests
     }
 
     [Test]
-    public void BootDestination_TravelsAsASet()
+    public void ExitDestination_TravelsAsASet()
     {
-        var g = new MapGroupRecord { BootMap = 8, BootX = 1, BootY = 2 };
-        var ownBoot = new MapRecord { BootMap = 3, BootX = 4, BootY = 5 };
-        Assert.That(MapGroupResolve.BootMap(ownBoot, g), Is.EqualTo(3));   // map's own boot map...
-        Assert.That(MapGroupResolve.BootX(ownBoot, g), Is.EqualTo(4));     // ...brings its own X/Y
-        Assert.That(MapGroupResolve.BootY(ownBoot, g), Is.EqualTo(5));
-        var noBoot = new MapRecord { BootMap = 0, BootX = 99, BootY = 99 };
-        Assert.That(MapGroupResolve.BootMap(noBoot, g), Is.EqualTo(8));    // 0 boot map → whole set inherits
-        Assert.That(MapGroupResolve.BootX(noBoot, g), Is.EqualTo(1));
-        Assert.That(MapGroupResolve.BootY(noBoot, g), Is.EqualTo(2));
+        var g = new MapGroupRecord { ExitMap = 8, ExitX = 1, ExitY = 2 };
+        var ownBoot = new MapRecord { ExitMap = 3, ExitX = 4, ExitY = 5 };
+        Assert.That(MapGroupResolve.ExitMap(ownBoot, g), Is.EqualTo(3));   // map's own boot map...
+        Assert.That(MapGroupResolve.ExitX(ownBoot, g), Is.EqualTo(4));     // ...brings its own X/Y
+        Assert.That(MapGroupResolve.ExitY(ownBoot, g), Is.EqualTo(5));
+        var noBoot = new MapRecord { ExitMap = 0, ExitX = 99, ExitY = 99 };
+        Assert.That(MapGroupResolve.ExitMap(noBoot, g), Is.EqualTo(8));    // 0 boot map → whole set inherits
+        Assert.That(MapGroupResolve.ExitX(noBoot, g), Is.EqualTo(1));
+        Assert.That(MapGroupResolve.ExitY(noBoot, g), Is.EqualTo(2));
     }
 
     [Test]

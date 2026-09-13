@@ -54,19 +54,19 @@ public sealed record SendMapGroupsPacket : IPacket
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.SendMapGroups;
     [JsonPropertyName("groups")] public GroupData[] Groups { get; init; } = [];
 
-    // Only the inheritable fields the client resolves against. Anything server- or
-    // contest-side concerns the client's render/predict paths never read, so they stay off the wire here.
+    // Only the inheritable fields the client resolves against. Anything the client's render/predict paths
+    // never read stays off the wire here.
     public sealed record GroupData(
         [property: JsonPropertyName("num")] int Num,
         [property: JsonPropertyName("displayName")] string DisplayName,
-        [property: JsonPropertyName("moral")] MapMoral? Moral,
         [property: JsonPropertyName("music")] int Music,
         [property: JsonPropertyName("indoors")] bool? Indoors,
         [property: JsonPropertyName("alwaysLit")] bool? AlwaysLit,
         [property: JsonPropertyName("alwaysDark")] bool? AlwaysDark,
-        [property: JsonPropertyName("bootMap")] int BootMap,
-        [property: JsonPropertyName("bootX")] int BootX,
-        [property: JsonPropertyName("bootY")] int BootY
+        [property: JsonPropertyName("passThrough")] bool? PlayersPassThrough,
+        [property: JsonPropertyName("exitMap")] int ExitMap,
+        [property: JsonPropertyName("exitX")] int ExitX,
+        [property: JsonPropertyName("exitY")] int ExitY
     );
 }
 
@@ -91,19 +91,19 @@ public sealed record SendMapPacket : IPacket
     [JsonPropertyName("left")] public int Left { get; init; }
     [JsonPropertyName("right")] public int Right { get; init; }
     // MapGroup-inheritable fields. Always RAW here — the map's own value, with 0 (int fields) or
-    // null (Moral + the bools) meaning "inherit from the MapGroup". BOTH the editor (authoring the inherit/
+    // null (the bools) meaning "inherit from the MapGroup". BOTH the editor (authoring the inherit/
     // override state) and the game client now receive raw and resolve the effective value themselves against
     // their cached group (client: ClientState.*Of + MapGroupResolve; server-side gameplay: GameWorld.*Of). The
     // group is shipped independently (SendMapGroupsPacket at join + UpdateMapGroupPacket on live edit), so a
     // group edit reaches online players without touching any map's revision.
-    [JsonPropertyName("moral")] public MapMoral? Moral { get; init; }
     [JsonPropertyName("music")] public int Music { get; init; }
-    [JsonPropertyName("bootMap")] public int BootMap { get; init; }
-    [JsonPropertyName("bootX")] public int BootX { get; init; }
-    [JsonPropertyName("bootY")] public int BootY { get; init; }
+    [JsonPropertyName("exitMap")] public int ExitMap { get; init; }
+    [JsonPropertyName("exitX")] public int ExitX { get; init; }
+    [JsonPropertyName("exitY")] public int ExitY { get; init; }
     [JsonPropertyName("indoors")] public bool? Indoors { get; init; }
     [JsonPropertyName("alwaysLit")] public bool? AlwaysLit { get; init; }
     [JsonPropertyName("alwaysDark")] public bool? AlwaysDark { get; init; }
+    [JsonPropertyName("passThrough")] public bool? PlayersPassThrough { get; init; }
     // Map-enter/leave greeting. Editor-authored, editor-only: PacketBuilder.SendMap leaves
     // these blank for the game client (which never speaks them — the server does, from its own MapRecord), and
     // carries them only to the editor so a map load/save round-trips the greeting.

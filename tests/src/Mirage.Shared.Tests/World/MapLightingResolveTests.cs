@@ -11,7 +11,8 @@ namespace Mirage.Shared.Tests.World;
 /// that says "dark" both come out true, and nothing downstream could tell which the author meant — so they
 /// resolve together, and every combination below has exactly one answer.</para>
 ///
-/// <para>Lighting is authored, and independent of Moral: a town can be dark, and a lit map need not be safe.</para>
+/// <para>Lighting is authored, and independent of every other map property: a town can be dark, and a lit
+/// map need not be indoors.</para>
 /// </summary>
 [TestFixture]
 public class MapLightingResolveTests
@@ -95,12 +96,12 @@ public class MapLightingResolveTests
         });
     }
 
-    /// <summary>Moral is orthogonal: it decides whether you can be attacked, not whether you can see.</summary>
+    /// <summary>Indoors is orthogonal: it decides whether weather falls on you, not whether you can see.</summary>
     [Test]
-    public void MoralDoesNotDecideLighting()
+    public void IndoorsDoesNotDecideLighting()
     {
-        var safe = new MapRecord { Moral = MapMoral.Safe };
-        var lethalButLit = new MapRecord { Moral = MapMoral.None, AlwaysLit = true };
+        var safe = new MapRecord { Indoors = true };
+        var lethalButLit = new MapRecord { Indoors = false, AlwaysLit = true };
 
         Assert.Multiple(() =>
         {

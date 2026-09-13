@@ -8,7 +8,6 @@ using Mirage.Shared.Protocol;
 using Mirage.Shared.Records;
 using NUnit.Framework;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Mirage.Server.Tests.World;
 
@@ -16,50 +15,31 @@ namespace Mirage.Server.Tests.World;
 /// Crossing a map boundary speaks about the map being LEFT before the map being JOINED — every line,
 /// whichever lines they happen to be.
 ///
-/// <para>🔴 An Arena→Safe step said "You are entering a safe zone." and then "You exit the arena.",
-/// because the safe branch and the arena branch were two blocks and the safe one ran first. Both halves
-/// are now split out of the crossing (<c>AnnounceLeavingZone</c> / <c>AnnounceEnteringZone</c>) and
-/// bracket the position update, so the split — not the order two branches happen to sit in — is what
-/// keeps the lines in sequence.</para>
+/// <para>🔴 The rule is a property of the CROSSING, not of any one pair of lines. The departure half and
+/// the arrival half bracket the position update, so anything a game adds to either half is in sequence
+/// by construction rather than by whoever wrote it last remembering the order. This once failed the
+/// other way: two independent blocks each decided whether to speak, and the one that ran first was not
+/// the one that belonged first.</para>
 ///
-/// <para>The map's own JoinSay/LeaveSay greeting obeys the same rule, so the whole departure (greeting +
-/// zone rules) lands before any of the arrival.</para>
+/// <para>Core speaks one line on each side — the map's own LeaveSay and JoinSay. A game that adds more
+/// adds them to the same two halves.</para>
 /// </summary>
 [TestFixture]
 public class MapTransitionMessageOrderTests
 {
     const int From = 1, To = 2, Idx = 1;
 
-    // Every line that belongs to the map being left, and every line that belongs to the map being joined.
-    static readonly string[] Departure =
-    [
-        ServerStrings.MapGreeting_LeaveSay,
-        ServerStrings.MovementSystem_LeaveSafeBase,
-        ServerStrings.MovementSystem_LeaveSafeNonPk,
-        ServerStrings.MovementSystem_LeaveArena,
-    ];
-
-    static readonly string[] Arrival =
-    [
-        ServerStrings.MapGreeting_JoinSay,
-        ServerStrings.MovementSystem_EnterSafeBase,
-        ServerStrings.MovementSystem_EnterSafePk,
-        ServerStrings.MovementSystem_EnterSafeNonPk,
-        ServerStrings.MovementSystem_EnterArenaBase,
-        ServerStrings.MovementSystem_EnterArenaPvp,
-    ];
-
     /// <summary>A player standing on <see cref="From"/>, ready to walk to <see cref="To"/>. Both maps carry
     /// a greeting so the transition speaks one on each side of the crossing.</summary>
-    static (MovementSystem move, CapturingDispatcher chat) Setup(MapMoral from, MapMoral to, bool isPk, int level = 20)
+    static (MovementSystem Move, CapturingDispatcher Chat, GameWorld World) Setup()
     {
         var world = new GameWorld();
         var pm = new PlayerManager();
         var chat = new CapturingDispatcher();
         var move = new MovementSystem(world, pm, chat);
 
-        Dress(world.Maps[From], from, "Gatekeeper", "Welcome to the first map.", "Farewell from the first map.");
-        Dress(world.Maps[To], to, "Warden", "Welcome to the second map.", "Farewell from the second map.");
+        Dress(world.Maps[From], "Gatekeeper", "Welcome to the first map.", "Farewell from the first map.");
+        Dress(world.Maps[To], "Warden", "Welcome to the second map.", "Farewell from the second map.");
 
         var sp = pm[Idx];
         sp.IsConnected = true;
@@ -69,87 +49,43 @@ public class MapTransitionMessageOrderTests
         p.Map = From;
         p.X = 5;
         p.Y = 5;
-        p.PkExpiryUtc = isPk ? long.MaxValue : 0;
         world.MapObservers[From].Add(Idx);
-        return (move, chat);
+        return (move, chat, world);
     }
 
-    static void Dress(MapRecord map, MapMoral moral, string speaker, string join, string leave)
+    static void Dress(MapRecord map, string speaker, string join, string leave)
     {
-        map.Moral = moral;
         map.GreetingSpeaker = speaker;
         map.JoinSay = join;
         map.LeaveSay = leave;
     }
 
-    // ── The reported case ────────────────────────────────────────────────────
-
     [Test]
-    public void ArenaToSafe_ExitsTheArenaBeforeEnteringTheSafeZone()
+    public void ACrossingFinishesWithTheMapBeingLeftBeforeItStartsOnTheOneBeingJoined()
     {
-        var (move, chat) = Setup(MapMoral.Arena, MapMoral.Safe, isPk: false);
+        var (move, chat, _) = Setup();
+
         move.PlayerWarp(Idx, To, 5, 5);
 
         Assert.That(chat.Keys, Is.EqualTo(new[]
         {
             ServerStrings.MapGreeting_LeaveSay,
-            ServerStrings.MovementSystem_LeaveArena,
             ServerStrings.MapGreeting_JoinSay,
-            ServerStrings.MovementSystem_EnterSafeBase,
-            ServerStrings.MovementSystem_EnterSafeNonPk
         }));
     }
 
+    /// <summary>Two rooms of one building share a greeting, so stepping between them is not entering or
+    /// leaving anything and says nothing at all. Without this a corridor would announce itself at every
+    /// doorway.</summary>
     [Test]
-    public void SafeToArena_LeavesTheSafeZoneBeforeEnteringTheArena()
+    public void ACrossingThatChangesNothingSaysNothing()
     {
-        var (move, chat) = Setup(MapMoral.Safe, MapMoral.Arena, isPk: false);
+        var (move, chat, world) = Setup();
+        Dress(world.Maps[To], "Gatekeeper", "Welcome to the first map.", "Farewell from the first map.");
+
         move.PlayerWarp(Idx, To, 5, 5);
 
-        Assert.That(chat.Keys, Is.EqualTo(new[]
-        {
-            ServerStrings.MapGreeting_LeaveSay,
-            ServerStrings.MovementSystem_LeaveSafeBase,
-            ServerStrings.MovementSystem_LeaveSafeNonPk,
-            ServerStrings.MapGreeting_JoinSay,
-            ServerStrings.MovementSystem_EnterArenaBase,
-            ServerStrings.MovementSystem_EnterArenaPvp
-        }));
-    }
-
-    // ── The rule itself, over every crossing that says anything ──────────────
-
-    [Test]
-    public void NoArrivalLineEverPrecedesADepartureLine(
-        [Values(MapMoral.None, MapMoral.Safe, MapMoral.Arena)] MapMoral from,
-        [Values(MapMoral.None, MapMoral.Safe, MapMoral.Arena)] MapMoral to,
-        [Values(true, false)] bool isPk)
-    {
-        var (move, chat) = Setup(from, to, isPk);
-        move.PlayerWarp(Idx, To, 5, 5);
-
-        int lastDeparture = chat.Keys.FindLastIndex(Departure.Contains);
-        int firstArrival = chat.Keys.FindIndex(Arrival.Contains);
-        if (lastDeparture < 0 || firstArrival < 0) return;   // a crossing with only one half to say
-
-        Assert.That(lastDeparture, Is.LessThan(firstArrival),
-            $"{from}->{to} spoke about the map being joined before it finished with the map being left: "
-            + string.Join(", ", chat.Keys));
-    }
-
-    /// <summary>A crossing that changes nothing about the zone still speaks the greeting in order, and
-    /// says nothing about zone rules.</summary>
-    [Test]
-    public void SameMoral_SpeaksOnlyTheGreetings()
-    {
-        var (move, chat) = Setup(MapMoral.Safe, MapMoral.Safe, isPk: false);
-        move.PlayerWarp(Idx, To, 5, 5);
-
-        Assert.That(chat.Keys, Is.EqualTo(new[]
-        {
-            ServerStrings.MapGreeting_LeaveSay,
-            ServerStrings.MapGreeting_JoinSay
-        }));
+        Assert.That(chat.Keys, Is.Empty);
     }
 
     // Records the localized chat lines sent to the player, in the order they were sent.

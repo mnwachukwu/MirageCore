@@ -772,15 +772,15 @@ public sealed partial class EditorPacketHandler
         map.Name = src.Name;
         map.DisplayName = src.DisplayName;
         map.Revision++;
-        map.Moral = src.Moral;
+        map.PlayersPassThrough = src.PlayersPassThrough;
         map.Up = src.Up;
         map.Down = src.Down;
         map.Left = src.Left;
         map.Right = src.Right;
         map.Music = src.Music;
-        map.BootMap = src.BootMap;
-        map.BootX = src.BootX;
-        map.BootY = src.BootY;
+        map.ExitMap = src.ExitMap;
+        map.ExitX = src.ExitX;
+        map.ExitY = src.ExitY;
         map.Indoors = src.Indoors;
         map.AlwaysLit = src.AlwaysLit;
         map.AlwaysDark = src.AlwaysDark;
@@ -862,13 +862,13 @@ public sealed partial class EditorPacketHandler
         Name = g.Name,
         DisplayName = g.DisplayName,
         Music = g.Music,
-        Moral = g.Moral,
+        PlayersPassThrough = g.PlayersPassThrough,
         Indoors = g.Indoors,
         AlwaysLit = g.AlwaysLit,
         AlwaysDark = g.AlwaysDark,
-        BootMap = g.BootMap,
-        BootX = g.BootX,
-        BootY = g.BootY,
+        ExitMap = g.ExitMap,
+        ExitX = g.ExitX,
+        ExitY = g.ExitY,
         GreetingSpeaker = g.GreetingSpeaker,
         JoinSay = g.JoinSay,
         LeaveSay = g.LeaveSay,
@@ -934,13 +934,13 @@ public sealed partial class EditorPacketHandler
         group.Name = p.Name;
         group.DisplayName = p.DisplayName;
         group.Music = p.Music;
-        group.Moral = p.Moral;
+        group.PlayersPassThrough = p.PlayersPassThrough;
         group.Indoors = p.Indoors;
         group.AlwaysLit = p.AlwaysLit;
         group.AlwaysDark = p.AlwaysDark;
-        group.BootMap = p.BootMap;
-        group.BootX = p.BootX;
-        group.BootY = p.BootY;
+        group.ExitMap = p.ExitMap;
+        group.ExitX = p.ExitX;
+        group.ExitY = p.ExitY;
         group.GreetingSpeaker = p.GreetingSpeaker;
         group.JoinSay = p.JoinSay;
         group.LeaveSay = p.LeaveSay;
@@ -948,7 +948,7 @@ public sealed partial class EditorPacketHandler
         _bg.Run(_persistence.SaveMapGroupAsync(n, group), nameof(IPersistenceService.SaveMapGroupAsync));
 
         // Push the edit to online players. A MapGroup is an INDEPENDENT client-cached def (like items/npcs/shops):
-        // the client holds the group and resolves each member map's effective values (Moral/Music/Indoors/
+        // the client holds the group and resolves each member map's effective values (Music/Indoors/
         // lighting/display name) against it on demand (ClientState.*Of + MapGroupResolve), so a group edit needs
         // NO map re-send and NO map-revision bump — broadcasting the new group state re-caches it on every client
         // and the next frame recomputes. Server-side gameplay reads (GameWorld.*Of) already resolve against this

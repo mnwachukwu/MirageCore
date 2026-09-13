@@ -239,13 +239,7 @@ public sealed class HudPanel
         }
         if (_cachedMapName.Length > 0)
         {
-            var mapNameColor = state.MoralOf(state.Map) switch
-            {
-                MapMoral.Safe => UiHelper.SafeMapNameColor,
-                MapMoral.Arena => UiHelper.ArenaMapNameColor,
-                _ => Color.DimGray,
-            };
-            UiHelper.DrawLabelCentered(sb, font, _cachedMapName, SidebarLeft, y, SidebarWidth, mapNameColor);
+            UiHelper.DrawLabelCentered(sb, font, _cachedMapName, SidebarLeft, y, SidebarWidth, Color.DimGray);
         }
         y += NameRowH;
 

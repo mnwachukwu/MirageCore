@@ -17,9 +17,6 @@ namespace Mirage.Editor.ViewModels;
 /// edits — and the notification that re-raises them all when the record is swapped wholesale.</summary>
 public sealed partial class MapEditorViewModel : ObservableObject
 {
-    // Tri-state Moral choices for the map's inherit/override ComboBox. Rebuilt on language change.
-    public IReadOnlyList<MoralChoice> MoralOptions { get; private set; } = MoralChoices.Build();
-
     // Routes map name edits through the ViewModel so the list item DisplayName updates live.
     public string MapName
     {
@@ -47,17 +44,17 @@ public sealed partial class MapEditorViewModel : ObservableObject
     // Pass-through properties for map record fields — each setter marks the map dirty
     // so that edits to numeric fields and NPC slots register correctly.
 
-    // Tri-state Moral: "(Inherit)" (null) or an explicit MapMoral. The map's own value overrides
-    // its group; null inherits the group (else the hard default None).
-    public MoralChoice? SelectedMapMoral
+    /// <summary>Tri-state: ticked = players walk through each other here, unticked = they collide,
+    /// dash = inherit the group (which defaults to colliding).</summary>
+    public bool? MapPlayersPassThrough
     {
-        get => MoralOptions.FirstOrDefault(c => c.Value == SelectedMap?.Record.Moral) ?? MoralOptions[0];
+        get => SelectedMap?.Record.PlayersPassThrough;
         set
         {
-            if (SelectedMap is null || value is null || SelectedMap.Record.Moral == value.Value) return;
-            SelectedMap.Record.Moral = value.Value;
+            if (SelectedMap is null || SelectedMap.Record.PlayersPassThrough == value) return;
+            SelectedMap.Record.PlayersPassThrough = value;
             SelectedMap.MarkDirty();
-            OnPropertyChanged(nameof(SelectedMapMoral));
+            OnPropertyChanged(nameof(MapPlayersPassThrough));
         }
     }
     public int MapUp
@@ -110,33 +107,33 @@ public sealed partial class MapEditorViewModel : ObservableObject
             SelectedMap.MarkDirty();
         }
     }
-    public int MapBootMap
+    public int MapExitMap
     {
-        get => SelectedMap?.Record.BootMap ?? 0;
+        get => SelectedMap?.Record.ExitMap ?? 0;
         set
         {
-            if (SelectedMap is null || SelectedMap.Record.BootMap == value) return;
-            SelectedMap.Record.BootMap = value;
+            if (SelectedMap is null || SelectedMap.Record.ExitMap == value) return;
+            SelectedMap.Record.ExitMap = value;
             SelectedMap.MarkDirty();
         }
     }
-    public int MapBootX
+    public int MapExitX
     {
-        get => SelectedMap?.Record.BootX ?? 0;
+        get => SelectedMap?.Record.ExitX ?? 0;
         set
         {
-            if (SelectedMap is null || SelectedMap.Record.BootX == value) return;
-            SelectedMap.Record.BootX = value;
+            if (SelectedMap is null || SelectedMap.Record.ExitX == value) return;
+            SelectedMap.Record.ExitX = value;
             SelectedMap.MarkDirty();
         }
     }
-    public int MapBootY
+    public int MapExitY
     {
-        get => SelectedMap?.Record.BootY ?? 0;
+        get => SelectedMap?.Record.ExitY ?? 0;
         set
         {
-            if (SelectedMap is null || SelectedMap.Record.BootY == value) return;
-            SelectedMap.Record.BootY = value;
+            if (SelectedMap is null || SelectedMap.Record.ExitY == value) return;
+            SelectedMap.Record.ExitY = value;
             SelectedMap.MarkDirty();
         }
     }
@@ -349,7 +346,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(MapName));
         OnPropertyChanged(nameof(MapDisplayName));
-        OnPropertyChanged(nameof(SelectedMapMoral));
+        OnPropertyChanged(nameof(MapPlayersPassThrough));
         OnPropertyChanged(nameof(MapGroup));
         OnPropertyChanged(nameof(SelectedMapGroup));
         OnPropertyChanged(nameof(MapUp));
@@ -357,9 +354,9 @@ public sealed partial class MapEditorViewModel : ObservableObject
         OnPropertyChanged(nameof(MapLeft));
         OnPropertyChanged(nameof(MapRight));
         OnPropertyChanged(nameof(MapMusic));
-        OnPropertyChanged(nameof(MapBootMap));
-        OnPropertyChanged(nameof(MapBootX));
-        OnPropertyChanged(nameof(MapBootY));
+        OnPropertyChanged(nameof(MapExitMap));
+        OnPropertyChanged(nameof(MapExitX));
+        OnPropertyChanged(nameof(MapExitY));
         OnPropertyChanged(nameof(MapGreetingSpeaker));
         OnPropertyChanged(nameof(MapJoinSay));
         OnPropertyChanged(nameof(MapLeaveSay));
@@ -376,7 +373,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectedMapDown));
         OnPropertyChanged(nameof(SelectedMapLeft));
         OnPropertyChanged(nameof(SelectedMapRight));
-        OnPropertyChanged(nameof(SelectedMapBootMap));
+        OnPropertyChanged(nameof(SelectedMapExitMap));
         OnPropertyChanged(nameof(NeighborMapUp));
         OnPropertyChanged(nameof(NeighborMapDown));
         OnPropertyChanged(nameof(NeighborMapLeft));

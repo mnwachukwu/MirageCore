@@ -45,8 +45,8 @@ public static partial class EditorStrings
     public const string MapEditor_PaletteHeader = nameof(MapEditor_PaletteHeader);
     public const string MapEditor_PropertiesHeader = nameof(MapEditor_PropertiesHeader);
     public const string MapEditor_SelectMapPrompt = nameof(MapEditor_SelectMapPrompt);
-    public const string MapEditor_MoralLabel = nameof(MapEditor_MoralLabel);
-    // The three titled groups. Their member labels drop the prefix the header now carries — Boot Map
+    public const string MapEditor_PassThroughLabel = nameof(MapEditor_PassThroughLabel);
+    // The three titled groups. Their member labels drop the prefix the header now carries — Exit Map
     // reads "Map" under Respawn, and the greeting fields read plainly under Greeting.
     public const string MapEditor_MapLinksHeader = nameof(MapEditor_MapLinksHeader);
     public const string MapEditor_RespawnHeader = nameof(MapEditor_RespawnHeader);
@@ -57,9 +57,9 @@ public static partial class EditorStrings
     public const string MapEditor_RightLabel = nameof(MapEditor_RightLabel);
     public const string MapEditor_ClearTooltip = nameof(MapEditor_ClearTooltip);
     public const string MapEditor_MusicLabel = nameof(MapEditor_MusicLabel);
-    public const string MapEditor_BootMapLabel = nameof(MapEditor_BootMapLabel);
-    public const string MapEditor_BootXLabel = nameof(MapEditor_BootXLabel);
-    public const string MapEditor_BootYLabel = nameof(MapEditor_BootYLabel);
+    public const string MapEditor_ExitMapLabel = nameof(MapEditor_ExitMapLabel);
+    public const string MapEditor_ExitXLabel = nameof(MapEditor_ExitXLabel);
+    public const string MapEditor_ExitYLabel = nameof(MapEditor_ExitYLabel);
     // Map-enter/leave greeting; reused by the MapGroup editor's shared fallback fields.
     public const string MapEditor_GreetingSpeakerLabel = nameof(MapEditor_GreetingSpeakerLabel);
     // Shown in a blank greeting box: the value the map would inherit from its group, or this hint.

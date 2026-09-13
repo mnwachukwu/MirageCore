@@ -246,8 +246,8 @@ public sealed partial class ClientPacketHandler : IClientEvents
             if (!SlotValidation.IsValidMapGroupNum(g.Num, _state.Limits.MapGroups)) continue;
             _state.MapGroups[g.Num] = new MapGroupRecord
             {
-                Index = g.Num, DisplayName = g.DisplayName, Moral = g.Moral, Music = g.Music,
-                Indoors = g.Indoors, AlwaysLit = g.AlwaysLit, AlwaysDark = g.AlwaysDark, BootMap = g.BootMap, BootX = g.BootX, BootY = g.BootY,
+                Index = g.Num, DisplayName = g.DisplayName, Music = g.Music,
+                Indoors = g.Indoors, AlwaysLit = g.AlwaysLit, AlwaysDark = g.AlwaysDark, PlayersPassThrough = g.PlayersPassThrough, ExitMap = g.ExitMap, ExitX = g.ExitX, ExitY = g.ExitY,
             };
         }
     }
@@ -257,8 +257,8 @@ public sealed partial class ClientPacketHandler : IClientEvents
         if (!SlotValidation.IsValidMapGroupNum(p.GroupNum, _state.Limits.MapGroups)) return;
         _state.MapGroups[p.GroupNum] = new MapGroupRecord
         {
-            Index = p.GroupNum, DisplayName = p.DisplayName, Moral = p.Moral, Music = p.Music,
-            Indoors = p.Indoors, AlwaysLit = p.AlwaysLit, AlwaysDark = p.AlwaysDark, BootMap = p.BootMap, BootX = p.BootX, BootY = p.BootY,
+            Index = p.GroupNum, DisplayName = p.DisplayName, Music = p.Music,
+            Indoors = p.Indoors, AlwaysLit = p.AlwaysLit, AlwaysDark = p.AlwaysDark, PlayersPassThrough = p.PlayersPassThrough, ExitMap = p.ExitMap, ExitX = p.ExitX, ExitY = p.ExitY,
         };
     }
 }

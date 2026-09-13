@@ -231,10 +231,6 @@ public static class UiHelper
     // chat palette; the hover tone brightens to confirm the hand cursor is over a live link.
     public static readonly Color HyperlinkColor = new(120, 180, 255);
     public static readonly Color HyperlinkHoverColor = new(180, 220, 255);
-    // Map-name color shown when the player is standing on a Safe-moral map (HudPanel).
-    public static readonly Color SafeMapNameColor = new(120, 190, 120);
-    // Map-name color for an Arena-moral map (penalty-free open PvP) — HudPanel.
-    public static readonly Color ArenaMapNameColor = Color.Yellow;
     // Time-of-Day / Weather status-line color (HudPanel).
     public static readonly Color WeatherStatusColor = new(0, 120, 255);
 

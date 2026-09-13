@@ -108,7 +108,7 @@ public class EditorLiveBroadcastTests
         var h = new Harness();
         h.Save(new EditorSaveMapGroupPacket
         {
-            GroupNum = 3, Name = "Catacombs", DisplayName = "The Catacombs", Music = 9, Moral = MapMoral.Safe,
+            GroupNum = 3, Name = "Catacombs", DisplayName = "The Catacombs", Music = 9, PlayersPassThrough = true,
         });
 
         var u = h.Dispatcher.OneBroadcast<UpdateMapGroupPacket>();
@@ -117,7 +117,7 @@ public class EditorLiveBroadcastTests
             Assert.That(u.GroupNum, Is.EqualTo(3));
             Assert.That(u.DisplayName, Is.EqualTo("The Catacombs"));
             Assert.That(u.Music, Is.EqualTo(9));
-            Assert.That(u.Moral, Is.EqualTo(MapMoral.Safe));
+            Assert.That(u.PlayersPassThrough, Is.True);
             Assert.That(h.World.MapGroups[3].Music, Is.EqualTo(9), "the edit was applied to the live record");
         });
     }

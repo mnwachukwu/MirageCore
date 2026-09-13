@@ -15,14 +15,6 @@ public static partial class ServerStrings
     // ── SpellSystem ───────────────────────────────────────────────────────────
 
     // ── MovementSystem ────────────────────────────────────────────────────────
-    public const string MovementSystem_EnterSafeBase = nameof(MovementSystem_EnterSafeBase);
-    public const string MovementSystem_EnterSafePk = nameof(MovementSystem_EnterSafePk);
-    public const string MovementSystem_EnterSafeNonPk = nameof(MovementSystem_EnterSafeNonPk);
-    public const string MovementSystem_LeaveSafeBase = nameof(MovementSystem_LeaveSafeBase);
-    public const string MovementSystem_LeaveSafeNonPk = nameof(MovementSystem_LeaveSafeNonPk);
-    public const string MovementSystem_EnterArenaBase = nameof(MovementSystem_EnterArenaBase);
-    public const string MovementSystem_EnterArenaPvp = nameof(MovementSystem_EnterArenaPvp);
-    public const string MovementSystem_LeaveArena = nameof(MovementSystem_LeaveArena);
     public const string MovementSystem_WarpDestinationMissing = nameof(MovementSystem_WarpDestinationMissing);
 
     // ── PartySystem ───────────────────────────────────────────────────────────

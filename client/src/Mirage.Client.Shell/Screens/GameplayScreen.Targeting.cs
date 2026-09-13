@@ -37,7 +37,6 @@ public sealed partial class GameplayScreen : IGameScreen
     private void CycleTabTarget(bool reverse = false)
     {
         var state = _ctx.State;
-        bool safeMap = state.MoralOf(state.Map) == MapMoral.Safe;
         var me = state.Me;
         int myWX = _ctx.State.MapTilesX + me.X;  // local player sits at the center cell
         int myWY = _ctx.State.MapTilesY + me.Y;
@@ -86,7 +85,7 @@ public sealed partial class GameplayScreen : IGameScreen
             TryAddNpc(new TargetRef(TargetKind.Traversal, t.SpawnMapNum, t.SpawnSlot), off.Value.ox + t.X, off.Value.oy + t.Y, def.EffectiveSize, t.Layer);
         }
 
-        if (!_skipPlayersWithTabTarget && !safeMap)
+        if (!_skipPlayersWithTabTarget)
         {
             for (int i = 1; i <= state.PlayerSlots; i++)
             {

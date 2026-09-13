@@ -34,11 +34,11 @@ public enum WorldIssueKind
     /// steps on it, so the tile is authored but unusable.</summary>
     WarpTileOutside,
 
-    /// <summary>A boot point names a map number the world has no room for.</summary>
-    BootMapMissing,
+    /// <summary>An exit point names a map number the world has no room for.</summary>
+    ExitMapMissing,
 
-    /// <summary>A boot point names a tile outside the map it sends players to.</summary>
-    BootTileOutside,
+    /// <summary>An exit point names a tile outside the map it sends players to.</summary>
+    ExitTileOutside,
 
     /// <summary>A map names a group that has no record.</summary>
     MapGroupMissing,
@@ -195,7 +195,7 @@ public static class WorldCheck
             if (map is null || !authored[m]) continue;
 
             CheckLinks(found, maps, m, map, authored);
-            CheckBootPoint(found, maps, m, map, authored);
+            CheckExitPoint(found, maps, m, map, authored);
 
             if (map.MapGroup != 0 && !w.GroupExists(map.MapGroup))
                 found.Add(WorldIssue.OnMap(WorldIssueKind.MapGroupMissing, m, $"{map.MapGroup}"));
@@ -259,21 +259,21 @@ public static class WorldCheck
         }
     }
 
-    private static void CheckBootPoint(List<WorldIssue> found, MapRecord?[] maps, int m, MapRecord map, bool[] authored)
+    private static void CheckExitPoint(List<WorldIssue> found, MapRecord?[] maps, int m, MapRecord map, bool[] authored)
     {
-        if (map.BootMap == 0) return;
+        if (map.ExitMap == 0) return;
 
-        if (!HasMap(authored, map.BootMap))
+        if (!HasMap(authored, map.ExitMap))
         {
-            found.Add(WorldIssue.OnMap(WorldIssueKind.BootMapMissing, m, $"{map.BootMap}"));
+            found.Add(WorldIssue.OnMap(WorldIssueKind.ExitMapMissing, m, $"{map.ExitMap}"));
             return;
         }
 
-        var dest = maps[map.BootMap]!;
-        if (!dest.Contains(map.BootX, map.BootY))
+        var dest = maps[map.ExitMap]!;
+        if (!dest.Contains(map.ExitX, map.ExitY))
         {
-            found.Add(WorldIssue.OnMap(WorldIssueKind.BootTileOutside, m,
-                $"{map.BootMap} ({map.BootX},{map.BootY}) of {dest.Width}x{dest.Height}"));
+            found.Add(WorldIssue.OnMap(WorldIssueKind.ExitTileOutside, m,
+                $"{map.ExitMap} ({map.ExitX},{map.ExitY}) of {dest.Width}x{dest.Height}"));
         }
     }
 

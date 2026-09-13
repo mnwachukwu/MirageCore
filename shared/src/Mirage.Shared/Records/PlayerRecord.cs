@@ -141,7 +141,7 @@ public sealed class PlayerRecord
     public Direction Dir { get; set; }
     // Two-layer world: which logical layer (ground vs bridge-top fringe) this player occupies. PERSISTED with the
     // character — it's part of the position in a layered world, so a relog restores the player onto the bridge
-    // instead of snapping to Ground INSIDE a now-solid ramp tile (a ramp is Blocked on Ground). A true warp/boot
+    // instead of snapping to Ground INSIDE a now-solid ramp tile (a ramp is Blocked on Ground). A true warp/exit
     // still passes destLayer (usually Ground); PlayerWarp re-fits to a walkable layer on arrival. Recomputed on
     // movement. See LayerLogic/WorldLayer.
     public WorldLayer Layer { get; set; }

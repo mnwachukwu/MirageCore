@@ -146,12 +146,9 @@ public static class InputProcessor
                           (attrType == TileType.Door && !state.TempTile[nx, ny, (int)newLayer]);
             }
 
-            // Another player standing on the target tile AND SAME LAYER also blocks movement — except in safe
-            // zones, where players pass through each other.  PK-flagged movers are the lone exception to the
-            // safe-zone exemption.  A grace-period PKer counts as effectively non-PK and keeps the pass-through.
-            long nowUtcLocal = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            bool effectivelyPk = me.IsPk(nowUtcLocal) && me.PkGraceUntilUtc <= nowUtcLocal;
-            if (!blocked && (effectivelyPk || state.MoralOf(state.Map) != MapMoral.Safe))
+            // Another player standing on the target tile AND SAME LAYER also blocks movement — unless the
+            // map says players walk through each other.  Mirrors the server's gate so this never rubber-bands.
+            if (!blocked && !state.PlayersPassThroughOn(state.Map))
             {
                 for (int i = 1; i <= state.PlayerSlots; i++)
                 {
@@ -292,12 +289,10 @@ public static class InputProcessor
         // center-map check (natives + chasing guests + a large body spilling across the seam).
         if (state.IsTileNpcBlocked(state.NeighborMapNums[col, row], dx, dy, newLayer)) return true;
 
-        // Player block across the seam — same-layer, same pass-through rule.  Pass-through applies when either
-        // side of the crossing is a safe zone (the mover's source map OR the neighbor destination map), unless
-        // the mover is PK-flagged.  A grace-period PKer counts as effectively non-PK and keeps the pass-through.
-        long nowUtcLocal = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        bool effectivelyPk = me.IsPk(nowUtcLocal) && me.PkGraceUntilUtc <= nowUtcLocal;
-        bool playersPassThrough = !effectivelyPk && (state.MoralOf(state.Map) == MapMoral.Safe || state.MoralOf(map) == MapMoral.Safe);
+        // Player block across the seam — same-layer, same pass-through rule.  EITHER side saying pass-through
+        // is enough, so nobody is stranded on a boundary between a map that lets them through and one that
+        // does not.  Mirrors the server's gate.
+        bool playersPassThrough = state.PlayersPassThroughOn(state.Map) || state.PlayersPassThroughOn(map);
         if (!playersPassThrough)
         {
             int destMapNum = state.NeighborMapNums[col, row];

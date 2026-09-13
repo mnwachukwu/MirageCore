@@ -26,21 +26,21 @@ public partial class MapGroupEditorView : LocalizedUserControl
         _displayNameLabel.Text = EditorStrings.Get(EditorStrings.Common_DisplayNameLabel);
         _fallbackHeader.Text = EditorStrings.Get(EditorStrings.MapGroupEditor_FallbackHeader);
         // Reuse the map editor's labels for the shared fallback fields (identical wording).
-        _moralLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_MoralLabel);
+        _passThroughLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_PassThroughLabel);
         _musicLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_MusicLabel);
         _greetingSpeakerLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_GreetingSpeakerLabel);
         _joinSayLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_JoinSayLabel);
         _leaveSayLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_LeaveSayLabel);
         _respawnGroup.Header = EditorStrings.Get(EditorStrings.MapEditor_RespawnHeader);
         _greetingGroup.Header = EditorStrings.Get(EditorStrings.MapEditor_GreetingHeader);
-        _bootMapLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_BootMapLabel);
-        _bootXLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_BootXLabel);
-        _bootYLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_BootYLabel);
+        _exitMapLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_ExitMapLabel);
+        _exitXLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_ExitXLabel);
+        _exitYLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_ExitYLabel);
         _indoorsLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_IndoorsLabel);
         _alwaysLitLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_AlwaysLitLabel);
         _alwaysDarkLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_AlwaysDarkLabel);
         _triStateHint.Text = EditorStrings.Get(EditorStrings.MapGroupEditor_TriStateHint);
-        _searchBootMap.PlaceholderText = EditorStrings.Get(EditorStrings.MapEditor_SearchMapsPlaceholder);
+        _searchExitMap.PlaceholderText = EditorStrings.Get(EditorStrings.MapEditor_SearchMapsPlaceholder);
         _copyBtn.Content = EditorStrings.Get(EditorStrings.Common_Copy);
         _discardBtn.Content = EditorStrings.Get(EditorStrings.Common_Discard);
         _discardAllBtn.Content = EditorStrings.Get(EditorStrings.Common_DiscardAll);

@@ -6,7 +6,7 @@ using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
 namespace Mirage.Editor.ViewModels;
 
-/// <summary>One MapGroup slot in the MapGroup editor. Holds the authored fields; Moral + the two
+/// <summary>One MapGroup slot in the MapGroup editor. Holds the authored fields; the
 /// environment bools are tri-state (null = "(Inherit)"/don't-provide) so a group can decline to supply a value.
 /// A group is authored end to end: who holds the territory its maps make up is the server's and is not here.</summary>
 public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRow
@@ -23,7 +23,7 @@ public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRo
     private string _displayName = "";   // record DisplayName; managed via DisplayNameText (the generated
                                         // property would collide with the list-label DisplayName below)
     [ObservableProperty] private int _music;
-    [ObservableProperty] private MapMoral? _moral;
+    [ObservableProperty] private bool? _playersPassThrough;
     // Map-enter/leave greeting fallback: a member map inherits any greeting field it leaves
     // blank from the group.
     [ObservableProperty] private string _greetingSpeaker = "";
@@ -32,9 +32,9 @@ public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRo
     [ObservableProperty] private bool? _indoors;
     [ObservableProperty] private bool? _alwaysLit;
     [ObservableProperty] private bool? _alwaysDark;
-    [ObservableProperty] private int _bootMap;
-    [ObservableProperty] private int _bootX;
-    [ObservableProperty] private int _bootY;
+    [ObservableProperty] private int _exitMap;
+    [ObservableProperty] private int _exitX;
+    [ObservableProperty] private int _exitY;
     [ObservableProperty] private bool _territory;
 
     public bool IsDirty => _dirty;
@@ -43,12 +43,6 @@ public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRo
 
     public string DisplayName => $"{Index}: {(string.IsNullOrEmpty(Name) ? EditorStrings.Get(EditorStrings.Common_EmptyName) : Name)}";
 
-    public IReadOnlyList<MoralChoice> MoralOptions { get; private set; } = MoralChoices.Build();
-    public MoralChoice? SelectedMoral
-    {
-        get => MoralOptions.FirstOrDefault(c => c.Value == Moral) ?? MoralOptions[0];
-        set { if (value is not null) Moral = value.Value; }
-    }
 
     private readonly Func<NamedEntry[]> _mapEntries;
 
@@ -68,16 +62,16 @@ public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRo
             Name = r.Name;
             DisplayNameText = r.DisplayName;
             Music = r.Music;
-            Moral = r.Moral;
+            PlayersPassThrough = r.PlayersPassThrough;
             GreetingSpeaker = r.GreetingSpeaker;
             JoinSay = r.JoinSay;
             LeaveSay = r.LeaveSay;
             Indoors = r.Indoors;
             AlwaysLit = r.AlwaysLit;
             AlwaysDark = r.AlwaysDark;
-            BootMap = r.BootMap;
-            BootX = r.BootX;
-            BootY = r.BootY;
+            ExitMap = r.ExitMap;
+            ExitX = r.ExitX;
+            ExitY = r.ExitY;
         }
         finally { _loading = false; }
     }
@@ -101,13 +95,13 @@ public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRo
     // ── Entity pickers (type-ahead) ───────────────────────────────────────────
     private static NamedEntry? EntryFor(NamedEntry[] entries, int id) => id > 0 && id < entries.Length ? entries[id] : null;
 
-    public NamedEntry? SelectedBootMap
+    public NamedEntry? SelectedExitMap
     {
-        get => EntryFor(_mapEntries(), BootMap);
+        get => EntryFor(_mapEntries(), ExitMap);
         set
         {
             var id = value?.Id ?? 0;
-            if (BootMap != id) BootMap = id;
+            if (ExitMap != id) ExitMap = id;
         }
     }
 
@@ -125,14 +119,10 @@ public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRo
         MarkDirty();
     }
     partial void OnMusicChanged(int value) => MarkDirty();
-    partial void OnMoralChanged(MapMoral? value)
-    {
-        OnPropertyChanged(nameof(SelectedMoral));
-        MarkDirty();
-    }
     partial void OnGreetingSpeakerChanged(string value) => MarkDirty();
     partial void OnJoinSayChanged(string value) => MarkDirty();
     partial void OnLeaveSayChanged(string value) => MarkDirty();
+    partial void OnPlayersPassThroughChanged(bool? value) => MarkDirty();
     partial void OnIndoorsChanged(bool? value) => MarkDirty();
     partial void OnAlwaysLitChanged(bool? value)
     {
@@ -144,13 +134,13 @@ public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRo
         if (value == true && AlwaysLit is not null) AlwaysLit = null;
         MarkDirty();
     }
-    partial void OnBootMapChanged(int value)
+    partial void OnExitMapChanged(int value)
     {
-        OnPropertyChanged(nameof(SelectedBootMap));
+        OnPropertyChanged(nameof(SelectedExitMap));
         MarkDirty();
     }
-    partial void OnBootXChanged(int value) => MarkDirty();
-    partial void OnBootYChanged(int value) => MarkDirty();
+    partial void OnExitXChanged(int value) => MarkDirty();
+    partial void OnExitYChanged(int value) => MarkDirty();
 
     public void ClearDirty()
     {
@@ -158,18 +148,12 @@ public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRo
         OnPropertyChanged(nameof(IsDirty));
     }
 
-    // Re-raise the type-ahead selections + Moral list when the shared entry lists / language change.
+    // Re-raise the type-ahead selections when the shared entry lists / language change.
     public void NotifyEntriesChanged()
     {
-        OnPropertyChanged(nameof(SelectedBootMap));
+        OnPropertyChanged(nameof(SelectedExitMap));
     }
 
-    public void RefreshMoralOptions()
-    {
-        MoralOptions = MoralChoices.Build();
-        OnPropertyChanged(nameof(MoralOptions));
-        OnPropertyChanged(nameof(SelectedMoral));
-    }
 
     /// <summary>Fill from a record and leave the row DIRTY and loaded — the copy path, where the new
     /// record exists only in memory until a save persists it.
@@ -200,16 +184,16 @@ public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRo
             Name = pkt.Name;
             DisplayNameText = pkt.DisplayName;
             Music = pkt.Music;
-            Moral = pkt.Moral;
+            PlayersPassThrough = pkt.PlayersPassThrough;
             GreetingSpeaker = pkt.GreetingSpeaker;
             JoinSay = pkt.JoinSay;
             LeaveSay = pkt.LeaveSay;
             Indoors = pkt.Indoors;
             AlwaysLit = pkt.AlwaysLit;
             AlwaysDark = pkt.AlwaysDark;
-            BootMap = pkt.BootMap;
-            BootX = pkt.BootX;
-            BootY = pkt.BootY;
+            ExitMap = pkt.ExitMap;
+            ExitX = pkt.ExitX;
+            ExitY = pkt.ExitY;
         }
         finally { _loading = false; }
 
@@ -226,16 +210,16 @@ public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRo
         Name = Name,
         DisplayName = DisplayNameText,
         Music = Music,
-        Moral = Moral,
+        PlayersPassThrough = PlayersPassThrough,
         GreetingSpeaker = GreetingSpeaker,
         JoinSay = JoinSay,
         LeaveSay = LeaveSay,
         Indoors = Indoors,
         AlwaysLit = AlwaysLit,
         AlwaysDark = AlwaysDark,
-        BootMap = BootMap,
-        BootX = BootX,
-        BootY = BootY,
+        ExitMap = ExitMap,
+        ExitX = ExitX,
+        ExitY = ExitY,
     };
 
     /// <summary>Project the row into the online save packet. The single source of that mapping — both the
@@ -246,15 +230,15 @@ public sealed partial class MapGroupRowViewModel : ObservableObject, ILockableRo
         Name = Name,
         DisplayName = DisplayNameText,
         Music = Music,
-        Moral = Moral,
+        PlayersPassThrough = PlayersPassThrough,
         GreetingSpeaker = GreetingSpeaker,
         JoinSay = JoinSay,
         LeaveSay = LeaveSay,
         Indoors = Indoors,
         AlwaysLit = AlwaysLit,
         AlwaysDark = AlwaysDark,
-        BootMap = BootMap,
-        BootX = BootX,
-        BootY = BootY,
+        ExitMap = ExitMap,
+        ExitX = ExitX,
+        ExitY = ExitY,
     };
 }

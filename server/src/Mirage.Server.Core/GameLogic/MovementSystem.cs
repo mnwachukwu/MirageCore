@@ -15,7 +15,7 @@ namespace Mirage.Server.Core.GameLogic;
 public sealed class MovementSystem : GameSystem
 {
     private readonly GameWorld _world;
-private readonly WorldEvents _events;
+    private readonly WorldEvents _events;
     private readonly PlayerManager _pm;
     private readonly ILogger<MovementSystem> _logger;
 
@@ -235,49 +235,11 @@ private readonly WorldEvents _events;
             SendMsg(index, ServerStrings.MapGreeting_LeaveSay, GameColor.Npc, ("Speaker", g.Speaker.TrimEnd()), ("LeaveSay", g.LeaveSay.TrimEnd()));
     }
 
-    // ── Zone-rule announcements ───────────────────────────────────────────────
-    // The map's MORAL, which decides whether PvP is off, one-sided or free. Split into a leaving and a
-    // joining half so a caller says everything about the old map before anything about the new one. A
-    // map holds exactly one moral, so within a half the branches are mutually exclusive.
-
-    /// <summary>Tell the player which zone rules stop applying. Silent unless a moral ends.</summary>
-    private void AnnounceLeavingZone(int index, MapMoral oldMoral, MapMoral newMoral, bool isPk)
-    {
-        if (oldMoral == MapMoral.Safe && newMoral != MapMoral.Safe)
-        {
-            _dispatcher.SendLocalizedChatTo(index, ServerStrings.MovementSystem_LeaveSafeBase, new ChatMetadata(GameColor.BrightRed, ChatChannel.System));
-            if (!isPk)
-                _dispatcher.SendLocalizedChatTo(index, ServerStrings.MovementSystem_LeaveSafeNonPk, new ChatMetadata(GameColor.Gray, ChatChannel.System));
-        }
-        else if (oldMoral == MapMoral.Arena && newMoral != MapMoral.Arena)
-        {
-            _dispatcher.SendLocalizedChatTo(index, ServerStrings.MovementSystem_LeaveArena, new ChatMetadata(GameColor.Yellow, ChatChannel.System));
-        }
-    }
-
-    /// <summary>Tell the player which zone rules now apply. Silent unless a moral begins.</summary>
-    private void AnnounceEnteringZone(int index, MapMoral oldMoral, MapMoral newMoral, bool isPk)
-    {
-        if (newMoral == MapMoral.Safe && oldMoral != MapMoral.Safe)
-        {
-            // Base line first (green), then the PvP-implications note on its own gray line. PvP is
-            // asymmetric in safe zones: non-PKers can strike PKers without retaliation, and PKers can
-            // only attack other PKers.
-            _dispatcher.SendLocalizedChatTo(index, ServerStrings.MovementSystem_EnterSafeBase, new ChatMetadata(GameColor.BrightGreen, ChatChannel.System));
-            _dispatcher.SendLocalizedChatTo(index, isPk ? ServerStrings.MovementSystem_EnterSafePk : ServerStrings.MovementSystem_EnterSafeNonPk, new ChatMetadata(GameColor.Gray, ChatChannel.System));
-        }
-        else if (newMoral == MapMoral.Arena && oldMoral != MapMoral.Arena)
-        {
-            _dispatcher.SendLocalizedChatTo(index, ServerStrings.MovementSystem_EnterArenaBase, new ChatMetadata(GameColor.Yellow, ChatChannel.System));
-            _dispatcher.SendLocalizedChatTo(index, ServerStrings.MovementSystem_EnterArenaPvp, new ChatMetadata(GameColor.Gray, ChatChannel.System));
-        }
-    }
-
     /// <summary>True when <paramref name="mapNum"/> is a real map and (<paramref name="x"/>,
     /// <paramref name="y"/>) is a real tile on it.
     ///
     /// <para>Coordinates reach a warp from four places that the engine does not control — an authored Warp
-    /// attribute, a map's Boot/spawn setting, the operator's config, and a character file saved against an
+    /// attribute, a map's Exit/spawn setting, the operator's config, and a character file saved against an
     /// older version of the map. Every one of them can name a tile that does not exist, and the destination
     /// is indexed into <see cref="MapRecord.Tile"/> without another check, so this is the only thing standing
     /// between a mistyped coordinate and an <see cref="IndexOutOfRangeException"/> on the game loop.</para></summary>
@@ -315,16 +277,11 @@ private readonly WorldEvents _events;
 
         var from = sp.InGame ? new WorldPlace(p.Map, p.X, p.Y) : WorldPlace.Nowhere;
         int oldMap = p.Map;
-        var oldMoral = _world.MoralOf(oldMap);
-        var newMoral = _world.MoralOf(mapNum);
         var oldGreeting = _world.GreetingOf(oldMap);
         var newGreeting = _world.GreetingOf(mapNum);
         // Walking between contiguous map tiles that share the same greeting (e.g. two maps of one building that
         // inherit it from their group) stays silent — the player hasn't entered or left anything.
         bool greetingChanged = oldGreeting != newGreeting;
-        // Zone rules are announced only for a real map-to-map move made by someone already in the world.
-        bool moralChanged = sp.InGame && oldMap != mapNum;
-        bool isPk = p.IsPk(NowUtc);
 
         // A shop and a quest menu both hang off the keeper NPC that opened them, and both sessions end when
         // the player leaves the map that NPC stands on — one lifetime, one gate. A warp that lands back on
@@ -338,12 +295,10 @@ private readonly WorldEvents _events;
         }
 
         // Departure before arrival: every line about the map being left is spoken before any line about
-        // the map being joined. A single step can trip both halves — an Arena→Safe crossing exits the
-        // arena AND enters a safe zone.
+        // the map being joined. The two halves bracket the position update below, so anything added to
+        // either one stays in sequence without the adder having to know the order.
         if (greetingChanged)
             OnLeaveMap(index);
-        if (moralChanged)
-            AnnounceLeavingZone(index, oldMoral, newMoral, isPk);
 
         p.Map = mapNum;
         p.X = x;
@@ -361,11 +316,6 @@ private readonly WorldEvents _events;
         // landing the map chatter last in the joining player's chat instead of before the welcome lines.
         if (!suppressMapGreeting && greetingChanged)
             OnJoinMap(index);
-
-        if (moralChanged)
-        {
-            AnnounceEnteringZone(index, oldMoral, newMoral, isPk);
-        }
 
         if (_pm.GetTotalMapPlayers(oldMap) == 0)
             _world.PlayersOnMap[oldMap] = false;
@@ -654,13 +604,9 @@ private readonly WorldEvents _events;
         if (_world.IsTileOccupiedByNpc(destMapNum, x, y, null, newLayer)) return false;
 
         // Block on other players on the destination tile AND layer, mirroring the client's prediction so a
-        // tampered client can't cheat through.  Pass-through applies when either the source or destination
-        // map is safe AND the mover isn't PK-flagged.  A grace-period PKer counts as effectively non-PK.
-        var srcMoral = _world.MoralOf(mover.Map);
-        var destMoral = _world.MoralOf(destMapNum);
-        long nowUtc = NowUtc;
-        bool effectivelyPk = mover.IsPk(nowUtc) && _pm[index].PkGraceUntilUtc <= nowUtc;
-        bool playersPassThrough = !effectivelyPk && (srcMoral == MapMoral.Safe || destMoral == MapMoral.Safe);
+        // tampered client can't cheat through.  EITHER side saying pass-through is enough, so a player is
+        // never stranded on a boundary between a map that lets them through and one that does not.
+        bool playersPassThrough = _world.PlayersPassThroughOn(mover.Map) || _world.PlayersPassThroughOn(destMapNum);
         if (!playersPassThrough)
         {
             foreach (int i in _world.MapObservers[destMapNum])

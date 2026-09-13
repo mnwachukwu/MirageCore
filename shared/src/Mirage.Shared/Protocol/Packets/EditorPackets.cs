@@ -194,7 +194,7 @@ public sealed record EditorSaveMapPacket : IPacket
     [JsonPropertyName("map")] public SendMapPacket Map { get; init; } = null!;
 }
 
-// Editor-authored MapGroup fields. Moral + the environment bools are NULLABLE so a group can
+// Editor-authored MapGroup fields. The bools are NULLABLE so a group can
 // decline to provide one (null = inherit downstream). ControllingGuild is runtime state, NOT authored here —
 // the server preserves it across a save.
 public sealed record EditorSaveMapGroupPacket : IPacket
@@ -204,13 +204,13 @@ public sealed record EditorSaveMapGroupPacket : IPacket
     [JsonPropertyName("name")] public string Name { get; init; } = "";
     [JsonPropertyName("displayName")] public string DisplayName { get; init; } = "";
     [JsonPropertyName("music")] public int Music { get; init; }
-    [JsonPropertyName("moral")] public MapMoral? Moral { get; init; }
     [JsonPropertyName("indoors")] public bool? Indoors { get; init; }
     [JsonPropertyName("alwaysLit")] public bool? AlwaysLit { get; init; }
     [JsonPropertyName("alwaysDark")] public bool? AlwaysDark { get; init; }
-    [JsonPropertyName("bootMap")] public int BootMap { get; init; }
-    [JsonPropertyName("bootX")] public int BootX { get; init; }
-    [JsonPropertyName("bootY")] public int BootY { get; init; }
+    [JsonPropertyName("passThrough")] public bool? PlayersPassThrough { get; init; }
+    [JsonPropertyName("exitMap")] public int ExitMap { get; init; }
+    [JsonPropertyName("exitX")] public int ExitX { get; init; }
+    [JsonPropertyName("exitY")] public int ExitY { get; init; }
     // Map-enter/leave greeting fallback: a map inherits any blank greeting field from its group.
     [JsonPropertyName("greetingSpeaker")] public string GreetingSpeaker { get; init; } = "";
     [JsonPropertyName("joinSay")] public string JoinSay { get; init; } = "";
@@ -337,13 +337,13 @@ public sealed record UpdateMapGroupPacket : IPacket
     [JsonPropertyName("name")] public string Name { get; init; } = "";
     [JsonPropertyName("displayName")] public string DisplayName { get; init; } = "";
     [JsonPropertyName("music")] public int Music { get; init; }
-    [JsonPropertyName("moral")] public MapMoral? Moral { get; init; }
     [JsonPropertyName("indoors")] public bool? Indoors { get; init; }
     [JsonPropertyName("alwaysLit")] public bool? AlwaysLit { get; init; }
     [JsonPropertyName("alwaysDark")] public bool? AlwaysDark { get; init; }
-    [JsonPropertyName("bootMap")] public int BootMap { get; init; }
-    [JsonPropertyName("bootX")] public int BootX { get; init; }
-    [JsonPropertyName("bootY")] public int BootY { get; init; }
+    [JsonPropertyName("passThrough")] public bool? PlayersPassThrough { get; init; }
+    [JsonPropertyName("exitMap")] public int ExitMap { get; init; }
+    [JsonPropertyName("exitX")] public int ExitX { get; init; }
+    [JsonPropertyName("exitY")] public int ExitY { get; init; }
     [JsonPropertyName("greetingSpeaker")] public string GreetingSpeaker { get; init; } = "";
     [JsonPropertyName("joinSay")] public string JoinSay { get; init; } = "";
     [JsonPropertyName("leaveSay")] public string LeaveSay { get; init; } = "";

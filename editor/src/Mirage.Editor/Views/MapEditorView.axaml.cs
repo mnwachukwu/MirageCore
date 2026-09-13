@@ -135,7 +135,7 @@ public partial class MapEditorView : LocalizedUserControl
         _selectMapPrompt.Text = EditorStrings.Get(EditorStrings.MapEditor_SelectMapPrompt);
         _nameLabel.Text = EditorStrings.Get(EditorStrings.Common_NameLabel);
         _displayNameLabel.Text = EditorStrings.Get(EditorStrings.Common_DisplayNameLabel);
-        _moralLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_MoralLabel);
+        _passThroughLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_PassThroughLabel);
         _mapLinksGroup.Header = EditorStrings.Get(EditorStrings.MapEditor_MapLinksHeader);
         _respawnGroup.Header = EditorStrings.Get(EditorStrings.MapEditor_RespawnHeader);
         _greetingGroup.Header = EditorStrings.Get(EditorStrings.MapEditor_GreetingHeader);
@@ -144,9 +144,9 @@ public partial class MapEditorView : LocalizedUserControl
         _leftLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_LeftLabel);
         _rightLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_RightLabel);
         _musicLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_MusicLabel);
-        _bootMapLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_BootMapLabel);
-        _bootXLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_BootXLabel);
-        _bootYLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_BootYLabel);
+        _exitMapLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_ExitMapLabel);
+        _exitXLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_ExitXLabel);
+        _exitYLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_ExitYLabel);
         _greetingSpeakerLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_GreetingSpeakerLabel);
         _joinSayLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_JoinSayLabel);
         _leaveSayLabel.Text = EditorStrings.Get(EditorStrings.MapEditor_LeaveSayLabel);
@@ -169,12 +169,12 @@ public partial class MapEditorView : LocalizedUserControl
         _searchDown.PlaceholderText = mapPh;
         _searchLeft.PlaceholderText = mapPh;
         _searchRight.PlaceholderText = mapPh;
-        _searchBootMap.PlaceholderText = mapPh;
+        _searchExitMap.PlaceholderText = mapPh;
         _searchMapGroup.PlaceholderText = EditorStrings.Get(EditorStrings.MapEditor_SearchMapGroupsPlaceholder);
 
         // Every picker's clear button says the same thing on hover.
         string clear = EditorStrings.Get(EditorStrings.MapEditor_ClearTooltip);
-        foreach (var btn in new[] { _clearUp, _clearDown, _clearLeft, _clearRight, _clearBootMap, _clearMapGroup })
+        foreach (var btn in new[] { _clearUp, _clearDown, _clearLeft, _clearRight, _clearExitMap, _clearMapGroup })
             ToolTip.SetTip(btn, clear);
 
         // Footer action buttons
@@ -580,7 +580,7 @@ public partial class MapEditorView : LocalizedUserControl
             _searchDown.ResyncTextToSelection();
             _searchLeft.ResyncTextToSelection();
             _searchRight.ResyncTextToSelection();
-            _searchBootMap.ResyncTextToSelection();
+            _searchExitMap.ResyncTextToSelection();
             _searchMapGroup.ResyncTextToSelection();
         };
 

@@ -145,7 +145,7 @@ public sealed class JoinLeaveSystem : GameSystem
         _dispatcher.SendTo(index, BuildSendConversations());
 
         // Map groups: shipped before any map so the client can resolve a map's effective inheritable
-        // values (Moral/Music/Indoors/lighting/display name) against its cached group. Kept fresh live by
+        // values (Music/Indoors/lighting/display name) against its cached group. Kept fresh live by
         // UpdateMapGroupPacket on an editor save.
         _dispatcher.SendTo(index, BuildSendMapGroups());
 
@@ -494,26 +494,26 @@ public sealed class JoinLeaveSystem : GameSystem
         if (_pm.GetTotalMapPlayers(p.Map) == 0)
             _world.PlayersOnMap[p.Map] = false;
 
-        // Check boot map: if the map (or its MapGroup) boots players to a safe map on logout, move there
-        // before saving. Read the effective boot destination via the helpers BEFORE reassigning p.Map.
-        int bootMap = _world.BootMapOf(p.Map);
-        if (bootMap > 0)
+        // Check the exit point: if the map (or its MapGroup) names somewhere to leave from, move there
+        // before saving. Read the effective exit destination via the helpers BEFORE reassigning p.Map.
+        int exitMap = _world.ExitMapOf(p.Map);
+        if (exitMap > 0)
         {
-            int bootX = _world.BootXOf(p.Map);
-            int bootY = _world.BootYOf(p.Map);
-            // A boot point is authored content, so one naming no tile is reported and ignored: the
+            int exitX = _world.ExitXOf(p.Map);
+            int exitY = _world.ExitYOf(p.Map);
+            // An exit point is authored content, so one naming no tile is reported and ignored: the
             // character is saved standing where they logged out, which is somewhere that exists.
-            if (_world.IsRealMap(bootMap) && _world.Maps[bootMap].Contains(bootX, bootY))
+            if (_world.IsRealMap(exitMap) && _world.Maps[exitMap].Contains(exitX, exitY))
             {
-                p.X = bootX;
-                p.Y = bootY;
-                p.Map = bootMap;
+                p.X = exitX;
+                p.Y = exitY;
+                p.Map = exitMap;
             }
             else
             {
                 _logger.LogWarning(
-                    "Map #{Map} boots to map #{BootMap} ({X},{Y}), which is not a tile that exists - {Name} was left where they logged out.",
-                    p.Map, bootMap, bootX, bootY, p.TrimmedName);
+                    "Map #{Map} boots to map #{ExitMap} ({X},{Y}), which is not a tile that exists - {Name} was left where they logged out.",
+                    p.Map, exitMap, exitX, exitY, p.TrimmedName);
             }
         }
 
@@ -854,14 +854,14 @@ public sealed class JoinLeaveSystem : GameSystem
             .Select(g => new SendMapGroupsPacket.GroupData(
                 g.Index,
                 g.DisplayName,
-                g.Moral,
                 g.Music,
                 g.Indoors,
                 g.AlwaysLit,
                 g.AlwaysDark,
-                g.BootMap,
-                g.BootX,
-                g.BootY))
+                g.PlayersPassThrough,
+                g.ExitMap,
+                g.ExitX,
+                g.ExitY))
             .ToArray();
         return new SendMapGroupsPacket { Groups = groups };
     }

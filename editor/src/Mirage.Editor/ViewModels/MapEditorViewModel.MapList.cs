@@ -130,7 +130,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
     ///
     /// <para>The four neighbor links are dropped. They are the one part of a map that cannot be copied:
     /// each names a map whose own link still points back at the ORIGINAL, so a copy that kept them would
-    /// claim an adjacency the other side does not agree with. Warps, boot point and group membership are
+    /// claim an adjacency the other side does not agree with. Warps, exit point and group membership are
     /// kept — those are properties of the map rather than edges of the neighbor graph.</para>
     ///
     /// <para>The revision resets to zero rather than being carried over. It counts saves of THIS slot, and

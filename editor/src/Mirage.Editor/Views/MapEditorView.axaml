@@ -368,11 +368,8 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                   </Grid.ColumnDefinitions>
-                  <TextBlock x:Name="_moralLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                  <ComboBox  Grid.Column="1"
-                             ItemsSource="{Binding MoralOptions}"
-                             SelectedItem="{Binding SelectedMapMoral, Mode=TwoWay}"
-                             HorizontalAlignment="Stretch"/>
+                  <TextBlock x:Name="_passThroughLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                  <CheckBox  Grid.Column="1" IsThreeState="True" IsChecked="{Binding MapPlayersPassThrough}"/>
                 </Grid>
 
                 <Grid>
@@ -515,15 +512,15 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                       </Grid.ColumnDefinitions>
-                      <TextBlock x:Name="_bootMapLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                      <controls:DropdownAutoCompleteBox x:Name="_searchBootMap" Grid.Column="1"
+                      <TextBlock x:Name="_exitMapLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                      <controls:DropdownAutoCompleteBox x:Name="_searchExitMap" Grid.Column="1"
                                        ItemsSource="{Binding MapEntries}"
-                                       SelectedItem="{Binding SelectedMapBootMap, Mode=TwoWay}"
+                                       SelectedItem="{Binding SelectedMapExitMap, Mode=TwoWay}"
                                        ItemFilter="{x:Static models:NamedEntryFilter.ByNameOrId}"
                                        FilterMode="Custom"
                                        MinimumPrefixLength="0"/>
-                      <Button x:Name="_clearBootMap" Grid.Column="2" Classes="glyph" Content="×"
-                              Command="{Binding ClearMapEntityCommand}" CommandParameter="BootMap"/>
+                      <Button x:Name="_clearExitMap" Grid.Column="2" Classes="glyph" Content="×"
+                              Command="{Binding ClearMapEntityCommand}" CommandParameter="ExitMap"/>
                     </Grid>
 
                     <Grid>
@@ -532,8 +529,8 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                       </Grid.ColumnDefinitions>
-                      <TextBlock x:Name="_bootXLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                      <NumericUpDown Grid.Column="1" Value="{Binding MapBootX, Mode=TwoWay}"
+                      <TextBlock x:Name="_exitXLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                      <NumericUpDown Grid.Column="1" Value="{Binding MapExitX, Mode=TwoWay}"
                                      Minimum="0" Maximum="15" FormatString="0"/>
                     </Grid>
 
@@ -543,8 +540,8 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                       </Grid.ColumnDefinitions>
-                      <TextBlock x:Name="_bootYLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                      <NumericUpDown Grid.Column="1" Value="{Binding MapBootY, Mode=TwoWay}"
+                      <TextBlock x:Name="_exitYLabel" Grid.Column="0" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                      <NumericUpDown Grid.Column="1" Value="{Binding MapExitY, Mode=TwoWay}"
                                      Minimum="0" Maximum="11" FormatString="0"/>
                     </Grid>
                   </StackPanel>

@@ -81,10 +81,10 @@ public readonly record struct LightSourceCmd(
     /// <summary>0 on the tile just left, 1 on the tile being entered.</summary>
     float ReachBlend = 0f);
 
-/// <summary>A map-wide area light for a safe-zone map cell. <see cref="ScreenX"/>/<see cref="ScreenY"/>
+/// <summary>A map-wide area light for an always-lit map cell. <see cref="ScreenX"/>/<see cref="ScreenY"/>
 /// is the cell's top-left in screen space and <see cref="PxW"/>/<see cref="PxH"/> the cell's own size in
 /// pixels, which is the map's size and not the viewport's. Rendered as a soft-edged box (non-flickering)
-/// so safe zones stay lit at night with a little spill into the surrounding wilderness.</summary>
+/// so a lit map stays lit at night with a little spill into the surrounding dark.</summary>
 public readonly record struct MapLightCmd(float ScreenX, float ScreenY, int PxW, int PxH);
 
 /// <summary>A bright additive glow core for magical FX (spell balls, sparkles, embers). Drawn at the

@@ -314,8 +314,8 @@ public static class RenderCommandBuilder
     // are suppressed entirely: the halo would be redundant over a map that is already fully bright. Keyed to
     // the map seam (not the light's soft spill) so a torch snaps on the instant its bearer steps off the lit
     // map. Deliberately simple: onset is symmetric regardless of what borders the map, and matches where
-    // InAlwaysDark lifts. Keyed on the authored lighting, not on Moral: a safe map is not lit by virtue of
-    // being safe, and a lit map need not be safe.
+    // InAlwaysDark lifts. Keyed on the authored lighting and nothing else: what a map is FOR has no
+    // bearing on whether you can see in it.
     private static bool InTownLight(ClientState state, int wx, int wy)
     {
         for (int row = 0; row < 3; row++)

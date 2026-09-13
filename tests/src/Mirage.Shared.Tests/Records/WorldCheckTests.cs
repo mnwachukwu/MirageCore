@@ -150,13 +150,13 @@ public class WorldCheckTests
     }
 
     [Test]
-    public void ABootPointOutsideItsMap_IsFound()
+    public void AExitPointOutsideItsMap_IsFound()
     {
         var w = World();
-        w.Maps[1]!.BootMap = 2;
-        w.Maps[1]!.BootX = 40;
+        w.Maps[1]!.ExitMap = 2;
+        w.Maps[1]!.ExitX = 40;
 
-        Assert.That(Kinds(w), Does.Contain(WorldIssueKind.BootTileOutside));
+        Assert.That(Kinds(w), Does.Contain(WorldIssueKind.ExitTileOutside));
     }
 
     [Test]

@@ -497,7 +497,7 @@ public static partial class EditorStrings
     public const string WorldCheck_KindQuest = nameof(WorldCheck_KindQuest);
     public const string WorldCheck_KindConversation = nameof(WorldCheck_KindConversation);
     public const string WorldCheck_WarpMapMissing = nameof(WorldCheck_WarpMapMissing);
-    public const string WorldCheck_BootMapMissing = nameof(WorldCheck_BootMapMissing);
+    public const string WorldCheck_ExitMapMissing = nameof(WorldCheck_ExitMapMissing);
     public const string WorldCheck_NpcMissing = nameof(WorldCheck_NpcMissing);
     public const string WorldCheck_ItemMissing = nameof(WorldCheck_ItemMissing);
     public const string WorldCheck_QuestMissing = nameof(WorldCheck_QuestMissing);
@@ -512,7 +512,7 @@ public static partial class EditorStrings
     public const string WorldCheck_LinkNotReciprocal = nameof(WorldCheck_LinkNotReciprocal);
     public const string WorldCheck_LinkOutOfRange = nameof(WorldCheck_LinkOutOfRange);
     public const string WorldCheck_WarpTileOutside = nameof(WorldCheck_WarpTileOutside);
-    public const string WorldCheck_BootTileOutside = nameof(WorldCheck_BootTileOutside);
+    public const string WorldCheck_ExitTileOutside = nameof(WorldCheck_ExitTileOutside);
     public const string WorldCheck_MapGroupMissing = nameof(WorldCheck_MapGroupMissing);
     public const string WorldCheck_SpawnPinOutside = nameof(WorldCheck_SpawnPinOutside);
     public const string WorldCheck_LightOutside = nameof(WorldCheck_LightOutside);

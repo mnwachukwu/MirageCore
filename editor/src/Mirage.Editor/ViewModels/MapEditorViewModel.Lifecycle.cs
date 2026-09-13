@@ -37,9 +37,6 @@ public sealed partial class MapEditorViewModel : ObservableObject
         OnPropertyChanged(nameof(HoveredGroundAttributeText));
         OnPropertyChanged(nameof(HoveredFringeAttributeText));
         OnPropertyChanged(nameof(HoveredNpcSpawnText));
-        MoralOptions = MoralChoices.Build();
-        OnPropertyChanged(nameof(MoralOptions));
-        OnPropertyChanged(nameof(SelectedMapMoral));
         // A lock held by another window of your own account is worded, not just named.
         RefreshLockState();
     }
