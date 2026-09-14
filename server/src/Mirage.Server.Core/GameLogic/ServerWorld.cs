@@ -176,6 +176,20 @@ public sealed class ServerWorld : IWorld
         return 0;
     }
 
+    public string AccessOf(EntityHandle who)
+    {
+        if (!who.IsPlayer || !IsInWorld(who)) return string.Empty;
+
+        return _pm[who.PlayerIndex].Char.Access switch
+        {
+            AdminLevel.Creator => "creator",
+            AdminLevel.Developer => "developer",
+            AdminLevel.Mapper => "mapper",
+            AdminLevel.Monitor => "monitor",
+            _ => "player",
+        };
+    }
+
     public string GuildRankOf(EntityHandle who)
     {
         if (Guild(GuildNumber(who)) is not { } guild) return string.Empty;
@@ -295,6 +309,8 @@ public sealed class ServerWorld : IWorld
 
         return EconomyFormulas.RepairCost(points, _world.Items[itemNum]);
     }
+
+    public double RepairRateAt(int tier) => EconomyFormulas.RepairGoldPerDurabilityPoint(tier);
 
     /// <summary>The bag slot holding the copy of that item they are WEARING, or null. Wearing is what
     /// makes it findable: two copies in the bag are two different amounts of wear, and a rule about what
@@ -525,6 +541,45 @@ public sealed class ServerWorld : IWorld
         if (who.IsPlayer && IsInWorld(who)) _items.TakeItem(who.PlayerIndex, itemNum, quantity);
     }
 
+    public IReadOnlyList<int> BagOf(EntityHandle who)
+    {
+        if (!who.IsPlayer || !IsInWorld(who)) return [];
+
+        var p = _pm[who.PlayerIndex].Char;
+        var held = new List<int>();
+
+        for (int slot = 1; slot <= Constants.MaxInv; slot++)
+        {
+            if (p.Inv[slot].Num > 0) held.Add(slot);
+        }
+
+        return held;
+    }
+
+    public (int ItemNum, int Quantity, bool Worn) InSlot(EntityHandle who, int slot)
+    {
+        if (!who.IsPlayer || !IsInWorld(who) || slot < 1 || slot > Constants.MaxInv) return (0, 0, false);
+
+        var p = _pm[who.PlayerIndex].Char;
+        int itemNum = p.Inv[slot].Num;
+
+        if (itemNum <= 0) return (0, 0, false);
+
+        // A stack answers with its count and everything else with one, so a rule can price a slot
+        // without first asking what kind of thing is in it.
+        int quantity = Math.Max(p.Inv[slot].Quantity, 1);
+
+        return (itemNum, quantity, p.IsEquipped(slot));
+    }
+
+    public bool DropFrom(EntityHandle who, int slot, int quantity = 0)
+    {
+        if (InSlot(who, slot).ItemNum <= 0) return false;
+
+        _items.PlayerMapDropItem(who.PlayerIndex, slot, Math.Max(quantity, 0));
+        return true;
+    }
+
     public long Carrying(EntityHandle who, int itemNum)
     {
         if (!who.IsPlayer || !IsInWorld(who) || itemNum < 1 || itemNum > _world.Limits.Items) return 0L;
@@ -715,6 +770,19 @@ public sealed class ServerWorld : IWorld
     /// <summary>A map's game fields WITH its group's behind them — the map's own value when it carries the
     /// key, else the group's, else nothing. The read every rule wants; <see cref="RecordAt"/> answers with
     /// the map's own bag alone, which is what an editor authoring that one map needs.</summary>
+    public WorldPlace ExitFrom(int mapNum)
+    {
+        if (mapNum < 1 || mapNum > _world.Limits.Maps || mapNum >= _world.Maps.Length) return WorldPlace.Nowhere;
+
+        var map = _world.Maps[mapNum];
+        var group = _world.GroupOf(mapNum);
+        int exit = MapGroupResolve.ExitMap(map, group);
+
+        return exit > 0
+            ? new WorldPlace(exit, MapGroupResolve.ExitX(map, group), MapGroupResolve.ExitY(map, group))
+            : WorldPlace.Nowhere;
+    }
+
     public AttributeValue? MapValue(int mapNum, string key)
     {
         if (mapNum < 1 || mapNum > _world.Limits.Maps || mapNum >= _world.Maps.Length) return null;

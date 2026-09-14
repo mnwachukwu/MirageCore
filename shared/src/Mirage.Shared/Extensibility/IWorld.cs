@@ -187,6 +187,33 @@ public interface IWorld
     /// <summary>Takes items out of this body's bag, worn ones included.</summary>
     void Take(EntityHandle who, int itemNum, int quantity = 1);
 
+    // ── The bag, slot by slot ─────────────────────────────────────────────────
+    //
+    // Carrying and Give and Take answer about an ITEM. A rule about what somebody is carrying —
+    // what a death scatters, what a thief takes, what a customs post seizes — is about SLOTS: two
+    // copies of one sword are two slots and two amounts of wear, and a stack of coins is one slot
+    // holding a number.
+
+    /// <summary>Which bag slots hold anything, in slot order. Empty for a body carrying nothing and
+    /// for one that is not in the world.</summary>
+    IReadOnlyList<int> BagOf(EntityHandle who);
+
+    /// <summary>What is in that bag slot: the item, how many of it, and whether it is the copy being
+    /// worn. Zeroes for a slot that is empty or is not there.
+    ///
+    /// <para><paramref name="quantity"/> is the stack size for something that stacks and 1
+    /// otherwise, so a rule can count what a slot is worth without knowing which kind it is.</para></summary>
+    (int ItemNum, int Quantity, bool Worn) InSlot(EntityHandle who, int slot);
+
+    /// <summary>Puts what is in that bag slot on the ground where the body is standing.
+    ///
+    /// <para><paramref name="quantity"/> takes part of a stack; 0 takes the whole slot. What a game
+    /// drops this way lands as a player drop and behaves like one: anyone may pick it up, and it is
+    /// subject to the world's own limit on litter.</para>
+    ///
+    /// <para>False for a slot holding nothing, and for a body that is not in the world.</para></summary>
+    bool DropFrom(EntityHandle who, int slot, int quantity = 0);
+
     /// <summary>How many of that item this body is carrying, worn ones and every stack counted
     /// together. 0 for a body carrying none.
     ///
@@ -288,6 +315,15 @@ public interface IWorld
     /// <para>For a map this is the name a player is shown, resolved through its group the way the
     /// client resolves it. For a game's own family it is the record's <c>name</c> field.</para></summary>
     string RecordName(string familyId, int num);
+
+    /// <summary>Where this map puts somebody who leaves it other than by walking, resolved through
+    /// its <see cref="MapGroupOf">group</see>. <see cref="WorldPlace.Nowhere"/> for a map that names
+    /// none, and for one that is not there.
+    ///
+    /// <para>The map author's say over where leaving this place lands you. A game deciding where a
+    /// death or a spell sends somebody reads it and outranks it as it sees fit — the engine consults
+    /// it for nothing on its own.</para></summary>
+    WorldPlace ExitFrom(int mapNum);
 
     /// <summary>One of a game's own fields on a map, with the map's <see cref="MapGroupOf">group</see>
     /// behind it: the map's own value when it carries the key, else the group's, else null.
@@ -501,6 +537,14 @@ public interface IWorld
     // place, nothing walks it, and it outlives every member — so the thing that names one is the same
     // thing that names an item or a map.
 
+    /// <summary>What this body's account may do to the world — <c>player</c>, <c>monitor</c>,
+    /// <c>mapper</c>, <c>developer</c>, or <c>creator</c>. Blank for a body that is not there.
+    ///
+    /// <para>Whoever runs a world usually wants its staff outside its rules: no fighting, no loot, no
+    /// place on a ladder. Which rules that means is a game's to decide, and this is the fact it
+    /// decides on.</para></summary>
+    string AccessOf(EntityHandle who);
+
     /// <summary>Which guild this body's account belongs to, or 0 for none.</summary>
     int GuildNumber(EntityHandle who);
 
@@ -577,6 +621,15 @@ public interface IWorld
     /// <summary>What repairing that many points of that item costs in gold, by the engine's own repair
     /// rate. 0 for an item that is not there.</summary>
     int RepairCost(int itemNum, int points);
+
+    /// <summary>Gold a point of durability costs to repair on ON-TIER gear at that tier, priced against
+    /// a reference piece rather than against anything anybody is holding.
+    ///
+    /// <para>Fractional, and deliberately so — at the bottom of the ladder a point is worth a fraction of
+    /// a coin. A game charging a per-use upkeep in something other than durability asks this so its
+    /// number tracks the engine's repair economy instead of being pinned beside it, where the two drift
+    /// apart the first time repair is retuned and nothing reports it.</para></summary>
+    double RepairRateAt(int tier);
 
     /// <summary>The time now, in seconds since 1970, UTC.
     ///

@@ -2,10 +2,9 @@
 #
 # What a quest IS lives in declarations/quests.cm. This is what a character does with one.
 #
-# 🔴 A CHARACTER CARRIES ONE NUMBER PER QUEST AND ONE PER GOAL, and nothing else. Where a quest is up
-# to is a fact about the character, so it lives on the character — not in a table beside them that a
-# deletion, a rollback, or a second server could disagree with. The cost is a declared key per slot,
-# which is what a save file is.
+# A character carries one number per quest and one per goal, and nothing else. Where a quest is up to
+# is a fact about the character, so it lives on the character rather than in a table beside them that
+# a deletion, a rollback, or a second server could disagree with. It costs a declared key per slot.
 
 shared model Quests
 
@@ -47,7 +46,7 @@ shared model Quests
     public integer SeasonDays = 91;
 
     # One number naming the period a day falls in, for that cadence. Two runs in the same period give
-    # the same number, and that is the whole of the rule: a quest re-opens when the number changes.
+    # the same number; a quest re-opens when the number changes.
     public integer function PeriodOf(integer cadence, integer day)
         if cadence == Quests.Daily
             yield day;
@@ -118,9 +117,9 @@ shared model Quests
             game.Attribute(Quests.LineAt(line), "owner");
         end loop
 
-        # 🔴 A CONVERSATION CHOICE REACHES THESE. A choice names a verb by the id it was declared
-        # with, and picking it opens whatever panel that verb opens — so a giver's own dialogue can
-        # end in "Tell me more" and the journal is what comes up.
+        # A conversation choice reaches these. A choice names a verb by the id it was declared with,
+        # and picking it opens whatever panel that verb opens, so a giver's own dialogue can end in
+        # "Tell me more" and bring up the journal.
         Verb ask = game.Action(Quests.Offer, "Ask about work", "Quests");
         ask.OnNpc();
         ask.Icon("scroll");
@@ -272,9 +271,9 @@ shared model Quests
 
     # ── Counting toward one ───────────────────────────────────────────────────
 
-    # 🔴 CALLED FROM THE ONE PLACE A CREATURE DIES, so a kill counts whether it was a swing or a
-    # spell. A second call site would be a second rule, and the one that got forgotten would be the
-    # one nobody notices until a quest will not finish.
+    # Called from the one place a creature dies, so a kill counts whether it was a swing or a spell.
+    # A second call site would be a second rule, and the forgotten one would not surface until a
+    # quest refused to finish.
     public function Killed(Player who, integer kind)
         integer rows = World.Records(Quests.Goals);
         boolean moved = false;
@@ -376,8 +375,8 @@ shared model Quests
 
         who.SetNumber(Quests.At(number), Quests.Finished);
 
-        # The period it was finished in, which is what holds it shut until that period has passed. One
-        # is added so a quest finished in period nought is told apart from one never finished.
+        # The period it was finished in. It stays shut until that period has passed. One is added so
+        # a quest finished in period nought is told apart from one never finished.
         who.SetNumber(Quests.PeriodAt(number),
                       Quests.PeriodOf(Quests.CadenceOf(number), Calendar.Today()) + 1);
 
@@ -391,7 +390,7 @@ shared model Quests
 
         who.Message(name + " is settled.");
 
-        # ⚠ LAST, because earning may take them up a level and levelling says so. A payout announced
+        # ⚠ Last, because earning may take them up a level and levelling says so. A payout announced
         # after the level-up reads as the reward for the level rather than for the quest.
         Levels.Earn(who, Quests.PaidExp(number, again));
     end function
@@ -438,9 +437,9 @@ shared model Quests
 
     # ── The journal ───────────────────────────────────────────────────────────
 
-    # 🔴 A WINDOW OVER WHAT IS UNDERWAY, rewritten whenever it changes. The panel reads these keys live
-    # off the player, so a game with no journal code still draws one — but somebody with forty quests
-    # taken has a screen nobody can read, and the eight they are working on is the useful answer.
+    # A window over what is underway, rewritten whenever it changes. The panel reads these keys live
+    # off the player, so a game with no journal code still draws one. Somebody with forty quests taken
+    # has a screen nobody can read; the eight they are working on is the useful answer.
     public function Write(Player who)
         integer many = World.Records(Quests.Of);
         integer line = 0;

@@ -1,22 +1,21 @@
 # What a quest IS, as records an author fills in.
 #
-# 🔴 THE NPC ROLES LIVE HERE, NOT ON THE CREATURE. A quest names who offers it and who takes it back;
-# the creature record says nothing about quests at all. So adding a quest is one row and touches
-# nothing else, and a creature can be the giver for as many quests as an author likes without ever
-# being edited.
+# The NPC roles live here rather than on the creature. A quest names who offers it and who takes it
+# back; the creature record says nothing about quests at all. Adding a quest is one row and touches
+# nothing else, and a creature can give as many quests as an author likes without ever being edited.
 
 model Quest
     public string name;
     public string description;
 
-    # Who offers it, and who takes it back. A picker over the engine's own creatures — they have no
-    # model a field could be typed as, which is what Points is for.
+    # Who offers it, and who takes it back. A picker over the engine's own creatures, which have no
+    # model a field could be typed as — that is what Points exists for.
     public integer giver;
     public integer turnIn;
 
     # ── What it takes to accept ───────────────────────────────────────────────
     #
-    # Zero means no requirement, which is what an unauthored field means anyway.
+    # Zero means no requirement, and an unauthored field reads as zero.
 
     public integer reqLevel;
     public integer reqStr;
@@ -35,10 +34,10 @@ model Quest
 
     # ── Taking it again ───────────────────────────────────────────────────────
     #
-    # ⚠ HOW OFTEN it re-opens, not whether. Nought is a quest finished once and for all; the rest
+    # ⚠ How often it re-opens, not whether. Nought is a quest finished once and for all; the rest
     # re-open once the day, the week, the month or the season it was finished in has passed. A
     # character carries the period they last finished it in, and it lights up again when that period
-    # is no longer the current one — so nothing has to sweep every character at midnight.
+    # is no longer the current one, so nothing has to sweep every character at midnight.
 
     public integer cadence;
 
@@ -91,7 +90,7 @@ model QuestGoal
 
     # Which creature has to be killed, and how many.
     #
-    # ⚠ KILLING is the only thing the original ever counted. Fetching and exploring were declared and
+    # ⚠ Killing is the only thing the original ever counted. Fetching and exploring were declared and
     # never wired, so they are not here: a goal kind nothing advances is a quest nobody can finish.
     public integer quarry;
     public integer many;

@@ -1,7 +1,7 @@
 # What a guild is worth to the people in it.
 #
 # One privilege a level, cumulative, and every one of them switches off the moment the tax goes
-# unpaid. Levelling a guild is slow and expensive, and this is the whole of what the money buys.
+# unpaid. Levelling a guild is slow and expensive, and these five are what the money buys.
 #
 # ⚠ Two of the five reach nothing here, because the engine does the thing they modify: what a
 # creature drops and how a swing wears a weapon are Core's, and a rule has no hold on either. They
@@ -50,8 +50,8 @@ shared model Perks
 
     # ── Level two: gear sometimes shrugs off a hit ────────────────────────────
     #
-    # ⚠ ORDINARY wear only. What dying costs a kit is untouched by this, which is what keeps the
-    # privilege from being the answer to a war.
+    # ⚠ Ordinary wear only. What dying costs a kit is untouched by this, so the privilege is not an
+    # answer to a war.
 
     public boolean function Shrugs(Player who)
         if not Perks.Active(World.GuildOf(who), Perks.PreventWearLevel)

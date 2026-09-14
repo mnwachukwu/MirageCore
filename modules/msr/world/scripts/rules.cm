@@ -1,23 +1,22 @@
 # Mirage Source Remastered, rebuilt on Core as a world's own rules.
 #
-# 🔴 THIS FILE IS THE ENGINE'S DOOR AND NOTHING ELSE. Every function the engine calls is here, and
-# each one hands the work to the model that owns it. A game that put its whole self in this file
-# would be a game in one file.
+# This file is the engine's door. Every function the engine calls is here, and each one hands the
+# work to the model that owns it. Nothing else lives here.
 #
-# 🔴 TWO FOLDERS, AND THE LINE BETWEEN THEM IS WHO WRITES IT.
+# Two folders sit below it, split by who writes what.
 #
-#   declarations/   the record models — what a WORLD AUTHOR fills in through the editor
-#   behavior/       the rules — what happens, which nobody authors
+#   declarations/   the record models a world author fills in through the editor
+#   behavior/       the rules, which nobody authors
 #
 #   declarations/character.cm   a class, and the kit it opens with
 #   declarations/magic.cm       a spell, who may learn it, and what a class already knows
-#   declarations/gear.cm        what this game adds to the ENGINE'S own items, and who may wield them
+#   declarations/gear.cm        this game's own fields on the engine's items, and who may wield them
 #   declarations/quests.cm      a quest, what finishing it takes, and who may take it
-#   declarations/places.cm      what this game adds to the ENGINE'S own maps
-#   declarations/beasts.cm      what this game adds to the ENGINE'S own creatures
+#   declarations/places.cm      this game's own fields on the engine's maps
+#   declarations/beasts.cm      this game's own fields on the engine's creatures
 #
-#   behavior/stats.cm      what a character sheet IS, and the arithmetic behind it
-#   behavior/sheet.cm      what the engine carries, and what a new character starts with
+#   behavior/stats.cm      the four stats, the pool curves, and the experience table
+#   behavior/sheet.cm      the keys the engine carries, and what a new character starts with
 #   behavior/vitals.cm     the three pools, and what puts back into them
 #   behavior/combat.cm     what a swing is worth, and what a body turns aside
 #   behavior/fight.cm      where that lands on somebody
@@ -28,9 +27,9 @@
 #   behavior/classes.cm    applying the class they chose, and what it is worth afterwards
 #   behavior/spells.cm     what casting costs, and what a cast is worth
 #   behavior/book.cm       what a character knows, has ready, and does with it
-#   behavior/gear.cm       who may wield what
+#   behavior/gear.cm       who may wield what, and how gear wears out
 #   behavior/quests.cm     taking one, counting toward it, and handing it back
-#   behavior/guilds.cm     what a guild is FOR: a level, a war, and who may fight whom
+#   behavior/guilds.cm     a guild's level, its wars, and who may fight whom
 #   behavior/ledger.cm     what a guild is charged, and what it is paid
 #   behavior/perks.cm      what a guild is worth to the people in it
 #   behavior/valor.cm      the war currency
@@ -38,12 +37,12 @@
 #   behavior/calendar.cm   the calendar, worked out from the clock
 #   behavior/levels.cm     experience, and what it buys
 #
-# The original is a .NET solution of some hundreds of files. What is being reproduced is the GAME —
+# The original is a .NET solution of some hundreds of files. What is reproduced here is the game —
 # its stats, its pools, its fights, its classes — on an engine that has never heard of any of it.
 
 shared model Rules
 
-    # Declaring runs once, before the world exists. Everything it says is about what the game IS.
+    # Declaring runs once, before the world exists, so everything it says is about the game itself.
     public function Configure(Builder game)
         Sheet.Declare(game);
         Vitals.Declare(game);
@@ -144,20 +143,20 @@ shared model Rules
         Fight.Maul(it, who);
     end function
 
-    # And one that reached another creature. Two handlers rather than one, because a rule handed the
-    # wrong kind of body runs and is wrong — which is worse than a rule that is not called.
+    # And one that reached another creature. Two handlers rather than one: a rule handed the wrong
+    # kind of body runs and gives a wrong answer, where one never called at least gives none.
     public function OnNpcContact(Npc it, Npc other)
         Fight.Clash(it, other);
     end function
 
-    # Nothing stops a death here yet - a grace timer is what the original had, and it wants the
-    # respawn rule beside it rather than on its own.
+    # Nothing stops a death here yet. The original had a grace timer, which belongs beside the
+    # respawn rule rather than on its own.
     public string function OnMayDie(Player who, string cause)
         yield "";
     end function
 
     # And what one costs, asked while the body is still on the tile it fell on. `killer` is nobody
-    # when the world itself did it, which IsHere answers.
+    # when the world itself did it; IsHere answers that.
     public function OnDied(Player who, Player killer, string cause)
         Death.Fell(who, killer, cause);
     end function

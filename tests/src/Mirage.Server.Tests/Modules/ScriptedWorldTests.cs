@@ -2318,6 +2318,40 @@ public class ScriptedWorldTests
             return true;
         }
 
+        /// <summary>What a test put in each bag slot: the item, how many, and whether it is worn.</summary>
+        public Dictionary<(EntityHandle, int), (int ItemNum, int Quantity, bool Worn)> Carried { get; } = [];
+
+        public IReadOnlyList<int> BagOf(EntityHandle who) =>
+            [.. Carried.Keys.Where(k => k.Item1 == who).Select(k => k.Item2).OrderBy(s => s)];
+
+        public (int ItemNum, int Quantity, bool Worn) InSlot(EntityHandle who, int slot) =>
+            Carried.TryGetValue((who, slot), out var held) ? held : (0, 0, false);
+
+        /// <summary>What a rule put on the ground, by the slot it came out of.</summary>
+        public List<(EntityHandle Who, int Slot, int Quantity)> Dropped { get; } = [];
+
+        public bool DropFrom(EntityHandle who, int slot, int quantity = 0)
+        {
+            if (InSlot(who, slot).ItemNum <= 0) return false;
+
+            Dropped.Add((who, slot, quantity));
+            Carried.Remove((who, slot));
+            return true;
+        }
+
+        /// <summary>What a test says each account may do. Everybody is an ordinary player until it
+        /// says otherwise.</summary>
+        public Dictionary<EntityHandle, string> Access { get; } = [];
+
+        public string AccessOf(EntityHandle who) =>
+            Access.TryGetValue(who, out string? level) ? level : "player";
+
+        /// <summary>Where a test says each map sends somebody who leaves it.</summary>
+        public Dictionary<int, WorldPlace> Exits { get; } = [];
+
+        public WorldPlace ExitFrom(int mapNum) =>
+            Exits.TryGetValue(mapNum, out var at) ? at : WorldPlace.Nowhere;
+
         /// <summary>How much of each item a test says a body is carrying.</summary>
         public Dictionary<(EntityHandle, int), long> Holding { get; } = [];
 
@@ -2418,14 +2452,16 @@ public class ScriptedWorldTests
         /// <summary>What the repair rate is, per point, for a test that charges for wear.</summary>
         public int RepairPerPoint { get; set; } = 2;
 
+        public double RepairRatePerTier { get; set; } = 0.5;
+
         public IReadOnlyList<int> WornBy(EntityHandle who) =>
             HasOn.TryGetValue(who, out var on) ? on : [];
 
-        /// <summary>What a test put in each named slot, by body.</summary>
-        public Dictionary<(EntityHandle, string), int> InSlot { get; } = [];
+        /// <summary>What a test put in each named equip slot, by body.</summary>
+        public Dictionary<(EntityHandle, string), int> Equipped { get; } = [];
 
         public int WornIn(EntityHandle who, string slotKey) =>
-            InSlot.TryGetValue((who, slotKey), out int item) ? item : 0;
+            Equipped.TryGetValue((who, slotKey), out int item) ? item : 0;
 
         public (int Left, int Full) DurabilityOf(EntityHandle who, int itemNum) =>
             Wearing.TryGetValue((who, itemNum), out var dur) ? dur : (0, 0);
@@ -2439,6 +2475,8 @@ public class ScriptedWorldTests
         }
 
         public int RepairCost(int itemNum, int points) => Math.Max(0, points) * RepairPerPoint;
+
+        public double RepairRateAt(int tier) => Math.Max(tier, 0) * RepairRatePerTier;
 
         public bool SetRecordValue(string familyId, int num, string key, AttributeValue value)
         {

@@ -1,10 +1,10 @@
 # What this game hangs on an item the ENGINE owns.
 #
-# 🔴 AN ITEM'S OWN PROPERTIES ARE A CLOSED SET, because Core cannot act on a property it has never
-# heard of — it knows a weapon has power and durability because it spends both. What a GAME knows
-# about that sword is open, and it belongs on the sword rather than in a table beside it: a level
-# requirement is a fact about the item, and a second family keyed by item number is that same fact
-# stored where it can be forgotten.
+# An item's own properties are a closed set, because Core cannot act on a property it has never heard
+# of; it knows a weapon has power and durability because it spends both. What a game knows about that
+# sword is open, and it belongs on the sword rather than in a table beside it: a level requirement is
+# a fact about the item, and a second family keyed by item number stores that fact where it can be
+# forgotten.
 #
 # Extend adds these rows to the editor's own Items form. There is no new folder, no new file, and no
 # new packet — an extended family is the same family with more rows on it.
@@ -14,9 +14,9 @@ model ItemRules
     # opinion about who may hold it, which is exactly the kind of fact this is for.
     public integer levelReq;
 
-    # ⚠ THE SPELL A SCROLL CARRIES, on the scroll rather than on the spell. It is one value about one
-    # item, so it is a field; and typed as this game's own Spell model, so the editor draws a picker
-    # listing the spells by name.
+    # ⚠ The spell a scroll carries, on the scroll rather than on the spell. One value about one item,
+    # so it is a field; typed as this game's own Spell model, so the editor draws a picker listing
+    # the spells by name.
     public Spell teaches;
 
     # ⚠ The war currency, and exactly ONE item in a world should carry it. It is what a guild's
@@ -27,6 +27,11 @@ model ItemRules
     # for it; anything a RULE charges a person — a bounty, a toll — is charged in this.
     public boolean coin;
 
+    # ⚠ And the casting reagent, also exactly one. A damaging cast spends it, which is what makes a
+    # caster's upkeep cost what a warrior's repair bill costs. A world with none authored has casters
+    # who fight for free.
+    public boolean reagent;
+
     public shared function Describe(Records these)
         these.Extend("Items");
 
@@ -34,6 +39,7 @@ model ItemRules
         these.Caption("teaches", "Spell written on it");
         these.Caption("valor", "This is valor");
         these.Caption("coin", "This is the coin");
+        these.Caption("reagent", "This is the casting reagent");
 
         these.Range("levelReq", 0, 255);
     end function

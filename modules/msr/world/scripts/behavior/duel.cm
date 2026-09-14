@@ -22,9 +22,9 @@ shared model Duel
     # the last blow. So each hit adds to a running total held on the attacker, keyed by the person
     # they are hitting, and the leader is kept on the victim.
     #
-    # The bout number is what makes an old total stop counting: the victim bumps it on every death,
-    # and a total stamped with a bout that has passed starts again from nothing. Keys are reused for
-    # the life of the pair rather than accumulating.
+    # The bout number stops an old total counting. The victim bumps it on every death, and a total
+    # stamped with a bout that has passed starts again from nothing. Keys are reused for the life of
+    # the pair rather than accumulating.
 
     public string Bout = "bout";
     public string Most = "credmost";
@@ -71,6 +71,16 @@ shared model Duel
     # than that the map is protected.
 
     public string function Judge(Player who, Player them)
+        # ⚠ Staff are outside this entirely, on both sides of it. Somebody who can edit the world is
+        # not somebody the world's own rules should be weighing.
+        if World.Access(who) != "player"
+            yield "You are here to watch, not to fight.";
+        end if
+
+        if World.Access(them) != "player"
+            yield them.Name + " is not somebody you may fight.";
+        end if
+
         # A pair is protected as partymates anywhere, the arena included, so an organized team match
         # has no friendly fire in it.
         if Duel.SameParty(who, them)

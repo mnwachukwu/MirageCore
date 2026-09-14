@@ -144,6 +144,11 @@ public class ModuleStartTests
         public bool Wear(EntityHandle who, int itemNum) => false;
         public bool Remove(EntityHandle who, int itemNum) => false;
         public long Carrying(EntityHandle who, int itemNum) => 0L;
+        public IReadOnlyList<int> BagOf(EntityHandle who) => [];
+        public (int ItemNum, int Quantity, bool Worn) InSlot(EntityHandle who, int slot) => (0, 0, false);
+        public bool DropFrom(EntityHandle who, int slot, int quantity = 0) => false;
+        public string AccessOf(EntityHandle who) => string.Empty;
+        public WorldPlace ExitFrom(int mapNum) => WorldPlace.Nowhere;
         public bool IsRunning(EntityHandle who) => false;
         public string BehaviorOf(EntityHandle npc) => string.Empty;
         public int GroupOf(EntityHandle npc) => 0;
@@ -163,6 +168,8 @@ public class ModuleStartTests
         public (int Left, int Full) DurabilityOf(EntityHandle who, int itemNum) => (0, 0);
         public int Wear(EntityHandle who, int itemNum, int points) => 0;
         public int RepairCost(int itemNum, int points) => 0;
+
+        public double RepairRateAt(int tier) => 0;
         public AttributeValue? MapValue(int mapNum, string key) => null;
         public bool SetRecordValue(string familyId, int num, string key, AttributeValue value) => false;
         public bool GiveGuildGold(int guild, long amount) => false;

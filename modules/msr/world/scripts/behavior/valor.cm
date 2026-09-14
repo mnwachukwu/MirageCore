@@ -82,8 +82,7 @@ shared model Valor
         give.Icon("flame");
     end function
 
-    # Everything they carry, which is what the verb on the bar means. An amount is what the vault
-    # panel's form asks for.
+    # The verb on the bar gives everything they carry. The vault panel's form asks for an amount.
     public function GiveAll(Player who)
         Valor.Donate(who, who.Carrying(Valor.Item()));
     end function

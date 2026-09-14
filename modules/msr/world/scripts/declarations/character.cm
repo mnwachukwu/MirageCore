@@ -1,9 +1,8 @@
 # What a character can BE, as records an author fills in.
 #
-# 🔴 THE MODEL IS THE DECLARATION. Writing what a record holds is the whole of it: the engine reads
-# these and hands the editor a section per model, a folder on disk, loading and saving, row locking,
-# hot reload, world transfer, and the world check. Nothing here is written twice, so nothing here can
-# drift.
+# The model is the declaration. Writing what a record holds is all of it: the engine reads these and
+# hands the editor a section per model, a folder on disk, loading and saving, row locking, hot
+# reload, world transfer, and the world check. Nothing here is written twice, so nothing can drift.
 #
 # The fields are public because the ENGINE reads them and no script does. A private field nothing
 # names is one the compiler asks you to delete.

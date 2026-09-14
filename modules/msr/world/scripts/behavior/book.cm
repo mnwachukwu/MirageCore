@@ -26,10 +26,11 @@ shared model Book
             game.Attribute(Book.NameAt(slot), "owner");
         end loop
 
-        # 🔴 Q, which is what the original cast with. E is the melee key and R reaches, so the three
-        # keys a hand rests on are the three things a character does.
+        # Q, as the original cast with. E is the melee key and R reaches, so the three keys a hand
+        # rests on are the three things a character does.
         Verb outward = game.Action(Book.Cast, "Cast", "Magic");
         outward.OnNpc();
+        outward.OnPlayer();
         outward.Icon("spark");
         outward.Key("Q");
 
@@ -64,9 +65,8 @@ shared model Book
 
     # ── Learning ──────────────────────────────────────────────────────────────
 
-    # 🔴 A SCROLL, and only a scroll, which is how the original taught everything. Somebody uses one
-    # out of their bag and the spell written on it goes into the book; the scroll is spent only if it
-    # was read.
+    # A scroll and only a scroll, as the original taught everything. Somebody uses one out of their
+    # bag and the spell written on it goes into the book; the scroll is spent only if it was read.
     #
     # ⚠ Raised for every use, the engine's own two included — so a scroll that is also a piece of gear
     # would be worn AND read. Nothing sensible is both, and a world that authored one meant it.
@@ -82,9 +82,9 @@ shared model Book
         end if
     end function
 
-    # 🔴 READ OFF THE ITEM, which is a field this game ADDED to the engine's own Items. A scroll
-    # carries one spell, so it is one value about one record — and a scan of every spell looking for
-    # the one that named this scroll would be the same fact stored backwards.
+    # Read off the item, from a field this game added to the engine's own Items. A scroll carries one
+    # spell, so it is one value about one record; scanning every spell for the one that named this
+    # scroll would be the same fact stored backwards.
     public integer function WrittenOn(integer item)
         if item < 1
             yield 0;
@@ -259,15 +259,120 @@ shared model Book
         yield cost;
     end function
 
-    function Spend(Player who, integer cost)
+    # The tier a caster is priced at when something has to put a number on them: the spell they had
+    # prepared, whatever it does, and failing that the strongest damage spell in the book. Somebody who
+    # has learned none is not a caster and is priced at nothing.
+    public integer function CasterTier(Player who)
+        integer ready = who.Number(Book.Ready);
+
+        if ready > 0
+            yield World.RecordNumber(Spells.Of, ready, "levelReq");
+        end if
+
+        integer best = 0;
+
+        loop for slot = 1 to Book.Slots
+            integer known = who.Number(Book.At(slot));
+
+            if known > 0
+                if Spells.TypeOf(known) == Spells.Costly
+                    integer tier = World.RecordNumber(Spells.Of, known, "levelReq");
+
+                    if tier > best
+                        best = tier;
+                    end if
+                end if
+            end if
+        end loop
+
+        yield best;
+    end function
+
+    # ── The pouch ─────────────────────────────────────────────────────────────
+    #
+    # A damaging cast burns a reagent, which is what a caster pays instead of a repair bill. The
+    # arithmetic is spells.cm; this is where it meets a bag.
+    #
+    # ⚠ Asked for BEFORE the cast and taken AFTER it, like mana. What a cast CAN take is what gates it,
+    # not what this one rolled: a roll of nothing must not let an empty pouch cast, any more than a
+    # weapon at no durability can swing.
+
+    # What this cast is billed, before anything is rolled. Zero for a spell that is not damage, and
+    # zero where the bill is waived.
+    real function ReagentBill(Player who, integer number, boolean waived)
+        if waived
+            yield 0.0;
+        end if
+
+        if Spells.TypeOf(number) != Spells.Costly
+            yield 0.0;
+        end if
+
+        yield Spells.ReagentCost(World.RecordNumber(Spells.Of, number, "levelReq"), who.Map);
+    end function
+
+    # ⚠ A world that ticked the box on nothing has casters who fight for free. Refusing every cast is
+    # the alternative, and a world is not broken for leaving a field blank.
+    boolean function HasReagents(Player who, real exact)
+        integer many = Spells.PerCast(exact);
+
+        if many < 1
+            yield true;
+        end if
+
+        integer reagent = Gear.Reagent();
+
+        if reagent < 1
+            yield true;
+        end if
+
+        if who.Carrying(reagent) >= many
+            yield true;
+        end if
+
+        who.Message("You have no " + World.RecordName(Gear.Of, reagent) + " left to cast with.");
+        yield false;
+    end function
+
+    # And what it took. A guild at level two sometimes shrugs the cost off — the same privilege that
+    # sometimes spares a weapon a chip.
+    function Burn(Player who, real exact)
+        integer many = Spells.RollReagents(exact);
+
+        if many < 1
+            yield;
+        end if
+
+        if Perks.Shrugs(who)
+            yield;
+        end if
+
+        who.Take(Gear.Reagent(), many);
+    end function
+
+    function Spend(Player who, integer cost, real exact)
         who.SetNumber(Vitals.Mana, who.Number(Vitals.Mana) - cost);
+
+        Book.Burn(who, exact);
+
         who.Wait(Fight.SwingSeconds);
         who.Engage(Fight.EngagedSeconds);
     end function
 
-    # A spell aimed at a creature.
+    # A spell aimed at whatever is standing there.
     public function Hurl(Player who, integer map, integer x, integer y)
         if who.IsWaiting
+            yield;
+        end if
+
+        # A person is answered before a creature, the same order a swing takes. Which of the two it is
+        # changes every rule that follows — the gates, the share of damage that lands, whether the
+        # reagent is waived — so the cast at a person is its own path and this one is about creatures
+        # from here down.
+        Player? body = World.PlayerAt(map, x, y);
+
+        if body.HasValue()
+            Book.Fling(who, body.Value(), map, x, y);
             yield;
         end if
 
@@ -275,6 +380,14 @@ shared model Book
         integer cost = Book.Afford(who, number);
 
         if cost < 1
+            yield;
+        end if
+
+        # Casting at a creature always pays the pouch. An arena changes what players may do to each
+        # other and has never changed anything about a creature.
+        real exact = Book.ReagentBill(who, number, false);
+
+        if not Book.HasReagents(who, exact)
             yield;
         end if
 
@@ -300,8 +413,8 @@ shared model Book
             yield;
         end if
 
-        # 🔴 THE ENGINE'S OWN REACH, counted across map borders. The world scrolls contiguously, so a
-        # body one tile over a seam is one tile away — arithmetic on the coordinates would call it
+        # The engine's own reach, counted across map borders. The world scrolls contiguously, so a
+        # body one tile over a seam is one tile away; arithmetic on the coordinates would call it
         # another map and refuse a cast the player can see landing.
         integer gap = World.Distance(who.Map, who.X, who.Y, map, x, y);
 
@@ -317,19 +430,32 @@ shared model Book
             yield;
         end if
 
-        Book.Spend(who, cost);
+        Book.Spend(who, cost, exact);
         target.Engage(Fight.EngagedSeconds);
+
+        # ⚠ Rolled AFTER the cast is paid for. A cast the sky took off course still happened: the mana
+        # went, the reagent went, and the beat went. Rolling it before the spend would make a gale a
+        # discount rather than a hazard.
+        if Combat.WindTakesIt(who.Map)
+            who.Message("The wind tears your spell apart.");
+            yield;
+        end if
+
         who.ThrowAtNpc(target, "bolt", 120, 160, 255);
 
         integer int = who.Number(Stats.Int);
         integer level = Stats.LevelOf(who);
         integer amount = World.RecordNumber(Spells.Of, number, "amount");
         integer raw = Combat.Vary(Spells.Power(int, amount));
-        boolean crit = Combat.Rolls(Combat.PlayerChance(int, level,
-                                                        Combat.PlayerCritDivisor, Combat.PlayerCritCap));
+        boolean crit = false;
 
-        if crit
-            raw = Combat.Crit(raw);
+        if Combat.CanFocus(who)
+            crit = Combat.Rolls(Combat.PlayerChance(int, level,
+                                                    Combat.PlayerCritDivisor, Combat.PlayerCritCap));
+
+            if crit
+                raw = Combat.Crit(raw);
+            end if
         end if
 
         integer defence = target.Number(Stats.Def);
@@ -368,13 +494,207 @@ shared model Book
         if health > 0
             target.SetNumber(Vitals.Health, health);
 
-            # 🔴 A spell is a hit, so it answers like one. Without this a caster is the one thing in
-            # the world an ambling creature never fights back against.
+            # A spell is a hit, so it answers like one. Without this a caster is the one thing in the
+            # world an ambling creature never fights back against.
             Beasts.Answer(target, who);
             yield;
         end if
 
         Fight.Slain(who, target, map, x, y);
+    end function
+
+    # ── A spell aimed at a person ─────────────────────────────────────────────
+    #
+    # Two halves that share a target and nothing else.
+    #
+    # Anything RESTORING reaches whoever is standing there, with no gate but the range and the line. A
+    # heal is not an attack, and putting it through the duelling rules would stop somebody patching up
+    # a guildmate on a protected tile — which is the one place they are most likely to be doing it.
+    #
+    # Anything HARMING goes through the whole of duel.cm first and then answers the way a swing does:
+    # the same block, the same sidestep, the same three quarters of what lands.
+
+    function Fling(Player who, Player them, integer map, integer x, integer y)
+        integer number = who.Number(Book.Ready);
+        integer cost = Book.Afford(who, number);
+
+        if cost < 1
+            yield;
+        end if
+
+        string type = Spells.TypeOf(number);
+        boolean harms = Spells.Harms(type);
+
+        if harms
+            string refused = Duel.Judge(who, them);
+
+            if refused != ""
+                who.Message(refused);
+                yield;
+            end if
+        end if
+
+        # ⚠ Nothing is cast at a body that is already down, restoring included. A heal on a corpse is
+        # the caster paying for nothing, and the engine puts them back full anyway.
+        if them.Number(Vitals.Health) < 1
+            who.Message("There is nothing left there to cast at.");
+            yield;
+        end if
+
+        integer gap = World.Distance(who.Map, who.X, who.Y, map, x, y);
+
+        if gap < 0 or gap > Spells.Range
+            who.Message("That is too far away.");
+            yield;
+        end if
+
+        if not World.CanSee(who.Map, who.X, who.Y, map, x, y)
+            who.Message("You cannot see a clear line to that.");
+            yield;
+        end if
+
+        # ⚠ The pouch is waived on an arena, and only between people. It is the same waiver a death
+        # gets there, for the same reason: nothing a bout costs is meant to be felt afterwards. A cast
+        # at a CREATURE standing on an arena still pays — an arena changes what players may do to each
+        # other and has never changed anything about the rest of the world.
+        real exact = Book.ReagentBill(who, number, Places.EitherArena(who, them));
+
+        if not Book.HasReagents(who, exact)
+            yield;
+        end if
+
+        if harms
+            Death.StartedIt(who);
+            them.Engage(Fight.EngagedSeconds);
+        end if
+
+        Book.Spend(who, cost, exact);
+
+        if Combat.WindTakesIt(who.Map)
+            who.Message("The wind tears your spell apart.");
+            them.Message(who.Name + "'s spell comes apart in the wind.");
+            yield;
+        end if
+
+        who.ThrowAtPlayer(them, "bolt", 120, 160, 255);
+
+        if type == "GiveItem"
+            Book.HandOver(who, them, number);
+            yield;
+        end if
+
+        if harms
+            Book.Sap(who, them, type, number);
+            yield;
+        end if
+
+        Book.Mend(who, them, type, number);
+    end function
+
+    # Handing something over at range. What the spell was authored to conjure, into their bag.
+    function HandOver(Player who, Player them, integer number)
+        integer item = World.RecordNumber(Spells.Of, number, "item");
+        integer many = World.RecordNumber(Spells.Of, number, "many");
+
+        if item < 1 or many < 1
+            yield;
+        end if
+
+        them.Give(item, many);
+        them.Float("+" + many, 120, 220, 140);
+
+        who.Message("You hand " + them.Name + " what they needed.");
+        them.Message(who.Name + " conjures something into your hands.");
+    end function
+
+    # Putting something back into somebody else. The same magnitude a self-cast restores.
+    function Mend(Player who, Player them, string type, integer number)
+        integer amount = World.RecordNumber(Spells.Of, number, "amount");
+        integer back = Combat.Vary(Spells.Power(who.Number(Stats.Int), amount));
+
+        Vitals.Give(them, Spells.Vital(type), Spells.Ceiling(type), back);
+
+        them.Float("+" + back, 120, 220, 140);
+        them.Burst(120, 200, 255, 60);
+
+        who.Message("You mend " + them.Name + " for " + back + ".");
+        them.Message(who.Name + " mends you for " + back + ".");
+    end function
+
+    # And taking something out of them. The reactions are melee's exactly: a shield turns a spell
+    # aside and wears for it, and a free hand steps out of one. Neither is a roll a caster can beat by
+    # casting harder, which is what keeps a defensive kit worth wearing against a caster.
+    function Sap(Player who, Player them, string type, integer number)
+        integer theirLevel = Stats.LevelOf(them);
+        integer theirDef = them.Number(Stats.Def);
+
+        if Combat.CanDodge(them)
+            if Combat.Rolls(Combat.PlayerChance(theirDef, theirLevel, Combat.PlayerDodgeDivisor, Combat.PlayerDodgeCap))
+                Combat.Spend(them, Combat.DodgeCostShare);
+                who.Message(them.Name + " steps out of it.");
+                them.Message("You step out of " + who.Name + "'s spell.");
+                yield;
+            end if
+        end if
+
+        if Combat.CanBlock(them)
+            if Combat.Rolls(Combat.PlayerChance(theirDef, theirLevel, Combat.PlayerBlockDivisor, Combat.PlayerBlockCap))
+                Combat.Spend(them, Combat.BlockCostShare);
+                Gear.Chip(them, Sheet.Shield);
+                who.Message(them.Name + " turns it aside.");
+                them.Message("Your shield turns aside " + who.Name + "'s spell.");
+                yield;
+            end if
+        end if
+
+        integer int = who.Number(Stats.Int);
+        integer amount = World.RecordNumber(Spells.Of, number, "amount");
+        integer raw = Combat.Vary(Spells.Power(int, amount));
+        boolean crit = false;
+
+        if Combat.CanFocus(who)
+            crit = Combat.Rolls(Combat.PlayerChance(int, Stats.LevelOf(who),
+                                                    Combat.PlayerCritDivisor, Combat.PlayerCritCap));
+
+            if crit
+                raw = Combat.Crit(raw);
+            end if
+        end if
+
+        # ⚠ Only health is mitigated, and only health is shared down. Armor is not what holds mana or
+        # breath, so draining either goes through whatever somebody is wearing — which is the same rule
+        # a cast at a creature runs.
+        if type != "SubHp"
+            Book.Drown(who, them, type, raw);
+            yield;
+        end if
+
+        integer full = Combat.Resolve(raw, Combat.Protection(theirLevel, theirDef), Combat.MinDamageFloor);
+        integer damage = Math.Round(full * Duel.DamageShare);
+
+        if damage < 1
+            who.Message("Your spell does nothing to " + them.Name + ".");
+            them.Message(who.Name + "'s spell cannot get through your guard.");
+            yield;
+        end if
+
+        Duel.Land(who, them, damage, crit);
+    end function
+
+    # A drain: straight out of the pool it names, never past nothing.
+    function Drown(Player who, Player them, string type, integer taken)
+        string vital = Spells.Vital(type);
+        integer left = them.Number(vital) - taken;
+
+        if left < 0
+            left = 0;
+        end if
+
+        them.SetNumber(vital, left);
+        them.Float("" + taken, 140, 120, 220);
+
+        who.Message("You draw " + taken + " out of " + them.Name + ".");
+        them.Message(who.Name + " draws " + taken + " out of you.");
     end function
 
     # A spell aimed at the caster. Restoring, or a thing handed over.
@@ -397,7 +717,10 @@ shared model Book
             yield;
         end if
 
-        Book.Spend(who, cost);
+        # Nothing restoring costs a reagent, so the bill is nothing; it is asked for anyway rather than
+        # written as a zero, because what is and is not billed is spells.cm's answer and not this
+        # function's.
+        Book.Spend(who, cost, Book.ReagentBill(who, number, false));
         who.Burst(120, 200, 255, 60);
 
         if type == "GiveItem"
@@ -415,9 +738,9 @@ shared model Book
         integer amount = World.RecordNumber(Spells.Of, number, "amount");
         integer back = Combat.Vary(Spells.Power(who.Number(Stats.Int), amount));
 
-        # ⚠ Spent BEFORE the restore, which is what stops a mana spell paying for itself. Restoring
-        # into the pool the cost came out of is the one case where the order of two writes decides
-        # whether the game has an economy.
+        # ⚠ Spent before the restore, so a mana spell cannot pay for itself. Restoring into the pool
+        # the cost came out of is the one case where the order of two writes decides whether the game
+        # has an economy.
         Vitals.Give(who, Spells.Vital(type), Spells.Ceiling(type), back);
         who.Float("+" + back, 120, 220, 140);
     end function

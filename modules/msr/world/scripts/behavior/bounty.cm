@@ -4,8 +4,8 @@
 # thousands, and it is the only thing on the ballooning curve that moves it at all.
 #
 # A leader takes one out, pays for it out of their own pocket, and the guild has a day to fill it.
-# Three a day at most, and abandoning one does not give the slot back — the cost is what stops a
-# leader rolling for an easy target.
+# Three a day at most, and abandoning one does not give the slot back, so a leader cannot re-roll
+# cheaply for an easy target.
 
 shared model Bounty
 

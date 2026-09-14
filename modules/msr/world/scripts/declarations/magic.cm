@@ -12,9 +12,9 @@ model Spell
     public string name;
     public Magic type;
 
-    # ⚠ THE MAGNITUDE DOES THREE JOBS: how much the spell does, the intelligence needed to learn it,
+    # ⚠ The magnitude does three jobs: how much the spell does, the intelligence needed to learn it,
     # and what it sets the mana cost to. One number, so a world author cannot write a spell that is
-    # powerful, cheap, and free to pick up — and a tier ladder falls out of the magnitudes rather than
+    # powerful, cheap, and free to pick up, and a tier ladder falls out of the magnitudes rather than
     # having to be balanced by hand. Unused by GiveItem, which hands over a thing rather than an
     # amount and so carries its own gate below.
     public integer amount;
@@ -27,7 +27,7 @@ model Spell
     # mid-ladder spell at level one, so the magnitude cannot pace the ladder on its own.
     public integer levelReq;
 
-    # ⚠ HOW IT IS LEARNED IS NOT HERE. A spell is written on a SCROLL, and that is a fact about the
+    # ⚠ How it is learned is not here. A spell is written on a scroll, and that is a fact about the
     # scroll rather than about the spell — see `teaches` in declarations/gear.cm. A class's own
     # starting book is a third family again, below.
 
@@ -49,9 +49,9 @@ end model
 
 # Which classes may learn which spells.
 #
-# ⚠ NO ROW FOR A SPELL MEANS EVERY CLASS MAY LEARN IT. That is the common case, so it is the one that
-# costs nothing to author — a world where the gate were the default would need a row per class per
-# spell before anybody could cast anything.
+# ⚠ No row for a spell means every class may learn it. That is the common case, so it costs nothing
+# to author. A world where the gate were the default would need a row per class per spell before
+# anybody could cast anything.
 
 model SpellGate
     public Spell forSpell;

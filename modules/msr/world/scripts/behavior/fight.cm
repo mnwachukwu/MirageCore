@@ -7,8 +7,8 @@ shared model Fight
 
     public string Attack = "msr.attack";
 
-    # How long a swing marks somebody as being in one. Regen reads this, which is what makes running
-    # away a decision rather than a formality.
+    # How long a swing marks somebody as being in one. Regen reads this, so running away is a
+    # decision rather than a formality.
     public integer EngagedSeconds = 10;
 
     # And how long before they may swing again.
@@ -29,7 +29,7 @@ shared model Fight
         # Declaring it is how a game says the reach belongs to its own rule now.
         hit.Key("E");
 
-        # 🔴 And the reaching has to go somewhere, or taking E costs the world its shops and its
+        # The reaching has to go somewhere, or taking E costs the world its shops and its
         # conversations. This verb does what E used to, on R.
         Verb reach = game.Action(Fight.Reach, "Interact", "Combat");
         reach.OnNpc();
@@ -58,8 +58,8 @@ shared model Fight
             yield;
         end if
 
-        # ⚠ The cooldown is the engine's own, and it is what stops a client that sends the verb as
-        # fast as it can from swinging as fast as it can.
+        # ⚠ The cooldown is the engine's own. It stops a client that sends the verb as fast as it can
+        # from swinging that fast.
         if who.IsWaiting
             yield;
         end if
@@ -117,8 +117,8 @@ shared model Fight
         if left > 0
             target.SetNumber(Vitals.Health, left);
 
-            # 🔴 What makes a creature that never notices anybody still fight back. Without this a body
-            # authored to amble is a punching bag, which is half the original's bestiary.
+            # A creature that never notices anybody still fights back. Without this a body authored
+            # to amble is a punching bag, and that is half the original's bestiary.
             Beasts.Answer(target, who);
             yield;
         end if
@@ -128,8 +128,8 @@ shared model Fight
 
     # ── One creature swings at another ────────────────────────────────────────
     #
-    # 🔴 The engine notices this pairing on its own: a body closes on anything within its range that is
-    # not its own kind and not in its group, and raises OnNpcContact when it arrives. So a world with a
+    # The engine notices this pairing on its own: a body closes on anything within its range that is
+    # not its own kind and not in its group, and raises OnNpcContact when it arrives. A world with a
     # wolf and a deer in it needs nothing but this function to have them fight.
     #
     # ⚠ Neither side has a level, so each stands in for its own — the same substitution Strike makes
@@ -244,9 +244,9 @@ shared model Fight
         boolean died = who.Kill("slain by " + it.Name);
 
         if not died
-            # 🔴 Something refused the death, and a LIVE body standing at nothing is the bug that
+            # ⚠ Something refused the death. A live body left standing at nothing is the bug that
             # follows: nothing anywhere sweeps for one, so it would stand there with regen quietly
-            # ticking it back up. A refusal has to leave them alive rather than neither.
+            # ticking it back up. A refusal leaves them alive rather than neither.
             who.SetNumber(Vitals.Health, 1);
         end if
     end function
@@ -290,7 +290,7 @@ shared model Fight
         World.TellNear(map, x, y, it.Name + " kills " + name + ".");
     end function
 
-    # 🔴 Every way a player can kill a creature ends here — a swing, and a spell. Two copies would be
+    # Every way a player can kill a creature ends here — a swing, and a spell. Two copies would be
     # two experience curves, and the second one rots.
     public function Slain(Player who, Npc target, integer map, integer x, integer y)
         # ⚠ The stain goes down BEFORE the body leaves. Once it is dead there is nothing to ask where
@@ -325,9 +325,9 @@ shared model Fight
         Guilds.Earn(who, Guilds.ExpPerKill);
         Perks.Trickle(who);
 
-        # 🔴 THE ONE PLACE A PLAYER KILLS A CREATURE, so a kill counts toward a quest whether it was a
-        # swing or a spell. A second call site would be a second rule, and the one that got forgotten
-        # would be the one nobody notices until a quest will not finish.
+        # The one place a player kills a creature, so a kill counts toward a quest whether it was a
+        # swing or a spell. A second call site would be a second rule, and the forgotten one would
+        # not surface until a quest refused to finish.
         Quests.Killed(who, kind);
         Bounty.Killed(who, kind);
     end function

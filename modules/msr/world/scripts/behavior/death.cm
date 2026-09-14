@@ -97,6 +97,10 @@ shared model Death
     public function Fell(Player who, Player killer, string cause)
         integer level = Stats.LevelOf(who);
 
+        # Where the map author says leaving this place lands you, which outranks whatever respawn
+        # point the player bought for themselves. A war death overrides it again, below.
+        Death.SendHome(who);
+
         # The bout ends here whatever it cost, so nothing dealt before now counts toward the next one.
         string creditedTo = Duel.CreditedTo(who);
         Duel.ClearCredit(who);
@@ -117,15 +121,14 @@ shared model Death
         end if
 
         # A war death: the credited killer's guild is the one at war, not whoever landed the last
-        # blow. Worn gear is the whole of it.
+        # blow. Worn gear is the only thing it costs.
         if byPlayer
             Player? credited = who.Find(creditedTo);
 
             if credited.HasValue()
                 if Guilds.AtWar(who, credited.Value())
                     # A grudge war has no ground of its own, so they come back where they fell and
-                    # the fight carries on. The body has not moved yet, which is what makes this
-                    # readable.
+                    # the fight carries on. The body has not moved yet, so the tile is still readable.
                     who.RespawnAt(who.Map, who.X, who.Y);
 
                     Guilds.WarDeath(who, credited.Value());
@@ -159,10 +162,18 @@ shared model Death
         yield Math.Abs(gap) >= Duel.LevelGapProtection;
     end function
 
-    # A murderer's death: double the wear, double the experience, and half an hour off the sentence.
+    # A murderer's death: the bag on the ground, a roll on every piece worn, double the wear, double
+    # the experience, and half an hour off the sentence.
+    #
+    # ⚠ The drops run BEFORE the wear. A piece that breaks on a death is unequipped by the wear, and
+    # if that ran first the piece would be scattered as ordinary luggage rather than getting the
+    # equipped roll it was owed. The order carries the rule; do not swap it.
     function Murderer(Player who, Player killer, boolean byPlayer)
         who.Message("You are a murderer, and it costs you double.");
 
+        Death.BurnReagents(who, Death.MurdererWearPercent);
+        Death.DropCarried(who, 100);
+        Death.DropWorn(who);
         Death.WearGear(who, Death.MurdererWearPercent);
 
         integer lost = Death.LoseExp(who, 2);
@@ -175,7 +186,11 @@ shared model Death
 
     # The usual death. Killing somebody who was not a murderer and had not started it makes the
     # killer one.
+    #
+    # ⚠ Drops before wear here too, for the same reason.
     function Ordinary(Player who, Player killer, boolean byPlayer)
+        Death.BurnReagents(who, Death.NormalWearPercent);
+        Death.DropCarried(who, Death.NormalDropPercent);
         Death.WearGear(who, Death.NormalWearPercent);
 
         integer lost = Death.LoseExp(who, 1);
@@ -192,6 +207,71 @@ shared model Death
         end if
 
         Death.MarkMurderer(killer);
+    end function
+
+    # ── Where they wake up ────────────────────────────────────────────────────
+    #
+    # The map they died on gets first say, through the boot point its author wrote — or its region's,
+    # for a map that named none. Saying nothing leaves it to the engine, which answers with the
+    # player's own respawn point and then the world's.
+
+    public function SendHome(Player who)
+        integer exit = World.ExitMap(who.Map);
+
+        if exit < 1
+            yield;
+        end if
+
+        who.RespawnAt(exit, World.ExitX(who.Map), World.ExitY(who.Map));
+    end function
+
+    # ── What falls on the ground ──────────────────────────────────────────────
+    #
+    # An ordinary death scatters a fifth of what is in the bag, at random, and leaves what is worn
+    # alone. A murderer's death empties the bag outright and rolls a quarter on each worn piece as
+    # well, so killing one is worth doing.
+    #
+    # Coin is a special case in both: a slot of it drops a part rather than the lot. An ordinary
+    # death loses some of it and a murderer loses all of it.
+
+    public integer NormalDropPercent = 20;
+    public integer WornDropPercent = 25;
+
+    # Each carried slot rolls separately at that chance. At a hundred the whole bag goes.
+    public function DropCarried(Player who, integer chance)
+        integer coin = Gear.Coin();
+
+        loop each slot in World.BagOf(who)
+            if not World.SlotIsWorn(who, slot)
+                if Combat.Rolls(chance)
+                    Death.Scatter(who, slot, coin, chance);
+                end if
+            end if
+        end loop
+    end function
+
+    # And every worn piece rolls a quarter, which only a murderer faces.
+    public function DropWorn(Player who)
+        loop each slot in World.BagOf(who)
+            if World.SlotIsWorn(who, slot)
+                if Combat.Rolls(Death.WornDropPercent)
+                    World.DropSlot(who, slot, 0);
+                end if
+            end if
+        end loop
+    end function
+
+    # One slot on the ground. A slot of coin drops part of itself on an ordinary death and the whole
+    # pile on a murderer's; anything else goes whole either way.
+    function Scatter(Player who, integer slot, integer coin, integer chance)
+        if World.ItemInSlot(who, slot) != coin or chance >= 100
+            World.DropSlot(who, slot, 0);
+            yield;
+        end if
+
+        integer held = World.CountInSlot(who, slot);
+
+        World.DropSlot(who, slot, Combat.Roll(held) + 1);
     end function
 
     # ── What it costs ─────────────────────────────────────────────────────────
@@ -214,6 +294,67 @@ shared model Death
                 end if
             end if
         end loop
+    end function
+
+    # ── What a caster loses ───────────────────────────────────────────────────
+    #
+    # Reagents are a caster's durability, so a death destroys them the way it wears a kit: at the same
+    # share, doubled for a murderer, and priced off the spell they had prepared rather than off
+    # anything they are holding. A warrior's weapon wears from the weapon; a caster's pouch empties
+    # from the book, so somebody carrying both pays both.
+    #
+    # ⚠ Run BEFORE the drops, so what survives this still faces the ordinary drop roll — the same
+    # ordering the wear itself is under, and for the same reason.
+
+    public integer CasterDeathMultiplier = 10;
+
+    # What this death is owed from the pouch, never more than is in it. Answered without taking
+    # anything, because a war death prices the loss into the vault's bill before deciding how much of
+    # it the player actually bears.
+    public integer function ReagentLoss(Player who, integer percent)
+        integer tier = Book.CasterTier(who);
+
+        if tier < 1
+            yield 0;
+        end if
+
+        integer reagent = Gear.Reagent();
+
+        if reagent < 1
+            yield 0;
+        end if
+
+        integer held = who.Carrying(reagent);
+
+        if held < 1
+            yield 0;
+        end if
+
+        integer lost = Math.Round(Spells.BaseReagentCost(tier) * Death.CasterDeathMultiplier
+                                  * percent / Death.NormalWearPercent);
+
+        if lost > held
+            yield held;
+        end if
+
+        if lost < 1
+            yield 0;
+        end if
+
+        yield lost;
+    end function
+
+    public function TakeReagents(Player who, integer many)
+        if many < 1
+            yield;
+        end if
+
+        who.Take(Gear.Reagent(), many);
+        who.Message("You lose " + many + " of what you cast with.");
+    end function
+
+    public function BurnReagents(Player who, integer percent)
+        Death.TakeReagents(who, Death.ReagentLoss(who, percent));
     end function
 
     # What a share of a piece's durability comes to, never less than a point: a death always leaves

@@ -32,9 +32,9 @@ shared model Spells
     # heal to be priced above.
     public real RestoreSurcharge = 1.10;
 
-    # 🔴 Mana is the ONE type whose output is its own input, so any cast that nets positive is a loop
+    # ⚠ Mana is the one type whose output is its own input, so a cast that nets positive is a loop
     # rather than a good trade. Priced off the authored amount alone it netted positive for almost
-    # everybody — the restore carries a term growing without bound in the caster's own intelligence,
+    # everybody: the restore carries a term growing without bound in the caster's own intelligence,
     # and no constant outruns a curve. So it prices off what it actually hands over.
     public real ManaSurcharge = 1.30;
 
@@ -59,8 +59,8 @@ shared model Spells
     end function
 
     # Raw, before variance and before a crit. The caster's own contribution runs Combat.Swing because
-    # mind and strength ARE the same stat; the spell's magnitude is what makes one spell differ from
-    # another at equal intelligence.
+    # mind and strength are the same stat; the spell's magnitude separates one spell from another at
+    # equal intelligence.
     public integer function Power(integer int, integer amount)
         yield Combat.Swing(int) + Spells.Contribution(amount, int);
     end function
@@ -112,6 +112,73 @@ shared model Spells
         end if
 
         yield Math.Max(1, Math.Round(cost));
+    end function
+
+    # ── What sustained casting costs ──────────────────────────────────────────
+    #
+    # A warrior's cost of fighting is repair; a caster's is reagents, at one apiece. The two are the
+    # same number on purpose: what a cast burns is what a swing burns off a weapon at the same tier,
+    # so neither class is cheaper to play than the other.
+    #
+    # 🔴 PRICED OFF THE ENGINE'S REPAIR RATE rather than off a figure written here. A figure written
+    # here goes stale the moment repair is retuned, and it fails silently — nothing throws, casters
+    # simply stop paying their share.
+    #
+    # Read off the spell's LEVEL rather than its magnitude, because the warrior it is matched against
+    # is defined by tier; magnitude ranks a spell within one, the way bulk ranks a weapon within one.
+
+    # Only damage costs a reagent. A heal is the utility half of the book and pays the full mana price
+    # instead, so charging it twice would be charging it twice.
+    public string Costly = "SubHp";
+
+    # Rain doubles the bill, as it doubles what a swing costs a weapon.
+    public integer RainCost = 2;
+
+    # What a tier is billed with nothing else going on. The figure a death is priced off, because a
+    # death is not a cast and the sky it happened under is not part of what it cost.
+    public real function BaseReagentCost(integer level)
+        yield World.RepairRate(level) * Gear.AverageChip();
+    end function
+
+    # And what one cast is billed here and now.
+    public real function ReagentCost(integer level, integer map)
+        real exact = Spells.BaseReagentCost(level);
+
+        if World.Weather(map) == Gear.Rainy
+            exact = exact * Spells.RainCost;
+        end if
+
+        yield exact;
+    end function
+
+    # What a cast takes WHEN IT TAKES ANY — whole, and never a range. That is the shape of the thing
+    # being mirrored: a swing removes one point of durability or none, never a point and sometimes two.
+    # The smallest count that keeps the odds below certainty, so the whole low band is a single reagent.
+    public integer function PerCast(real exact)
+        if exact <= 0.0
+            yield 0;
+        end if
+
+        yield Math.Ceiling(exact);
+    end function
+
+    # That many or nothing, on odds that average out to the exact cost at every tier.
+    #
+    # ⚠ A cast does NOT always cost a reagent, for the same reason a swing does not always cost
+    # durability. Charging one every time is ten times the mirror swing at level one, and the two only
+    # meet around level forty.
+    public integer function RollReagents(real exact)
+        integer many = Spells.PerCast(exact);
+
+        if many < 1
+            yield 0;
+        end if
+
+        if Combat.Happens(exact / many)
+            yield many;
+        end if
+
+        yield 0;
     end function
 
     # ── Reading a spell ───────────────────────────────────────────────────────

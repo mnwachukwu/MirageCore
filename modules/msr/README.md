@@ -2,9 +2,9 @@
 
 Mirage Source Remastered, rebuilt on Core as a world's own rules.
 
-🔴 **This is the proof the engine carries a genre.** Survey shows that a game can be written in
-Compass; this shows that a whole RPG can — stats, pools, fights, classes — on an engine that has
-never heard of a hit point.
+This is the proof the engine carries a genre. Survey shows that a game can be written in Compass;
+this shows that a whole RPG can — stats, pools, fights, classes — on an engine that has never
+heard of a hit point.
 
 **It is a port, not a design.** Ground truth is `D:\Repos\MirageSourceRemastered`, which still stands
 at the state this engine was cut from. Every number here was read out of that source and is held to
@@ -19,9 +19,9 @@ sample spans the whole curve rather than its comfortable middle.
 
 ## What is here
 
-🔴 **Two folders, and the line between them is who writes it.** `declarations/` holds the record
-models — what a *world author* fills in through the editor. `behavior/` holds the rules, which nobody
-authors. `rules.cm` sits above both because it is the engine's door.
+Two folders, split by who writes what. `declarations/` holds the record models a *world author*
+fills in through the editor; `behavior/` holds the rules, which nobody authors. `rules.cm` sits
+above both as the engine's door.
 
 | File | What it is |
 |---|---|
@@ -44,7 +44,7 @@ authors. `rules.cm` sits above both because it is the engine's door.
 | `scripts/behavior/classes.cm` | applying the class they chose, and what it is worth afterwards |
 | `scripts/behavior/spells.cm` | what casting costs, and what a cast is worth |
 | `scripts/behavior/book.cm` | what a character knows, has ready, and does with it |
-| `scripts/behavior/gear.cm` | who may wield what |
+| `scripts/behavior/gear.cm` | who may wield what, and how gear wears out |
 | `scripts/behavior/quests.cm` | taking one, counting toward it, and handing it back |
 | `scripts/behavior/levels.cm` | experience, and what it buys |
 | `scripts/behavior/guilds.cm` | what a guild is for: a level, a war, and who may fight whom |
@@ -55,10 +55,10 @@ authors. `rules.cm` sits above both because it is the engine's door.
 | `scripts/behavior/calendar.cm` | the calendar, worked out from the clock |
 
 `stats.cm` is pure arithmetic with no opinion about a world; `sheet.cm` declares the keys and puts the
-opening numbers on a body. One is a formula and the other is a decision, which is why they are not one
-file.
+opening numbers on a body. One is a formula and the other is a decision, so they are separate
+files.
 
-🔴 **A pool is two numbers, and only one of them is really stored.** The ceiling is derived — the
+A pool is two numbers, and only one of them is really stored. The ceiling is derived — the
 formula in `stats.cm`, recomputed whenever anything it reads changes — and it is carried as an
 attribute only because the CLIENT draws the bars from it and cannot run a formula. A stored maximum is
 how the two drift apart, and a character whose maximum disagrees with their level is a bug nobody sees
@@ -73,7 +73,7 @@ journal, and **K** the guild vault.
 bar, and a dozen letters that open its own windows — and a game chooses from `GameKey.Offered` and
 nothing else. The guild panel would have been G and is K instead.
 
-🔴 **Binding E takes the engine's reach key outright.** That is the engine's own rule and it is
+⚠ Binding E takes the engine's reach key outright. That is the engine's own rule and it is
 deliberate: sharing a key between a game's verb and Core's reaching is worse than taking it. But
 taking it would cost the world its shops and its conversations, so a verb can now say
 `reach.Interacts()` — picking it does what E used to. MSR puts that on R.
@@ -81,8 +81,8 @@ taking it would cost the world its shops and its conversations, so a verb can no
 ### The five behaviors
 
 The original gave a creature one of five behaviors, and four of them said something about fighting.
-Core's five say how a body MOVES and nothing about why — which is what keeps the word meaningful in a
-game with no combat in it. `beasts.cm` is the translation, and it needs no engine word of its own:
+Core's five say how a body moves and nothing about why, so the word still means something in a game
+with no combat in it. `beasts.cm` is the translation, and it needs no engine word of its own:
 
 | The original | How it is written here |
 |---|---|
@@ -92,10 +92,10 @@ game with no combat in it. `beasts.cm` is the translation, and it needs no engin
 | Stationary | authored **Stationary** |
 | Guard | authored **Wander** carrying the `guard` key, roused by `Beasts.CallGuards` |
 
-🔴 **`it.Chase(who)` is the whole of it.** A body authored to amble never notices anybody, so a game
+`it.Chase(who)` does all of it. A body authored to amble never notices anybody, so a game
 that could not point one at somebody could not write a creature that fights back. Chasing overrides
 the noticing and not the legs: one authored to hold its tile still holds it, and one authored to open
-the gap runs from whoever it was pointed at, which is what being hit should do to a body that flees.
+the gap runs from whoever it was pointed at, as a body that flees should when it is hit.
 
 ⚠ **A guard is marked on the creature RECORD**, in the attributes an editor hangs on the template —
 `guard = 1`. Every copy of that creature is a guard; a body that became one at spawn would be one by
@@ -110,7 +110,7 @@ as the other two directions, and a kill pays nobody: a creature has no sheet to 
 
 ### Classes
 
-🔴 **A class is authored, not written.** `declarations/character.cm` declares the *shape* of one — a
+A class is authored, not written. `declarations/character.cm` declares the *shape* of one — a
 name, a pitch, and four numbers — and the editor builds a Classes section from that model without
 having been compiled for this game. How many there are and what they open with is a world author's,
 exactly as it was in the original.
@@ -123,7 +123,7 @@ be granted by several classes without being authored twice. Its `forClass` field
 ⚠ **A class counts twice, and the second time is the one that matters.** Its spread becomes the
 character's four stats at enlistment, and it is *also* added to every pool ceiling for as long as they
 play. So two characters at the same level with identical stats still have different pools if they
-enlisted differently — which is what keeps a class meaningful after the opening twenty points stop
+enlisted differently, so a class still matters after the opening twenty points stop
 mattering. A port that applied only the first half would read correctly on the character sheet and be
 wrong on every bar.
 
@@ -137,7 +137,7 @@ played before to open a bag and work out what goes where is a worse opening than
 
 ### Magic
 
-🔴 **A spell is a swing delivered at range.** Mind and strength are the same offense stat running the
+A spell is a swing delivered at range. Mind and strength are the same offense stat running the
 same curve, so a caster and a warrior of equal investment deal identical damage. Range is paid for in
 mana and in the wait after a cast, never in the numbers — `spells.cm` reuses `Combat.Swing` rather
 than mirroring it, so the two cannot drift.
@@ -171,9 +171,9 @@ player was shown rather than nearly agreeing.
 
 ### Quests
 
-🔴 **The NPC roles live on the quest, not on the creature.** A quest names who offers it and who takes
+The NPC roles live on the quest, not on the creature. A quest names who offers it and who takes
 it back, so adding one is a row and touches nothing else — and a creature can give as many quests as an
-author likes without ever being edited. `prereq` points at another quest, which is the whole of what a
+author likes without ever being edited. `prereq` points at another quest, and that is all a
 chain is.
 
 Three families again: the quest, a row per **goal**, and a row per **class gate**. Killing is the only

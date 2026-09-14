@@ -22,7 +22,8 @@ shared model Calendar
         yield day % 7 == Calendar.SundayRemainder;
     end function
 
-    # The day the week holding this one began, which is what buckets a week without a calendar.
+    # The day the week holding this one began. Two days in one week give the same answer, which is
+    # all a weekly bucket needs.
     #
     # ⚠ The seven is not decoration. A remainder can come out negative for the first days of 1970,
     # which are before the first Sunday the epoch ever saw, and the week would then be measured

@@ -759,6 +759,105 @@ public class MsrStatsTests
     }
 
     /// <summary>A book fills in order, refuses what it already holds, and names the reason.</summary>
+    /// <summary>🔴 <b>What a swing costs a weapon, on average, over a whole hundred-to-nothing cycle.</b>
+    /// A caster's reagent bill is matched against a warrior's repair bill, and this ratio is the bridge
+    /// between them — so it is READ OFF the wear bands rather than written down beside them.
+    ///
+    /// <para>Four bands twenty-five points wide chipping at a quarter, a half, three quarters, and
+    /// certainty. Crossing them takes 100 + 50 + 33⅓ + 25 hits, so a hundred points of durability go in
+    /// 208⅓ hits, which is 0.48 a hit.</para>
+    ///
+    /// <para>⚠ Move a band and this moves. That is the point: a figure copied here would go stale the
+    /// moment one did, and it would fail silently — nothing throws, casters simply stop paying their
+    /// share.</para></summary>
+    [Test]
+    public void AverageWearPerHit_IsReadOffTheWearBands() =>
+        Assert.That(Answered("Math.Round(Gear.AverageChip() * 100)"), Is.EqualTo("48"));
+
+    /// <summary>🔴 <b>A cast takes a whole number of reagents or none.</b> That is the shape of the
+    /// thing it mirrors: a swing removes one point of durability or none, never a point and sometimes
+    /// two. So the bill rounds UP to what a charge would be, and how often a charge happens carries the
+    /// fraction.</summary>
+    [TestCase("0.0", ExpectedResult = "0")]
+    [TestCase("0.02", ExpectedResult = "1")]
+    [TestCase("0.48", ExpectedResult = "1")]
+    [TestCase("1.0", ExpectedResult = "1")]
+    [TestCase("1.2", ExpectedResult = "2")]
+    [TestCase("9.6", ExpectedResult = "10")]
+    public string OneCastTakesAWholeNumberOfReagents(string exact) =>
+        Answered($"Spells.PerCast({exact})");
+
+    /// <summary>🔴 <b>The bill is the engine's repair rate, not a number of this game's own.</b> A
+    /// warrior at this tier burns that much gold a durability point; a caster burns the same, at a
+    /// reagent to the gold, times what a swing costs a weapon.</summary>
+    [Test]
+    public void TheReagentBillIsPricedOffTheEnginesRepairRate()
+    {
+        var (module, world) = Asking("""
+                    who.Message("" + Math.Round(Spells.BaseReagentCost(20) * 100));
+                    who.Message("" + Spells.PerCast(Spells.BaseReagentCost(20)));
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        world.Here.Add(EntityHandle.ForPlayer(1));
+
+        // Ten gold a durability point at tier twenty.
+        world.RepairRatePerTier = 0.5;
+
+        ((ITickWork)scripts).Tick(1);
+
+        Assert.That(world.Said, Is.EqualTo(new[] { "480", "5" }),
+            "ten gold a point at 0.48 points a swing is 4.8 reagents a cast, so a cast that charges charges five");
+    }
+
+    /// <summary>🔴 <b>A bill that is already whole is charged every time.</b> The roll carries the
+    /// fraction and nothing else, so odds of one are certainty rather than nearly certainty — otherwise
+    /// the mirror leaks in the caster's favor at every tier where the arithmetic happens to come out
+    /// even.</summary>
+    [Test]
+    public void AWholeBillIsChargedEveryTime()
+    {
+        var (module, world) = Asking("""
+                    loop for _ = 1 to 40
+                        who.Message("" + Spells.RollReagents(2.0));
+                    end loop
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        world.Here.Add(EntityHandle.ForPlayer(1));
+
+        ((ITickWork)scripts).Tick(1);
+
+        Assert.That(world.Said, Is.All.EqualTo("2"), "a cost of exactly two is two, every time");
+    }
+
+    /// <summary>⚠ And a fractional one charges the WHOLE amount or nothing — never the fraction, which
+    /// is not a quantity of items anybody can hold.</summary>
+    [Test]
+    public void AFractionalBillChargesTheWholeAmountOrNothing()
+    {
+        var (module, world) = Asking("""
+                    loop for _ = 1 to 200
+                        who.Message("" + Spells.RollReagents(1.5));
+                    end loop
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        world.Here.Add(EntityHandle.ForPlayer(1));
+
+        ((ITickWork)scripts).Tick(1);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(world.Said, Is.All.AnyOf("0", "2"));
+            Assert.That(world.Said, Has.Some.EqualTo("2"), "three quarters of the time it charges two");
+            Assert.That(world.Said, Has.Some.EqualTo("0"), "and the rest of the time it charges nothing");
+        });
+    }
+
     [Test]
     public void LearningWritesTheSpellIntoTheFirstFreePage()
     {
@@ -1003,7 +1102,7 @@ public class MsrStatsTests
         Assert.Multiple(() =>
         {
             Assert.That(items.Fields.Select(f => f.Key),
-                Is.EquivalentTo(new[] { "levelReq", "teaches", "valor", "coin" }));
+                Is.EquivalentTo(new[] { "levelReq", "teaches", "valor", "coin", "reagent" }));
             Assert.That(_declared.Schema.Families.Any(f => f.Id == "ItemRules"), Is.False,
                 "the fields joined Items rather than becoming a family of their own");
 
@@ -2281,8 +2380,8 @@ public class MsrStatsTests
         world.Bag.Set("sp", AttributeValue.From(100L));
         world.Bag.Set("maxsp", AttributeValue.From(200L));
 
-        if (shield > 0) world.InSlot[(who, "shield")] = shield;
-        if (weapon > 0) world.InSlot[(who, "weapon")] = weapon;
+        if (shield > 0) world.Equipped[(who, "shield")] = shield;
+        if (weapon > 0) world.Equipped[(who, "weapon")] = weapon;
 
         return world;
     }

@@ -1,5 +1,3 @@
-# Enlisting: how somebody becomes one of the classes an author wrote.
-#
 # What a class IS lives in declarations/character.cm. This is what happens when somebody takes one.
 #
 # A class counts TWICE, which reads as a mistake until you see both halves:
@@ -8,7 +6,7 @@
 #   2. Its spread is ALSO added to every pool ceiling, forever - see Vitals.Refresh.
 #
 # So two characters at the same level with the same stats still have different pools if they enlisted
-# differently. That is what keeps a class meaningful after the opening twenty points stop mattering.
+# differently, and a class still matters once the opening twenty points stop mattering.
 
 shared model Classes
 
@@ -19,9 +17,9 @@ shared model Classes
     # ── What the engine is told ───────────────────────────────────────────────
 
     public function Declare(Builder game)
-        # 🔴 ASKED BEFORE THE CHARACTER EXISTS, as the original asked it. A class decides what somebody
-        # IS, so being asked after they are made is being asked too late — the four stats would already
-        # be written and the spread would be a correction rather than a beginning.
+        # Asked before the character exists, as the original asked it. A class decides what somebody
+        # is, so asking after they are made is too late: the four stats would already be written and
+        # the spread would be a correction rather than a beginning.
         #
         # The player picks from whatever classes a world author wrote, listed by their own names, and
         # the number is on the body before OnPlayerJoined runs.
@@ -58,9 +56,9 @@ shared model Classes
 
     # Everything the authored kit says this class opens with.
     #
-    # 🔴 A PIECE MARKED WORN ARRIVES ON, as the original handed it over. Asking somebody who has never
+    # A piece marked worn arrives on, as the original handed it over. Asking somebody who has never
     # played before to open a bag and work out what goes where is a worse opening than any gear is
-    # worth, and a piece mis-authored into a bag they cannot wear is a worse story still.
+    # worth, and a piece mis-authored into a bag they cannot wear is worse still.
     function Outfit(Player who, integer number)
         integer lines = World.Records("ClassKit");
 
@@ -86,9 +84,8 @@ shared model Classes
 
     # ── What a class is worth afterwards ──────────────────────────────────────
     #
-    # 🔴 Read on every pool recompute, so this is the half that outlives enlistment. A character with
-    # no class reads zero from all three and gets the plain curve, which is what somebody who has not
-    # met a trainer yet should have.
+    # Read on every pool recompute, so this is the half that outlives enlistment. A character with no
+    # class reads zero from all three and gets the plain curve.
 
     public integer function Stat(integer number, string stat)
         if number < 1

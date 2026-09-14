@@ -5,8 +5,8 @@
 # So every number a fight reads off a creature is here, and an author fills them in on the same form
 # the rest of the creature is authored on.
 #
-# A spawned body carries a copy of these, which is what Fight.Strike and Fight.Maul read. They are
-# read off the RECORD as well, by anything choosing a kind of creature rather than a particular one.
+# A spawned body carries a copy of these, and Fight.Strike and Fight.Maul read that copy. Anything
+# choosing a kind of creature rather than a particular one reads them off the record instead.
 
 model BeastRules
     public integer str;

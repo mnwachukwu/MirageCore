@@ -1,9 +1,9 @@
 # A fight: what a swing is worth, what a body turns aside, and what is left.
 #
-# 🔴 ONE ARITHMETIC, BOTH DIRECTIONS. A player hitting a creature and a creature hitting a player run
-# the same four steps — raw, varied, resolved against protection, applied — and the only things that
-# differ are the numbers each side brings and the floor under a hit that lands. Two paths would be two
-# balance passes, and the second one always rots.
+# One arithmetic serves both directions. A player hitting a creature and a creature hitting a player
+# run the same four steps — raw, varied, resolved against protection, applied — and differ only in
+# the numbers each side brings and the floor under a hit that lands. Two paths would be two balance
+# passes, and the second one rots.
 #
 # ⚠ The numbers are the original's, not a design. Damage and mitigation share an exponent of 1.5 on
 # purpose: they grow in step, so a fight at level 200 takes about as many swings as one at level 20.
@@ -18,8 +18,8 @@ shared model Combat
     public real CurveExponent = 1.5;
     public real DamageDivisor = 10.0;
 
-    # Mitigation is LEVEL-primary. Everybody gets the baseline their level earns, and defense is the
-    # payoff on top of it - which is what makes defense a sidegrade rather than an outright win.
+    # Mitigation is level-primary. Everybody gets the baseline their level earns and defense pays on
+    # top of it, so defense is a sidegrade rather than an outright win.
     public real LevelMitigationDivisor = 11.0;
     public real DefMitigationDivisor = 14.0;
 
@@ -91,16 +91,14 @@ shared model Combat
 
     # ── What a reaction costs, and what it needs ──────────────────────────────
     #
-    # ⚠ None of the three is free, and none of them is a pure roll. Each needs stamina left, each needs
-    # the right thing in the right hand, and each spends stamina when it fires — so a body that keeps
-    # turning blows aside runs out of the breath to keep doing it. That is the whole reason stamina is
-    # a pool rather than a number on a sheet.
+    # ⚠ None of the three is a bare roll. Each needs stamina left and the right thing in hand, and
+    # each spends stamina when it fires, so a body that keeps turning blows aside runs out of breath.
     #
     #   block   a shield, and 2% of the pool
-    #   dodge   NO shield — you cannot sidestep behind one — and 4%, twice a block
+    #   dodge   no shield — you cannot sidestep from behind one — and 4%, twice a block
     #   crit    a weapon, and 2%
     #
-    # And the sky can stop all three: nothing is turned aside in a heavy wind.
+    # The sky can stop all three: nothing is turned aside in a heavy wind.
 
     public real BlockCostShare = 0.02;
     public real DodgeCostShare = 0.04;
@@ -157,6 +155,13 @@ shared model Combat
         yield World.WornIn(who, Sheet.Weapon) > 0;
     end function
 
+    # And the same for a cast, which needs no weapon. A spell is put together rather than swung, so
+    # what it takes is breath and a sky that is not tearing at it — and unlike the other three it
+    # spends nothing, because there is no follow-through to pay for.
+    public boolean function CanFocus(Player who)
+        yield who.Number(Vitals.Stamina) > 0 and Combat.Reactions(who.Map);
+    end function
+
     # Spending it. Never past nothing.
     public function Spend(Player who, real share)
         integer spent = Combat.Cost(who.Number(Vitals.MaxStamina), share, who.Map);
@@ -171,9 +176,8 @@ shared model Combat
 
     # ── The sky tearing a blow off course ─────────────────────────────────────
     #
-    # ⚠ Rolled on the ATTACKER'S map and BEFORE any reaction, so a blow the wind took never arrived and
-    # cost the defender nothing. That ordering is what keeps it apart from the three above rather than
-    # a fourth kind of them.
+    # ⚠ Rolled on the attacker's map and before any reaction, so a blow the wind took never arrived
+    # and cost the defender nothing. The order is what separates this from the three above.
 
     public integer WindMissPercent = 10;
 
@@ -203,7 +207,7 @@ shared model Combat
 
     # ── The roll ──────────────────────────────────────────────────────────────
 
-    # ⚠ ONE generator for the whole game rather than one per swing. A new one per call is seeded from
+    # ⚠ One generator for the whole game rather than one per swing. A new one per call is seeded from
     # the clock, and several swings inside a tick would draw the same number.
     Random dice = new Random();
 
@@ -213,6 +217,17 @@ shared model Combat
         end if
 
         yield Combat.dice.Next(0, 100) < chancePercent;
+    end function
+
+    # A roll against a share of one rather than against a whole percent. Odds that fall out of
+    # arithmetic are not whole numbers, and rounding one to the nearest percent moves it by up to half
+    # a point — which is the difference between a cost that averages out and one that quietly does not.
+    public boolean function Happens(real chance)
+        if chance <= 0.0
+            yield false;
+        end if
+
+        yield Combat.dice.NextDouble() < chance;
     end function
 
     # A number from nought up to but not including the one asked for. The same generator, so nothing

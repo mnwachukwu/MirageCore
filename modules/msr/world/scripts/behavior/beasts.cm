@@ -1,9 +1,9 @@
 # What a creature IS, on top of how it walks.
 #
-# 🔴 CORE'S BEHAVIORS ARE ABOUT LOCOMOTION, AND DELIBERATELY NOTHING ELSE. A record says a body holds
-# its tile, ambles, closes on what it notices, opens the gap, or tidies litter — five ways of moving,
-# none of which mentions fighting. The original's five said why instead, and four of the five meant
-# something about combat.
+# Core's behaviors are about locomotion and deliberately nothing else. A record says a body holds its
+# tile, ambles, closes on what it notices, opens the gap, or tidies litter — five ways of moving, none
+# of which mentions fighting. The original's five said why instead, and four of them meant something
+# about combat.
 #
 # This file is the translation. Nothing here is new engine surface; it is the original's vocabulary
 # written out of the parts Core does offer.
@@ -32,12 +32,12 @@ shared model Beasts
 
     # ── Fighting back ─────────────────────────────────────────────────────────
 
-    # 🔴 EVERY creature answers a hit, whatever its record says about noticing.
+    # Every creature answers a hit, whatever its record says about noticing.
     #
-    # For one authored to close on what it sees this changes nothing — it was already coming. For one
-    # authored to amble it is the whole of "attacks when attacked": it never notices anybody, and this
-    # is the only thing that ever points it at somebody. For one authored to open the gap it runs,
-    # which is what being hit should do to a body that flees.
+    # For one authored to close on what it sees this changes nothing; it was already coming. For one
+    # authored to amble this is "attacks when attacked" entire — it never notices anybody, and nothing
+    # else ever points it at somebody. For one authored to open the gap it runs, as a body that flees
+    # should when it is hit.
     public function Answer(Npc it, Player who)
         # Whether it turned is dropped on purpose. A handle whose body has already left cannot be
         # pointed anywhere, and the creature that was hit being gone is the outcome the hitter wanted.
@@ -54,8 +54,8 @@ shared model Beasts
 
     # Somebody did something the town will not have. The guards standing near it come after them.
     #
-    # ⚠ Nearest first, which is what World.NpcsNear answers with, so taking the first few takes the
-    # ones who could plausibly have seen it.
+    # ⚠ World.NpcsNear answers nearest first, so taking the first few takes the ones who could
+    # plausibly have seen it.
     public function CallGuards(Player on, integer map, integer x, integer y)
         Npc[] nearby = World.NpcsNear(map, x, y, Beasts.GuardRange);
         integer sent = 0;

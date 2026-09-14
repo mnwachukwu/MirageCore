@@ -8,7 +8,7 @@
 # first member arrives, and it settles every day it missed — so a quiet week still costs a week's tax.
 #
 # ⚠ Days are counted from the same epoch World.Now() counts seconds from, which began on a Thursday.
-# That is what makes the weekday arithmetic below work at all.
+# The weekday arithmetic below depends on that.
 
 shared model Ledger
 
@@ -242,7 +242,7 @@ shared model Ledger
             yield;
         end if
 
-        # A war the vault cannot keep up is dropped, which is the whole of the penalty.
+        # A war the vault cannot keep up is dropped. Nothing else is charged for missing it.
         World.Tell(World.GuildName(guild) + " can no longer afford its war against "
                    + World.GuildName(against) + ".");
 

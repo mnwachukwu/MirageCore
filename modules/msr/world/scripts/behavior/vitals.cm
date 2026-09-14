@@ -1,12 +1,12 @@
 # The three pools, and what puts back into them.
 #
-# 🔴 A POOL IS TWO NUMBERS: what a body has, and what it can hold. The ceiling is derived — it is the
-# formula in stats.cm, recomputed whenever anything it reads changes — and the current value is the
-# only one that is really stored. Keeping the ceiling as a stored number is how the two drift apart,
-# and a character whose maximum disagrees with their level is a bug nobody can see until they heal.
+# A pool is two numbers: what a body has, and what it can hold. Only the current value is really
+# stored. The ceiling is derived from the formula in stats.cm and recomputed whenever anything it
+# reads changes — stored instead, the two drift apart, and a character whose maximum disagrees with
+# their level is a bug nobody sees until they heal.
 #
-# ⚠ STAMINA DOES NOT COME BACK WHILE YOU RUN, and the pools shrink in snow. Both are read off the
-# world rather than off the body — running is the engine's own movement state, and the weather is the
+# ⚠ Stamina does not come back while you run, and the pools shrink in snow. Both are read off the
+# world rather than off the body: running is the engine's own movement state, and the weather is the
 # engine's own sky.
 
 shared model Vitals
@@ -54,18 +54,17 @@ shared model Vitals
     public function Refresh(Player who)
         integer level = Stats.LevelOf(who);
 
-        # 🔴 The class counts a SECOND time here. Its spread became the character's four stats at
-        # enlistment, and it is also added to every ceiling for as long as they play — which is what
-        # keeps a class meaningful after the opening twenty points stop mattering. Somebody who has
-        # not enlisted reads zero and gets the plain curve.
+        # ⚠ The class counts a second time here. Its spread became the character's four stats at
+        # enlistment, and it is added to every ceiling for as long as they play, so a class still
+        # matters once the opening twenty points stop mattering. Somebody who has not enlisted reads
+        # zero and gets the plain curve.
         integer health = Stats.MaxHealth(level, who.Number(Stats.Def), Classes.StatOf(who, Stats.Def));
         integer mana = Stats.MaxMana(level, who.Number(Stats.Int), Classes.StatOf(who, Stats.Int));
         integer stamina = Stats.MaxStamina(level, who.Number(Stats.Spd), Classes.StatOf(who, Stats.Spd));
 
-        # ⚠ SNOW SHRINKS WHAT A BODY CAN HOLD, and health least of the three. Applied to the CEILING
-        # rather than to regen, so a blizzard is felt at once rather than slowly — and the cap below
-        # takes the current value down with it, which is what makes walking into one something you
-        # notice rather than something you work out later.
+        # ⚠ Snow shrinks what a body can hold, health least of the three. Applied to the ceiling
+        # rather than to regen, so a blizzard is felt at once; the cap below takes the current value
+        # down with it, so walking into one is noticed rather than worked out later.
         if World.Weather(who.Map) == "snow"
             health = Math.Round(health * Vitals.SnowHealth);
             mana = Math.Round(mana * Vitals.SnowOther);
@@ -99,9 +98,9 @@ shared model Vitals
 
     # ── Putting it back ───────────────────────────────────────────────────────
     #
-    # 🔴 HEALTH DOES NOT COME BACK IN A FIGHT. That is the whole shape of the original's regen: it is
-    # what makes a fight a thing you can lose, and what makes retreating a decision. Mana and stamina
-    # do come back mid-fight, at half rate, so a caster can sustain without being free.
+    # Health does not come back in a fight. That is the shape of the original's regen: a fight can be
+    # lost, and retreating is a decision. Mana and stamina do come back mid-fight, at half rate, so a
+    # caster can sustain without casting for free.
 
     public integer InCombatShare = 2;
 
@@ -109,14 +108,25 @@ shared model Vitals
     public real SnowHealth = 0.9;
     public real SnowOther = 0.8;
 
+    # ── Resting somewhere protected ───────────────────────────────────────────
+    #
+    # The original ticked health every 2.5 seconds and every 1.25 on protected ground, and mana and
+    # stamina every 2.5 and every 1. Here the tick is a fixed second and the AMOUNT carries the
+    # difference, so the same two ratios appear as multipliers.
+    #
+    # ⚠ Being in a fight beats being somewhere protected. Fighting inside a town gets ordinary combat
+    # regen rather than a fast one, which is what stops a safe tile being a place to fight from.
+
+    public real SafeHealth = 2.0;
+    public real SafeOther = 2.5;
+
     public function Rest(Player who)
         integer def = who.Number(Stats.Def);
         integer int = who.Number(Stats.Int);
         integer spd = who.Number(Stats.Spd);
 
-        # 🔴 STAMINA DOES NOT COME BACK WHILE YOU RUN. Without this, running costs nothing anybody can
-        # feel: a body that fills as fast as it sprints has an endless sprint, and the pool stops
-        # being a decision.
+        # Stamina does not come back while you run. A body that fills as fast as it sprints has an
+        # endless sprint, and the pool stops being a decision.
         integer legs = Stats.StaminaRegen(spd);
 
         if who.IsRunning
@@ -129,9 +139,17 @@ shared model Vitals
             yield;
         end if
 
-        Vitals.Give(who, Vitals.Health, Vitals.MaxHealth, Stats.HealthRegen(def));
-        Vitals.Give(who, Vitals.Mana, Vitals.MaxMana, Stats.ManaRegen(int));
-        Vitals.Give(who, Vitals.Stamina, Vitals.MaxStamina, legs);
+        real heart = 1.0;
+        real other = 1.0;
+
+        if Places.IsProtected(who.Map)
+            heart = Vitals.SafeHealth;
+            other = Vitals.SafeOther;
+        end if
+
+        Vitals.Give(who, Vitals.Health, Vitals.MaxHealth, Math.Round(Stats.HealthRegen(def) * heart));
+        Vitals.Give(who, Vitals.Mana, Vitals.MaxMana, Math.Round(Stats.ManaRegen(int) * other));
+        Vitals.Give(who, Vitals.Stamina, Vitals.MaxStamina, Math.Round(legs * other));
     end function
 
     # One pool, one tick's worth, never past its ceiling.

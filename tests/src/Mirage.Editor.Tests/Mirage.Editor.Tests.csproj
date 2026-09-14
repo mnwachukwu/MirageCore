@@ -26,6 +26,27 @@
     <ProjectReference Include="..\..\..\client\src\Mirage.Client.Shell\Mirage.Client.Shell.csproj" />
   </ItemGroup>
 
+  <!-- 🔴 THE EDITOR'S CATALOG IS THE ONE THIS ASSEMBLY RUNS AGAINST.
+       Both applications ship a catalog at lang\*.json, and this is the one project that references
+       both — so two sets of four identically named files are copied into one output folder and
+       whichever lands second wins. That order is a property of the build graph rather than of
+       anything written down: the editor's won here and the client's won on every CI runner, where
+       every editor key resolved to its bracketed fallback and a hundred assertions failed on text
+       that was never missing.
+
+       So the editor's four are copied last, by name, after the content copy that raced. Ordered
+       AfterTargets="CopyFilesToOutputDirectory" because that is the target the race happens in. -->
+  <Target Name="EditorCatalogWinsOverTheClients" AfterTargets="CopyFilesToOutputDirectory">
+    <ItemGroup>
+      <EditorCatalog Include="$(MSBuildThisFileDirectory)..\..\..\editor\src\Mirage.Editor\lang\*.json" />
+    </ItemGroup>
+
+    <Error Condition="'@(EditorCatalog)' == ''"
+           Text="The editor ships no lang\*.json. Every localized string in this suite would read as its own key." />
+
+    <Copy SourceFiles="@(EditorCatalog)" DestinationFolder="$(OutDir)lang" SkipUnchangedFiles="true" />
+  </Target>
+
   <!-- Hands the editor's source path to LocalizationConventionTests. Reflection can tell us a type's
        BASE CLASS but not whether it USES localized strings, and "uses localized strings" is the
        condition that actually needs a refresh hook - so that one check reads the sources. -->

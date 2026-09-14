@@ -1100,9 +1100,8 @@ shared model Guilds
     # what an ordinary death would have cost. When the vault cannot pay, the whole doubled wear lands
     # on the player and the guild is one step nearer bankruptcy.
     #
-    # ⚠ Only the side that DECLARED pays. A guild that was declared on and never answered loses
-    # nothing by dying, which is what stops a one-sided war from being a way to bleed somebody who
-    # never agreed to fight.
+    # ⚠ Only the side that declared pays. A guild that was declared on and never answered loses
+    # nothing by dying, so a one-sided war cannot be used to bleed somebody who never agreed to fight.
 
     public integer WarWearPercent = 20;
     public integer VaultRepairPercent = 75;
@@ -1117,8 +1116,8 @@ shared model Guilds
 
         victim.Message("You fell in your guild's war.");
 
-        # Everybody on the winning side who put damage in rolls for a point of valor, which is what a
-        # war is worth to the people fighting it.
+        # Everybody on the winning side who put damage in rolls for a point of valor. That is what a
+        # war pays the people fighting it.
         Valor.Award(victim, ours);
 
         integer slot = Guilds.SlotFor(theirs, ours);
@@ -1140,6 +1139,13 @@ shared model Guilds
                 repair = repair + World.RepairCost(item, Death.WearOn(full, Guilds.WarWearPercent));
             end if
         end loop
+
+        # ⚠ A caster's pouch is folded into the SAME bill, at a reagent to the gold. Reagents are what
+        # a caster wears out instead of a weapon, so a war that pays to re-kit its fighters and not to
+        # restock its casters is a war only one half of the guild can afford to fight.
+        integer reagents = Death.ReagentLoss(victim, Guilds.WarWearPercent);
+
+        repair = repair + reagents;
 
         boolean covered = true;
         integer drained = 0;
@@ -1177,6 +1183,16 @@ shared model Guilds
                 end if
             end if
         end loop
+
+        # And the pouch bears the same share the gear does. A war death has no drops, so whatever the
+        # vault spared simply stays in the bag.
+        integer burned = reagents;
+
+        if covered
+            burned = Math.Round(reagents * Guilds.PlayerWearPercent / 100.0);
+        end if
+
+        Death.TakeReagents(victim, burned);
 
         Guilds.Died(victim, killer, covered, drained);
     end function
@@ -1234,7 +1250,7 @@ shared model Guilds
         World.SetGuildNumber(theirs, Guilds.Attrition(victimSlot), left);
         World.SetGuildNumber(ours, Guilds.Attrition(killerSlot), gained);
 
-        # A new low means the killer made real progress, which is what keeps the war from going cold.
+        # A new low means the killer made real progress, so the war is not going cold.
         if left < World.GuildNumber(theirs, Guilds.LowestSeen(victimSlot))
             World.SetGuildNumber(theirs, Guilds.LowestSeen(victimSlot), left);
             World.SetGuildNumber(ours, Guilds.LastProgress(killerSlot), now);
