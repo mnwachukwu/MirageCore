@@ -136,6 +136,21 @@ public class ModuleStartTests
         public bool Provoke(EntityHandle npc, EntityHandle quarry) => false;
         public bool Forget(EntityHandle npc) => false;
         public IReadOnlyList<EntityHandle> NpcsNear(WorldPlace at, int tiles) => [];
+
+        public IReadOnlyList<EntityHandle> PlayersNear(WorldPlace at, int tiles) => [];
+
+        public bool DropAt(WorldPlace at, int itemNum, int quantity = 1,
+                           EntityHandle claimedBy = default, int claimSeconds = 0) => false;
+        public int LocalOffset() => 0;
+        public bool Mark(WorldMarker marker) => false;
+        public bool Unmark(string id) => false;
+        public IReadOnlyList<WorldPlace> SpreadOver(int region, int count, string onlyWhere = "") => [];
+        public bool Empty(int mapNum) => false;
+        public bool Refill(int mapNum) => false;
+        public bool IsEmptied(int mapNum) => false;
+        public bool InsideMark(string id, WorldPlace place) => false;
+        public AttributeBag WorldValues() => new();
+        public void SetWorldValue(string key, AttributeValue value) { }
         public string TileAt(WorldPlace place) => string.Empty;
         public bool CanSee(WorldPlace from, WorldPlace to) => false;
         public int Distance(WorldPlace from, WorldPlace to) => -1;

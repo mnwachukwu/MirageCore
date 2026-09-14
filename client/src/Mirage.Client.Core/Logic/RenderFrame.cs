@@ -27,6 +27,16 @@ public readonly record struct ItemDrawCmd(
 public readonly record struct DecalDrawCmd(float ScreenX, float ScreenY, float Amount, float Freshness,
                                           int Seed, int Size = 1, WorldLayer Layer = WorldLayer.Ground);
 
+/// <summary>Draw one thing a game has marked on the ground: a pennant on the tile, optionally a ring around
+/// it, a label over it, and a meter under the label.
+///
+/// <para>Everything past the tile is optional. <paramref name="Label"/> empty writes nothing,
+/// <paramref name="Radius"/> at nothing draws no ring, and <paramref name="Ceiling"/> at nothing draws no
+/// meter — so the same command covers a bare pin and a contested point with all three.</para></summary>
+public readonly record struct MarkerDrawCmd(float ScreenX, float ScreenY, int Rgb, string Label,
+                                            int Radius, long Value, long Ceiling,
+                                            WorldLayer Layer = WorldLayer.Ground);
+
 /// <summary>Draw one character sprite (player or NPC) at the given screen position.
 /// <paramref name="AnimFrame"/> is 0 = idle/stand, 1 = walk, 2 = attack.  <paramref name="Size"/> is the
 /// footprint size class 1/2/3: the sprite is drawn Size*32 px square from a Size-matched atlas, anchored at
@@ -211,8 +221,9 @@ public sealed class RenderFrame
     /// <summary>Corpse name labels — drawn in the WORLD layer with the red X (below items/NPCs/players), not
     /// with the floating <see cref="Names"/> overlay, so nothing walks "over" a corpse's name.</summary>
     public List<TextDrawCmd> CorpseNames { get; } = new();
-    /// <summary>Territory-contest capture points (participant-only) — flag + radius circle + name, drawn in the
-    /// world layer so they scroll with the map and living entities draw over them.</summary>
+    /// <summary>What a game has marked on the ground — a pennant, a ring, a label, a meter. Drawn in the
+    /// world layer so marks scroll with the map and living entities draw over them.</summary>
+    public List<MarkerDrawCmd> Markers { get; } = new();
     /// <summary>Light emitters (players + NPCs) within the halo-reach of the viewport. Wider cull than
     /// <see cref="Npcs"/>/<see cref="Players"/> so off-screen entities still light the view edge.</summary>
     public List<LightSourceCmd> Lights { get; } = new();
@@ -251,6 +262,7 @@ public sealed class RenderFrame
         Players.Clear();
         Corpses.Clear();
         CorpseNames.Clear();
+        Markers.Clear();
         Lights.Clear();
         AlwaysLitMapLights.Clear();
         AlwaysDarkMapLights.Clear();

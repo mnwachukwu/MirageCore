@@ -363,6 +363,43 @@ public sealed partial class ClientState
             if (!IsObservedMap(m)) (drop ??= new()).Add(m);
         if (drop is not null)
             foreach (int m in drop) DecalsByMap.Remove(m);
+
+        if (MarkersByMap.Count == 0) return;
+        drop = null;
+        foreach (int m in MarkersByMap.Keys)
+            if (!IsObservedMap(m)) (drop ??= new()).Add(m);
+        if (drop is not null)
+            foreach (int m in drop) MarkersByMap.Remove(m);
+    }
+
+    /// <summary>One thing a game has marked on the ground — a flag on a capture point, a ring around
+    /// somewhere dangerous, a name over a doorway. Everything past the square is optional: no label draws
+    /// no label, no radius draws no ring, no ceiling draws no meter.</summary>
+    public sealed class Marker
+    {
+        public int X;
+        public int Y;
+        public int Rgb;
+        public string Label = "";
+        public int Radius;
+        public long Value;
+        public long Ceiling;
+        public WorldLayer Layer;
+    }
+
+    /// <summary>Marks keyed by MAP NUMBER, replaced whole whenever the server sends that map's list.
+    ///
+    /// <para>⚠ The list is what THIS client may see: a mark can name who it is for, so two people
+    /// standing on one square are told different things. Nothing here filters, because the filtering
+    /// already happened.</para></summary>
+    public Dictionary<int, List<Marker>> MarkersByMap { get; } = new();
+
+    /// <summary>The mark list for a map, created empty on first use.</summary>
+    public List<Marker> MarkersForMap(int mapNum)
+    {
+        if (!MarkersByMap.TryGetValue(mapNum, out var list))
+            MarkersByMap[mapNum] = list = new List<Marker>();
+        return list;
     }
 
     /// <summary>How much gold the character is carrying, or 0 when the stack is absent.</summary>

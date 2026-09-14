@@ -29,6 +29,7 @@ public sealed class JoinLeaveSystem : GameSystem
     private readonly TimeOfDaySystem _tod;
     private readonly WeatherSystem _weather;
     private readonly DecalSystem _decals;
+    private readonly MarkerSystem _markers;
     private readonly ILogger<JoinLeaveSystem> _logger;
     private readonly Configuration.ServerConfig _config;
 
@@ -37,6 +38,7 @@ public sealed class JoinLeaveSystem : GameSystem
                            PartySystem party, GuildSystem guilds, MailSystem mail, SocialSystem social, TradeSystem trade,
                            ConversationSystem conversations,
                            TimeOfDaySystem tod, WeatherSystem weather, DecalSystem decals,
+                           MarkerSystem markers,
                            ILogger<JoinLeaveSystem> logger,
                            IClock? clock = null,
                            Configuration.ServerConfig? config = null,
@@ -60,6 +62,7 @@ public sealed class JoinLeaveSystem : GameSystem
         _tod = tod;
         _weather = weather;
         _decals = decals;
+        _markers = markers;
         _logger = logger;
     }
 
@@ -320,6 +323,7 @@ public sealed class JoinLeaveSystem : GameSystem
 
         SendMapItemsSnapshot(index, p.Map);
         _decals.SendSnapshot(index, p.Map);
+        _markers.SendSnapshot(index, p.Map);
         _dispatcher.SendTo(index, BuildMapNpcs(_world, p.Map));
         SendTraversalNpcs(index, p.Map);
         SendMapNpcAttributes(index, p.Map);
@@ -417,6 +421,7 @@ public sealed class JoinLeaveSystem : GameSystem
                 // the client already knows which cell this map occupies.
                 SendMapItemsSnapshot(index, mapNum);
                 _decals.SendSnapshot(index, mapNum);
+                _markers.SendSnapshot(index, mapNum);
                 _dispatcher.SendTo(index, BuildMapNpcs(_world, mapNum));
                 SendTraversalNpcs(index, mapNum);
                 SendMapNpcAttributes(index, mapNum);

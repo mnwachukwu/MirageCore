@@ -28,6 +28,7 @@
 #   behavior/spells.cm     what casting costs, and what a cast is worth
 #   behavior/book.cm       what a character knows, has ready, and does with it
 #   behavior/gear.cm       who may wield what, and how gear wears out
+#   behavior/loot.cm       what a kill is worth to the people who made it
 #   behavior/quests.cm     taking one, counting toward it, and handing it back
 #   behavior/guilds.cm     a guild's level, its wars, and who may fight whom
 #   behavior/ledger.cm     what a guild is charged, and what it is paid
@@ -35,6 +36,7 @@
 #   behavior/valor.cm      the war currency
 #   behavior/bounty.cm     a standing bounty, and what filling it pays
 #   behavior/calendar.cm   the calendar, worked out from the clock
+#   behavior/season.cm     which season it is, and when the next one starts
 #   behavior/levels.cm     experience, and what it buys
 #
 # The original is a .NET solution of some hundreds of files. What is reproduced here is the game —
@@ -62,6 +64,12 @@ shared model Rules
     # character. A first arrival is enrolled.
     public function OnPlayerJoined(Player who)
         Sheet.Enroll(who);
+    end function
+
+    # The world's own beat, once rather than once per body. What belongs to the world and to nobody in
+    # it is settled here; anything about a person is below.
+    public function OnTick()
+        Season.Tick();
     end function
 
     # Once for each body in the world, every twentieth tick.
@@ -159,6 +167,12 @@ shared model Rules
     # when the world itself did it; IsHere answers that.
     public function OnDied(Player who, Player killer, string cause)
         Death.Fell(who, killer, cause);
+    end function
+
+    # One line of a dead creature's table, before it is rolled. Raised once per line, so a creature
+    # carrying three things raises it three times.
+    public function OnLoot(Spoils drop)
+        Loot.Shed(drop);
     end function
 
 end model

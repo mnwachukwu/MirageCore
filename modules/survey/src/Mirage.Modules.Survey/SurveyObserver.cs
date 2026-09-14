@@ -109,3 +109,42 @@ public sealed class StayWhileSurveying : ILingerPolicy
     public Deadline LingerFor(EntityHandle who)
         => Deadline.InSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds(), Survey.LingerSeconds);
 }
+
+/// <summary>
+/// What a specimen leaves behind is the finder's.
+///
+/// <para>Two answers to the same question, and they are the two reasons a game has an opinion about loot
+/// at all. The CLAIM holds a drop for whoever was standing over it, long enough to bend down — without
+/// it, a find belongs to whoever is quickest rather than to whoever did the work. The CHANCE is the
+/// other half: a surveyor who has cataloged enough to be a Naturalist spots what a beginner walks past,
+/// so their lines land more often.</para>
+///
+/// <para>Neither is a number Core could have guessed. The engine rolls the table a world authored and
+/// puts what lands on the tile; everything above is this game's.</para>
+/// </summary>
+public sealed class TheFindersSpecimen : ILootPolicy
+{
+    private IWorld? _world;
+
+    /// <summary>Handed the world once there is one, like everything else here that acts on it.</summary>
+    public void Begin(IWorld world) => _world = world;
+
+    public void Weigh(Spoil spoil)
+    {
+        ArgumentNullException.ThrowIfNull(spoil);
+
+        // Nobody to hold it for and nobody whose eye to read: the world itself took the thing out, and
+        // what it was carrying is free to whoever finds it.
+        if (!spoil.Killer.IsPlayer) return;
+
+        spoil.ClaimedBy = spoil.Killer;
+        spoil.ClaimSeconds = Survey.ClaimSeconds;
+
+        if (_world?.AttributesOf(spoil.Killer) is not { } bag) return;
+
+        long found = bag.TryGet(Survey.Specimens, out var seen) ? seen.AsLong() : 0;
+        if (found < Survey.PracticedEye) return;
+
+        spoil.ChancePercent += spoil.ChancePercent * Survey.PracticedEyeBonusPercent / 100;
+    }
+}

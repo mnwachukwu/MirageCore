@@ -173,6 +173,7 @@ var host = Host.CreateDefaultBuilder(args)
         // ⚠ Handed as a LIST rather than resolved one at a time, because ItemSystem asks every policy in
         // order and the empty case has to be an empty list rather than a missing service.
         services.AddSingleton<IReadOnlyList<IUsePolicy>>(registry.UsePolicies);
+        services.AddSingleton<IReadOnlyList<ILootPolicy>>(registry.LootPolicies);
 
         // The line decoder is a static, so the table has to be installed rather than injected. Doing it
         // at composition time means a module's packets are readable before the first connection.
@@ -230,6 +231,8 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<DeathSystem>();
         services.AddSingleton<AttributeSystem>();
         services.AddSingleton<DecalSystem>();
+        services.AddSingleton<MarkerSystem>();
+        services.AddSingleton<SpreadSystem>();
         services.AddSingleton<PartySystem>();
         services.AddSingleton<GuildSystem>();
         services.AddSingleton<MailSystem>();

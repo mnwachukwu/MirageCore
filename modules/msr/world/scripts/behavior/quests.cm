@@ -40,13 +40,13 @@ shared model Quests
     public integer Monthly = 3;
     public integer Seasonally = 4;
 
-    # A season is thirteen weeks, which is the length the original's territory season ran to. It is
-    # counted from the epoch rather than from a season the world is keeping, because seasons
-    # themselves are not ported.
-    public integer SeasonDays = 91;
-
     # One number naming the period a day falls in, for that cadence. Two runs in the same period give
     # the same number; a quest re-opens when the number changes.
+    #
+    # ⚠ A SEASON IGNORES THE DAY and answers with the number the world is keeping. A season is not a
+    # slice of the calendar — it starts when the world starts one and runs thirteen whole weeks from
+    # there — so there is nothing about a date that could name it. Every caller passes today, which is
+    # the only day the answer would be right for anyway.
     public integer function PeriodOf(integer cadence, integer day)
         if cadence == Quests.Daily
             yield day;
@@ -61,7 +61,7 @@ shared model Quests
         end if
 
         if cadence == Quests.Seasonally
-            yield day / Quests.SeasonDays;
+            yield Season.Which();
         end if
 
         yield 0;

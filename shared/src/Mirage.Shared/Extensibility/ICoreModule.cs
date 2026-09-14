@@ -113,6 +113,11 @@ public interface ICoreBuilder
     /// first refusal stops the use and is the answer.</summary>
     void AddUsePolicy(IUsePolicy policy);
 
+    /// <summary>What this game says about a slain creature's drops — how often a line lands, how much of
+    /// it there is, and who it belongs to. Declare none and every creature drops what its table says at
+    /// the rate its table says, free to whoever reaches it.</summary>
+    void AddLootPolicy(ILootPolicy policy);
+
     /// <summary>Something to ask before a character exists — a class, a bloodline, a starting town. The
     /// answer is written onto the new character under the choice's key, before anything is told they
     /// joined. Declare none and the creation screen asks for a name and a face, which is a supported

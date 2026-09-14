@@ -48,6 +48,13 @@ abstract model Player
     public integer X;
 
     ##
+        @summary: The square they are standing on, as a value - map, tile and PLANE together. What
+        to hand anything that puts something where somebody is, because a bridge and the water under
+        it are the same three numbers and two different places.
+    ##
+    public Spot Where;
+
+    ##
         @summary: How far down it.
     ##
     public integer Y;
@@ -540,6 +547,13 @@ abstract model Npc
     public integer X;
 
     ##
+        @summary: The square it is standing on, as a value - map, tile and PLANE together. What to
+        hand anything that puts something where a body is, because a bridge and the water under it
+        are the same three numbers and two different places.
+    ##
+    public Spot Where;
+
+    ##
         @summary: How far down it.
     ##
     public integer Y;
@@ -736,6 +750,14 @@ shared abstract model World
         over a border is close and is not in the answer; ask for each map to reach those.
     ##
     public abstract Npc[] function NpcsNear(integer map, integer x, integer y, integer tiles);
+
+    ##
+        @summary: Every player standing within that many tiles of the square, nearest first - the
+        mirror of NpcsNear, and what a rule about the PEOPLE around something starts from: who
+        shared a kill, who heard a shout, who was standing too close. ⚠ On that map only, so
+        somebody one tile over a border is close and is not in the answer.
+    ##
+    public abstract Player[] function PlayersNear(integer map, integer x, integer y, integer tiles);
 
     ##
         @summary: The player standing on that square, or nothing. Answered before a creature when
@@ -966,6 +988,20 @@ shared abstract model World
     public abstract integer function RepairCost(integer item, integer points);
 
     ##
+        @summary: Puts an item on that square out of nowhere, free to whoever reaches it first. Not
+        out of anybody's bag - a chest that opens, a reward left where a quest ended, a hoard a rule
+        rolled for itself. Player.Drop is the other one, and it moves something that already exists.
+    ##
+    public abstract boolean function DropAt(Spot where, integer item, integer many);
+
+    ##
+        @summary: The same, held for one player for that many seconds: nobody else may pick it up
+        until the time runs out, and the client shows them whose it is. What stops the person who
+        did the work watching somebody else walk off with it.
+    ##
+    public abstract boolean function DropClaimed(Spot where, integer item, integer many, Player who, integer seconds);
+
+    ##
         @summary: Gold one point of durability costs on ON-TIER gear at that tier, priced off a
         reference piece rather than off anything anybody is holding. Fractional on purpose: near the
         bottom of the ladder a point is worth a fraction of a coin. A game charging upkeep in
@@ -1038,6 +1074,115 @@ shared abstract model World
     public abstract integer function Now();
 
     ##
+        @summary: That square on the ground, as a value - so a rule can carry it around, keep a set
+        of them, and hand it to anything that puts something somewhere.
+    ##
+    public abstract Spot function Spot(integer map, integer x, integer y);
+
+    ##
+        @summary: The same square on the RAISED surface rather than on the ground - a bridge, a
+        ledge, a gantry, whatever a world built up there. The two are one tile and two places.
+    ##
+    public abstract Spot function SpotRaised(integer map, integer x, integer y);
+
+    ##
+        @summary: That many squares spread across a region, every one reachable ON FOOT from every
+        other. ⚠ Measured by WALKING, across the region's seams - not in a straight line, which is a
+        lie wherever a wall or water stands between two tiles that are near on paper, and not by map
+        number, which piles everything into whichever corner was drawn first. 'onlyWhere' names one
+        of YOUR OWN truth fields on Maps and a square goes only on a map carrying it; blank puts one
+        anywhere in the region. The walk crosses the whole region either way, so a town in the
+        middle of one is walked THROUGH. Fewer than asked for means there was nowhere else to put
+        one.
+    ##
+    public abstract Spot[] function SpreadOver(integer region, integer count, string onlyWhere);
+
+    ##
+        @summary: Takes every creature off that map and keeps it that way. For ground that has to
+        stop being ordinary for a while: a war fought over it, a ritual nobody should interrupt, an
+        arena cleared for a duel. Nothing comes back until World.Wake - which is what separates this
+        from clearing a map and watching it refill a minute later.
+    ##
+    public abstract boolean function Empty(integer map);
+
+    ##
+        @summary: Lets it hold creatures again, and puts its own back at once rather than leaving it
+        bare until each slot's clock comes round.
+    ##
+    public abstract boolean function Refill(integer map);
+
+    ##
+        @summary: Whether that map is being kept empty of creatures.
+    ##
+    public abstract boolean function IsEmptied(integer map);
+
+    ##
+        @summary: Puts a mark on that square and hands it back, so its ring, its label, its meter
+        and who sees it are each a line of their own. The twin of an overhead bar, for a PLACE.
+        Marking again under a name already used REPLACES what is there, which is how a mark moves
+        and how its meter counts - one call rather than a remove and a place.
+    ##
+    public abstract Marker function Marker(string id, Spot where);
+
+    ##
+        @summary: Takes one away by name. False when nothing was under it, which is an ordinary
+        answer for a rule clearing up after something that ended on its own.
+    ##
+    public abstract boolean function Unmark(string id);
+
+    ##
+        @summary: Whether that square is inside the mark's ring. ⚠ ASK THIS rather than doing the
+        arithmetic: the ring a player can see and the ring a rule scores are then the same mark, and
+        two answers drifting apart is invisible - the line on the screen would sit somewhere other
+        than the line that counts. False for a mark with no ring, and for another map.
+    ##
+    public abstract boolean function InsideMark(string id, Spot where);
+
+    ##
+        @summary: How far the server's own civil day is from UTC right now, in seconds - east of it
+        positive, west of it negative. ⚠ ANYTHING THAT TURNS OVER AT MIDNIGHT wants this: a daily
+        reset, a weekly tax, a season all mean the operator's own midnight, and dividing World.Now
+        by a day gives the wrong one everywhere but Greenwich. Add it before dividing. Read fresh,
+        so a place that keeps summer time answers differently in July than in January - which is
+        what keeps a boundary at midnight all year.
+    ##
+    public abstract integer function LocalOffset();
+
+    ##
+        @summary: One of YOUR OWN values about the world itself, as a whole number, or zero for one
+        never written. The place for what belongs to no body and no record - which season it is,
+        whether an event is running, how many times something has happened. Read back as it was left
+        when the server starts again.
+    ##
+    public abstract integer function Number(string key);
+
+    ##
+        @summary: The same, as text. Empty for one never written.
+    ##
+    public abstract string function Text(string key);
+
+    ##
+        @summary: And as a yes or no. False for one never written.
+    ##
+    public abstract boolean function Truth(string key);
+
+    ##
+        @summary: Writes one. Kept until the world is next written, which the engine does on its own
+        cadence and at shutdown.
+    ##
+    public abstract function SetNumber(string key, integer amount);
+
+    ##
+        @summary: The same, as text.
+    ##
+    public abstract function SetText(string key, string value);
+
+    ##
+        @summary: And as a yes or no.
+    ##
+    public abstract function SetTruth(string key, boolean value);
+
+    ##
         @summary: Takes gold out of a vault, recording who spent it. Through the engine's own ledger
         rather than by writing the number: a vault that went down with nothing in the spending log
         is money a guild cannot account for. False when the vault does not hold that much, so this
@@ -1105,4 +1250,138 @@ abstract model Values
         @summary: The same, as a yes or no. False where it carried nothing.
     ##
     public abstract boolean function Truth(string field);
+end model
+
+##
+    @summary: A square, as a value rather than as three numbers. Handed back by World.SpreadOver
+    so a rule can carry one around, hold a set of them, and put something on each - which three
+    loose numbers cannot be made to do.
+##
+abstract model Spot
+
+    ##
+        @summary: Which map it is on.
+    ##
+    public integer Map;
+
+    ##
+        @summary: How far across.
+    ##
+    public integer X;
+
+    ##
+        @summary: And how far down.
+    ##
+    public integer Y;
+
+    ##
+        @summary: Whether it is on the RAISED surface rather than on the ground - a bridge, a ledge,
+        a gantry. ⚠ A bridge and the water under it are the same three numbers and two different
+        places, so a rule that acts on a square asks this before deciding it knows where it is.
+    ##
+    public boolean IsRaised;
+end model
+
+##
+    @summary: Something drawn on a PLACE rather than over a body, handed back by World.Marker so
+    its ring, its label, its meter and who sees it are each a line of their own. The twin of an
+    overhead bar, for a square: a flag on a capture point, a ring around somewhere dangerous, a
+    name over a doorway. What is not said is not drawn.
+##
+abstract model Marker
+
+    ##
+        @summary: Writes that over it. Left unsaid, a mark carries no label.
+    ##
+    public abstract function Label(string text);
+
+    ##
+        @summary: What color it is drawn in. The pennant, the ring and the label all take it, so a
+        side's own color is one line.
+    ##
+    public abstract function Color(integer red, integer green, integer blue);
+
+    ##
+        @summary: Draws the ground within that many tiles of it. ⚠ Drawn as the STAIRCASE of tiles
+        actually inside, never as a circle - so the line on the screen and World.InsideMark are one
+        statement. Nothing at or below zero draws no ring.
+    ##
+    public abstract function Ring(integer tiles);
+
+    ##
+        @summary: A bar over it, that full out of that. A ceiling of nothing draws no meter, which
+        is how a mark that is only a pin says so.
+    ##
+    public abstract function Meter(integer value, integer ceiling);
+
+    ##
+        @summary: Makes it private to those bodies. Left unsaid, everybody who can see the square
+        sees it. ⚠ A SNAPSHOT rather than a rule: somebody who joins afterwards is not on it until
+        the mark is placed again. A side whose members come and go says this each time it moves the
+        mark, which it is doing anyway.
+    ##
+    public abstract function SeenBy(Player[] them);
+end model
+
+##
+    @summary: One line of a dead creature's drop table, on its way to the ground, handed to
+    OnLoot before it is rolled. What the world authored is readable; what this kill makes of it
+    is written back. A line left alone lands exactly as authored, free to whoever reaches it.
+##
+abstract model Spoils
+
+    ##
+        @summary: What this line drops, by item number.
+    ##
+    public integer Item;
+
+    ##
+        @summary: How many of it. ⚠ Only an item that STACKS reads this; anything else lands as one
+        however large the number is.
+    ##
+    public integer Many;
+
+    ##
+        @summary: How often the line lands, as a plain percent - one in a hundred at 1, every time
+        at 100 or more, never at nothing.
+    ##
+    public integer Chance;
+
+    ##
+        @summary: Which creature this was a copy of. What a rule about a KIND of creature keys on,
+        and it outlives the body - which is about to stop being there.
+    ##
+    public integer Kind;
+
+    ##
+        @summary: The body itself, still standing on the tile it fell on. ⚠ For this call only: the
+        slot is cleared the moment the table finishes rolling, and a handle kept past that answers
+        IsHere with no.
+    ##
+    public Npc? From;
+
+    ##
+        @summary: Who killed it, or nothing when the world itself did.
+    ##
+    public Player? Killer;
+
+    ##
+        @summary: Makes the line land that often instead. Nothing at or below zero drops the line
+        without rolling it at all, which is how a rule says this creature owes this player nothing.
+    ##
+    public abstract function Rolls(integer chance);
+
+    ##
+        @summary: Makes it that many instead - a doubled purse, a halved one. Read only for an item
+        that stacks, as above.
+    ##
+    public abstract function Yields(integer many);
+
+    ##
+        @summary: Holds the drop for that player for that long: nobody else may pick it up until the
+        time runs out, and the client shows them whose it is. What stops the person who did the work
+        watching somebody else walk off with it. Left unsaid, a drop is free to whoever reaches it
+        first.
+    ##
+    public abstract function ClaimedBy(Player who, integer seconds);
 end model

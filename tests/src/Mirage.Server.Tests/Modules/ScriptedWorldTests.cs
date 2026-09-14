@@ -2478,6 +2478,54 @@ public class ScriptedWorldTests
 
         public double RepairRateAt(int tier) => Math.Max(tier, 0) * RepairRatePerTier;
 
+        /// <summary>How far a test has put the server's civil day from UTC. Zero unless it cares.</summary>
+        public int Offset { get; set; }
+
+        public int LocalOffset() => Offset;
+
+        /// <summary>What a game has marked on the ground, by the name it marked under.</summary>
+        public Dictionary<string, WorldMarker> Marked { get; } = [];
+
+        public bool Mark(WorldMarker marker)
+        {
+            if (marker is null || string.IsNullOrWhiteSpace(marker.Id)) return false;
+
+            Marked[marker.Id] = marker;
+            return true;
+        }
+
+        public bool Unmark(string id) => Marked.Remove(id);
+
+        /// <summary>What a test says SpreadOver answers with, and the maps it says are quiet.</summary>
+        public List<WorldPlace> Spread { get; } = [];
+        public HashSet<int> Emptied { get; } = [];
+
+        public IReadOnlyList<WorldPlace> SpreadOver(int region, int count, string onlyWhere = "") =>
+            [.. Spread.Take(Math.Max(count, 0))];
+
+        public bool Empty(int mapNum) => Emptied.Add(mapNum);
+
+        public bool Refill(int mapNum) => Emptied.Remove(mapNum);
+
+        public bool IsEmptied(int mapNum) => Emptied.Contains(mapNum);
+
+        public bool InsideMark(string id, WorldPlace place)
+        {
+            if (!Marked.TryGetValue(id, out var found) || found.Radius <= 0 || found.At.Map != place.Map) return false;
+
+            int dx = place.X - found.At.X;
+            int dy = place.Y - found.At.Y;
+
+            return dx * dx + dy * dy <= found.Radius * found.Radius;
+        }
+
+        /// <summary>What the game kept about the world itself.</summary>
+        public AttributeBag Kept { get; } = new();
+
+        public AttributeBag WorldValues() => Kept;
+
+        public void SetWorldValue(string key, AttributeValue value) => Kept.Set(key, value);
+
         public bool SetRecordValue(string familyId, int num, string key, AttributeValue value)
         {
             if (RecordAt(familyId, num) is not { } row) return false;
@@ -2508,10 +2556,25 @@ public class ScriptedWorldTests
 
         /// <summary>Read off the same Standing table At answers from, so a test places a body once and both
         /// questions agree about where it is.</summary>
-        public IReadOnlyList<EntityHandle> NpcsNear(WorldPlace at, int tiles) =>
+        public List<(WorldPlace At, int ItemNum, int Quantity, EntityHandle ClaimedBy, int ClaimSeconds)> Littered { get; } = [];
+
+        public bool DropAt(WorldPlace at, int itemNum, int quantity = 1,
+                           EntityHandle claimedBy = default, int claimSeconds = 0)
+        {
+            if (itemNum < 1) return false;
+
+            Littered.Add((at, itemNum, Math.Max(quantity, 1), claimedBy, claimSeconds));
+            return true;
+        }
+
+        public IReadOnlyList<EntityHandle> NpcsNear(WorldPlace at, int tiles) => Near(at, tiles, wanted: true);
+
+        public IReadOnlyList<EntityHandle> PlayersNear(WorldPlace at, int tiles) => Near(at, tiles, wanted: false);
+
+        private IReadOnlyList<EntityHandle> Near(WorldPlace at, int tiles, bool wanted) =>
         [
             .. Standing
-                .Where(s => s.Key.Map == at.Map && s.Value.IsNpc
+                .Where(s => s.Key.Map == at.Map && s.Value.IsNpc == wanted
                             && Math.Abs(s.Key.X - at.X) + Math.Abs(s.Key.Y - at.Y) <= tiles)
                 .OrderBy(s => Math.Abs(s.Key.X - at.X) + Math.Abs(s.Key.Y - at.Y))
                 .Select(s => s.Value),

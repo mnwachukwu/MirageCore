@@ -110,7 +110,7 @@ public class FleeDirectionBiasTests
     {
         var dispatcher = new NoOpDispatcher();
         var movement = new MovementSystem(world, pm, dispatcher);
-        var spawn = new SpawnSystem(world, pm, dispatcher);
+        var spawn = new SpawnSystem(world, pm, dispatcher, items: null!);
         return new NpcAiSystem(world, pm, dispatcher, movement, spawn, items: null!);
     }
 

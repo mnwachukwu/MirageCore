@@ -106,7 +106,9 @@ public sealed partial class GameplayScreen : IGameScreen
         foreach (var cmd in _renderFrame.CorpseNames)
             if (cmd.Layer == group) DrawWorldName(sb, nameFont, cmd, nameCellW, nameLineH);
 
-        // Territory-contest capture points: radius circle + triangular flag + name, in the world
+        // What a game has marked on the ground: the ring, the pennant, the label, the meter. In the world
+        // layer with the corpses, so a living body walking over a mark draws on top of it.
+        DrawMarkers(sb, group, nameFont, nameCellW, nameLineH);
 
         if (_items is not null)
         {

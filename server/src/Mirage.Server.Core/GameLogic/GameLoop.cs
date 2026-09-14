@@ -357,7 +357,8 @@ public sealed class GameLoop : IDisposable
     /// called immediately after an admin /tod or /weather change so the jump survives a crash.</summary>
     public void PersistEnvironmentNow()
     {
-        var env = new EnvironmentState(_tod.CurrentPosMs, _weather.CurrentWeather, _weather.CurrentRemainingMs);
+        var env = new EnvironmentState(_tod.CurrentPosMs, _weather.CurrentWeather, _weather.CurrentRemainingMs,
+                                       _world.Values);
         _bg.Run(_persistence.SaveEnvironmentAsync(env), nameof(IPersistenceService.SaveEnvironmentAsync));
     }
 }

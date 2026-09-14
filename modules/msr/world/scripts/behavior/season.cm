@@ -1,0 +1,75 @@
+# Which season it is.
+#
+# Thirteen weeks, turning over on the same weekday the week itself resets on — so a season is a whole
+# number of weeks and never a slice of one.
+#
+# ⚠ The number is KEPT ON THE WORLD rather than worked out from the epoch. A season that began when
+# the server did is the original's rule; arithmetic on the epoch would say a world three days old is
+# in its two-hundredth season, and would renumber every season the moment the length changed.
+#
+# ⚠ And nothing is settled retroactively. A world that has never run adopts its first week reset as
+# the start of season one, and a server brought back after a year away begins a season rather than
+# ending fifty of them.
+#
+# What it is FOR, so far, is the seasonal quest cadence. The leaderboard and the archive that read the
+# same number in the original are territory's, and territory is not ported.
+
+shared model Season
+
+    public integer Weeks = 13;
+
+    # What is kept on the world.
+    public string Key = "season";
+    public string Began = "seasonbegan";
+    public string Walked = "seasonwalked";
+
+    public integer function Which()
+        yield World.Number(Season.Key);
+    end function
+
+    # Walked day by day rather than answered from today, so a server that was off over a reset still
+    # crosses it when it comes back — the same catch-up the guild ledger does, for the same reason.
+    public function Tick()
+        integer today = Calendar.Today();
+        integer last = World.Number(Season.Walked);
+
+        # A world nobody has run before starts from today. Walking from 1970 would run four hundred
+        # seasons past before the first player arrived.
+        if last < 1
+            last = today - 1;
+        end if
+
+        loop while last < today
+            last = last + 1;
+
+            Season.Day(last);
+        end loop
+
+        World.SetNumber(Season.Walked, today);
+    end function
+
+    function Day(integer day)
+        if not Calendar.IsSunday(day)
+            yield;
+        end if
+
+        integer began = World.Number(Season.Began);
+
+        # The first reset a world ever sees is the start of season one.
+        if began < 1
+            World.SetNumber(Season.Began, day);
+            World.SetNumber(Season.Key, 1);
+            yield;
+        end if
+
+        if (day - began) / 7 < Season.Weeks
+            yield;
+        end if
+
+        World.SetNumber(Season.Began, day);
+        World.SetNumber(Season.Key, Season.Which() + 1);
+
+        World.Tell("Season " + Season.Which() + " begins.");
+    end function
+
+end model

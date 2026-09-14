@@ -21,7 +21,7 @@ public class NpcSpawnPlacementTests
     const int Map = 1, NpcNum = 1;
 
     static SpawnSystem NewSpawn(GameWorld world, PlayerManager pm)
-        => new(world, pm, new NoOpDispatcher());
+        => new(world, pm, new NoOpDispatcher(), items: null!);
 
     // A minimal huntable NPC type in slot NpcNum. SpawnNpc only needs Name/Behavior + a valid EffectiveSize
     // (Size 0 clamps to 1) and pure Effective* vitals, so nothing else is required for placement assertions.

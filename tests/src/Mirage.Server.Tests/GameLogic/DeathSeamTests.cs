@@ -33,6 +33,7 @@ public class DeathSeamTests
         var pm = new PlayerManager();
         var dispatcher = new NoOpDispatcher();
         var movement = new MovementSystem(world, pm, dispatcher);
+        var spawns = new SpawnSystem(world, pm, dispatcher, items: null!);
 
         var sp = pm[Index];
         sp.IsConnected = true;
@@ -48,7 +49,7 @@ public class DeathSeamTests
         p.SpawnY = 9;
         world.MapObservers[Map].Add(Index);
 
-        return (new DeathSystem(world, pm, dispatcher, movement, policies), pm);
+        return (new DeathSystem(world, pm, dispatcher, movement, spawns, policies), pm);
     }
 
     [Test]

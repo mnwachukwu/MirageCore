@@ -2224,12 +2224,126 @@ public class MsrStatsTests
     [TestCase(2, 3, 10, ExpectedResult = false)]
     [TestCase(3, 20_454, 20_460, ExpectedResult = true)]
     [TestCase(3, 20_454, 20_500, ExpectedResult = false)]
-    [TestCase(4, 0, 90, ExpectedResult = true)]
-    [TestCase(4, 0, 91, ExpectedResult = false)]
     [TestCase(0, 0, 99_999, ExpectedResult = true)]
     public bool TwoDaysInOnePeriodShareAKey(int cadence, int first, int later) =>
         Answered($"Quests.PeriodOf({cadence}, {first})")
         == Answered($"Quests.PeriodOf({cadence}, {later})");
+
+    // ── Whose midnight ───────────────────────────────────────────────────────
+
+    private string TodayAt(long moment, int offset)
+    {
+        var world = new ScriptedWorldTests.RecordingWorld { Clock = moment, Offset = offset };
+        var (module, _) = Asking("""
+                    who.Message("" + Calendar.Today());
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+
+        world.Here.Add(EntityHandle.ForPlayer(1));
+        ((ITickWork)scripts).Tick(1);
+
+        return world.Said.Count > 0 ? world.Said[^1] : "(nothing)";
+    }
+
+    /// <summary>🔴 <b>Midnight means the OPERATOR's midnight.</b> A daily settlement, a weekly tax and a
+    /// season all turn over on the server's own civil day, as they did in the original — so a world east
+    /// of Greenwich is already on tomorrow while UTC is still on today, and one west of it is still on
+    /// yesterday after UTC has moved on.</summary>
+    [Test]
+    public void TheDayTurnsOverAtTheServersOwnMidnight()
+    {
+        const long HalfPastEleven = 19_000L * 86_400L + 23L * 3_600L + 1_800L;
+        const long HalfPastMidnight = 19_000L * 86_400L + 1_800L;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(TodayAt(HalfPastEleven, offset: 0), Is.EqualTo("19000"),
+                "at Greenwich the day is UTC's day");
+            Assert.That(TodayAt(HalfPastEleven, offset: 2 * 3_600), Is.EqualTo("19001"),
+                "two hours east it is already tomorrow");
+            Assert.That(TodayAt(HalfPastMidnight, offset: -5 * 3_600), Is.EqualTo("18999"),
+                "and five hours west it is still yesterday");
+        });
+    }
+
+    // ── Seasons ──────────────────────────────────────────────────────────────
+    //
+    // 🔴 A season is not a slice of the calendar. It starts when the world starts one and runs thirteen
+    // whole weeks from there, so there is nothing about a DATE that could name it — which is why the
+    // seasonal cadence above is left out of that table and asked for here instead.
+
+    /// <summary>Days since 1970 for a day the world's week resets on. Day 3 was the first Sunday the
+    /// epoch saw, so every Sunday after it is three more than a multiple of seven.</summary>
+    private static long SecondsOnSunday(int weeksAfterTheFirst) =>
+        (3L + weeksAfterTheFirst * 7L) * 86_400L + 12L * 3_600L;
+
+    /// <summary>Runs the world's own beat once for each moment given, and answers with the season
+    /// afterwards. The clock is moved by hand between beats, which is the whole point.</summary>
+    private string SeasonAfter(params long[] moments)
+    {
+        var world = new ScriptedWorldTests.RecordingWorld();
+        var (module, _) = Asking("""
+                    who.Message("" + Season.Which());
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+
+        world.Here.Add(EntityHandle.ForPlayer(1));
+
+        foreach (long moment in moments)
+        {
+            world.Clock = moment;
+            ((ITickWork)scripts).Tick(1);
+        }
+
+        return world.Said.Count > 0 ? world.Said[^1] : "(nothing)";
+    }
+
+    /// <summary>⚠ A world nobody has run before is in NO season, and adopts the first week reset it
+    /// sees as the start of season one. Counting from the epoch instead would put a world three days
+    /// old in its two-hundredth season.</summary>
+    [Test]
+    public void AWorldThatHasNeverRun_IsInNoSeasonUntilItsFirstReset()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(SeasonAfter(SecondsOnSunday(0) + 86_400L), Is.EqualTo("0"),
+                "a Monday, and nothing has started yet");
+            Assert.That(SeasonAfter(SecondsOnSunday(0)), Is.EqualTo("1"),
+                "and the reset day it does see is season one");
+        });
+    }
+
+    /// <summary>Thirteen whole weeks, and the twelfth reset is still inside the first one.</summary>
+    [Test]
+    public void ASeasonRunsThirteenWeeks()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(SeasonAfter(SecondsOnSunday(0), SecondsOnSunday(12)), Is.EqualTo("1"));
+            Assert.That(SeasonAfter(SecondsOnSunday(0), SecondsOnSunday(13)), Is.EqualTo("2"));
+            Assert.That(SeasonAfter(SecondsOnSunday(0), SecondsOnSunday(26)), Is.EqualTo("3"));
+        });
+    }
+
+    /// <summary>🔴 <b>A server that was off over a reset still crosses it.</b> The days are walked
+    /// rather than the answer read off today, so a world nobody logged into for a fortnight comes back
+    /// having turned the season over rather than having missed it.</summary>
+    [Test]
+    public void AServerThatWasOff_StillCrossesTheResetItMissed()
+    {
+        Assert.That(SeasonAfter(SecondsOnSunday(0), SecondsOnSunday(14)), Is.EqualTo("2"),
+            "one beat, fourteen weeks later, and the thirteen-week boundary was still crossed");
+    }
+
+    /// <summary>⚠ And nothing is settled retroactively. A world brought up after a year away begins a
+    /// season rather than ending fifty of them.</summary>
+    [Test]
+    public void AWorldBroughtUpAfterAYear_BeginsOneSeason()
+    {
+        Assert.That(SeasonAfter(SecondsOnSunday(52)), Is.EqualTo("1"));
+    }
 
     /// <summary>A repeat run pays the repeat set. ⚠ A repeat reward left at nought is "nobody said"
     /// rather than "pays nothing", so it falls back to the first run's — a quest an author gave a
@@ -2943,13 +3057,169 @@ public class MsrStatsTests
         return (long)Math.Round(shifted * shifted / 15.0 * 1.5, MidpointRounding.AwayFromZero);
     }
 
+    // ── What a kill is worth to the people who made it ─────────────────────────
+    //
+    // 🔴 The engine rolls a creature's authored table; who shared the kill and whose the thing is are
+    // this game's. Both are unreachable from a tick, so these ask the loot policy directly — which is
+    // the same call the engine makes, line by line, before it rolls.
+
+    private const int Coin = 7, Sword = 8;
+
+    /// <summary>A creature dead on (5,5) with two people standing over it, the damage each of them dealt
+    /// already on the body, and a world that knows which item is the coin.</summary>
+    private (ScriptedWorldModule Module, ScriptedWorldTests.RecordingWorld World, Spoil Line) AKill(
+        int itemNum, int quantity, int chance, long annDealt, long bobDealt)
+    {
+        var world = new ScriptedWorldTests.RecordingWorld();
+        var (module, _) = Asking("""
+                    who.Message("");
+            """, world);
+
+        var beast = EntityHandle.ForNpc(1, 1);
+        var ann = EntityHandle.ForPlayer(1);
+        var bob = EntityHandle.ForPlayer(2);
+
+        world.Standing[new WorldPlace(1, 5, 5)] = beast;
+        world.Standing[new WorldPlace(1, 5, 6)] = ann;
+        world.Standing[new WorldPlace(1, 5, 7)] = bob;
+        world.Names[ann] = "Ann";
+        world.Names[bob] = "Bob";
+
+        // The ledger the game keeps on the creature as it is hit, written here rather than swung for.
+        world.BagFor(beast).Set("dealt.Ann", annDealt);
+        world.BagFor(beast).Set("dealt.Bob", bobDealt);
+        world.BagFor(ann);
+        world.BagFor(bob);
+
+        world.Records["Items"] =
+        [
+            Row(("name", "Rag")),
+            .. Enumerable.Range(2, Coin - 2).Select(_ => Row(("name", "Rag"))),
+            Row(("name", "Gold"), ("coin", true)),
+            Row(("name", "Sword")),
+        ];
+
+        var line = new Spoil
+        {
+            Body = beast,
+            Killer = ann,
+            Kind = 1,
+            ItemNum = itemNum,
+            Quantity = quantity,
+            ChancePercent = chance,
+        };
+
+        return (module, world, line);
+    }
+
+    /// <summary>🔴 <b>Coin is the one thing on a table that divides.</b> Everybody who fought for it
+    /// takes a share, and every share is held for the person who earned it — otherwise a purse belongs
+    /// to whoever is standing nearest when it lands.</summary>
+    [Test]
+    public void ThePurseIsSplitBetweenEverybodyWhoFoughtForIt()
+    {
+        var (module, world, line) = AKill(Coin, quantity: 10, chance: 100, annDealt: 100, bobDealt: 90);
+        using ScriptedWorldModule scripts = module;
+
+        ((ILootPolicy)scripts).Weigh(line);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(line.ChancePercent, Is.Zero, "the line is the game's from here, so the engine stands down");
+            Assert.That(world.Littered, Has.Count.EqualTo(2), "two who fought, two stacks");
+            Assert.That(world.Littered.Sum(l => l.Quantity), Is.EqualTo(10),
+                "nothing is created and nothing is destroyed");
+            Assert.That(world.Littered.Select(l => l.ClaimedBy),
+                Is.EquivalentTo(new[] { EntityHandle.ForPlayer(1), EntityHandle.ForPlayer(2) }),
+                "and each share is held for whoever earned it");
+        });
+    }
+
+    /// <summary>⚠ Somebody who chipped once and walked away is not somebody who shared the kill. The bar
+    /// is three quarters of what the top dealer did, so nine tenths is in and a tenth is out.</summary>
+    [Test]
+    public void SomebodyWhoOnlyChippedAtIt_SharesNothing()
+    {
+        var (module, world, line) = AKill(Coin, quantity: 10, chance: 100, annDealt: 100, bobDealt: 10);
+        using ScriptedWorldModule scripts = module;
+
+        ((ILootPolicy)scripts).Weigh(line);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(world.Littered, Has.Count.EqualTo(1));
+            Assert.That(world.Littered[0].Quantity, Is.EqualTo(10), "the whole purse");
+            Assert.That(world.Littered[0].ClaimedBy, Is.EqualTo(EntityHandle.ForPlayer(1)));
+        });
+    }
+
+    /// <summary>🔴 <b>A creature another creature did most of the work on drops nothing.</b> Chipping a
+    /// monster and letting a guard finish it is the cheapest exploit in the game and the one every player
+    /// finds, so the answer is no loot at all rather than a smaller share.</summary>
+    [Test]
+    public void AKillAGuardFinished_PaysNobody()
+    {
+        var (module, world, line) = AKill(Sword, quantity: 1, chance: 100, annDealt: 40, bobDealt: 10);
+        using ScriptedWorldModule scripts = module;
+
+        world.BagFor(EntityHandle.ForNpc(1, 1)).Set("beastdealt", 90L);
+
+        ((ILootPolicy)scripts).Weigh(line);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(line.ChancePercent, Is.Zero);
+            Assert.That(world.Littered, Is.Empty);
+        });
+    }
+
+    /// <summary>Nobody laid a hand on it, so whatever killed it was not a person and the table is the
+    /// world's own business — the engine rolls it as authored.</summary>
+    [Test]
+    public void ACreatureNobodyFought_IsLeftToTheEngine()
+    {
+        var (module, world, line) = AKill(Sword, quantity: 1, chance: 60, annDealt: 0, bobDealt: 0);
+        using ScriptedWorldModule scripts = module;
+
+        ((ILootPolicy)scripts).Weigh(line);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(line.ChancePercent, Is.EqualTo(60), "left exactly as it was authored");
+            Assert.That(world.Littered, Is.Empty);
+        });
+    }
+
+    /// <summary>Anything that is not coin goes to one of them, whole. A sword cannot be halved, so it is
+    /// drawn for rather than divided.</summary>
+    [Test]
+    public void AnythingElseGoesToOneOfThem()
+    {
+        var (module, world, line) = AKill(Sword, quantity: 1, chance: 100, annDealt: 100, bobDealt: 90);
+        using ScriptedWorldModule scripts = module;
+
+        ((ILootPolicy)scripts).Weigh(line);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(world.Littered, Has.Count.EqualTo(1));
+            Assert.That(world.Littered[0].ItemNum, Is.EqualTo(Sword));
+            Assert.That(world.Littered[0].ClaimedBy.IsPlayer, Is.True, "one of the two, held for them");
+            Assert.That(world.Littered[0].ClaimSeconds, Is.GreaterThan(0));
+        });
+    }
+
     private static AttributeBag Row(params (string Key, object Value)[] fields)
     {
         var bag = new AttributeBag();
         foreach (var (key, value) in fields)
         {
-            bag.Set(key, value is long number ? AttributeValue.From(number)
-                                              : AttributeValue.From((string)value));
+            bag.Set(key, value switch
+            {
+                long number => AttributeValue.From(number),
+                bool ticked => AttributeValue.From(ticked),
+                _ => AttributeValue.From((string)value),
+            });
         }
 
         return bag;

@@ -214,6 +214,22 @@ public interface IWorld
     /// <para>False for a slot holding nothing, and for a body that is not in the world.</para></summary>
     bool DropFrom(EntityHandle who, int slot, int quantity = 0);
 
+    /// <summary>
+    /// Puts an item on the ground on a square, out of nowhere.
+    ///
+    /// <para>Not out of anybody's bag — a chest that opens, a reward left where a quest ended, a
+    /// creature's hoard a game rolled for itself. <see cref="DropFrom"/> is the other one, and it moves
+    /// something that already exists; this makes one.</para>
+    ///
+    /// <para><paramref name="claimedBy"/> and <paramref name="claimSeconds"/> hold it for one player for
+    /// that long: nobody else may pick it up until the time runs out, and the client shows them whose it
+    /// is. Left unsaid, the drop is free to whoever reaches it first.</para>
+    ///
+    /// <para>False for an item or a square that is not there.</para>
+    /// </summary>
+    bool DropAt(WorldPlace at, int itemNum, int quantity = 1,
+                EntityHandle claimedBy = default, int claimSeconds = 0);
+
     /// <summary>How many of that item this body is carrying, worn ones and every stack counted
     /// together. 0 for a body carrying none.
     ///
@@ -428,6 +444,17 @@ public interface IWorld
     /// </summary>
     IReadOnlyList<EntityHandle> NpcsNear(WorldPlace at, int tiles);
 
+    /// <summary>
+    /// Every player standing within so many tiles of a square, nearest first.
+    ///
+    /// <para>The mirror of <see cref="NpcsNear"/>, and needed for the same reason: a rule about the
+    /// PEOPLE around an event — who shared a kill, who heard a shout, who was caught in a blast — has
+    /// nothing to start from otherwise, because a game is only ever handed one body at a time.</para>
+    ///
+    /// <para>⚠ On that map only, measured in tiles from the square, exactly as above.</para>
+    /// </summary>
+    IReadOnlyList<EntityHandle> PlayersNear(WorldPlace at, int tiles);
+
     // ── Asking about the ground ─────────────────────────────────────────
     //
     // 🔴 A game is given squares constantly — a verb was used on one, a body is standing on one — and
@@ -631,12 +658,106 @@ public interface IWorld
     /// apart the first time repair is retuned and nothing reports it.</para></summary>
     double RepairRateAt(int tier);
 
+    /// <summary>
+    /// Up to so many spots spread across a region, every one reachable on foot from every other.
+    ///
+    /// <para>🔴 <b>Measured by WALKING</b>, across the region's map seams, not in a straight line and not
+    /// by map number. A straight line is a lie wherever a wall, a cliff or water stands between two tiles
+    /// that are near on paper and a long way apart on foot; map numbers run in authoring order, so
+    /// spreading by them piles everything into whichever corner was drawn first.</para>
+    ///
+    /// <para>What the spots are for is a game's — capture points, chests, patrol posts, somewhere to hide
+    /// a key. What the engine contributes is the part no script can do: a region is thousands of tiles,
+    /// and the seam step, the walking distance and the connected stretch are all things it already knows
+    /// because it moves bodies across them.</para>
+    ///
+    /// <para><paramref name="onlyWhere"/> names one of the game's own truth fields on Maps, and a spot
+    /// goes only on a map carrying it; blank puts one anywhere in the region. The walk covers the whole
+    /// region either way — a town in the middle of one is walked THROUGH, and leaving it out would cut
+    /// the region in half at its towns.</para>
+    ///
+    /// <para>Fewer than asked for is an ordinary answer: the region's largest walkable stretch had
+    /// nowhere else to put one.</para>
+    /// </summary>
+    IReadOnlyList<WorldPlace> SpreadOver(int region, int count, string onlyWhere = "");
+
+    /// <summary>
+    /// Takes every creature off a map and keeps it that way.
+    ///
+    /// <para>For a place that has to stop being ordinary ground for a while: a war fought over it, a
+    /// ritual nobody should interrupt, an arena cleared for a duel. The bodies go now and nothing comes
+    /// back until <see cref="Refill"/> — which is what separates this from clearing a map and watching it
+    /// refill a minute later.</para>
+    ///
+    /// <para>False for a map that is not there, or one already emptied.</para>
+    /// </summary>
+    bool Empty(int mapNum);
+
+    /// <summary>Lets a map hold creatures again, and puts its own back at once rather than leaving it
+    /// bare until each slot's clock comes round. False for a map that was not emptied.</summary>
+    bool Refill(int mapNum);
+
+    /// <summary>Whether a map is being kept clear of creatures.</summary>
+    bool IsEmptied(int mapNum);
+
+    /// <summary>Puts a mark on the ground, or replaces the one already under that name.
+    ///
+    /// <para>The twin of an overhead bar, for a PLACE — a flag on a capture point, a ring around a
+    /// blast, a name over a doorway, a meter on a ritual. See <see cref="WorldMarker"/> for what one
+    /// draws.</para>
+    ///
+    /// <para>Replacing rather than stacking is what makes a mark that moves, or whose meter is counting,
+    /// one call. False for a square that is not there.</para></summary>
+    bool Mark(WorldMarker marker);
+
+    /// <summary>Takes one away by name. False when nothing was under it, which is an ordinary answer for
+    /// a game clearing up after something that ended on its own.</summary>
+    bool Unmark(string id);
+
+    /// <summary>Whether a square is inside a mark's ring.
+    ///
+    /// <para>🔴 <b>The ring drawn and the ring asked about are the same mark.</b> A game scoring the
+    /// ground inside one asks this rather than doing the arithmetic itself: the two answers drifting
+    /// apart is invisible, because the line a player can see would sit somewhere other than the line
+    /// that counts.</para>
+    ///
+    /// <para>Measured center to center and inclusive, so what this answers yes for is exactly the
+    /// staircase of tiles the ring outlines. False for a mark with no ring, and for another map.</para></summary>
+    bool InsideMark(string id, WorldPlace place);
+
     /// <summary>The time now, in seconds since 1970, UTC.
     ///
     /// <para>A game with anything dated in it needs this: a cooldown that has to survive a restart, a
     /// window that opens for an hour, a daily reset. Counting ticks answers a different question, since
     /// ticks stop when the server does.</para></summary>
     long Now();
+
+    /// <summary>How far the server's own civil day is from UTC right now, in seconds — east of it
+    /// positive, west of it negative.
+    ///
+    /// <para><b>Anything that turns over at MIDNIGHT wants this.</b> A daily reset, a weekly tax, a
+    /// season: those are meant to land on the operator's civil day rather than on a UTC boundary, and a
+    /// game that divides <see cref="Now"/> by a day gets the wrong one everywhere but Greenwich. Add it
+    /// before dividing.</para>
+    ///
+    /// <para>⚠ Read fresh each time, so a place that keeps summer time gives a different answer in July
+    /// than in January. That is what makes a boundary land at midnight all year rather than drifting an
+    /// hour twice.</para></summary>
+    int LocalOffset();
+
+    /// <summary>
+    /// Everything a game keeps about the WORLD rather than about anybody in it — a season number,
+    /// whether an event is running, how many times something has happened.
+    ///
+    /// <para>The one place for state that belongs to no body and no record. It is persisted beside the
+    /// time of day and the weather, which are the engine's own answers to the same question, and it
+    /// comes back as it was left when the server starts again.</para>
+    /// </summary>
+    AttributeBag WorldValues();
+
+    /// <summary>Write one of them. Kept until the world is next written, which happens on the engine's
+    /// own save cadence and at shutdown.</summary>
+    void SetWorldValue(string key, AttributeValue value);
 
     /// <summary>Take gold out of a guild's vault, recording who spent it.
     ///

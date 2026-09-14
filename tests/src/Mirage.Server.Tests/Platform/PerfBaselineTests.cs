@@ -144,7 +144,7 @@ public class PerfBaselineTests
         var join = new JoinLeaveSystem(world, new PlayerManager(), new NoOpDispatcher(),
             saver: null!, movement: null!, party: null!, guilds: null!, mail: null!, social: null!,
             trade: null!, conversations: null!,
-            tod: null!, weather: null!, decals: null!,
+            tod: null!, weather: null!, decals: null!, markers: null!,
             Microsoft.Extensions.Logging.Abstractions.NullLogger<JoinLeaveSystem>.Instance);
 
         TestContext.WriteLine("World-data builders (run on every join AND every region sync):");

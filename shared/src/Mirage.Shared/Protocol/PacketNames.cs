@@ -216,6 +216,8 @@ public static class PacketNames
     public const string SendPlayerData = "playerdata";
     // A map's stains, whole-list. Sent only when the list changes; drying needs no wire.
     public const string DecalUpdate = "decals";
+    // What a game has marked on a map, whole-list and PER CLIENT - a marker may name who sees it.
+    public const string MarkerUpdate = "marks";
 
     /// <summary>S→C: a line of text floats up off a body. Spawned only by a game.</summary>
     public const string FloatingText = "float";

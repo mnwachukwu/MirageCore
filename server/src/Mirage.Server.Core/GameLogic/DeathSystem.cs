@@ -18,21 +18,28 @@ namespace Mirage.Server.Core.GameLogic;
 /// points, no hunger, no drowning — so the only caller is a game module. An engine with no module
 /// loaded has deaths it knows how to perform and nothing that asks for one, which is the correct
 /// behavior rather than a gap.</para>
+///
+/// <para><b>One door, two kinds of body.</b> A creature killed through the same call goes to
+/// <see cref="SpawnSystem.KillNpc"/>, because a creature comes back on a spawn clock rather than at a
+/// respawn point. A game asks for a death the same way either way and is answered the same way.</para>
 /// </summary>
 public sealed class DeathSystem : GameSystem
 {
     private readonly GameWorld _world;
     private readonly PlayerManager _pm;
     private readonly MovementSystem _movement;
+    private readonly SpawnSystem _spawns;
     private readonly IReadOnlyList<IDeathPolicy> _policies;
 
     public DeathSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher,
-                       MovementSystem movement, IEnumerable<IDeathPolicy>? policies = null)
+                       MovementSystem movement, SpawnSystem spawns,
+                       IEnumerable<IDeathPolicy>? policies = null)
         : base(dispatcher)
     {
         _world = world;
         _pm = pm;
         _movement = movement;
+        _spawns = spawns;
         _policies = policies is null ? [] : [.. policies];
     }
 
@@ -43,7 +50,13 @@ public sealed class DeathSystem : GameSystem
     /// back for — the one place a corpse is worth looking.</para></summary>
     public bool Kill(EntityHandle who, EntityHandle killer = default, string causeKey = "")
     {
-        if (!who.IsPlayer) return false;   // NPC death is a spawner's business, not a warp's
+        // A creature's death is a slot's life rather than a warp, and the policies below are written
+        // about a PLAYER - MayDie and OnDied take one, and a handler handed the wrong kind of body is
+        // worse than one that is not called. So it goes to the spawner whole, and a game says what a
+        // kill was worth at its own call site rather than through a handler about somebody else.
+        if (who.IsNpc) return _spawns.KillNpc(who, killer);
+
+        if (!who.IsPlayer) return false;
 
         var sp = _pm[who.PlayerIndex];
         if (!sp.IsPlaying) return false;

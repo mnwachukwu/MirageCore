@@ -111,6 +111,7 @@ shared model Fight
         who.Sweep(true);
         Gear.Chip(who, Sheet.Weapon);
         Fight.Wound(target, damage, crit);
+        Loot.Credit(target, who, damage);
 
         integer left = target.Number(Vitals.Health) - damage;
 
@@ -168,6 +169,7 @@ shared model Fight
 
         it.Sweep(true);
         Fight.Wound(other, damage, crit);
+        Loot.CreditBeast(other, damage);
 
         integer left = other.Number(Vitals.Health) - damage;
 

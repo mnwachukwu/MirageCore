@@ -1,0 +1,269 @@
+# What a kill is worth to the people who made it.
+#
+# The engine rolls a creature's authored table and puts what lands on the tile it fell on. Everything
+# else is this file: who shared the kill, what a guild's privileges do to a line, and whose the thing
+# is once it is on the ground.
+#
+# 🔴 EVERY LINE IS TAKEN OVER. The engine is told to stand down and the roll happens here, because a
+# purse is divided between several people and one line of a table cannot land as several stacks. So
+# the roll, the split, the claim, and what everybody is told are all below.
+#
+# ⚠ Being in a party is deliberately beside the point. Two strangers who both fought the creature both
+# earned a share, and a partymate who stood at the back did not. What counts is damage dealt.
+
+shared model Loot
+
+    # ── The ledger ────────────────────────────────────────────────────────────
+    #
+    # Who has hit this creature and for how much, kept on the creature itself and keyed by the name of
+    # whoever swung. A creature is rebuilt from its template when it respawns, so a fresh body starts
+    # with a clean slate and nothing anywhere has to wipe one.
+
+    public string DealtBy = "dealt.";
+
+    # And what OTHER CREATURES have taken out of it, as one running total rather than by name. Only
+    # the largest matters, and a guard that killed something is one number rather than a list.
+    public string DealtByBeasts = "beastdealt";
+
+    public function Credit(Npc it, Player who, integer damage)
+        if damage < 1
+            yield;
+        end if
+
+        it.SetNumber(Loot.DealtBy + who.Name, it.Number(Loot.DealtBy + who.Name) + damage);
+    end function
+
+    public function CreditBeast(Npc it, integer damage)
+        if damage < 1
+            yield;
+        end if
+
+        it.SetNumber(Loot.DealtByBeasts, it.Number(Loot.DealtByBeasts) + damage);
+    end function
+
+    # ── Who shared it ─────────────────────────────────────────────────────────
+
+    # Within this much of the top dealer, as a percent of what they did. Somebody who fought alongside
+    # the leader shares the kill; somebody who chipped once and walked away does not.
+    public integer SharePercent = 75;
+
+    # How far from the body to look. Wider than any map, because the rule is "still there to see it
+    # fall" rather than a distance — and the engine's answer is per map, so this reaches the whole of
+    # the one the body is lying on and none of the next.
+    public integer Reach = 200;
+
+    # How long a claimed drop is held for whoever won it.
+    public integer ClaimSeconds = 30;
+
+    # What the top dealer did. Zero when nobody hit it, which is a creature something else killed.
+    integer function TopDamage(Npc it, integer map, integer x, integer y)
+        integer top = 0;
+
+        loop each who in World.PlayersNear(map, x, y, Loot.Reach)
+            integer dealt = it.Number(Loot.DealtBy + who.Name);
+
+            if dealt > top
+                top = dealt;
+            end if
+        end loop
+
+        yield top;
+    end function
+
+    # What a share costs, never less than a point: against a creature killed in one blow the fraction
+    # rounds to nothing, and a bar of nothing lets everybody standing nearby roll.
+    integer function Bar(integer top)
+        yield Math.Max(1, Math.Round(top * Loot.SharePercent / 100.0));
+    end function
+
+    integer function Sharers(Npc it, integer map, integer x, integer y, integer bar)
+        integer many = 0;
+
+        loop each who in World.PlayersNear(map, x, y, Loot.Reach)
+            if it.Number(Loot.DealtBy + who.Name) >= bar
+                many = many + 1;
+            end if
+        end loop
+
+        yield many;
+    end function
+
+    # ── One line of the table ─────────────────────────────────────────────────
+
+    public function Shed(Spoils drop)
+        Npc? fell = drop.From;
+
+        # Nothing to stand over. The body has already gone, so there is nobody to credit and nowhere
+        # to put anything; the engine's own roll is left to it.
+        if not fell.HasValue()
+            yield;
+        end if
+
+        Npc it = fell.Value();
+        integer map = it.Map;
+        integer x = it.X;
+        integer y = it.Y;
+
+        # ⚠ The SQUARE it fell on, plane and all. A creature killed on a bridge leaves its hoard on the
+        # bridge; dropped by three loose numbers it would land in the water underneath.
+        Spot fallen = it.Where;
+
+        integer top = Loot.TopDamage(it, map, x, y);
+
+        # ⚠ A creature that another creature did most of the work on drops NOTHING. Otherwise chipping
+        # a monster and letting a guard finish it is free loot, which is the cheapest exploit in the
+        # game and the one every player finds.
+        if it.Number(Loot.DealtByBeasts) > top
+            drop.Rolls(0);
+            yield;
+        end if
+
+        # Nobody laid a hand on it, so whatever killed it was not a person and the table is the
+        # world's own business.
+        if top < 1
+            yield;
+        end if
+
+        integer bar = Loot.Bar(top);
+        integer sharers = Loot.Sharers(it, map, x, y, bar);
+        integer guild = Loot.LeadingGuild(it, map, x, y, top);
+
+        integer chance = Perks.DropRate(guild, drop.Chance);
+
+        # From here the line is the game's, whatever happens to it.
+        drop.Rolls(0);
+
+        if not Combat.Rolls(chance)
+            yield;
+        end if
+
+        integer many = Math.Max(1, drop.Many);
+        boolean doubled = Perks.DoublesDrop(guild);
+
+        # Coin is the one thing on a table that divides, so a doubled purse is doubled BEFORE it is
+        # split and everybody who fought shares the privilege.
+        if drop.Item == Gear.Coin()
+            if doubled
+                many = many * 2;
+            end if
+
+            Loot.Divide(it, fallen, drop.Item, many, bar, sharers);
+            yield;
+        end if
+
+        Loot.Award(it, fallen, drop.Item, many, bar, sharers);
+
+        # ⚠ A doubled sword is a SECOND one on the ground and unclaimed — a bonus anybody may take,
+        # rather than more of the winner's pile.
+        if doubled
+            World.DropAt(fallen, drop.Item, many);
+            World.TellNear(map, x, y, it.Name + " drops a second " + World.RecordName(Gear.Of, drop.Item) + ".");
+        end if
+    end function
+
+    # Whose guild decides the privileges: the biggest dealer's. Whether a line lands at all is one
+    # question about the whole kill, so it needs one answer, and the person who did the most is a
+    # defensible and repeatable one.
+    integer function LeadingGuild(Npc it, integer map, integer x, integer y, integer top)
+        loop each who in World.PlayersNear(map, x, y, Loot.Reach)
+            if it.Number(Loot.DealtBy + who.Name) >= top
+                yield World.GuildOf(who);
+            end if
+        end loop
+
+        yield 0;
+    end function
+
+    # ── Handing it out ────────────────────────────────────────────────────────
+
+    # Coin, split evenly, with the odd coins going to a rotation picked at random.
+    #
+    # ⚠ NOT to the biggest dealers. Inside this set everybody is within a quarter of everybody else by
+    # definition, so "hit hardest" is noise dressed up as merit — and it would hand the same person the
+    # extra coin on every kill they were part of.
+    function Divide(Npc it, Spot fallen, integer item, integer total,
+                    integer bar, integer sharers)
+        if sharers < 1
+            yield;
+        end if
+
+        integer map = fallen.Map;
+        integer x = fallen.X;
+        integer y = fallen.Y;
+
+        integer share = total / sharers;
+        integer over = total - share * sharers;
+        integer first = Combat.Roll(sharers);
+        integer seen = 0;
+
+        loop each who in World.PlayersNear(map, x, y, Loot.Reach)
+            if it.Number(Loot.DealtBy + who.Name) >= bar
+                integer mine = share;
+
+                if (seen - first + sharers) % sharers < over
+                    mine = mine + 1;
+                end if
+
+                # A purse too small to go round pays who it can. An empty stack is not a drop.
+                if mine > 0
+                    World.DropClaimed(fallen, item, mine, who, Loot.ClaimSeconds);
+                    who.Message(it.Name + " drops " + mine + " " + World.RecordName(Gear.Of, item)
+                                + ", split " + sharers + " ways.");
+                end if
+
+                seen = seen + 1;
+            end if
+        end loop
+    end function
+
+    # Anything else: one owner, decided PER LINE. A kill that drops a sword and a potion can hand them
+    # to two different people, so one unlucky roll costs somebody a thing rather than the whole kill.
+    function Award(Npc it, Spot fallen, integer item, integer many,
+                   integer bar, integer sharers)
+        string name = World.RecordName(Gear.Of, item);
+
+        integer map = fallen.Map;
+        integer x = fallen.X;
+        integer y = fallen.Y;
+
+        if sharers < 1
+            World.DropAt(fallen, item, many);
+            yield;
+        end if
+
+        integer winner = Combat.Roll(sharers);
+        integer seen = 0;
+        string won = "";
+
+        loop each who in World.PlayersNear(map, x, y, Loot.Reach)
+            if it.Number(Loot.DealtBy + who.Name) >= bar
+                if seen == winner
+                    World.DropClaimed(fallen, item, many, who, Loot.ClaimSeconds);
+                    won = who.Name;
+                end if
+
+                seen = seen + 1;
+            end if
+        end loop
+
+        # ⚠ Told in a second pass, because everybody has to hear the same answer and the answer is not
+        # known until the first one has finished. Saying it as we went would tell whoever came before
+        # the winner that they had lost to nobody in particular.
+        if won == ""
+            yield;
+        end if
+
+        loop each who in World.PlayersNear(map, x, y, Loot.Reach)
+            if it.Number(Loot.DealtBy + who.Name) >= bar
+                if who.Name == won
+                    who.Message(it.Name + " drops " + name + ", and it is yours.");
+                end if
+
+                if who.Name != won
+                    who.Message(it.Name + " drops " + name + ". " + won + " won it.");
+                end if
+            end if
+        end loop
+    end function
+
+end model

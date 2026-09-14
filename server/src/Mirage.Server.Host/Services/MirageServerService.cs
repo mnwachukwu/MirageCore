@@ -377,6 +377,10 @@ public sealed class MirageServerService : IHostedService
         _tod.Init(env.TodPositionMs);
         _weather.Init(env.Weather, env.WeatherRemainingMs);
 
+        // And whatever the game kept about the world. A file written before it kept anything carries
+        // none, which is the same starting point a world that has never run from.
+        if (env.Values is { } kept) _world.Values = kept;
+
         // What the world actually holds, rather than what its ceilings allow. The second line this used
         // to print counted the blank files it had just written, and there are none.
         LocalizedLog.Info(_logger, ServerStrings.Server_LoadedSummary,

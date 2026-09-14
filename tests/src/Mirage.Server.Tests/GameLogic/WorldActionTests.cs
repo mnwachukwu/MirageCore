@@ -38,7 +38,6 @@ public class WorldActionTests
         var dispatcher = new NoOpDispatcher();
         var movement = new MovementSystem(world, pm, dispatcher);
         var attributes = new AttributeSystem(world, pm, dispatcher);
-        var deaths = new DeathSystem(world, pm, dispatcher, movement);
         var items = new ItemSystem(world, pm, dispatcher, persistence: null!, bg: null!);
         var decals = new DecalSystem(world, dispatcher);
 
@@ -55,7 +54,8 @@ public class WorldActionTests
         sp.Char.X = 5;
         sp.Char.Y = 5;
 
-        var spawn = new SpawnSystem(world, pm, dispatcher);
+        var spawn = new SpawnSystem(world, pm, dispatcher, items);
+        var deaths = new DeathSystem(world, pm, dispatcher, movement, spawn);
         var ai = new NpcAiSystem(world, pm, dispatcher, movement, spawn, items);
         var actions = new ServerWorld(world, pm, attributes, deaths, movement, items,
                                       joinLeave: null!, decals, ai, guilds: null!, dispatcher);

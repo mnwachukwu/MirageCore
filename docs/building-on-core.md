@@ -39,10 +39,10 @@ and their absence is the product rather than a gap in it.
 
 ---
 
-## The seventeen seams
+## The eighteen seams
 
 A game is an [`ICoreModule`](../shared/src/Mirage.Shared/Extensibility/ICoreModule.cs). It is asked to
-describe itself once, and everything it can say is one of seventeen calls on the builder it is handed.
+describe itself once, and everything it can say is one of eighteen calls on the builder it is handed.
 
 **What the game is made of**
 
@@ -78,6 +78,7 @@ describe itself once, and everything it can say is one of seventeen calls on the
 | `AddObserver` | what to be told when something happens in the world |
 | `AddDeathPolicy` | whether dying happens at all, what it costs, where the body comes back |
 | `AddUsePolicy` | whether somebody may use a thing out of their bag |
+| `AddLootPolicy` | what a slain creature leaves behind, how often, and whose it is |
 | `AddCreationChoice` | what to ask before a character exists |
 | `AddLingerPolicy` | how long a dropped connection leaves a body standing |
 

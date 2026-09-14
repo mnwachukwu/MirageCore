@@ -488,6 +488,7 @@ shared model Book
         end if
 
         Fight.Wound(target, taken, crit);
+        Loot.Credit(target, who, taken);
 
         integer health = target.Number(Vitals.Health) - taken;
 

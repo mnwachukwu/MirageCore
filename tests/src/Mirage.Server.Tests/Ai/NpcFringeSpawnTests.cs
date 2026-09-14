@@ -73,7 +73,7 @@ public class NpcFringeSpawnTests
     static List<MapNpcRecord> SpawnMany(GameWorld world, int times)
     {
         var pm = new PlayerManager();
-        var spawn = new SpawnSystem(world, pm, new NoOpDispatcher());
+        var spawn = new SpawnSystem(world, pm, new NoOpDispatcher(), items: null!);
         var seen = new List<MapNpcRecord>();
         for (int i = 0; i < times; i++)
         {
@@ -94,7 +94,7 @@ public class NpcFringeSpawnTests
 
         // dir, then per attempt: layer (0 = the fringe), x, y.
         var pm = new PlayerManager();
-        new SpawnSystem(world, pm, new NoOpDispatcher(), new Rolls(0, 0, 8, 4)).SpawnNpc(1, Map);
+        new SpawnSystem(world, pm, new NoOpDispatcher(), items: null!, rng: new Rolls(0, 0, 8, 4)).SpawnNpc(1, Map);
 
         var mn = world.MapNpcs[Map, 1];
         Assert.Multiple(() =>

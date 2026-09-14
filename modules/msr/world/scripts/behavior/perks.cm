@@ -3,10 +3,11 @@
 # One privilege a level, cumulative, and every one of them switches off the moment the tax goes
 # unpaid. Levelling a guild is slow and expensive, and these five are what the money buys.
 #
-# ⚠ Two of the five reach nothing here, because the engine does the thing they modify: what a
-# creature drops and how a swing wears a weapon are Core's, and a rule has no hold on either. They
-# are declared anyway, so the levels read correctly and so what is missing is visible rather than
-# silently absent.
+#   one     a fifth again as often off a creature's table
+#   two     gear sometimes shrugs off a hit, and a cast sometimes costs no reagent
+#   three   a tenth more experience
+#   four    one drop in twenty comes twice
+#   five    a kill sometimes pays the vault
 
 shared model Perks
 
@@ -36,6 +37,30 @@ shared model Perks
         end if
 
         yield Guilds.LevelOf(guild) >= level;
+    end function
+
+    # ── Level one: a fifth again off a creature's table ───────────────────────
+    #
+    # ⚠ The RATE of every line, not one line's worth. It was always "your drop rate" rather than "your
+    # drop", so a table of three things gets the lift three times — which is also why level four's
+    # double is rolled per line rather than per kill.
+
+    public integer function DropRate(integer guild, integer chance)
+        if not Perks.Active(guild, Perks.DropRateLevel)
+            yield chance;
+        end if
+
+        yield chance + chance * Perks.DropRateBonusPercent / 100;
+    end function
+
+    # ── Level four: one drop in twenty comes twice ────────────────────────────
+
+    public boolean function DoublesDrop(integer guild)
+        if not Perks.Active(guild, Perks.DoubleDropLevel)
+            yield false;
+        end if
+
+        yield Combat.Rolls(Perks.DoubleDropChancePercent);
     end function
 
     # ── Level three: a tenth more experience ──────────────────────────────────

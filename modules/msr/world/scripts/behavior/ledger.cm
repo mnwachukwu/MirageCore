@@ -7,8 +7,9 @@
 # Missed days are caught up rather than skipped. A guild nobody was logged into settles when the
 # first member arrives, and it settles every day it missed — so a quiet week still costs a week's tax.
 #
-# ⚠ Days are counted from the same epoch World.Now() counts seconds from, which began on a Thursday.
-# The weekday arithmetic below depends on that.
+# ⚠ Days are counted from the epoch World.Now() counts seconds from, shifted onto the server's own
+# civil day — so midnight here is the operator's midnight, as it was in the original. The epoch began
+# on a Thursday, and the weekday arithmetic below depends on that.
 
 shared model Ledger
 

@@ -1,3 +1,5 @@
+using Mirage.Shared;
+
 namespace Mirage.Shared.Extensibility;
 
 /// <summary>
@@ -6,7 +8,11 @@ namespace Mirage.Shared.Extensibility;
 /// <para>Plain integers, like <see cref="Respawn"/>: a narrower type would silently wrap a coordinate
 /// past its width and name a tile nobody meant.</para>
 /// </summary>
-public readonly record struct WorldPlace(int Map, int X, int Y)
+/// <param name="Layer">Which plane of a two-layer world: the ground, or the RAISED surface over it — a
+/// bridge deck, a ledge, a gantry. ⚠ A bridge and the water under it are ONE square on three counts and
+/// two different places, so anything that cares where something is cares about this as well; the ground
+/// is only the answer when nothing says otherwise.</param>
+public readonly record struct WorldPlace(int Map, int X, int Y, WorldLayer Layer = WorldLayer.Ground)
 {
     /// <summary>Nowhere. The zero value, which is what a body that was not anywhere before comes from.</summary>
     public static WorldPlace Nowhere => default;
@@ -18,7 +24,14 @@ public readonly record struct WorldPlace(int Map, int X, int Y)
     /// whether anything about a move mattered.</summary>
     public bool SameMapAs(in WorldPlace other) => Map == other.Map;
 
-    public override string ToString() => IsSet ? $"map {Map} ({X},{Y})" : "nowhere";
+    /// <summary>Whether two places are the same tile on the same plane — the whole of what "here" means
+    /// in a world with a deck over it.</summary>
+    public bool SameTileAs(in WorldPlace other) =>
+        Map == other.Map && X == other.X && Y == other.Y && Layer == other.Layer;
+
+    public override string ToString() =>
+        IsSet ? Layer == WorldLayer.Ground ? $"map {Map} ({X},{Y})" : $"map {Map} ({X},{Y}) raised"
+              : "nowhere";
 }
 
 /// <summary>

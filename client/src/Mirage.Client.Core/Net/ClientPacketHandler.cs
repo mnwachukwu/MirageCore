@@ -208,6 +208,9 @@ public sealed partial class ClientPacketHandler : IClientEvents
             case DecalUpdatePacket p:
                 HandleDecalUpdate(p);
                 break;
+            case MarkerUpdatePacket p:
+                HandleMarkerUpdate(p);
+                break;
             case AggressorRefreshPacket p:
                 HandleAggressorRefresh(p);
                 break;

@@ -245,7 +245,7 @@ This file covers what the project is and how to get it running. Everything else 
 
 | Document | What it answers |
 |---|---|
-| [Building a game on Core](docs/building-on-core.md) | What the engine already does, the seventeen seams a game declares through, and the half-built features that fail silently |
+| [Building a game on Core](docs/building-on-core.md) | What the engine already does, the eighteen seams a game declares through, and the half-built features that fail silently |
 | [Building, publishing, and releasing](docs/building.md) | How a working tree becomes installers, what the version number is bound to, how a tag cuts a release, and which platforms the output runs on |
 | [Icons and shipping your own client](docs/branding.md) | Rebranding a fork: the four icon locations, the MonoGame window-icon trap, and repackaging a client without a compiler |
 | [Scripting](docs/scripting.md) | Writing a game in Compass: the sibling checkout it needs, what the host does, what a script may declare, and what it may not reach |

@@ -29,7 +29,8 @@ public sealed class CoreRegistry
                          GamePanels panels,
                          IReadOnlyList<IWorldObserver> observers,
                          IReadOnlyList<IDeathPolicy> deathPolicies, IReadOnlyList<ILingerPolicy> lingerPolicies,
-                         IReadOnlyList<IUsePolicy> usePolicies, CreationChoiceSet creationChoices,
+                         IReadOnlyList<IUsePolicy> usePolicies, IReadOnlyList<ILootPolicy> lootPolicies,
+                         CreationChoiceSet creationChoices,
                          IReadOnlyList<ICoreModule> modules, IReadOnlyList<string> moduleNames)
     {
         Schema = schema;
@@ -47,6 +48,7 @@ public sealed class CoreRegistry
         DeathPolicies = deathPolicies;
         LingerPolicies = lingerPolicies;
         UsePolicies = usePolicies;
+        LootPolicies = lootPolicies;
         CreationChoices = creationChoices;
         Modules = modules;
         ModuleNames = moduleNames;
@@ -101,6 +103,10 @@ public sealed class CoreRegistry
     /// <summary>What a game lets somebody use out of their bag. Empty in an engine with no game
     /// loaded, and then every use Core itself understands is allowed.</summary>
     public IReadOnlyList<IUsePolicy> UsePolicies { get; }
+
+    /// <summary>What a game says a slain creature leaves behind. Empty in an engine with no game loaded,
+    /// and then a creature drops what its own table says, free to whoever reaches it.</summary>
+    public IReadOnlyList<ILootPolicy> LootPolicies { get; }
 
     /// <summary>What this game asks before a character exists. Empty until a game says otherwise, and
     /// then the creation screen asks for a name and an appearance and nothing else.</summary>
@@ -216,6 +222,7 @@ internal sealed class CoreBuilder : ICoreBuilder
     private readonly List<IWorldObserver> _observers = [];
     private readonly List<IDeathPolicy> _deathPolicies = [];
     private readonly List<IUsePolicy> _usePolicies = [];
+    private readonly List<ILootPolicy> _lootPolicies = [];
     private readonly List<CreationChoice> _creationChoices = [];
     private readonly List<ILingerPolicy> _lingerPolicies = [];
     private string _module = "(none)";
@@ -547,6 +554,13 @@ internal sealed class CoreBuilder : ICoreBuilder
         _usePolicies.Add(policy);
     }
 
+    public void AddLootPolicy(ILootPolicy policy)
+    {
+        ArgumentNullException.ThrowIfNull(policy);
+        Refuse();
+        _lootPolicies.Add(policy);
+    }
+
     public void AddCreationChoice(CreationChoice choice)
     {
         ArgumentNullException.ThrowIfNull(choice);
@@ -584,7 +598,7 @@ internal sealed class CoreBuilder : ICoreBuilder
                                 new DisplayFieldSet(_displayFields), new PacketRoutes([.. _packetRoutes]),
                                 new GameActions(_actions), [.. _actionHandlers], new GamePanels([.. _panels]),
                                 [.. _observers], [.. _deathPolicies],
-                                [.. _lingerPolicies], [.. _usePolicies],
+                                [.. _lingerPolicies], [.. _usePolicies], [.. _lootPolicies],
                                 new CreationChoiceSet([.. _creationChoices]), modules, moduleNames);
     }
 

@@ -23,6 +23,7 @@ only the engine calls is one nothing in the module calls.
 | `public function OnPlayerTick(Player who)` | the same tick, once for each player in the world, which a script has no other way to walk |
 | `public string function OnMayDie(Player who, string cause)` | somebody is about to die; yield a reason to stop it, or blank to let it happen |
 | `public function OnDied(Player who, Player killer, string cause)` | somebody died, and the body has not moved yet. What a death COSTS is written here - gear wear, a dropped bag, lost experience - and it runs while they are still lying where they fell, so anything shed lands on the tile they can go back for. 'killer' is nobody when the world itself did it, which Player.IsHere answers. Call Player.RespawnAt from in here to say where they come back |
+| `public function OnLoot(Spoils drop)` | a creature is about to drop one line of its table, and this is the game's say over what that line is worth. Called once PER LINE, before the roll, so a table of three things raises it three times. Write on what you are handed: drop.Rolls changes how often it lands, drop.Yields how much of it there is, drop.ClaimedBy who may pick it up and for how long. ⚠ The body is still on its tile while this runs and stops being there immediately afterwards, so read it now rather than keeping it |
 | `public integer function OnLinger(Player who)` | their connection dropped; yield how many seconds the body stays in the world |
 | `public function OnMessage(Player who, string message, Values values)` | a client sent one of this game's own messages, carrying the fields its model declared |
 | `public function OnContact(Npc it, Player who)` | a creature reached the player it was chasing. ⚠ Only for a PLAYER quarry — the parameter says Player, and a handler handed the wrong kind of body is worse than one that is not called. A creature that reached another creature raises OnNpcContact |
@@ -45,6 +46,7 @@ Held as a value and never made by a script: the engine hands one over.
 | `Guild` | `string` | The name of the guild their account belongs to, or empty for none. |
 | `Map` | `integer` | Which map they are standing on, or zero when they are nowhere. |
 | `X` | `integer` | How far across that map they are. |
+| `Where` | `Spot` | The square they are standing on, as a value - map, tile and PLANE together. What to hand anything that puts something where somebody is, because a bridge and the water under it are the same three numbers and two different places. |
 | `Y` | `integer` | How far down it. |
 | `Has(string key)` | `boolean` | Whether they carry that key at all, so absence is told from zero. |
 | `Number(string key)` | `integer` | What they carry under that key, or zero where they carry nothing. |
@@ -154,6 +156,7 @@ Held as a value and never made by a script: the engine hands one over.
 | `IsHere` | `boolean` | Whether the body is still in the world. A handle outlives what it names. |
 | `Map` | `integer` | Which map it is standing on, or zero when it is nowhere. |
 | `X` | `integer` | How far across that map it is. |
+| `Where` | `Spot` | The square it is standing on, as a value - map, tile and PLANE together. What to hand anything that puts something where a body is, because a bridge and the water under it are the same three numbers and two different places. |
 | `Y` | `integer` | How far down it. |
 | `Has(string key)` | `boolean` | Whether it carries that key at all, so absence is told from zero. |
 | `Number(string key)` | `integer` | What it carries under that key, or zero where it carries nothing. |
@@ -191,6 +194,7 @@ Reached through its own name; there are no values of it.
 |---|---|---|
 | `NpcAt(integer map, integer x, integer y)` | `Npc?` | The creature standing on that square, or nothing. A verb declared OnNpc arrives at OnAction with the square it was used on, and this is what turns that into the body. |
 | `NpcsNear(integer map, integer x, integer y, integer tiles)` | `Npc[]` | Every creature standing within that many tiles of the square, nearest first - which is what a rule about the bodies AROUND something starts from: guards answering a call, a herd that scatters when one of them is startled. ⚠ On that map only, so a body one tile over a border is close and is not in the answer; ask for each map to reach those. |
+| `PlayersNear(integer map, integer x, integer y, integer tiles)` | `Player[]` | Every player standing within that many tiles of the square, nearest first - the mirror of NpcsNear, and what a rule about the PEOPLE around something starts from: who shared a kill, who heard a shout, who was standing too close. ⚠ On that map only, so somebody one tile over a border is close and is not in the answer. |
 | `PlayerAt(integer map, integer x, integer y)` | `Player?` | The player standing on that square, or nothing. Answered before a creature when both somehow occupy one tile. |
 | `Tell(string line)` | — | Says a line to everybody in the world. For the handful of things that are genuinely everyone's business - a season turning, somebody finishing what only one person can finish. A game that announces ordinary events this way has an unreadable chat log. |
 | `TellOn(integer map, string line)` | — | Says a line to everybody who can SEE that map, which is the nearest thing a seamless world has to a room. Not everybody standing on it: somebody on the next map along is looking at this one. |
@@ -226,6 +230,8 @@ Reached through its own name; there are no values of it.
 | `DurabilityFull(Player who, integer item)` | `integer` | How much that item holds when new. Zero for one with no durability at all, which is an ordinary thing for an item to be. |
 | `WearOut(Player who, integer item, integer points)` | `integer` | Wears out that many points of the copy they are wearing, never past nothing. Yields how many were actually taken, which is fewer than asked for when it was nearly worn out. ⚠ An item worn to nothing is NOT destroyed: it stays in the bag, unusable, until it is repaired. |
 | `RepairCost(integer item, integer points)` | `integer` | What repairing that many points of that item costs, by the engine's own repair rate - the same rate a repair shop charges, so a game pricing wear agrees with the shop. |
+| `DropAt(Spot where, integer item, integer many)` | `boolean` | Puts an item on that square out of nowhere, free to whoever reaches it first. Not out of anybody's bag - a chest that opens, a reward left where a quest ended, a hoard a rule rolled for itself. Player.Drop is the other one, and it moves something that already exists. |
+| `DropClaimed(Spot where, integer item, integer many, Player who, integer seconds)` | `boolean` | The same, held for one player for that many seconds: nobody else may pick it up until the time runs out, and the client shows them whose it is. What stops the person who did the work watching somebody else walk off with it. |
 | `RepairRate(integer tier)` | `real` | Gold one point of durability costs on ON-TIER gear at that tier, priced off a reference piece rather than off anything anybody is holding. Fractional on purpose: near the bottom of the ladder a point is worth a fraction of a coin. A game charging upkeep in something that is not durability - a reagent, a charge, a ration - prices it against this, so its number follows the repair shop instead of drifting away from it silently. |
 | `RegionOf(integer map)` | `integer` | Which map group that map belongs to, or zero. A group is the engine's idea of a region: several maps sharing a name and some settings. A game that owns regions asks this to turn where somebody is standing into which region it is. Read what your game hangs on one with World.Record("MapGroups", ...). |
 | `ExitMap(integer map)` | `integer` | Where this map puts somebody who leaves it other than by walking, as a map number, or zero for one that names none. The map author's say over where leaving this place lands you; the engine consults it for nothing on its own, so a game reads it and outranks it as it sees fit. Its region answers for a map that says nothing. |
@@ -237,6 +243,22 @@ Reached through its own name; there are no values of it.
 | `SetRecordNumber(string records, integer number, string field, integer amount)` | — | Writes one of YOUR OWN fields on a record, and saves it. Where a game keeps what belongs to no body and no guild: the last day it settled accounts, a season number, who holds a territory. ⚠ Your own fields only - the engine's properties are written through their own paths, which normalize what they are given. |
 | `SetRecordText(string records, integer number, string field, string value)` | — | The same, with text. |
 | `Now()` | `integer` | The time now, in seconds since 1970, UTC. What anything dated needs: a cooldown that has to survive a restart, a window that stays open for an hour, a daily reset. Counting ticks answers a different question, since ticks stop when the server does. |
+| `Spot(integer map, integer x, integer y)` | `Spot` | That square on the ground, as a value - so a rule can carry it around, keep a set of them, and hand it to anything that puts something somewhere. |
+| `SpotRaised(integer map, integer x, integer y)` | `Spot` | The same square on the RAISED surface rather than on the ground - a bridge, a ledge, a gantry, whatever a world built up there. The two are one tile and two places. |
+| `SpreadOver(integer region, integer count, string onlyWhere)` | `Spot[]` | That many squares spread across a region, every one reachable ON FOOT from every other. ⚠ Measured by WALKING, across the region's seams - not in a straight line, which is a lie wherever a wall or water stands between two tiles that are near on paper, and not by map number, which piles everything into whichever corner was drawn first. 'onlyWhere' names one of YOUR OWN truth fields on Maps and a square goes only on a map carrying it; blank puts one anywhere in the region. The walk crosses the whole region either way, so a town in the middle of one is walked THROUGH. Fewer than asked for means there was nowhere else to put one. |
+| `Empty(integer map)` | `boolean` | Takes every creature off that map and keeps it that way. For ground that has to stop being ordinary for a while: a war fought over it, a ritual nobody should interrupt, an arena cleared for a duel. Nothing comes back until World.Wake - which is what separates this from clearing a map and watching it refill a minute later. |
+| `Refill(integer map)` | `boolean` | Lets it hold creatures again, and puts its own back at once rather than leaving it bare until each slot's clock comes round. |
+| `IsEmptied(integer map)` | `boolean` | Whether that map is being kept empty of creatures. |
+| `Marker(string id, Spot where)` | `Marker` | Puts a mark on that square and hands it back, so its ring, its label, its meter and who sees it are each a line of their own. The twin of an overhead bar, for a PLACE. Marking again under a name already used REPLACES what is there, which is how a mark moves and how its meter counts - one call rather than a remove and a place. |
+| `Unmark(string id)` | `boolean` | Takes one away by name. False when nothing was under it, which is an ordinary answer for a rule clearing up after something that ended on its own. |
+| `InsideMark(string id, Spot where)` | `boolean` | Whether that square is inside the mark's ring. ⚠ ASK THIS rather than doing the arithmetic: the ring a player can see and the ring a rule scores are then the same mark, and two answers drifting apart is invisible - the line on the screen would sit somewhere other than the line that counts. False for a mark with no ring, and for another map. |
+| `LocalOffset()` | `integer` | How far the server's own civil day is from UTC right now, in seconds - east of it positive, west of it negative. ⚠ ANYTHING THAT TURNS OVER AT MIDNIGHT wants this: a daily reset, a weekly tax, a season all mean the operator's own midnight, and dividing World.Now by a day gives the wrong one everywhere but Greenwich. Add it before dividing. Read fresh, so a place that keeps summer time answers differently in July than in January - which is what keeps a boundary at midnight all year. |
+| `Number(string key)` | `integer` | One of YOUR OWN values about the world itself, as a whole number, or zero for one never written. The place for what belongs to no body and no record - which season it is, whether an event is running, how many times something has happened. Read back as it was left when the server starts again. |
+| `Text(string key)` | `string` | The same, as text. Empty for one never written. |
+| `Truth(string key)` | `boolean` | And as a yes or no. False for one never written. |
+| `SetNumber(string key, integer amount)` | — | Writes one. Kept until the world is next written, which the engine does on its own cadence and at shutdown. |
+| `SetText(string key, string value)` | — | The same, as text. |
+| `SetTruth(string key, boolean value)` | — | And as a yes or no. |
 | `SpendGuildGold(integer guild, integer amount, Player by)` | `boolean` | Takes gold out of a vault, recording who spent it. Through the engine's own ledger rather than by writing the number: a vault that went down with nothing in the spending log is money a guild cannot account for. False when the vault does not hold that much, so this is the check as well as the payment. |
 | `Records(string records)` | `integer` | How many records of that kind this world holds, counting blank slots. Zero for a kind nobody declared. |
 | `Record(string records, integer number, string field)` | `string` | One field of one record, as text, or empty where the slot or the field is not there. What a game reads at run time out of the records its own editor authored. |
@@ -254,6 +276,45 @@ Held as a value and never made by a script: the engine hands one over.
 | `Number(string field)` | `integer` | What it carried under that name, or zero where it carried nothing. |
 | `Text(string field)` | `string` | The same, as text, or empty where it carried nothing. An enumeration field arrives as the member's own name. |
 | `Truth(string field)` | `boolean` | The same, as a yes or no. False where it carried nothing. |
+
+### Spot
+
+Held as a value and never made by a script: the engine hands one over.
+
+| Written | Yields | What it does |
+|---|---|---|
+| `Map` | `integer` | Which map it is on. |
+| `X` | `integer` | How far across. |
+| `Y` | `integer` | And how far down. |
+| `IsRaised` | `boolean` | Whether it is on the RAISED surface rather than on the ground - a bridge, a ledge, a gantry. ⚠ A bridge and the water under it are the same three numbers and two different places, so a rule that acts on a square asks this before deciding it knows where it is. |
+
+### Marker
+
+Held as a value and never made by a script: the engine hands one over.
+
+| Written | Yields | What it does |
+|---|---|---|
+| `Label(string text)` | — | Writes that over it. Left unsaid, a mark carries no label. |
+| `Color(integer red, integer green, integer blue)` | — | What color it is drawn in. The pennant, the ring and the label all take it, so a side's own color is one line. |
+| `Ring(integer tiles)` | — | Draws the ground within that many tiles of it. ⚠ Drawn as the STAIRCASE of tiles actually inside, never as a circle - so the line on the screen and World.InsideMark are one statement. Nothing at or below zero draws no ring. |
+| `Meter(integer value, integer ceiling)` | — | A bar over it, that full out of that. A ceiling of nothing draws no meter, which is how a mark that is only a pin says so. |
+| `SeenBy(Player[] them)` | — | Makes it private to those bodies. Left unsaid, everybody who can see the square sees it. ⚠ A SNAPSHOT rather than a rule: somebody who joins afterwards is not on it until the mark is placed again. A side whose members come and go says this each time it moves the mark, which it is doing anyway. |
+
+### Spoils
+
+Held as a value and never made by a script: the engine hands one over.
+
+| Written | Yields | What it does |
+|---|---|---|
+| `Item` | `integer` | What this line drops, by item number. |
+| `Many` | `integer` | How many of it. ⚠ Only an item that STACKS reads this; anything else lands as one however large the number is. |
+| `Chance` | `integer` | How often the line lands, as a plain percent - one in a hundred at 1, every time at 100 or more, never at nothing. |
+| `Kind` | `integer` | Which creature this was a copy of. What a rule about a KIND of creature keys on, and it outlives the body - which is about to stop being there. |
+| `From` | `Npc?` | The body itself, still standing on the tile it fell on. ⚠ For this call only: the slot is cleared the moment the table finishes rolling, and a handle kept past that answers IsHere with no. |
+| `Killer` | `Player?` | Who killed it, or nothing when the world itself did. |
+| `Rolls(integer chance)` | — | Makes the line land that often instead. Nothing at or below zero drops the line without rolling it at all, which is how a rule says this creature owes this player nothing. |
+| `Yields(integer many)` | — | Makes it that many instead - a doubled purse, a halved one. Read only for an item that stacks, as above. |
+| `ClaimedBy(Player who, integer seconds)` | — | Holds the drop for that player for that long: nobody else may pick it up until the time runs out, and the client shows them whose it is. What stops the person who did the work watching somebody else walk off with it. Left unsaid, a drop is free to whoever reaches it first. |
 
 ## What a module may not reach
 

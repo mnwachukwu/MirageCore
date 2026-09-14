@@ -186,7 +186,7 @@ public class WorldEventTests
         var pm = new PlayerManager();
         var dispatcher = new NoOpDispatcher();
         var movement = new MovementSystem(world, pm, dispatcher);
-        var spawn = new SpawnSystem(world, pm, dispatcher);
+        var spawn = new SpawnSystem(world, pm, dispatcher, items: null!);
         var ai = new NpcAiSystem(world, pm, dispatcher, movement, spawn, items: null!, events: events);
 
         world.Maps[Map] = new MapRecord(16, 12);

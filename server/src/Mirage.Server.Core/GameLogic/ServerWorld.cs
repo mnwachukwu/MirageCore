@@ -32,6 +32,12 @@ public sealed class ServerWorld : IWorld
     private readonly ItemSystem _items;
     private readonly JoinLeaveSystem _joinLeave;
     private readonly DecalSystem _decals;
+    private readonly MarkerSystem _markers;
+
+    /// <summary>The slot lifecycle behind Hush and Wake. Null in a harness with no spawner, where a map
+    /// is clear only in the sense that nothing ever put anything on it.</summary>
+    private readonly SpawnSystem? _spawns;
+    private readonly SpreadSystem _spread;
     private readonly NpcAiSystem _ai;
 
     /// <summary>The engine's own guild bookkeeping, for the two things a game cannot do by
@@ -49,7 +55,8 @@ public sealed class ServerWorld : IWorld
     public ServerWorld(GameWorld world, PlayerManager pm, AttributeSystem attributes, DeathSystem deaths,
                        MovementSystem movement, ItemSystem items, JoinLeaveSystem joinLeave,
                        DecalSystem decals, NpcAiSystem ai, GuildSystem guilds,
-                       IPacketDispatcher dispatcher, IClock? clock = null,
+                       IPacketDispatcher dispatcher, MarkerSystem? markers = null,
+                       SpawnSystem? spawns = null, SpreadSystem? spread = null, IClock? clock = null,
                        IPersistenceService? persistence = null, IBackgroundPersistence? bg = null)
     {
         _ai = ai;
@@ -65,6 +72,9 @@ public sealed class ServerWorld : IWorld
         _items = items;
         _joinLeave = joinLeave;
         _decals = decals;
+        _markers = markers ?? new MarkerSystem(world, pm, dispatcher);
+        _spawns = spawns;
+        _spread = spread ?? new SpreadSystem(world, dispatcher);
         _queries = new WorldQueries(world, pm);
         _clock = clock ?? SystemClock.Instance;
     }
@@ -87,12 +97,14 @@ public sealed class ServerWorld : IWorld
         if (who.IsPlayer && IsInWorld(who))
         {
             var p = _pm[who.PlayerIndex].Char;
-            return new WorldPlace(p.Map, p.X, p.Y);
+            return new WorldPlace(p.Map, p.X, p.Y, p.Layer);
         }
 
         // An NPC is NAMED by where it spawns and may be standing somewhere else; the place is where the
         // body is, which is what a game asking "where is it" means.
-        return Locate(who) is { } at ? new WorldPlace(at.CurrentMap, at.Record.X, at.Record.Y) : WorldPlace.Nowhere;
+        return Locate(who) is { } at
+            ? new WorldPlace(at.CurrentMap, at.Record.X, at.Record.Y, at.Record.Layer)
+            : WorldPlace.Nowhere;
     }
 
     // ── What a game says ──────────────────────────────────────────────────────
@@ -333,7 +345,35 @@ public sealed class ServerWorld : IWorld
     public int MapGroupOf(int mapNum) =>
         mapNum >= 1 && mapNum <= _world.Limits.Maps ? _world.Maps[mapNum].MapGroup : 0;
 
+    public IReadOnlyList<WorldPlace> SpreadOver(int region, int count, string onlyWhere = "") =>
+        _spread.SpreadOver(region, count, onlyWhere);
+
+    public bool Empty(int mapNum) => _spawns?.Empty(mapNum) ?? false;
+
+    public bool Refill(int mapNum) => _spawns?.Refill(mapNum) ?? false;
+
+    public bool IsEmptied(int mapNum) => _spawns?.IsEmptied(mapNum) ?? false;
+
+    public bool Mark(WorldMarker marker) => _markers.Mark(marker);
+
+    public bool Unmark(string id) => _markers.Unmark(id);
+
+    public bool InsideMark(string id, WorldPlace place) => _markers.Inside(id, place);
+
     public long Now() => _clock.UtcNowUnix;
+
+    // Read off the two the clock already answers rather than off the zone, so a fixed clock in a test
+    // moves both halves together and summer time needs no special case.
+    public int LocalOffset() =>
+        (int)(new DateTimeOffset(DateTime.SpecifyKind(_clock.LocalNow, DateTimeKind.Utc))
+                  .ToUnixTimeSeconds() - _clock.UtcNowUnix);
+
+    public AttributeBag WorldValues() => _world.Values;
+
+    public void SetWorldValue(string key, AttributeValue value)
+    {
+        if (!string.IsNullOrWhiteSpace(key)) _world.Values.Set(key, value);
+    }
 
     public bool SpendGuildGold(int guild, long amount, EntityHandle by)
     {
@@ -577,6 +617,22 @@ public sealed class ServerWorld : IWorld
         if (InSlot(who, slot).ItemNum <= 0) return false;
 
         _items.PlayerMapDropItem(who.PlayerIndex, slot, Math.Max(quantity, 0));
+        return true;
+    }
+
+    public bool DropAt(WorldPlace at, int itemNum, int quantity = 1,
+                       EntityHandle claimedBy = default, int claimSeconds = 0)
+    {
+        if (Map(at) is null || itemNum < 1 || itemNum > _world.Limits.Items) return false;
+
+        // A stack of nothing is not a drop, and only a stacking item reads the count at all.
+        int slot = _items.SpawnItem(itemNum, Math.Max(quantity, 1), at.Map, at.X, at.Y,
+                                   ItemSource.NpcDropped, layer: at.Layer);
+        if (slot <= 0) return false;
+
+        if (claimedBy.IsPlayer && claimSeconds > 0)
+            _items.TagMapItem(at.Map, slot, claimedBy.PlayerIndex, claimSeconds * 1000L);
+
         return true;
     }
 
@@ -937,6 +993,29 @@ public sealed class ServerWorld : IWorld
 
         // Nearest first, because a rule that takes a few of them wants the near ones — a game asking for
         // one body and getting whichever slot happened to be lowest would read as picking at random.
+        found.Sort((a, b) => a.Gap.CompareTo(b.Gap));
+        return [.. found.Select(f => f.Who)];
+    }
+
+    public IReadOnlyList<EntityHandle> PlayersNear(WorldPlace at, int tiles)
+    {
+        if (at.Map < 1 || at.Map > _world.Limits.Maps || tiles < 0) return [];
+
+        var found = new List<(int Gap, EntityHandle Who)>();
+
+        // The roster rather than the tile, because nothing keeps a tile-to-player map and the count is
+        // bounded by the slot limit - the same walk At() does for one square.
+        for (int index = 1; index <= _pm.Slots; index++)
+        {
+            var sp = _pm[index];
+            if (!sp.IsPlaying || sp.Char.Map != at.Map) continue;
+
+            int gap = Math.Abs(sp.Char.X - at.X) + Math.Abs(sp.Char.Y - at.Y);
+            if (gap > tiles) continue;
+
+            found.Add((gap, EntityHandle.ForPlayer(index)));
+        }
+
         found.Sort((a, b) => a.Gap.CompareTo(b.Gap));
         return [.. found.Select(f => f.Who)];
     }

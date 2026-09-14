@@ -4,8 +4,9 @@
 # that only ever goes up and survives a restart. Everything a rule wants to say about a DAY, a week or
 # a month is arithmetic on top of that, and it is here so there is one copy of it.
 #
-# ⚠ This is UTC. The original's boundaries were the server's own local midnight, so a world running
-# somewhere other than UTC rolls over at a different hour of its own day than that one did.
+# ⚠ EVERY BOUNDARY HERE IS THE SERVER'S OWN MIDNIGHT, not UTC's. A tax that falls at midnight means
+# the operator's midnight, as it did in the original — so the clock is shifted onto the server's civil
+# day before anything is divided by a day, and every answer below rides on that one shift.
 
 shared model Calendar
 
@@ -14,8 +15,11 @@ shared model Calendar
     # Day zero was a Thursday, so a Sunday is every third day after it.
     public integer SundayRemainder = 3;
 
+    # ⚠ Asked fresh rather than worked out once, because a place that keeps summer time is a different
+    # number of hours from UTC in July than in January — and a boundary computed from a stale offset
+    # would drift an hour twice a year.
     public integer function Today()
-        yield World.Now() / Calendar.SecondsPerDay;
+        yield (World.Now() + World.LocalOffset()) / Calendar.SecondsPerDay;
     end function
 
     public boolean function IsSunday(integer day)

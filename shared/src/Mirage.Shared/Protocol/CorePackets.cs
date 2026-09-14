@@ -216,6 +216,7 @@ public static class CorePackets
         builder.Register(PacketNames.PlayerInGame, Read<PlayerInGamePacket>);
         builder.Register(PacketNames.SendPlayerData, Read<SendPlayerDataPacket>);
         builder.Register(PacketNames.DecalUpdate, Read<DecalUpdatePacket>);
+        builder.Register(PacketNames.MarkerUpdate, Read<MarkerUpdatePacket>);
         builder.Register(PacketNames.FloatingText, Read<FloatingTextPacket>);
         builder.Register(PacketNames.GameEffect, Read<GameEffectPacket>);
         builder.Register(PacketNames.AttributeSchema, Read<AttributeSchemaPacket>);

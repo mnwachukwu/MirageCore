@@ -57,6 +57,7 @@ public static class RenderCommandBuilder
         EmitMapDarkOverrides(state, frame, camera);
         EmitTileGround(state, frame, camera);
         EmitDecals(state, frame, camera);
+        EmitMarkers(state, frame, camera);
         EmitItems(state, frame, camera);
         EmitNpcs(state, frame, camera, tickNow, alwaysShowBars, hoveredEntity, targetEntity, showNpcNames, nameLineH);
         EmitPlayers(state, frame, camera, tickNow, alwaysShowBars, hoveredEntity, targetEntity, showOtherPlayerNames, showPlayerName, myIndex, nameLineH);
@@ -162,6 +163,44 @@ public static class RenderCommandBuilder
                 }
             }
         }
+    }
+
+    // Emits what a game has marked on the ground. The same nine-cell walk the stains take, for the same
+    // reason: a mark is a per-map list at a known tile, so a cell's offset turns it into a screen position
+    // with no tile scan.
+    //
+    // ⚠ A mark is kept when its RING reaches the view even though its own tile does not. The ring is the
+    // only thing saying where the marked ground ends, and a mark near the edge holds ground somebody can be
+    // standing on — so culling on the tile alone takes the line off ground that is still marked.
+    private static void EmitMarkers(ClientState state, RenderFrame frame, Camera camera)
+    {
+        if (state.MarkersByMap.Count == 0) return;
+        for (int row = 0; row < 3; row++)
+        {
+            for (int col = 0; col < 3; col++)
+            {
+                int mapNum = (col == 1 && row == 1) ? state.CenterMapNum : state.NeighborMapNums[col, row];
+                if (mapNum <= 0 || !state.MarkersByMap.TryGetValue(mapNum, out var marks) || marks.Count == 0) continue;
+                int offX = col * state.MapTilesX;
+                int offY = row * state.MapTilesY;
+                foreach (var m in marks)
+                {
+                    var (screenX, screenY) = camera.WorldTileToScreen(offX + m.X, offY + m.Y, 0, 0);
+                    if (!MarkerOnScreen(screenX, screenY, m.Radius)) continue;
+                    frame.Markers.Add(new MarkerDrawCmd(screenX, screenY, m.Rgb, m.Label,
+                                                        m.Radius, m.Value, m.Ceiling, m.Layer));
+                }
+            }
+        }
+    }
+
+    // Culled by the mark's reach rather than by its tile: a ring of R tiles extends R+1 past the anchor, and
+    // a label sits above it.
+    private static bool MarkerOnScreen(float screenX, float screenY, int radius)
+    {
+        float reach = (Math.Max(radius, 0) + 1) * Constants.PicX;
+        return screenX > -reach && screenX < Camera.ViewW + reach
+            && screenY > -reach && screenY < Camera.ViewH + reach;
     }
 
     // A stain is centered on its footprint (screen origin + size*Pic/2) and its blob reaches ~size*Max/2 past

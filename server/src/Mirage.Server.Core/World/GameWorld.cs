@@ -59,6 +59,20 @@ public sealed class GameWorld
     /// is a world made of Core's own families and nothing else.</summary>
     public ModuleRecords ModuleRecords { get; } = new();
 
+    /// <summary>
+    /// What a game keeps about the WORLD rather than about anybody in it — a season number, whether an
+    /// event is running, how many times something has happened since the server was built.
+    ///
+    /// <para>Core writes nothing here and reads nothing from it. It is persisted alongside the time of
+    /// day and the weather, which are the engine's own answers to the same question: state that belongs
+    /// to the world itself and has no record to live on.</para>
+    /// </summary>
+    public AttributeBag Values { get; set; } = new();
+
+    /// <summary>What a game has marked on the ground, by map. Runtime only: a marker says what is
+    /// happening right now, and a server that stopped is not still contesting anything.</summary>
+    public Dictionary<int, List<WorldMarker>> Markers { get; } = new();
+
     public MapRecord[] Maps { get; }
     public TempTileState[] TempTiles { get; }
     public ItemRecord[] Items { get; }

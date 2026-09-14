@@ -66,6 +66,18 @@ public static class Survey
     /// meadow overnight.</summary>
     public const int LingerSeconds = 30;
 
+    /// <summary>How long a find is held for whoever turned it up. Long enough to bend down, short enough
+    /// that a specimen nobody wants is not fenced off all afternoon.</summary>
+    public const int ClaimSeconds = 20;
+
+    /// <summary>The count at which a surveyor starts seeing what a beginner walks past — the same rung
+    /// <see cref="RankFor"/> calls a Naturalist, read from there rather than restated as a number.</summary>
+    public const int PracticedEye = 20;
+
+    /// <summary>And how much more often their finds turn something up, as a percent of the chance the
+    /// world authored.</summary>
+    public const int PracticedEyeBonusPercent = 25;
+
     /// <summary>The rank a count has earned. Deliberately a lookup a GAME owns: Core has no notion of
     /// progression, and this is the whole of what this one means by it.</summary>
     public static string RankFor(long specimens) => specimens switch

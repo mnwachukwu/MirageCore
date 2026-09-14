@@ -2,6 +2,7 @@ using Mirage.Server.Core.Net;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
 
@@ -11,20 +12,34 @@ public sealed class SpawnSystem : GameSystem
 {
     private readonly GameWorld _world;
     private readonly PlayerManager _pm;
+    private readonly ItemSystem _items;
+    private readonly WorldQueries _queries;
+    private readonly SelectionTracking _selection;
+    private readonly IReadOnlyList<ILootPolicy> _loot;
     private const int SpawnSearchAttempts = 100;
 
     public SpawnSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher,
-                       IRandomSource? rng = null)
+                       ItemSystem items, IRandomSource? rng = null,
+                       IReadOnlyList<ILootPolicy>? loot = null)
         : base(dispatcher, rng: rng)
     {
         _world = world;
         _pm = pm;
+        _items = items;
+        _loot = loot ?? [];
+        _queries = new WorldQueries(world, pm);
+        _selection = new SelectionTracking(pm);
     }
 
     public void SpawnNpc(int mapNpcSlot, int mapNum)
     {
         if (mapNpcSlot <= 0 || mapNpcSlot > Constants.MaxMapNpcs) return;
         if (mapNum <= 0 || mapNum > _world.Limits.Maps) return;
+
+        // ⚠ The one chokepoint, so every route back onto a map answers to it: the respawn clock, a guest
+        // coming home from a chase, and a game asking for a map's own bodies. An emptied map takes none of
+        // them until it is refilled.
+        if (_emptied.Contains(mapNum)) return;
 
         // Runtime post mapNpcSlot (1-based) reads dense entry [mapNpcSlot - 1]; posts past the authored list
         // are empty and spawn nothing.
@@ -221,11 +236,145 @@ public sealed class SpawnSystem : GameSystem
             SpawnMapNpcs(i);
     }
 
-    /// <summary>Clear every live native NPC on a map and tell observers to remove them — the territory-war
-    /// despawn. Mirrors the death-side slot cleanup (Num/Hp zeroed, SpawnWait stamped) but with no
-    /// damage or FX; respawns then stay suppressed for the
-    /// war state, and the contest-end resume calls <see cref="SpawnMapNpcs"/> once suppression lifts. Reserved
-    /// slots (a native away chasing as a guest) already read Num = 0, so they are left untouched.</summary>
+    // ── A creature stops ──────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Takes a creature out of the world, puts what it was carrying on the tile it fell on, and starts
+    /// its respawn clock.
+    ///
+    /// <para><b>The inverse of <see cref="SpawnNpc"/>, and here for the same reason.</b> A creature's
+    /// life is a slot's life: it is the slot that is cleared, the slot that is broadcast, and the slot
+    /// that comes back when its interval has run. A player's death is a warp and belongs to
+    /// <c>DeathSystem</c>; this one is not.</para>
+    ///
+    /// <para><b>Core has no rule that ends a creature either.</b> Nothing here calls this — an engine
+    /// with no game loaded has no hit points and nothing that could reach nothing. It is reached through
+    /// <c>IWorld.Kill</c>, which is a game asking.</para>
+    ///
+    /// <para>Returns whether a body was actually there to kill, so a rule that pays out for a kill can
+    /// tell one from a verb aimed at an empty square.</para>
+    /// </summary>
+    public bool KillNpc(EntityHandle npc, EntityHandle killer = default)
+    {
+        if (_queries.ResolveNpc(npc) is not { Record.Num: > 0 } found) return false;
+
+        int mapNum = found.CurrentMap;
+        var body = found.Record;
+        var template = _world.Npcs[body.Num];
+
+        // ⚠ Read BEFORE anything is cleared. Every one of these is about to stop being answerable, and
+        // the drops land where the body was rather than where its slot is.
+        int kind = body.Num;
+        int x = body.X, y = body.Y;
+        var layer = body.Layer;
+
+        ShedLoot(npc, killer, kind, template, mapNum, x, y, layer);
+
+        if (found.CurrentSlot > 0) ClearNative(mapNum, found.CurrentSlot, body);
+        else ClearVisitor((TraversalNpcRecord)body);
+
+        return true;
+    }
+
+    /// <summary>A creature on its home map: the slot is emptied, the clock stamped, and everybody
+    /// watching told to take the sprite away.</summary>
+    private void ClearNative(int mapNum, int slot, MapNpcRecord body)
+    {
+        body.Num = 0;
+        body.Target = 0;
+        body.NpcTargetSpawnMap = 0;
+        body.NpcTargetSpawnSlot = 0;
+        body.Roused = false;
+        body.ClearDamageCredit();
+        body.DamageByNpc = null;
+        body.SpawnWait = Environment.TickCount64;
+
+        SendToMap(_world, mapNum,
+            new NpcDeadPacket { MapNum = mapNum, NpcSlot = slot, Damage = 0, IsCrit = false });
+
+        // Anybody locked onto it is locked onto a slot that is about to hold a different creature.
+        _selection.ClearSelectionsOfNpcSlot(mapNum, slot);
+    }
+
+    /// <summary>And one killed away from home. The husk is left in the visiting list for the AI pass to
+    /// drop — it looks for <c>Num</c> at nothing and does exactly this — while the home slot stops being
+    /// reserved and starts counting, which is what brings the creature back where it belongs rather than
+    /// where it died.</summary>
+    private void ClearVisitor(TraversalNpcRecord guest)
+    {
+        SendToMap(_world, guest.CurrentMapNum,
+            new NpcDespawnPacket { SpawnMapNum = guest.SpawnMapNum, SpawnSlot = guest.SpawnSlot });
+
+        guest.Num = 0;
+        guest.Target = 0;
+        guest.ClearDamageCredit();
+        guest.DamageByNpc = null;
+
+        _selection.ClearSelectionsOfVisitor(guest.SpawnMapNum, guest.SpawnSlot);
+
+        var home = _world.MapNpcs[guest.SpawnMapNum, guest.SpawnSlot];
+        home.IsReservedSlot = false;
+        home.Num = 0;
+        home.SpawnWait = Environment.TickCount64;
+    }
+
+    /// <summary>
+    /// What it was carrying, onto the tile it fell on.
+    ///
+    /// <para>🔴 <b>Every line rolls on its own</b>, so one death yields nothing, one thing, or several —
+    /// which is what lets a table say "almost always a little gold, sometimes a potion, very rarely the
+    /// sword" in three lines. <see cref="NpcDrop"/> carries the reasoning.</para>
+    ///
+    /// <para>Each line is shown to every loot policy first, so a game can lift the rate, change the
+    /// amount, or say whose it is before the roll happens. With no policy loaded the table lands exactly
+    /// as it was authored, free to whoever reaches it.</para>
+    ///
+    /// <para>⚠ Everything lands on ONE tile rather than scattering. Several claimed stacks sharing a
+    /// square are told apart by their claim rather than by where they sit, and a pile nobody can stand
+    /// on top of to deny is what pickup at range already buys.</para>
+    /// </summary>
+    private void ShedLoot(EntityHandle npc, EntityHandle killer, int kind, NpcRecord template,
+                          int mapNum, int x, int y, WorldLayer layer)
+    {
+        var table = template.Drops;
+        if (table is null) return;
+
+        for (int i = 0; i < table.Count; i++)
+        {
+            var line = table[i];
+            if (!line.IsLive || line.ItemNum > _world.Limits.Items) continue;
+
+            var spoil = new Spoil
+            {
+                Body = npc,
+                Killer = killer,
+                Kind = kind,
+                ItemNum = line.ItemNum,
+                Quantity = line.Quantity,
+                ChancePercent = line.Chance,
+            };
+
+            foreach (var policy in _loot) policy.Weigh(spoil);
+
+            if (spoil.ChancePercent <= 0 || Rng.Percent() >= spoil.ChancePercent) continue;
+
+            // A stack of nothing is not a drop. Only a stacking item reads the count at all; everything
+            // else lands as one however large this is, so the floor costs nothing there.
+            int value = Math.Max(spoil.Quantity, 1);
+
+            int slot = _items.SpawnItem(spoil.ItemNum, value, mapNum, x, y, ItemSource.NpcDropped, layer: layer);
+            if (slot <= 0) continue;
+
+            if (spoil.ClaimedBy.IsPlayer && spoil.ClaimSeconds > 0)
+                _items.TagMapItem(mapNum, slot, spoil.ClaimedBy.PlayerIndex, spoil.ClaimSeconds * 1000L);
+        }
+    }
+
+    /// <summary>Clear every live native NPC on a map and tell observers to remove them — the wholesale
+    /// despawn a game reaches for when a map is being taken out of play. The same slot cleanup
+    /// <see cref="KillNpc"/> does, with nothing dropped and nothing credited: each slot's clock starts,
+    /// so they come back on their own intervals once whatever suppressed them lifts. Reserved slots (a
+    /// native away chasing as a guest) already read Num = 0, so they are left untouched.</summary>
     public void DespawnMapNpcs(int mapNum)
     {
         if (mapNum <= 0 || mapNum > _world.Limits.Maps) return;
@@ -240,12 +389,55 @@ public sealed class SpawnSystem : GameSystem
         }
     }
 
+    // ── A map kept clear of creatures ────────────────────────────────────────
+
+    /// <summary>Maps a game is keeping clear. Runtime only: a server that stopped is not still holding
+    /// anything, and a world comes back with its creatures where they belong.</summary>
+    private readonly HashSet<int> _emptied = [];
+
+    /// <summary>Whether a map is being kept clear of creatures.</summary>
+    public bool IsEmptied(int mapNum) => _emptied.Contains(mapNum);
+
+    /// <summary>
+    /// Takes every creature off a map and keeps it that way.
+    ///
+    /// <para>What a game reaches for when a place has to stop being ordinary ground for a while: a war
+    /// fought over it, a ritual nobody should be interrupted during, an arena cleared for a duel. The
+    /// bodies go now and the slots stay empty — their clocks keep running, but nothing comes back until
+    /// <see cref="Refill"/>, which is what makes this different from clearing a map and watching it refill
+    /// a minute later.</para>
+    ///
+    /// <para>False for a map that is not there, or one already emptied.</para>
+    /// </summary>
+    public bool Empty(int mapNum)
+    {
+        if (mapNum <= 0 || mapNum > _world.Limits.Maps || !_emptied.Add(mapNum)) return false;
+
+        DespawnMapNpcs(mapNum);
+        return true;
+    }
+
+    /// <summary>Lets a map hold creatures again, and spawns its own back onto it at once rather than
+    /// leaving it bare until each slot's clock comes round. False for a map that was not emptied.</summary>
+    public bool Refill(int mapNum)
+    {
+        if (!_emptied.Remove(mapNum)) return false;
+
+        SpawnMapNpcs(mapNum);
+        return true;
+    }
+
     /// <summary>Check each dead NPC slot; respawn once SpawnSecs has elapsed.  The caller only invokes
     /// this for OBSERVED maps, so neighbor-map NPCs respawn while you watch from across a seam — not just
     /// maps you physically stand on (which would leave a neighbor you cleared looking permanently empty
-    /// until you stepped onto it).</summary>
+    /// until you stepped onto it).
+    ///
+    /// <para>⚠ An emptied map respawns nothing. Without this the despawn is undone a minute later, one
+    /// slot at a time, and the map a game emptied fills back up while it is still being fought over.</para></summary>
     public void CheckNpcRespawn(int mapNum, long now)
     {
+        if (_emptied.Contains(mapNum)) return;
+
         var entries = _world.Maps[mapNum].Npcs;
         for (int i = 1; i <= Constants.MaxMapNpcs; i++)
         {

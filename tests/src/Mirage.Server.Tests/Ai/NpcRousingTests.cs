@@ -252,10 +252,10 @@ public class NpcRousingTests
         var dispatcher = new NoOpDispatcher();
         var movement = new MovementSystem(game, pm, dispatcher);
         var attributes = new AttributeSystem(game, pm, dispatcher);
-        var deaths = new DeathSystem(game, pm, dispatcher, movement);
         var items = new ItemSystem(game, pm, dispatcher, persistence: null!, bg: null!);
         var decals = new DecalSystem(game, dispatcher);
-        var spawn = new SpawnSystem(game, pm, dispatcher);
+        var spawn = new SpawnSystem(game, pm, dispatcher, items);
+        var deaths = new DeathSystem(game, pm, dispatcher, movement, spawn);
         var ai = new NpcAiSystem(game, pm, dispatcher, movement, spawn, items);
 
         game.Maps[Map] = new MapRecord(16, 12);
