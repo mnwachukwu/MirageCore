@@ -236,6 +236,14 @@ public sealed partial class GameplayScreen : IGameScreen
         }
 
         _ctx.Sender.SendInvokeAction(actionId, mapNum, tileX, tileY, targetName, npcSlot);
+
+        // 🔴 And Core's own reaching, for a verb that asked for it. A game that binds E takes the
+        // reach key outright, so this is the only way it can hand shops and conversations back.
+        if (npcSlot > 0 && _ctx.State.Actions.All.Any(
+                a => string.Equals(a.Id, actionId, System.StringComparison.Ordinal) && a.Interacts))
+        {
+            _ctx.Sender.SendNpcInteract(mapNum, npcSlot);
+        }
     }
 
     /// <summary>The game's verbs for one surface, flat, ready to append to a menu Core already built.

@@ -1,0 +1,129 @@
+# What a quest IS, as records an author fills in.
+#
+# 🔴 THE NPC ROLES LIVE HERE, NOT ON THE CREATURE. A quest names who offers it and who takes it back;
+# the creature record says nothing about quests at all. So adding a quest is one row and touches
+# nothing else, and a creature can be the giver for as many quests as an author likes without ever
+# being edited.
+
+model Quest
+    public string name;
+    public string description;
+
+    # Who offers it, and who takes it back. A picker over the engine's own creatures — they have no
+    # model a field could be typed as, which is what Points is for.
+    public integer giver;
+    public integer turnIn;
+
+    # ── What it takes to accept ───────────────────────────────────────────────
+    #
+    # Zero means no requirement, which is what an unauthored field means anyway.
+
+    public integer reqLevel;
+    public integer reqStr;
+    public integer reqDef;
+    public integer reqSpd;
+    public integer reqInt;
+
+    # A quest that must be finished first. The whole of what a chain is.
+    public Quest prereq;
+
+    # ── What it pays ──────────────────────────────────────────────────────────
+
+    public integer rewardExp;
+    public integer rewardItem;
+    public integer rewardMany;
+
+    # ── Taking it again ───────────────────────────────────────────────────────
+    #
+    # ⚠ HOW OFTEN it re-opens, not whether. Nought is a quest finished once and for all; the rest
+    # re-open once the day, the week, the month or the season it was finished in has passed. A
+    # character carries the period they last finished it in, and it lights up again when that period
+    # is no longer the current one — so nothing has to sweep every character at midnight.
+
+    public integer cadence;
+
+    # And what a LATER run pays, which is usually less than the first. Left at nought, a repeat pays
+    # what the first run paid.
+    public integer repeatExp;
+    public integer repeatItem;
+    public integer repeatMany;
+
+    public shared function Describe(Records these)
+        these.Are("Quests", "Quest", 200);
+        these.Icon("scroll");
+
+        these.Points("giver", "NPCs");
+        these.Points("turnIn", "NPCs");
+        these.Points("rewardItem", "Items");
+        these.Points("repeatItem", "Items");
+
+        these.Caption("giver", "Offered by");
+        these.Caption("turnIn", "Turned in to");
+        these.Caption("prereq", "Comes after");
+        these.Caption("reqLevel", "Level needed");
+        these.Caption("reqStr", "Strength needed");
+        these.Caption("reqDef", "Defense needed");
+        these.Caption("reqSpd", "Speed needed");
+        these.Caption("reqInt", "Intelligence needed");
+        these.Caption("rewardExp", "Experience paid");
+        these.Caption("rewardItem", "Item paid");
+        these.Caption("rewardMany", "How many");
+        these.Caption("cadence", "Re-opens: 0 never, 1 daily, 2 weekly, 3 monthly, 4 seasonally");
+        these.Caption("repeatExp", "Experience paid again");
+        these.Caption("repeatItem", "Item paid again");
+        these.Caption("repeatMany", "How many again");
+
+        these.Length("name", 40);
+        these.Length("description", 240);
+        these.Range("reqLevel", 0, 255);
+        these.Range("cadence", 0, 4);
+    end function
+end model
+
+# What finishing one takes.
+#
+# ⚠ A ROW PER GOAL, because a record holds fields and not lists — the same shape every other
+# many-to-one fact in this game takes. A quest with no goals is finished the moment it is accepted,
+# which is a perfectly ordinary delivery quest.
+
+model QuestGoal
+    public Quest forQuest;
+
+    # Which creature has to be killed, and how many.
+    #
+    # ⚠ KILLING is the only thing the original ever counted. Fetching and exploring were declared and
+    # never wired, so they are not here: a goal kind nothing advances is a quest nobody can finish.
+    public integer quarry;
+    public integer many;
+
+    public shared function Describe(Records these)
+        these.Are("Quest goals", "Goal", 500);
+        these.Icon("flag");
+
+        these.Points("quarry", "NPCs");
+
+        these.Caption("forQuest", "Quest");
+        these.Caption("quarry", "Creature to kill");
+        these.Caption("many", "How many");
+
+        these.Range("many", 1, 9999);
+    end function
+end model
+
+# Which classes may take which quests.
+#
+# ⚠ No row for a quest means every class may take it — the same default the spell and gear gates use,
+# and for the same reason.
+
+model QuestGate
+    public Quest forQuest;
+    public Class forClass;
+
+    public shared function Describe(Records these)
+        these.Are("Quest gates", "Quest gate", 500);
+        these.Icon("key");
+
+        these.Caption("forQuest", "Quest");
+        these.Caption("forClass", "May be taken by");
+    end function
+end model

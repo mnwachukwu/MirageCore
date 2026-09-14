@@ -136,6 +136,14 @@ public sealed partial class ClientState
     public IReadOnlyList<Mirage.Shared.Records.CharacterAppearance> Appearances { get; set; } =
         Mirage.Shared.Records.CharacterAppearance.DefaultSet;
 
+    /// <summary>What this game asks at creation beyond a name and a face, with every list already
+    /// resolved to that world's own records.
+    ///
+    /// <para>🔴 A client has never seen a game's classes and cannot look one up, so the SERVER resolves
+    /// the lists and sends what to show. Empty in a world that asks nothing, and then the creation
+    /// screen draws a name box and an appearance list, which is what it has always drawn.</para></summary>
+    public IReadOnlyList<Mirage.Shared.Extensibility.CreationChoice> Asked { get; set; } = [];
+
     /// <summary>
     /// What to call the game we are connected to — the window title, the menu, the HUD.
     ///

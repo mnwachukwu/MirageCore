@@ -23,8 +23,11 @@ public sealed partial class MapEditorViewModel : ObservableObject
     private MapRowViewModel? _subscribedMap;
     private readonly List<MapRowViewModel> _subscribedMapRows = [];
 
-    public bool IsSelectedMapDirty => SelectedMap is not null && SelectedMap.IsDirty;
-    public bool HasAnyDirtyMap => Maps.Any(m => m.IsDirty);
+    // The game's own fields on the open map count as edits to that map, so both flags fold them in.
+    // There is only ever one such form — it follows the selection — so at most one map's can be dirty.
+    public bool IsSelectedMapDirty =>
+        (SelectedMap is not null && SelectedMap.IsDirty) || GameFields.IsDirty;
+    public bool HasAnyDirtyMap => Maps.Any(m => m.IsDirty) || GameFields.IsDirty;
 
     private void NotifyMapDirtyState()
     {

@@ -52,6 +52,20 @@ public interface ICoreBuilder
     /// <summary>Record families this module adds, and the choice sets their fields draw from.</summary>
     void AddFamily(RecordFamily family);
 
+    /// <summary>
+    /// Fields this module adds to a family that already exists — the engine's <c>Items</c> or
+    /// <c>NPCs</c>, or another module's.
+    ///
+    /// <para>🔴 <b>A record the engine owns has a closed set of properties, because Core cannot act on
+    /// one it has never heard of.</b> A game's are open, and they belong on the same record rather than
+    /// in a table beside it: a class gate is a fact about the sword, and a second family keyed by item
+    /// number is that fact stored where it can be forgotten.</para>
+    ///
+    /// <para>Every field lands in the record's own attribute bag, so nothing here needs a new column, a
+    /// new file, or a new packet. A key already on the family is refused by name.</para>
+    /// </summary>
+    void ExtendFamily(string familyId, IReadOnlyList<FieldDescriptor> fields);
+
     /// <inheritdoc cref="AddFamily"/>
     void AddChoiceSet(ChoiceSet choices);
 
@@ -94,6 +108,16 @@ public interface ICoreBuilder
     /// <summary>What this game says about dying — whether it happens, what it costs, where the body
     /// comes back. Declare none and <c>DeathSystem.Kill</c> moves the body and takes nothing.</summary>
     void AddDeathPolicy(IDeathPolicy policy);
+
+    /// <summary>What this game says about using something out of a bag. Every policy must allow it; the
+    /// first refusal stops the use and is the answer.</summary>
+    void AddUsePolicy(IUsePolicy policy);
+
+    /// <summary>Something to ask before a character exists — a class, a bloodline, a starting town. The
+    /// answer is written onto the new character under the choice's key, before anything is told they
+    /// joined. Declare none and the creation screen asks for a name and a face, which is a supported
+    /// world.</summary>
+    void AddCreationChoice(CreationChoice choice);
 
     /// <summary>What this game says about a dropped connection — how long the body stays in the world
     /// before it is taken out. Declare none and a disconnect removes the player at once.</summary>

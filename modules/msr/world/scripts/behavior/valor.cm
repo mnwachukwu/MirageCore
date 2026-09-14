@@ -1,0 +1,125 @@
+# The war currency: what killing for your guild earns, and what it is for.
+#
+# Valor is an ITEM, carried like anything else, so it can be traded, banked, and lost. What makes it
+# valor is a box ticked on that item in the editor rather than a number written here — one item in a
+# world carries it.
+#
+# Donated into the vault it stops being an item and becomes a number on the guild, and the weekly
+# settlement spends it on the tax before it touches gold.
+
+shared model Valor
+
+    public string Field = "valor";
+
+    # A member of the killing guild who dealt damage has this chance of a point for the kill.
+    public integer GrudgeChancePercent = 10;
+
+    public string DonateVerb = "msr.guild.donate";
+
+    # ── Which item it is ──────────────────────────────────────────────────────
+    #
+    # Found once by walking the items and kept, because it is asked on every war kill and a world's
+    # items do not change under a running server. Minus one means the walk found nothing, which is a
+    # world nobody ticked the box in.
+
+    integer found = 0;
+
+    public integer function Item()
+        if Valor.found != 0
+            yield Valor.found;
+        end if
+
+        loop for num = 1 to World.Records("Items")
+            if World.RecordTruth("Items", num, Valor.Field)
+                Valor.found = num;
+                yield num;
+            end if
+        end loop
+
+        Valor.found = -1;
+
+        yield -1;
+    end function
+
+    # ── Earning it ────────────────────────────────────────────────────────────
+    #
+    # Everybody on the killer's side who put damage into this body rolls for a point of their own —
+    # separately, so a group is worth more than one person and nobody's roll takes from anybody else's.
+
+    public function Award(Player victim, integer guild)
+        integer item = Valor.Item();
+
+        if item < 1 or guild < 1
+            yield;
+        end if
+
+        loop each member in World.GuildMembers(guild)
+            if Valor.Helped(member, victim)
+                if Combat.Rolls(Valor.GrudgeChancePercent)
+                    member.Give(item, 1);
+                    member.Message("You earn a point of valor.");
+                end if
+            end if
+        end loop
+    end function
+
+    # Whether they put damage into this body in the bout that just ended. The credit board holds the
+    # running total on the ATTACKER, stamped with the victim's bout, so this is one question of one
+    # body rather than a walk.
+    boolean function Helped(Player member, Player victim)
+        if member.Number(Duel.DealtIn + victim.Name) != victim.Number(Duel.Bout)
+            yield false;
+        end if
+
+        yield member.Number(Duel.DealtTo + victim.Name) > 0;
+    end function
+
+    # ── Giving it to the guild ────────────────────────────────────────────────
+
+    public function Declare(Builder game)
+        Verb give = game.Action(Valor.DonateVerb, "Donate valor", "Guild");
+        give.OnHud();
+        give.Icon("flame");
+    end function
+
+    # Everything they carry, which is what the verb on the bar means. An amount is what the vault
+    # panel's form asks for.
+    public function GiveAll(Player who)
+        Valor.Donate(who, who.Carrying(Valor.Item()));
+    end function
+
+    public function Donate(Player who, integer amount)
+        integer guild = World.GuildOf(who);
+
+        if guild < 1
+            who.Message("You are not in a guild.");
+            yield;
+        end if
+
+        integer item = Valor.Item();
+
+        if item < 1
+            who.Message("There is no valor in this world.");
+            yield;
+        end if
+
+        if amount < 1
+            who.Message("Donate how much?");
+            yield;
+        end if
+
+        integer held = who.Carrying(item);
+
+        if held < amount
+            who.Message("You are only carrying " + held + " valor.");
+            yield;
+        end if
+
+        who.Take(item, amount);
+        World.SetGuildNumber(guild, Ledger.Valor, World.GuildNumber(guild, Ledger.Valor) + amount);
+
+        World.TellThese(World.GuildMembers(guild),
+                        who.Name + " gave " + amount + " valor to the vault.");
+    end function
+
+end model

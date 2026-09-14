@@ -29,6 +29,7 @@ public sealed class CoreRegistry
                          GamePanels panels,
                          IReadOnlyList<IWorldObserver> observers,
                          IReadOnlyList<IDeathPolicy> deathPolicies, IReadOnlyList<ILingerPolicy> lingerPolicies,
+                         IReadOnlyList<IUsePolicy> usePolicies, CreationChoiceSet creationChoices,
                          IReadOnlyList<ICoreModule> modules, IReadOnlyList<string> moduleNames)
     {
         Schema = schema;
@@ -45,6 +46,8 @@ public sealed class CoreRegistry
         Observers = observers;
         DeathPolicies = deathPolicies;
         LingerPolicies = lingerPolicies;
+        UsePolicies = usePolicies;
+        CreationChoices = creationChoices;
         Modules = modules;
         ModuleNames = moduleNames;
     }
@@ -94,6 +97,14 @@ public sealed class CoreRegistry
 
     /// <summary>What this game says about dying, asked in the order their modules were configured.</summary>
     public IReadOnlyList<IDeathPolicy> DeathPolicies { get; }
+
+    /// <summary>What a game lets somebody use out of their bag. Empty in an engine with no game
+    /// loaded, and then every use Core itself understands is allowed.</summary>
+    public IReadOnlyList<IUsePolicy> UsePolicies { get; }
+
+    /// <summary>What this game asks before a character exists. Empty until a game says otherwise, and
+    /// then the creation screen asks for a name and an appearance and nothing else.</summary>
+    public CreationChoiceSet CreationChoices { get; }
 
     /// <summary>What this game says about a dropped connection. Empty means a disconnect takes the player
     /// straight out of the world.</summary>
@@ -204,6 +215,8 @@ internal sealed class CoreBuilder : ICoreBuilder
     private readonly List<IActionHandler> _actionHandlers = [];
     private readonly List<IWorldObserver> _observers = [];
     private readonly List<IDeathPolicy> _deathPolicies = [];
+    private readonly List<IUsePolicy> _usePolicies = [];
+    private readonly List<CreationChoice> _creationChoices = [];
     private readonly List<ILingerPolicy> _lingerPolicies = [];
     private string _module = "(none)";
     private bool _frozen;
@@ -212,6 +225,52 @@ internal sealed class CoreBuilder : ICoreBuilder
     public PacketRegistry.Builder Packets { get; } = new();
 
     internal void BeginModule(string name) => _module = name;
+
+    /// <summary>
+    /// Add a game's own fields to a family that already exists — the engine's <c>Items</c> or
+    /// <c>NPCs</c>, or another module's.
+    ///
+    /// <para>🔴 <b>A record the engine owns has a closed set of properties, because Core cannot act on
+    /// one it has never heard of.</b> A game's are open, and they belong on the same record rather than
+    /// in a table beside it: a class gate is a fact about the sword, and a second family keyed by item
+    /// number is that fact stored where it can be forgotten.</para>
+    ///
+    /// <para>Every field lands in the record's own attribute bag, so nothing here needs a new column, a
+    /// new file, or a new packet — an extended family is the same family with more rows on its
+    /// form.</para>
+    ///
+    /// <para>⚠ A key that clashes with one already on the family is refused by name. Two modules both
+    /// calling something <c>power</c> would write over each other, and the one that lost would present
+    /// as an authored value that will not stay put.</para>
+    /// </summary>
+    public void ExtendFamily(string familyId, IReadOnlyList<FieldDescriptor> fields)
+    {
+        ArgumentNullException.ThrowIfNull(fields);
+        Refuse();
+
+        int at = _families.FindIndex(f => string.Equals(f.Id, familyId, StringComparison.Ordinal));
+
+        if (at < 0)
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' added fields to record family '{familyId}', which nothing declared.",
+                _module);
+        }
+
+        var family = _families[at];
+
+        foreach (FieldDescriptor field in fields)
+        {
+            if (family.Fields.Any(f => string.Equals(f.Key, field.Key, StringComparison.Ordinal)))
+            {
+                throw new CoreModuleException(
+                    $"Module '{_module}' added field '{field.Key}' to record family '{familyId}', which "
+                    + "already has one by that name.", _module);
+            }
+        }
+
+        _families[at] = family with { Fields = [.. family.Fields, .. fields] };
+    }
 
     public void AddFamily(RecordFamily family)
     {
@@ -481,6 +540,32 @@ internal sealed class CoreBuilder : ICoreBuilder
         _deathPolicies.Add(policy);
     }
 
+    public void AddUsePolicy(IUsePolicy policy)
+    {
+        ArgumentNullException.ThrowIfNull(policy);
+        Refuse();
+        _usePolicies.Add(policy);
+    }
+
+    public void AddCreationChoice(CreationChoice choice)
+    {
+        ArgumentNullException.ThrowIfNull(choice);
+        Refuse();
+
+        if (string.IsNullOrWhiteSpace(choice.Key))
+            throw new CoreModuleException($"Module '{_module}' asked something at creation with no key.", _module);
+
+        // Two choices under one key would both write it, and the second would win silently - which
+        // presents as a player's pick not sticking rather than as a declaration mistake.
+        if (_creationChoices.Any(c => string.Equals(c.Key, choice.Key, StringComparison.Ordinal)))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' asked twice under key '{choice.Key}' at creation.", _module);
+        }
+
+        _creationChoices.Add(choice);
+    }
+
     public void AddLingerPolicy(ILingerPolicy policy)
     {
         ArgumentNullException.ThrowIfNull(policy);
@@ -499,7 +584,8 @@ internal sealed class CoreBuilder : ICoreBuilder
                                 new DisplayFieldSet(_displayFields), new PacketRoutes([.. _packetRoutes]),
                                 new GameActions(_actions), [.. _actionHandlers], new GamePanels([.. _panels]),
                                 [.. _observers], [.. _deathPolicies],
-                                [.. _lingerPolicies], modules, moduleNames);
+                                [.. _lingerPolicies], [.. _usePolicies],
+                                new CreationChoiceSet([.. _creationChoices]), modules, moduleNames);
     }
 
     private void Refuse()

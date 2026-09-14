@@ -49,6 +49,7 @@ public sealed class SpawnSystem : GameSystem
         mn.JanitorTarget = 0;
         mn.NpcTargetSpawnMap = 0;
         mn.NpcTargetSpawnSlot = 0;
+        mn.Roused = false;           // a fresh body was sent after nobody, whatever the last occupant was doing
         mn.LastSpokeTo = 0;
         mn.LastSpokeToNpc = 0;
         mn.LastReachedTargetMs = 0;

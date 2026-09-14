@@ -1,0 +1,89 @@
+# What a spell can BE, as records an author fills in.
+#
+# A field typed as an enumeration becomes a drop-down with nothing else declared, and a field typed as
+# another model becomes a picker listing that model's records by name. Neither is named twice, so
+# neither can drift.
+
+enumeration Magic
+    AddHp, AddMp, AddSp, SubHp, SubMp, SubSp, GiveItem
+end enumeration
+
+model Spell
+    public string name;
+    public Magic type;
+
+    # ⚠ THE MAGNITUDE DOES THREE JOBS: how much the spell does, the intelligence needed to learn it,
+    # and what it sets the mana cost to. One number, so a world author cannot write a spell that is
+    # powerful, cheap, and free to pick up — and a tier ladder falls out of the magnitudes rather than
+    # having to be balanced by hand. Unused by GiveItem, which hands over a thing rather than an
+    # amount and so carries its own gate below.
+    public integer amount;
+
+    public integer item;
+    public integer many;
+    public integer intReq;
+
+    # When, where the magnitude decides who. A specialist opens with enough intelligence to meet a
+    # mid-ladder spell at level one, so the magnitude cannot pace the ladder on its own.
+    public integer levelReq;
+
+    # ⚠ HOW IT IS LEARNED IS NOT HERE. A spell is written on a SCROLL, and that is a fact about the
+    # scroll rather than about the spell — see `teaches` in declarations/gear.cm. A class's own
+    # starting book is a third family again, below.
+
+    public shared function Describe(Records these)
+        these.Are("Spells", "Spell", 200);
+        these.Icon("spark");
+
+        these.Caption("amount", "Magnitude");
+        these.Caption("item", "Item given");
+        these.Caption("many", "How many");
+        these.Caption("intReq", "Intelligence needed");
+        these.Caption("levelReq", "Level needed");
+
+        these.Length("name", 24);
+        these.Range("amount", 0, 250);
+        these.Range("levelReq", 0, 255);
+    end function
+end model
+
+# Which classes may learn which spells.
+#
+# ⚠ NO ROW FOR A SPELL MEANS EVERY CLASS MAY LEARN IT. That is the common case, so it is the one that
+# costs nothing to author — a world where the gate were the default would need a row per class per
+# spell before anybody could cast anything.
+
+model SpellGate
+    public Spell forSpell;
+    public Class forClass;
+
+    public shared function Describe(Records these)
+        these.Are("Spell gates", "Gate", 500);
+        these.Icon("key");
+
+        these.Caption("forSpell", "Spell");
+        these.Caption("forClass", "May be learned by");
+    end function
+end model
+
+# And what a class already knows the day it enlists.
+
+model ClassSpell
+    public Class forClass;
+    public Spell spell;
+
+    public shared function Describe(Records these)
+        these.Are("Starting spells", "Starting spell", 200);
+        these.Icon("book");
+
+        these.Caption("forClass", "Class");
+        these.Caption("spell", "Knows");
+    end function
+end model
+
+# What the Prepare button on the spellbook sends. A model rather than a verb per page: twenty verbs
+# would be twenty declarations saying the same thing, and a form is what a number wants.
+
+model Prepared
+    public integer slot;
+end model

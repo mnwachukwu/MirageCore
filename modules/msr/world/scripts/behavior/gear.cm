@@ -1,0 +1,178 @@
+# Who may wield what, and what a scroll does when it is read.
+#
+# What this game hangs on an item lives in declarations/gear.cm. This is what those facts mean.
+
+shared model Gear
+
+    public string Of = "Items";
+    public string Gates = "GearGate";
+
+    # ── The gate ──────────────────────────────────────────────────────────────
+
+    # ⚠ No row for a piece means every class may wield it, which is the common case and so the one
+    # that costs nothing to author. The same shape the spell gate takes, read the same way.
+    public boolean function OpenTo(integer item, integer forClass)
+        integer rows = World.Records(Gear.Gates);
+        boolean gated = false;
+
+        loop for row = 1 to rows
+            if World.RecordNumber(Gear.Gates, row, "item") == item
+                gated = true;
+
+                if World.RecordNumber(Gear.Gates, row, "forClass") == forClass
+                    yield true;
+                end if
+            end if
+        end loop
+
+        yield not gated;
+    end function
+
+    # Everything this game asks before somebody should be holding a piece: the class it is written
+    # for, and the level it was meant for.
+    public boolean function MayWield(Player who, integer item)
+        if not Gear.OpenTo(item, who.Number(Classes.Key))
+            yield false;
+        end if
+
+        yield Stats.LevelOf(who) >= Gear.LevelNeeded(item);
+    end function
+
+    public integer function LevelNeeded(integer item)
+        yield World.RecordNumber(Gear.Of, item, "levelReq");
+    end function
+
+    # ── Wearing out in a fight ────────────────────────────────────────────────
+    #
+    # A piece does not lose a point every time it is used. It loses one on a roll that gets likelier as
+    # it wears: healthy gear shrugs off three hits in four, and gear under a quarter chips every time.
+    # So a kit degrades slowly at first and then quickly, which is what makes repairing it a decision.
+    #
+    # Rain doubles what a chip costs, and a guild at level two has a chance to shrug one off entirely.
+    # ⚠ That privilege is about ORDINARY wear only — what dying costs is untouched by it.
+
+    public integer HealthyPercent = 75;
+    public integer WornPercent = 50;
+    public integer DamagedPercent = 25;
+
+    public integer HealthyChance = 25;
+    public integer WornChance = 50;
+    public integer DamagedChance = 75;
+    public integer CriticalChance = 100;
+
+    public integer RainWear = 2;
+
+    public string Rainy = "rain";
+
+    # How likely this piece is to chip, by how worn it already is.
+    public integer function ChipChance(integer left, integer full)
+        if full < 1
+            yield 0;
+        end if
+
+        integer share = left * 100 / full;
+
+        if share >= Gear.HealthyPercent
+            yield Gear.HealthyChance;
+        end if
+
+        if share >= Gear.WornPercent
+            yield Gear.WornChance;
+        end if
+
+        if share >= Gear.DamagedPercent
+            yield Gear.DamagedChance;
+        end if
+
+        yield Gear.CriticalChance;
+    end function
+
+    # One hit's worth of wear on whatever is in that slot. A piece with no durability budget at all is
+    # indestructible and never chips.
+    public function Chip(Player who, string slot)
+        integer item = World.WornIn(who, slot);
+
+        if item < 1
+            yield;
+        end if
+
+        integer full = World.DurabilityFull(who, item);
+
+        if full < 1
+            yield;
+        end if
+
+        if not Combat.Rolls(Gear.ChipChance(World.DurabilityLeft(who, item), full))
+            yield;
+        end if
+
+        if Perks.Shrugs(who)
+            yield;
+        end if
+
+        integer points = 1;
+
+        if World.Weather(who.Map) == Gear.Rainy
+            points = Gear.RainWear;
+        end if
+
+        if World.WearOut(who, item, points) > 0
+            if World.DurabilityLeft(who, item) <= 0
+                if who.TakeOff(item)
+                    who.Message("Your gear has broken.");
+                end if
+            end if
+        end if
+    end function
+
+    # ── The coin ──────────────────────────────────────────────────────────────
+    #
+    # Which item this world spends. Found once by walking the items and kept, because a world's items
+    # do not change under a running server. Minus one means nobody ticked the box.
+
+    public string CoinField = "coin";
+
+    integer minted = 0;
+
+    public integer function Coin()
+        if Gear.minted != 0
+            yield Gear.minted;
+        end if
+
+        loop for num = 1 to World.Records(Gear.Of)
+            if World.RecordTruth(Gear.Of, num, Gear.CoinField)
+                Gear.minted = num;
+                yield num;
+            end if
+        end loop
+
+        Gear.minted = -1;
+
+        yield -1;
+    end function
+
+    # ── Refusing ──────────────────────────────────────────────────────────────
+    #
+    # 🔴 ASKED BEFORE THE PIECE GOES ON, so a refusal means it never did. A rule told afterwards could
+    # only take it off again, which the player sees as a flicker and which leaves the moment between
+    # the two with the wrong body wearing the wrong thing.
+    #
+    # ⚠ A blank answer lets it happen. Every refusal here names something the player can do something
+    # about, because a refusal with no reason reads as the game being broken.
+    public string function Judge(Player who, integer item)
+        # Only gear is gated. A potion, a key, a scroll — nothing this game says restricts any of them,
+        # and refusing something nobody gated would refuse everything.
+        if Gear.MayWield(who, item)
+            yield "";
+        end if
+
+        integer needed = Gear.LevelNeeded(item);
+
+        if Stats.LevelOf(who) < needed
+            yield "You must be level " + needed + " to use that.";
+        end if
+
+        yield "Your kind was never trained for that.";
+    end function
+
+end model

@@ -1,0 +1,165 @@
+# Mirage Source Remastered, rebuilt on Core as a world's own rules.
+#
+# 🔴 THIS FILE IS THE ENGINE'S DOOR AND NOTHING ELSE. Every function the engine calls is here, and
+# each one hands the work to the model that owns it. A game that put its whole self in this file
+# would be a game in one file.
+#
+# 🔴 TWO FOLDERS, AND THE LINE BETWEEN THEM IS WHO WRITES IT.
+#
+#   declarations/   the record models — what a WORLD AUTHOR fills in through the editor
+#   behavior/       the rules — what happens, which nobody authors
+#
+#   declarations/character.cm   a class, and the kit it opens with
+#   declarations/magic.cm       a spell, who may learn it, and what a class already knows
+#   declarations/gear.cm        what this game adds to the ENGINE'S own items, and who may wield them
+#   declarations/quests.cm      a quest, what finishing it takes, and who may take it
+#   declarations/places.cm      what this game adds to the ENGINE'S own maps
+#   declarations/beasts.cm      what this game adds to the ENGINE'S own creatures
+#
+#   behavior/stats.cm      what a character sheet IS, and the arithmetic behind it
+#   behavior/sheet.cm      what the engine carries, and what a new character starts with
+#   behavior/vitals.cm     the three pools, and what puts back into them
+#   behavior/combat.cm     what a swing is worth, and what a body turns aside
+#   behavior/fight.cm      where that lands on somebody
+#   behavior/duel.cm       two players, and who is allowed to fight whom
+#   behavior/death.cm      what dying costs, and where you wake up
+#   behavior/places.cm     what a map means to a fight
+#   behavior/beasts.cm     what a creature is, on top of how it walks
+#   behavior/classes.cm    applying the class they chose, and what it is worth afterwards
+#   behavior/spells.cm     what casting costs, and what a cast is worth
+#   behavior/book.cm       what a character knows, has ready, and does with it
+#   behavior/gear.cm       who may wield what
+#   behavior/quests.cm     taking one, counting toward it, and handing it back
+#   behavior/guilds.cm     what a guild is FOR: a level, a war, and who may fight whom
+#   behavior/ledger.cm     what a guild is charged, and what it is paid
+#   behavior/perks.cm      what a guild is worth to the people in it
+#   behavior/valor.cm      the war currency
+#   behavior/bounty.cm     a standing bounty, and what filling it pays
+#   behavior/calendar.cm   the calendar, worked out from the clock
+#   behavior/levels.cm     experience, and what it buys
+#
+# The original is a .NET solution of some hundreds of files. What is being reproduced is the GAME —
+# its stats, its pools, its fights, its classes — on an engine that has never heard of any of it.
+
+shared model Rules
+
+    # Declaring runs once, before the world exists. Everything it says is about what the game IS.
+    public function Configure(Builder game)
+        Sheet.Declare(game);
+        Vitals.Declare(game);
+        Fight.Declare(game);
+        Classes.Declare(game);
+        Book.Declare(game);
+        Quests.Declare(game);
+        Guilds.Declare(game);
+        Bounty.Declare(game);
+
+        # Once a second rather than once a tick. Regen is a rate, and twenty writes a second per
+        # player is traffic nobody can see the difference in.
+        game.TickEvery(20);
+    end function
+
+    # Somebody who has been here before keeps what they had; their values were saved with their
+    # character. A first arrival is enrolled.
+    public function OnPlayerJoined(Player who)
+        Sheet.Enroll(who);
+    end function
+
+    # Once for each body in the world, every twentieth tick.
+    public function OnPlayerTick(Player who)
+        Vitals.Rest(who);
+        Guilds.Tick(who);
+        Ledger.Tick(who);
+        Bounty.Tick(who);
+    end function
+
+    # `on` names whoever the verb was used on, and is blank for one offered on a square.
+    public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+        if action == Fight.Attack
+            Fight.Strike(who, map, x, y);
+        end if
+
+        if action == Book.Cast
+            Book.Hurl(who, map, x, y);
+        end if
+
+        if action == Book.CastSelf
+            Book.Inward(who);
+        end if
+
+        if action == Quests.Offer
+            Quests.Ask(who, map, x, y);
+        end if
+
+        if action == Quests.Hand
+            Quests.Give(who, map, x, y);
+        end if
+
+        if action == Guilds.WarVerb
+            Guilds.War(who, on);
+        end if
+
+        if action == Guilds.PeaceVerb
+            Guilds.Peace(who, on);
+        end if
+
+        if action == Valor.DonateVerb
+            Valor.GiveAll(who);
+        end if
+
+        if action == Bounty.TakeVerb
+            Bounty.Take(who);
+        end if
+
+        if action == Bounty.DropVerb
+            Bounty.Drop(who);
+        end if
+    end function
+
+    # Asked BEFORE anything happens, so a reason here stops the use outright.
+    public string function OnMayUse(Player who, integer item, integer slot)
+        yield Gear.Judge(who, item);
+    end function
+
+    # And afterwards, once the engine has done its own half. A scroll is this game's.
+    public function OnItemUsed(Player who, integer item, integer slot)
+        Book.Read(who, item);
+    end function
+
+    # The Prepare button on the spellbook. A form rather than a verb per page: twenty verbs would be
+    # twenty declarations saying the same thing.
+    public function OnMessage(Player who, string message, Values values)
+        if message == "Prepared"
+            Book.Prepare(who, values.Number("slot"));
+            yield;
+        end if
+
+        if message == "Donation"
+            Valor.Donate(who, values.Number("amount"));
+        end if
+    end function
+
+    # A creature reached somebody it was chasing.
+    public function OnContact(Npc it, Player who)
+        Fight.Maul(it, who);
+    end function
+
+    # And one that reached another creature. Two handlers rather than one, because a rule handed the
+    # wrong kind of body runs and is wrong — which is worse than a rule that is not called.
+    public function OnNpcContact(Npc it, Npc other)
+        Fight.Clash(it, other);
+    end function
+
+    # Nothing stops a death here yet - a grace timer is what the original had, and it wants the
+    # respawn rule beside it rather than on its own.
+    public string function OnMayDie(Player who, string cause)
+        yield "";
+    end function
+
+    # And what one costs, asked while the body is still on the tile it fell on. `killer` is nobody
+    # when the world itself did it, which IsHere answers.
+    public function OnDied(Player who, Player killer, string cause)
+        Death.Fell(who, killer, cause);
+    end function
+
+end model

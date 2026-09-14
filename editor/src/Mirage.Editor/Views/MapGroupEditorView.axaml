@@ -3,6 +3,7 @@
              xmlns:models="using:Mirage.Editor.Models"
              xmlns:controls="using:Mirage.Editor.Controls"
              xmlns:vm="using:Mirage.Editor.ViewModels"
+             xmlns:views="using:Mirage.Editor.Views"
              Grid.IsSharedSizeScope="True"
              x:DataType="vm:MapGroupEditorViewModel"
              x:Class="Mirage.Editor.Views.MapGroupEditorView">
@@ -209,6 +210,9 @@
 
           <TextBlock x:Name="_triStateHint" FontSize="11" Foreground="#8B84AE" FontStyle="Italic"
                      TextWrapping="Wrap"/>
+
+          <!-- The game's own fields on this record, when the loaded game added any. -->
+          <views:GameFieldsView DataContext="{Binding GameFields}"/>
         </StackPanel>
       </ScrollViewer>
     </Grid>

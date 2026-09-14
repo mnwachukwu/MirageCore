@@ -862,6 +862,89 @@ public class ScriptedWorldTests
         });
     }
 
+    /// <summary>What a death COSTS, which is a different question from whether it happens. The handler
+    /// runs while the body is still on the tile it fell on, and it reads who did it.</summary>
+    [Test]
+    public void RulesSayWhatADeathCosts_AndWhereTheBodyComesBack()
+    {
+        var world = new RecordingWorld();
+        var (module, _) = Built("""
+            shared model Rules
+                public function Configure(Builder game)
+                end function
+
+                public function OnDied(Player who, Player killer, string cause)
+                    who.SetNumber("lost", 10);
+
+                    if killer.IsHere
+                        who.SetNumber("murdered", 1);
+                    end if
+
+                    who.RespawnAt(4, 5, 6);
+                end function
+            end model
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+
+        var who = EntityHandle.ForPlayer(1);
+        var killer = EntityHandle.ForPlayer(2);
+        world.Here.Add(who);
+        world.Here.Add(killer);
+
+        var death = new Death(who, killer, "slain");
+        scripts.OnDied(in death);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+            Assert.That(world.Bag["lost"].AsLong(), Is.EqualTo(10L), "the cost was applied");
+            Assert.That(world.Bag["murdered"].AsLong(), Is.EqualTo(1L), "and the killer is readable");
+            Assert.That(scripts.RespawnFor(in death), Is.EqualTo(new Respawn(4, 5, 6)),
+                "the place the handler named");
+        });
+    }
+
+    /// <summary>⚠ A place named for one death is not read for the next. The handler is asked again,
+    /// and a body it says nothing about comes back where the world puts it.</summary>
+    [Test]
+    public void APlaceNamedForOneDeath_IsNotReadForAnother()
+    {
+        var world = new RecordingWorld();
+        var (module, _) = Built("""
+            shared model Rules
+                public function Configure(Builder game)
+                end function
+
+                public function OnDied(Player who, Player killer, string cause)
+                    if cause == "war"
+                        who.RespawnAt(4, 5, 6);
+                    end if
+                end function
+            end model
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+
+        var who = EntityHandle.ForPlayer(1);
+        world.Here.Add(who);
+
+        var inWar = new Death(who, EntityHandle.None, "war");
+        scripts.OnDied(in inWar);
+        Assert.That(scripts.RespawnFor(in inWar), Is.EqualTo(new Respawn(4, 5, 6)));
+
+        var drowned = new Death(who, EntityHandle.None, "drowned");
+        scripts.OnDied(in drowned);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(scripts.RespawnFor(in drowned).IsSet, Is.False,
+                "the handler named nowhere this time");
+            Assert.That(scripts.RespawnFor(in inWar).IsSet, Is.False,
+                "and the place it named for the other death is gone with it");
+        });
+    }
+
     /// <summary>🔴 Rules that write neither policy leave the engine's own answers alone.
     ///
     /// <para>A policy registered for a world that never wrote one would put a call into the death path
@@ -1975,7 +2058,16 @@ public class ScriptedWorldTests
 
         public void Tell(EntityHandle who, string text, ChatChannel channel, int color) => Said.Add(text);
 
-        public bool IsInWorld(EntityHandle who) => who.IsSet;
+        /// <summary>Which bodies are in the world, or empty for "every handle names one".
+        ///
+        /// <para>⚠ Empty is the default because almost every test here acts on one body and does not
+        /// care. A test that runs a PER-PLAYER tick does care: this double keeps ONE attribute bag,
+        /// so a tick that visits every slot applies the same rule to the same bag hundreds of times
+        /// and any rate compounds.</para></summary>
+        public HashSet<EntityHandle> Here { get; } = [];
+
+        public bool IsInWorld(EntityHandle who) =>
+            who.IsSet && (Here.Count == 0 || Here.Contains(who));
         /// <summary>Where a test put this body, or <see cref="Place"/> for one it said nothing
         /// about — which is most of them, and is what every test written before Standing existed
         /// relies on.</summary>
@@ -2008,9 +2100,12 @@ public class ScriptedWorldTests
                               ChatChannel channel, int color) =>
             Announced.Add(($"these {string.Join(' ', them)}", text));
 
-        /// <summary>Which guild a test put somebody in, and who else is in the world with them.</summary>
+        /// <summary>Which guild a test put somebody in, who else is in it with them, and who is in
+        /// their party. Guildmates and partymates are kept apart: a rule that treats the two
+        /// differently is one a double answering both from one list could not be asked about.</summary>
         public Dictionary<EntityHandle, string> Guilds { get; } = [];
         public Dictionary<EntityHandle, List<EntityHandle>> Groups { get; } = [];
+        public Dictionary<EntityHandle, List<EntityHandle>> Parties { get; } = [];
 
         public string GuildOf(EntityHandle who) =>
             Guilds.TryGetValue(who, out string? name) ? name : string.Empty;
@@ -2019,7 +2114,7 @@ public class ScriptedWorldTests
             Groups.TryGetValue(who, out var mates) ? mates : [];
 
         public IReadOnlyList<EntityHandle> PartyOf(EntityHandle who) =>
-            Groups.TryGetValue(who, out var mates) ? mates : [];
+            Parties.TryGetValue(who, out var mates) ? mates : [];
 
         /// <summary>What floated off whom, and in what color.</summary>
         public List<(EntityHandle Who, string Text, uint Rgb)> Floated { get; } = [];
@@ -2044,21 +2139,46 @@ public class ScriptedWorldTests
 
         public EntityHandle At(WorldPlace place) =>
             Standing.TryGetValue(place, out var who) ? who : EntityHandle.None;
-        public AttributeBag? AttributesOf(EntityHandle who) => Bag;
+        /// <summary>A bag of its own for each body a test asked to keep apart. Everything else shares
+        /// <see cref="Bag"/>, which is what nearly every test here wants.</summary>
+        public Dictionary<EntityHandle, AttributeBag> Bags { get; } = [];
+
+        /// <summary>Gives this body a bag of its own and hands it back. A test about two bodies
+        /// writing the same key needs it; one about a single body does not.</summary>
+        public AttributeBag BagFor(EntityHandle who)
+        {
+            if (!Bags.TryGetValue(who, out var own)) Bags[who] = own = new AttributeBag();
+
+            return own;
+        }
+
+        private AttributeBag Held(EntityHandle who) =>
+            Bags.TryGetValue(who, out var own) ? own : Bag;
+
+        public AttributeBag? AttributesOf(EntityHandle who) => Held(who);
 
         public bool SetAttribute(EntityHandle who, string key, AttributeValue value)
         {
-            Bag.Set(key, value);
+            Held(who).Set(key, value);
             return true;
         }
 
         public bool SetAttributes(EntityHandle who, IReadOnlyCollection<KeyValuePair<string, AttributeValue>> values)
         {
-            foreach (var (key, value) in values) Bag.Set(key, value);
+            foreach (var (key, value) in values) Held(who).Set(key, value);
             return true;
         }
 
-        public bool RemoveAttribute(EntityHandle who, string key) => Bag.Remove(key);
+        public bool RemoveAttribute(EntityHandle who, string key) => Held(who).Remove(key);
+        /// <summary>Which states a test has put a body in, for the readers to answer from.</summary>
+        public HashSet<(EntityHandle Who, string State)> In { get; } = [];
+
+        public bool IsEngaged(EntityHandle who) => In.Contains((who, "engaged"));
+        public bool IsDowned(EntityHandle who) => In.Contains((who, "downed"));
+        public bool IsMarked(EntityHandle who) => In.Contains((who, "marked"));
+        public bool IsAggressor(EntityHandle who) => In.Contains((who, "aggressor"));
+        public bool IsWaiting(EntityHandle who) => In.Contains((who, "cooldown"));
+
         public void SetEngaged(EntityHandle who, int seconds) => Timed.Add((who, "engaged", seconds));
         public void SetDowned(EntityHandle who, int seconds) => Timed.Add((who, "downed", seconds));
         public void SetMarked(EntityHandle who, int seconds) => Timed.Add((who, "marked", seconds));
@@ -2079,8 +2199,15 @@ public class ScriptedWorldTests
             return true;
         }
 
-        public void Give(EntityHandle who, int itemNum, int quantity = 1) { }
-        public void Take(EntityHandle who, int itemNum, int quantity = 1) { }
+        /// <summary>What was put in a bag, in the order it was granted — which is what a kit is.</summary>
+        public List<(int Item, int Many)> Given { get; } = [];
+
+        public void Give(EntityHandle who, int itemNum, int quantity = 1) => Given.Add((itemNum, quantity));
+
+        /// <summary>What was taken back out of a bag, in the order it went.</summary>
+        public List<(int Item, int Many)> Taken { get; } = [];
+
+        public void Take(EntityHandle who, int itemNum, int quantity = 1) => Taken.Add((itemNum, quantity));
         public void ReleaseGhost(EntityHandle who) { }
         /// <summary>What was marked on the ground, which unlike everything else shown, lasts.</summary>
         public List<(WorldPlace At, int Size, float Amount)> Stained { get; } = [];
@@ -2097,6 +2224,259 @@ public class ScriptedWorldTests
         public AttributeBag? RecordAt(string familyId, int num) =>
             RecordsOf(familyId) is { } rows && num >= 1 && num <= rows.Count ? rows[num - 1] : null;
 
-        public string NameOf(EntityHandle who) => who.IsSet ? who.ToString() : string.Empty;
+        /// <summary>What a test called each record, by family and slot.</summary>
+        public Dictionary<(string, int), string> RecordNames { get; } = [];
+
+        public string RecordName(string familyId, int num) =>
+            RecordNames.TryGetValue((familyId, num), out string? name) ? name
+                : RecordAt(familyId, num) is { } row && row.TryGet("name", out AttributeValue named)
+                    ? named.AsText() : string.Empty;
+
+        /// <summary>A game's fields on each map, keyed by map number. Stands in for the map's own bag
+        /// with its group's behind it, which a test has no groups to build.</summary>
+        public Dictionary<int, AttributeBag> MapFields { get; } = [];
+
+        public AttributeValue? MapValue(int mapNum, string key) =>
+            MapFields.TryGetValue(mapNum, out var bag) && bag.TryGet(key, out AttributeValue held)
+                ? held : null;
+
+        /// <summary>What a test called each body. Anything unnamed answers with its handle, which is
+        /// distinct per body and is all most tests ever need.</summary>
+        public Dictionary<EntityHandle, string> Names { get; } = [];
+
+        public string NameOf(EntityHandle who) =>
+            Names.TryGetValue(who, out string? name) ? name
+            : who.IsSet ? who.ToString() : string.Empty;
+
+        /// <summary>Which creature a handle is a copy of. The double has no creature table, so a test that
+        /// cares sets one; everything else reads the spawn slot, which is distinct per body and is what a
+        /// rule keying on a species would key on.</summary>
+        public Dictionary<EntityHandle, int> Kinds { get; } = [];
+
+        public int KindOf(EntityHandle who) =>
+            !who.IsNpc ? 0 : Kinds.TryGetValue(who, out int kind) ? kind : who.SpawnSlot;
+
+        /// <summary>Who each creature was last sent after, and who was told to let go — the two halves of
+        /// pointing a body at somebody, kept so a test can read back what the script asked for.</summary>
+        public Dictionary<EntityHandle, EntityHandle> Chasing { get; } = [];
+        public List<EntityHandle> Forgotten { get; } = [];
+
+        public bool Provoke(EntityHandle npc, EntityHandle quarry)
+        {
+            if (!IsInWorld(npc) || !IsInWorld(quarry)) return false;
+            if (npc == quarry) return false;
+
+            Chasing[npc] = quarry;
+            return true;
+        }
+
+        public bool Forget(EntityHandle npc)
+        {
+            if (!IsInWorld(npc)) return false;
+
+            Chasing.Remove(npc);
+            Forgotten.Add(npc);
+            return true;
+        }
+
+        /// <summary>What the ground is, by square. A test that cares sets one; everything else is walkable,
+        /// which is what an open map is.</summary>
+        public Dictionary<WorldPlace, string> Ground { get; } = [];
+
+        public string TileAt(WorldPlace place) =>
+            Ground.TryGetValue(place, out string? kind) ? kind : "walkable";
+
+        /// <summary>Squares a test declared sightless. Nothing is in the way otherwise, which is what an
+        /// open map with no walls on it answers.</summary>
+        public HashSet<WorldPlace> Unseen { get; } = [];
+
+        public bool CanSee(WorldPlace from, WorldPlace to) => !Unseen.Contains(to);
+
+        /// <summary>Manhattan on one map, and -1 across two. The double has no grid, so it answers the
+        /// shape of the question rather than the world's own geometry.</summary>
+        public int Distance(WorldPlace from, WorldPlace to) =>
+            from.Map == to.Map ? Math.Abs(from.X - to.X) + Math.Abs(from.Y - to.Y) : -1;
+
+        /// <summary>What a test said the sky is doing. Clear until it says otherwise.</summary>
+        public string Weather { get; set; } = "clear";
+
+        public string WeatherOn(int mapNum) => Weather;
+
+        /// <summary>Which region each map belongs to. A test that cares about territory says so.</summary>
+        public Dictionary<int, int> Regions { get; } = [];
+
+        public int MapGroupOf(int mapNum) => Regions.TryGetValue(mapNum, out int group) ? group : 0;
+
+        /// <summary>What a rule asked to be put on, in order.</summary>
+        public List<int> Worn { get; } = [];
+
+        public bool Wear(EntityHandle who, int itemNum)
+        {
+            if (!IsInWorld(who)) return false;
+
+            Worn.Add(itemNum);
+            return true;
+        }
+
+        /// <summary>How much of each item a test says a body is carrying.</summary>
+        public Dictionary<(EntityHandle, int), long> Holding { get; } = [];
+
+        public long Carrying(EntityHandle who, int itemNum) =>
+            Holding.TryGetValue((who, itemNum), out long many) ? many : 0L;
+
+        /// <summary>What a rule asked to be taken off, in order.</summary>
+        public List<int> Removed { get; } = [];
+
+        public bool Remove(EntityHandle who, int itemNum)
+        {
+            if (!HasOn.TryGetValue(who, out var on) || !on.Contains(itemNum)) return false;
+
+            on.Remove(itemNum);
+            Removed.Add(itemNum);
+            return true;
+        }
+
+        /// <summary>Whether a test said this body is running. Walking, until it does.</summary>
+        public HashSet<EntityHandle> Runners { get; } = [];
+
+        public bool IsRunning(EntityHandle who) => Runners.Contains(who);
+
+        /// <summary>What each creature was authored as. A test that cares sets one; a body nobody described
+        /// ambles, notices nothing, and keeps to no pack — which is what an unauthored record is.</summary>
+        public Dictionary<EntityHandle, (string Behavior, int Group, int Range)> Authored { get; } = [];
+
+        public string BehaviorOf(EntityHandle npc) =>
+            !IsInWorld(npc) ? string.Empty
+            : Authored.TryGetValue(npc, out var authored) ? authored.Behavior : "wander";
+
+        public int GroupOf(EntityHandle npc) =>
+            Authored.TryGetValue(npc, out var authored) ? authored.Group : 0;
+
+        public int RangeOf(EntityHandle npc) =>
+            Authored.TryGetValue(npc, out var authored) ? authored.Range : 0;
+
+        public bool IsChasing(EntityHandle npc) => Chasing.ContainsKey(npc);
+
+        /// <summary>Which guild each body belongs to by NUMBER, what each is called, and what is in its
+        /// vault. A test that cares about guilds says so; everything else is in none.</summary>
+        public Dictionary<EntityHandle, int> InGuild { get; } = [];
+        public Dictionary<int, string> GuildNames { get; } = [];
+        public Dictionary<int, long> Vaults { get; } = [];
+        public Dictionary<EntityHandle, string> Ranks { get; } = [];
+
+        /// <summary>Each guild's own values, made on first ask — a guild a test named exists.</summary>
+        public Dictionary<int, AttributeBag> GuildBags { get; } = [];
+
+        public int GuildNumber(EntityHandle who) => InGuild.TryGetValue(who, out int guild) ? guild : 0;
+
+        public string GuildName(int guild) => GuildNames.TryGetValue(guild, out string? name) ? name : string.Empty;
+
+        public int GuildNamed(string name)
+        {
+            foreach (var (guild, named) in GuildNames)
+            {
+                if (string.Equals(named, name, StringComparison.OrdinalIgnoreCase)) return guild;
+            }
+
+            return 0;
+        }
+
+        public string GuildRankOf(EntityHandle who) =>
+            Ranks.TryGetValue(who, out string? rank) ? rank : GuildNumber(who) > 0 ? "member" : string.Empty;
+
+        public AttributeBag? GuildValues(int guild)
+        {
+            if (guild < 1) return null;
+            if (!GuildBags.TryGetValue(guild, out var bag)) GuildBags[guild] = bag = new AttributeBag();
+            return bag;
+        }
+
+        public bool SetGuildValue(int guild, string key, AttributeValue value)
+        {
+            if (GuildValues(guild) is not { } bag) return false;
+
+            bag.Set(key, value);
+            return true;
+        }
+
+        public IReadOnlyList<EntityHandle> MembersOf(int guild) =>
+            [.. InGuild.Where(g => g.Value == guild && IsInWorld(g.Key)).Select(g => g.Key)];
+
+        public long GuildGold(int guild) => Vaults.TryGetValue(guild, out long gold) ? gold : 0L;
+
+        /// <summary>What a test says the time is. Moved by hand, so a rule about a window or a
+        /// cooldown is asked at a moment the test chose rather than at whatever the clock reads.</summary>
+        public long Clock { get; set; } = 1_700_000_000L;
+
+        public long Now() => Clock;
+
+        /// <summary>What each body is wearing, and how worn each piece is. A test that cares sets
+        /// them; everything else is wearing nothing.</summary>
+        public Dictionary<EntityHandle, List<int>> HasOn { get; } = [];
+        public Dictionary<(EntityHandle, int), (int Left, int Full)> Wearing { get; } = [];
+
+        /// <summary>What the repair rate is, per point, for a test that charges for wear.</summary>
+        public int RepairPerPoint { get; set; } = 2;
+
+        public IReadOnlyList<int> WornBy(EntityHandle who) =>
+            HasOn.TryGetValue(who, out var on) ? on : [];
+
+        /// <summary>What a test put in each named slot, by body.</summary>
+        public Dictionary<(EntityHandle, string), int> InSlot { get; } = [];
+
+        public int WornIn(EntityHandle who, string slotKey) =>
+            InSlot.TryGetValue((who, slotKey), out int item) ? item : 0;
+
+        public (int Left, int Full) DurabilityOf(EntityHandle who, int itemNum) =>
+            Wearing.TryGetValue((who, itemNum), out var dur) ? dur : (0, 0);
+
+        public int Wear(EntityHandle who, int itemNum, int points)
+        {
+            var (left, full) = DurabilityOf(who, itemNum);
+            int taken = Math.Min(Math.Max(points, 0), left);
+            if (taken > 0) Wearing[(who, itemNum)] = (left - taken, full);
+            return taken;
+        }
+
+        public int RepairCost(int itemNum, int points) => Math.Max(0, points) * RepairPerPoint;
+
+        public bool SetRecordValue(string familyId, int num, string key, AttributeValue value)
+        {
+            if (RecordAt(familyId, num) is not { } row) return false;
+
+            row.Set(key, value);
+            return true;
+        }
+
+        public bool GiveGuildGold(int guild, long amount)
+        {
+            if (guild < 1 || amount <= 0) return false;
+
+            Vaults[guild] = GuildGold(guild) + amount;
+            return true;
+        }
+
+        /// <summary>What was taken out of a vault, so a test can read back what a rule charged.</summary>
+        public List<(int Guild, long Amount)> Spent { get; } = [];
+
+        public bool SpendGuildGold(int guild, long amount, EntityHandle by)
+        {
+            if (guild < 1 || amount <= 0 || GuildGold(guild) < amount) return false;
+
+            Vaults[guild] = GuildGold(guild) - amount;
+            Spent.Add((guild, amount));
+            return true;
+        }
+
+        /// <summary>Read off the same Standing table At answers from, so a test places a body once and both
+        /// questions agree about where it is.</summary>
+        public IReadOnlyList<EntityHandle> NpcsNear(WorldPlace at, int tiles) =>
+        [
+            .. Standing
+                .Where(s => s.Key.Map == at.Map && s.Value.IsNpc
+                            && Math.Abs(s.Key.X - at.X) + Math.Abs(s.Key.Y - at.Y) <= tiles)
+                .OrderBy(s => Math.Abs(s.Key.X - at.X) + Math.Abs(s.Key.Y - at.Y))
+                .Select(s => s.Value),
+        ];
     }
 }

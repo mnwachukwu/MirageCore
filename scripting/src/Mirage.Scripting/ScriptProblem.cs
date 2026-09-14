@@ -3,6 +3,11 @@ namespace Mirage.Scripting;
 /// <summary>How badly a script is wrong.</summary>
 public enum ScriptSeverity : byte
 {
+    /// <summary>The script is correct and does what its author meant; the language has a view about
+    /// how it is written. Kept apart from a warning because a whole game's worth of opinions logged as
+    /// problems is a load that reads as broken when it is not.</summary>
+    Opinion = 2,
+
     /// <summary>Worth saying, and the script still runs.</summary>
     Warning = 0,
 

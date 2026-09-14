@@ -79,6 +79,15 @@ public sealed record AddCharPacket : IPacket
     /// <para>A position rather than a sprite number: the server holds the list, so it resolves the
     /// choice itself and a client cannot ask to look like something the world never offered.</para></summary>
     [JsonPropertyName("appearance")] public int Appearance { get; init; }
+
+    /// <summary>What was picked for each thing this game asks at creation, in the order it asked, as the
+    /// 1-based number of the record chosen.
+    ///
+    /// <para>⚠ Checked against what the world actually offers rather than trusted: a client naming a
+    /// class that is not there, or answering a question nobody asked, gets the same treatment as one
+    /// asking to look like a sprite the world never offered. Short or absent means unanswered, which a
+    /// world asking nothing sends every time.</para></summary>
+    [JsonPropertyName("chose")] public IReadOnlyList<int> Chose { get; init; } = [];
 }
 
 /// <summary>C→S: delete the character in <c>Slot</c>.</summary>
@@ -153,6 +162,16 @@ public sealed record ServerHelloPacket : IPacket
     /// which looks a game offers is the author's decision rather than a property of the atlas.</summary>
     [JsonPropertyName("appearances")]
     public IReadOnlyList<CharacterAppearance> Appearances { get; init; } = CharacterAppearance.DefaultSet;
+
+    /// <summary>What this game asks at creation beyond a name and a face, with each list already
+    /// resolved to the records this world holds.
+    ///
+    /// <para>🔴 <b>Resolved HERE, by the server, because only the server has the records.</b> A client
+    /// is handed the options and their names rather than a family id it would have to look up — it has
+    /// never seen the world's classes and cannot be asked to. Empty in a world that asks nothing, which
+    /// is what the screen already draws.</para></summary>
+    [JsonPropertyName("asked")]
+    public IReadOnlyList<Extensibility.CreationChoice> Asked { get; init; } = [];
 
     /// <summary>What a stain on the ground looks like in this world, packed 0xRRGGBB. Sent here rather
     /// than with the stains themselves: one color covers the world, and the client needs it before the

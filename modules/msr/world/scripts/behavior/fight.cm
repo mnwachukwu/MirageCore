@@ -1,0 +1,335 @@
+# What happens when two bodies meet: a swing, what it does, and what is left of whoever took it.
+#
+# combat.cm is arithmetic and knows nothing about a world. This is where it lands on somebody: the
+# rolls, the messages, the picture, the death. One is a formula and the other is a fight.
+
+shared model Fight
+
+    public string Attack = "msr.attack";
+
+    # How long a swing marks somebody as being in one. Regen reads this, which is what makes running
+    # away a decision rather than a formality.
+    public integer EngagedSeconds = 10;
+
+    # And how long before they may swing again.
+    public integer SwingSeconds = 1;
+
+    # ── Declaring ─────────────────────────────────────────────────────────────
+
+    public string Reach = "msr.interact";
+
+    public function Declare(Builder game)
+        Verb hit = game.Action(Fight.Attack, "Attack", "Combat");
+        hit.OnNpc();
+        hit.OnPlayer();
+        hit.Icon("sword");
+
+        # ⚠ E, which is the key the ENGINE reaches for whatever you are facing with. Binding it takes
+        # that over, deliberately: in the original this was the melee key, and Q was the spell key.
+        # Declaring it is how a game says the reach belongs to its own rule now.
+        hit.Key("E");
+
+        # 🔴 And the reaching has to go somewhere, or taking E costs the world its shops and its
+        # conversations. This verb does what E used to, on R.
+        Verb reach = game.Action(Fight.Reach, "Interact", "Combat");
+        reach.OnNpc();
+        reach.Icon("bubble");
+        reach.Key("R");
+        reach.Interacts();
+    end function
+
+    # ── A player swings at a creature ─────────────────────────────────────────
+
+    public function Strike(Player who, integer map, integer x, integer y)
+        # A person standing there is answered before a creature. Both arrive through the same verb on
+        # the same key, and which of the two it is changes every rule that follows — so the swing at
+        # a person goes to duel.cm and this function is about creatures from here down.
+        Player? body = World.PlayerAt(map, x, y);
+
+        if body.HasValue()
+            Duel.Strike(who, body.Value());
+            yield;
+        end if
+
+        Npc? target = World.NpcAt(map, x, y);
+
+        if not target.HasValue()
+            who.Message("There is nothing there to fight.");
+            yield;
+        end if
+
+        # ⚠ The cooldown is the engine's own, and it is what stops a client that sends the verb as
+        # fast as it can from swinging as fast as it can.
+        if who.IsWaiting
+            yield;
+        end if
+
+        who.Wait(Fight.SwingSeconds);
+        who.Engage(Fight.EngagedSeconds);
+        target.Engage(Fight.EngagedSeconds);
+
+        # The wind takes it before anything else is rolled.
+        if Combat.WindTakesIt(who.Map)
+            who.Sweep(false);
+            who.Message("The wind takes your swing.");
+            yield;
+        end if
+
+        integer level = Stats.LevelOf(who);
+        integer defence = target.Number(Stats.Def);
+
+        # A creature that turns the swing aside, or steps out of it.
+        if Combat.Rolls(Combat.NpcChance(defence, Combat.NpcDodgeDivisor, Combat.NpcDodgeCap))
+            who.Sweep(false);
+            who.Message(target.Name + " steps aside.");
+            yield;
+        end if
+
+        if Combat.Rolls(Combat.NpcChance(defence, Combat.NpcBlockDivisor, Combat.NpcBlockCap))
+            who.Sweep(false);
+            who.Message(target.Name + " turns it aside.");
+            yield;
+        end if
+
+        integer raw = Combat.Vary(Combat.Swing(who.Number(Stats.Str)));
+        boolean crit = false;
+
+        # A critical needs a weapon in hand and the breath to put behind it.
+        if Combat.CanCrit(who)
+            crit = Combat.Rolls(Combat.PlayerChance(who.Number(Stats.Str), level,
+                                                    Combat.PlayerCritDivisor, Combat.PlayerCritCap));
+
+            if crit
+                Combat.Spend(who, Combat.CritCostShare);
+                raw = Combat.Crit(raw);
+            end if
+        end if
+
+        # A creature has no level of its own, so its own defence stands in for one.
+        integer damage = Combat.Resolve(raw, Combat.Protection(defence, defence), Combat.PveDamageFloor);
+
+        who.Sweep(true);
+        Gear.Chip(who, Sheet.Weapon);
+        Fight.Wound(target, damage, crit);
+
+        integer left = target.Number(Vitals.Health) - damage;
+
+        if left > 0
+            target.SetNumber(Vitals.Health, left);
+
+            # 🔴 What makes a creature that never notices anybody still fight back. Without this a body
+            # authored to amble is a punching bag, which is half the original's bestiary.
+            Beasts.Answer(target, who);
+            yield;
+        end if
+
+        Fight.Slain(who, target, map, x, y);
+    end function
+
+    # ── One creature swings at another ────────────────────────────────────────
+    #
+    # 🔴 The engine notices this pairing on its own: a body closes on anything within its range that is
+    # not its own kind and not in its group, and raises OnNpcContact when it arrives. So a world with a
+    # wolf and a deer in it needs nothing but this function to have them fight.
+    #
+    # ⚠ Neither side has a level, so each stands in for its own — the same substitution Strike makes
+    # for the creature it is hitting.
+
+    public function Clash(Npc it, Npc other)
+        if it.IsWaiting
+            yield;
+        end if
+
+        it.Wait(Fight.SwingSeconds);
+        it.Engage(Fight.EngagedSeconds);
+        other.Engage(Fight.EngagedSeconds);
+
+        integer defence = other.Number(Stats.Def);
+
+        if Combat.Rolls(Combat.NpcChance(defence, Combat.NpcDodgeDivisor, Combat.NpcDodgeCap))
+            it.Sweep(false);
+            yield;
+        end if
+
+        if Combat.Rolls(Combat.NpcChance(defence, Combat.NpcBlockDivisor, Combat.NpcBlockCap))
+            it.Sweep(false);
+            yield;
+        end if
+
+        integer raw = Combat.Vary(Combat.Swing(it.Number(Stats.Str)));
+        boolean crit = Combat.Rolls(Combat.NpcChance(it.Number(Stats.Str),
+                                                    Combat.NpcCritDivisor, Combat.NpcBlockCap));
+
+        if crit
+            raw = Combat.Crit(raw);
+        end if
+
+        integer damage = Combat.Resolve(raw, Combat.Protection(defence, defence), Combat.PveDamageFloor);
+
+        it.Sweep(true);
+        Fight.Wound(other, damage, crit);
+
+        integer left = other.Number(Vitals.Health) - damage;
+
+        if left > 0
+            other.SetNumber(Vitals.Health, left);
+            Beasts.AnswerNpc(other, it);
+            yield;
+        end if
+
+        Fight.Fell(it, other);
+    end function
+
+    # ── A creature swings at a player ─────────────────────────────────────────
+    #
+    # The same four steps, the other way round, with the player's own numbers on defence.
+
+    public function Maul(Npc it, Player who)
+        if it.IsWaiting
+            yield;
+        end if
+
+        it.Wait(Fight.SwingSeconds);
+        it.Engage(Fight.EngagedSeconds);
+        who.Engage(Fight.EngagedSeconds);
+
+        # The wind takes it before anybody reacts, so a blow it took costs the body nothing.
+        if Combat.WindTakesIt(it.Map)
+            it.Sweep(false);
+            who.Message(it.Name + " swings wide in the wind.");
+            yield;
+        end if
+
+        integer level = Stats.LevelOf(who);
+        integer defence = who.Number(Stats.Def);
+
+        if Combat.CanDodge(who)
+            if Combat.Rolls(Combat.PlayerChance(defence, level, Combat.PlayerDodgeDivisor, Combat.PlayerDodgeCap))
+                Combat.Spend(who, Combat.DodgeCostShare);
+                who.Message("You step aside.");
+                yield;
+            end if
+        end if
+
+        if Combat.CanBlock(who)
+            if Combat.Rolls(Combat.PlayerChance(defence, level, Combat.PlayerBlockDivisor, Combat.PlayerBlockCap))
+                Combat.Spend(who, Combat.BlockCostShare);
+                Gear.Chip(who, Sheet.Shield);
+                who.Message("You turn it aside.");
+                yield;
+            end if
+        end if
+
+        integer raw = Combat.Vary(Combat.Swing(it.Number(Stats.Str)));
+
+        if Combat.Rolls(Combat.NpcChance(it.Number(Stats.Str), Combat.NpcCritDivisor, Combat.NpcBlockCap))
+            raw = Combat.Crit(raw);
+        end if
+
+        integer damage = Combat.Resolve(raw, Combat.Protection(level, defence), Combat.MinDamageFloor);
+
+        it.Sweep(true);
+        who.Float("" + damage, 220, 60, 60);
+        who.Message(it.Name + " hits you for " + damage + ".");
+
+        integer left = who.Number(Vitals.Health) - damage;
+
+        if left > 0
+            who.SetNumber(Vitals.Health, left);
+            yield;
+        end if
+
+        who.SetNumber(Vitals.Health, 0);
+
+        boolean died = who.Kill("slain by " + it.Name);
+
+        if not died
+            # 🔴 Something refused the death, and a LIVE body standing at nothing is the bug that
+            # follows: nothing anywhere sweeps for one, so it would stand there with regen quietly
+            # ticking it back up. A refusal has to leave them alive rather than neither.
+            who.SetNumber(Vitals.Health, 1);
+        end if
+    end function
+
+    # ── What a wound looks like ───────────────────────────────────────────────
+
+    public function Wound(Npc target, integer damage, boolean crit)
+        if crit
+            # Two, as the original wrote them.
+            target.Float("" + damage + "!!", 255, 210, 80);
+            target.Burst(190, 20, 20, 80);
+            yield;
+        end if
+
+        target.Float("" + damage, 255, 240, 240);
+        target.Burst(190, 20, 20, 40);
+    end function
+
+    # ── What a kill is worth ──────────────────────────────────────────────────
+
+    # ⚠ A creature killed by a creature pays NOBODY. The original credited a kill to whoever landed the
+    # blow, and a body that is not a player has no sheet to credit — so a wolf farming deer on an empty
+    # map is an event nobody profits from, which is the point.
+
+    function Fell(Npc it, Npc other)
+        integer map = other.Map;
+        integer x = other.X;
+        integer y = other.Y;
+
+        # The stain goes down BEFORE the body leaves. Once it is dead there is nothing left to ask
+        # where it was standing.
+        World.Stain(map, x, y, 2, 90);
+
+        string name = other.Name;
+        boolean died = other.Kill("slain");
+
+        if not died
+            yield;
+        end if
+
+        World.TellNear(map, x, y, it.Name + " kills " + name + ".");
+    end function
+
+    # 🔴 Every way a player can kill a creature ends here — a swing, and a spell. Two copies would be
+    # two experience curves, and the second one rots.
+    public function Slain(Player who, Npc target, integer map, integer x, integer y)
+        # ⚠ The stain goes down BEFORE the body leaves. Once it is dead there is nothing to ask where
+        # it was standing.
+        World.Stain(map, x, y, 2, 90);
+
+        string name = target.Name;
+
+        # ⚠ Read BEFORE the body goes, because a handle whose body has left answers zero — and a quest
+        # counting kills would then count them all as the same creature, which is no creature.
+        integer kind = target.Kind;
+
+        boolean died = target.Kill("slain");
+
+        if not died
+            # Nothing was there to kill, so nothing was earned. Paying out anyway is how a verb
+            # spammed at an empty square becomes a way to farm experience.
+            yield;
+        end if
+
+        World.TellNear(map, x, y, name + " falls.");
+
+        # A creature's worth is what it was made of. The original computed this from the length of the
+        # fight it would have been; this is the same shape with the stats it had.
+        integer worth = Combat.Swing(target.Number(Stats.Def)) + Combat.Swing(target.Number(Stats.Str));
+
+        Levels.Earn(who, worth);
+
+        # ⚠ A guild earns ONE point for a kill, whatever the kill was worth to the player. The two
+        # curves have nothing to do with each other: a guild's runs to hundreds of millions and is
+        # climbed by questing, and the kill trickle is a rounding error against it on purpose.
+        Guilds.Earn(who, Guilds.ExpPerKill);
+        Perks.Trickle(who);
+
+        # 🔴 THE ONE PLACE A PLAYER KILLS A CREATURE, so a kill counts toward a quest whether it was a
+        # swing or a spell. A second call site would be a second rule, and the one that got forgotten
+        # would be the one nobody notices until a quest will not finish.
+        Quests.Killed(who, kind);
+        Bounty.Killed(who, kind);
+    end function
+
+end model

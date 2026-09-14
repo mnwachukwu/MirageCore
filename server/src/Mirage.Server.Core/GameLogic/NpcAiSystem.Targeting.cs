@@ -1,6 +1,7 @@
 using Mirage.Server.Core.Net;
 using Mirage.Server.Core.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
 
@@ -116,6 +117,89 @@ public sealed partial class NpcAiSystem : GameSystem
         return best;
     }
 
+    /// <summary>
+    /// Point a creature at a body, whatever its record would have noticed on its own.
+    ///
+    /// <para>🔴 <b>The lock and the rousing are set together, and neither works alone.</b> The legs pass
+    /// steps toward any body holding a target, so a bare lock moves it — for one tick, until the brain
+    /// reads a record with no noticing rule, finds nothing to mind, and takes a wander stride over the
+    /// top of it. <see cref="MapNpcRecord.Roused"/> is what tells the brain the target is somebody
+    /// else's decision.</para>
+    ///
+    /// <para>Takes the RUSH rather than the cautious walk-in: a body that was sent after somebody is not
+    /// deciding whether to be interested.</para>
+    ///
+    /// <para>False when either side is not in the world, and for a creature pointed at itself.</para>
+    /// </summary>
+    public bool Rouse(EntityHandle npc, EntityHandle quarry)
+    {
+        if (_queries.ResolveNpc(npc) is not { } found || found.Record.Num <= 0) return false;
+
+        var mn = found.Record;
+        // The same clock the chase clocks are stamped against — the give-up gate compares the two, and a
+        // wall-clock stamp there would read as a lock held since the epoch.
+        long now = Environment.TickCount64;
+
+        if (quarry.IsPlayer)
+        {
+            if (quarry.PlayerIndex < 1 || quarry.PlayerIndex > _pm.Slots || !_pm[quarry.PlayerIndex].IsPlaying)
+                return false;
+
+            mn.Target = quarry.PlayerIndex;
+            mn.NpcTargetSpawnMap = 0;
+            mn.NpcTargetSpawnSlot = 0;
+        }
+        else if (quarry.IsNpc)
+        {
+            // Pointed at itself it would chase its own tile forever, holding a lock nothing can end.
+            if (quarry.SpawnMap == npc.SpawnMap && quarry.SpawnSlot == npc.SpawnSlot) return false;
+            if (_queries.ResolveNpc(quarry) is not { } victim || victim.Record.Num <= 0) return false;
+
+            mn.Target = 0;
+            mn.NpcTargetSpawnMap = quarry.SpawnMap;
+            mn.NpcTargetSpawnSlot = quarry.SpawnSlot;
+        }
+        else
+        {
+            return false;
+        }
+
+        mn.Roused = true;
+        mn.MarkReachedTarget(now);
+        mn.BeginRushEngagement();
+        AnnounceTarget(found, hasTarget: true);
+        return true;
+    }
+
+    /// <summary>Let go of whatever a creature was chasing, leaving it to its record's own behavior again.
+    /// False for a handle naming nobody; harmless on a body that was chasing nothing.</summary>
+    public bool Calm(EntityHandle npc)
+    {
+        if (_queries.ResolveNpc(npc) is not { } found || found.Record.Num <= 0) return false;
+
+        var mn = found.Record;
+        mn.Target = 0;
+        mn.NpcTargetSpawnMap = 0;
+        mn.NpcTargetSpawnSlot = 0;
+        mn.Roused = false;
+        AnnounceTarget(found, hasTarget: false);
+        return true;
+    }
+
+    /// <summary>Tell the map a body's target changed. A visitor has no slot on the map it stands on, so it
+    /// is announced through its own record rather than by slot.</summary>
+    private void AnnounceTarget(WorldQueries.NpcLocation found, bool hasTarget)
+    {
+        if (found.Record is TraversalNpcRecord guest)
+        {
+            BroadcastTraversalState(guest);
+            return;
+        }
+
+        SendToMap(_world, found.CurrentMap,
+            new NpcTargetPacket { MapNum = found.CurrentMap, NpcSlot = found.CurrentSlot, HasTarget = hasTarget });
+    }
+
     /// <summary>Notice a non-kin NPC via <see cref="FindNoticeableNpc"/> and lock onto it.</summary>
     private void TryNoticeNpc(int mapNum, int slot, MapNpcRecord mn, long now)
     {
@@ -168,8 +252,9 @@ public sealed partial class NpcAiSystem : GameSystem
         SendToMap(_world, mapNum, new NpcTargetPacket { MapNum = mapNum, NpcSlot = slot, HasTarget = mn.Target != 0 });
     }
 
-    /// <summary>Give-up gate for a <see cref="NpcBehavior.Pursue"/> NPC: true once it has held its
-    /// lock for longer than <see cref="NpcUnreachedGiveUpMs"/> without once reaching what it is after.
+    /// <summary>Give-up gate for a chasing NPC — one authored to <see cref="NpcBehavior.Pursue"/>, or any
+    /// body a game roused: true once it has held its lock for longer than
+    /// <see cref="NpcUnreachedGiveUpMs"/> without once reaching what it is after.
     /// <see cref="MapNpcRecord.LastReachedTargetMs"/> is stamped on acquisition and on every chase step
     /// that closed world-distance, so an NPC that is genuinely closing keeps resetting this clock and
     /// only one that cannot act on its quarry at all times out.
@@ -179,7 +264,7 @@ public sealed partial class NpcAiSystem : GameSystem
     /// a warp, because seamless pursuit is the point. What stops a mob being parked somewhere it does
     /// not belong is this clock: it either reaches its quarry or it goes home.</para></summary>
     private bool ShouldGiveUpUnreachedTarget(MapNpcRecord mn, long now)
-        => _world.Npcs[mn.Num].Behavior == NpcBehavior.Pursue
+        => (mn.Roused || _world.Npcs[mn.Num].Behavior == NpcBehavior.Pursue)
            && mn.LastReachedTargetMs > 0
            && now - mn.LastReachedTargetMs > NpcUnreachedGiveUpMs;
 

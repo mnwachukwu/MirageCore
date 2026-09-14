@@ -1,0 +1,109 @@
+# Enlisting: how somebody becomes one of the classes an author wrote.
+#
+# What a class IS lives in declarations/character.cm. This is what happens when somebody takes one.
+#
+# A class counts TWICE, which reads as a mistake until you see both halves:
+#
+#   1. Its spread becomes the character's four stats, once, at enlistment.
+#   2. Its spread is ALSO added to every pool ceiling, forever - see Vitals.Refresh.
+#
+# So two characters at the same level with the same stats still have different pools if they enlisted
+# differently. That is what keeps a class meaningful after the opening twenty points stop mattering.
+
+shared model Classes
+
+    # What a character carries. Both reach a save file, so they are written once here.
+    public string Key = "class";
+    public string Name = "classname";
+
+    # ── What the engine is told ───────────────────────────────────────────────
+
+    public function Declare(Builder game)
+        # 🔴 ASKED BEFORE THE CHARACTER EXISTS, as the original asked it. A class decides what somebody
+        # IS, so being asked after they are made is being asked too late — the four stats would already
+        # be written and the spread would be a correction rather than a beginning.
+        #
+        # The player picks from whatever classes a world author wrote, listed by their own names, and
+        # the number is on the body before OnPlayerJoined runs.
+        game.AskAtCreation(Classes.Key, "Class", Classes.Of);
+
+        # The NAME is on the sheet where a player reads it; the number is the game's own business.
+        game.Attribute(Classes.Name, "owner");
+    end function
+
+    # ── Becoming one ──────────────────────────────────────────────────────────
+
+    public function Take(Player who, integer number)
+        string name = World.Record(Classes.Of, number, "name");
+
+        who.SetNumber(Classes.Key, number);
+        who.SetText(Classes.Name, name);
+
+        # The spread REPLACES what enrollment laid down. Enrolling gives an even five across four
+        # stats so a character is playable before meeting anybody; a class is the real answer.
+        who.SetNumber(Stats.Str, Classes.Stat(number, Stats.Str));
+        who.SetNumber(Stats.Def, Classes.Stat(number, Stats.Def));
+        who.SetNumber(Stats.Spd, Classes.Stat(number, Stats.Spd));
+        who.SetNumber(Stats.Int, Classes.Stat(number, Stats.Int));
+
+        # ⚠ Fill rather than Refresh. The pools just grew by the class's own contribution, and a
+        # character who enlisted and then had to go and rest is a worse opening than it is worth.
+        Vitals.Fill(who);
+
+        Classes.Outfit(who, number);
+        Book.Grant(who, number);
+
+        who.Message("You are " + name + ". " + World.Record(Classes.Of, number, "description"));
+    end function
+
+    # Everything the authored kit says this class opens with.
+    #
+    # 🔴 A PIECE MARKED WORN ARRIVES ON, as the original handed it over. Asking somebody who has never
+    # played before to open a bag and work out what goes where is a worse opening than any gear is
+    # worth, and a piece mis-authored into a bag they cannot wear is a worse story still.
+    function Outfit(Player who, integer number)
+        integer lines = World.Records("ClassKit");
+
+        loop for line = 1 to lines
+            if World.RecordNumber("ClassKit", line, "forClass") == number
+                integer item = World.RecordNumber("ClassKit", line, "item");
+                integer many = World.RecordNumber("ClassKit", line, "many");
+
+                if item > 0 and many > 0
+                    who.Give(item, many);
+
+                    # ⚠ Only if it will go on, and only if this class was meant to hold it. A line
+                    # marked worn naming something that is not gear, gear this world has no slot for,
+                    # or gear the gate turns down is carried rather than refused — a kit with one bad
+                    # row still opens the game.
+                    if World.RecordTruth("ClassKit", line, "worn") and Gear.MayWield(who, item)
+                        who.Wear(item);
+                    end if
+                end if
+            end if
+        end loop
+    end function
+
+    # ── What a class is worth afterwards ──────────────────────────────────────
+    #
+    # 🔴 Read on every pool recompute, so this is the half that outlives enlistment. A character with
+    # no class reads zero from all three and gets the plain curve, which is what somebody who has not
+    # met a trainer yet should have.
+
+    public integer function Stat(integer number, string stat)
+        if number < 1
+            yield 0;
+        end if
+
+        yield World.RecordNumber(Classes.Of, number, stat);
+    end function
+
+    public integer function StatOf(Player who, string stat)
+        yield Classes.Stat(who.Number(Classes.Key), stat);
+    end function
+
+    # The name of the family these records live in. Written once, because a typo in it reads as a
+    # world with no classes rather than as a mistake.
+    public string Of = "Class";
+
+end model

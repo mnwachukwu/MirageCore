@@ -1,0 +1,95 @@
+# The character sheet: what the engine is told to carry, and what a new character starts with.
+#
+# Separate from stats.cm on purpose. That file is arithmetic and has no opinion about a world; this
+# one declares the keys to the engine and puts the opening numbers on a body. One is a formula, the
+# other is a decision.
+
+shared model Sheet
+
+    # ── What the engine carries, and who may see it ───────────────────────────
+    #
+    # "owner" is theirs alone; "viewport" is anybody who can see them. A character sheet is private
+    # and the vitals are not, which is why the two lists differ.
+    # ── Where a body wears things ─────────────────────────────────────────────
+    #
+    # ⚠ The four the original had, and nothing may be worn until they are declared — an item names one
+    # of these keys on its own record, and a piece naming a slot this world has not declared cannot go
+    # on anybody.
+    #
+    # Which one a piece occupies decides more than where it draws: a shield is what makes a block
+    # possible, an empty shield hand is what makes a dodge possible, and a weapon is what makes a
+    # critical possible. See combat.cm.
+
+    public string Weapon = "weapon";
+    public string Armor = "armor";
+    public string Helmet = "helmet";
+    public string Shield = "shield";
+
+    public function Declare(Builder game)
+        game.EquipSlot(Sheet.Weapon, "Weapon");
+        game.EquipSlot(Sheet.Armor, "Armor");
+        game.EquipSlot(Sheet.Helmet, "Helmet");
+        game.EquipSlot(Sheet.Shield, "Shield");
+
+        game.Attribute(Stats.Str, "owner");
+        game.Attribute(Stats.Def, "owner");
+        game.Attribute(Stats.Spd, "owner");
+        game.Attribute(Stats.Int, "owner");
+        game.Attribute(Stats.Points, "owner");
+        game.Attribute(Stats.Exp, "owner");
+
+        # Level is public: it is on the name plate of everybody you meet.
+        game.Attribute(Stats.Level, "viewport");
+
+        # The sheet, on the sidebar.
+        game.Heading("Character");
+        game.Field(Classes.Name, "Class", 200, 200, 160);
+        game.Field(Stats.Level, "Level", 200, 200, 160);
+        game.Field(Stats.Exp, "Experience", 200, 200, 160);
+        game.Field(Stats.Str, "Strength", 200, 200, 160);
+        game.Field(Stats.Def, "Defense", 200, 200, 160);
+        game.Field(Stats.Spd, "Speed", 200, 200, 160);
+        game.Field(Stats.Int, "Intelligence", 200, 200, 160);
+        game.Badge(Stats.Points, "Unspent", 240, 200, 80);
+    end function
+
+    # ── A new character ───────────────────────────────────────────────────────
+    #
+    # ⚠ The guard is the whole of it. Somebody who has been here before carries their own numbers,
+    # and writing the opening spread over them would reset every returning character on every join.
+    public function Enroll(Player who)
+        if who.Has(Stats.Level)
+            yield;
+        end if
+
+        who.SetNumber(Stats.Level, 1);
+        who.SetNumber(Stats.Exp, 0);
+
+        # 🔴 THE CLASS IS ALREADY ON THEM. It was picked before this character existed, so enrolling is
+        # applying it rather than asking for it — and Classes.Take writes the spread, fills the pools,
+        # hands over the kit, and opens the book.
+        if who.Number(Classes.Key) > 0
+            Classes.Take(who, who.Number(Classes.Key));
+            yield;
+        end if
+
+        # The opening allotment, spread evenly.
+        #
+        # ⚠ This is what somebody has BEFORE they enlist, not instead of a class. A character has to
+        # be playable between joining and finding a trainer, and a sheet of four zeroes is not — so
+        # the even spread stands until Classes.Take replaces it.
+        integer apiece = Stats.BaseStatTotal / 4;
+
+        who.SetNumber(Stats.Str, apiece);
+        who.SetNumber(Stats.Def, apiece);
+        who.SetNumber(Stats.Spd, apiece);
+        who.SetNumber(Stats.Int, apiece);
+        who.SetNumber(Stats.Points, 0);
+
+        # Their pools, sized to the sheet that was just written and filled.
+        Vitals.Fill(who);
+
+        who.Message("You are level 1, with " + Stats.BaseStatTotal + " points across four stats.");
+    end function
+
+end model

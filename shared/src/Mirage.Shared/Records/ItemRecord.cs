@@ -1,3 +1,4 @@
+using Mirage.Shared.Extensibility;
 using System.Text.Json.Serialization;
 
 namespace Mirage.Shared.Records;
@@ -144,6 +145,18 @@ public sealed class ItemRecord
     /// <summary>What a character wears or consumes carries a tier; currency and keys carry none. Gold is
     /// not something you qualify for, and a key that refuses its own door is a puzzle nobody asked for.</summary>
     public static bool UsesTier(ItemType type) => IsEquipment(type) || IsConsumable(type);
+
+    /// <summary>Everything a game hangs on this item that the engine has no name for — a class gate, a
+    /// spell written on a scroll, an element, a rarity.
+    ///
+    /// <para>🔴 <b>What lets a game extend a record the engine owns.</b> An item's own properties are
+    /// the ones Core acts on and they are a closed set, because Core cannot act on a property it has
+    /// never heard of. A game's are open, and they travel with the item: authored in the editor, saved
+    /// to the world file, and read back by name.</para>
+    ///
+    /// <para>A game declares which keys belong here by writing a model and describing it into this
+    /// family; see <c>Records.Extend</c>.</para></summary>
+    public AttributeBag Attributes { get; set; } = new();
 
     /// <summary>Zero every field that does not apply to the current <see cref="Type"/>, so the record
     /// carries only properties it actually has. Call on any path that writes an item — the editor's save

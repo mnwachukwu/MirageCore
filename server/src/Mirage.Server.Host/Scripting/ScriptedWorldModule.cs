@@ -45,7 +45,7 @@ namespace Mirage.Server.Host.Scripting;
 /// </summary>
 public sealed class ScriptedWorldModule
     : ICoreModule, IWorldObserver, ITickWork, IActionHandler, IPacketRoute,
-      IDeathPolicy, ILingerPolicy, IDisposable
+      IDeathPolicy, ILingerPolicy, IUsePolicy, IDisposable
 {
     /// <summary>The folder inside a world that holds its rules.</summary>
     public const string ScriptsFolder = "scripts";
@@ -93,10 +93,40 @@ public sealed class ScriptedWorldModule
             + "to walk"),
         new("OnMayDie", 2, "string function OnMayDie(Player who, string cause)",
             "somebody is about to die; yield a reason to stop it, or blank to let it happen"),
+        new("OnDied", 3, "function OnDied(Player who, Player killer, string cause)",
+            "somebody died, and the body has not moved yet. What a death COSTS is written here - "
+            + "gear wear, a dropped bag, lost experience - and it runs while they are still lying "
+            + "where they fell, so anything shed lands on the tile they can go back for. 'killer' is "
+            + "nobody when the world itself did it, which Player.IsHere answers. Call "
+            + "Player.RespawnAt from in here to say where they come back"),
         new("OnLinger", 1, "integer function OnLinger(Player who)",
             "their connection dropped; yield how many seconds the body stays in the world"),
         new("OnMessage", 3, "function OnMessage(Player who, string message, Values values)",
             "a client sent one of this game's own messages, carrying the fields its model declared"),
+        new("OnContact", 2, "function OnContact(Npc it, Player who)",
+            "a creature reached the player it was chasing. \u26a0 Only for a PLAYER quarry \u2014 the "
+            + "parameter says Player, and a handler handed the wrong kind of body is worse than one "
+            + "that is not called. A creature that reached another creature raises OnNpcContact"),
+        new("OnNpcContact", 2, "function OnNpcContact(Npc it, Npc other)",
+            "a creature reached the creature it was chasing. Creatures notice each other on their own "
+            + "\u2014 anything not its own kind and not sharing its group, within its range \u2014 so a "
+            + "world with two hostile species needs nothing but this handler to make them fight"),
+        new("OnMayUse", 3, "string function OnMayUse(Player who, integer item, integer slot)",
+            "somebody is about to use something out of their bag; yield a reason to stop it, or blank "
+            + "to let it happen. \U0001F534 Asked BEFORE anything happens, which is the whole difference "
+            + "between this and OnItemUsed: a rule told afterwards can only take the gear off again, "
+            + "and the player sees a flicker. A refusal costs them neither the item nor the beat"),
+        new("OnItemUsed", 3, "function OnItemUsed(Player who, integer item, integer slot)",
+            "they used something out of their bag. \u26a0 Raised for EVERY use, the engine's own two "
+            + "included: wearing a piece of gear and opening a door have already happened by the "
+            + "time this is called. Everything else an item might mean is a game's, and this is "
+            + "where it is written - a scroll that teaches, a potion that heals, a horn that is "
+            + "heard across the map"),
+        new("OnPlayerWarped", 4,
+            "function OnPlayerWarped(Player who, integer fromMap, integer fromX, integer fromY)",
+            "they arrived somewhere they did not walk to. \u26a0 A warp is NOT a step, so it raises "
+            + "nothing at OnPlayerMoved - a rule that watched only steps would miss every door, "
+            + "every teleport, and every respawn"),
     ];
 
     private readonly string _worldDir;
@@ -105,8 +135,9 @@ public sealed class ScriptedWorldModule
     private readonly HashSet<string> _offered = new(StringComparer.Ordinal);
     private IWorld? _world;
     private LoadedScript? _loaded;
-    private bool _onJoined, _onLeft, _onMoved, _onTick, _onPlayerTick, _onMayDie, _onLinger;
-    private bool _onAction, _onMessage;
+    private bool _onJoined, _onLeft, _onMoved, _onTick, _onPlayerTick, _onMayDie, _onDied, _onLinger;
+    private bool _onAction, _onMessage, _onContact, _onNpcContact, _onItemUsed, _onWarped;
+    private bool _onMayUse;
 
     /// <summary>The messages this world's rules declared, which is also what this route owns.</summary>
     private readonly List<string> _messages = [];
@@ -169,10 +200,14 @@ public sealed class ScriptedWorldModule
         var (module, problems) = ScriptCompiler.CompileFolder(_folder, catalog);
         Problems = problems;
 
+        // An opinion is the language remarking on how a CORRECT script is written, so it is logged as
+        // information. Logged as a warning it reads as a list of faults on a load that had none, and an
+        // author learns to skip the whole block — warnings included.
         foreach (ScriptProblem problem in problems)
         {
             if (problem.Severity == ScriptSeverity.Error) Log.Error("Scripts: {Problem}", problem);
-            else Log.Warning("Scripts: {Problem}", problem);
+            else if (problem.Severity == ScriptSeverity.Warning) Log.Warning("Scripts: {Problem}", problem);
+            else Log.Information("Scripts: {Problem}", problem);
         }
 
         if (module is null)
@@ -197,8 +232,9 @@ public sealed class ScriptedWorldModule
 
         // A policy that always allows and never lingers is what the engine already does, so registering
         // one a script did not write would put a call into the death path for no answer.
-        if (_onMayDie) builder.AddDeathPolicy(this);
+        if (_onMayDie || _onDied) builder.AddDeathPolicy(this);
         if (_onLinger) builder.AddLingerPolicy(this);
+        if (_onMayUse) builder.AddUsePolicy(this);
 
         // 🔴 Both halves, or the message goes nowhere. Registering the command is what makes a line
         // deserialize; the route is what delivers what it became. The commands were registered while
@@ -332,8 +368,14 @@ public sealed class ScriptedWorldModule
         _onTick = _offered.Contains("OnTick");
         _onPlayerTick = _offered.Contains("OnPlayerTick");
         _onMayDie = _offered.Contains("OnMayDie");
+        _onDied = _offered.Contains("OnDied");
         _onLinger = _offered.Contains("OnLinger");
         _onMessage = _offered.Contains("OnMessage");
+        _onContact = _offered.Contains("OnContact");
+        _onNpcContact = _offered.Contains("OnNpcContact");
+        _onItemUsed = _offered.Contains("OnItemUsed");
+        _onMayUse = _offered.Contains("OnMayUse");
+        _onWarped = _offered.Contains("OnPlayerWarped");
     }
 
     /// <summary>Hands the module the world. Everything a binding does goes through this.</summary>
@@ -344,6 +386,45 @@ public sealed class ScriptedWorldModule
     }
 
     // ── What the world tells it ───────────────────────────────────────────────
+
+    /// <summary>
+    /// A creature reached what it was chasing, routed by what it caught.
+    ///
+    /// <para>⚠ <b>Two handlers rather than one, because the quarry is two different kinds of body.</b> A
+    /// single handler would have to name one of them in its signature and be handed the other, and a
+    /// rule that runs on the wrong kind of body is worse than one that is not called. A game that
+    /// answers both the same way writes one function and calls it from each.</para>
+    /// </summary>
+    public void OnContact(EntityHandle npc, EntityHandle quarry)
+    {
+        if (quarry.IsPlayer)
+        {
+            if (_onContact) Run("OnContact", npc, quarry);
+            return;
+        }
+
+        if (_onNpcContact && quarry.IsNpc) Run("OnNpcContact", npc, quarry);
+    }
+
+    /// <summary>They used something out of their bag.
+    ///
+    /// <para>Raised for EVERY use, the engine's own two included: wearing a piece of gear and opening a
+    /// door have already happened by the time a game hears about it. Everything else an item might mean
+    /// has nowhere else to be written — a scroll that teaches, a potion that heals, a horn heard across
+    /// the map.</para></summary>
+    public void OnItemUsed(EntityHandle who, int itemNum, int invSlot)
+    {
+        if (_onItemUsed) Run("OnItemUsed", who, (long)itemNum, (long)invSlot);
+    }
+
+    /// <summary>They arrived somewhere they did not walk to.
+    ///
+    /// <para>⚠ A warp is not a step, so nothing reaches <c>OnPlayerMoved</c> for one. A rule watching
+    /// only steps would miss every door, every teleport, and every respawn.</para></summary>
+    public void OnPlayerWarped(EntityHandle who, in WorldPlace from, in WorldPlace to)
+    {
+        if (_onWarped) Run("OnPlayerWarped", who, (long)from.Map, (long)from.X, (long)from.Y);
+    }
 
     public void OnPlayerJoined(EntityHandle who)
     {
@@ -438,6 +519,55 @@ public sealed class ScriptedWorldModule
         if (!_onMayDie) return Refusal.Allow;
 
         object? said = Ask("OnMayDie", death.Who, death.CauseKey);
+        string reason = said as string ?? string.Empty;
+
+        return reason.Length > 0 ? Refusal.Deny(reason) : Refusal.Allow;
+    }
+
+    /// <summary>What a death costs, handed to the rules while the body is still where it fell.
+    ///
+    /// <para>The handler may name where they come back, through <c>Player.RespawnAt</c>. That arrives
+    /// here rather than as a result because a place is three numbers and a handler yields one value;
+    /// <see cref="RespawnFor"/> is called immediately afterwards and reads what was set.</para>
+    ///
+    /// <para>A handler that fails is logged, and the death proceeds. Stopping it at this point is not
+    /// available — the refusal happens at <see cref="MayDie"/>, before anything has been taken.</para></summary>
+    public void OnDied(in Death death)
+    {
+        if (!_onDied) return;
+
+        _risesAt = Respawn.Default;
+        _risen = death.Who;
+        Run("OnDied", death.Who, death.Killer, death.CauseKey);
+    }
+
+    /// <summary>Where the body comes back: whatever the <c>OnDied</c> handler named, or Core's own
+    /// answer when it named nothing. Checked against the body that died, so a place set for one death
+    /// cannot be read by the next.</summary>
+    public Respawn RespawnFor(in Death death) =>
+        _risen == death.Who ? _risesAt : Respawn.Default;
+
+    private Respawn _risesAt;
+    private EntityHandle _risen;
+
+    /// <summary>Records a place for the body currently dying. Anything else is ignored, so the setter
+    /// is safe to offer on every player rather than only on the one a handler was handed.</summary>
+    private void Rises(EntityHandle who, int map, int x, int y)
+    {
+        if (who.IsSet && who == _risen) _risesAt = new Respawn(map, x, y);
+    }
+
+    /// <summary>Whether somebody may use a thing, asked of the rules.
+    ///
+    /// <para>🔴 <b>A handler that fails ALLOWS the use</b>, for the same reason a failed death handler
+    /// allows the death: a world where nothing can be used because a script has a bug in it is worse
+    /// and much harder to notice, since a refusal looks exactly like a rule working. Silence means yes,
+    /// and the failure is in the log.</para></summary>
+    public Refusal MayUse(in Use use)
+    {
+        if (!_onMayUse) return Refusal.Allow;
+
+        object? said = Ask("OnMayUse", use.Who, (long)use.ItemNum, (long)use.InvSlot);
         string reason = said as string ?? string.Empty;
 
         return reason.Length > 0 ? Refusal.Deny(reason) : Refusal.Allow;
@@ -597,6 +727,20 @@ public sealed class ScriptedWorldModule
                 (_, a) => Standing(a, wanted: EntitySort.Npc),
                 "The creature standing on that square, or nothing. A verb declared OnNpc arrives at "
                 + "OnAction with the square it was used on, and this is what turns that into the body.")
+            // 🔴 A game is only ever handed ONE body - the one a verb was used on, the one that reached
+            // somebody. A rule about the bodies AROUND an event has nothing to start from without this.
+            .Function("NpcsNear", ScriptType.SetOf(npc.AsType),
+                [ScriptType.Integer.Named("map"), ScriptType.Integer.Named("x"),
+                 ScriptType.Integer.Named("y"), ScriptType.Integer.Named("tiles")],
+                (_, a) => ScriptValue.Set(
+                    World.NpcsNear(new WorldPlace((int)a.AsInteger(0), (int)a.AsInteger(1), (int)a.AsInteger(2)),
+                                   (int)a.AsInteger(3))
+                         .Select(h => (object?)h)),
+                "Every creature standing within that many tiles of the square, nearest first - which is "
+                + "what a rule about the bodies AROUND something starts from: guards answering a call, a "
+                + "herd that scatters when one of them is startled. ⚠ On that map only, so a body one "
+                + "tile over a border is close and is not in the answer; ask for each map to reach "
+                + "those.")
             .Function("PlayerAt", player.AsType.OrNothing(),
                 [ScriptType.Integer.Named("map"), ScriptType.Integer.Named("x"), ScriptType.Integer.Named("y")],
                 (_, a) => Standing(a, wanted: EntitySort.Player),
@@ -664,6 +808,196 @@ public sealed class ScriptedWorldModule
                 (_, a) => ScriptValue.Set(World.PartyOf(Who(a.As<object>(0)))
                                                .Select(h => (object?)h)),
                 "Everybody in their party, including them. Empty for somebody in no party.")
+            // 🔴 A game is given squares constantly - a verb was used on one, a body is standing on one -
+            // and could learn nothing about what is there. Each of these is the engine answering a
+            // question it already answers for itself a hundred times a tick.
+            .Function("TileAt", ScriptType.Text,
+                [ScriptType.Integer.Named("map"), ScriptType.Integer.Named("x"), ScriptType.Integer.Named("y")],
+                (_, a) => World.TileAt(Where(a)),
+                "What kind of ground is there: 'walkable', 'blocked', 'warp', 'item', 'npcavoid', "
+                + "'door', 'plate', or 'ramp'. Empty for a square that is not on a real map. ⚠ The "
+                + "GROUND layer - a bridge deck is a different answer at the same coordinates.")
+            .Function("CanSee", ScriptType.Truth,
+                [ScriptType.Integer.Named("fromMap"), ScriptType.Integer.Named("fromX"), ScriptType.Integer.Named("fromY"),
+                 ScriptType.Integer.Named("toMap"), ScriptType.Integer.Named("toX"), ScriptType.Integer.Named("toY")],
+                (_, a) => World.CanSee(Where(a), Where(a, 3)),
+                "Whether a straight line between two squares crosses nothing that stops sight. \U0001F534 The "
+                + "ENGINE'S own trace, which is the same one the client colors its target arrow with - so "
+                + "a rule gating on this agrees with what the player was shown rather than nearly "
+                + "agreeing. A wall stops sight only if it was authored to: a railing is blocked to walk "
+                + "through and clear to see through.")
+            .Function("Distance", ScriptType.Integer,
+                [ScriptType.Integer.Named("fromMap"), ScriptType.Integer.Named("fromX"), ScriptType.Integer.Named("fromY"),
+                 ScriptType.Integer.Named("toMap"), ScriptType.Integer.Named("toX"), ScriptType.Integer.Named("toY")],
+                (_, a) => (long)World.Distance(Where(a), Where(a, 3)),
+                "How far apart two squares are, in tiles, COUNTING ACROSS MAP BORDERS. \U0001F534 The world "
+                + "scrolls contiguously, so a body one tile over a border is one tile away - and "
+                + "arithmetic on the coordinates says it is on another map and unreachable. Every range "
+                + "rule wants this rather than subtraction. -1 when the two are too far apart to compare.")
+            .Function("Weather", ScriptType.Text, [ScriptType.Integer.Named("map")],
+                (_, a) => World.WeatherOn((int)a.AsInteger(0)),
+                "What the sky is doing over that map: 'clear', 'rain', 'snow', 'heatwave', or "
+                + "'heavywind'. Empty for a map that is not there.")
+
+            // 🔴 The engine already RUNS a guild - founding, membership, ranks, applications, a vault,
+            // and the ledger of who paid in. What it has no opinion about is what a guild DOES.
+            .Function("GuildOf", ScriptType.Integer, [player.AsType.Named("who")],
+                (_, a) => (long)World.GuildNumber(Who(a.As<object>(0))),
+                "Which guild they belong to, as its number, or zero for none. \U0001F534 The NUMBER, because a "
+                + "guild is a record rather than a body: it has no place, nothing walks it, and it "
+                + "outlives every member. Player.Guild answers with the NAME, which is what a player "
+                + "reads rather than what a rule keys on.")
+            .Function("GuildNamed", ScriptType.Integer, [ScriptType.Text.Named("name")],
+                (_, a) => (long)World.GuildNamed(a.AsText(0)),
+                "The guild with that name, or zero. Case-insensitive, the way the engine's own founding "
+                + "check compares - so a rule acting on a name a player typed asks the same question "
+                + "the engine did when it refused a second guild by that name.")
+            .Function("GuildName", ScriptType.Text, [ScriptType.Integer.Named("guild")],
+                (_, a) => World.GuildName((int)a.AsInteger(0)),
+                "What that guild is called, or empty for a number naming none.")
+            .Function("GuildRank", ScriptType.Text, [player.AsType.Named("who")],
+                (_, a) => World.GuildRankOf(Who(a.As<object>(0))),
+                "What rank they hold: 'leader', 'officer', 'member', or empty for somebody in no "
+                + "guild. The engine keeps the rank and moves it; what a rank may DO is yours.")
+            .Function("GuildNumber", ScriptType.Integer,
+                [ScriptType.Integer.Named("guild"), ScriptType.Text.Named("key")],
+                (_, a) => World.GuildValues((int)a.AsInteger(0)) is { } bag
+                          && bag.TryGet(a.AsText(1), out AttributeValue held) ? held.AsLong() : 0L,
+                "One of the values YOUR GAME hangs on a guild - a war, a level, a season score. Zero "
+                + "for a key it does not carry, and for a number naming no guild.")
+            .Function("GuildText", ScriptType.Text,
+                [ScriptType.Integer.Named("guild"), ScriptType.Text.Named("key")],
+                (_, a) => World.GuildValues((int)a.AsInteger(0)) is { } bag
+                          && bag.TryGet(a.AsText(1), out AttributeValue held) ? held.AsText() : string.Empty,
+                "The same, as text.")
+            .Action("SetGuildNumber",
+                [ScriptType.Integer.Named("guild"), ScriptType.Text.Named("key"), ScriptType.Integer.Named("amount")],
+                (_, a) =>
+                {
+                    World.SetGuildValue((int)a.AsInteger(0), a.AsText(1), AttributeValue.From(a.AsInteger(2)));
+                    return null;
+                },
+                "Writes one of them, and gets the guild onto disk. ⚠ Saved on EVERY write, because a "
+                + "guild is not a body: nothing logs it out, so there is no later moment where its "
+                + "values would be written anyway.")
+            .Action("SetGuildText",
+                [ScriptType.Integer.Named("guild"), ScriptType.Text.Named("key"), ScriptType.Text.Named("value")],
+                (_, a) =>
+                {
+                    World.SetGuildValue((int)a.AsInteger(0), a.AsText(1), AttributeValue.From(a.AsText(2)));
+                    return null;
+                },
+                "The same, with text.")
+            .Function("GuildMembers", ScriptType.SetOf(player.AsType), [ScriptType.Integer.Named("guild")],
+                (_, a) => ScriptValue.Set(World.MembersOf((int)a.AsInteger(0)).Select(h => (object?)h)),
+                "Everybody IN THE WORLD who belongs to that guild. Empty for one with nobody online, "
+                + "which is not the same as a guild that is not there.")
+            .Function("GuildGold", ScriptType.Integer, [ScriptType.Integer.Named("guild")],
+                (_, a) => World.GuildGold((int)a.AsInteger(0)),
+                "What is in that guild's vault.")
+            .Action("GiveGuildGold",
+                [ScriptType.Integer.Named("guild"), ScriptType.Integer.Named("amount")],
+                (_, a) =>
+                {
+                    World.GiveGuildGold((int)a.AsInteger(0), a.AsInteger(1));
+                    return null;
+                },
+                "Puts gold into a vault. The counterpart to SpendGuildGold: a game holding gold aside - "
+                + "an escrow, a stake, a bond - has to be able to give it back.")
+            // Core spends durability on its own - a swing wears a weapon, a shop restores it - and a
+            // game that puts a cost on dying could reach none of it.
+            .Function("WornBy", ScriptType.SetOf(ScriptType.Integer), [player.AsType.Named("who")],
+                (_, a) => ScriptValue.Set(World.WornBy(Who(a.As<object>(0))).Select(n => (object?)(long)n)),
+                "What they are wearing, as item numbers, in slot order. Empty for somebody wearing "
+                + "nothing.")
+            .Function("WornIn", ScriptType.Integer,
+                [player.AsType.Named("who"), ScriptType.Text.Named("slot")],
+                (_, a) => (long)World.WornIn(Who(a.As<object>(0)), a.AsText(1)),
+                "What they are wearing in ONE slot, by item number. Zero for an empty slot, and for a "
+                + "slot this world does not declare. A rule about one place on the body asks this "
+                + "rather than walking the list - whether a shield is up, whether a hand is free.")
+            .Function("DurabilityLeft", ScriptType.Integer,
+                [player.AsType.Named("who"), ScriptType.Integer.Named("item")],
+                (_, a) => (long)World.DurabilityOf(Who(a.As<object>(0)), (int)a.AsInteger(1)).Left,
+                "How much wear is left in the copy they are WEARING. Zero when they are not wearing "
+                + "one - two copies in a bag are two different amounts of wear, and this means the one "
+                + "that was on them.")
+            .Function("DurabilityFull", ScriptType.Integer,
+                [player.AsType.Named("who"), ScriptType.Integer.Named("item")],
+                (_, a) => (long)World.DurabilityOf(Who(a.As<object>(0)), (int)a.AsInteger(1)).Full,
+                "How much that item holds when new. Zero for one with no durability at all, which is "
+                + "an ordinary thing for an item to be.")
+            .Function("WearOut", ScriptType.Integer,
+                [player.AsType.Named("who"), ScriptType.Integer.Named("item"),
+                 ScriptType.Integer.Named("points")],
+                (_, a) => (long)World.Wear(Who(a.As<object>(0)), (int)a.AsInteger(1), (int)a.AsInteger(2)),
+                "Wears out that many points of the copy they are wearing, never past nothing. Yields "
+                + "how many were actually taken, which is fewer than asked for when it was nearly worn "
+                + "out. ⚠ An item worn to nothing is NOT destroyed: it stays in the bag, unusable, "
+                + "until it is repaired.")
+            .Function("RepairCost", ScriptType.Integer,
+                [ScriptType.Integer.Named("item"), ScriptType.Integer.Named("points")],
+                (_, a) => (long)World.RepairCost((int)a.AsInteger(0), (int)a.AsInteger(1)),
+                "What repairing that many points of that item costs, by the engine's own repair rate - "
+                + "the same rate a repair shop charges, so a game pricing wear agrees with the shop.")
+            .Function("RegionOf", ScriptType.Integer, [ScriptType.Integer.Named("map")],
+                (_, a) => (long)World.MapGroupOf((int)a.AsInteger(0)),
+                "Which map group that map belongs to, or zero. A group is the engine's idea of a "
+                + "region: several maps sharing a name and some settings. A game that owns regions "
+                + "asks this to turn where somebody is standing into which region it is. Read what "
+                + "your game hangs on one with World.Record(\"MapGroups\", ...).")
+            .Function("MapNumber", ScriptType.Integer,
+                [ScriptType.Integer.Named("map"), ScriptType.Text.Named("field")],
+                (_, a) => World.MapValue((int)a.AsInteger(0), a.AsText(1)) is { } held ? held.AsLong() : 0L,
+                "One of YOUR OWN fields on a map, as a whole number - a field you added with "
+                + "Records.Extend(\"Maps\"). The map's own value, and its region's where the map "
+                + "leaves it unset, which is how every property a map inherits already works. Zero "
+                + "where neither carries it.")
+            .Function("MapText", ScriptType.Text,
+                [ScriptType.Integer.Named("map"), ScriptType.Text.Named("field")],
+                (_, a) => World.MapValue((int)a.AsInteger(0), a.AsText(1)) is { } held ? held.AsText() : string.Empty,
+                "The same, as text.")
+            .Function("MapTruth", ScriptType.Truth,
+                [ScriptType.Integer.Named("map"), ScriptType.Text.Named("field")],
+                (_, a) => World.MapValue((int)a.AsInteger(0), a.AsText(1)) is { } held && held.AsBool(),
+                "The same, as a yes or no. An unticked box and an absent one are the same answer.")
+            .Action("SetRecordNumber",
+                [ScriptType.Text.Named("records"), ScriptType.Integer.Named("number"),
+                 ScriptType.Text.Named("field"), ScriptType.Integer.Named("amount")],
+                (_, a) =>
+                {
+                    World.SetRecordValue(a.AsText(0), (int)a.AsInteger(1), a.AsText(2),
+                                         AttributeValue.From(a.AsInteger(3)));
+                    return null;
+                },
+                "Writes one of YOUR OWN fields on a record, and saves it. Where a game keeps what "
+                + "belongs to no body and no guild: the last day it settled accounts, a season number, "
+                + "who holds a territory. ⚠ Your own fields only - the engine's properties are written "
+                + "through their own paths, which normalize what they are given.")
+            .Action("SetRecordText",
+                [ScriptType.Text.Named("records"), ScriptType.Integer.Named("number"),
+                 ScriptType.Text.Named("field"), ScriptType.Text.Named("value")],
+                (_, a) =>
+                {
+                    World.SetRecordValue(a.AsText(0), (int)a.AsInteger(1), a.AsText(2),
+                                         AttributeValue.From(a.AsText(3)));
+                    return null;
+                },
+                "The same, with text.")
+            .Function("Now", ScriptType.Integer, [],
+                (_, _) => World.Now(),
+                "The time now, in seconds since 1970, UTC. What anything dated needs: a cooldown that "
+                + "has to survive a restart, a window that stays open for an hour, a daily reset. "
+                + "Counting ticks answers a different question, since ticks stop when the server does.")
+            .Function("SpendGuildGold", ScriptType.Truth,
+                [ScriptType.Integer.Named("guild"), ScriptType.Integer.Named("amount"),
+                 player.AsType.Named("by")],
+                (_, a) => World.SpendGuildGold((int)a.AsInteger(0), a.AsInteger(1), Who(a.As<object>(2))),
+                "Takes gold out of a vault, recording who spent it. \U0001F534 Through the engine's own LEDGER "
+                + "rather than by writing the number: a vault that went down with nothing in the "
+                + "spending log is money a guild cannot account for, and accounting for it is most of "
+                + "what a vault is for. False when the vault does not hold that much, which makes this "
+                + "the check as well as the payment.")
             .Function("Records", ScriptType.Integer, [ScriptType.Text.Named("records")],
                 (_, a) => (long)World.RecordsOf(a.AsText(0)).Count,
                 "How many records of that kind this world holds, counting blank slots. Zero for a kind "
@@ -680,7 +1014,22 @@ public sealed class ScriptedWorldModule
                 (_, a) => World.RecordAt(a.AsText(0), (int)a.AsInteger(1)) is { } row
                           && row.TryGet(a.AsText(2), out AttributeValue held)
                           ? held.AsLong() : 0L,
-                "The same, as a whole number. Zero where the slot or the field is not there.");
+                "The same, as a whole number. Zero where the slot or the field is not there.")
+            .Function("RecordName", ScriptType.Text,
+                [ScriptType.Text.Named("records"), ScriptType.Integer.Named("number")],
+                (_, a) => World.RecordName(a.AsText(0), (int)a.AsInteger(1)),
+                "What a record is CALLED - an item's name, a creature's, a map's. The one property "
+                + "of the engine's own a record can be asked for, because a rule that PICKS a record "
+                + "rather than being handed one has to be able to say which. Blank for a slot nobody "
+                + "authored. For your own records it is their name field.")
+            .Function("RecordTruth", ScriptType.Truth,
+                [ScriptType.Text.Named("records"), ScriptType.Integer.Named("number"), ScriptType.Text.Named("field")],
+                (_, a) => World.RecordAt(a.AsText(0), (int)a.AsInteger(1)) is { } row
+                          && row.TryGet(a.AsText(2), out AttributeValue held)
+                          && held.AsBool(),
+                "The same, as a yes or no - which is what a checkbox on the editor's form writes. "
+                + "False where the slot or the field is not there, and an unticked box is the same "
+                + "answer as an absent one.");
 
         npc
             .Value("Name", ScriptType.Text, (it, _) => World.NameOf(Who(it)),
@@ -721,6 +1070,17 @@ public sealed class ScriptedWorldModule
                     return null;
                 },
                 "Floats a line off them, to everybody who can see it happen - a number, a word, a name. The color is red, green and blue, each 0 to 255. \u26a0 The one place a script asks the client to DRAW: everything else it does sets state and lets the client decide what that looks like, and a number that happened once is not state.")
+            .Value("IsEngaged", ScriptType.Truth, (it, _) => World.IsEngaged(Who(it)),
+                "Whether they are in a fight right now. What being in one MEANS is yours - holding regen"
+                + "through it, refusing a warp out of it - and this is the clock you set, read back.")
+            .Value("IsMarked", ScriptType.Truth, (it, _) => World.IsMarked(Who(it)),
+                "Whether they carry a mark right now.")
+            .Value("IsAggressor", ScriptType.Truth, (it, _) => World.IsAggressor(Who(it)),
+                "Whether they are flagged as having started it.")
+            .Value("IsWaiting", ScriptType.Truth, (it, _) => World.IsWaiting(Who(it)),
+                "Whether they are still held off acting. \u26a0 Measured FORWARD from when the cooldown"
+                + "started, which is the direction the bar drawing it measures.")
+
             // ⚠ Four of the five. `Down` is a body lying there waiting to get up, and a creature has
             // no such state: one that runs out of health despawns and its slot counts down to a
             // respawn, which Kill and the spawn clock already own.
@@ -782,7 +1142,54 @@ public sealed class ScriptedWorldModule
             .Function("Kill", ScriptType.Truth, [ScriptType.Text.Named("cause")],
                 (it, a) => World.Kill(Who(it), EntityHandle.None, a.AsText(0)),
                 "Takes it out of the world, with a cause the death policy can read. False for a body "
-                + "that was not there, or that something refused to let die.");
+                + "that was not there, or that something refused to let die.")
+
+            // 🔴 What KIND of creature this is. Name is what a player reads; this is what a rule keys on.
+            .Value("Kind", ScriptType.Integer, (it, _) => (long)World.KindOf(Who(it)),
+                "Which creature it is a copy of - the number of its record in this world's creatures. "
+                + "⚠ What a rule about a species keys on: a bounty per creature, a drop table, which "
+                + "bodies a quest counts. Name answers with what a player READS, and two records may "
+                + "share a name, so a rule written against one silently follows an editor rename. Zero "
+                + "for a body that has left the world.")
+
+            // 🔴 Pointing a body at somebody. What a creature does ON ITS OWN is authored on its record
+            // - hold, amble, close on what it notices, open the gap - and that vocabulary is about
+            // walking, deliberately. WHY is the game's, and these two are how it says so.
+            .Function("Chase", ScriptType.Truth, [player.AsType.Named("who")],
+                (it, a) => World.Provoke(Who(it), Who(a.As<object>(0))),
+                "Sends it after a player, whether or not it would ever have noticed them itself - which "
+                + "is how a creature that only fights back gets written: author it to amble, and chase "
+                + "whoever hits it. It commits to the approach rather than walking in, because a body "
+                + "that was SENT is not deciding whether to be interested. ⚠ It overrides the noticing, "
+                + "not the legs: one authored to hold its tile still holds it, and one authored to open "
+                + "the gap runs from them instead. False where either body has left the world.")
+            .Function("ChaseNpc", ScriptType.Truth, [npc.AsType.Named("other")],
+                (it, a) => World.Provoke(Who(it), Who(a.As<object>(0))),
+                "The same, at another creature - a guard sent at whatever wandered in, a beast set on "
+                + "one it would have ignored. False for a creature sent after itself.")
+            .Function("Forget", ScriptType.Truth, [],
+                (it, _) => World.Forget(Who(it)),
+                "Lets go of whatever it was chasing, leaving it to its record's own behavior again. "
+                + "Harmless on a body that was chasing nothing.")
+
+            // 🔴 What an AUTHOR wrote on the record, as against what this one body is carrying. A rule
+            // that treats a chaser differently from an ambler had no way to tell them apart.
+            .Value("Behavior", ScriptType.Text, (it, _) => World.BehaviorOf(Who(it)),
+                "How it moves on its own: 'stationary', 'wander', 'pursue', 'flee', or 'scavenge'. ⚠ Five "
+                + "ways of WALKING and deliberately nothing about why - a reason is a property of the "
+                + "game, and 'hostile' means nothing in a world with no fighting in it. Empty once the "
+                + "body has left.")
+            .Value("Group", ScriptType.Integer, (it, _) => (long)World.GroupOf(Who(it)),
+                "Which pack it keeps to, or zero for one in none. Two creatures sharing a group never "
+                + "notice each other, on top of never noticing their own kind - which is what keeps a "
+                + "pack from fighting itself.")
+            .Value("Range", ScriptType.Integer, (it, _) => (long)World.RangeOf(Who(it)),
+                "How far it notices anything, in tiles, as its record was authored. Zero for a body "
+                + "that notices nobody.")
+            .Value("IsChasing", ScriptType.Truth, (it, _) => World.IsChasing(Who(it)),
+                "Whether it is after somebody right now - one it noticed, or one you sent it after. The "
+                + "other half of Chase and Forget, which write and never read: without this a rule "
+                + "cannot tell a creature already in a fight from one standing idle.");
 
         verb
             .Action("OnTile", [], (v, _) => Verbal(v).OnTile(),
@@ -800,6 +1207,10 @@ public sealed class ScriptedWorldModule
                 + "acts on the square the player faces.")
             .Action("Icon", [ScriptType.Text.Named("glyph")], (v, a) => Verbal(v).Icon(a.AsText(0)),
                 "The glyph beside it. One of: " + GameIcon.Listed + ". A name that is not one of those is refused, because a glyph nobody drew is a section that looks like every other section.")
+            .Action("Interacts", [], (v, _) => Verbal(v).Interacts(),
+                "Picking it also does what the engine's own reach key would have done - a shop, a "
+                + "conversation, or the body's own line. ⚠ A game that binds E takes that key "
+                + "outright, so this is how it hands interaction back. Only meaningful on a creature.")
             .Action("Opens", [ScriptType.Text.Named("panel")], (v, a) => Verbal(v).Opens(a.AsText(0)),
                 "The panel it opens, by the id given to game.Panel. One that was never declared is "
                 + "refused by name rather than drawing a button that does nothing.")
@@ -854,6 +1265,16 @@ public sealed class ScriptedWorldModule
             .Action("Icon", [ScriptType.Text.Named("glyph")],
                 (r, a) => Shape(r).Icon(a.AsText(0)),
                 "The glyph beside it. One of: " + GameIcon.Listed + ". A name that is not one of those is refused, because a glyph nobody drew is a section that looks like every other section.")
+            .Action("Extend", [ScriptType.Text.Named("records")],
+                (r, a) => Shape(r).Extend(a.AsText(0)),
+                "Adds this model's fields to records that ALREADY EXIST rather than declaring a kind of "
+                + "its own - the engine's 'Items' or 'NPCs', or another module's. \U0001F534 How a game hangs "
+                + "its own facts on a record the ENGINE owns: which classes may wield a sword, which "
+                + "spell is written on a scroll. An item's own properties are a closed set because Core "
+                + "cannot act on one it has never heard of; yours are open, and they belong ON the sword "
+                + "rather than in a table beside it. ⚠ What these records are called, where they live "
+                + "and how many there may be are the other family's answers, so Are and Stored say "
+                + "nothing here.")
             .Action("Stored", [ScriptType.Text.Named("folder"), ScriptType.Text.Named("prefix")],
                 (r, a) => Shape(r).Stored(a.AsText(0), a.AsText(1)),
                 "Where these records live: the folder under the world, and what each file is called "
@@ -868,7 +1289,15 @@ public sealed class ScriptedWorldModule
                 "The bounds of a whole-number field. Equal bounds mean unbounded.")
             .Action("Length", [ScriptType.Text.Named("field"), ScriptType.Integer.Named("characters")],
                 (r, a) => Shape(r).Length(a.AsText(0), a.AsInteger(1)),
-                "How long a text field may be. Zero means no limit.");
+                "How long a text field may be. Zero means no limit.")
+            .Action("Points", [ScriptType.Text.Named("field"), ScriptType.Text.Named("records")],
+                (r, a) => Shape(r).Points(a.AsText(0), a.AsText(1)),
+                "Makes a whole-number field a PICKER over another kind of record, listing them by name. "
+                + "\U0001F534 The way to point at the ENGINE'S own records - 'Items', 'NPCs', 'Maps', "
+                + "'Shops', 'Conversations' - which have no model to type a field as. A field typed as "
+                + "one of your own models already does this and needs nothing here. ⚠ The number is "
+                + "still what is stored: this changes what the form draws and nothing about what a rule "
+                + "reads back.");
 
         player
             .Action("Message", [ScriptType.Text.Named("line")], (who, a) =>
@@ -876,6 +1305,9 @@ public sealed class ScriptedWorldModule
                 World.Tell(Who(who), a.AsText(0));
                 return null;
             }, "Sends a line of text to this player, and to nobody else.")
+            .Value("Name", ScriptType.Text, (who, _) => World.NameOf(Who(who)),
+                "Their character's name, trimmed. Blank once the body has left - the same answer a "
+                + "creature's name gives, because it is the same question.")
             .Value("IsHere", ScriptType.Truth, (who, _) => World.IsInWorld(Who(who)),
                 "Whether they are still in the world. A handle outlives the body it names.")
             .Value("Guild", ScriptType.Text, (who, _) => World.GuildOf(Who(who)),
@@ -923,6 +1355,28 @@ public sealed class ScriptedWorldModule
                 World.Take(Who(who), (int)a.AsInteger(0), (int)a.AsInteger(1));
                 return null;
             }, "Takes that many out of it, worn ones included.")
+            .Function("Carrying", ScriptType.Integer, [ScriptType.Integer.Named("item")],
+                (who, a) => World.Carrying(Who(who), (int)a.AsInteger(0)),
+                "How many of that item they are carrying, worn ones and every stack counted together. "
+                + "The read that goes with Give and Take: a rule charging somebody in a currency of "
+                + "its own asks this first, because taking more than they have and taking what they "
+                + "have look the same afterwards.")
+            .Function("Wear", ScriptType.Truth, [ScriptType.Integer.Named("item")],
+                (who, a) => World.Wear(Who(who), (int)a.AsInteger(0)),
+                "Puts something they are carrying ON, taking off whatever was in its slot. \U0001F534 A game "
+                + "that hands somebody a sword has no other way to put it in their hand - an opening "
+                + "kit, a quest reward, a curse that arms them against their will. ⚠ None of the "
+                + "refusals a player pressing the button meets apply: a RULE arming somebody mid-fight "
+                + "meant to. False for a body not carrying it, and for a piece naming a slot this world "
+                + "does not declare.")
+            .Function("TakeOff", ScriptType.Truth, [ScriptType.Integer.Named("item")],
+                (who, a) => World.Remove(Who(who), (int)a.AsInteger(0)),
+                "Takes something off. It stays in the bag. The other half of Wear, and what a rule "
+                + "about ruined gear needs: a piece worn down to nothing comes off the body it broke "
+                + "on. False for a body not wearing it.")
+            .Value("IsRunning", ScriptType.Truth, (who, _) => World.IsRunning(Who(who)),
+                "Whether they are running rather than walking right now. What running COSTS is yours; "
+                + "the engine moves the body and this is how a rule hears about it.")
 
             // ⚠ The five the engine already keeps, and it keeps them for PLAYERS. An NPC's engaged
             // state has nowhere to live yet, so these are here and not on Npc.
@@ -952,6 +1406,19 @@ public sealed class ScriptedWorldModule
                     return null;
                 },
                 "Floats a line off them, to everybody who can see it happen - a number, a word, a name. The color is red, green and blue, each 0 to 255. \u26a0 The one place a script asks the client to DRAW: everything else it does sets state and lets the client decide what that looks like, and a number that happened once is not state.")
+            .Value("IsEngaged", ScriptType.Truth, (who, _) => World.IsEngaged(Who(who)),
+                "Whether they are in a fight right now. What being in one MEANS is yours - holding regen"
+                + "through it, refusing a warp out of it - and this is the clock you set, read back.")
+            .Value("IsDowned", ScriptType.Truth, (who, _) => World.IsDowned(Who(who)),
+                "Whether they are out of action right now.")
+            .Value("IsMarked", ScriptType.Truth, (who, _) => World.IsMarked(Who(who)),
+                "Whether they carry a mark right now.")
+            .Value("IsAggressor", ScriptType.Truth, (who, _) => World.IsAggressor(Who(who)),
+                "Whether they are flagged as having started it.")
+            .Value("IsWaiting", ScriptType.Truth, (who, _) => World.IsWaiting(Who(who)),
+                "Whether they are still held off acting. \u26a0 Measured FORWARD from when the cooldown"
+                + "started, which is the direction the bar drawing it measures.")
+
             // 🔴 The only draws a game may call. Everything else it does sets state and lets the
             // client decide what that looks like - and a swing is not state, it is a thing that
             // happened once with nothing to derive it from.
@@ -997,6 +1464,16 @@ public sealed class ScriptedWorldModule
                 (who, a) => World.Kill(Who(who), EntityHandle.None, a.AsText(0)),
                 "Takes them out of the world, with a cause OnMayDie can read. False where something "
                 + "refused to let them die, which is what a death policy is for.")
+            .Action("RespawnAt",
+                [ScriptType.Integer.Named("map"), ScriptType.Integer.Named("x"), ScriptType.Integer.Named("y")],
+                (who, a) =>
+                {
+                    Rises(Who(who), (int)a.AsInteger(0), (int)a.AsInteger(1), (int)a.AsInteger(2));
+                    return null;
+                },
+                "Says where this body comes back. ⚠ Only from inside OnDied, and only about the "
+                + "body that died - it is read the moment that handler returns, and anywhere else it "
+                + "does nothing. Say nothing and they come back where the world puts them.")
 
             // 🔴 The other half of a verb used ON somebody. OnAction carries the target as a NAME,
             // because the boundary has no way to say "somebody, or nobody" in an argument — but it can
@@ -1053,6 +1530,18 @@ public sealed class ScriptedWorldModule
                 "A verb this game offers, under a heading of its own. Picking it calls OnAction. Offered "
                 + "in a square's menu until the verb says otherwise, and handed back so where "
                 + "it is offered, what key reaches it, and what it needs are each their own line.")
+            .Action("AskAtCreation",
+                [ScriptType.Text.Named("key"), ScriptType.Text.Named("caption"),
+                 ScriptType.Text.Named("records")],
+                (b, a) => Build(b).AskAtCreation(a.AsText(0), a.AsText(1), a.AsText(2)),
+                "Something to ask BEFORE a character exists - a class, a bloodline, a starting town. "
+                + "\U0001F534 The one question a game cannot ask any other way: everything else it wants to "
+                + "know it asks of a body already in the world, and what a character IS has to be "
+                + "settled before there is one. The player picks from the records you name, listed by "
+                + "their own names, and the number they picked is written onto them under your key "
+                + "before OnPlayerJoined runs - so you read it the ordinary way and need no handler. "
+                + "⚠ A blank record is not offered, because a list of unnamed slots is a screen "
+                + "nobody can use.")
             .Function("Panel", panel.AsType,
                 [ScriptType.Text.Named("id"), ScriptType.Text.Named("title"), ScriptType.Integer.Named("width"), ScriptType.Integer.Named("height")],
                 (b, a) => Build(b).Panel(a.AsText(0), a.AsText(1), a.AsInteger(2), a.AsInteger(3)),
@@ -1098,12 +1587,16 @@ public sealed class ScriptedWorldModule
     /// </summary>
     private object? Standing(IReadOnlyList<object?> arguments, EntitySort wanted)
     {
-        var place = new WorldPlace(
-            (int)arguments.AsInteger(0), (int)arguments.AsInteger(1), (int)arguments.AsInteger(2));
-
-        EntityHandle found = World.At(place);
+        EntityHandle found = World.At(Where(arguments));
         return found.Sort == wanted ? found : null;
     }
+
+    /// <summary>The square three consecutive arguments name, starting at <paramref name="first"/>. Every
+    /// call taking a place spells it as map, x and y, so this is what reads one back.</summary>
+    private static WorldPlace Where(IReadOnlyList<object?> arguments, int first = 0) =>
+        new((int)arguments.AsInteger(first),
+            (int)arguments.AsInteger(first + 1),
+            (int)arguments.AsInteger(first + 2));
 
     /// <summary>
     /// What a thrown thing looks like, named as TEXT because Compass has no type values.
@@ -1184,6 +1677,12 @@ public sealed class ScriptedWorldModule
         public object? Icon(string icon)
         {
             if (declaring.Glyph($"the verb '{verb.Id}'", icon)) verb.Icon = icon;
+            return null;
+        }
+
+        public object? Interacts()
+        {
+            verb.Interacts = true;
             return null;
         }
 
@@ -1339,6 +1838,12 @@ public sealed class ScriptedWorldModule
             return null;
         }
 
+        public object? Extend(string family)
+        {
+            if (declared) declaring.Extend(model, family);
+            return null;
+        }
+
         public object? Caption(string field, string label)
         {
             if (declared) declaring.Caption($"{model}.{field}", label);
@@ -1354,6 +1859,12 @@ public sealed class ScriptedWorldModule
         public object? Length(string field, long maxLength)
         {
             if (declared) declaring.Length($"{model}.{field}", maxLength);
+            return null;
+        }
+
+        public object? Points(string field, string family)
+        {
+            if (declared) declaring.Points($"{model}.{field}", family);
             return null;
         }
     }
@@ -1419,21 +1930,26 @@ public sealed class ScriptedWorldModule
         {
             foreach (Refinement refinement in _refinements) Apply(refinement);
 
-            // 🔴 A field may be typed as a model that was never declared as records, and the picker
-            // would then list nothing at all - which reads as a game with no records in it rather than
-            // as a model somebody forgot to declare. So the field is dropped and named.
+            // 🔴 A field may point at records that do not exist, and the picker would then list nothing
+            // at all - which reads as a game with no records in it rather than as a model somebody
+            // forgot to declare. So the field is dropped and named.
+            //
+            // The ENGINE'S own families count: Items, NPCs, Maps, Shops and Conversations are records a
+            // world holds like any other, and a kit line naming a sword by name rather than by number is
+            // the ordinary thing to want.
             foreach (PendingRecords records in _records)
             {
                 records.Fields.RemoveAll(f =>
                 {
                     if (f.Kind is not FieldKind.RecordRef || f.RecordFamilyId is not { } target
-                        || Described(target) is not null)
+                        || Described(target) is not null || CoreRecordFamilies.Find(target) is not null)
                     {
                         return false;
                     }
 
                     Refuse($"the field '{records.Id}.{f.Key}'",
-                           $"it points at '{f.RecordFamilyId}', which no game.Records call declared");
+                           $"it points at '{f.RecordFamilyId}', which is neither one of this game's "
+                           + "own kinds of record nor one of the engine's");
                     return true;
                 });
             }
@@ -1443,7 +1959,9 @@ public sealed class ScriptedWorldModule
                 Guard($"the choices '{set.Id}'", () => builder.AddChoiceSet(set));
             }
 
-            foreach (PendingRecords records in _records)
+            // ⚠ Extensions AFTER the new families, so a module may extend one another module declared
+            // without the two having to be loaded in a particular order.
+            foreach (PendingRecords records in _records.Where(r => r.Extends.Length == 0))
             {
                 Guard($"the records '{records.Id}'", () => builder.AddFamily(new RecordFamily
                 {
@@ -1458,6 +1976,12 @@ public sealed class ScriptedWorldModule
                         : 1000,
                     Fields = records.Fields,
                 }));
+            }
+
+            foreach (PendingRecords records in _records.Where(r => r.Extends.Length > 0))
+            {
+                Guard($"the fields '{records.Id}' adds to '{records.Extends}'",
+                      () => builder.ExtendFamily(records.Extends, records.Fields));
             }
 
             // The panels before the verbs that open them, so a verb naming one can be checked against
@@ -1525,6 +2049,7 @@ public sealed class ScriptedWorldModule
                 Ordinal = verb.Ordinal,
                 Key = verb.Key,
                 Icon = verb.Icon,
+                Interacts = verb.Interacts,
                 OpensPanel = opens,
                 When = verb.When,
             }));
@@ -1694,6 +2219,30 @@ public sealed class ScriptedWorldModule
             records.Prefix = prefix;
         }
 
+        /// <summary>
+        /// These fields are ADDED to a family that already exists, rather than being a family of their
+        /// own.
+        ///
+        /// <para>🔴 <b>How a game extends a record the ENGINE owns.</b> An item's own properties are the
+        /// ones Core acts on and they are a closed set; a game's are open, and they belong on the same
+        /// record rather than in a table beside it. A class gate is a fact about the sword.</para>
+        ///
+        /// <para>Everything else a model says about itself still applies — a caption, a range, a picker
+        /// — because these are rows on a form either way. What does not apply is where the records live,
+        /// how many there may be, and what they are called: the family being extended already answers
+        /// all three.</para>
+        /// </summary>
+        public void Extend(string model, string family)
+        {
+            if (Described(model) is not { } records)
+            {
+                Refuse($"extending '{family}'", $"no records called '{model}' were declared");
+                return;
+            }
+
+            records.Extends = family;
+        }
+
         /// <summary>What a field is called on the form, when its own name is not the words wanted.</summary>
         public void Caption(string field, string label) =>
             Refine(field, "the caption", d => d with { LabelKey = label });
@@ -1704,6 +2253,26 @@ public sealed class ScriptedWorldModule
             {
                 Min = (int)Math.Clamp(min, int.MinValue, int.MaxValue),
                 Max = (int)Math.Clamp(max, int.MinValue, int.MaxValue),
+            });
+
+        /// <summary>
+        /// Retype a whole-number field as a slot in another kind of record, so the editor draws a picker
+        /// listing them by name.
+        ///
+        /// <para>🔴 <b>The escape hatch for the engine's own records.</b> A field typed as a MODEL
+        /// already points at that model's records — but <c>Items</c>, <c>NPCs</c>, <c>Maps</c>,
+        /// <c>Shops</c> and <c>Conversations</c> have no model a script could name, and authoring a kit
+        /// line by typing 214 when the answer is "Iron Key" is the thing a picker exists to
+        /// stop.</para>
+        ///
+        /// <para>⚠ The number is still what is STORED. This changes what the form draws and nothing
+        /// about what a rule reads back, which is why the field is written as a plain whole number.</para>
+        /// </summary>
+        public void Points(string field, string family) =>
+            Refine(field, $"pointing at '{family}'", d => d with
+            {
+                Kind = FieldKind.RecordRef,
+                RecordFamilyId = family,
             });
 
         /// <summary>How long a text field may be. Zero means no limit.</summary>
@@ -1766,8 +2335,30 @@ public sealed class ScriptedWorldModule
 
             public string Icon { get; set; } = string.Empty;
 
+            /// <summary>The family these fields are ADDED to, rather than a family of their own. Empty
+            /// for the ordinary case, which is a model describing a kind of record nobody had.</summary>
+            public string Extends { get; set; } = string.Empty;
+
             public List<FieldDescriptor> Fields { get; init; } = [];
         }
+
+        /// <summary>Something to ask before a character exists.
+        ///
+        /// <para>⚠ The key is declared as an ATTRIBUTE too, seen by its owner. The answer is written onto
+        /// the character and a game reads it back as an ordinary key, so a key nothing declared would be
+        /// one the engine never syncs — written, saved, and invisible to the body carrying it.</para>
+        /// </summary>
+        public object? AskAtCreation(string key, string caption, string records)
+            => Guard($"the creation choice '{key}'", () =>
+            {
+                builder.Attributes.Declare(key, AttributeVisibility.Owner);
+                builder.AddCreationChoice(new CreationChoice
+                {
+                    Key = key,
+                    LabelKey = caption,
+                    FamilyId = records,
+                });
+            });
 
         public object? Attribute(string key, string visibility) => Guard($"the attribute '{key}'", () =>
             builder.Attributes.Declare(key, Visibility(visibility)));
@@ -2071,6 +2662,7 @@ public sealed class ScriptedWorldModule
             public ActionSurface Surface { get; set; } = ActionSurface.Tile;
             public string Key { get; set; } = string.Empty;
             public string Icon { get; set; } = string.Empty;
+            public bool Interacts { get; set; }
             public string Opens { get; set; } = string.Empty;
             public ActionCondition When { get; set; } = ActionCondition.Always;
         }

@@ -145,6 +145,28 @@ public interface IWorld
     /// client draws the flashing name.</summary>
     void SetAggressor(EntityHandle who, int seconds);
 
+    /// <summary>
+    /// Whether this body is engaged right now.
+    ///
+    /// <para>🔴 <b>The five states above could be entered and not asked about.</b> A game that holds
+    /// its regen through a fight, or refuses a verb to somebody still on cooldown, has to read the
+    /// clock it set — and the alternative is keeping a second copy in an attribute, which is a second
+    /// answer to a question the engine is already answering.</para>
+    /// </summary>
+    bool IsEngaged(EntityHandle who);
+
+    /// <summary>Whether this body is out of action right now.</summary>
+    bool IsDowned(EntityHandle who);
+
+    /// <summary>Whether this body is marked right now.</summary>
+    bool IsMarked(EntityHandle who);
+
+    /// <summary>Whether this body is flagged as having started it.</summary>
+    bool IsAggressor(EntityHandle who);
+
+    /// <summary>Whether this body is still held off acting.</summary>
+    bool IsWaiting(EntityHandle who);
+
     /// <summary>Starts this body's action cooldown, which the overhead bars draw as a depleting row.
     /// <paramref name="seconds"/> is how long the bar takes to empty.</summary>
     void SetActionCooldown(EntityHandle who, int seconds);
@@ -164,6 +186,14 @@ public interface IWorld
 
     /// <summary>Takes items out of this body's bag, worn ones included.</summary>
     void Take(EntityHandle who, int itemNum, int quantity = 1);
+
+    /// <summary>How many of that item this body is carrying, worn ones and every stack counted
+    /// together. 0 for a body carrying none.
+    ///
+    /// <para>The read that pairs with <see cref="Give"/> and <see cref="Take"/>. A rule that charges
+    /// somebody in a currency of its own — a toll, a donation, an offering — asks this first, because
+    /// taking more than they have and taking what they have look identical afterwards.</para></summary>
+    long Carrying(EntityHandle who, int itemNum);
 
     /// <summary>Takes a body a <see cref="ILingerPolicy"/> kept out of the world now, rather than when
     /// its deadline passes.</summary>
@@ -240,12 +270,45 @@ public interface IWorld
     /// </summary>
     EntityHandle At(WorldPlace place);
 
-    /// <summary>Every record of one of this game's own families, 1-based, blanks included. Empty for a
-    /// family this world does not hold.</summary>
+    /// <summary>Every record of one family, 1-based, blanks included. Empty for a family this world does
+    /// not hold. For one of the engine's own families this is the game's fields on each record, never the
+    /// engine's own properties.</summary>
     IReadOnlyList<AttributeBag> RecordsOf(string familyId);
 
-    /// <summary>One record of one of this game's own families, or null for a slot that is not there.</summary>
+    /// <summary>One record of one family, or null for a slot that is not there.</summary>
     AttributeBag? RecordAt(string familyId, int num);
+
+    /// <summary>What a record is CALLED — an item's name, a creature's, a map's. Blank for a slot
+    /// nobody authored and for a family whose records carry no name.
+    ///
+    /// <para>The one property every family has, and the only one of the engine's own that is readable
+    /// this way. A rule that picks a record rather than being handed one — a bounty on a kind of
+    /// creature, a shopping list, a map a season moves to — has to be able to say which.</para>
+    ///
+    /// <para>For a map this is the name a player is shown, resolved through its group the way the
+    /// client resolves it. For a game's own family it is the record's <c>name</c> field.</para></summary>
+    string RecordName(string familyId, int num);
+
+    /// <summary>One of a game's own fields on a map, with the map's <see cref="MapGroupOf">group</see>
+    /// behind it: the map's own value when it carries the key, else the group's, else null.
+    ///
+    /// <para>Every inheritable property the engine keeps on a map resolves this way, and a game's fields
+    /// are no different — a dungeon can say once, on its group, that it is somewhere you can be
+    /// attacked.</para></summary>
+    AttributeValue? MapValue(int mapNum, string key);
+
+    /// <summary>
+    /// Write one field of one record, and get it onto disk.
+    ///
+    /// <para>A game's records are mostly authored and read, but some of what a game keeps belongs to no
+    /// body and no guild: the last day it settled accounts, a season number, who holds a territory. Those
+    /// have nowhere else to live.</para>
+    ///
+    /// <para>⚠ A game's own fields only. The engine's properties are written through their own paths,
+    /// which normalize what they are given; a value written straight into one would skip all of that. A
+    /// key in the extension bag has nothing to normalize, so it is reachable on any family.</para>
+    /// </summary>
+    bool SetRecordValue(string familyId, int num, string key, AttributeValue value);
 
     // ── Who somebody is with ───────────────────────────────────────────
     //
@@ -273,4 +336,262 @@ public interface IWorld
     /// <para>A game is handed handles and has no other way to turn one into something a player can read.
     /// Trimmed, because a record name is stored fixed-width.</para></summary>
     string NameOf(EntityHandle who);
+
+    /// <summary>Which creature record this body is a copy of, or 0 for a player and for a handle naming
+    /// nobody.
+    ///
+    /// <para>🔴 <b>The only way a game can tell one species from another.</b> <see cref="NameOf"/> answers
+    /// with a display string, which is what a player reads rather than what a rule keys on: two records
+    /// may share a name, a name may be translated, and an editor rename would silently rewrite the
+    /// game's arithmetic. A game that pays a different bounty per creature, or drops a different kit,
+    /// asks this.</para></summary>
+    int KindOf(EntityHandle who);
+
+    // ── Pointing a creature at somebody ─────────────────────────────────
+    //
+    // 🔴 What a body does ON ITS OWN is authored on its record — it holds a tile, ambles, closes on what
+    // it notices, or opens the gap. That vocabulary is about LOCOMOTION and says nothing about why, which
+    // is what keeps it genre-agnostic. Why is a game's, and a game needs two verbs to say it: send this
+    // body after that one, and let it go.
+    //
+    // Between them they are how a game writes the reasons the engine deliberately does not hold — a
+    // creature that fights back once hit, a guard that moves on whoever drew a weapon, a herd that
+    // scatters from one that was startled.
+
+    /// <summary>
+    /// Send a creature after a body, whether or not it would ever have noticed that body itself.
+    ///
+    /// <para>⚠ <b>It overrides the record's own noticing, not its legs.</b> A body that holds its tile
+    /// still holds it — being roused does not make a statue walk. Everything that moves closes on what it
+    /// was pointed at, and a body authored to open the gap opens it instead, because retreating is what
+    /// that body does about somebody.</para>
+    ///
+    /// <para>It also commits to the approach rather than walking it in, since a body that was SENT is not
+    /// deciding whether to be interested.</para>
+    ///
+    /// <para>False when either side is not in the world, and for a creature pointed at itself.</para>
+    /// </summary>
+    bool Provoke(EntityHandle npc, EntityHandle quarry);
+
+    /// <summary>Let go of whatever a creature was chasing, leaving it to its record's own behavior again.
+    /// False for a handle naming nobody. Harmless on a body that was chasing nothing.</summary>
+    bool Forget(EntityHandle npc);
+
+    /// <summary>
+    /// Every creature standing within so many tiles of a square, nearest first.
+    ///
+    /// <para>🔴 <b>A game is only ever HANDED one body at a time</b> — the one a verb was used on, the one
+    /// that reached somebody. A rule about the bodies AROUND an event has nothing to start from without
+    /// this: guards answering a call, a herd that scatters when one of them is startled, a spell that
+    /// catches what is standing beside its target.</para>
+    ///
+    /// <para>⚠ On that map only, measured in tiles from the square. The world scrolls contiguously, so a
+    /// body one tile over a border is close and is not in this answer — a game that wants the ones next
+    /// door asks for each map. Visitors standing on the map are included; they are as much there as the
+    /// natives.</para>
+    /// </summary>
+    IReadOnlyList<EntityHandle> NpcsNear(WorldPlace at, int tiles);
+
+    // ── Asking about the ground ─────────────────────────────────────────
+    //
+    // 🔴 A game is given squares constantly — a verb was used on one, a body is standing on one — and
+    // until now could learn nothing at all about what is there. Everything below is the engine
+    // answering a question it already answers for itself a hundred times a tick.
+
+    /// <summary>What kind of tile is at that square — <c>walkable</c>, <c>blocked</c>, <c>warp</c>,
+    /// <c>item</c>, <c>npcavoid</c>, <c>door</c>, <c>plate</c>, or <c>ramp</c>. Blank for a square that
+    /// is not on a real map.
+    ///
+    /// <para>⚠ On the ground layer. A bridge deck is a different answer at the same coordinates, and a
+    /// game that cares about bridges is asking a question this does not answer.</para></summary>
+    string TileAt(WorldPlace place);
+
+    /// <summary>
+    /// Whether a straight line from one square to another crosses nothing that stops sight.
+    ///
+    /// <para>🔴 <b>The engine's own answer, not an approximation of it.</b> This is the identical trace
+    /// the client colors its target arrow with, so a game gating on it agrees with what the player was
+    /// shown rather than nearly agreeing.</para>
+    ///
+    /// <para>A wall stops sight only if it was authored to: a railing or a window is blocked to walk
+    /// through and clear to see through. A closed door always stops it. False when either square is not
+    /// on a real map, or when the two are too far apart to be compared.</para>
+    /// </summary>
+    bool CanSee(WorldPlace from, WorldPlace to);
+
+    /// <summary>
+    /// How far apart two squares are, in tiles, counting across map borders.
+    ///
+    /// <para>🔴 <b>The world scrolls contiguously, so a body one tile over a border is one tile away</b>
+    /// — and arithmetic on the coordinates alone says it is on another map and unreachable. Every range
+    /// rule a game writes wants this rather than subtraction.</para>
+    ///
+    /// <para>-1 when either square is not on a real map, or when they are too far apart for the engine
+    /// to place one relative to the other.</para>
+    /// </summary>
+    int Distance(WorldPlace from, WorldPlace to);
+
+    /// <summary>What the weather is over that map — <c>clear</c>, <c>rain</c>, <c>snow</c>,
+    /// <c>heatwave</c>, or <c>heavywind</c>. Blank for a map that is not there.</summary>
+    string WeatherOn(int mapNum);
+
+    /// <summary>Which map group that map belongs to, or 0 for a map in none.
+    ///
+    /// <para>A group is the engine's idea of a region: several maps sharing a name and some settings. A
+    /// game that owns regions — a territory, a province — asks this to turn where somebody is standing
+    /// into which region it is.</para></summary>
+    int MapGroupOf(int mapNum);
+
+    /// <summary>Put something on, out of the bag, and take off whatever was in its slot.
+    ///
+    /// <para>🔴 <b>A game that hands somebody a sword has no other way to put it in their hand.</b> The
+    /// engine already knows how to wear things and which slot each item names; what it had no way to
+    /// hear was a rule asking for it — a class's opening kit, a quest reward, a curse that arms
+    /// somebody against their will.</para>
+    ///
+    /// <para>False for a body that is not carrying that item, and for a piece naming a slot this world
+    /// does not declare. Wearing something already worn is not an error and changes nothing.</para></summary>
+    bool Wear(EntityHandle who, int itemNum);
+
+    /// <summary>Take something off. It stays in the bag.
+    ///
+    /// <para>The other half of <see cref="Wear(EntityHandle, int)"/>. A death that breaks a piece of
+    /// armor calls this to take it off the body it broke on.</para>
+    ///
+    /// <para>False for a body that is not wearing that item.</para></summary>
+    bool Remove(EntityHandle who, int itemNum);
+
+    /// <summary>Whether they are running rather than walking right now. What running COSTS is a game's;
+    /// the engine moves the body and this is how a rule hears about it.</summary>
+    bool IsRunning(EntityHandle who);
+
+    // ── Asking what a creature was authored as ──────────────────────────
+    //
+    // 🔴 A game reads its OWN attributes off a body freely and could learn nothing about what an author
+    // actually wrote on the record. A rule that treats a chaser differently from an ambler, or that
+    // keeps a pack together, had no way to tell them apart.
+
+    /// <summary>How this body moves on its own — <c>stationary</c>, <c>wander</c>, <c>pursue</c>,
+    /// <c>flee</c>, or <c>scavenge</c>. Blank for anything that is not a creature in the world.</summary>
+    string BehaviorOf(EntityHandle npc);
+
+    /// <summary>Which pack this body keeps to, or 0 for one in none. Two creatures sharing a non-zero
+    /// group never notice each other, on top of never noticing their own kind.</summary>
+    int GroupOf(EntityHandle npc);
+
+    /// <summary>How far it notices anything, in tiles, as its record was authored. 0 for a body that
+    /// notices nobody, and for anything that is not a creature in the world.</summary>
+    int RangeOf(EntityHandle npc);
+
+    /// <summary>Whether it is after somebody right now — one it noticed, or one a game sent it after.
+    ///
+    /// <para>The counterpart to <see cref="Provoke"/> and <see cref="Forget"/>, which write and never
+    /// read: without this a rule cannot tell a creature already in a fight from one standing
+    /// idle.</para></summary>
+    bool IsChasing(EntityHandle npc);
+
+    // ── Guilds, as something a game can act on ──────────────────────────
+    //
+    // 🔴 The engine already runs a guild: founding, membership, ranks, applications, a vault, and the
+    // ledger of who paid into it. What it has no opinion about is what a guild DOES — a war, a rank
+    // that means something, a level, a season. Those are a game's, and a guild carries an attribute
+    // bag for exactly them.
+    //
+    // ⚠ A guild is named by its NUMBER rather than by a handle. It is a record, not a body: it has no
+    // place, nothing walks it, and it outlives every member — so the thing that names one is the same
+    // thing that names an item or a map.
+
+    /// <summary>Which guild this body's account belongs to, or 0 for none.</summary>
+    int GuildNumber(EntityHandle who);
+
+    /// <summary>What that guild is called, or blank for a number naming none.</summary>
+    string GuildName(int guild);
+
+    /// <summary>The guild with that name, or 0. Case-insensitive, the way the engine's own founding
+    /// check compares — a game declaring war on a name a player typed asks the same question.</summary>
+    int GuildNamed(string name);
+
+    /// <summary>What rank this body holds in their guild — <c>leader</c>, <c>officer</c>,
+    /// <c>member</c>, or blank for somebody in no guild.
+    ///
+    /// <para>The engine keeps the rank and moves it; what a rank may DO is a game's, and this is what
+    /// a rule gating on one reads.</para></summary>
+    string GuildRankOf(EntityHandle who);
+
+    /// <summary>
+    /// Everything a game hangs on a guild that the engine has no name for — a war, a level, a season
+    /// score. Null for a number naming none.
+    /// </summary>
+    AttributeBag? GuildValues(int guild);
+
+    /// <summary>Write one of them, and get the guild onto disk. False for a number naming none.
+    ///
+    /// <para>⚠ Saved on every write, because a guild is not a body: nothing logs it out, so there is no
+    /// later moment where its values would be written anyway.</para></summary>
+    bool SetGuildValue(int guild, string key, AttributeValue value);
+
+    /// <summary>Everybody IN THE WORLD who belongs to that guild. Empty for a guild with nobody
+    /// online, which is not the same as a guild that is not there.</summary>
+    IReadOnlyList<EntityHandle> MembersOf(int guild);
+
+    /// <summary>What is in that guild's vault. 0 for a number naming none.</summary>
+    long GuildGold(int guild);
+
+    /// <summary>Put gold into a guild's vault. False for a number naming none, or an amount of nothing.
+    ///
+    /// <para>The counterpart to <see cref="SpendGuildGold"/>. A game that holds gold aside — an escrow, a
+    /// stake, a bond — has to be able to give it back, and a war that ends in a draw returns both sides'
+    /// stakes rather than paying anybody.</para></summary>
+    bool GiveGuildGold(int guild, long amount);
+
+    // ── Worn gear, and what wears it out ────────────────────────────────
+    //
+    // Core spends durability on its own — a swing wears a weapon, a repair shop restores it — and a
+    // game that puts a cost on dying has no way to reach any of that. What follows is the same four
+    // questions the shop asks, answered for a rule instead.
+
+    /// <summary>What this body is wearing, as item numbers, in slot order. Empty for a body wearing
+    /// nothing and for one that is not in the world.</summary>
+    IReadOnlyList<int> WornBy(EntityHandle who);
+
+    /// <summary>What this body is wearing in ONE slot, by item number. 0 for an empty slot, and for a
+    /// slot this world does not declare.
+    ///
+    /// <para>A rule about a particular place on the body asks this rather than walking the list:
+    /// whether somebody is holding a shield, whether their hand is free, what is on their head. Which
+    /// slots exist is the game's own declaration, so the key is one it chose.</para></summary>
+    int WornIn(EntityHandle who, string slotKey);
+
+    /// <summary>How much wear is left in the copy of that item they are wearing, and how much it holds
+    /// when new. Both 0 when they are not wearing one, and when the item has no durability at all —
+    /// which is an ordinary thing for an item to be.</summary>
+    (int Left, int Full) DurabilityOf(EntityHandle who, int itemNum);
+
+    /// <summary>Wear out that many points of the copy they are wearing, never past nothing. Returns how
+    /// many points were actually taken, which is less than asked for when it was nearly worn out.
+    ///
+    /// <para>An item worn to nothing is not destroyed: it stays in the bag, unusable, until it is
+    /// repaired. That is the engine's rule, not a game's.</para></summary>
+    int Wear(EntityHandle who, int itemNum, int points);
+
+    /// <summary>What repairing that many points of that item costs in gold, by the engine's own repair
+    /// rate. 0 for an item that is not there.</summary>
+    int RepairCost(int itemNum, int points);
+
+    /// <summary>The time now, in seconds since 1970, UTC.
+    ///
+    /// <para>A game with anything dated in it needs this: a cooldown that has to survive a restart, a
+    /// window that opens for an hour, a daily reset. Counting ticks answers a different question, since
+    /// ticks stop when the server does.</para></summary>
+    long Now();
+
+    /// <summary>Take gold out of a guild's vault, recording who spent it.
+    ///
+    /// <para>🔴 <b>Through the engine's own ledger, not by writing the number.</b> A vault that went
+    /// down with nothing in the spending log is money a guild cannot account for, and accounting for it
+    /// is most of what a vault is for.</para>
+    ///
+    /// <para>False when the vault does not hold that much, which is what makes this the check as well
+    /// as the payment.</para></summary>
+    bool SpendGuildGold(int guild, long amount, EntityHandle by);
 }

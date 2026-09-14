@@ -1,0 +1,90 @@
+# The calendar, worked out from the clock.
+#
+# World.Now() answers in seconds since the start of 1970, which is all an engine owes a game: a number
+# that only ever goes up and survives a restart. Everything a rule wants to say about a DAY, a week or
+# a month is arithmetic on top of that, and it is here so there is one copy of it.
+#
+# ⚠ This is UTC. The original's boundaries were the server's own local midnight, so a world running
+# somewhere other than UTC rolls over at a different hour of its own day than that one did.
+
+shared model Calendar
+
+    public integer SecondsPerDay = 86400;
+
+    # Day zero was a Thursday, so a Sunday is every third day after it.
+    public integer SundayRemainder = 3;
+
+    public integer function Today()
+        yield World.Now() / Calendar.SecondsPerDay;
+    end function
+
+    public boolean function IsSunday(integer day)
+        yield day % 7 == Calendar.SundayRemainder;
+    end function
+
+    # The day the week holding this one began, which is what buckets a week without a calendar.
+    #
+    # ⚠ The seven is not decoration. A remainder can come out negative for the first days of 1970,
+    # which are before the first Sunday the epoch ever saw, and the week would then be measured
+    # forward instead of back.
+    public integer function WeekOf(integer day)
+        yield day - (day - Calendar.SundayRemainder + 7) % 7;
+    end function
+
+    # ── Months ────────────────────────────────────────────────────────────────
+    #
+    # A month is not a fixed number of days, so bucketing by one would drift. This is the civil date
+    # the day number names, by the usual shift-the-year-to-March arithmetic: with March as month zero
+    # the leap day falls at the END of the year, and the month lengths then repeat on a five-month
+    # pattern that one division reproduces.
+    #
+    # Only days after 1970 are ever asked about here, so the negative-era branches the general form
+    # carries are left out.
+
+    integer EpochShift = 719468;
+    integer DaysPerEra = 146097;
+
+    public integer function YearOf(integer day)
+        integer z = day + Calendar.EpochShift;
+        integer era = z / Calendar.DaysPerEra;
+        integer dayOfEra = z - era * Calendar.DaysPerEra;
+        integer yearOfEra = (dayOfEra - dayOfEra / 1460 + dayOfEra / 36524 - dayOfEra / 146096) / 365;
+        integer year = yearOfEra + era * 400;
+
+        # January and February are the tenth and eleventh months of a year that starts in March, and
+        # they belong to the NEXT calendar year.
+        if Calendar.MarchMonth(dayOfEra, yearOfEra) >= 10
+            yield year + 1;
+        end if
+
+        yield year;
+    end function
+
+    public integer function MonthOf(integer day)
+        integer z = day + Calendar.EpochShift;
+        integer era = z / Calendar.DaysPerEra;
+        integer dayOfEra = z - era * Calendar.DaysPerEra;
+        integer yearOfEra = (dayOfEra - dayOfEra / 1460 + dayOfEra / 36524 - dayOfEra / 146096) / 365;
+        integer marchMonth = Calendar.MarchMonth(dayOfEra, yearOfEra);
+
+        # March is nought, so January and February are the eleventh and twelfth of the year before.
+        if marchMonth >= 10
+            yield marchMonth - 9;
+        end if
+
+        yield marchMonth + 3;
+    end function
+
+    # Which month of the March-first year this day falls in, nought through eleven.
+    integer function MarchMonth(integer dayOfEra, integer yearOfEra)
+        integer dayOfYear = dayOfEra - (365 * yearOfEra + yearOfEra / 4 - yearOfEra / 100);
+
+        yield (5 * dayOfYear + 2) / 153;
+    end function
+
+    # One number naming the month, so two of them can be compared without a date at all.
+    public integer function MonthKey(integer day)
+        yield Calendar.YearOf(day) * 12 + Calendar.MonthOf(day);
+    end function
+
+end model

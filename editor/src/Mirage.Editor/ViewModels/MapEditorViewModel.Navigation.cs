@@ -38,6 +38,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
     partial void OnSelectedMapChanged(MapRowViewModel? oldValue, MapRowViewModel? newValue)
     {
         OnPropertyChanged(nameof(IsSelectedLocked));
+        TrackGameFields(newValue);
         // Undo/Redo are gated on the open map's lock, so switching maps re-decides them.
         UpdateUndoRedo();
         // Arrivals belong to the map being viewed, so they are re-read for the new one.

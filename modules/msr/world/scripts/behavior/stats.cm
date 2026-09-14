@@ -1,0 +1,155 @@
+# What this game counts, and the arithmetic behind it.
+#
+# 🔴 THE FOUNDATION. Everything else in this game reads these keys: vitals refill against the pools
+# here, combat reads the same four stats, and a class is a starting spread of them. Nothing here is
+# about anybody in particular — it is the shape of a character sheet, said once.
+#
+# ⚠ The numbers are NOT invented. They are the formulas the original Mirage Source Remastered ran,
+# carried over unchanged, so a character built here has the pools it would have had there. Where one
+# reads oddly the reason is in the original's own comments, and the important ones are repeated below.
+
+shared model Stats
+
+    # ── What a body carries ───────────────────────────────────────────────────
+    #
+    # These names reach a save file and a socket, so they are written once here and nothing else in
+    # this game spells them out.
+
+    public string Str = "str";
+    public string Def = "def";
+    public string Spd = "spd";
+    public string Int = "int";
+
+    public string Level = "level";
+    public string Exp = "exp";
+    public string Points = "points";
+
+    # ── The dials ─────────────────────────────────────────────────────────────
+
+    # Every class opens with this many points across the four stats, and each level grants three
+    # more. Together they are what says whether a character sheet is one the game could have made.
+    public integer BaseStatTotal = 20;
+    public integer PointsPerLevel = 3;
+    public integer MaxLevel = 255;
+
+    # ⚠ The shift is what keeps the low end sane. A plain x²/K would crater it - a fresh level 1
+    # character would hold about five health - and one shifted quadratic gives a single continuous
+    # curve from the first level to the last with no change of slope partway up.
+    public integer CurveShift = 15;
+    public real PoolDivisor = 15.0;
+
+    # Defense's weight in the health pool, and Int's in the mana pool. Lower than speed's weight in
+    # stamina because defense is double duty - it buys mitigation as well - so a defensive build's
+    # health lead over a fragile one stays bounded.
+    public real DefWeight = 0.22;
+    public real SpdWeight = 0.5;
+
+    # Stamina is LINEAR, and deliberately. Its costs are a percentage of the pool, so growing the
+    # pool would inflate the number without changing how many things a fight affords.
+    public integer StaminaScale = 2;
+
+    # Longer fights at every level, without touching win rates or the growth curve.
+    public real PoolScale = 1.5;
+
+    # ── The pools ─────────────────────────────────────────────────────────────
+    #
+    # A class contributes a flat amount to each, which is what makes two classes at one level feel
+    # different. A game with no classes passes zero and gets the plain curve.
+
+    public integer function MaxHealth(integer level, integer def, integer classDef)
+        yield Stats.Quadratic(level, def, classDef, Stats.DefWeight);
+    end function
+
+    public integer function MaxMana(integer level, integer int, integer classInt)
+        yield Stats.Quadratic(level, int, classInt, Stats.DefWeight);
+    end function
+
+    public integer function MaxStamina(integer level, integer spd, integer classSpd)
+        real total = level + spd * Stats.SpdWeight + classSpd;
+        yield Math.Round(total * Stats.StaminaScale);
+    end function
+
+    # The shape both quadratic pools share.
+    integer function Quadratic(integer level, integer stat, integer classStat, real weight)
+        real shifted = level + stat * weight + classStat + Stats.CurveShift;
+        yield Math.Round(shifted * shifted / Stats.PoolDivisor * Stats.PoolScale);
+    end function
+
+    # ── What comes back per tick ──────────────────────────────────────────────
+    #
+    # ⚠ Each regen has the SHAPE of the pool it fills, which is what keeps the fraction returned per
+    # tick about the same at every level. A flat rate against a quadratic pool gets weaker the whole
+    # way up, and resting starts to feel worse the better you are.
+
+    public real RegenDivisor = 100.0;
+    public real StaminaRegenWeight = 0.25;
+
+    # A body with nothing in the stat still gets a tick worth having.
+    public integer VitalFloor = 2;
+    public integer StaminaFloor = 4;
+
+    public integer function HealthRegen(integer def)
+        yield Stats.Regen(def, Stats.VitalFloor);
+    end function
+
+    public integer function ManaRegen(integer int)
+        yield Stats.Regen(int, Stats.VitalFloor);
+    end function
+
+    public integer function StaminaRegen(integer spd)
+        integer back = Math.Round(spd * Stats.StaminaRegenWeight * Stats.StaminaScale);
+
+        if back < Stats.StaminaFloor
+            yield Stats.StaminaFloor;
+        end if
+
+        yield back;
+    end function
+
+    integer function Regen(integer stat, integer floor)
+        real shifted = stat + Stats.CurveShift;
+        integer back = Math.Round(shifted * shifted / Stats.RegenDivisor * Stats.PoolScale);
+
+        if back < floor
+            yield floor;
+        end if
+
+        yield back;
+    end function
+
+    # ── Levelling ─────────────────────────────────────────────────────────────
+
+    # What the next level costs. It grows as the square of the level, so with stat budgets growing
+    # in a line the kills per level grow in a line too rather than flattening out.
+    public integer function ToNextLevel(integer level)
+        yield level * level * 500;
+    end function
+
+    # The most a character of this level may hold across the four stats and their unspent points.
+    # A death penalty can leave somebody under it; nothing legitimate puts anybody over.
+    public integer function PointBudget(integer level)
+        integer earned = level;
+
+        if earned < 1
+            earned = 1;
+        end if
+
+        yield Stats.BaseStatTotal + Stats.PointsPerLevel * (earned - 1);
+    end function
+
+    # ── Reading a body ────────────────────────────────────────────────────────
+    #
+    # Level reads as one rather than zero for anybody who has never been enrolled, so every formula
+    # above is safe to ask about a body this game has not touched yet.
+
+    public integer function LevelOf(Player who)
+        integer level = who.Number(Stats.Level);
+
+        if level < 1
+            yield 1;
+        end if
+
+        yield level;
+    end function
+
+end model

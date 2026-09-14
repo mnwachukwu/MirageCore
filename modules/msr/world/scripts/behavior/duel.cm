@@ -1,0 +1,240 @@
+# Two players fighting, and who is allowed to.
+#
+# Separate from fight.cm because the gates are the whole of it. A swing at a creature asks whether
+# anything is standing there; a swing at a person asks six questions first, and the order they are
+# asked in is what the player reads back as the reason.
+
+shared model Duel
+
+    # Nobody under this may fight or be fought.
+    public integer MinLevel = 10;
+
+    # A kill by somebody more than this many levels away from you costs you nothing, and earns them
+    # nothing either.
+    public integer LevelGapProtection = 5;
+
+    # Players deal three quarters of their damage to each other.
+    public real DamageShare = 0.75;
+
+    # ── The credit board ──────────────────────────────────────────────────────
+    #
+    # Which guild's war a death belongs to is decided by who dealt the MOST damage, not by who landed
+    # the last blow. So each hit adds to a running total held on the attacker, keyed by the person
+    # they are hitting, and the leader is kept on the victim.
+    #
+    # The bout number is what makes an old total stop counting: the victim bumps it on every death,
+    # and a total stamped with a bout that has passed starts again from nothing. Keys are reused for
+    # the life of the pair rather than accumulating.
+
+    public string Bout = "bout";
+    public string Most = "credmost";
+    public string MostBy = "credby";
+
+    public string DealtTo = "dealt.";
+    public string DealtIn = "dealtin.";
+
+    function Credit(Player who, Player them, integer damage)
+        integer bout = them.Number(Duel.Bout);
+        integer dealt = 0;
+
+        if who.Number(Duel.DealtIn + them.Name) == bout
+            dealt = who.Number(Duel.DealtTo + them.Name);
+        end if
+
+        dealt = dealt + damage;
+
+        who.SetNumber(Duel.DealtIn + them.Name, bout);
+        who.SetNumber(Duel.DealtTo + them.Name, dealt);
+
+        if dealt > them.Number(Duel.Most)
+            them.SetNumber(Duel.Most, dealt);
+            them.SetText(Duel.MostBy, who.Name);
+        end if
+    end function
+
+    # Who this death belongs to. Blank when nobody has hit them this bout.
+    public string function CreditedTo(Player them)
+        yield them.Text(Duel.MostBy);
+    end function
+
+    # A fresh bout, so nothing anybody dealt before now counts toward the next death.
+    public function ClearCredit(Player them)
+        them.SetNumber(Duel.Bout, them.Number(Duel.Bout) + 1);
+        them.SetNumber(Duel.Most, 0);
+        them.SetText(Duel.MostBy, "");
+    end function
+
+    # ── Who may be fought ─────────────────────────────────────────────────────
+    #
+    # The order is the answer the player gets, so it is fixed. Being in the same party or guild is
+    # asked first: a swing at a guildmate on a protected map should say they are a guildmate rather
+    # than that the map is protected.
+
+    public string function Judge(Player who, Player them)
+        # A pair is protected as partymates anywhere, the arena included, so an organized team match
+        # has no friendly fire in it.
+        if Duel.SameParty(who, them)
+            yield "You cannot attack somebody in your own party.";
+        end if
+
+        # Guild protection lifts on an arena, where a kill costs nothing anyway.
+        if World.GuildOf(who) > 0 and World.GuildOf(who) == World.GuildOf(them)
+            if not Places.EitherArena(who, them)
+                yield "You cannot attack somebody in your own guild.";
+            end if
+        end if
+
+        # A protected map on either side stops it, unless the target is already a murderer or has
+        # just started a fight themselves — neither of those is protected anywhere.
+        if Places.EitherProtected(who, them)
+            if not Death.IsMurderer(them) and not them.IsAggressor
+                yield "This is a safe place.";
+            end if
+        end if
+
+        if Stats.LevelOf(who) < Duel.MinLevel
+            yield "You are too low a level to fight anybody.";
+        end if
+
+        if Stats.LevelOf(them) < Duel.MinLevel
+            yield them.Name + " is too low a level to be fought.";
+        end if
+
+        yield "";
+    end function
+
+    boolean function SameParty(Player who, Player them)
+        loop each mate in World.Party(who)
+            if mate.Name == them.Name
+                yield true;
+            end if
+        end loop
+
+        yield false;
+    end function
+
+    # ── A swing ───────────────────────────────────────────────────────────────
+    #
+    # The same four steps a swing at a creature runs, with the other body's own numbers on both sides
+    # and a quarter taken off what lands.
+
+    public function Strike(Player who, Player them)
+        string refused = Duel.Judge(who, them);
+
+        if refused != ""
+            who.Message(refused);
+            yield;
+        end if
+
+        if who.IsWaiting
+            yield;
+        end if
+
+        who.Wait(Fight.SwingSeconds);
+        who.Engage(Fight.EngagedSeconds);
+        them.Engage(Fight.EngagedSeconds);
+
+        # Whoever swings first started it, and wears the flag that says so.
+        Death.StartedIt(who);
+
+        # The wind takes it before either of them reacts.
+        if Combat.WindTakesIt(who.Map)
+            who.Sweep(false);
+            who.Message("The wind takes your swing.");
+            them.Message(who.Name + " swings wide in the wind.");
+            yield;
+        end if
+
+        integer theirLevel = Stats.LevelOf(them);
+        integer theirDef = them.Number(Stats.Def);
+
+        if Combat.CanDodge(them)
+            if Combat.Rolls(Combat.PlayerChance(theirDef, theirLevel, Combat.PlayerDodgeDivisor, Combat.PlayerDodgeCap))
+                Combat.Spend(them, Combat.DodgeCostShare);
+                who.Sweep(false);
+                who.Message(them.Name + " steps aside.");
+                them.Message("You step aside from " + who.Name + ".");
+                yield;
+            end if
+        end if
+
+        if Combat.CanBlock(them)
+            if Combat.Rolls(Combat.PlayerChance(theirDef, theirLevel, Combat.PlayerBlockDivisor, Combat.PlayerBlockCap))
+                Combat.Spend(them, Combat.BlockCostShare);
+                Gear.Chip(them, Sheet.Shield);
+                who.Sweep(false);
+                who.Message(them.Name + " turns it aside.");
+                them.Message("You turn aside " + who.Name + "'s blow.");
+                yield;
+            end if
+        end if
+
+        integer level = Stats.LevelOf(who);
+        integer raw = Combat.Vary(Combat.Swing(who.Number(Stats.Str)));
+        boolean crit = false;
+
+        if Combat.CanCrit(who)
+            crit = Combat.Rolls(Combat.PlayerChance(who.Number(Stats.Str), level,
+                                                    Combat.PlayerCritDivisor, Combat.PlayerCritCap));
+
+            if crit
+                Combat.Spend(who, Combat.CritCostShare);
+                raw = Combat.Crit(raw);
+            end if
+        end if
+
+        integer full = Combat.Resolve(raw, Combat.Protection(theirLevel, theirDef), Combat.MinDamageFloor);
+        integer damage = Math.Round(full * Duel.DamageShare);
+
+        who.Sweep(true);
+        Gear.Chip(who, Sheet.Weapon);
+
+        if damage < 1
+            who.Message("Your blow does nothing to " + them.Name + ".");
+            them.Message(who.Name + " cannot get through your guard.");
+            yield;
+        end if
+
+        Duel.Land(who, them, damage, crit);
+    end function
+
+    # What a landed blow does, and what is left of them.
+    public function Land(Player who, Player them, integer damage, boolean crit)
+        Duel.Credit(who, them, damage);
+
+        if crit
+            them.Float("" + damage + "!!", 255, 210, 80);
+            them.Burst(190, 20, 20, 80);
+        end if
+
+        if not crit
+            them.Float("" + damage, 220, 60, 60);
+            them.Burst(190, 20, 20, 40);
+        end if
+
+        who.Message("You hit " + them.Name + " for " + damage + ".");
+        them.Message(who.Name + " hits you for " + damage + ".");
+
+        integer left = them.Number(Vitals.Health) - damage;
+
+        if left > 0
+            them.SetNumber(Vitals.Health, left);
+            yield;
+        end if
+
+        them.SetNumber(Vitals.Health, 0);
+
+        # The stain goes down before the body moves, on the tile they fell on.
+        World.Stain(them.Map, them.X, them.Y, 2, 90);
+
+        boolean died = them.Kill("slain by " + who.Name);
+
+        if not died
+            # Something refused the death. A body left at nothing would stand there with regen quietly
+            # ticking it back up, because nothing anywhere sweeps for one.
+            them.SetNumber(Vitals.Health, 1);
+            yield;
+        end if
+    end function
+
+end model

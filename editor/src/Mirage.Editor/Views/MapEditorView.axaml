@@ -4,6 +4,7 @@
              xmlns:models="using:Mirage.Editor.Models"
              xmlns:mui="using:Mirage.Ui.Controls"
              xmlns:vm="using:Mirage.Editor.ViewModels"
+             xmlns:views="using:Mirage.Editor.Views"
              Grid.IsSharedSizeScope="True"
              x:DataType="vm:MapEditorViewModel"
              x:Class="Mirage.Editor.Views.MapEditorView">
@@ -638,6 +639,9 @@
                          IsTabStop="False" MinHeight="60" MaxHeight="140" Margin="0,0,0,4"
                          ScrollViewer.VerticalScrollBarVisibility="Auto"
                          ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+
+                <!-- The game's own fields on this map, when the loaded game added any. -->
+                <views:GameFieldsView DataContext="{Binding GameFields}"/>
 
               </StackPanel>
             </ScrollViewer>

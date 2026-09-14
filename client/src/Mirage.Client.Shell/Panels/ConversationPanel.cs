@@ -63,6 +63,22 @@ public sealed class ConversationPanel : IGamePanel
         return _nodeId > 0 ? def.NodeById(_nodeId) ?? def.RootNode : def.RootNode;
     }
 
+    /// <summary>The game's own verb a choice picked, and the panel that verb opens, held until whoever
+    /// drives this panel takes it.
+    ///
+    /// <para>🔴 <b>Reported rather than acted on.</b> Opening a panel means bringing a window to the
+    /// front of a stack this panel is one member of, which is the screen's job — a panel that reached
+    /// into that stack would be a panel that can put itself anywhere in it.</para></summary>
+    private (string ActionId, string OpensPanel)? _picked;
+
+    /// <summary>Take what a choice picked, leaving nothing behind. Asked once per tick.</summary>
+    public (string ActionId, string OpensPanel)? TakePicked()
+    {
+        var picked = _picked;
+        _picked = null;
+        return picked;
+    }
+
     public void Update(InputState input, ClientState state, ClientPacketSender sender)
     {
         if (!IsOpen) return;
@@ -98,8 +114,22 @@ public sealed class ConversationPanel : IGamePanel
             {
                 // The game's own verb, at the speaker's square. This client does not know what it does —
                 // it carries the id it was given and the place the conversation is happening.
+                //
+                // ⚠ And the panel that verb OPENS, if it names one. A choice that invoked the verb and
+                // left the window shut is a conversation offering to show you something and then not
+                // showing it, which is most of what a quest board is.
                 var (x, y) = SpeakerTile(state);
                 sender.SendInvokeAction(ch.ActionId, _map, x, y);
+
+                string opens = string.Empty;
+                foreach (var declared in state.Actions.All)
+                {
+                    if (!string.Equals(declared.Id, ch.ActionId, StringComparison.Ordinal)) continue;
+                    opens = declared.OpensPanel;
+                    break;
+                }
+
+                _picked = (ch.ActionId, opens);
                 IsOpen = false;
             }
             else if (ch.Action == ConversationAction.OpenShop)

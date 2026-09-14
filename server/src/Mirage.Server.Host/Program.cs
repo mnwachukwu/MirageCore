@@ -170,6 +170,10 @@ var host = Host.CreateDefaultBuilder(args)
         foreach (var policy in registry.DeathPolicies) services.AddSingleton(policy);
         foreach (var policy in registry.LingerPolicies) services.AddSingleton(policy);
 
+        // ⚠ Handed as a LIST rather than resolved one at a time, because ItemSystem asks every policy in
+        // order and the empty case has to be an empty list rather than a missing service.
+        services.AddSingleton<IReadOnlyList<IUsePolicy>>(registry.UsePolicies);
+
         // The line decoder is a static, so the table has to be installed rather than injected. Doing it
         // at composition time means a module's packets are readable before the first connection.
         PacketSerializer.Registry = registry.Packets;

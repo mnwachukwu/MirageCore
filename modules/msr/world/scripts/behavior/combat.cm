@@ -1,0 +1,247 @@
+# A fight: what a swing is worth, what a body turns aside, and what is left.
+#
+# 🔴 ONE ARITHMETIC, BOTH DIRECTIONS. A player hitting a creature and a creature hitting a player run
+# the same four steps — raw, varied, resolved against protection, applied — and the only things that
+# differ are the numbers each side brings and the floor under a hit that lands. Two paths would be two
+# balance passes, and the second one always rots.
+#
+# ⚠ The numbers are the original's, not a design. Damage and mitigation share an exponent of 1.5 on
+# purpose: they grow in step, so a fight at level 200 takes about as many swings as one at level 20.
+# Change one and combat plateaus or collapses.
+
+shared model Combat
+
+    # ── The shape of a swing ──────────────────────────────────────────────────
+
+    # The shift is a low-end floor: a body with no strength still swings for about nine.
+    public integer OffenseShift = 20;
+    public real CurveExponent = 1.5;
+    public real DamageDivisor = 10.0;
+
+    # Mitigation is LEVEL-primary. Everybody gets the baseline their level earns, and defense is the
+    # payoff on top of it - which is what makes defense a sidegrade rather than an outright win.
+    public real LevelMitigationDivisor = 11.0;
+    public real DefMitigationDivisor = 14.0;
+
+    # ⚠ A hit that lands always does something. Without the floor a defensive build becomes immune
+    # rather than durable, and the fight stops being a fight.
+    public real MinDamageFloor = 0.12;
+
+    # A player hitting a creature floors HIGHER, so a low-offense build making real progress is slow
+    # rather than a wall it cannot get through.
+    public real PveDamageFloor = 0.35;
+
+    # ── What a swing is worth ─────────────────────────────────────────────────
+    #
+    # Strength and mind are the SAME offense stat. A spell is a swing delivered at range, and range is
+    # paid for by its cost rather than by dealing more.
+
+    public integer function Swing(integer stat)
+        integer raw = Math.Round(Math.Pow(stat + Combat.OffenseShift, Combat.CurveExponent) / Combat.DamageDivisor);
+
+        if raw < 1
+            yield 1;
+        end if
+
+        yield raw;
+    end function
+
+    # What a body turns aside.
+    public integer function Protection(integer level, integer def)
+        real fromLevel = Math.Pow(level + Combat.OffenseShift, Combat.CurveExponent) / Combat.LevelMitigationDivisor;
+        real fromDef = Math.Pow(def, Combat.CurveExponent) / Combat.DefMitigationDivisor;
+
+        yield Math.Round(fromLevel + fromDef);
+    end function
+
+    # What is left of a swing after a body turns what it can aside.
+    public integer function Resolve(integer swing, integer protection, real floorShare)
+        integer floor = Math.Round(swing * floorShare);
+        integer left = swing - protection;
+
+        if left < floor
+            yield floor;
+        end if
+
+        yield left;
+    end function
+
+    # ── Chance ────────────────────────────────────────────────────────────────
+    #
+    # No hidden gate: the number returned IS the percentage rolled against. A player's chance counts
+    # their level as well as the stat, so the caps want real investment; a creature's counts the stat
+    # alone and caps lower, because its defense already buys it health and experience.
+
+    public real PlayerBlockDivisor = 9.0;
+    public real PlayerDodgeDivisor = 18.0;
+    public real PlayerCritDivisor = 9.0;
+    public integer PlayerBlockCap = 35;
+    public integer PlayerDodgeCap = 15;
+    public integer PlayerCritCap = 35;
+
+    public real NpcBlockDivisor = 7.0;
+    public real NpcDodgeDivisor = 14.0;
+    public real NpcCritDivisor = 7.0;
+    public integer NpcBlockCap = 25;
+    public integer NpcDodgeCap = 10;
+
+    public integer function PlayerChance(integer stat, integer level, real divisor, integer cap)
+        yield Combat.Capped(Math.Round((stat + level) / divisor), cap);
+    end function
+
+    # ── What a reaction costs, and what it needs ──────────────────────────────
+    #
+    # ⚠ None of the three is free, and none of them is a pure roll. Each needs stamina left, each needs
+    # the right thing in the right hand, and each spends stamina when it fires — so a body that keeps
+    # turning blows aside runs out of the breath to keep doing it. That is the whole reason stamina is
+    # a pool rather than a number on a sheet.
+    #
+    #   block   a shield, and 2% of the pool
+    #   dodge   NO shield — you cannot sidestep behind one — and 4%, twice a block
+    #   crit    a weapon, and 2%
+    #
+    # And the sky can stop all three: nothing is turned aside in a heavy wind.
+
+    public real BlockCostShare = 0.02;
+    public real DodgeCostShare = 0.04;
+    public real CritCostShare = 0.02;
+
+    public string Windy = "heavywind";
+    public string Hot = "heatwave";
+
+    public integer HeatCostMultiplier = 2;
+
+    # A share of the whole pool, never less than a point: a reaction always costs something.
+    public integer function Cost(integer maxStamina, real share, integer map)
+        integer spent = Math.Round(maxStamina * share);
+
+        if World.Weather(map) == Combat.Hot
+            spent = spent * Combat.HeatCostMultiplier;
+        end if
+
+        if spent < 1
+            yield 1;
+        end if
+
+        yield spent;
+    end function
+
+    # Whether the weather allows a reaction at all.
+    public boolean function Reactions(integer map)
+        yield World.Weather(map) != Combat.Windy;
+    end function
+
+    # Whether a body can turn a blow aside: a shield up, breath left, and weather that allows it.
+    public boolean function CanBlock(Player who)
+        if who.Number(Vitals.Stamina) < 1 or not Combat.Reactions(who.Map)
+            yield false;
+        end if
+
+        yield World.WornIn(who, Sheet.Shield) > 0;
+    end function
+
+    # And step out of one, which takes the hand a shield would be in.
+    public boolean function CanDodge(Player who)
+        if who.Number(Vitals.Stamina) < 1 or not Combat.Reactions(who.Map)
+            yield false;
+        end if
+
+        yield World.WornIn(who, Sheet.Shield) < 1;
+    end function
+
+    public boolean function CanCrit(Player who)
+        if who.Number(Vitals.Stamina) < 1 or not Combat.Reactions(who.Map)
+            yield false;
+        end if
+
+        yield World.WornIn(who, Sheet.Weapon) > 0;
+    end function
+
+    # Spending it. Never past nothing.
+    public function Spend(Player who, real share)
+        integer spent = Combat.Cost(who.Number(Vitals.MaxStamina), share, who.Map);
+        integer left = who.Number(Vitals.Stamina) - spent;
+
+        if left < 0
+            left = 0;
+        end if
+
+        who.SetNumber(Vitals.Stamina, left);
+    end function
+
+    # ── The sky tearing a blow off course ─────────────────────────────────────
+    #
+    # ⚠ Rolled on the ATTACKER'S map and BEFORE any reaction, so a blow the wind took never arrived and
+    # cost the defender nothing. That ordering is what keeps it apart from the three above rather than
+    # a fourth kind of them.
+
+    public integer WindMissPercent = 10;
+
+    public boolean function WindTakesIt(integer map)
+        if World.Weather(map) != Combat.Windy
+            yield false;
+        end if
+
+        yield Combat.Rolls(Combat.WindMissPercent);
+    end function
+
+    public integer function NpcChance(integer stat, real divisor, integer cap)
+        yield Combat.Capped(Math.Round(stat / divisor), cap);
+    end function
+
+    integer function Capped(integer chance, integer cap)
+        if chance > cap
+            yield cap;
+        end if
+
+        if chance < 0
+            yield 0;
+        end if
+
+        yield chance;
+    end function
+
+    # ── The roll ──────────────────────────────────────────────────────────────
+
+    # ⚠ ONE generator for the whole game rather than one per swing. A new one per call is seeded from
+    # the clock, and several swings inside a tick would draw the same number.
+    Random dice = new Random();
+
+    public boolean function Rolls(integer chancePercent)
+        if chancePercent <= 0
+            yield false;
+        end if
+
+        yield Combat.dice.Next(0, 100) < chancePercent;
+    end function
+
+    # A number from nought up to but not including the one asked for. The same generator, so nothing
+    # anywhere in this game draws from one of its own.
+    public integer function Roll(integer most)
+        if most < 1
+            yield 0;
+        end if
+
+        yield Combat.dice.Next(0, most);
+    end function
+
+    # A bell rather than a flat spread, so most swings land near the middle and the extremes are rare.
+    public integer function Vary(integer damage)
+        real spread = 0.0;
+
+        loop for _ = 1 to 4
+            spread = spread + Combat.dice.NextDouble();
+        end loop
+
+        real bell = spread / 4.0;
+
+        yield Math.Round(damage * (0.8 + bell * 0.4));
+    end function
+
+    public integer function Crit(integer raw)
+        real noise = Combat.dice.NextDouble() * (raw * 0.5 + 1.0);
+
+        yield Math.Round(raw * 1.25 + noise + 1.0);
+    end function
+
+end model

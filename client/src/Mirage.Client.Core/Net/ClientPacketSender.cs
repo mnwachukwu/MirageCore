@@ -69,8 +69,15 @@ public sealed class ClientPacketSender
     /// <summary>Create a character. <paramref name="appearance"/> is a position in the list the server
     /// offered in its greeting, not a sprite number — the server resolves it against the list it
     /// sent.</summary>
-    public void SendAddChar(string name, int appearance)
-        => _transport.Send(new AddCharPacket { Name = name, Appearance = appearance });
+    /// <param name="chose">What was picked for each thing this game asks at creation, in the order the
+    /// server asked, as the record's own 1-based number. Empty in a world that asks nothing.</param>
+    public void SendAddChar(string name, int appearance, IReadOnlyList<int>? chose = null)
+        => _transport.Send(new AddCharPacket
+        {
+            Name = name,
+            Appearance = appearance,
+            Chose = chose ?? [],
+        });
 
     public void SendDelChar(int slot)
         => _transport.Send(new DelCharPacket { Slot = slot });

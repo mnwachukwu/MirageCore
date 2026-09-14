@@ -1,0 +1,1375 @@
+# Guild wars.
+#
+# Core founds guilds, admits members, keeps ranks and a vault, and records who paid into it. None of
+# that is here. What is here is what a guild does with another guild.
+#
+# A guild may have up to five declarations OUT at once and any number coming in. Each war is held
+# from both sides: our entry says whether we declared and whether they did, and the pair of those two
+# flags is what a war's status is.
+#
+# Storage is the guild's own values, one set of keys per war slot. A guild has five slots; an
+# opponent of zero means the slot is free.
+
+shared model Guilds
+
+    # ── What a guild carries ──────────────────────────────────────────────────
+
+    public string Level = "glevel";
+    public string Exp = "gexp";
+
+    # Five slots. Receiving a declaration uses a slot too, so a guild that everybody declares on can
+    # run out — the original kept an unbounded list, and this is the one place the shape differs.
+    public integer Slots = 5;
+
+    # ── The numbers, all from the original ────────────────────────────────────
+
+    public integer MaxLevel = 5;
+
+    # 1,000,000 then four times as much each level: 1M, 4M, 16M, 64M, 256M.
+    public integer FirstLevelExp = 1000000;
+    public integer LevelStep = 4;
+
+    public integer DeclareBase = 35000;
+    public integer DeclareLevelStep = 3500;
+    public integer DeclareFloor = 3500;
+
+    # Declaring on a guild that has never levelled costs double. That war can never become mutual, so
+    # its cost is paid for a fight the other side cannot answer.
+    public integer UnbloodedMultiplier = 2;
+
+    public integer MinLevelToDeclare = 1;
+
+    # Ten minutes before a one-sided declaration goes live, fifteen before it can be retracted, and an
+    # hour before the same opponent can be declared on again.
+    public integer WarmupSeconds = 600;
+    public integer RetractLockSeconds = 900;
+    public integer RedeclareCooldownSeconds = 3600;
+
+    # The tug-of-war meter each side of a mutual war starts with, and what a death swings it by.
+    public integer AttritionPool = 1000;
+    public integer BaseDeathAttrition = 20;
+
+    # A repeatedly killed target is worth less: the percentages counted at stages one to four, and the
+    # last one for every stage past that. One stage recovers every five minutes.
+    public integer DrStage1 = 100;
+    public integer DrStage2 = 75;
+    public integer DrStage3 = 50;
+    public integer DrStage4 = 25;
+    public integer DrRecoverySeconds = 300;
+
+    # Five vault-uncovered deaths in a row lose the war outright.
+    public integer BankruptcyStreak = 5;
+
+    # Two hours with neither side making progress ends a mutual war as a draw.
+    public integer ColdSeconds = 7200;
+
+    # An ante has to be agreed within an hour of the war becoming mutual, and neither a stake nor a
+    # peace offering may be more than half the staking guild's vault.
+    public integer WagerWindowSeconds = 3600;
+    public integer StakeVaultPercent = 50;
+
+    public string WarVerb = "msr.guild.war";
+    public string PeaceVerb = "msr.guild.peace";
+
+    # ── What the engine is told ───────────────────────────────────────────────
+
+    public function Declare(Builder game)
+        Verb war = game.Action(Guilds.WarVerb, "Declare war", "Guild");
+        war.OnPlayer();
+        war.Icon("flame");
+
+        Verb peace = game.Action(Guilds.PeaceVerb, "Retract declaration", "Guild");
+        peace.OnPlayer();
+        peace.Icon("bubble");
+
+        Valor.Declare(game);
+
+        # The vault, as a member sees it. Everything on it is the GUILD'S, mirrored onto each member
+        # by Guilds.Show so a panel — which reads a body — has something to read.
+        Panel vault = game.Panel("msr.vault", "Guild", 260, 300);
+        vault.Key("K");
+        vault.Icon("shield");
+        vault.Heading("Standing");
+        vault.Field(Guilds.SeenName, "Guild", 200, 200, 160);
+        vault.Field(Guilds.SeenLevel, "Level", 200, 200, 160);
+        vault.Field(Guilds.SeenExp, "Experience", 200, 200, 160);
+        vault.Badge(Guilds.SeenPerks, "Privileges", 240, 200, 80);
+        vault.Heading("Vault");
+        vault.Field(Guilds.SeenGold, "Gold", 240, 210, 120);
+        vault.Field(Guilds.SeenValor, "Valor", 240, 210, 120);
+        vault.Field(Guilds.SeenTax, "Weekly tax", 200, 200, 160);
+        vault.Asks("Donation", "Donate valor");
+    end function
+
+    # ── What a member sees ────────────────────────────────────────────────────
+    #
+    # A panel reads a body, and everything worth showing here belongs to the guild. So the standing is
+    # copied onto each member as it ticks. Nothing reads these back: they are the picture, and the
+    # guild's own values are the fact.
+
+    public string SeenName = "gvName";
+    public string SeenLevel = "gvLevel";
+    public string SeenExp = "gvExp";
+    public string SeenGold = "gvGold";
+    public string SeenValor = "gvValor";
+    public string SeenPerks = "gvPerks";
+    public string SeenTax = "gvTax";
+
+    public function Show(Player who)
+        integer guild = World.GuildOf(who);
+
+        if guild < 1
+            who.SetText(Guilds.SeenName, "none");
+            yield;
+        end if
+
+        integer level = Guilds.LevelOf(guild);
+
+        who.SetText(Guilds.SeenName, World.GuildName(guild));
+        who.SetNumber(Guilds.SeenLevel, level);
+        who.SetNumber(Guilds.SeenExp, World.GuildNumber(guild, Guilds.Exp));
+        who.SetNumber(Guilds.SeenGold, World.GuildGold(guild));
+        who.SetNumber(Guilds.SeenValor, World.GuildNumber(guild, Ledger.Valor));
+        who.SetNumber(Guilds.SeenTax, Ledger.WeeklyTax(level));
+
+        if World.GuildNumber(guild, Ledger.PerksActive) > 0
+            who.SetText(Guilds.SeenPerks, "in force");
+            yield;
+        end if
+
+        who.SetText(Guilds.SeenPerks, "suspended");
+    end function
+
+    # ── Where a war is written ────────────────────────────────────────────────
+    #
+    # One set of keys per slot. Reading a war means finding the slot holding that opponent.
+
+    public string function Opponent(integer slot)
+        yield "gw" + slot + "op";
+    end function
+
+    public string function WeDeclared(integer slot)
+        yield "gw" + slot + "we";
+    end function
+
+    public string function TheyDeclared(integer slot)
+        yield "gw" + slot + "they";
+    end function
+
+    public string function DeclaredAt(integer slot)
+        yield "gw" + slot + "at";
+    end function
+
+    public string function GoesLive(integer slot)
+        yield "gw" + slot + "live";
+    end function
+
+    public string function Cost(integer slot)
+        yield "gw" + slot + "cost";
+    end function
+
+    public string function Announced(integer slot)
+        yield "gw" + slot + "said";
+    end function
+
+    public string function Attrition(integer slot)
+        yield "gw" + slot + "att";
+    end function
+
+    public string function LowestSeen(integer slot)
+        yield "gw" + slot + "low";
+    end function
+
+    public string function LastProgress(integer slot)
+        yield "gw" + slot + "prog";
+    end function
+
+    public string function Uncovered(integer slot)
+        yield "gw" + slot + "unc";
+    end function
+
+    # A per-opponent cooldown after a war ends, so the same guild cannot be declared on again at once.
+    public string function CooldownOn(integer guild, integer opponent)
+        yield "gcd" + opponent;
+    end function
+
+    # A plea for peace we have out, and the gold set aside with it.
+    public string function PeaceOffered(integer slot)
+        yield "gw" + slot + "peace";
+    end function
+
+    public string function PeaceEscrow(integer slot)
+        yield "gw" + slot + "pesc";
+    end function
+
+    # An ante we have proposed, and one both sides have locked. The moment the war became mutual is
+    # what the wager window is measured from.
+    public string function WagerProposed(integer slot)
+        yield "gw" + slot + "prop";
+    end function
+
+    public string function AnteEscrow(integer slot)
+        yield "gw" + slot + "ante";
+    end function
+
+    public string function MutualSince(integer slot)
+        yield "gw" + slot + "mut";
+    end function
+
+    # The slot holding a war with that opponent, or zero.
+    public integer function SlotFor(integer guild, integer opponent)
+        loop for slot = 1 to Guilds.Slots
+            if World.GuildNumber(guild, Guilds.Opponent(slot)) == opponent
+                yield slot;
+            end if
+        end loop
+
+        yield 0;
+    end function
+
+    public integer function FreeSlot(integer guild)
+        loop for slot = 1 to Guilds.Slots
+            if World.GuildNumber(guild, Guilds.Opponent(slot)) < 1
+                yield slot;
+            end if
+        end loop
+
+        yield 0;
+    end function
+
+    # How many declarations this guild has out. Only ours count toward the five.
+    public integer function Outgoing(integer guild)
+        integer many = 0;
+
+        loop for slot = 1 to Guilds.Slots
+            if World.GuildNumber(guild, Guilds.Opponent(slot)) > 0
+                if World.GuildNumber(guild, Guilds.WeDeclared(slot)) > 0
+                    many = many + 1;
+                end if
+            end if
+        end loop
+
+        yield many;
+    end function
+
+    # ── What a guild earns ────────────────────────────────────────────────────
+    #
+    # ⚠ A guild's experience is CUMULATIVE and is never spent. A level is a threshold the running
+    # total has passed, not a cost taken out of it — so reaching level five means holding 256 million
+    # rather than having earned 341 million across five rungs.
+
+    # One point per creature a member kills. The trickle, and it is deliberately tiny: guild quests
+    # are what actually levels a guild, and a roster grinding mobs is meant to take a long time.
+    public integer ExpPerKill = 1;
+
+    public function Earn(Player who, integer amount)
+        integer guild = World.GuildOf(who);
+
+        if guild > 0
+            Guilds.Credit(guild, amount);
+        end if
+    end function
+
+    public function Credit(integer guild, integer amount)
+        integer level = Guilds.LevelOf(guild);
+
+        if amount < 1 or level >= Guilds.MaxLevel
+            yield;
+        end if
+
+        integer held = World.GuildNumber(guild, Guilds.Exp) + amount;
+
+        World.SetGuildNumber(guild, Guilds.Exp, held);
+
+        integer reached = Guilds.LevelForExp(held);
+
+        if reached <= level
+            yield;
+        end if
+
+        World.SetGuildNumber(guild, Guilds.Level, reached);
+        World.TellThese(World.GuildMembers(guild),
+                        World.GuildName(guild) + " reaches guild level " + reached + ".");
+    end function
+
+    # The total needed to REACH a level: a million, and four times as much for each rung above it.
+    public integer function ExpForLevel(integer level)
+        if level < 1
+            yield 0;
+        end if
+
+        integer at = Guilds.FirstLevelExp;
+
+        loop for _ = 2 to level
+            at = at * Guilds.LevelStep;
+        end loop
+
+        yield at;
+    end function
+
+    # And the level a total has reached, counted down from the top so the highest one it clears wins.
+    public integer function LevelForExp(integer exp)
+        integer level = Guilds.MaxLevel;
+
+        loop while level > 0 and exp < Guilds.ExpForLevel(level)
+            level = level - 1;
+        end loop
+
+        yield level;
+    end function
+
+    # A new guild is level zero. Zero is a real standing: it cannot declare, and it costs double to
+    # declare upon.
+    public integer function LevelOf(integer guild)
+        integer level = World.GuildNumber(guild, Guilds.Level);
+
+        if level < 0
+            yield 0;
+        end if
+
+        yield level;
+    end function
+
+    # ── Declaring ─────────────────────────────────────────────────────────────
+
+    # The gap between the two levels sets the price. Declaring upward is cheaper, downward dearer.
+    # The doubling for an unlevelled target is applied before the floor.
+    public integer function DeclareCost(integer guild, integer against)
+        integer theirs = Guilds.LevelOf(against);
+        integer cost = Guilds.DeclareBase - Guilds.DeclareLevelStep * (theirs - Guilds.LevelOf(guild));
+
+        if theirs <= 0
+            cost = cost * Guilds.UnbloodedMultiplier;
+        end if
+
+        if cost < Guilds.DeclareFloor
+            yield Guilds.DeclareFloor;
+        end if
+
+        yield cost;
+    end function
+
+    public function War(Player who, string on)
+        integer guild = World.GuildOf(who);
+
+        if guild < 1
+            who.Message("You are in no guild.");
+            yield;
+        end if
+
+        Player? them = who.Find(on);
+
+        if not them.HasValue()
+            who.Message("There is nobody here by that name.");
+            yield;
+        end if
+
+        integer against = World.GuildOf(them.Value());
+
+        if against < 1 or against == guild
+            who.Message("There is nobody there to declare on.");
+            yield;
+        end if
+
+        Guilds.Against(who, guild, against);
+    end function
+
+    # Declaring, once the target is known. An officer's attempt is queued for the leader instead.
+    public function Against(Player who, integer guild, integer against)
+        integer slot = Guilds.SlotFor(guild, against);
+        boolean answering = false;
+
+        if slot > 0
+            if World.GuildNumber(guild, Guilds.WeDeclared(slot)) > 0
+                who.Message("You are already at war with " + World.GuildName(against) + ".");
+                yield;
+            end if
+
+            answering = true;
+        end if
+
+        string rank = World.GuildRank(who);
+
+        if rank == "officer"
+            Guilds.Ask(who, Guilds.KindDeclare, against, 0);
+            yield;
+        end if
+
+        if rank != "leader"
+            who.Message("Only a guild leader declares war.");
+            yield;
+        end if
+
+        # Returning their declaration is a different act from starting one. It needs no vault, no
+        # cooldown check, and it makes the war mutual at once.
+        if answering
+            Guilds.Answer(who, guild, against, slot);
+            yield;
+        end if
+
+        Guilds.Begin(who, guild, against);
+    end function
+
+    # A fresh declaration.
+    function Begin(Player who, integer guild, integer against)
+
+        if Guilds.LevelOf(guild) < Guilds.MinLevelToDeclare
+            who.Message("Your guild has not levelled enough to declare war.");
+            yield;
+        end if
+
+        if Guilds.Outgoing(guild) >= Guilds.Slots
+            who.Message("Your guild already has " + Guilds.Slots + " declarations out.");
+            yield;
+        end if
+
+        integer clears = World.GuildNumber(guild, Guilds.CooldownOn(guild, against));
+
+        if clears > World.Now()
+            who.Message("It is too soon to declare on " + World.GuildName(against) + " again.");
+            yield;
+        end if
+
+        integer slot = Guilds.FreeSlot(guild);
+        integer theirSlot = Guilds.FreeSlot(against);
+
+        if slot < 1 or theirSlot < 1
+            who.Message("There is no room for another war.");
+            yield;
+        end if
+
+        integer cost = Guilds.DeclareCost(guild, against);
+
+        if not World.SpendGuildGold(guild, cost, who)
+            who.Message("Your vault does not hold the " + cost + " gold that would cost.");
+            yield;
+        end if
+
+        integer now = World.Now();
+        integer live = now + Guilds.WarmupSeconds;
+
+        World.SetGuildNumber(guild, Guilds.Opponent(slot), against);
+        World.SetGuildNumber(guild, Guilds.WeDeclared(slot), 1);
+        World.SetGuildNumber(guild, Guilds.TheyDeclared(slot), 0);
+        World.SetGuildNumber(guild, Guilds.DeclaredAt(slot), now);
+        World.SetGuildNumber(guild, Guilds.GoesLive(slot), live);
+        World.SetGuildNumber(guild, Guilds.Cost(slot), cost);
+        World.SetGuildNumber(guild, Guilds.Announced(slot), 0);
+
+        World.SetGuildNumber(against, Guilds.Opponent(theirSlot), guild);
+        World.SetGuildNumber(against, Guilds.WeDeclared(theirSlot), 0);
+        World.SetGuildNumber(against, Guilds.TheyDeclared(theirSlot), 1);
+        World.SetGuildNumber(against, Guilds.GoesLive(theirSlot), live);
+        World.SetGuildNumber(against, Guilds.Announced(theirSlot), 0);
+
+        # The public announcement waits for go-live, so a grievance answered during the warmup reads
+        # as a mutual war rather than as a declaration and then a correction.
+        World.TellThese(World.GuildMembers(guild),
+                        "You have declared war on " + World.GuildName(against) + ".");
+        World.TellThese(World.GuildMembers(against),
+                        World.GuildName(guild) + " has declared war on you.");
+    end function
+
+    # Returning a declaration. The war is mutual and live at once, and both meters start now.
+    function Answer(Player who, integer guild, integer against, integer slot)
+        if Guilds.LevelOf(guild) < Guilds.MinLevelToDeclare
+            who.Message("Your guild has not levelled enough to answer that.");
+            yield;
+        end if
+
+        integer now = World.Now();
+
+        World.SetGuildNumber(guild, Guilds.WeDeclared(slot), 1);
+        World.SetGuildNumber(guild, Guilds.DeclaredAt(slot), now);
+        World.SetGuildNumber(guild, Guilds.GoesLive(slot), now);
+        World.SetGuildNumber(guild, Guilds.Announced(slot), 1);
+        Guilds.StartMeter(guild, slot, now);
+
+        integer theirs = Guilds.SlotFor(against, guild);
+
+        if theirs > 0
+            World.SetGuildNumber(against, Guilds.TheyDeclared(theirs), 1);
+            World.SetGuildNumber(against, Guilds.GoesLive(theirs), now);
+            World.SetGuildNumber(against, Guilds.Announced(theirs), 1);
+            Guilds.StartMeter(against, theirs, now);
+        end if
+
+        World.Tell("The war between " + World.GuildName(against) + " and " + World.GuildName(guild)
+                   + " reaches an elevated pitch.");
+    end function
+
+    function StartMeter(integer guild, integer slot, integer now)
+        World.SetGuildNumber(guild, Guilds.Attrition(slot), Guilds.AttritionPool);
+        World.SetGuildNumber(guild, Guilds.LowestSeen(slot), Guilds.AttritionPool);
+        World.SetGuildNumber(guild, Guilds.LastProgress(slot), now);
+        World.SetGuildNumber(guild, Guilds.Uncovered(slot), 0);
+        World.SetGuildNumber(guild, Guilds.MutualSince(slot), now);
+    end function
+
+    # ── Suing for peace ───────────────────────────────────────────────────────
+    #
+    # Only on a mutual war, and only from the side conceding. With no ante locked the plea has to
+    # carry gold, and that offering is what the other side wins by accepting. Accepting ends the war
+    # with the accepter as the winner.
+
+    public integer function MostStakeable(integer guild)
+        yield World.GuildGold(guild) * Guilds.StakeVaultPercent / 100;
+    end function
+
+    public function SuePeace(Player who, integer against, integer offering)
+        integer guild = World.GuildOf(who);
+
+        if guild < 1
+            who.Message("You are in no guild.");
+            yield;
+        end if
+
+        string rank = World.GuildRank(who);
+
+        if rank == "officer"
+            Guilds.Ask(who, Guilds.KindPeace, against, offering);
+            yield;
+        end if
+
+        if rank != "leader"
+            who.Message("Only a guild leader sues for peace.");
+            yield;
+        end if
+
+        integer slot = Guilds.SlotFor(guild, against);
+
+        if not Guilds.IsMutual(guild, slot)
+            who.Message("There is no war with them to settle.");
+            yield;
+        end if
+
+        if World.GuildNumber(guild, Guilds.PeaceOffered(slot)) > 0
+            who.Message("You have already sued for peace.");
+            yield;
+        end if
+
+        # With an ante already locked the pot is the stake, and the plea carries nothing with it.
+        if World.GuildNumber(guild, Guilds.AnteEscrow(slot)) < 1
+            if offering < 1
+                who.Message("A plea for peace has to carry an offering.");
+                yield;
+            end if
+
+            if offering > Guilds.MostStakeable(guild)
+                who.Message("You may offer at most " + Guilds.MostStakeable(guild) + " gold.");
+                yield;
+            end if
+
+            if not World.SpendGuildGold(guild, offering, who)
+                who.Message("Your vault does not hold that.");
+                yield;
+            end if
+
+            World.SetGuildNumber(guild, Guilds.PeaceEscrow(slot), offering);
+        end if
+
+        World.SetGuildNumber(guild, Guilds.PeaceOffered(slot), 1);
+
+        World.TellThese(World.GuildMembers(guild),
+                        "You have sued for peace with " + World.GuildName(against) + ".");
+        World.TellThese(World.GuildMembers(against),
+                        World.GuildName(guild) + " sues for peace.");
+    end function
+
+    # Accepting wins the war. Refusing leaves it running and gives their offering back.
+    public function AnswerPeace(Player who, integer offerer, boolean accept)
+        integer guild = World.GuildOf(who);
+
+        if guild < 1 or World.GuildRank(who) != "leader"
+            who.Message("Only a guild leader answers a plea for peace.");
+            yield;
+        end if
+
+        integer theirs = Guilds.SlotFor(offerer, guild);
+
+        if theirs < 1 or World.GuildNumber(offerer, Guilds.PeaceOffered(theirs)) < 1
+            who.Message("They have not sued for peace.");
+            yield;
+        end if
+
+        if accept
+            Guilds.Won(guild, offerer, "has sued for peace");
+            yield;
+        end if
+
+        World.SetGuildNumber(offerer, Guilds.PeaceOffered(theirs), 0);
+        Guilds.ReleasePeace(offerer, theirs);
+
+        World.TellThese(World.GuildMembers(offerer),
+                        World.GuildName(guild) + " has refused your plea.");
+    end function
+
+    public function WithdrawPeace(Player who, integer against)
+        integer guild = World.GuildOf(who);
+
+        if guild < 1 or World.GuildRank(who) != "leader"
+            who.Message("Only a guild leader withdraws a plea.");
+            yield;
+        end if
+
+        integer slot = Guilds.SlotFor(guild, against);
+
+        if slot < 1 or World.GuildNumber(guild, Guilds.PeaceOffered(slot)) < 1
+            who.Message("You have no plea out to them.");
+            yield;
+        end if
+
+        World.SetGuildNumber(guild, Guilds.PeaceOffered(slot), 0);
+        Guilds.ReleasePeace(guild, slot);
+
+        World.TellThese(World.GuildMembers(against),
+                        World.GuildName(guild) + " has withdrawn its plea.");
+    end function
+
+    # A withdrawn or refused plea gives its offering back. A locked ante is not released this way; it
+    # rides to the end of the war.
+    function ReleasePeace(integer guild, integer slot)
+        integer held = World.GuildNumber(guild, Guilds.PeaceEscrow(slot));
+
+        if held > 0
+            World.GiveGuildGold(guild, held);
+            World.SetGuildNumber(guild, Guilds.PeaceEscrow(slot), 0);
+        end if
+    end function
+
+    # ── Wagers ────────────────────────────────────────────────────────────────
+    #
+    # A matched ante on a mutual war, agreed within an hour of it becoming mutual. Proposing escrows
+    # nothing; accepting takes the amount out of both vaults at once.
+
+    public boolean function WagerWindowOpen(integer guild, integer slot)
+        integer since = World.GuildNumber(guild, Guilds.MutualSince(slot));
+
+        if since < 1
+            yield false;
+        end if
+
+        yield World.Now() <= since + Guilds.WagerWindowSeconds;
+    end function
+
+    public function ProposeWager(Player who, integer against, integer amount)
+        integer guild = World.GuildOf(who);
+
+        if guild < 1 or World.GuildRank(who) != "leader"
+            who.Message("Only a guild leader proposes a wager.");
+            yield;
+        end if
+
+        integer slot = Guilds.SlotFor(guild, against);
+
+        if not Guilds.IsMutual(guild, slot)
+            who.Message("There is no mutual war with them.");
+            yield;
+        end if
+
+        if World.GuildNumber(guild, Guilds.AnteEscrow(slot)) > 0
+            who.Message("There is already a stake on this war.");
+            yield;
+        end if
+
+        if not Guilds.WagerWindowOpen(guild, slot)
+            who.Message("It is too late in the war to agree a stake.");
+            yield;
+        end if
+
+        if amount < 1 or amount > Guilds.MostStakeable(guild)
+            who.Message("You may stake at most " + Guilds.MostStakeable(guild) + " gold.");
+            yield;
+        end if
+
+        World.SetGuildNumber(guild, Guilds.WagerProposed(slot), amount);
+        World.TellThese(World.GuildMembers(against),
+                        World.GuildName(guild) + " proposes a stake of " + amount + " gold.");
+    end function
+
+    public function WithdrawWager(Player who, integer against)
+        integer guild = World.GuildOf(who);
+
+        if guild < 1 or World.GuildRank(who) != "leader"
+            who.Message("Only a guild leader withdraws a wager.");
+            yield;
+        end if
+
+        integer slot = Guilds.SlotFor(guild, against);
+
+        if slot < 1 or World.GuildNumber(guild, Guilds.WagerProposed(slot)) < 1
+            who.Message("You have proposed nothing.");
+            yield;
+        end if
+
+        World.SetGuildNumber(guild, Guilds.WagerProposed(slot), 0);
+        World.TellThese(World.GuildMembers(against),
+                        World.GuildName(guild) + " has withdrawn its proposed stake.");
+    end function
+
+    public function RejectWager(Player who, integer against)
+        integer guild = World.GuildOf(who);
+
+        if guild < 1 or World.GuildRank(who) != "leader"
+            who.Message("Only a guild leader answers a wager.");
+            yield;
+        end if
+
+        integer theirs = Guilds.SlotFor(against, guild);
+
+        if theirs < 1 or World.GuildNumber(against, Guilds.WagerProposed(theirs)) < 1
+            who.Message("They have proposed nothing.");
+            yield;
+        end if
+
+        World.SetGuildNumber(against, Guilds.WagerProposed(theirs), 0);
+        World.TellThese(World.GuildMembers(against),
+                        World.GuildName(guild) + " has refused your stake.");
+    end function
+
+    # Both vaults are checked again here. They move between the proposal and the answer, and a stale
+    # proposal the proposer can no longer cover is voided rather than half-taken.
+    public function AcceptWager(Player who, integer against)
+        integer guild = World.GuildOf(who);
+
+        if guild < 1 or World.GuildRank(who) != "leader"
+            who.Message("Only a guild leader answers a wager.");
+            yield;
+        end if
+
+        integer slot = Guilds.SlotFor(guild, against);
+        integer theirs = Guilds.SlotFor(against, guild);
+
+        if not Guilds.IsMutual(guild, slot) or theirs < 1
+            who.Message("There is no mutual war with them.");
+            yield;
+        end if
+
+        if World.GuildNumber(guild, Guilds.AnteEscrow(slot)) > 0
+            who.Message("There is already a stake on this war.");
+            yield;
+        end if
+
+        integer amount = World.GuildNumber(against, Guilds.WagerProposed(theirs));
+
+        if amount < 1
+            who.Message("They have proposed nothing.");
+            yield;
+        end if
+
+        if not Guilds.WagerWindowOpen(guild, slot)
+            who.Message("It is too late in the war to agree a stake.");
+            yield;
+        end if
+
+        if amount > Guilds.MostStakeable(guild)
+            who.Message("You cannot cover a stake of " + amount + " gold.");
+            yield;
+        end if
+
+        if amount > Guilds.MostStakeable(against)
+            World.SetGuildNumber(against, Guilds.WagerProposed(theirs), 0);
+            who.Message(World.GuildName(against) + " can no longer cover that stake.");
+            yield;
+        end if
+
+        if not World.SpendGuildGold(guild, amount, who)
+            who.Message("Your vault does not hold that.");
+            yield;
+        end if
+
+        if not World.SpendGuildGold(against, amount, who)
+            World.GiveGuildGold(guild, amount);
+            who.Message(World.GuildName(against) + " can no longer cover that stake.");
+            yield;
+        end if
+
+        World.SetGuildNumber(guild, Guilds.AnteEscrow(slot), amount);
+        World.SetGuildNumber(guild, Guilds.WagerProposed(slot), 0);
+        World.SetGuildNumber(against, Guilds.AnteEscrow(theirs), amount);
+        World.SetGuildNumber(against, Guilds.WagerProposed(theirs), 0);
+
+        World.TellThese(World.GuildMembers(guild), "A stake of " + amount + " gold is locked.");
+        World.TellThese(World.GuildMembers(against), "A stake of " + amount + " gold is locked.");
+    end function
+
+    # Everything both sides set aside. A decisive result pays the whole pot to the winner; a draw
+    # returns each side its own stake.
+    function SettlePot(integer guild, integer against, integer winner)
+        integer ourSlot = Guilds.SlotFor(guild, against);
+        integer theirSlot = Guilds.SlotFor(against, guild);
+        integer ours = Guilds.StakeOf(guild, ourSlot);
+        integer theirs = Guilds.StakeOf(against, theirSlot);
+
+        Guilds.ClearStakes(guild, ourSlot);
+        Guilds.ClearStakes(against, theirSlot);
+
+        if winner < 1
+            World.GiveGuildGold(guild, ours);
+            World.GiveGuildGold(against, theirs);
+            yield;
+        end if
+
+        World.GiveGuildGold(winner, ours + theirs);
+    end function
+
+    integer function StakeOf(integer guild, integer slot)
+        if slot < 1
+            yield 0;
+        end if
+
+        yield World.GuildNumber(guild, Guilds.AnteEscrow(slot))
+            + World.GuildNumber(guild, Guilds.PeaceEscrow(slot));
+    end function
+
+    function ClearStakes(integer guild, integer slot)
+        if slot < 1
+            yield;
+        end if
+
+        World.SetGuildNumber(guild, Guilds.AnteEscrow(slot), 0);
+        World.SetGuildNumber(guild, Guilds.PeaceEscrow(slot), 0);
+    end function
+
+    # ── Retracting ────────────────────────────────────────────────────────────
+    #
+    # Only a one-sided declaration can be taken back, and only after the lock. A mutual war ends by
+    # being won or by going cold.
+
+    public function Peace(Player who, string on)
+        integer guild = World.GuildOf(who);
+
+        if guild < 1
+            who.Message("You are in no guild.");
+            yield;
+        end if
+
+        Player? them = who.Find(on);
+
+        if not them.HasValue()
+            who.Message("There is nobody here by that name.");
+            yield;
+        end if
+
+        Guilds.Withdraw(who, guild, World.GuildOf(them.Value()));
+    end function
+
+    # Retracting, once the target is known. An officer's attempt is queued for the leader.
+    public function Withdraw(Player who, integer guild, integer against)
+        string rank = World.GuildRank(who);
+
+        if rank == "officer"
+            Guilds.Ask(who, Guilds.KindRetract, against, 0);
+            yield;
+        end if
+
+        if rank != "leader"
+            who.Message("Only a guild leader retracts a declaration.");
+            yield;
+        end if
+
+        integer slot = Guilds.SlotFor(guild, against);
+
+        if slot < 1 or World.GuildNumber(guild, Guilds.WeDeclared(slot)) < 1
+            who.Message("You have not declared on them.");
+            yield;
+        end if
+
+        if World.GuildNumber(guild, Guilds.TheyDeclared(slot)) > 0
+            who.Message("They have answered. That war has to be settled, not withdrawn.");
+            yield;
+        end if
+
+        integer locked = World.GuildNumber(guild, Guilds.DeclaredAt(slot)) + Guilds.RetractLockSeconds;
+
+        if locked > World.Now()
+            who.Message("It is too soon to take that back.");
+            yield;
+        end if
+
+        Guilds.EndWar(guild, against, 0);
+        World.Tell(World.GuildName(guild) + " has retracted its declaration against "
+                   + World.GuildName(against) + ".");
+    end function
+
+    # Clear a war from both sides and set the cooldown that stops an immediate re-declaration.
+    #
+    # The pot is settled first, while both entries still hold their stakes. A winner of zero is a draw,
+    # which returns each side its own.
+    public function EndWar(integer guild, integer against, integer winner)
+        integer clears = World.Now() + Guilds.RedeclareCooldownSeconds;
+
+        Guilds.SettlePot(guild, against, winner);
+
+        Guilds.Clear(guild, Guilds.SlotFor(guild, against));
+        Guilds.Clear(against, Guilds.SlotFor(against, guild));
+
+        World.SetGuildNumber(guild, Guilds.CooldownOn(guild, against), clears);
+        World.SetGuildNumber(against, Guilds.CooldownOn(against, guild), clears);
+    end function
+
+    function Clear(integer guild, integer slot)
+        if slot < 1
+            yield;
+        end if
+
+        World.SetGuildNumber(guild, Guilds.Opponent(slot), 0);
+        World.SetGuildNumber(guild, Guilds.WeDeclared(slot), 0);
+        World.SetGuildNumber(guild, Guilds.TheyDeclared(slot), 0);
+        World.SetGuildNumber(guild, Guilds.DeclaredAt(slot), 0);
+        World.SetGuildNumber(guild, Guilds.GoesLive(slot), 0);
+        World.SetGuildNumber(guild, Guilds.Cost(slot), 0);
+        World.SetGuildNumber(guild, Guilds.Announced(slot), 0);
+        World.SetGuildNumber(guild, Guilds.Attrition(slot), 0);
+        World.SetGuildNumber(guild, Guilds.LowestSeen(slot), 0);
+        World.SetGuildNumber(guild, Guilds.LastProgress(slot), 0);
+        World.SetGuildNumber(guild, Guilds.Uncovered(slot), 0);
+        World.SetGuildNumber(guild, Guilds.MutualSince(slot), 0);
+        World.SetGuildNumber(guild, Guilds.PeaceOffered(slot), 0);
+        World.SetGuildNumber(guild, Guilds.PeaceEscrow(slot), 0);
+        World.SetGuildNumber(guild, Guilds.WagerProposed(slot), 0);
+        World.SetGuildNumber(guild, Guilds.AnteEscrow(slot), 0);
+    end function
+
+    # ── What an officer may ask for ───────────────────────────────────────────
+    #
+    # An officer cannot declare, retract, or sue for peace. Asking queues the request for the leader,
+    # who accepts it — which runs the action as the leader, re-checking everything — or denies it.
+    #
+    # Ten pending at most, and one per kind and target: asking twice for the same thing says so
+    # rather than queueing it again.
+
+    public integer Requests = 10;
+
+    public integer KindDeclare = 1;
+    public integer KindRetract = 2;
+    public integer KindPeace = 3;
+
+    public string function RequestKind(integer row)
+        yield "gr" + row + "kind";
+    end function
+
+    public string function RequestTarget(integer row)
+        yield "gr" + row + "at";
+    end function
+
+    public string function RequestAmount(integer row)
+        yield "gr" + row + "gold";
+    end function
+
+    public string function RequestBy(integer row)
+        yield "gr" + row + "by";
+    end function
+
+    public integer function RequestRow(integer guild, integer kind, integer target)
+        loop for row = 1 to Guilds.Requests
+            if World.GuildNumber(guild, Guilds.RequestKind(row)) == kind
+                if World.GuildNumber(guild, Guilds.RequestTarget(row)) == target
+                    yield row;
+                end if
+            end if
+        end loop
+
+        yield 0;
+    end function
+
+    public function Ask(Player who, integer kind, integer target, integer amount)
+        integer guild = World.GuildOf(who);
+
+        if guild < 1
+            who.Message("You are in no guild.");
+            yield;
+        end if
+
+        if Guilds.RequestRow(guild, kind, target) > 0
+            who.Message("Your guild has already asked for that.");
+            yield;
+        end if
+
+        integer row = Guilds.FreeRequest(guild);
+
+        if row < 1
+            who.Message("There are already " + Guilds.Requests + " requests waiting.");
+            yield;
+        end if
+
+        World.SetGuildNumber(guild, Guilds.RequestKind(row), kind);
+        World.SetGuildNumber(guild, Guilds.RequestTarget(row), target);
+        World.SetGuildNumber(guild, Guilds.RequestAmount(row), amount);
+        World.SetGuildText(guild, Guilds.RequestBy(row), who.Name);
+
+        who.Message("Your request has gone to your guild leader.");
+    end function
+
+    integer function FreeRequest(integer guild)
+        loop for row = 1 to Guilds.Requests
+            if World.GuildNumber(guild, Guilds.RequestKind(row)) < 1
+                yield row;
+            end if
+        end loop
+
+        yield 0;
+    end function
+
+    # Accepting runs the action as the leader, which re-checks every gate. Denying discards it.
+    public function Review(Player who, integer kind, integer target, boolean accept)
+        integer guild = World.GuildOf(who);
+
+        if guild < 1 or World.GuildRank(who) != "leader"
+            who.Message("Only a guild leader reviews requests.");
+            yield;
+        end if
+
+        integer row = Guilds.RequestRow(guild, kind, target);
+
+        if row < 1
+            who.Message("There is no such request.");
+            yield;
+        end if
+
+        integer amount = World.GuildNumber(guild, Guilds.RequestAmount(row));
+        Guilds.DropRequest(guild, row);
+
+        if not accept
+            who.Message("You deny the request.");
+            yield;
+        end if
+
+        if kind == Guilds.KindDeclare
+            Guilds.Against(who, guild, target);
+            yield;
+        end if
+
+        if kind == Guilds.KindRetract
+            Guilds.Withdraw(who, guild, target);
+            yield;
+        end if
+
+        if kind == Guilds.KindPeace
+            Guilds.SuePeace(who, target, amount);
+        end if
+    end function
+
+    function DropRequest(integer guild, integer row)
+        World.SetGuildNumber(guild, Guilds.RequestKind(row), 0);
+        World.SetGuildNumber(guild, Guilds.RequestTarget(row), 0);
+        World.SetGuildNumber(guild, Guilds.RequestAmount(row), 0);
+        World.SetGuildText(guild, Guilds.RequestBy(row), "");
+    end function
+
+    # ── Whether two bodies may fight ──────────────────────────────────────────
+
+    # A war is live for combat once its go-live has passed. A mutual war's go-live is the moment it
+    # was answered, so it is live immediately. Either side's entry makes both sides fair game.
+    public boolean function AtWar(Player who, Player them)
+        integer ours = World.GuildOf(who);
+        integer theirs = World.GuildOf(them);
+
+        if ours < 1 or theirs < 1 or ours == theirs
+            yield false;
+        end if
+
+        integer slot = Guilds.SlotFor(ours, theirs);
+
+        if slot < 1
+            yield false;
+        end if
+
+        yield World.GuildNumber(ours, Guilds.GoesLive(slot)) <= World.Now();
+    end function
+
+    public boolean function IsMutual(integer guild, integer slot)
+        if slot < 1
+            yield false;
+        end if
+
+        if World.GuildNumber(guild, Guilds.WeDeclared(slot)) < 1
+            yield false;
+        end if
+
+        yield World.GuildNumber(guild, Guilds.TheyDeclared(slot)) > 0;
+    end function
+
+    # ── What a war death costs the loser ──────────────────────────────────────
+    #
+    # Worn gear, and nothing else. No dropped bag, no lost experience, no murderer's flag: a declared
+    # war is agreed hostility rather than murder, and the only thing it wears down is equipment.
+    #
+    # The gear wears at twice the usual rate, and the vault pays three quarters of putting that right
+    # — whole or nothing. When it pays, a quarter of the doubled wear reaches the gear, which is half
+    # what an ordinary death would have cost. When the vault cannot pay, the whole doubled wear lands
+    # on the player and the guild is one step nearer bankruptcy.
+    #
+    # ⚠ Only the side that DECLARED pays. A guild that was declared on and never answered loses
+    # nothing by dying, which is what stops a one-sided war from being a way to bleed somebody who
+    # never agreed to fight.
+
+    public integer WarWearPercent = 20;
+    public integer VaultRepairPercent = 75;
+    public integer PlayerWearPercent = 25;
+
+    public function WarDeath(Player victim, Player killer)
+        integer theirs = World.GuildOf(victim);
+        integer ours = World.GuildOf(killer);
+
+        World.Tell(World.GuildName(ours) + "'s " + killer.Name + " has killed "
+                   + World.GuildName(theirs) + "'s " + victim.Name + ".");
+
+        victim.Message("You fell in your guild's war.");
+
+        # Everybody on the winning side who put damage in rolls for a point of valor, which is what a
+        # war is worth to the people fighting it.
+        Valor.Award(victim, ours);
+
+        integer slot = Guilds.SlotFor(theirs, ours);
+        boolean bears = World.GuildNumber(theirs, Guilds.WeDeclared(slot)) > 0;
+
+        if not bears
+            Guilds.Died(victim, killer, true, 0);
+            yield;
+        end if
+
+        # What putting all of it right would cost, at the engine's own repair rate — the same rate a
+        # repair shop charges, so the vault is billed what the player would have been.
+        integer repair = 0;
+
+        loop each item in World.WornBy(victim)
+            integer full = World.DurabilityFull(victim, item);
+
+            if full > 0
+                repair = repair + World.RepairCost(item, Death.WearOn(full, Guilds.WarWearPercent));
+            end if
+        end loop
+
+        boolean covered = true;
+        integer drained = 0;
+
+        if repair > 0
+            integer ask = Math.Round(repair * Guilds.VaultRepairPercent / 100.0);
+
+            # Through the vault's own ledger, so the guild can see what its war is costing it.
+            covered = World.SpendGuildGold(theirs, ask, victim);
+
+            if covered
+                drained = ask;
+                World.TellThese(World.GuildMembers(theirs),
+                                "The vault paid " + ask + " gold for that death.");
+            end if
+        end if
+
+        loop each item in World.WornBy(victim)
+            integer full = World.DurabilityFull(victim, item);
+
+            if full > 0
+                integer doubled = Death.WearOn(full, Guilds.WarWearPercent);
+                integer points = doubled;
+
+                if covered
+                    points = Math.Round(doubled * Guilds.PlayerWearPercent / 100.0);
+                end if
+
+                if World.WearOut(victim, item, points) > 0
+                    if World.DurabilityLeft(victim, item) <= 0
+                        if victim.TakeOff(item)
+                            victim.Message("Your gear has been ruined.");
+                        end if
+                    end if
+                end if
+            end if
+        end loop
+
+        Guilds.Died(victim, killer, covered, drained);
+    end function
+
+    # ── A death in a war ──────────────────────────────────────────────────────
+    #
+    # Only a mutual war has a meter. The swing is the gold this death cost the victim's vault, counted
+    # in full, plus a flat rate scaled by how often this victim has been killed lately. The victim's
+    # meter falls by it and the killer's rises by the same amount.
+
+    public function Died(Player victim, Player killer, boolean vaultCovered, integer treasuryDamage)
+        integer theirs = World.GuildOf(victim);
+        integer ours = World.GuildOf(killer);
+
+        if theirs < 1 or ours < 1 or theirs == ours
+            yield;
+        end if
+
+        integer victimSlot = Guilds.SlotFor(theirs, ours);
+        integer killerSlot = Guilds.SlotFor(ours, theirs);
+
+        if not Guilds.IsMutual(theirs, victimSlot) or not Guilds.IsMutual(ours, killerSlot)
+            yield;
+        end if
+
+        integer now = World.Now();
+        integer stage = Guilds.StageOf(victim, now);
+        integer swing = treasuryDamage + Guilds.BaseDeathAttrition * Guilds.Weight(stage) / 100;
+
+        # The victim is worth less next time; the killer recovers a stage for having earned it.
+        victim.SetNumber(Guilds.DrStage, stage + 1);
+        victim.SetNumber(Guilds.DrSeen, now);
+
+        integer killerStage = Guilds.StageOf(killer, now) - 1;
+
+        if killerStage < 1
+            killerStage = 1;
+        end if
+
+        killer.SetNumber(Guilds.DrStage, killerStage);
+        killer.SetNumber(Guilds.DrSeen, now);
+
+        integer left = World.GuildNumber(theirs, Guilds.Attrition(victimSlot)) - swing;
+
+        if left < 0
+            left = 0;
+        end if
+
+        integer gained = World.GuildNumber(ours, Guilds.Attrition(killerSlot)) + swing;
+
+        if gained > Guilds.AttritionPool
+            gained = Guilds.AttritionPool;
+        end if
+
+        World.SetGuildNumber(theirs, Guilds.Attrition(victimSlot), left);
+        World.SetGuildNumber(ours, Guilds.Attrition(killerSlot), gained);
+
+        # A new low means the killer made real progress, which is what keeps the war from going cold.
+        if left < World.GuildNumber(theirs, Guilds.LowestSeen(victimSlot))
+            World.SetGuildNumber(theirs, Guilds.LowestSeen(victimSlot), left);
+            World.SetGuildNumber(ours, Guilds.LastProgress(killerSlot), now);
+        end if
+
+        if vaultCovered
+            World.SetGuildNumber(theirs, Guilds.Uncovered(victimSlot), 0);
+        end if
+
+        if not vaultCovered
+            integer streak = World.GuildNumber(theirs, Guilds.Uncovered(victimSlot)) + 1;
+            World.SetGuildNumber(theirs, Guilds.Uncovered(victimSlot), streak);
+
+            World.TellThese(World.GuildMembers(theirs),
+                            "The vault could not cover that death against " + World.GuildName(ours) + ".");
+
+            if streak >= Guilds.BankruptcyStreak
+                Guilds.Won(ours, theirs, "is bankrupt");
+                yield;
+            end if
+        end if
+
+        if left <= 0
+            Guilds.Won(ours, theirs, "is beaten");
+        end if
+    end function
+
+    # How farmed a target is, one stage recovered every five minutes, never below one.
+    public string DrStage = "wardr";
+    public string DrSeen = "wardrat";
+
+    public integer function StageOf(Player who, integer now)
+        integer stage = who.Number(Guilds.DrStage);
+        integer seen = who.Number(Guilds.DrSeen);
+
+        if stage <= 1 or seen <= 0
+            if stage < 1
+                yield 1;
+            end if
+
+            yield stage;
+        end if
+
+        integer recovered = (now - seen) / Guilds.DrRecoverySeconds;
+        integer left = stage - recovered;
+
+        if left < 1
+            yield 1;
+        end if
+
+        yield left;
+    end function
+
+    # What percentage of the flat rate a stage is worth. Past the last stage it stays at the lowest,
+    # so a heavily farmed target is still worth something and every death moves the meter.
+    public integer function Weight(integer stage)
+        if stage <= 1
+            yield Guilds.DrStage1;
+        end if
+
+        if stage == 2
+            yield Guilds.DrStage2;
+        end if
+
+        if stage == 3
+            yield Guilds.DrStage3;
+        end if
+
+        yield Guilds.DrStage4;
+    end function
+
+    function Won(integer winner, integer loser, string how)
+        World.Tell(World.GuildName(loser) + " " + how + ". " + World.GuildName(winner)
+                   + " has won the war.");
+
+        Guilds.EndWar(winner, loser, winner);
+    end function
+
+    # ── The clocks ────────────────────────────────────────────────────────────
+    #
+    # Walked from the player tick, because nothing ticks a guild. A war between guilds nobody is
+    # logged into does not advance, which is the same thing the original's own tick interval means at
+    # a coarser grain.
+
+    public function Tick(Player who)
+        Guilds.Show(who);
+
+        integer guild = World.GuildOf(who);
+
+        if guild < 1
+            yield;
+        end if
+
+        integer now = World.Now();
+
+        loop for slot = 1 to Guilds.Slots
+            integer against = World.GuildNumber(guild, Guilds.Opponent(slot));
+
+            if against > 0
+                Guilds.Watch(guild, against, slot, now);
+            end if
+        end loop
+    end function
+
+    function Watch(integer guild, integer against, integer slot, integer now)
+        # A one-sided declaration announces itself publicly when its warmup runs out.
+        if World.GuildNumber(guild, Guilds.Announced(slot)) < 1
+            if World.GuildNumber(guild, Guilds.WeDeclared(slot)) > 0
+                if World.GuildNumber(guild, Guilds.TheyDeclared(slot)) < 1
+                    if World.GuildNumber(guild, Guilds.GoesLive(slot)) <= now
+                        World.SetGuildNumber(guild, Guilds.Announced(slot), 1);
+                        World.Tell(World.GuildName(guild) + " has declared war on "
+                                   + World.GuildName(against) + ".");
+                    end if
+                end if
+            end if
+        end if
+
+        # A mutual war where neither side has made progress for two hours is a draw.
+        if Guilds.IsMutual(guild, slot)
+            integer theirSlot = Guilds.SlotFor(against, guild);
+            integer ours = World.GuildNumber(guild, Guilds.LastProgress(slot));
+            integer theirs = World.GuildNumber(against, Guilds.LastProgress(theirSlot));
+            integer last = ours;
+
+            if theirs > last
+                last = theirs;
+            end if
+
+            if last > 0 and now - last >= Guilds.ColdSeconds
+                World.Tell("The war between " + World.GuildName(guild) + " and "
+                           + World.GuildName(against) + " has gone cold.");
+                Guilds.EndWar(guild, against, 0);
+            end if
+        end if
+    end function
+
+end model

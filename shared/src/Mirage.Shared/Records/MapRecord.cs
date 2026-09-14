@@ -112,6 +112,8 @@ public sealed class MapRecord
                 return false;
             }
 
+            if (Attributes.Count > 0) return false;
+
             var blank = new TileRecord();
             for (int x = 0; x < Width; x++)
             {
@@ -143,6 +145,14 @@ public sealed class MapRecord
     // Placed light sources: sparse list, at most one per tile. Emitted client-side at night / in
     // AlwaysDark maps. Empty by default, so old maps deserialize with no lights (no migration).
     public List<PlacedLight> Lights { get; set; } = new();
+
+    /// <summary>Everything a game hangs on this map that the engine has no name for — whether you can be
+    /// attacked here, what season it is, which faction holds it.
+    ///
+    /// <para>A game's fields fall back to the map's <see cref="MapGroup"/> the same way the properties
+    /// above do: read one through <c>GameWorld.MapValue</c>, which checks the map's own bag and then the
+    /// group's.</para></summary>
+    public Extensibility.AttributeBag Attributes { get; set; } = new();
 
     public MapRecord() { }
 

@@ -1,0 +1,80 @@
+# What a creature IS, on top of how it walks.
+#
+# 🔴 CORE'S BEHAVIORS ARE ABOUT LOCOMOTION, AND DELIBERATELY NOTHING ELSE. A record says a body holds
+# its tile, ambles, closes on what it notices, opens the gap, or tidies litter — five ways of moving,
+# none of which mentions fighting. The original's five said why instead, and four of the five meant
+# something about combat.
+#
+# This file is the translation. Nothing here is new engine surface; it is the original's vocabulary
+# written out of the parts Core does offer.
+#
+#   Attack on sight        Pursue, and swing on contact                       — Rules.OnContact
+#   Attack when attacked   Wander, and chase whoever lands a hit              — Beasts.Answer
+#   Friendly               Wander, with no rule pointing it at anybody
+#   Stationary             Stationary
+#   Guard                  Wander, carrying the guard key, roused by a crime  — Beasts.CallGuards
+#
+# ⚠ A guard is marked on the CREATURE RECORD, in the attributes an editor hangs on the template. That
+# is where a per-species fact belongs: every copy of that creature is a guard, and a body that became
+# one at spawn would be a guard by accident.
+
+shared model Beasts
+
+    # Carried by a creature that answers a crime. Any number above zero means yes.
+    public string Guard = "guard";
+
+    # How far a shout carries, in tiles. The original asked each guard for its own noticing range;
+    # one number is the same rule with the authoring taken out of it.
+    public integer GuardRange = 10;
+
+    # How many answer. A whole map converging on one body reads as a bug rather than as law.
+    public integer GuardsWhoAnswer = 3;
+
+    # ── Fighting back ─────────────────────────────────────────────────────────
+
+    # 🔴 EVERY creature answers a hit, whatever its record says about noticing.
+    #
+    # For one authored to close on what it sees this changes nothing — it was already coming. For one
+    # authored to amble it is the whole of "attacks when attacked": it never notices anybody, and this
+    # is the only thing that ever points it at somebody. For one authored to open the gap it runs,
+    # which is what being hit should do to a body that flees.
+    public function Answer(Npc it, Player who)
+        # Whether it turned is dropped on purpose. A handle whose body has already left cannot be
+        # pointed anywhere, and the creature that was hit being gone is the outcome the hitter wanted.
+        it.Chase(who);
+    end function
+
+    # And the same between two creatures, so a bite from behind turns the bitten one around rather
+    # than leaving it walking away from a fight it is losing.
+    public function AnswerNpc(Npc it, Npc attacker)
+        it.ChaseNpc(attacker);
+    end function
+
+    # ── Guards ────────────────────────────────────────────────────────────────
+
+    # Somebody did something the town will not have. The guards standing near it come after them.
+    #
+    # ⚠ Nearest first, which is what World.NpcsNear answers with, so taking the first few takes the
+    # ones who could plausibly have seen it.
+    public function CallGuards(Player on, integer map, integer x, integer y)
+        Npc[] nearby = World.NpcsNear(map, x, y, Beasts.GuardRange);
+        integer sent = 0;
+
+        loop each body in nearby
+            if sent >= Beasts.GuardsWhoAnswer
+                yield;
+            end if
+
+            if body.Number(Beasts.Guard) > 0
+                if body.Chase(on)
+                    sent = sent + 1;
+                end if
+            end if
+        end loop
+
+        if sent > 0
+            on.Message("The guard has seen that.");
+        end if
+    end function
+
+end model

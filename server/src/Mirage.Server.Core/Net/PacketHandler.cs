@@ -5,7 +5,7 @@ using Mirage.Server.Core.Localization;
 using Mirage.Server.Core.Persistence;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
-using Mirage.Shared;
+using Mirage.Shared;
 using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
@@ -60,6 +60,16 @@ public sealed partial class PacketHandler
 
     /// <summary>Where a module's own commands go. Empty for an engine with no game loaded, and then
     /// every command below belongs to Core.</summary>
+    /// <summary>What the loaded game declared. Held whole rather than picked apart, because creating a
+    /// character asks it a question no other packet does.</summary>
+    private readonly CoreRegistry _registry;
+
+    /// <summary>The world as a game reads it, for resolving what a new character picked against the
+    /// records this world actually holds. Null in a harness that builds a handler without one, and then
+    /// a world that asks nothing at creation is the only one that works — which is what a harness with
+    /// no game loaded is.</summary>
+    private readonly IWorld? _actions;
+
     private readonly PacketRoutes _routes;
 
     /// <summary>What does the things a game lets the player do. Empty for an engine with no game
@@ -99,9 +109,12 @@ public sealed partial class PacketHandler
         PartySystem party, GuildSystem guilds, MailSystem mail, MarketSystem market, TradeSystem trade, ConversationSystem conversations, SocialSystem social, SpawnSystem spawn, TimeOfDaySystem tod, WeatherSystem weather, GameLoop gameLoop,
         ILogger<PacketHandler> logger,
         CoreRegistry? registry = null,
-        IClock? clock = null, IRandomSource? rng = null, ServerConfig? config = null)
+        IClock? clock = null, IRandomSource? rng = null, ServerConfig? config = null,
+        IWorld? actions = null)
     {
         var loaded = registry ?? CoreRegistry.CoreOnly;
+        _registry = loaded;
+        _actions = actions;
         _routes = loaded.PacketRoutes;
         _actionHandlers = loaded.ActionHandlers;
         _declaredActions = loaded.Actions;

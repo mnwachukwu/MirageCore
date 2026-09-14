@@ -1,0 +1,425 @@
+# The spellbook: what a character knows, what they have ready, and what happens when they cast it.
+#
+# behavior/spells.cm is arithmetic and declarations/magic.cm is a shape; this is where both land on
+# somebody. The split is the same one combat.cm and fight.cm make, and for the same reason.
+
+shared model Book
+
+    # Twenty, as the original had. A book of empty slots is what a spellbook looks like, so they are
+    # all declared and all shown.
+    public integer Slots = 20;
+
+    public string Ready = "prepared";
+    public string ReadyName = "preparedname";
+
+    public string Cast = "msr.cast";
+    public string CastSelf = "msr.cast.self";
+
+    # ── What the engine carries ───────────────────────────────────────────────
+
+    public function Declare(Builder game)
+        game.Attribute(Book.Ready, "owner");
+        game.Attribute(Book.ReadyName, "owner");
+
+        loop for slot = 1 to Book.Slots
+            game.Attribute(Book.At(slot), "owner");
+            game.Attribute(Book.NameAt(slot), "owner");
+        end loop
+
+        # 🔴 Q, which is what the original cast with. E is the melee key and R reaches, so the three
+        # keys a hand rests on are the three things a character does.
+        Verb outward = game.Action(Book.Cast, "Cast", "Magic");
+        outward.OnNpc();
+        outward.Icon("spark");
+        outward.Key("Q");
+
+        # A heal aimed at a creature would be a heal aimed at the wrong body, so restoring yourself is
+        # its own verb rather than a target nobody meant to pick.
+        Verb inward = game.Action(Book.CastSelf, "Cast on yourself", "Magic");
+        inward.OnHud();
+        inward.Icon("spark");
+
+        Panel book = game.Panel("msr.book", "Spellbook", 260, 320);
+        book.Key("J");
+        book.Icon("book");
+        book.Heading("Prepared");
+        book.Field(Book.ReadyName, "Ready", 200, 200, 160);
+        book.Heading("Known");
+
+        loop for slot = 1 to Book.Slots
+            book.Field(Book.NameAt(slot), "" + slot, 200, 200, 160);
+        end loop
+
+        book.Asks("Prepared", "Prepare");
+    end function
+
+    # The keys a slot's two halves live under. Written here so the shape of them is stated once.
+    public string function At(integer slot)
+        yield "book" + slot;
+    end function
+
+    public string function NameAt(integer slot)
+        yield "bookname" + slot;
+    end function
+
+    # ── Learning ──────────────────────────────────────────────────────────────
+
+    # 🔴 A SCROLL, and only a scroll, which is how the original taught everything. Somebody uses one
+    # out of their bag and the spell written on it goes into the book; the scroll is spent only if it
+    # was read.
+    #
+    # ⚠ Raised for every use, the engine's own two included — so a scroll that is also a piece of gear
+    # would be worn AND read. Nothing sensible is both, and a world that authored one meant it.
+    public function Read(Player who, integer item)
+        integer written = Book.WrittenOn(item);
+
+        if written < 1
+            yield;
+        end if
+
+        if Book.Learn(who, written)
+            who.Take(item, 1);
+        end if
+    end function
+
+    # 🔴 READ OFF THE ITEM, which is a field this game ADDED to the engine's own Items. A scroll
+    # carries one spell, so it is one value about one record — and a scan of every spell looking for
+    # the one that named this scroll would be the same fact stored backwards.
+    public integer function WrittenOn(integer item)
+        if item < 1
+            yield 0;
+        end if
+
+        yield World.RecordNumber(Gear.Of, item, "teaches");
+    end function
+
+    # ⚠ The refusals are in the order they are worth reporting, which is the original's own order.
+    # Known before full: a full book that already holds this spell needs no slot, so "your book is
+    # full" would name the wrong reason.
+    public boolean function Learn(Player who, integer number)
+        string name = Spells.NameOf(number);
+
+        if name == ""
+            who.Message("There is no such spell.");
+            yield false;
+        end if
+
+        integer myClass = who.Number(Classes.Key);
+
+        if not Spells.OpenTo(number, myClass)
+            who.Message("Your kind does not learn " + name + ".");
+            yield false;
+        end if
+
+        integer level = Stats.LevelOf(who);
+        integer needLevel = World.RecordNumber(Spells.Of, number, "levelReq");
+
+        if level < needLevel
+            who.Message("You must be level " + needLevel + " to learn " + name + ".");
+            yield false;
+        end if
+
+        integer needInt = Spells.IntNeeded(number, Classes.StatOf(who, Stats.Int));
+
+        if who.Number(Stats.Int) < needInt
+            who.Message("You need " + needInt + " intelligence to learn " + name + ".");
+            yield false;
+        end if
+
+        if Book.Holds(who, number)
+            who.Message("You already know " + name + ".");
+            yield false;
+        end if
+
+        integer free = Book.FreeSlot(who);
+
+        if free < 1
+            who.Message("Your book has no room for " + name + ".");
+            yield false;
+        end if
+
+        Book.Write(who, free, number);
+        who.Message("You learn " + name + ".");
+
+        # The first thing anybody learns is the thing they want ready.
+        if who.Number(Book.Ready) < 1
+            Book.Prepare(who, free);
+        end if
+
+        yield true;
+    end function
+
+    # What a class already knows the day it enlists. Called from Classes.Take, so the opening book is
+    # part of enlisting rather than a second errand.
+    public function Grant(Player who, integer forClass)
+        integer rows = World.Records(Spells.Known);
+        integer taught = 0;
+
+        loop for row = 1 to rows
+            if World.RecordNumber(Spells.Known, row, "forClass") == forClass
+                integer number = World.RecordNumber(Spells.Known, row, "spell");
+
+                if number > 0
+                    if Book.Learn(who, number)
+                        taught = taught + 1;
+                    end if
+                end if
+            end if
+        end loop
+
+        # ⚠ Counted rather than reported one at a time, and a spell that would not go in is passed
+        # over in silence: an opening book is a gift rather than a list of refusals.
+        if taught > 0
+            who.Message("You begin knowing " + taught + " spells.");
+        end if
+    end function
+
+    # ── The book itself ───────────────────────────────────────────────────────
+
+    function Write(Player who, integer slot, integer number)
+        who.SetNumber(Book.At(slot), number);
+        who.SetText(Book.NameAt(slot), Spells.NameOf(number));
+    end function
+
+    public boolean function Holds(Player who, integer number)
+        loop for slot = 1 to Book.Slots
+            if who.Number(Book.At(slot)) == number
+                yield true;
+            end if
+        end loop
+
+        yield false;
+    end function
+
+    public integer function FreeSlot(Player who)
+        loop for slot = 1 to Book.Slots
+            if who.Number(Book.At(slot)) < 1
+                yield slot;
+            end if
+        end loop
+
+        yield 0;
+    end function
+
+    public function Prepare(Player who, integer slot)
+        if slot < 1 or slot > Book.Slots
+            who.Message("There is no such page.");
+            yield;
+        end if
+
+        integer number = who.Number(Book.At(slot));
+
+        if number < 1
+            who.Message("That page is empty.");
+            yield;
+        end if
+
+        who.SetNumber(Book.Ready, number);
+        who.SetText(Book.ReadyName, Spells.NameOf(number));
+        who.Message(Spells.NameOf(number) + " is ready.");
+    end function
+
+    # ── Casting ───────────────────────────────────────────────────────────────
+
+    # Everything true of a cast before anyone is picked to receive it. Yields the mana it will cost,
+    # or zero for a cast that is refused — and a refusal has already said why.
+    #
+    # ⚠ A REFUSAL PAYS NOTHING. Nothing was attempted, so nothing is spent and no cooldown starts.
+    # That is only true of refusals: a cast that finds no target is a whiff and pays the full wait,
+    # the same way a swing into air does.
+    integer function Afford(Player who, integer number)
+        if number < 1
+            who.Message("You have no spell prepared.");
+            yield 0;
+        end if
+
+        string name = Spells.NameOf(number);
+        integer level = Stats.LevelOf(who);
+        integer needLevel = World.RecordNumber(Spells.Of, number, "levelReq");
+
+        if level < needLevel
+            who.Message("You must be level " + needLevel + " to cast " + name + ".");
+            yield 0;
+        end if
+
+        integer needInt = Spells.IntNeeded(number, Classes.StatOf(who, Stats.Int));
+
+        if who.Number(Stats.Int) < needInt
+            who.Message("You need " + needInt + " intelligence to cast " + name + ".");
+            yield 0;
+        end if
+
+        integer cost = Spells.Cost(number, who.Number(Stats.Int), who.Number(Vitals.MaxMana));
+
+        if who.Number(Vitals.Mana) < cost
+            who.Message("You do not have the mana for " + name + ".");
+            yield 0;
+        end if
+
+        yield cost;
+    end function
+
+    function Spend(Player who, integer cost)
+        who.SetNumber(Vitals.Mana, who.Number(Vitals.Mana) - cost);
+        who.Wait(Fight.SwingSeconds);
+        who.Engage(Fight.EngagedSeconds);
+    end function
+
+    # A spell aimed at a creature.
+    public function Hurl(Player who, integer map, integer x, integer y)
+        if who.IsWaiting
+            yield;
+        end if
+
+        integer number = who.Number(Book.Ready);
+        integer cost = Book.Afford(who, number);
+
+        if cost < 1
+            yield;
+        end if
+
+        Npc? target = World.NpcAt(map, x, y);
+
+        if not target.HasValue()
+            who.Message("There is nothing there to cast at.");
+            yield;
+        end if
+
+        # ⚠ What the SPELL is comes before where anybody is standing. A heal aimed at a beast is the
+        # wrong spell whether or not it would have reached, and being told the range when the aim was
+        # the mistake sends somebody walking closer to try it again.
+        string type = Spells.TypeOf(number);
+
+        if Spells.Restores(type)
+            who.Message("That would be a kindness wasted.");
+            yield;
+        end if
+
+        if type == "GiveItem"
+            who.Message("There is nobody there to hand anything to.");
+            yield;
+        end if
+
+        # 🔴 THE ENGINE'S OWN REACH, counted across map borders. The world scrolls contiguously, so a
+        # body one tile over a seam is one tile away — arithmetic on the coordinates would call it
+        # another map and refuse a cast the player can see landing.
+        integer gap = World.Distance(who.Map, who.X, who.Y, map, x, y);
+
+        if gap < 0 or gap > Spells.Range
+            who.Message("That is too far away.");
+            yield;
+        end if
+
+        # And the engine's own trace, which is the one the client colored the target arrow with — so a
+        # refusal here agrees with what the player was shown rather than nearly agreeing.
+        if not World.CanSee(who.Map, who.X, who.Y, map, x, y)
+            who.Message("You cannot see a clear line to that.");
+            yield;
+        end if
+
+        Book.Spend(who, cost);
+        target.Engage(Fight.EngagedSeconds);
+        who.ThrowAtNpc(target, "bolt", 120, 160, 255);
+
+        integer int = who.Number(Stats.Int);
+        integer level = Stats.LevelOf(who);
+        integer amount = World.RecordNumber(Spells.Of, number, "amount");
+        integer raw = Combat.Vary(Spells.Power(int, amount));
+        boolean crit = Combat.Rolls(Combat.PlayerChance(int, level,
+                                                        Combat.PlayerCritDivisor, Combat.PlayerCritCap));
+
+        if crit
+            raw = Combat.Crit(raw);
+        end if
+
+        integer defence = target.Number(Stats.Def);
+        integer taken = Combat.Resolve(raw, Combat.Protection(defence, defence), Combat.PveDamageFloor);
+
+        # ⚠ Only health is mitigated. Draining mana or stamina goes through whatever a body's armor
+        # is, because armor is not what holds those.
+        if type != "SubHp"
+            taken = raw;
+        end if
+
+        Book.Drain(who, target, type, taken, crit, map, x, y);
+    end function
+
+    # What a drain does to the creature it landed on.
+    function Drain(Player who, Npc target, string type, integer taken, boolean crit,
+                   integer map, integer x, integer y)
+        string vital = Spells.Vital(type);
+
+        if type != "SubHp"
+            integer left = target.Number(vital) - taken;
+
+            if left < 0
+                left = 0;
+            end if
+
+            target.SetNumber(vital, left);
+            target.Float("" + taken, 140, 120, 220);
+            yield;
+        end if
+
+        Fight.Wound(target, taken, crit);
+
+        integer health = target.Number(Vitals.Health) - taken;
+
+        if health > 0
+            target.SetNumber(Vitals.Health, health);
+
+            # 🔴 A spell is a hit, so it answers like one. Without this a caster is the one thing in
+            # the world an ambling creature never fights back against.
+            Beasts.Answer(target, who);
+            yield;
+        end if
+
+        Fight.Slain(who, target, map, x, y);
+    end function
+
+    # A spell aimed at the caster. Restoring, or a thing handed over.
+    public function Inward(Player who)
+        if who.IsWaiting
+            yield;
+        end if
+
+        integer number = who.Number(Book.Ready);
+        integer cost = Book.Afford(who, number);
+
+        if cost < 1
+            yield;
+        end if
+
+        string type = Spells.TypeOf(number);
+
+        if Spells.Harms(type)
+            who.Message("You would regret that.");
+            yield;
+        end if
+
+        Book.Spend(who, cost);
+        who.Burst(120, 200, 255, 60);
+
+        if type == "GiveItem"
+            integer item = World.RecordNumber(Spells.Of, number, "item");
+            integer many = World.RecordNumber(Spells.Of, number, "many");
+
+            if item > 0 and many > 0
+                who.Give(item, many);
+                who.Message("You conjure what you asked for.");
+            end if
+
+            yield;
+        end if
+
+        integer amount = World.RecordNumber(Spells.Of, number, "amount");
+        integer back = Combat.Vary(Spells.Power(who.Number(Stats.Int), amount));
+
+        # ⚠ Spent BEFORE the restore, which is what stops a mana spell paying for itself. Restoring
+        # into the pool the cost came out of is the one case where the order of two writes decides
+        # whether the game has an economy.
+        Vitals.Give(who, Spells.Vital(type), Spells.Ceiling(type), back);
+        who.Float("+" + back, 120, 220, 140);
+    end function
+
+end model

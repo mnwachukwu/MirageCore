@@ -1,0 +1,487 @@
+# Taking a quest, counting toward it, and handing it back.
+#
+# What a quest IS lives in declarations/quests.cm. This is what a character does with one.
+#
+# 🔴 A CHARACTER CARRIES ONE NUMBER PER QUEST AND ONE PER GOAL, and nothing else. Where a quest is up
+# to is a fact about the character, so it lives on the character — not in a table beside them that a
+# deletion, a rollback, or a second server could disagree with. The cost is a declared key per slot,
+# which is what a save file is.
+
+shared model Quests
+
+    public string Of = "Quest";
+    public string Goals = "QuestGoal";
+    public string Gates = "QuestGate";
+
+    # ── The dials ─────────────────────────────────────────────────────────────
+
+    # How many quests and goals a character's own record can hold. Below what an author may write, on
+    # purpose: a world may author two hundred quests, and a character carries what they have touched.
+    public integer Tracked = 40;
+    public integer Counted = 120;
+
+    # How many lines the journal shows. A window, not a limit — a reader wants the handful they are
+    # working on, and eight is what fits.
+    public integer Shown = 8;
+
+    # What a slot holds. Nothing is not-started; the rest are the whole lifecycle.
+    #
+    # ⚠ A run that is NOT the first is its own state, because the difference is what it pays. Taking a
+    # finished quest again is a repeat run, and handing that one in pays the repeat rewards rather than
+    # the first-run rewards.
+    public integer Taken = 1;
+    public integer Finished = 2;
+    public integer Repeating = 3;
+
+    # ── When a finished quest opens again ─────────────────────────────────────
+
+    public integer Never = 0;
+    public integer Daily = 1;
+    public integer Weekly = 2;
+    public integer Monthly = 3;
+    public integer Seasonally = 4;
+
+    # A season is thirteen weeks, which is the length the original's territory season ran to. It is
+    # counted from the epoch rather than from a season the world is keeping, because seasons
+    # themselves are not ported.
+    public integer SeasonDays = 91;
+
+    # One number naming the period a day falls in, for that cadence. Two runs in the same period give
+    # the same number, and that is the whole of the rule: a quest re-opens when the number changes.
+    public integer function PeriodOf(integer cadence, integer day)
+        if cadence == Quests.Daily
+            yield day;
+        end if
+
+        if cadence == Quests.Weekly
+            yield Calendar.WeekOf(day);
+        end if
+
+        if cadence == Quests.Monthly
+            yield Calendar.MonthKey(day);
+        end if
+
+        if cadence == Quests.Seasonally
+            yield day / Quests.SeasonDays;
+        end if
+
+        yield 0;
+    end function
+
+    # ⚠ Stamped with ONE added, so a quest finished in period zero is told apart from one never
+    # finished at all. Nothing else reads the number.
+    public string function PeriodAt(integer slot)
+        yield "qwhen" + slot;
+    end function
+
+    # Whether a run of this quest is underway, first time or not. Three places ask, and a repeat run
+    # that any one of them missed would be a quest nobody could advance, hand in, or see in the journal.
+    public boolean function Underway(Player who, integer number)
+        integer holding = who.Number(Quests.At(number));
+
+        yield holding == Quests.Taken or holding == Quests.Repeating;
+    end function
+
+    public integer function CadenceOf(integer number)
+        yield World.RecordNumber(Quests.Of, number, "cadence");
+    end function
+
+    # Whether a finished quest has come round again: it re-opens at all, and the period it was
+    # finished in has passed.
+    public boolean function ComeRound(Player who, integer number)
+        integer cadence = Quests.CadenceOf(number);
+
+        if cadence == Quests.Never
+            yield false;
+        end if
+
+        yield who.Number(Quests.PeriodAt(number))
+              != Quests.PeriodOf(cadence, Calendar.Today()) + 1;
+    end function
+
+    public string Offer = "msr.quest.offer";
+    public string Hand = "msr.quest.hand";
+
+    # ── What the engine carries ───────────────────────────────────────────────
+
+    public function Declare(Builder game)
+        loop for slot = 1 to Quests.Tracked
+            game.Attribute(Quests.At(slot), "owner");
+            game.Attribute(Quests.PeriodAt(slot), "owner");
+        end loop
+
+        loop for row = 1 to Quests.Counted
+            game.Attribute(Quests.CountAt(row), "owner");
+        end loop
+
+        loop for line = 1 to Quests.Shown
+            game.Attribute(Quests.LineAt(line), "owner");
+        end loop
+
+        # 🔴 A CONVERSATION CHOICE REACHES THESE. A choice names a verb by the id it was declared
+        # with, and picking it opens whatever panel that verb opens — so a giver's own dialogue can
+        # end in "Tell me more" and the journal is what comes up.
+        Verb ask = game.Action(Quests.Offer, "Ask about work", "Quests");
+        ask.OnNpc();
+        ask.Icon("scroll");
+        ask.Opens("msr.journal");
+
+        Verb hand = game.Action(Quests.Hand, "Hand it in", "Quests");
+        hand.OnNpc();
+        hand.Icon("coin");
+
+        Panel journal = game.Panel("msr.journal", "Journal", 300, 220);
+        journal.Key("U");
+        journal.Icon("scroll");
+        journal.Heading("Underway");
+
+        loop for line = 1 to Quests.Shown
+            journal.Field(Quests.LineAt(line), "", 200, 200, 160);
+        end loop
+    end function
+
+    public string function At(integer slot)
+        yield "quest" + slot;
+    end function
+
+    public string function CountAt(integer row)
+        yield "qcount" + row;
+    end function
+
+    public string function LineAt(integer line)
+        yield "qlog" + line;
+    end function
+
+    # ── Taking one ────────────────────────────────────────────────────────────
+
+    # Somebody asked a creature about work. Every quest that creature offers and this character may
+    # take is accepted at once — the original offered them one at a time through a dialogue, and a
+    # list they can read afterwards is the same answer without a screen this game cannot draw.
+    public function Ask(Player who, integer map, integer x, integer y)
+        Npc? giver = World.NpcAt(map, x, y);
+
+        if not giver.HasValue()
+            who.Message("There is nobody there to ask.");
+            yield;
+        end if
+
+        integer kind = giver.Kind;
+        integer many = World.Records(Quests.Of);
+        integer took = 0;
+
+        loop for number = 1 to many
+            if World.RecordNumber(Quests.Of, number, "giver") == kind
+                if Quests.Take(who, number)
+                    took = took + 1;
+                end if
+            end if
+        end loop
+
+        if took < 1
+            who.Message(giver.Name + " has nothing for you.");
+        end if
+
+        Quests.Write(who);
+    end function
+
+    # ⚠ The refusals are silent. A giver offering four quests to somebody who qualifies for one would
+    # otherwise say three things nobody asked about — and a quest you cannot take yet is not news, it
+    # is the shape of a ladder.
+    public boolean function Take(Player who, integer number)
+        if number < 1 or number > Quests.Tracked
+            yield false;
+        end if
+
+        integer holding = who.Number(Quests.At(number));
+
+        if holding == Quests.Taken or holding == Quests.Repeating
+            yield false;
+        end if
+
+        # Finished, and its period has not come round yet.
+        if holding == Quests.Finished and not Quests.ComeRound(who, number)
+            yield false;
+        end if
+
+        if not Quests.Allows(who, number)
+            yield false;
+        end if
+
+        # A quest taken again is a REPEAT run, and the state is the only thing that remembers — so
+        # handing it in pays what a repeat pays rather than what the first run did.
+        integer run = Quests.Taken;
+
+        if holding == Quests.Finished
+            run = Quests.Repeating;
+        end if
+
+        who.SetNumber(Quests.At(number), run);
+        Quests.Clear(who, number);
+        who.Message("You take on " + World.Record(Quests.Of, number, "name") + ".");
+        yield true;
+    end function
+
+    # Everything this game asks before somebody may take one.
+    public boolean function Allows(Player who, integer number)
+        integer prereq = World.RecordNumber(Quests.Of, number, "prereq");
+
+        if prereq > 0 and who.Number(Quests.At(prereq)) != Quests.Finished
+            yield false;
+        end if
+
+        if Stats.LevelOf(who) < World.RecordNumber(Quests.Of, number, "reqLevel")
+            yield false;
+        end if
+
+        if who.Number(Stats.Str) < World.RecordNumber(Quests.Of, number, "reqStr")
+            yield false;
+        end if
+
+        if who.Number(Stats.Def) < World.RecordNumber(Quests.Of, number, "reqDef")
+            yield false;
+        end if
+
+        if who.Number(Stats.Spd) < World.RecordNumber(Quests.Of, number, "reqSpd")
+            yield false;
+        end if
+
+        if who.Number(Stats.Int) < World.RecordNumber(Quests.Of, number, "reqInt")
+            yield false;
+        end if
+
+        yield Quests.OpenTo(number, who.Number(Classes.Key));
+    end function
+
+    # ⚠ No row for a quest means every class may take it.
+    public boolean function OpenTo(integer number, integer forClass)
+        integer rows = World.Records(Quests.Gates);
+        boolean gated = false;
+
+        loop for row = 1 to rows
+            if World.RecordNumber(Quests.Gates, row, "forQuest") == number
+                gated = true;
+
+                if World.RecordNumber(Quests.Gates, row, "forClass") == forClass
+                    yield true;
+                end if
+            end if
+        end loop
+
+        yield not gated;
+    end function
+
+    # ── Counting toward one ───────────────────────────────────────────────────
+
+    # 🔴 CALLED FROM THE ONE PLACE A CREATURE DIES, so a kill counts whether it was a swing or a
+    # spell. A second call site would be a second rule, and the one that got forgotten would be the
+    # one nobody notices until a quest will not finish.
+    public function Killed(Player who, integer kind)
+        integer rows = World.Records(Quests.Goals);
+        boolean moved = false;
+
+        loop for row = 1 to rows
+            if row <= Quests.Counted and World.RecordNumber(Quests.Goals, row, "quarry") == kind
+                integer quest = World.RecordNumber(Quests.Goals, row, "forQuest");
+
+                if quest > 0 and quest <= Quests.Tracked and Quests.Underway(who, quest)
+                    integer done = who.Number(Quests.CountAt(row));
+                    integer needed = World.RecordNumber(Quests.Goals, row, "many");
+
+                    if done < needed
+                        who.SetNumber(Quests.CountAt(row), done + 1);
+                        moved = true;
+
+                        if done + 1 >= needed
+                            who.Message(World.Record(Quests.Of, quest, "name") + ": that is all of them.");
+                        end if
+                    end if
+                end if
+            end if
+        end loop
+
+        if moved
+            Quests.Write(who);
+        end if
+    end function
+
+    # Whether every goal of a quest is met. A quest with no goals is met the moment it is taken, which
+    # is what a delivery is.
+    public boolean function Done(Player who, integer number)
+        integer rows = World.Records(Quests.Goals);
+
+        loop for row = 1 to rows
+            if row <= Quests.Counted and World.RecordNumber(Quests.Goals, row, "forQuest") == number
+                if who.Number(Quests.CountAt(row)) < World.RecordNumber(Quests.Goals, row, "many")
+                    yield false;
+                end if
+            end if
+        end loop
+
+        yield true;
+    end function
+
+    function Clear(Player who, integer number)
+        integer rows = World.Records(Quests.Goals);
+
+        loop for row = 1 to rows
+            if row <= Quests.Counted and World.RecordNumber(Quests.Goals, row, "forQuest") == number
+                who.SetNumber(Quests.CountAt(row), 0);
+            end if
+        end loop
+    end function
+
+    # ── Handing one back ──────────────────────────────────────────────────────
+
+    public function Give(Player who, integer map, integer x, integer y)
+        Npc? taker = World.NpcAt(map, x, y);
+
+        if not taker.HasValue()
+            who.Message("There is nobody there to hand it to.");
+            yield;
+        end if
+
+        integer kind = taker.Kind;
+        integer many = World.Records(Quests.Of);
+        integer paid = 0;
+
+        loop for number = 1 to many
+            if number <= Quests.Tracked and Quests.Underway(who, number)
+                if Quests.TakenBy(number) == kind and Quests.Done(who, number)
+                    Quests.Pay(who, number);
+                    paid = paid + 1;
+                end if
+            end if
+        end loop
+
+        if paid < 1
+            who.Message(taker.Name + " has nothing to settle with you.");
+        end if
+
+        Quests.Write(who);
+    end function
+
+    # Who takes it back: the turn-in creature, or the giver when nobody else was named.
+    public integer function TakenBy(integer number)
+        integer taker = World.RecordNumber(Quests.Of, number, "turnIn");
+
+        if taker > 0
+            yield taker;
+        end if
+
+        yield World.RecordNumber(Quests.Of, number, "giver");
+    end function
+
+    function Pay(Player who, integer number)
+        boolean again = who.Number(Quests.At(number)) == Quests.Repeating;
+
+        who.SetNumber(Quests.At(number), Quests.Finished);
+
+        # The period it was finished in, which is what holds it shut until that period has passed. One
+        # is added so a quest finished in period nought is told apart from one never finished.
+        who.SetNumber(Quests.PeriodAt(number),
+                      Quests.PeriodOf(Quests.CadenceOf(number), Calendar.Today()) + 1);
+
+        string name = World.Record(Quests.Of, number, "name");
+        integer item = Quests.PaidItem(number, again);
+        integer amount = Quests.PaidMany(number, again);
+
+        if item > 0 and amount > 0
+            who.Give(item, amount);
+        end if
+
+        who.Message(name + " is settled.");
+
+        # ⚠ LAST, because earning may take them up a level and levelling says so. A payout announced
+        # after the level-up reads as the reward for the level rather than for the quest.
+        Levels.Earn(who, Quests.PaidExp(number, again));
+    end function
+
+    # ── What a run pays ───────────────────────────────────────────────────────
+    #
+    # A later run has its own reward set. ⚠ A repeat reward left at nought is not "pays nothing" — it
+    # is "nobody said", and it falls back to what the first run paid. A quest an author set a cadence
+    # on and no repeat rewards for still pays.
+
+    public integer function PaidExp(integer number, boolean again)
+        if again
+            integer paid = World.RecordNumber(Quests.Of, number, "repeatExp");
+
+            if paid > 0
+                yield paid;
+            end if
+        end if
+
+        yield World.RecordNumber(Quests.Of, number, "rewardExp");
+    end function
+
+    public integer function PaidItem(integer number, boolean again)
+        if again
+            integer paid = World.RecordNumber(Quests.Of, number, "repeatItem");
+
+            if paid > 0
+                yield paid;
+            end if
+        end if
+
+        yield World.RecordNumber(Quests.Of, number, "rewardItem");
+    end function
+
+    public integer function PaidMany(integer number, boolean again)
+        if again
+            if World.RecordNumber(Quests.Of, number, "repeatItem") > 0
+                yield World.RecordNumber(Quests.Of, number, "repeatMany");
+            end if
+        end if
+
+        yield World.RecordNumber(Quests.Of, number, "rewardMany");
+    end function
+
+    # ── The journal ───────────────────────────────────────────────────────────
+
+    # 🔴 A WINDOW OVER WHAT IS UNDERWAY, rewritten whenever it changes. The panel reads these keys live
+    # off the player, so a game with no journal code still draws one — but somebody with forty quests
+    # taken has a screen nobody can read, and the eight they are working on is the useful answer.
+    public function Write(Player who)
+        integer many = World.Records(Quests.Of);
+        integer line = 0;
+
+        loop for number = 1 to many
+            if number <= Quests.Tracked and Quests.Underway(who, number)
+                if line < Quests.Shown
+                    line = line + 1;
+                    who.SetText(Quests.LineAt(line), Quests.Says(who, number));
+                end if
+            end if
+        end loop
+
+        # Everything past the last one is blanked, or a quest that was settled goes on being shown.
+        loop for blank = line + 1 to Quests.Shown
+            who.SetText(Quests.LineAt(blank), "");
+        end loop
+    end function
+
+    # One line: what it is called, and how far along it is.
+    string function Says(Player who, integer number)
+        string name = World.Record(Quests.Of, number, "name");
+
+        if Quests.Done(who, number)
+            yield name + " - ready to hand in";
+        end if
+
+        integer rows = World.Records(Quests.Goals);
+
+        loop for row = 1 to rows
+            if row <= Quests.Counted and World.RecordNumber(Quests.Goals, row, "forQuest") == number
+                integer done = who.Number(Quests.CountAt(row));
+                integer needed = World.RecordNumber(Quests.Goals, row, "many");
+
+                if done < needed
+                    yield name + " - " + done + " of " + needed;
+                end if
+            end if
+        end loop
+
+        yield name;
+    end function
+
+end model

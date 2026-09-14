@@ -106,6 +106,11 @@ public class ModuleStartTests
         public string GuildOf(EntityHandle who) => string.Empty;
         public IReadOnlyList<EntityHandle> GuildmatesOf(EntityHandle who) => [];
         public IReadOnlyList<EntityHandle> PartyOf(EntityHandle who) => [];
+        public bool IsEngaged(EntityHandle who) => false;
+        public bool IsDowned(EntityHandle who) => false;
+        public bool IsMarked(EntityHandle who) => false;
+        public bool IsAggressor(EntityHandle who) => false;
+        public bool IsWaiting(EntityHandle who) => false;
         public void Tell(EntityHandle who, string text, ChatChannel channel, int color) { }
         public AttributeBag? AttributesOf(EntityHandle who) => null;
         public bool SetAttribute(EntityHandle who, string key, AttributeValue value) => false;
@@ -124,7 +129,43 @@ public class ModuleStartTests
         public void Stain(WorldPlace at, int size, WorldLayer layer, float amount) { }
         public IReadOnlyList<AttributeBag> RecordsOf(string familyId) => [];
         public AttributeBag? RecordAt(string familyId, int num) => null;
+        public string RecordName(string familyId, int num) => string.Empty;
 
         public string NameOf(EntityHandle who) => who.IsSet ? who.ToString() : string.Empty;
+        public int KindOf(EntityHandle who) => 0;
+        public bool Provoke(EntityHandle npc, EntityHandle quarry) => false;
+        public bool Forget(EntityHandle npc) => false;
+        public IReadOnlyList<EntityHandle> NpcsNear(WorldPlace at, int tiles) => [];
+        public string TileAt(WorldPlace place) => string.Empty;
+        public bool CanSee(WorldPlace from, WorldPlace to) => false;
+        public int Distance(WorldPlace from, WorldPlace to) => -1;
+        public string WeatherOn(int mapNum) => string.Empty;
+        public int MapGroupOf(int mapNum) => 0;
+        public bool Wear(EntityHandle who, int itemNum) => false;
+        public bool Remove(EntityHandle who, int itemNum) => false;
+        public long Carrying(EntityHandle who, int itemNum) => 0L;
+        public bool IsRunning(EntityHandle who) => false;
+        public string BehaviorOf(EntityHandle npc) => string.Empty;
+        public int GroupOf(EntityHandle npc) => 0;
+        public int RangeOf(EntityHandle npc) => 0;
+        public bool IsChasing(EntityHandle npc) => false;
+        public int GuildNumber(EntityHandle who) => 0;
+        public string GuildName(int guild) => string.Empty;
+        public int GuildNamed(string name) => 0;
+        public string GuildRankOf(EntityHandle who) => string.Empty;
+        public AttributeBag? GuildValues(int guild) => null;
+        public bool SetGuildValue(int guild, string key, AttributeValue value) => false;
+        public IReadOnlyList<EntityHandle> MembersOf(int guild) => [];
+        public long GuildGold(int guild) => 0L;
+        public long Now() => 0L;
+        public IReadOnlyList<int> WornBy(EntityHandle who) => [];
+        public int WornIn(EntityHandle who, string slotKey) => 0;
+        public (int Left, int Full) DurabilityOf(EntityHandle who, int itemNum) => (0, 0);
+        public int Wear(EntityHandle who, int itemNum, int points) => 0;
+        public int RepairCost(int itemNum, int points) => 0;
+        public AttributeValue? MapValue(int mapNum, string key) => null;
+        public bool SetRecordValue(string familyId, int num, string key, AttributeValue value) => false;
+        public bool GiveGuildGold(int guild, long amount) => false;
+        public bool SpendGuildGold(int guild, long amount, EntityHandle by) => false;
     }
 }

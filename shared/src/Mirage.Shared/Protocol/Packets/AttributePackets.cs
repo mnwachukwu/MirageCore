@@ -134,7 +134,8 @@ public sealed record GameActionsPacket : IPacket
         [property: JsonPropertyName("opens")] string OpensPanel,
         [property: JsonPropertyName("key")] string Key,
         [property: JsonPropertyName("when")] ActionCondition When,
-        [property: JsonPropertyName("icon")] string Icon);
+        [property: JsonPropertyName("icon")] string Icon,
+        [property: JsonPropertyName("interacts")] bool Interacts = false);
 }
 
 /// <summary>

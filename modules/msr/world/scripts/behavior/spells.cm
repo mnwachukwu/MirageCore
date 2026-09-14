@@ -1,0 +1,191 @@
+# What casting costs, and what a cast is worth.
+#
+# A SPELL IS A SWING DELIVERED AT RANGE. Strength and mind are the same offense stat and run the same
+# curve, so a caster and a warrior of equal investment deal identical damage. What range costs is paid
+# in mana and in the wait after a cast, never in the damage - this reuses Combat.Swing rather than
+# mirroring it, so the two cannot drift.
+#
+# What a spell IS lives in declarations/magic.cm.
+
+shared model Spells
+
+    public string Of = "Spell";
+    public string Gates = "SpellGate";
+    public string Known = "ClassSpell";
+
+    # ── The dials ─────────────────────────────────────────────────────────────
+
+    # How far a cast reaches, in tiles. Pinned to the viewport in the original: a circle larger than
+    # what is drawn would let somebody hit what they cannot see.
+    public integer Range = 5;
+
+    # A class's head start on the intelligence gate. It moves the THRESHOLD and never the damage, so
+    # two casters with equal intelligence cast identically whatever they enlisted as.
+    public real AffinityDivisor = 4.0;
+
+    # Cost is the same shifted curve as everything else here, off the authored magnitude.
+    public integer CostShift = 15;
+    public real CostDivisor = 6.0;
+
+    # Putting stamina back costs a little more than taking it away did. Health is exempt: its
+    # counterpart is the caster's cheap workhorse below, so there is no full-price damage cost for a
+    # heal to be priced above.
+    public real RestoreSurcharge = 1.10;
+
+    # 🔴 Mana is the ONE type whose output is its own input, so any cast that nets positive is a loop
+    # rather than a good trade. Priced off the authored amount alone it netted positive for almost
+    # everybody — the restore carries a term growing without bound in the caster's own intelligence,
+    # and no constant outruns a curve. So it prices off what it actually hands over.
+    public real ManaSurcharge = 1.30;
+
+    # ⚠ And damage does not pay the utility price at all. It is the caster's sustainable weapon, so
+    # its cost is a flat, trivial share of the pool — mana is a distant ceiling on a marathon rather
+    # than a gate on each cast.
+    public integer DamageCostShare = 25;
+
+    # ── What a cast is worth ──────────────────────────────────────────────────
+
+    # The diminishing-returns curve an authored magnitude contributes through, which is the same
+    # curve a weapon's power runs. It asymptotes at the caster's own intelligence, so a large number
+    # typed into the editor cannot blow past what mitigation can answer.
+    public integer function Contribution(integer rating, integer stat)
+        if rating < 1
+            yield 0;
+        end if
+
+        integer paired = Math.Max(stat, 1);
+
+        yield Math.Round(2.0 * rating * paired / (paired + rating));
+    end function
+
+    # Raw, before variance and before a crit. The caster's own contribution runs Combat.Swing because
+    # mind and strength ARE the same stat; the spell's magnitude is what makes one spell differ from
+    # another at equal intelligence.
+    public integer function Power(integer int, integer amount)
+        yield Combat.Swing(int) + Spells.Contribution(amount, int);
+    end function
+
+    # ── Who may learn it ──────────────────────────────────────────────────────
+
+    public integer function Affinity(integer classInt)
+        yield Math.Round(classInt / Spells.AffinityDivisor);
+    end function
+
+    # What a spell is authored to need, before any head start. GiveItem carries its own, because an
+    # item number is an identity rather than a magnitude and gating off it would make a spell handing
+    # over item 200 harder to learn than one handing over item 3.
+    public integer function Authored(integer number)
+        if Spells.TypeOf(number) == "GiveItem"
+            yield World.RecordNumber(Spells.Of, number, "intReq");
+        end if
+
+        yield World.RecordNumber(Spells.Of, number, "amount");
+    end function
+
+    public integer function IntNeeded(integer number, integer classInt)
+        integer needed = Spells.Authored(number) - Spells.Affinity(classInt);
+
+        # Floored at one rather than at zero. A real spell always carries a magnitude, so unlike free
+        # gear it keeps a token requirement even for the class it was written for.
+        yield Math.Max(1, needed);
+    end function
+
+    # ── What it costs ─────────────────────────────────────────────────────────
+
+    public integer function Cost(integer number, integer casterInt, integer casterMaxMana)
+        string type = Spells.TypeOf(number);
+        integer amount = World.RecordNumber(Spells.Of, number, "amount");
+
+        if type == "SubHp"
+            yield Math.Max(1, Math.Round(casterMaxMana / Spells.DamageCostShare));
+        end if
+
+        if type == "AddMp"
+            yield Math.Max(1, Math.Ceiling(Spells.Power(casterInt, amount) * Spells.ManaSurcharge));
+        end if
+
+        real cost = Math.Pow(Spells.Authored(number) + Spells.CostShift, Combat.CurveExponent)
+                    / Spells.CostDivisor;
+
+        if type == "AddSp"
+            cost = cost * Spells.RestoreSurcharge;
+        end if
+
+        yield Math.Max(1, Math.Round(cost));
+    end function
+
+    # ── Reading a spell ───────────────────────────────────────────────────────
+
+    public string function TypeOf(integer number)
+        yield World.Record(Spells.Of, number, "type");
+    end function
+
+    public string function NameOf(integer number)
+        yield World.Record(Spells.Of, number, "name");
+    end function
+
+    # Which vital a type moves, and whether it puts in or takes out. Written as two answers rather
+    # than one so nothing anywhere has to spell the seven member names out twice.
+
+    public string function Vital(string type)
+        if type == "AddHp" or type == "SubHp"
+            yield Vitals.Health;
+        end if
+
+        if type == "AddMp" or type == "SubMp"
+            yield Vitals.Mana;
+        end if
+
+        if type == "AddSp" or type == "SubSp"
+            yield Vitals.Stamina;
+        end if
+
+        yield "";
+    end function
+
+    public string function Ceiling(string type)
+        if type == "AddHp" or type == "SubHp"
+            yield Vitals.MaxHealth;
+        end if
+
+        if type == "AddMp" or type == "SubMp"
+            yield Vitals.MaxMana;
+        end if
+
+        if type == "AddSp" or type == "SubSp"
+            yield Vitals.MaxStamina;
+        end if
+
+        yield "";
+    end function
+
+    public boolean function Restores(string type)
+        yield type == "AddHp" or type == "AddMp" or type == "AddSp";
+    end function
+
+    public boolean function Harms(string type)
+        yield type == "SubHp" or type == "SubMp" or type == "SubSp";
+    end function
+
+    # ── The gate ──────────────────────────────────────────────────────────────
+
+    # ⚠ No row for a spell means every class may learn it, so the scan answers true twice over: once
+    # for a spell nobody gated, and once for a gate naming this class.
+    public boolean function OpenTo(integer number, integer forClass)
+        integer rows = World.Records(Spells.Gates);
+        boolean gated = false;
+
+        loop for row = 1 to rows
+            if World.RecordNumber(Spells.Gates, row, "forSpell") == number
+                gated = true;
+
+                if World.RecordNumber(Spells.Gates, row, "forClass") == forClass
+                    yield true;
+                end if
+            end if
+        end loop
+
+        yield not gated;
+    end function
+
+end model

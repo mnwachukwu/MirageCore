@@ -33,8 +33,32 @@ public class ScriptStubTests
         return here?.FullName ?? throw new InvalidOperationException("The repository root is not above here.");
     }
 
-    private static string ShippedWorld() =>
-        Path.Combine(Repository(), "server", "src", "Mirage.Server.Host", "world");
+    /// <summary>
+    /// Every world folder this repository holds: the one the server ships, and each module's.
+    ///
+    /// <para>🔴 <b>A module's world is nobody's working directory, so nothing regenerates it.</b> The
+    /// shipped one is rewritten every time a server starts on it; a module's is written once by
+    /// whoever made it and then rots, quietly, until an author opens it in VS Code and is told the
+    /// engine's own types do not exist.</para>
+    /// </summary>
+    private static IEnumerable<string> Worlds()
+    {
+        string root = Repository();
+
+        yield return Path.Combine(root, "server", "src", "Mirage.Server.Host", "world");
+
+        string modules = Path.Combine(root, "modules");
+        if (!Directory.Exists(modules)) yield break;
+
+        foreach (string module in Directory.EnumerateDirectories(modules))
+        {
+            string world = Path.Combine(module, "world");
+            if (Directory.Exists(Path.Combine(world, ScriptedWorldModule.ScriptsFolder)))
+            {
+                yield return world;
+            }
+        }
+    }
 
     /// <summary>Every registered type reaches the stub, with every member on it.</summary>
     [Test]
@@ -180,32 +204,34 @@ public class ScriptStubTests
     }
 
     /// <summary>
-    /// The shipped world carries a current copy, and this writes one when it drifts.
+    /// Every world carries a current copy, and this writes one when it drifts.
     ///
     /// <para>It ships in the seed, so a fresh install can be opened in an editor before the server has
     /// ever run. Regenerating here rather than by hand is the same arrangement
     /// <c>docs/scripting-api.md</c> uses: the file cannot be stale and quietly wrong.</para>
     /// </summary>
     [Test]
-    public void TheShippedWorldsStubsAreCurrent()
+    public void EveryWorldsStubsAreCurrent()
     {
-        string world = ShippedWorld();
-        string scripts = Path.Combine(world, ScriptedWorldModule.ScriptsFolder);
+        var rewritten = new List<string>();
 
-        Assume.That(Directory.Exists(scripts), "the shipped world carries no scripts folder");
+        foreach (string world in Worlds())
+        {
+            string scripts = Path.Combine(world, ScriptedWorldModule.ScriptsFolder);
 
-        var folders = Directory.EnumerateDirectories(scripts, "*", SearchOption.AllDirectories)
-            .Prepend(scripts)
-            .Where(d => Directory.EnumerateFiles(d, "*" + ScriptModule.Extension).Any())
-            .Select(d => Path.GetRelativePath(world, d).Replace('\\', '/'))
-            .OrderBy(d => d, StringComparer.Ordinal)
-            .ToArray();
+            var folders = Directory.EnumerateDirectories(scripts, "*", SearchOption.AllDirectories)
+                .Prepend(scripts)
+                .Where(d => Directory.EnumerateFiles(d, "*" + ScriptModule.Extension).Any())
+                .Select(d => Path.GetRelativePath(world, d).Replace('\\', '/'))
+                .OrderBy(d => d, StringComparer.Ordinal)
+                .ToArray();
 
-        bool wrote = ScriptStubs.Write(world, Catalog(), folders);
+            if (ScriptStubs.Write(world, Catalog(), folders)) rewritten.Add(Path.GetFileName(world));
+        }
 
-        Assert.That(wrote, Is.False,
-            "the shipped world's editor stubs were out of date and have been rewritten. "
-            + "Run the tests again, and commit "
-            + $"{ScriptStubs.Folder}/{ScriptStubs.StubFile} and {ScriptStubs.ProjectFile}.");
+        Assert.That(rewritten, Is.Empty,
+            "editor stubs were out of date and have been rewritten. Run the tests again, and commit "
+            + $"{ScriptStubs.Folder}/{ScriptStubs.StubFile} and {ScriptStubs.ProjectFile} under: "
+            + string.Join(", ", rewritten));
     }
 }

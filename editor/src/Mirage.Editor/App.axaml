@@ -115,6 +115,63 @@
     <DataTemplate DataType="{x:Type vm:AccountEditorViewModel}">
       <views:AccountEditorView />
     </DataTemplate>
+
+    <!-- One row of a form the schema described. Here rather than inside a view because two screens show
+         these rows: the section for a family a game declared, and the game's own fields under each of the
+         engine's own records. One control per field kind, shown by the descriptor's own flags, so adding
+         a kind is a block here plus a flag on the row and never a switch in code-behind. -->
+    <DataTemplate DataType="{x:Type vm:SchemaFieldViewModel}">
+      <Grid Margin="0,0,0,8" ToolTip.Tip="{Binding Hint}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" MinWidth="120" SharedSizeGroup="SchemaFieldLabel"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Column="0" Text="{Binding Label}"
+                   VerticalAlignment="Center" Margin="0,0,10,0"
+                   TextWrapping="Wrap"/>
+
+        <Panel Grid.Column="1">
+          <NumericUpDown IsVisible="{Binding IsInteger}"
+                         Value="{Binding NumberValue}"
+                         Minimum="{Binding Minimum}" Maximum="{Binding Maximum}"
+                         Increment="1" FormatString="0"/>
+
+          <NumericUpDown IsVisible="{Binding IsReal}"
+                         Value="{Binding NumberValue}"
+                         Minimum="{Binding Minimum}" Maximum="{Binding Maximum}"
+                         Increment="0.1" FormatString="0.###"/>
+
+          <CheckBox IsVisible="{Binding IsFlag}"
+                    IsChecked="{Binding FlagValue}"/>
+
+          <TextBox IsVisible="{Binding IsText}"
+                   Text="{Binding TextValue}"/>
+
+          <ComboBox IsVisible="{Binding IsChoice}"
+                    HorizontalAlignment="Stretch"
+                    ItemsSource="{Binding Options}"
+                    SelectedValue="{Binding ChoiceValue}"
+                    SelectedValueBinding="{Binding Id}"
+                    DisplayMemberBinding="{Binding Label}"/>
+
+          <!-- A reference is a slot number. The picker names the records when this editor has that
+               family's list; the spinner beside it is what an author uses when it does not, so a
+               reference is always settable. -->
+          <Grid IsVisible="{Binding IsRecordRef}" ColumnDefinitions="*,Auto">
+            <ComboBox Grid.Column="0" HorizontalAlignment="Stretch"
+                      IsVisible="{Binding References.Count}"
+                      ItemsSource="{Binding References}"
+                      SelectedValue="{Binding ReferenceValue}"
+                      SelectedValueBinding="{Binding Id}"
+                      DisplayMemberBinding="{Binding Name}"/>
+            <NumericUpDown Grid.Column="1" Width="110" Margin="6,0,0,0"
+                           Value="{Binding ReferenceValue}"
+                           Minimum="0" Increment="1" FormatString="0"/>
+          </Grid>
+        </Panel>
+      </Grid>
+    </DataTemplate>
   </Application.DataTemplates>
 
 </Application>

@@ -503,6 +503,7 @@
   "SchemaEditor_SelectPrompt": "Sélectionnez un enregistrement à modifier.",
   "SchemaEditor_NoFields": "Cette famille ne déclare aucun champ, il n'y a donc rien à remplir. Ses enregistrements peuvent tout de même être créés, copiés et enregistrés.",
   "SchemaEditor_MissingRequired": "Des champs obligatoires sont encore vides.",
+  "GameFields_Heading": "Champs propres à ce jeu",
   "SchemaEditor_SaveButton": "Enregistrer",
   "ItemEditor_Notes_EquipmentHeader": "Équipement",
   "ItemEditor_Notes_EquipmentDurability": "• Durabilité : celle que la pièce possède à son ramassage ou à sa remise. Ce qui la consomme relève du jeu ; le moteur n'applique que les extrêmes — à 0 la pièce se retire, reste dans le sac et ne peut être reportée qu'après réparation. 0 = aucune durabilité, donc aucune usure.",

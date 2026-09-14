@@ -125,6 +125,10 @@ public sealed partial class NpcAiSystem : GameSystem
             RushCommitted = mn.RushCommitted,
             HasMadeContact = mn.HasMadeContact,
             ChaseSprinting = mn.ChaseSprinting,
+            // A body sent after somebody was sent after them wherever they go. Dropped at the seam it would
+            // hand itself back to a record with no noticing rule, which stops the chase one tile over a
+            // border — the hardest kind of bug to see, because it looks like the quarry got away.
+            Roused = mn.Roused,
             // Count this cross as the guest's action for THIS pass.  Maps tick in ascending order, so a
             // native crossing UP into a higher-numbered map (e.g. 1→2) lands in the destination's
             // traversal list before that map ticks; without this stamp RunTraversalAi would give it a
@@ -145,6 +149,7 @@ public sealed partial class NpcAiSystem : GameSystem
         mn.Target = 0;
         mn.NpcTargetSpawnMap = 0;
         mn.NpcTargetSpawnSlot = 0;
+        mn.Roused = false;
         mn.IsReservedSlot = true;
         mn.LastSpokeTo = 0;
         mn.LastSpokeToNpc = 0;

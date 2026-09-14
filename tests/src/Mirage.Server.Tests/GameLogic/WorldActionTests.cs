@@ -55,8 +55,10 @@ public class WorldActionTests
         sp.Char.X = 5;
         sp.Char.Y = 5;
 
+        var spawn = new SpawnSystem(world, pm, dispatcher);
+        var ai = new NpcAiSystem(world, pm, dispatcher, movement, spawn, items);
         var actions = new ServerWorld(world, pm, attributes, deaths, movement, items,
-                                      joinLeave: null!, decals, dispatcher);
+                                      joinLeave: null!, decals, ai, guilds: null!, dispatcher);
         return (actions, world, pm, dispatcher);
     }
 

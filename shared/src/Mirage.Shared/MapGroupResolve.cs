@@ -82,6 +82,19 @@ public static class MapGroupResolve
 
     private static string Pick(string own, string? group) =>
         !string.IsNullOrWhiteSpace(own) ? own : group ?? "";
+
+    /// <summary>One of a GAME'S fields on this map, the map's own bag first and the group's after it.
+    /// Null when neither carries the key.
+    ///
+    /// <para>Absence is the sentinel here rather than any particular value, because the engine does not
+    /// know what a game's field means and so cannot pick one. A game that wants an explicit "off" on a map
+    /// whose group says "on" writes its own value for off.</para></summary>
+    public static Extensibility.AttributeValue? Value(MapRecord map, MapGroupRecord? g, string key)
+    {
+        if (map.Attributes.TryGet(key, out var own)) return own;
+        if (g is not null && g.Attributes.TryGet(key, out var inherited)) return inherited;
+        return null;
+    }
 }
 
 /// <summary>What a map does with the day/night cycle. Three states rather than two booleans, because a map

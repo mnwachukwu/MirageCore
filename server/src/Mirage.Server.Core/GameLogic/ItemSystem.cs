@@ -34,11 +34,17 @@ private readonly WorldEvents _events;
     private readonly Dictionary<int, MapSaveState> _saveStates = [];
     private readonly object _saveStatesLock = new();
 
+    /// <summary>What this game says about using something. Empty in an engine with no game loaded, and
+    /// then every use Core itself understands is allowed.</summary>
+    private readonly IReadOnlyList<IUsePolicy> _mayUse;
+
     public ItemSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher,
-                      IPersistenceService persistence, IBackgroundPersistence bg, WorldEvents? events = null)
+                      IPersistenceService persistence, IBackgroundPersistence bg, WorldEvents? events = null,
+                      IReadOnlyList<IUsePolicy>? usePolicies = null)
         : base(dispatcher)
     {
         _world = world;
+        _mayUse = usePolicies ?? [];
         _events = events ?? WorldEvents.None;
         _pm = pm;
         _persistence = persistence;

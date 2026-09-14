@@ -521,10 +521,84 @@ public sealed class EditorDataService
         RaiseEntriesInvalidated();
     }
 
+    // ── A game's own fields on one of the ENGINE'S records ────────────────────
+    //
+    // An item, a creature, a map and a region each carry a bag of whatever the loaded game added to
+    // them. The typed rows above do not hold it — their record types have a property per field the
+    // engine acts on, and a game's are not among them — so it is read and written on its own.
+
+    /// <summary>A copy of the game's fields on one of the engine's records, for a form to edit. Empty
+    /// for a family without them, and for a slot that is not there.</summary>
+    public AttributeBag OfflineGameFields(string familyId, int num) =>
+        GameFieldsBag(familyId, num)?.Clone() ?? new AttributeBag();
+
+    /// <summary>Writes a game's fields onto one of the engine's records and saves the whole record, since
+    /// the bag is one property of a file that also holds everything the engine acts on.</summary>
+    public Task SaveOfflineGameFieldsAsync(string familyId, int num, AttributeBag fields)
+    {
+        ArgumentNullException.ThrowIfNull(fields);
+
+        switch (familyId)
+        {
+            case CoreRecordFamilies.Items when InRange(OfflineItems, num):
+                OfflineItems[num].Attributes = fields;
+                return SaveOfflineItemAsync(num, OfflineItems[num]);
+
+            case CoreRecordFamilies.Npcs when InRange(OfflineNpcs, num):
+                OfflineNpcs[num].Attributes = fields;
+                return SaveOfflineNpcAsync(num, OfflineNpcs[num]);
+
+            case CoreRecordFamilies.Maps when InRange(OfflineMaps, num):
+                OfflineMaps[num].Attributes = fields;
+                return SaveOfflineMapAsync(num, OfflineMaps[num]);
+
+            case CoreRecordFamilies.MapGroups when InRange(OfflineMapGroups, num):
+                OfflineMapGroups[num].Attributes = fields;
+                return SaveOfflineMapGroupAsync(num, OfflineMapGroups[num]);
+
+            default:
+                return Task.CompletedTask;
+        }
+    }
+
+    private AttributeBag? GameFieldsBag(string familyId, int num) => familyId switch
+    {
+        CoreRecordFamilies.Items => InRange(OfflineItems, num) ? OfflineItems[num].Attributes : null,
+        CoreRecordFamilies.Npcs => InRange(OfflineNpcs, num) ? OfflineNpcs[num].Attributes : null,
+        CoreRecordFamilies.Maps => InRange(OfflineMaps, num) ? OfflineMaps[num].Attributes : null,
+        CoreRecordFamilies.MapGroups => InRange(OfflineMapGroups, num) ? OfflineMapGroups[num].Attributes : null,
+        _ => null,
+    };
+
+    private static bool InRange<T>(T[] records, int num) where T : class =>
+        num >= 1 && num < records.Length && records[num] is not null;
+
+    /// <summary>The game's fields already on disk for this slot, kept across a save that did not carry
+    /// them. A typed row builds a fresh record out of the properties the engine acts on and knows nothing
+    /// about a game's, so without this an ordinary save would clear them.</summary>
+    private static AttributeBag KeptFields<T>(T[] records, int num, AttributeBag sent)
+        where T : class
+    {
+        if (sent.Count > 0) return sent;
+
+        return records is { Length: > 0 } && InRange(records, num) && Existing(records[num]) is { } held
+            ? held : sent;
+    }
+
+    private static AttributeBag? Existing(object record) => record switch
+    {
+        ItemRecord item => item.Attributes,
+        NpcRecord npc => npc.Attributes,
+        MapRecord map => map.Attributes,
+        MapGroupRecord group => group.Attributes,
+        _ => null,
+    };
+
     // ── Offline save ──────────────────────────────────────────────────────────
 
     public async Task SaveOfflineItemAsync(int index, ItemRecord record)
     {
+        record.Attributes = KeptFields(OfflineItems, index, record.Attributes);
         OfflineItems[index] = record;
         _itemEntries = null;
         await WriteJsonAsync(Path.Combine(EditorPaths.Data, "items", $"item{index}.json"), record);
@@ -533,6 +607,7 @@ public sealed class EditorDataService
 
     public async Task SaveOfflineNpcAsync(int index, NpcRecord record)
     {
+        record.Attributes = KeptFields(OfflineNpcs, index, record.Attributes);
         OfflineNpcs[index] = record;
         _npcEntries = null;
         await WriteJsonAsync(Path.Combine(EditorPaths.Data, "npcs", $"npc{index}.json"), record);
@@ -556,6 +631,7 @@ public sealed class EditorDataService
 
     public async Task SaveOfflineMapGroupAsync(int index, MapGroupRecord record)
     {
+        record.Attributes = KeptFields(OfflineMapGroups, index, record.Attributes);
         OfflineMapGroups[index] = record;
         _mapGroupEntries = null;
         await WriteJsonAsync(Path.Combine(EditorPaths.Data, "map_groups", $"{MapGroupRecord.FileStem}{index}.json"), record);

@@ -301,7 +301,7 @@ public static class ScriptCompiler
         {
             problems.Add(new ScriptProblem(
                 d.Id,
-                d.Severity == DiagnosticSeverity.Error ? ScriptSeverity.Error : ScriptSeverity.Warning,
+                Rated(d.Severity),
                 d.Message,
                 d.FileName,
                 d.Span.Start.Line,
@@ -310,4 +310,14 @@ public static class ScriptCompiler
 
         return problems;
     }
+
+    /// <summary>The language's three levels, kept as three. An opinion is a remark about how a correct
+    /// program is written — a dropped result, a spare word — and flattening it into a warning makes a
+    /// clean load look like a list of faults.</summary>
+    private static ScriptSeverity Rated(DiagnosticSeverity severity) => severity switch
+    {
+        DiagnosticSeverity.Error => ScriptSeverity.Error,
+        DiagnosticSeverity.Opinion => ScriptSeverity.Opinion,
+        _ => ScriptSeverity.Warning,
+    };
 }

@@ -193,9 +193,60 @@ mentions it; the engine calls `Describe` on every model that has one, before you
 | `boolean` | a checkbox |
 | an **enumeration** | a drop-down over its members |
 | another **model** | a picker listing that model's records by name |
+| a whole number named by `Points` | a picker over any family, **the engine's own included** |
 
 **Two seams close themselves.** A field typed as an enumeration declares its own set of choices; a field
 typed as another model declares its own link. Neither is named twice, so neither can drift.
+
+### Pointing at the engine's own records
+
+`Items`, `NPCs`, `Maps`, `Shops`, and `Conversations` are records a world holds like any other, and no
+model names them — so a field typed as a model cannot reach them. `Points` does:
+
+```
+public integer item;
+...
+these.Points("item", "Items");
+```
+
+The form draws a picker listing them by name; the number is still what is stored. Authoring a kit line
+by typing 214 when the answer is "Iron Sword" is exactly what this exists to stop.
+
+### Adding your own fields to the engine's records
+
+🔴 **An item's own properties are a closed set, because Core cannot act on one it has never heard of.**
+It knows a weapon has power and durability because it spends both. What *your game* knows about that
+sword is open — a class gate, an element, the spell written on a scroll — and those belong on the sword
+rather than in a table beside it.
+
+```
+model ItemRules
+    public integer levelReq;
+    public Spell teaches;
+
+    public shared function Describe(Records these)
+        these.Extend("Items");
+        these.Caption("teaches", "Spell written on it");
+    end function
+end model
+```
+
+The editor's own Items form grows those rows. There is no new folder, no new file, and no new packet —
+**an extended family is the same family with more rows on it.** A rule reads them back the ordinary
+way:
+
+```
+integer written = World.RecordNumber("Items", item, "teaches");
+```
+
+| | |
+|---|---|
+| `Are`, `Stored` on an extending model | ignored — the family being extended already answers all three |
+| A key the family already has | refused by name, because two modules writing one key overwrite each other |
+| What the engine's own properties mean | unchanged; a game reads and writes only its own keys |
+
+⚠ **A field holds one value, so a many-to-many fact is still a family.** "Which classes may wield
+this" is a list, and a list is rows — the same shape a spell gate takes.
 
 ⚠ **A schema model's fields must be `public`.** The engine reads them and your script does not, and a
 private field nothing names is one Compass will tell you to delete.
@@ -468,6 +519,11 @@ game can say what happened and cannot say who it happened to.
 |---|---|
 | `World.NpcAt(map, x, y)` | the creature there, or nothing |
 | `World.PlayerAt(map, x, y)` | the player there, or nothing |
+| `World.NpcsNear(map, x, y, tiles)` | every creature within that many tiles, nearest first |
+| `World.TileAt(map, x, y)` | what kind of ground is there |
+| `World.CanSee(fromMap, fx, fy, toMap, tx, ty)` | whether a straight line between two squares is clear |
+| `World.Distance(fromMap, fx, fy, toMap, tx, ty)` | how far apart they are, **counting across map borders** |
+| `World.Weather(map)` | what the sky is doing |
 | `World.Records(kind)` | how many records of that kind the world holds |
 | `World.Record(kind, number, field)` | one field of one record, as text |
 | `World.RecordNumber(kind, number, field)` | the same, as a whole number |
@@ -480,6 +536,96 @@ value of a type its body does not expect. The reach was ADDED beside it.
 same four attribute members a player has, and `Kill`. It is named by where it SPAWNS rather than where
 it stands, so one kept while the body walks onto the next map still names it — and `IsHere` is what
 says the body is still there.
+
+It also answers `Kind`, which is the number of the creature record it is a copy of.
+
+🔴 **A rule about a species keys on `Kind`, never on `Name`.** A name is what a player reads: two
+records may share one, a name may be translated, and a rename in the editor would silently rewrite the
+arithmetic of every rule written against it.
+
+### What a creature does, and why
+
+A creature's record says how it MOVES — it holds its tile, ambles, closes on what it notices, opens
+the gap, or clears litter. Five ways of walking, and deliberately nothing about a reason: a reason is
+a property of the game, and a word like "hostile" means nothing in a world with no combat in it.
+
+So a game says why, with two verbs on the handle:
+
+```
+it.Chase(who);        # send it after a player
+it.ChaseNpc(other);   # or after another creature
+it.Forget();          # and let go, leaving it to its record again
+```
+
+⚠ **It overrides the noticing, not the legs.** A body authored to hold its tile still holds it —
+pointing at somebody does not make a statue walk. One authored to open the gap runs from whoever it
+was pointed at, because retreating is what that body does about somebody.
+
+**This is what a creature that fights back is made of.** Author it to amble, so it notices nobody, and
+chase whoever lands a hit:
+
+```
+public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+    Npc? it = World.NpcAt(map, x, y);
+
+    if it.HasValue()
+        it.Chase(who);
+    end if
+end function
+```
+
+A guard is the same verb with a different trigger: find the bodies near a crime with
+`World.NpcsNear`, keep the ones carrying whatever key marks a guard, and send those.
+
+### One creature reaching another
+
+`OnContact` is raised when a creature reaches the **player** it was chasing. `OnNpcContact` is raised
+when it reaches a **creature**.
+
+```
+public function OnNpcContact(Npc it, Npc other)
+    Fight.Clash(it, other);
+end function
+```
+
+🔴 **Two handlers rather than one**, because the quarry is two different kinds of body. One handler
+would have to name a `Player` or an `Npc` in its signature and be handed the other, and a rule that
+runs on the wrong kind of body is worse than one that is never called. A game that answers both the
+same way writes one function and calls it from each.
+
+A creature also answers what its record was **authored** as — `it.Behavior`, `it.Group`, `it.Range` —
+and `it.IsChasing` says whether it is after anybody right now.
+
+⚠ **A rule about a species keys on `Kind`, and a rule about how a body walks keys on `Behavior`.**
+Neither is `Name`.
+
+### Measuring, and seeing
+
+🔴 **Never subtract coordinates.** The world scrolls contiguously, so a body one tile over a map
+border is one tile away — and arithmetic says it is on another map and unreachable. That is the single
+most common thing a range rule gets wrong.
+
+```
+integer gap = World.Distance(who.Map, who.X, who.Y, map, x, y);
+
+if gap < 0 or gap > 5
+    who.Message("That is too far away.");
+    yield;
+end if
+```
+
+`World.CanSee` is the **engine's own sight trace**, which is the same one the client colors its target
+arrow with — so a rule gating on it agrees with what the player was shown rather than nearly agreeing.
+A wall stops sight only if it was authored to: a railing is blocked to walk through and clear to see
+over. A closed door always stops it.
+
+`World.TileAt` answers `walkable`, `blocked`, `warp`, `item`, `npcavoid`, `door`, `plate`, or `ramp`,
+on the ground layer. `World.Weather(map)` answers `clear`, `rain`, `snow`, `heatwave`, or `heavywind`.
+
+**The engine sets this fight up on its own.** A body closes on anything within its range that is not
+its own kind and not sharing its group — so a world with a wolf and a deer in it needs nothing but
+this handler to have them fight. Grouping is authored on the creature record, and it keeps a pack from
+turning on itself.
 
 ### Reading the records your own editor authored
 

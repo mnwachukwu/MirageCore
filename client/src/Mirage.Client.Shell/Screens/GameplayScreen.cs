@@ -217,7 +217,18 @@ public sealed partial class GameplayScreen : IGameScreen
             () => _trade.Close(), Capturing: () => _trade.IsCapturingInput);
 
         _panels[PanelConversation] = new(PanelConversation, _conversation,
-            (input, _) => _conversation.Update(input, _ctx.State, _ctx.Sender),
+            (input, _) =>
+            {
+                _conversation.Update(input, _ctx.State, _ctx.Sender);
+
+                // A choice that named one of this game's verbs has already sent it; what is left is
+                // opening the window that verb asked for, which only the screen can do.
+                if (_conversation.TakePicked() is { OpensPanel.Length: > 0 } picked)
+                {
+                    _gamePanel.Open(_ctx.State, picked.OpensPanel);
+                    BringToFront(PanelGame);
+                }
+            },
             (sb, font, _, active, _) => _conversation.Draw(sb, font, _ctx.State, active),
             () => _conversation.Close());
 

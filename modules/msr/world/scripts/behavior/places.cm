@@ -1,0 +1,37 @@
+# What a map means to a fight.
+#
+# Three answers, and the map's own beats its region's. A protected map is one nobody may be attacked
+# on; an arena is open ground where a kill costs the loser nothing.
+
+shared model Places
+
+    public string Moral = "moral";
+
+    public integer Open = 0;
+    public integer Protected = 1;
+    public integer Arena = 2;
+
+    public integer function MoralOf(integer map)
+        yield World.MapNumber(map, Places.Moral);
+    end function
+
+    public boolean function IsProtected(integer map)
+        yield Places.MoralOf(map) == Places.Protected;
+    end function
+
+    public boolean function IsArena(integer map)
+        yield Places.MoralOf(map) == Places.Arena;
+    end function
+
+    # Either side's map decides. A protected map on one side blocks the fight even when the other side
+    # is an arena, and an arena on either side takes the stakes off a kill.
+
+    public boolean function EitherProtected(Player who, Player them)
+        yield Places.IsProtected(who.Map) or Places.IsProtected(them.Map);
+    end function
+
+    public boolean function EitherArena(Player who, Player them)
+        yield Places.IsArena(who.Map) or Places.IsArena(them.Map);
+    end function
+
+end model

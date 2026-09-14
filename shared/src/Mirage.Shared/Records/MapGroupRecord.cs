@@ -51,7 +51,20 @@ public sealed class MapGroupRecord
     public string JoinSay { get; set; } = string.Empty;
     public string LeaveSay { get; set; } = string.Empty;
 
-    /// <summary>Copy for an off-thread save snapshot. Every field is a value type or an immutable string, so
-    /// a shallow copy is a whole one.</summary>
-    public MapGroupRecord Clone() => (MapGroupRecord)MemberwiseClone();
+    /// <summary>Everything a game hangs on this group that the engine has no name for — who holds it, how
+    /// long they have held it, what it pays.
+    ///
+    /// <para>A group is the engine's own idea of a region: several maps that share a name and some
+    /// settings. What a region MEANS to a game — a territory, a province, a hunting ground — is a game's,
+    /// and this is where it says so.</para></summary>
+    public Extensibility.AttributeBag Attributes { get; set; } = new();
+
+    /// <summary>Copy for an off-thread save snapshot. Every other field is a value type or an immutable
+    /// string; the bag is copied so a snapshot cannot be written through.</summary>
+    public MapGroupRecord Clone()
+    {
+        var copy = (MapGroupRecord)MemberwiseClone();
+        copy.Attributes = Attributes.Clone();
+        return copy;
+    }
 }

@@ -5,6 +5,7 @@ using Mirage.Server.Core.Localization;
 using Mirage.Server.Core.Net;
 using Mirage.Server.Core.Players;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using System.Net;
@@ -38,6 +39,13 @@ public sealed class TcpConnectionAcceptor : IDisposable
     private readonly X509Certificate2 _cert;
     private readonly ServerConfig _config;
     private readonly Mirage.Server.Core.World.GameWorld _world;
+
+    /// <summary>What the loaded game declared, for the half of the greeting that is the GAME's rather
+    /// than the operator's or the world's.</summary>
+    private readonly CoreRegistry _registry;
+
+    /// <summary>The world as a game reads it, which is how a creation list is resolved to records.</summary>
+    private readonly IWorld _actions;
     private readonly LoginQueue _queue;
 
     public int Port => _port;
@@ -60,10 +68,14 @@ public sealed class TcpConnectionAcceptor : IDisposable
         ILogger<TcpConnectionAcceptor> logger,
         ILoggerFactory loggerFactory,
         ServerConfig config,
-        Mirage.Server.Core.World.GameWorld world)
+        Mirage.Server.Core.World.GameWorld world,
+        CoreRegistry registry,
+        IWorld actions)
     {
         _dispatcher = dispatcher;
         _world = world;
+        _registry = registry;
+        _actions = actions;
         _handler = handler;
         _editorHandler = editorHandler;
         _pm = pm;
@@ -262,7 +274,45 @@ public sealed class TcpConnectionAcceptor : IDisposable
         // character may be made with is authored beside the records, not configured beside the port.
         Appearances = _world.Appearances,
         DecalColor = _world.DecalColor,
+        Asked = Asked(),
     };
+
+    /// <summary>What this game asks at creation, with every list resolved to the records this world
+    /// holds right now.
+    ///
+    /// <para>🔴 <b>Resolved here because only the server has the records.</b> A game declares WHICH
+    /// family to offer; a client has never seen that family and cannot be asked to look it up. Built on
+    /// every greeting rather than cached, so a world edited while the server runs offers what it now
+    /// holds.</para>
+    ///
+    /// <para>⚠ A blank slot is left out. Record families are padded to their limit, and a list of
+    /// twenty classes where seventeen have no name is a screen nobody can use.</para></summary>
+    private IReadOnlyList<CreationChoice> Asked()
+    {
+        var asked = _registry.CreationChoices.Choices;
+        if (asked.Count == 0) return [];
+
+        var resolved = new List<CreationChoice>(asked.Count);
+
+        foreach (CreationChoice choice in asked)
+        {
+            var options = new List<CreationOption>();
+            IReadOnlyList<AttributeBag> records = _actions.RecordsOf(choice.FamilyId);
+
+            for (int i = 0; i < records.Count; i++)
+            {
+                string name = records[i].TryGet("name", out AttributeValue held) ? held.AsText() : string.Empty;
+                if (name.Length == 0) continue;
+
+                string note = records[i].TryGet("description", out AttributeValue said) ? said.AsText() : string.Empty;
+                options.Add(new CreationOption(i + 1, name, note));
+            }
+
+            resolved.Add(choice with { Options = options });
+        }
+
+        return resolved;
+    }
 
     private async Task<int> ClaimEditorSlotAsync(CancellationToken ct)
     {

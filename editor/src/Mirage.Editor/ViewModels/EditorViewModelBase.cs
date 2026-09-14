@@ -66,6 +66,37 @@ public abstract partial class EditorViewModelBase<TRow> : ObservableObject, IAut
     /// <summary>The row the editor pane is bound to, or null when nothing is selected.</summary>
     public abstract TRow? Selected { get; }
 
+    // ── A game's own fields on this record ───────────────────────────────────
+
+    /// <summary>The family whose EXTENSION fields this screen also authors, or null for a screen with
+    /// none. Overridden by each of the engine's own record screens; a screen for a family a game
+    /// declared has no second half, because the whole of it is the game's already.</summary>
+    protected virtual string? GameFieldsFamilyId => null;
+
+    private GameFieldsViewModel? _gameFields;
+
+    /// <summary>The game's own fields on the open record, or null for a screen that authors none.
+    /// Bound by the view as a section under the record's own rows.</summary>
+    public GameFieldsViewModel? GameFields =>
+        _gameFields ??= GameFieldsFamilyId is { } familyId ? BuildGameFields(familyId) : null;
+
+    private GameFieldsViewModel BuildGameFields(string familyId)
+    {
+        var fields = new GameFieldsViewModel(_data, _conn, familyId);
+        fields.Changed += NotifyDirtyState;
+        return fields;
+    }
+
+    /// <summary>Point the game's fields at the record that has just been selected. Called from each
+    /// screen's own selection handler, since the property holding the selection is named per screen.</summary>
+    protected void TrackGameFields(TRow? row)
+    {
+        if (GameFields is not { } fields) return;
+
+        fields.Show(row is null ? 0 : GetIndex(row));
+        NotifyDirtyState();
+    }
+
     // ── What points at the selected record ───────────────────────────────────
     // Every reference in this data model runs one way: the child names the parent, and no record carries a
     // list of its dependents. So the answer is a scan of the OTHER collections, which only
@@ -234,7 +265,7 @@ public abstract partial class EditorViewModelBase<TRow> : ObservableObject, IAut
     // ── Auto-save ─────────────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public int DirtyCount => Items.Count(GetIsDirty);
+    public int DirtyCount => Items.Count(GetIsDirty) + (GameFields is { IsDirty: true } ? 1 : 0);
 
     /// <inheritdoc />
     public string OpenRecordName => Selected is { } row ? GetName(row) : "";
@@ -244,31 +275,50 @@ public abstract partial class EditorViewModelBase<TRow> : ObservableObject, IAut
     {
         if (reach == AutoSaveReach.OpenRecord)
         {
-            if (Selected is not { } row || !GetIsDirty(row)) return 0;
-            await SaveOfflineAsync(row);
-            ClearDirtyState(row);
+            if (Selected is not { } row || !IsSelectedDirty) return 0;
+            if (GetIsDirty(row))
+            {
+                await SaveOfflineAsync(row);
+                ClearDirtyState(row);
+            }
+
+            await SaveGameFieldsForAsync(row);
             NotifyDirtyState();
             AfterSave(row);
             return 1;
         }
 
         var dirty = Items.Where(GetIsDirty).ToList();
-        if (dirty.Count == 0) return 0;
+        if (dirty.Count == 0 && GameFields is not { IsDirty: true }) return 0;
         foreach (var row in dirty)
         {
             await SaveOfflineAsync(row);
             ClearDirtyState(row);
             AfterSave(row);
         }
+
+        int saved = dirty.Count;
+        if (GameFields is { IsDirty: true } fields)
+        {
+            await fields.SaveAsync();
+            saved++;
+        }
+
         NotifyDirtyState();
-        return dirty.Count;
+        return saved;
     }
 
     // ── Dirty-state computed properties ───────────────────────────────────────
+    //
+    // The game's fields on the open record count as edits to that record, so both flags below fold
+    // them in. There is only ever one such form — it follows the selection — so at most one record's
+    // game fields can be dirty at a time.
+
     /// <summary>Whether the selected row has unsaved edits (enables Save / Discard).</summary>
-    public bool IsSelectedDirty => Selected is not null && GetIsDirty(Selected);
+    public bool IsSelectedDirty =>
+        (Selected is not null && GetIsDirty(Selected)) || GameFields is { IsDirty: true };
     /// <summary>Whether any row has unsaved edits (enables Save All / Discard All).</summary>
-    public bool HasAnyDirty => Items.Any(GetIsDirty);
+    public bool HasAnyDirty => Items.Any(GetIsDirty) || GameFields is { IsDirty: true };
 
     /// <summary>Re-raise the aggregate dirty flags. Call after anything that can change a row's
     /// dirty state, since neither flag is a stored value.</summary>
@@ -417,19 +467,35 @@ public abstract partial class EditorViewModelBase<TRow> : ObservableObject, IAut
     // funnels through here so the two modes can't diverge.
     private async Task SaveOneAsync(TRow vm)
     {
-        if (_data.IsOnline)
-            await _conn.SendSaveAsync(BuildSavePacket(vm));
-        else
-            await SaveOfflineAsync(vm);
-        ClearDirtyState(vm);
+        // Skipped for a record whose own rows nobody touched. Online that save is a broadcast to every
+        // client of a record that did not change; offline it is a file rewritten to what it already said.
+        if (GetIsDirty(vm))
+        {
+            if (_data.IsOnline)
+                await _conn.SendSaveAsync(BuildSavePacket(vm));
+            else
+                await SaveOfflineAsync(vm);
+            ClearDirtyState(vm);
+        }
+
+        // ⚠ Alongside the record's own save, never instead of it. The typed packet carries only what
+        // the engine acts on, and it is normalized on the way in; a game's fields have nothing to
+        // normalize and travel on the generic one. Both halves are one record, saved in one press.
+        await SaveGameFieldsForAsync(vm);
+
         NotifyDirtyState();
         AfterSave(vm);
     }
 
+    /// <summary>Write the game's fields on this row, when they are the ones on screen and they changed.</summary>
+    private Task SaveGameFieldsForAsync(TRow vm) =>
+        GameFields is { IsDirty: true } fields && fields.Num == GetIndex(vm)
+            ? fields.SaveAsync() : Task.CompletedTask;
+
     [RelayCommand]
     private async Task SaveAsync()
     {
-        if (Selected is null || !GetIsDirty(Selected)) return;
+        if (Selected is null || !IsSelectedDirty) return;
         var vm = Selected;
         try
         {
@@ -464,6 +530,24 @@ public abstract partial class EditorViewModelBase<TRow> : ObservableObject, IAut
                 return;
             }
         }
+        // A record whose own rows are clean can still have edited game fields, and those are not in
+        // the list above because the list is of dirty ROWS.
+        if (GameFields is { IsDirty: true } fields)
+        {
+            try
+            {
+                await fields.SaveAsync();
+                saved++;
+                NotifyDirtyState();
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = EditorStrings.Format(EditorStrings.EntityEditor_SaveFailed,
+                    ("Error", $"{TypeName} {fields.Num}: {ex.Message}"));
+                return;
+            }
+        }
+
         StatusMessage = saved > 0
             ? EditorStrings.Format(EditorStrings.EntityEditor_SaveAllSaved,
                 ("Count", saved), ("EntityTypePlural", TypeNamePlural))
@@ -474,13 +558,14 @@ public abstract partial class EditorViewModelBase<TRow> : ObservableObject, IAut
     [RelayCommand]
     private async Task DiscardAsync()
     {
-        if (Selected is null || !GetIsDirty(Selected)) return;
+        if (Selected is null || !IsSelectedDirty) return;
         var vm = Selected;
         if (_data.IsOnline)
             await LoadEntityAsync(vm);
         else
             LoadFromOfflineRecord(vm);
         ClearDirtyState(vm);
+        GameFields?.Reload();
         NotifyDirtyState();
         StatusMessage = EditorStrings.Format(EditorStrings.EntityEditor_Discarded,
             ("EntityType", TypeName), ("Index", GetIndex(vm)));
@@ -506,6 +591,7 @@ public abstract partial class EditorViewModelBase<TRow> : ObservableObject, IAut
                 return;
             }
         }
+        GameFields?.Reload();
         NotifyDirtyState();
         StatusMessage = EditorStrings.Format(EditorStrings.EntityEditor_AllDiscarded,
             ("EntityTypePlural", TypeNamePlural));

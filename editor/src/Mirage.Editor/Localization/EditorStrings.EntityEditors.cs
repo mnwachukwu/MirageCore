@@ -28,6 +28,10 @@ public static partial class EditorStrings
     public const string SchemaEditor_MissingRequired = nameof(SchemaEditor_MissingRequired);
     public const string SchemaEditor_SaveButton = nameof(SchemaEditor_SaveButton);
 
+    // The heading over a game's own fields on one of the engine's records. The fields themselves are
+    // captioned by the schema, in the game's catalog rather than this build's.
+    public const string GameFields_Heading = nameof(GameFields_Heading);
+
     public const string ItemEditor_Notes_EquipmentHeader = nameof(ItemEditor_Notes_EquipmentHeader);
     public const string ItemEditor_Notes_EquipmentDurability = nameof(ItemEditor_Notes_EquipmentDurability);
     public const string ItemEditor_Notes_EquipmentPower = nameof(ItemEditor_Notes_EquipmentPower);

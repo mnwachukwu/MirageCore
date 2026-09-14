@@ -22,7 +22,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
     private async Task SaveAllAsync()
     {
         var dirty = Maps.Where(m => m.IsDirty).ToList();
-        if (dirty.Count == 0)
+        if (dirty.Count == 0 && !GameFields.IsDirty)
         {
             StatusMessage = EditorStrings.Get(EditorStrings.MapEditorStatus_NoDirtyMaps);
             return;
@@ -47,6 +47,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
                     await _data.SaveOfflineMapAsync(vm.Index, vm.Record);
                 }
                 vm.ClearDirty();
+                await SaveGameFieldsForAsync(vm);
                 saved++;
             }
             catch (Exception ex)
@@ -56,6 +57,16 @@ public sealed partial class MapEditorViewModel : ObservableObject
                 return;
             }
         }
+
+        // A map whose own tiles are clean can still have edited game fields, and it is not in the list
+        // above because that list is of dirty MAPS.
+        if (GameFields.IsDirty)
+        {
+            await GameFields.SaveAsync();
+            saved++;
+        }
+
+        NotifyMapDirtyState();
         StatusMessage = EditorStrings.Format(EditorStrings.MapEditorStatus_SavedCount,
             ("Count", saved));
     }
@@ -67,9 +78,29 @@ public sealed partial class MapEditorViewModel : ObservableObject
         // A save with nothing to save still bumps the revision, and a revision bump is what tells every
         // connected client its cached copy is stale — so it costs a re-download of an unchanged map.
         // Save All already filters on this; the button's IsEnabled was the only thing holding the line here.
-        if (!SelectedMap.IsDirty) return;
+        if (!IsSelectedMapDirty) return;
         var vm = SelectedMap;
         var map = vm.Record;
+
+        // A map whose only edit is its game fields is saved without the revision bump: nothing a client
+        // caches has changed, so making every connected player re-download the map would buy nothing.
+        if (!vm.IsDirty)
+        {
+            try
+            {
+                await SaveGameFieldsForAsync(vm);
+                NotifyMapDirtyState();
+                StatusMessage = EditorStrings.Format(EditorStrings.MapEditorStatus_MapSaved,
+                    ("Index", vm.Index));
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = EditorStrings.Format(EditorStrings.MapEditorStatus_SaveFailed,
+                    ("Error", ex.Message));
+            }
+
+            return;
+        }
 
         try
         {
@@ -86,6 +117,8 @@ public sealed partial class MapEditorViewModel : ObservableObject
                 await _data.SaveOfflineMapAsync(vm.Index, map);
             }
             vm.ClearDirty();
+            await SaveGameFieldsForAsync(vm);
+            NotifyMapDirtyState();
             StatusMessage = EditorStrings.Format(EditorStrings.MapEditorStatus_MapSaved,
                 ("Index", vm.Index));
         }
@@ -99,7 +132,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
     // ── Auto-save ─────────────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public int DirtyCount => Maps.Count(m => m.IsDirty);
+    public int DirtyCount => Maps.Count(m => m.IsDirty) + (GameFields.IsDirty ? 1 : 0);
 
     /// <inheritdoc />
     public string OpenRecordName => SelectedMap?.Record.Name ?? "";
@@ -120,7 +153,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
         var targets = reach == AutoSaveReach.OpenRecord
             ? (SelectedMap is { IsDirty: true } open ? [open] : new List<MapRowViewModel>())
             : Maps.Where(m => m.IsDirty).ToList();
-        if (targets.Count == 0) return 0;
+        if (targets.Count == 0 && !GameFields.IsDirty) return 0;
 
         int saved = 0;
         EditorLog.Info("Auto-save writing {Count} dirty map(s), reach {Reach}.", targets.Count, reach);
@@ -129,8 +162,16 @@ public sealed partial class MapEditorViewModel : ObservableObject
             vm.BumpRevision();
             await _data.SaveOfflineMapAsync(vm.Index, vm.Record);
             vm.ClearDirty();
+            await SaveGameFieldsForAsync(vm);
             saved++;
         }
+
+        if (GameFields.IsDirty)
+        {
+            await GameFields.SaveAsync();
+            saved++;
+        }
+
         NotifyMapDirtyState();
         return saved;
     }
@@ -265,8 +306,9 @@ public sealed partial class MapEditorViewModel : ObservableObject
     [RelayCommand]
     private async Task DiscardMapAsync()
     {
-        if (SelectedMap is null || !SelectedMap.IsDirty) return;
+        if (SelectedMap is null || !IsSelectedMapDirty) return;
         var vm = SelectedMap;
+        GameFields.Reload();
         if (_data.IsOnline)
         {
             await LoadMapAsync(vm);

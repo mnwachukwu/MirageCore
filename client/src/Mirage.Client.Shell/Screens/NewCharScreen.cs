@@ -5,6 +5,7 @@ using Mirage.Client.Shell.Input;
 using Mirage.Client.Shell.Localization;
 using Mirage.Client.Shell.Ui;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 
 namespace Mirage.Client.Shell.Screens;
 
@@ -22,6 +23,11 @@ public sealed class NewCharScreen : IGameScreen
     private readonly ShellContext _ctx;
     private readonly TextInputField _nameField = new() { MaxLength = Constants.NameLength };
     private readonly ListBox _appearanceList = new();
+
+    // What this game asks at creation, and the list drawn for each. Two lists in step: the choice
+    // says what to send back, the list says what was picked.
+    private readonly List<CreationChoice> _asked = [];
+    private readonly List<ListBox> _askedLists = [];
     private readonly Button _createBtn;
     private readonly Button _cancelBtn;
     private InputState _input = new();
@@ -84,7 +90,43 @@ public sealed class NewCharScreen : IGameScreen
         }
 
         _appearanceList.SelectedIndex = _appearanceList.Items.Count > 0 ? 0 : -1;
+
+        BuildAskedLists();
     }
+
+    /// <summary>A list per thing this game asks at creation, filled from what the server resolved.
+    ///
+    /// <para>🔴 <b>Built here rather than in the constructor</b>, because the greeting arrives before
+    /// this screen exists but a reconnect to a different server replaces it — so the lists are the ones
+    /// the server this player is on actually sent.</para>
+    ///
+    /// <para>⚠ A question whose list came back EMPTY is dropped rather than drawn. A world that declared
+    /// classes and authored none would otherwise show a heading over nothing, and the player could not
+    /// get past a list with no rows in it.</para></summary>
+    private void BuildAskedLists()
+    {
+        _asked.Clear();
+        _askedLists.Clear();
+
+        foreach (CreationChoice choice in _ctx.State.Asked)
+        {
+            if (choice.Options.Count == 0) continue;
+
+            var list = new ListBox();
+            foreach (CreationOption option in choice.Options) list.Items.Add(option.Name);
+            list.SelectedIndex = 0;
+
+            _asked.Add(choice);
+            _askedLists.Add(list);
+        }
+    }
+
+    /// <summary>Where the list for the Nth question sits. Stacked under the appearance list, and the
+    /// dialog is tall enough for two — a game asking more than that wants a screen of its own.</summary>
+    private static Rectangle AskedRect(int which) =>
+        new(ColLX + ColLW + 40, 300 + which * (AskedListH + RowH + 6), ColLW, AskedListH);
+
+    private const int AskedListH = 60;
 
     public void OnExit() { }
 
@@ -100,6 +142,8 @@ public sealed class NewCharScreen : IGameScreen
 
         _nameField.Feed(input, Environment.TickCount64);
         _appearanceList.Update(input, AppearanceListRect);
+
+        for (int i = 0; i < _askedLists.Count; i++) _askedLists[i].Update(input, AskedRect(i));
 
         if (input.IsKeyPressed(Keys.Enter)) TryCreate();
         if (_createBtn.IsClicked(input)) TryCreate();
@@ -123,7 +167,15 @@ public sealed class NewCharScreen : IGameScreen
         }
 
         _errorMsg = "";
-        _ctx.Sender.SendAddChar(_nameField.Text, _appearanceList.SelectedIndex);
+        // The record's own number, not the row - a list drops the blank slots, so the two differ.
+        var chose = new int[_asked.Count];
+        for (int i = 0; i < _asked.Count; i++)
+        {
+            int row = _askedLists[i].SelectedIndex;
+            chose[i] = row >= 0 && row < _asked[i].Options.Count ? _asked[i].Options[row].Num : 0;
+        }
+
+        _ctx.Sender.SendAddChar(_nameField.Text, _appearanceList.SelectedIndex, chose);
         _ctx.Menu.GoToLoading(ClientStrings.Get(ClientStrings.NewCharScreen_CreatingCharacter));
         _ctx.Screens.Replace(new LoadingScreen(_ctx));
     }
@@ -142,6 +194,14 @@ public sealed class NewCharScreen : IGameScreen
 
         _nameField.Draw(sb, font, NameRect, focused: true, now);
         _appearanceList.Draw(sb, font, AppearanceListRect);
+
+        for (int i = 0; i < _askedLists.Count; i++)
+        {
+            var at = AskedRect(i);
+            sb.DrawString(font, _asked[i].LabelKey, new Vector2(at.X, at.Y - RowH),
+                          UiHelper.DlgLabelColor);
+            _askedLists[i].Draw(sb, font, at);
+        }
 
         DrawAppearancePreview(sb, now);
 

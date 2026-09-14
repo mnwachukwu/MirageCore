@@ -57,6 +57,7 @@ public sealed partial class ClientPacketHandler
                 GroupKey = a.GroupKey,
                 OpensPanel = a.OpensPanel,
                 Icon = a.Icon,
+                Interacts = a.Interacts,
                 Key = a.Key,
                 When = a.When,
             })]);

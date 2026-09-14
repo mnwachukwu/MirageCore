@@ -1,0 +1,73 @@
+# What a character can BE, as records an author fills in.
+#
+# 🔴 THE MODEL IS THE DECLARATION. Writing what a record holds is the whole of it: the engine reads
+# these and hands the editor a section per model, a folder on disk, loading and saving, row locking,
+# hot reload, world transfer, and the world check. Nothing here is written twice, so nothing here can
+# drift.
+#
+# The fields are public because the ENGINE reads them and no script does. A private field nothing
+# names is one the compiler asks you to delete.
+
+model Class
+    public string name;
+    public string description;
+
+    # ⚠ The four should add up to Stats.BaseStatTotal. Nothing enforces it — a world author may want a
+    # deliberately strong or weak class — but it is what an audit asks.
+    public integer str;
+    public integer def;
+    public integer spd;
+    public integer int;
+
+    public shared function Describe(Records these)
+        these.Are("Classes", "Class", 20);
+        these.Icon("shield");
+
+        these.Caption("int", "Intelligence");
+        these.Caption("str", "Strength");
+        these.Caption("def", "Defense");
+        these.Caption("spd", "Speed");
+
+        these.Length("name", 24);
+        these.Length("description", 120);
+
+        # A stat outside this is a character the arithmetic was never meant to hold.
+        these.Range("str", 0, 100);
+        these.Range("def", 0, 100);
+        these.Range("spd", 0, 100);
+        these.Range("int", 0, 100);
+    end function
+end model
+
+# What a class hands you on the day you enlist.
+#
+# A row per grant rather than a list on the class, because a record holds fields and not lists — and
+# because this way one item can be given by several classes without being authored twice.
+
+model ClassKit
+    # Typed as the model, so the editor draws a picker listing the classes by name rather than asking
+    # an author to remember that the Knight is number four.
+    public Class forClass;
+
+    # A plain number, pointed at the engine's own Items below — so an author picks "Iron Sword" rather
+    # than remembering that the Iron Sword is 214.
+    public integer item;
+    public integer many;
+
+    # Whether it arrives already on. A weapon does; a stack of bandages does not.
+    public boolean worn;
+
+    public shared function Describe(Records these)
+        these.Are("Starting kits", "Kit line", 200);
+        these.Icon("bag");
+
+        these.Points("item", "Items");
+
+        these.Caption("forClass", "Class");
+        these.Caption("item", "Gear");
+        these.Caption("many", "How many");
+        these.Caption("worn", "Worn on arrival");
+
+        these.Range("many", 1, 999);
+    end function
+end model

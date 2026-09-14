@@ -97,6 +97,7 @@ public sealed partial class ItemEditorViewModel : EditorViewModelBase<ItemRowVie
     }
 
     protected override string SectionId => CoreRecordFamilies.Items;
+    protected override string? GameFieldsFamilyId => CoreRecordFamilies.Items;
     protected override string TypeName => EditorStrings.Get(EditorStrings.ItemEditor_TypeName);
     protected override string TypeNamePlural => EditorStrings.Get(EditorStrings.ItemEditor_TypeNamePlural);
     protected override int GetIndex(ItemRowViewModel vm) => vm.Index;
@@ -133,6 +134,7 @@ public sealed partial class ItemEditorViewModel : EditorViewModelBase<ItemRowVie
     partial void OnSelectedItemChanged(ItemRowViewModel? oldValue, ItemRowViewModel? newValue)
     {
         NotifyInboundRefsChanged();
+        TrackGameFields(newValue);
         if (oldValue is not null) oldValue.PropertyChanged -= OnItemPropertyChanged;
         if (newValue is not null) newValue.PropertyChanged += OnItemPropertyChanged;
         NotifyDirtyState();

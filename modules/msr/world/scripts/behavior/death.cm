@@ -1,0 +1,297 @@
+# What dying costs, and where you wake up.
+#
+# The engine takes the body out of play and puts it back. Everything between those two — the gear
+# that wears, the experience that goes, the flag the killer picks up, how long you lie there — is
+# this file, and it runs while the body is still on the tile it fell on.
+#
+# Five kinds of death, and which one it is decides all of it:
+#
+#   an arena kill      costs nothing at all
+#   a guild-war kill   costs worn gear and nothing else, at double the usual rate
+#   a murderer's death costs double, and drops the bag
+#   too far apart      costs nothing, and earns the killer nothing
+#   anything else      the usual: gear, experience, and a flag on whoever did it
+
+shared model Death
+
+    # ── Wear, as a share of a piece's full durability ─────────────────────────
+
+    public integer NormalWearPercent = 10;
+    public integer MurdererWearPercent = 20;
+
+    # A war death wears double, and the vault pays most of putting it right.
+    public integer WarWearPercent = 20;
+
+    # ── The murderer's flag ───────────────────────────────────────────────────
+    #
+    # Held as an expiry of our own rather than as the engine's mark, because killing a murderer
+    # SHORTENS theirs and the engine's mark answers yes or no. The mark is set alongside it, so the
+    # name plate everybody else sees says the same thing this number does.
+
+    public string MurdererUntil = "pkuntil";
+
+    public integer MurdererSeconds = 3600;
+    public integer MurdererKillRelief = 1800;
+
+    # How long the flashing name lasts on whoever swung first.
+    public integer AggressorSeconds = 30;
+
+    # ── Lying there ───────────────────────────────────────────────────────────
+    #
+    # Ten seconds a death, one more step each time, shedding a step per minute and capped at two
+    # minutes. A war death overrides it with a flat half minute.
+
+    public string Steps = "deathsteps";
+    public string LastDeath = "diedat";
+
+    public integer StepSeconds = 10;
+    public integer MaxSteps = 12;
+    public integer WarRespawnSeconds = 30;
+
+    # ── Reading the flag ──────────────────────────────────────────────────────
+
+    public boolean function IsMurderer(Player who)
+        yield who.Number(Death.MurdererUntil) > World.Now();
+    end function
+
+    public function MarkMurderer(Player who)
+        integer now = World.Now();
+        integer expiry = now;
+
+        if Death.IsMurderer(who)
+            expiry = who.Number(Death.MurdererUntil);
+        end if
+
+        expiry = expiry + Death.MurdererSeconds;
+
+        who.SetNumber(Death.MurdererUntil, expiry);
+        who.Mark(expiry - now);
+
+        World.Tell(who.Name + " has murdered somebody.");
+    end function
+
+    # Killing a murderer takes half an hour off their sentence. Two deaths clear a fresh flag.
+    function Relieve(Player who)
+        integer left = who.Number(Death.MurdererUntil) - Death.MurdererKillRelief;
+
+        if left <= World.Now()
+            who.SetNumber(Death.MurdererUntil, 0);
+            who.Mark(0);
+            World.Tell(who.Name + " has paid for it.");
+            yield;
+        end if
+
+        who.SetNumber(Death.MurdererUntil, left);
+        who.Mark(left - World.Now());
+        World.Tell(who.Name + " is still paying for it.");
+    end function
+
+    # Whoever swings first wears the flashing name for half a minute. Not in an arena, where nothing
+    # is at stake, and not against somebody already flagged, who is fair game.
+    public function StartedIt(Player who)
+        who.Flag(Death.AggressorSeconds);
+    end function
+
+    # ── A death ───────────────────────────────────────────────────────────────
+
+    public function Fell(Player who, Player killer, string cause)
+        integer level = Stats.LevelOf(who);
+
+        # The bout ends here whatever it cost, so nothing dealt before now counts toward the next one.
+        string creditedTo = Duel.CreditedTo(who);
+        Duel.ClearCredit(who);
+
+        boolean byPlayer = killer.IsHere;
+
+        # Nobody under ten loses anything, to anybody.
+        if level < Duel.MinLevel
+            who.Message("You are spared the cost of that death.");
+            Death.LieThere(who, false);
+            yield;
+        end if
+
+        if byPlayer and Places.EitherArena(who, killer)
+            who.Message("It was only a bout. You have lost nothing.");
+            Death.LieThere(who, false);
+            yield;
+        end if
+
+        # A war death: the credited killer's guild is the one at war, not whoever landed the last
+        # blow. Worn gear is the whole of it.
+        if byPlayer
+            Player? credited = who.Find(creditedTo);
+
+            if credited.HasValue()
+                if Guilds.AtWar(who, credited.Value())
+                    # A grudge war has no ground of its own, so they come back where they fell and
+                    # the fight carries on. The body has not moved yet, which is what makes this
+                    # readable.
+                    who.RespawnAt(who.Map, who.X, who.Y);
+
+                    Guilds.WarDeath(who, credited.Value());
+                    Death.LieThere(who, true);
+                    yield;
+                end if
+            end if
+        end if
+
+        # Too far apart in level, and it costs the loser nothing.
+        if byPlayer and Death.TooFarApart(who, killer)
+            who.Message("They were too far above you for that to cost you anything.");
+            killer.Message("They were too far below you to be worth anything.");
+            Death.LieThere(who, false);
+            yield;
+        end if
+
+        if Death.IsMurderer(who)
+            Death.Murderer(who, killer, byPlayer);
+            Death.LieThere(who, false);
+            yield;
+        end if
+
+        Death.Ordinary(who, killer, byPlayer);
+        Death.LieThere(who, false);
+    end function
+
+    boolean function TooFarApart(Player who, Player killer)
+        integer gap = Stats.LevelOf(who) - Stats.LevelOf(killer);
+
+        yield Math.Abs(gap) >= Duel.LevelGapProtection;
+    end function
+
+    # A murderer's death: double the wear, double the experience, and half an hour off the sentence.
+    function Murderer(Player who, Player killer, boolean byPlayer)
+        who.Message("You are a murderer, and it costs you double.");
+
+        Death.WearGear(who, Death.MurdererWearPercent);
+
+        integer lost = Death.LoseExp(who, 2);
+
+        if byPlayer
+            Death.Pay(who, killer, lost);
+            Death.Relieve(who);
+        end if
+    end function
+
+    # The usual death. Killing somebody who was not a murderer and had not started it makes the
+    # killer one.
+    function Ordinary(Player who, Player killer, boolean byPlayer)
+        Death.WearGear(who, Death.NormalWearPercent);
+
+        integer lost = Death.LoseExp(who, 1);
+
+        if not byPlayer
+            yield;
+        end if
+
+        Death.Pay(who, killer, lost);
+
+        if who.IsAggressor
+            killer.Message("They started it. That one was free.");
+            yield;
+        end if
+
+        Death.MarkMurderer(killer);
+    end function
+
+    # ── What it costs ─────────────────────────────────────────────────────────
+
+    # Every piece they are wearing loses that share of its full durability, and a piece worn to
+    # nothing comes off. It stays in the bag; nothing on a death destroys a piece of gear.
+    public function WearGear(Player who, integer percent)
+        loop each item in World.WornBy(who)
+            integer full = World.DurabilityFull(who, item);
+
+            if full > 0
+                integer points = Death.WearOn(full, percent);
+
+                if World.WearOut(who, item, points) > 0
+                    if World.DurabilityLeft(who, item) <= 0
+                        if who.TakeOff(item)
+                            who.Message("Your gear has been ruined.");
+                        end if
+                    end if
+                end if
+            end if
+        end loop
+    end function
+
+    # What a share of a piece's durability comes to, never less than a point: a death always leaves
+    # a mark, whatever the piece is made of.
+    public integer function WearOn(integer full, integer percent)
+        integer points = Math.Round(full * percent / 100.0);
+
+        if points < 1
+            yield 1;
+        end if
+
+        yield points;
+    end function
+
+    # A tenth of the level's experience, doubled for a murderer. Never below zero and never a level.
+    integer function LoseExp(Player who, integer multiplier)
+        integer level = Stats.LevelOf(who);
+        integer lost = Math.Round(Stats.ToNextLevel(level - 1) * multiplier / 10.0);
+        integer held = who.Number(Stats.Exp);
+
+        if lost > held
+            lost = held;
+        end if
+
+        if lost < 1
+            yield 0;
+        end if
+
+        who.SetNumber(Stats.Exp, held - lost);
+        who.Message("You lose " + lost + " experience.");
+
+        yield lost;
+    end function
+
+    # What the loser lost, the winner takes. Whoever dealt the most damage is the one who earns it,
+    # which is the same person the war rule credits.
+    function Pay(Player who, Player killer, integer lost)
+        if lost < 1
+            yield;
+        end if
+
+        killer.Message("You take " + lost + " experience from " + who.Name + ".");
+
+        Levels.Earn(killer, lost);
+    end function
+
+    # ── How long they lie there ───────────────────────────────────────────────
+
+    public function LieThere(Player who, boolean inWar)
+        if inWar
+            who.Down(Death.WarRespawnSeconds);
+            yield;
+        end if
+
+        integer now = World.Now();
+        integer since = who.Number(Death.LastDeath);
+        integer steps = who.Number(Death.Steps);
+
+        # A step is shed for every whole minute since the last death, and never below none.
+        if since > 0 and now > since
+            integer shed = (now - since) / 60;
+
+            if shed > steps
+                shed = steps;
+            end if
+
+            steps = steps - shed;
+        end if
+
+        steps = steps + 1;
+
+        if steps > Death.MaxSteps
+            steps = Death.MaxSteps;
+        end if
+
+        who.SetNumber(Death.Steps, steps);
+        who.SetNumber(Death.LastDeath, now);
+        who.Down(steps * Death.StepSeconds);
+    end function
+
+end model

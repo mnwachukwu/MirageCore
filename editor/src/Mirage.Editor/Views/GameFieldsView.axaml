@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Mirage.Editor.ViewModels"
+             Grid.IsSharedSizeScope="True"
+             x:DataType="vm:GameFieldsViewModel"
+             x:Class="Mirage.Editor.Views.GameFieldsView">
+
+  <!-- The game's own fields on one of the engine's records, as a section under that record's own rows.
+       The whole thing is hidden for a world whose loaded game adds nothing to this family, so a stock
+       world shows no empty heading. -->
+  <StackPanel Spacing="8" IsVisible="{Binding IsShown}">
+
+    <Border Margin="0,12,0,0" Padding="0,10,0,0"
+            BorderBrush="{DynamicResource MirageLineSoftBrush}" BorderThickness="0,1,0,0">
+      <TextBlock Text="{Binding Heading}" FontSize="14" FontWeight="Bold"/>
+    </Border>
+
+    <ItemsControl ItemsSource="{Binding Form.Fields}"/>
+
+    <!-- Required fields still empty. Reported, never enforced: a half-filled record is an ordinary
+         state to be in while typing, and the server is what refuses a bad one. -->
+    <TextBlock x:Name="_missingRequired"
+               IsVisible="{Binding MissingRequired.Count}"
+               Foreground="{DynamicResource MirageWarnBrush}"
+               FontSize="12" TextWrapping="Wrap"/>
+  </StackPanel>
+</UserControl>

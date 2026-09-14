@@ -4,6 +4,7 @@
              xmlns:controls="using:Mirage.Editor.Controls"
              xmlns:mui="using:Mirage.Ui.Controls"
              xmlns:vm="using:Mirage.Editor.ViewModels"
+             xmlns:views="using:Mirage.Editor.Views"
              Grid.IsSharedSizeScope="True"
              x:DataType="vm:NpcEditorViewModel"
              x:Class="Mirage.Editor.Views.NpcEditorView">
@@ -272,6 +273,9 @@
       </StackPanel>
     </Border>
 
+
+          <!-- The game's own fields on this record, when the loaded game added any. -->
+          <views:GameFieldsView DataContext="{Binding GameFields}"/>
         </StackPanel>
       </ScrollViewer>
     </Grid>

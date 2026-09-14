@@ -1,0 +1,19 @@
+# What this game hangs on a MAP the engine owns.
+#
+# Core knows where the tiles are and who may walk on them. Whether you can be attacked standing there
+# is MSR's, so it is a field on the map rather than a table beside it.
+#
+# A map that leaves this blank takes its region's answer, the same way every other property a map
+# inherits works. Blank on both is an open map.
+
+model MapRules
+    # 0 is open, 1 is protected, 2 is the arena. Left blank it comes from the region.
+    public integer moral;
+
+    public shared function Describe(Records these)
+        these.Extend("Maps");
+
+        these.Caption("moral", "Fighting: 0 open, 1 protected, 2 arena");
+        these.Range("moral", 0, 2);
+    end function
+end model

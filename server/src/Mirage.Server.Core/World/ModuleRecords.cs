@@ -17,6 +17,7 @@ namespace Mirage.Server.Core.World;
 public sealed class ModuleRecords
 {
     private readonly Dictionary<string, AttributeBag[]> _byFamily = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, RecordFamily> _declared = new(StringComparer.Ordinal);
 
     /// <summary>Every family id with room here, in declaration order.</summary>
     public IReadOnlyList<string> Families => [.. _byFamily.Keys];
@@ -30,6 +31,7 @@ public sealed class ModuleRecords
         var slots = new AttributeBag[Math.Max(limit, 0) + 1];
         for (int i = 0; i < slots.Length; i++) slots[i] = new AttributeBag();
         _byFamily[family.Id] = slots;
+        _declared[family.Id] = family;
     }
 
     /// <summary>Replaces a family's records wholesale — what a load from disk hands back.</summary>
@@ -38,7 +40,13 @@ public sealed class ModuleRecords
         ArgumentNullException.ThrowIfNull(family);
         ArgumentNullException.ThrowIfNull(records);
         _byFamily[family.Id] = records;
+        _declared[family.Id] = family;
     }
+
+    /// <summary>The family a module declared under that id, or null. Saving a record needs the family
+    /// rather than its id — it names the folder and the filename the record is written as.</summary>
+    public RecordFamily? Family(string? familyId) =>
+        familyId is not null && _declared.TryGetValue(familyId, out var family) ? family : null;
 
     /// <summary>Whether this world holds records for that family.</summary>
     public bool Has(string? familyId) => familyId is not null && _byFamily.ContainsKey(familyId);

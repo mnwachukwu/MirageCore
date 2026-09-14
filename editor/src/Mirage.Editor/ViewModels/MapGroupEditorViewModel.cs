@@ -58,6 +58,7 @@ public sealed partial class MapGroupEditorViewModel : EditorViewModelBase<MapGro
     }
 
     protected override string SectionId => CoreRecordFamilies.MapGroups;
+    protected override string? GameFieldsFamilyId => CoreRecordFamilies.MapGroups;
     protected override string TypeName => EditorStrings.Get(EditorStrings.MapGroupEditor_TypeName);
     protected override string TypeNamePlural => EditorStrings.Get(EditorStrings.MapGroupEditor_TypeNamePlural);
     protected override int GetIndex(MapGroupRowViewModel vm) => vm.Index;
@@ -96,6 +97,7 @@ public sealed partial class MapGroupEditorViewModel : EditorViewModelBase<MapGro
 
     partial void OnSelectedMapGroupChanged(MapGroupRowViewModel? value)
     {
+        TrackGameFields(value);
         NotifyDirtyState();
         NotifyGroupMapsChanged();
         if (value is not null && !value.IsLoaded && _data.IsOnline)

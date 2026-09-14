@@ -130,6 +130,7 @@ public sealed partial class NpcEditorViewModel : EditorViewModelBase<NpcRowViewM
     }
 
     protected override string SectionId => CoreRecordFamilies.Npcs;
+    protected override string? GameFieldsFamilyId => CoreRecordFamilies.Npcs;
     protected override string TypeName => EditorStrings.Get(EditorStrings.NpcEditor_TypeName);
     protected override string TypeNamePlural => EditorStrings.Get(EditorStrings.NpcEditor_TypeNamePlural);
     protected override int GetIndex(NpcRowViewModel vm) => vm.Index;
@@ -166,6 +167,7 @@ public sealed partial class NpcEditorViewModel : EditorViewModelBase<NpcRowViewM
     partial void OnSelectedNpcChanged(NpcRowViewModel? oldValue, NpcRowViewModel? newValue)
     {
         NotifyInboundRefsChanged();
+        TrackGameFields(newValue);
         if (oldValue is not null) oldValue.PropertyChanged -= OnNpcPropertyChanged;
         if (newValue is not null) newValue.PropertyChanged += OnNpcPropertyChanged;
         NotifyDirtyState();

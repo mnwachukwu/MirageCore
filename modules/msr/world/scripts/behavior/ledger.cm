@@ -1,0 +1,267 @@
+# What a guild is charged, and what it is paid.
+#
+# One settlement a day, at midnight, per guild. Debits before credits: the weekly tax first, then the
+# daily maintenance on every declaration still going unanswered, then what the guild earned. Paying
+# a debt out of the same day's income would let a guild spend money it had not yet been given.
+#
+# Missed days are caught up rather than skipped. A guild nobody was logged into settles when the
+# first member arrives, and it settles every day it missed — so a quiet week still costs a week's tax.
+#
+# ⚠ Days are counted from the same epoch World.Now() counts seconds from, which began on a Thursday.
+# That is what makes the weekday arithmetic below work at all.
+
+shared model Ledger
+
+    # ── The numbers, all from the original ────────────────────────────────────
+
+    # A guild pays this much a week for every level it holds. Level zero is free, and has no perks to
+    # lose either.
+    public integer TaxPerLevel = 35000;
+
+    # Valor in the vault is spent on the bill before gold is: ten valor takes 3,500 gold off it, in
+    # whole steps, and never more than half the bill.
+    public integer ValorPerStep = 10;
+    public integer GoldPerStep = 3500;
+    public integer ValorOffsetCapPercent = 50;
+
+    # A declaration nobody answered costs half its declare price every day it stands.
+    public integer MaintenancePercent = 50;
+
+    # ── Where it is written ───────────────────────────────────────────────────
+
+    public string Settled = "gsettled";
+    public string Founded = "gfound";
+    public string Valor = "gvalor";
+    public string PerksActive = "gperks";
+    public string TaxedOn = "gtaxday";
+    public string MaintainedOn = "gmaint";
+    public string ResetOn = "gwreset";
+
+    # The vault dashboard's running totals for the week.
+    public string WeeklyIncome = "gincome";
+    public string WeeklyDonations = "gdonate";
+    public string WeeklyWarCosts = "gwarcost";
+
+    # What the level-five perk has trickled in since the last settlement.
+    public string Pending = "gpending";
+
+    # ── The clock ─────────────────────────────────────────────────────────────
+
+    public integer function Today()
+        yield Calendar.Today();
+    end function
+
+    public boolean function IsWeekReset(integer day)
+        yield Calendar.IsSunday(day);
+    end function
+
+    # A guild's tax falls on the weekday it was founded. The first settlement a guild ever sees is
+    # what anchors that, so a guild founded on a Tuesday pays on Tuesdays.
+    public boolean function IsTaxDay(integer guild, integer day)
+        integer founded = World.GuildNumber(guild, Ledger.Founded);
+
+        yield (day - founded) % 7 == 0;
+    end function
+
+    # ── Settling ──────────────────────────────────────────────────────────────
+
+    # Walked from a member's tick, because nothing ticks a guild.
+    public function Tick(Player who)
+        integer guild = World.GuildOf(who);
+
+        if guild < 1
+            yield;
+        end if
+
+        integer today = Ledger.Today();
+        integer last = World.GuildNumber(guild, Ledger.Settled);
+
+        # A guild nobody has settled before starts from today. Charging it for every day since 1970
+        # is the alternative, and it is not a bill anybody could pay.
+        if last < 1
+            World.SetGuildNumber(guild, Ledger.Settled, today);
+            World.SetGuildNumber(guild, Ledger.Founded, today);
+            World.SetGuildNumber(guild, Ledger.PerksActive, 1);
+            yield;
+        end if
+
+        loop while last < today
+            last = last + 1;
+
+            Ledger.Settle(who, guild, last);
+        end loop
+
+        World.SetGuildNumber(guild, Ledger.Settled, today);
+    end function
+
+    # One day, for one guild. Every step is guarded by the day it last ran on, so settling a day
+    # twice changes nothing the second time.
+    public function Settle(Player who, integer guild, integer day)
+        Ledger.ResetWeek(guild, day);
+
+        if Ledger.IsTaxDay(guild, day)
+            if World.GuildNumber(guild, Ledger.TaxedOn) != day
+                Ledger.Tax(who, guild, day);
+            end if
+        end if
+
+        if World.GuildNumber(guild, Ledger.MaintainedOn) != day
+            World.SetGuildNumber(guild, Ledger.MaintainedOn, day);
+
+            Ledger.Maintain(who, guild);
+        end if
+
+        Ledger.CreditPending(guild);
+    end function
+
+    # The week's running totals are zeroed BEFORE the day's flows, so today's tax and today's income
+    # both count toward the fresh week rather than the one that just ended.
+    function ResetWeek(integer guild, integer day)
+        if not Ledger.IsWeekReset(day)
+            yield;
+        end if
+
+        if World.GuildNumber(guild, Ledger.ResetOn) == day
+            yield;
+        end if
+
+        World.SetGuildNumber(guild, Ledger.ResetOn, day);
+        World.SetGuildNumber(guild, Ledger.WeeklyIncome, 0);
+        World.SetGuildNumber(guild, Ledger.WeeklyDonations, 0);
+        World.SetGuildNumber(guild, Ledger.WeeklyWarCosts, 0);
+    end function
+
+    # ── The weekly tax ────────────────────────────────────────────────────────
+
+    public integer function WeeklyTax(integer level)
+        if level < 1
+            yield 0;
+        end if
+
+        yield level * Ledger.TaxPerLevel;
+    end function
+
+    # What valor takes off a bill: whole steps only, and never more than the cap. The answer is the
+    # valor that would be spent; the gold it buys is that many steps at the gold rate.
+    public integer function ValorSteps(integer valor, integer tax)
+        if valor < 1 or tax < 1
+            yield 0;
+        end if
+
+        integer most = tax * Ledger.ValorOffsetCapPercent / 100;
+        integer steps = valor / Ledger.ValorPerStep;
+        integer affordable = most / Ledger.GoldPerStep;
+
+        if affordable < steps
+            yield affordable;
+        end if
+
+        yield steps;
+    end function
+
+    # Whole or nothing. A guild that cannot pay loses its perks and owes nothing afterwards — there
+    # are no back taxes, and one week's payment is what brings the perks back.
+    public function Tax(Player who, integer guild, integer day)
+        integer level = Guilds.LevelOf(guild);
+        integer tax = Ledger.WeeklyTax(level);
+
+        if tax < 1
+            yield;
+        end if
+
+        integer valor = World.GuildNumber(guild, Ledger.Valor);
+        integer steps = Ledger.ValorSteps(valor, tax);
+        integer owed = tax - steps * Ledger.GoldPerStep;
+
+        # ⚠ Whole or nothing, and the check IS the payment: the vault refuses a withdrawal it cannot
+        # cover, so asking first and spending second would be two answers to one question.
+        #
+        # The ledger wants a name against every withdrawal, and a tax is the guild's own bill rather
+        # than anybody's spending. It goes down against whichever member's tick settled the day, which
+        # is the closest to the truth the ledger can hold.
+        if not World.SpendGuildGold(guild, owed, who)
+            if World.GuildNumber(guild, Ledger.PerksActive) > 0
+                World.SetGuildNumber(guild, Ledger.PerksActive, 0);
+                World.TellThese(World.GuildMembers(guild),
+                                "The tax went unpaid. Your guild's privileges are suspended.");
+            end if
+
+            yield;
+        end if
+
+        # The valor is spent with the gold or not at all, so a bill nobody could pay costs nothing.
+        World.SetGuildNumber(guild, Ledger.Valor, valor - steps * Ledger.ValorPerStep);
+        World.SetGuildNumber(guild, Ledger.TaxedOn, day);
+
+        if World.GuildNumber(guild, Ledger.PerksActive) < 1
+            World.SetGuildNumber(guild, Ledger.PerksActive, 1);
+            World.TellThese(World.GuildMembers(guild),
+                            "The tax is paid. Your guild's privileges are restored.");
+        end if
+
+        World.TellThese(World.GuildMembers(guild), "The guild paid " + owed + " gold in tax.");
+    end function
+
+    # ── Keeping a declaration standing ────────────────────────────────────────
+    #
+    # Only a declaration the other side has NOT answered costs anything to keep. A mutual war is two
+    # guilds who both want it, and neither pays to be there.
+
+    public function Maintain(Player who, integer guild)
+        loop for slot = 1 to Guilds.Slots
+            integer against = World.GuildNumber(guild, Guilds.Opponent(slot));
+
+            if against > 0
+                Ledger.MaintainOne(who, guild, against, slot);
+            end if
+        end loop
+    end function
+
+    function MaintainOne(Player who, integer guild, integer against, integer slot)
+        if World.GuildNumber(guild, Guilds.WeDeclared(slot)) < 1
+            yield;
+        end if
+
+        if World.GuildNumber(guild, Guilds.TheyDeclared(slot)) > 0
+            yield;
+        end if
+
+        if World.GuildNumber(guild, Guilds.GoesLive(slot)) > World.Now()
+            yield;
+        end if
+
+        integer due = World.GuildNumber(guild, Guilds.Cost(slot)) * Ledger.MaintenancePercent / 100;
+
+        if due < 1
+            yield;
+        end if
+
+        if World.SpendGuildGold(guild, due, who)
+            World.SetGuildNumber(guild, Ledger.WeeklyWarCosts,
+                                 World.GuildNumber(guild, Ledger.WeeklyWarCosts) + due);
+            yield;
+        end if
+
+        # A war the vault cannot keep up is dropped, which is the whole of the penalty.
+        World.Tell(World.GuildName(guild) + " can no longer afford its war against "
+                   + World.GuildName(against) + ".");
+
+        Guilds.EndWar(guild, against, 0);
+    end function
+
+    # ── What the guild earned ─────────────────────────────────────────────────
+
+    function CreditPending(integer guild)
+        integer pending = World.GuildNumber(guild, Ledger.Pending);
+
+        if pending < 1
+            yield;
+        end if
+
+        World.GiveGuildGold(guild, pending);
+        World.SetGuildNumber(guild, Ledger.Pending, 0);
+        World.SetGuildNumber(guild, Ledger.WeeklyIncome,
+                             World.GuildNumber(guild, Ledger.WeeklyIncome) + pending);
+    end function
+
+end model

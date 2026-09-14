@@ -54,6 +54,15 @@ public sealed partial class NpcAiSystem : GameSystem
 
             var npc = _world.Npcs[mn.Num];
 
+            // A body a game pointed at somebody minds that body instead of its record's own routine. The
+            // legs already step toward whatever target it holds; this is only here to stop the routine
+            // from taking a stride over the top of the lock and clearing it.
+            if (mn.Roused)
+            {
+                RunRousedAi(mapNum, slot, mn, now);
+                continue;
+            }
+
             switch (npc.Behavior)
             {
                 case NpcBehavior.Pursue:
@@ -82,6 +91,37 @@ public sealed partial class NpcAiSystem : GameSystem
                     break;
             }
         }
+    }
+
+    /// <summary>Brain tick for a body a game roused: mind what it was pointed at, and let go when there is
+    /// nothing left to mind.
+    ///
+    /// <para>It never goes looking for anybody. Noticing is what a record's own behavior does, and a body
+    /// that picked a second quarry for itself would be chasing something the game never sent it after —
+    /// so when this lock ends the rousing ends with it, and the record takes the body back.</para>
+    ///
+    /// <para>The give-up clock still applies (see <see cref="ShouldGiveUpUnreachedTarget"/>): a body that
+    /// cannot reach what it was sent after goes home rather than standing against a wall forever.</para>
+    /// </summary>
+    private void RunRousedAi(int mapNum, int slot, MapNpcRecord mn, long now)
+    {
+        if (mn.Target > 0)
+        {
+            if (!_pm[mn.Target].IsPlaying) DropNativeTarget(mapNum, slot, mn);
+            else if (ShouldGiveUpUnreachedTarget(mn, now))
+            {
+                DropNativeTarget(mapNum, slot, mn);
+                ResetNativeNpc(mn, mapNum, slot, _world.Npcs[mn.Num]);
+            }
+            else if (_pm[mn.Target].Char.Map != mapNum)
+                NativeChaseAcrossBorder(mapNum, slot, mn, mn.Target, now, legsStep: true);
+        }
+        else if (mn.NpcTargetSpawnSlot > 0)
+        {
+            RunNoticedNpcStep(mapNum, slot, mn, now);
+        }
+
+        if (mn.Target == 0 && mn.NpcTargetSpawnSlot == 0) mn.Roused = false;
     }
 
     /// <summary>Brain tick for a <see cref="NpcBehavior.Pursue"/> native: notice a player if it has

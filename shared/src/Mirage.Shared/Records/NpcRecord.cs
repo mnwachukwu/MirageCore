@@ -48,8 +48,13 @@ public sealed class NpcRecord
     public int EffectiveSize => Math.Clamp(Size, 1, Constants.MaxNpcSize);
     public int SpawnSecs { get; set; }
     public NpcBehavior Behavior { get; set; }
-    /// <summary>AoS alliance tag: an Attack-on-Sight NPC won't attack another NPC sharing its
-    /// non-zero Group (additive with the same-type peace).  0 = ungrouped (original behavior).</summary>
+    /// <summary>Which pack this creature keeps to. A <see cref="NpcBehavior.Pursue"/> or
+    /// <see cref="NpcBehavior.Flee"/> body never notices another body sharing its non-zero group, on top
+    /// of never noticing its own kind. 0 = ungrouped, which is what an unset record means.
+    ///
+    /// <para>The rule is symmetric by construction — see <c>GameWorld.AreNpcsKin</c> — so a group set on
+    /// one side of a pair and not the other protects neither, and shows up in testing as the pack
+    /// fighting itself.</para></summary>
     public int Group { get; set; }
     /// <summary>How far it notices anything, in tiles. Free: <see cref="Constants.NpcRangeSoftCap"/> is
     /// what the editor expects it to stay within, not a limit anything enforces.</summary>

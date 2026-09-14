@@ -503,6 +503,7 @@
   "SchemaEditor_SelectPrompt": "Selecione um registro para editar.",
   "SchemaEditor_NoFields": "Esta família não declara campos, então não há nada a preencher. Seus registros ainda podem ser criados, copiados e salvos.",
   "SchemaEditor_MissingRequired": "Alguns campos obrigatórios ainda estão vazios.",
+  "GameFields_Heading": "Campos próprios deste jogo",
   "SchemaEditor_SaveButton": "Salvar registro",
   "ItemEditor_Notes_EquipmentHeader": "Equipamento",
   "ItemEditor_Notes_EquipmentDurability": "• Durabilidade: com a qual a peça começa ao ser pega ou recebida. O que a gasta é regra do jogo; o motor só aplica os extremos — em 0 a peça sai, fica na mochila e não pode ser usada de novo até ser consertada. 0 = sem durabilidade, então nunca se desgasta.",

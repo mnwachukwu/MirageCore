@@ -70,21 +70,33 @@ public class MapNpcRecord
     // (the SPD-scaled run cadence).  The fast movement pass gates on this; 0 = ready.
     public long NextMoveMs { get; set; }
     // Per-engagement approach commitment (runtime; not persisted).  Rolled once per fresh chase target in
-    // BeginEngagement: RushCommitted (won the NpcApproachRushChancePct "charge" roll) lets an AoS mob RUN the
-    // opening approach; otherwise the AoS mob walks in until HasMadeContact turns true (it reached the target
-    // once) — non-AoS chasers run the opening approach freely.  After contact the run/walk decision passes to
-    // the distance hysteresis (see ChaseSprinting below).  See NpcAiSystem.NpcWantsChaseRun.  Both carry across
-    // the native↔guest seam.
+    // BeginEngagement: RushCommitted (won the NpcApproachRushChancePct "charge" roll) lets a body that noticed
+    // somebody RUN the opening approach; otherwise it walks in until HasMadeContact turns true (it reached the
+    // target once).  A body a game ROUSED skips the roll and commits to the run — see BeginRushEngagement.
+    // After contact the run/walk decision passes to the distance hysteresis (see ChaseSprinting below).  See
+    // NpcAiSystem.NpcWantsChaseRun.  Both carry across the native↔guest seam.
     public bool RushCommitted { get; set; }
     public bool HasMadeContact { get; set; }
 
     // Re-close sprint latch (runtime; not persisted).  Lifecycle mirrors HasMadeContact: init false in
     // BeginEngagement/BeginRushEngagement, carried across the native↔guest seam, cleared at the chase
-    // steppers' adjacency early-returns.  Set true once a re-closing melee mob opens
-    // Constants.NpcChaseSprintGapTiles; while set it sprints (SP permitting) until it regains melee, which
-    // clears it back to a walk — so it bursts stamina instead of gluing.  Only non-guard, non-caster chasers
-    // consult it — see NpcAiSystem.NpcWantsChaseRun.
+    // steppers' adjacency early-returns.  Set true once a re-closing chaser opens
+    // Constants.NpcChaseSprintGapTiles; while set it sprints (SP permitting) until it regains reach, which
+    // clears it back to a walk — so it bursts stamina instead of gluing.  See NpcAiSystem.NpcWantsChaseRun.
     public bool ChaseSprinting { get; set; }
+
+    /// <summary>This body is chasing something a GAME pointed it at, rather than something it noticed
+    /// on its own terms (runtime; not persisted).
+    ///
+    /// <para>🔴 It is what lets a body chase at all when its authored <see cref="NpcBehavior"/> has no
+    /// noticing rule. A Wander body never acquires anybody, so without this the target a game wrote
+    /// would be ignored by the brain and overwritten by the next wander stride — set, and silently
+    /// inert. The legs pass already steps toward whatever target a body holds, so this only tells the
+    /// brain to leave that target alone and mind it instead.</para>
+    ///
+    /// <para>Cleared the moment the body has no target left, which is what keeps a roused body from
+    /// outliving what roused it.</para></summary>
+    public bool Roused { get; set; }
 
     /// <summary>Sized by the CREATOR, not by <see cref="Constants.MaxPlayers"/>.
     ///
@@ -247,12 +259,13 @@ public class MapNpcRecord
         ChaseSprinting = false;
     }
 
-    /// <summary>The NPC was DRAWN INTO combat (attacked) rather than spotting a target on its own, so it commits
-    /// to RUNNING the approach immediately — no cautious walk-in, no charge roll (being engaged is different from
-    /// initiating).  Sets <see cref="RushCommitted"/> and, for a genuinely fresh target, CLAIMS the chase
-    /// engagement (advances <see cref="ChaseTargetKey"/> + resets stall) so the legs pass's
+    /// <summary>The body was POINTED at somebody by a game rather than spotting it on its own, so it commits
+    /// to RUNNING the approach immediately — no cautious walk-in, no charge roll (being sent after somebody is
+    /// different from picking them).  Sets <see cref="RushCommitted"/> and, for a genuinely fresh target,
+    /// CLAIMS the chase engagement (advances <see cref="ChaseTargetKey"/> + resets stall) so the legs pass's
     /// <see cref="BeginEngagement"/> won't fire on this target and re-roll the rush back to a walk-in.  Called
-    /// from the attacked-aggro paths after the target is set.  Idempotent when already engaging this target.</summary>
+    /// when a body is roused (see <see cref="Roused"/>), after the target is set.  Idempotent when already
+    /// engaging this target.</summary>
     public void BeginRushEngagement()
     {
         RushCommitted = true;

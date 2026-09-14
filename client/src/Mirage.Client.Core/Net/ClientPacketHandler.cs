@@ -360,6 +360,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
         // What character creation may offer. Held from the greeting because the screen is reached
         // without asking the server anything.
         _state.Appearances = p.Appearances;
+        _state.Asked = p.Asked;
         // One color for the whole world, so it arrives before the first map's stains do.
         _state.DecalColor = p.DecalColor;
         GameNameChanged?.Invoke(_state.GameName);

@@ -55,6 +55,25 @@ public sealed partial class ItemSystem : GameSystem
             return;
         }
 
+        // ── What the GAME says about it ──────────────────────────────────────────────────────────
+        //
+        // 🔴 Asked before anything happens, which is the whole difference between this and hearing about
+        // it afterwards. A rule told after the fact can only take the gear off again — a flicker, and a
+        // moment with the wrong body wearing the wrong thing.
+        //
+        // ⚠ Before the cooldown too, so a refused use costs neither the beat nor the item. Every gate
+        // above this one is Core's own answer to whether the use is well-formed; this is the game's
+        // answer to whether it is allowed, and the two are different questions.
+        var asking = new Use(EntityHandle.ForPlayer(index), itemNum, invSlot);
+        foreach (var policy in _mayUse)
+        {
+            var answer = policy.MayUse(in asking);
+            if (answer.Allowed) continue;
+
+            if (answer.ReasonKey is { Length: > 0 } reason) SendMsg(index, reason, answer.Color);
+            return;
+        }
+
         // ── The consumable cooldown ──────────────────────────────────────────────────────────────
         // Its own clock, apart from the action beat, so using something up never costs an action and an
         // action never delays it. Authoritative here because a client-side gate is a courtesy.
@@ -138,5 +157,44 @@ public sealed partial class ItemSystem : GameSystem
 
         p.SetEquipped(item.EquipSlot, p.EquippedIn(item.EquipSlot) == invSlot ? 0 : invSlot);
         SendEquippedGear(index);
+    }
+
+    /// <summary>Put on the first copy of an item a bag holds, and take off whatever was in its slot.
+    ///
+    /// <para>🔴 <b>Named by ITEM rather than by bag slot, because that is what a rule knows.</b> A game
+    /// handing somebody a sword knows which sword; where it landed in the bag is the engine's own
+    /// bookkeeping, and asking a script to track it would be asking it to keep a copy of something it
+    /// cannot see.</para>
+    ///
+    /// <para>⚠ None of <see cref="UseItem"/>'s refusals apply. A rule granting gear is not a player
+    /// pressing a button: it is not held off by combat, and it is not stopped by a broken piece — a
+    /// game that wants those rules writes them, and one arming somebody mid-fight on purpose would be
+    /// refused by a gate it never asked for.</para>
+    ///
+    /// <para>False when the bag holds no such item, and when the piece names a slot this world does not
+    /// declare. Wearing something already worn changes nothing and answers true.</para></summary>
+    public bool WearFromBag(int index, int itemNum)
+    {
+        if (!_pm[index].IsPlaying || itemNum <= 0 || itemNum > _world.Limits.Items) return false;
+
+        var p = _pm[index].Char;
+        var item = _world.Items[itemNum];
+
+        if (!ItemRecord.IsEquipment(item.Type) || !_world.EquipSlots.Has(item.EquipSlot)) return false;
+
+        for (int slot = 1; slot <= Constants.MaxInv; slot++)
+        {
+            if (p.Inv[slot].Num != itemNum) continue;
+
+            // Already worn in its own slot: say so rather than toggling it off, because a rule asking
+            // for something to be ON must never be the thing that takes it off.
+            if (p.EquippedIn(item.EquipSlot) == slot) return true;
+
+            p.SetEquipped(item.EquipSlot, slot);
+            SendEquippedGear(index);
+            return true;
+        }
+
+        return false;
     }
 }

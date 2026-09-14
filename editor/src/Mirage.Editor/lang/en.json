@@ -503,6 +503,7 @@
   "SchemaEditor_SelectPrompt": "Select a record to edit.",
   "SchemaEditor_NoFields": "This family declares no fields, so there is nothing to fill in. Its records can still be created, copied and saved.",
   "SchemaEditor_MissingRequired": "Some required fields are still empty.",
+  "GameFields_Heading": "This game's own fields",
   "SchemaEditor_SaveButton": "Save Record",
   "ItemEditor_Notes_EquipmentHeader": "Equipment",
   "ItemEditor_Notes_EquipmentDurability": "• Durability: what the piece starts with when it is picked up or given. What spends it is the game's rule; the engine only enforces the ends — at 0 the piece comes off, stays in the bag, and cannot be worn again until a repair shop restores it. 0 = no durability budget, so it never wears.",

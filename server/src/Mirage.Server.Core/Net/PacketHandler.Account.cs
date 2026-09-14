@@ -318,10 +318,12 @@ public sealed partial class PacketHandler
         var sp = _pm[index];
         if (sp.IsPlaying || sp.Login == "") return;
 
-        RunAsync(HandleAddCharAsync(index, p.Name.Trim(), p.Appearance), nameof(HandleAddCharAsync));
+        RunAsync(HandleAddCharAsync(index, p.Name.Trim(), p.Appearance, p.Chose),
+                 nameof(HandleAddCharAsync));
     }
 
-    private async Task HandleAddCharAsync(int index, string name, int appearance)
+    private async Task HandleAddCharAsync(int index, string name, int appearance,
+                                          IReadOnlyList<int> chose)
     {
         // Max counts the whole string; min counts alphanumerics only (rejects "A__" / all-underscore).
         switch (NameRules.CheckLength(name, Constants.MinFieldLength, Constants.NameLength))
@@ -400,6 +402,40 @@ public sealed partial class PacketHandler
         _logger.LogInformation("Character {Name} added to {Login}'s account.", name, sp.Login);
         _dispatcher.SendTo(index, PacketBuilder.SendChars(
             Enumerable.Range(1, Constants.MaxChars).Select(i => (PlayerRecord?)sp.Chars[i])));
+    }
+
+    /// <summary>
+    /// Write what they picked at creation onto the new character.
+    ///
+    /// <para>🔴 <b>Onto the character's own attributes, before anything is told they exist.</b> So a
+    /// game reads a class the ordinary way and needs no handler of its own — by the time
+    /// <c>OnPlayerJoined</c> runs, the choice is already on the body.</para>
+    ///
+    /// <para>⚠ Checked against what the world OFFERS, not range-checked. A client naming a record that
+    /// is blank, or answering a question nobody asked, is asking for something this world never put on
+    /// the screen — and an unanswered question is left unwritten rather than defaulted, because a
+    /// default here is a class nobody chose.</para>
+    /// </summary>
+    private void WriteCreationChoices(PlayerRecord chr, IReadOnlyList<int> chose)
+    {
+        var asked = _registry.CreationChoices.Choices;
+        if (_actions is null) return;   // nothing to resolve a choice against
+
+        for (int i = 0; i < asked.Count; i++)
+        {
+            if (i >= chose.Count) continue;
+
+            int num = chose[i];
+            if (num < 1) continue;
+
+            var records = _actions.RecordsOf(asked[i].FamilyId);
+            if (num > records.Count) continue;
+
+            // A blank slot is not on the screen, so it is not an answer either.
+            if (!records[num - 1].TryGet("name", out AttributeValue held) || held.AsText().Length == 0) continue;
+
+            chr.Attributes.Set(asked[i].Key, AttributeValue.From((long)num));
+        }
     }
 
     private void HandleDelChar(int index, DelCharPacket p)

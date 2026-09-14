@@ -1,4 +1,5 @@
 using Mirage.Server.Core.Net;
+using Mirage.Server.Core.Persistence;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Shared;
@@ -31,14 +32,30 @@ public sealed class ServerWorld : IWorld
     private readonly ItemSystem _items;
     private readonly JoinLeaveSystem _joinLeave;
     private readonly DecalSystem _decals;
+    private readonly NpcAiSystem _ai;
+
+    /// <summary>The engine's own guild bookkeeping, for the two things a game cannot do by
+    /// writing a number: saving a guild, and spending from its vault through the ledger.</summary>
+    private readonly GuildSystem _guilds;
+
+    /// <summary>How a record a game writes at run time gets onto disk. Both are null in a harness with
+    /// no persistence, where a write still lands in memory and simply is not saved.</summary>
+    private readonly IPersistenceService? _persistence;
+    private readonly IBackgroundPersistence? _bg;
     private readonly WorldQueries _queries;
     private readonly IPacketDispatcher _dispatcher;
     private readonly IClock _clock;
 
     public ServerWorld(GameWorld world, PlayerManager pm, AttributeSystem attributes, DeathSystem deaths,
                        MovementSystem movement, ItemSystem items, JoinLeaveSystem joinLeave,
-                       DecalSystem decals, IPacketDispatcher dispatcher, IClock? clock = null)
+                       DecalSystem decals, NpcAiSystem ai, GuildSystem guilds,
+                       IPacketDispatcher dispatcher, IClock? clock = null,
+                       IPersistenceService? persistence = null, IBackgroundPersistence? bg = null)
     {
+        _ai = ai;
+        _guilds = guilds;
+        _persistence = persistence;
+        _bg = bg;
         _dispatcher = dispatcher;
         _world = world;
         _pm = pm;
@@ -137,6 +154,192 @@ public sealed class ServerWorld : IWorld
         return id >= 1 && _world.Guilds.TryGetValue(id, out var guild) ? guild.Name : string.Empty;
     }
 
+    // ── Guilds, as something a game can act on ────────────────────────────────
+
+    public int GuildNumber(EntityHandle who) =>
+        who.IsPlayer && IsInWorld(who) ? _pm[who.PlayerIndex].Guild : 0;
+
+    public string GuildName(int guild) => Guild(guild)?.Name ?? string.Empty;
+
+    public int GuildNamed(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return 0;
+
+        foreach (var (id, guild) in _world.Guilds)
+        {
+            // The same comparison the engine's own founding check makes, so a game cannot create a
+            // second guild under a name a player would read as the one already there.
+            if (!guild.Disbanded && string.Equals(guild.Name, name, StringComparison.OrdinalIgnoreCase))
+                return id;
+        }
+
+        return 0;
+    }
+
+    public string GuildRankOf(EntityHandle who)
+    {
+        if (Guild(GuildNumber(who)) is not { } guild) return string.Empty;
+
+        string login = _pm[who.PlayerIndex].Login;
+
+        foreach (var member in guild.Members)
+        {
+            if (!string.Equals(member.Login, login, StringComparison.OrdinalIgnoreCase)) continue;
+
+            return member.Rank switch
+            {
+                GuildRank.Leader => "leader",
+                GuildRank.Officer => "officer",
+                GuildRank.Member => "member",
+                _ => string.Empty,
+            };
+        }
+
+        return string.Empty;
+    }
+
+    public AttributeBag? GuildValues(int guild) => Guild(guild)?.Attributes;
+
+    public bool SetGuildValue(int guild, string key, AttributeValue value)
+    {
+        if (Guild(guild) is not { } found || string.IsNullOrWhiteSpace(key)) return false;
+
+        found.Attributes.Set(key, value);
+
+        // ⚠ Saved on every write. A guild is not a body: nothing logs it out, so there is no later
+        // moment where its values would be written anyway.
+        _guilds.SaveGuild(found);
+        return true;
+    }
+
+    public IReadOnlyList<EntityHandle> MembersOf(int guild)
+    {
+        if (guild < 1) return [];
+
+        var found = new List<EntityHandle>();
+        for (int i = 1; i <= _pm.Slots; i++)
+        {
+            if (_pm[i].IsPlaying && _pm[i].Guild == guild) found.Add(EntityHandle.ForPlayer(i));
+        }
+
+        return found;
+    }
+
+    public long GuildGold(int guild) => Guild(guild)?.VaultGold ?? 0L;
+
+    public bool GiveGuildGold(int guild, long amount)
+    {
+        if (Guild(guild) is not { } found || amount <= 0) return false;
+
+        // Through the engine's own credit, which is what keeps the vault's ceiling and its rounding in
+        // one place rather than in every game that pays a guild.
+        GuildSystem.CreditVault(found, amount);
+        _guilds.SaveGuild(found);
+        return true;
+    }
+
+    // ── Worn gear, and what wears it out ──────────────────────────────────────
+
+    public IReadOnlyList<int> WornBy(EntityHandle who)
+    {
+        if (!who.IsPlayer || !IsInWorld(who)) return [];
+
+        var p = _pm[who.PlayerIndex].Char;
+        var worn = new List<int>();
+
+        foreach (var slot in _world.EquipSlots.Slots)
+        {
+            int bagSlot = p.EquippedIn(slot.Key);
+            if (bagSlot >= 1 && p.Inv[bagSlot].Num > 0) worn.Add(p.Inv[bagSlot].Num);
+        }
+
+        return worn;
+    }
+
+    public int WornIn(EntityHandle who, string slotKey)
+    {
+        if (!who.IsPlayer || !IsInWorld(who) || string.IsNullOrEmpty(slotKey)) return 0;
+
+        var p = _pm[who.PlayerIndex].Char;
+        int bagSlot = p.EquippedIn(slotKey);
+
+        return bagSlot >= 1 ? p.Inv[bagSlot].Num : 0;
+    }
+
+    public (int Left, int Full) DurabilityOf(EntityHandle who, int itemNum)
+    {
+        if (WornSlot(who, itemNum) is not { } bagSlot) return (0, 0);
+
+        return (_pm[who.PlayerIndex].Char.Inv[bagSlot].Dur, _world.Items[itemNum].Durability);
+    }
+
+    public int Wear(EntityHandle who, int itemNum, int points)
+    {
+        if (points <= 0 || WornSlot(who, itemNum) is not { } bagSlot) return 0;
+
+        var inv = _pm[who.PlayerIndex].Char.Inv[bagSlot];
+        int taken = Math.Min(points, inv.Dur);
+
+        if (taken <= 0) return 0;
+
+        inv.Dur -= taken;
+
+        // Push the slot back to its owner, so anything drawn off durability follows the wear.
+        _items.SendInventoryUpdate(who.PlayerIndex, bagSlot);
+        return taken;
+    }
+
+    public int RepairCost(int itemNum, int points)
+    {
+        if (itemNum < 1 || itemNum > _world.Limits.Items || points <= 0) return 0;
+
+        return EconomyFormulas.RepairCost(points, _world.Items[itemNum]);
+    }
+
+    /// <summary>The bag slot holding the copy of that item they are WEARING, or null. Wearing is what
+    /// makes it findable: two copies in the bag are two different amounts of wear, and a rule about what
+    /// a death cost means the one that was on them.</summary>
+    private int? WornSlot(EntityHandle who, int itemNum)
+    {
+        if (!who.IsPlayer || !IsInWorld(who) || itemNum < 1 || itemNum > _world.Limits.Items) return null;
+
+        var p = _pm[who.PlayerIndex].Char;
+
+        foreach (var slot in _world.EquipSlots.Slots)
+        {
+            int bagSlot = p.EquippedIn(slot.Key);
+            if (bagSlot >= 1 && p.Inv[bagSlot].Num == itemNum) return bagSlot;
+        }
+
+        return null;
+    }
+
+    public int MapGroupOf(int mapNum) =>
+        mapNum >= 1 && mapNum <= _world.Limits.Maps ? _world.Maps[mapNum].MapGroup : 0;
+
+    public long Now() => _clock.UtcNowUnix;
+
+    public bool SpendGuildGold(int guild, long amount, EntityHandle by)
+    {
+        if (Guild(guild) is not { } found || amount <= 0 || found.VaultGold < amount) return false;
+
+        found.VaultGold -= amount;
+
+        // 🔴 Through the engine's own ledger. A vault that went down with nothing in the spending log
+        // is money a guild cannot account for, and accounting for it is most of what a vault is for.
+        _guilds.RecordSpending(found,
+            by.IsPlayer && IsInWorld(by) ? _pm[by.PlayerIndex].Login : string.Empty,
+            NameOf(by), amount);
+
+        return true;
+    }
+
+    /// <summary>The guild that number names, or null for one that is not there or was disbanded. A
+    /// disbanded guild still occupies its number so nothing reuses it, and answering about one would be
+    /// answering about a guild nobody can join.</summary>
+    private Shared.Records.GuildRecord? Guild(int guild) =>
+        guild >= 1 && _world.Guilds.TryGetValue(guild, out var found) && !found.Disbanded ? found : null;
+
     /// <summary>
     /// Everybody in the world sharing this body's guild.
     ///
@@ -228,6 +431,59 @@ public sealed class ServerWorld : IWorld
         else if (Npc(who) is { } npc) npc.AggressorUntil = until;
     }
 
+    // ── ... and reading it back ────────────────────────────────────────────
+    //
+    // Each answers off the same field its setter wrote, so there is no second clock to keep in step.
+
+    public bool IsEngaged(EntityHandle who)
+    {
+        if (who.IsPlayer && IsInWorld(who)) return _pm[who.PlayerIndex].IsInCombat(Environment.TickCount64);
+
+        return Npc(who) is { } npc && npc.CombatExpiresAt > 0
+            && Environment.TickCount64 < npc.CombatExpiresAt;
+    }
+
+    /// <summary>⚠ A creature has no downed state — see <see cref="SetDowned"/> — so it is never in one.</summary>
+    public bool IsDowned(EntityHandle who) =>
+        who.IsPlayer && IsInWorld(who) && _pm[who.PlayerIndex].Char.Dead;
+
+    public bool IsMarked(EntityHandle who)
+    {
+        if (who.IsPlayer && IsInWorld(who)) return _pm[who.PlayerIndex].Char.IsPk(_clock.UtcNowUnix);
+
+        return Npc(who) is { } npc && npc.MarkedUntilUtc > _clock.UtcNowUnix;
+    }
+
+    public bool IsAggressor(EntityHandle who)
+    {
+        long now = Environment.TickCount64;
+
+        if (who.IsPlayer && IsInWorld(who))
+        {
+            return _pm[who.PlayerIndex].PvpAttackerUntil > 0 && now < _pm[who.PlayerIndex].PvpAttackerUntil;
+        }
+
+        return Npc(who) is { } npc && npc.AggressorUntil > 0 && now < npc.AggressorUntil;
+    }
+
+    /// <summary>
+    /// ⚠ The cooldown is a START stamp rather than an expiry, so "still waiting" is measured FORWARD
+    /// from it — the same direction the bar drawing it measures.
+    /// </summary>
+    public bool IsWaiting(EntityHandle who)
+    {
+        long now = Environment.TickCount64;
+
+        if (who.IsPlayer && IsInWorld(who))
+        {
+            long started = _pm[who.PlayerIndex].AttackTimer;
+            return started > 0 && now - started < Constants.PlayerAttackCooldownMs;
+        }
+
+        return Npc(who) is { } npc && npc.AttackTimer > 0
+            && now - npc.AttackTimer < Constants.NpcAttackCooldownMs;
+    }
+
     /// <summary>The cooldown is a START stamp the bar measures forward from, not an expiry, so clearing
     /// it is zeroing the stamp rather than setting one in the past.</summary>
     public void SetActionCooldown(EntityHandle who, int seconds)
@@ -267,6 +523,13 @@ public sealed class ServerWorld : IWorld
     public void Take(EntityHandle who, int itemNum, int quantity = 1)
     {
         if (who.IsPlayer && IsInWorld(who)) _items.TakeItem(who.PlayerIndex, itemNum, quantity);
+    }
+
+    public long Carrying(EntityHandle who, int itemNum)
+    {
+        if (!who.IsPlayer || !IsInWorld(who) || itemNum < 1 || itemNum > _world.Limits.Items) return 0L;
+
+        return ItemSystem.CountItem(_pm[who.PlayerIndex].Char, _world.Items, itemNum);
     }
 
     public void ReleaseGhost(EntityHandle who)
@@ -412,9 +675,137 @@ public sealed class ServerWorld : IWorld
         return null;
     }
 
-    public IReadOnlyList<AttributeBag> RecordsOf(string familyId) => _world.ModuleRecords.All(familyId);
+    public IReadOnlyList<AttributeBag> RecordsOf(string familyId) => familyId switch
+    {
+        CoreRecordFamilies.Items => Bags(_world.Items, _world.Limits.Items, i => i.Attributes),
+        CoreRecordFamilies.Npcs => Bags(_world.Npcs, _world.Limits.Npcs, n => n.Attributes),
+        CoreRecordFamilies.Maps => Bags(_world.Maps, _world.Limits.Maps, m => m.Attributes),
+        CoreRecordFamilies.MapGroups => GroupBags(),
+        _ => _world.ModuleRecords.All(familyId),
+    };
 
-    public AttributeBag? RecordAt(string familyId, int num) => _world.ModuleRecords.Get(familyId, num);
+    public AttributeBag? RecordAt(string familyId, int num) => familyId switch
+    {
+        CoreRecordFamilies.Items => num >= 1 && num <= _world.Limits.Items ? _world.Items[num].Attributes : null,
+        CoreRecordFamilies.Npcs => num >= 1 && num <= _world.Limits.Npcs ? _world.Npcs[num].Attributes : null,
+        CoreRecordFamilies.Maps => MapBag(num),
+        CoreRecordFamilies.MapGroups => GroupBag(num),
+        _ => _world.ModuleRecords.Get(familyId, num),
+    };
+
+    public string RecordName(string familyId, int num) => familyId switch
+    {
+        CoreRecordFamilies.Items =>
+            num >= 1 && num <= _world.Limits.Items ? _world.Items[num].TrimmedName : string.Empty,
+        CoreRecordFamilies.Npcs =>
+            num >= 1 && num <= _world.Limits.Npcs ? _world.Npcs[num].TrimmedName : string.Empty,
+        CoreRecordFamilies.Shops =>
+            num >= 1 && num <= _world.Limits.Shops ? _world.Shops[num].TrimmedName : string.Empty,
+        CoreRecordFamilies.Conversations =>
+            num >= 1 && num <= _world.Limits.Conversations ? _world.Conversations[num].TrimmedName : string.Empty,
+        CoreRecordFamilies.Maps =>
+            num >= 1 && num <= _world.Limits.Maps && num < _world.Maps.Length
+                ? MapGroupResolve.DisplayName(_world.Maps[num], _world.GroupOf(num)) : string.Empty,
+        CoreRecordFamilies.MapGroups =>
+            _world.MapGroups.TryGetValue(num, out var group) ? group.Name.Trim() : string.Empty,
+        _ => RecordAt(familyId, num) is { } row && row.TryGet("name", out AttributeValue named)
+                ? named.AsText() : string.Empty,
+    };
+
+    /// <summary>A map's game fields WITH its group's behind them — the map's own value when it carries the
+    /// key, else the group's, else nothing. The read every rule wants; <see cref="RecordAt"/> answers with
+    /// the map's own bag alone, which is what an editor authoring that one map needs.</summary>
+    public AttributeValue? MapValue(int mapNum, string key)
+    {
+        if (mapNum < 1 || mapNum > _world.Limits.Maps || mapNum >= _world.Maps.Length) return null;
+
+        return MapGroupResolve.Value(_world.Maps[mapNum], _world.GroupOf(mapNum), key);
+    }
+
+    private AttributeBag? MapBag(int num) =>
+        num >= 1 && num <= _world.Limits.Maps && num < _world.Maps.Length ? _world.Maps[num].Attributes : null;
+
+    /// <summary>A map group's own bag, or null for a group that is not there. A group is only there once
+    /// somebody authored it, unlike an item or a creature, which occupy every slot up to the world's
+    /// limit whether or not anything was written in them.</summary>
+    /// <summary>Every group's bag, 1-based and dense up to the highest one authored. A gap reads as
+    /// an empty bag, so a game counting regions gets the same shape every other family has.</summary>
+    private IReadOnlyList<AttributeBag> GroupBags()
+    {
+        int most = 0;
+        foreach (int id in _world.MapGroups.Keys) most = Math.Max(most, id);
+
+        var all = new List<AttributeBag>(most);
+        for (int id = 1; id <= most; id++) all.Add(GroupBag(id) ?? new AttributeBag());
+
+        return all;
+    }
+
+    private AttributeBag? GroupBag(int num) =>
+        num >= 1 && _world.MapGroups.TryGetValue(num, out var group) ? group.Attributes : null;
+
+    /// <summary>Write one of a GAME'S fields on a record, whichever family it belongs to.
+    ///
+    /// <para>The engine's own properties are not reachable this way. An item's power and a map's exit are
+    /// normalized by the typed paths that own them, and a value written straight into the array would skip
+    /// that; the extension bag has nothing to normalize, because Core has never heard of a key in it.</para></summary>
+    public bool SetRecordValue(string familyId, int num, string key, AttributeValue value)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return false;
+        if (RecordAt(familyId, num) is not { } row) return false;
+
+        row.Set(key, value);
+
+        // Saved on the spot. A record a game writes at run time is state, and nothing else in the
+        // engine comes back later to write it.
+        SaveRecord(familyId, num, row);
+
+        return true;
+    }
+
+    private void SaveRecord(string familyId, int num, AttributeBag row)
+    {
+        if (_persistence is null || _bg is null) return;
+
+        switch (familyId)
+        {
+            case CoreRecordFamilies.Items:
+                _bg.Run(_persistence.SaveItemAsync(num, _world.Items[num]), nameof(IPersistenceService.SaveItemAsync));
+                break;
+
+            case CoreRecordFamilies.Npcs:
+                _bg.Run(_persistence.SaveNpcAsync(num, _world.Npcs[num]), nameof(IPersistenceService.SaveNpcAsync));
+                break;
+
+            case CoreRecordFamilies.Maps:
+                _bg.Run(_persistence.SaveMapAsync(num, _world.Maps[num]), nameof(IPersistenceService.SaveMapAsync));
+                break;
+
+            case CoreRecordFamilies.MapGroups when _world.MapGroups.TryGetValue(num, out var group):
+                _bg.Run(_persistence.SaveMapGroupAsync(num, group), nameof(IPersistenceService.SaveMapGroupAsync));
+                break;
+
+            default:
+                if (_world.ModuleRecords.Family(familyId) is { } family)
+                    _bg.Run(_persistence.SaveModuleRecordAsync(family, num, row), nameof(IPersistenceService.SaveModuleRecordAsync));
+                break;
+        }
+    }
+
+    /// <summary>A family the ENGINE owns, read as the bags a game hung on it.
+    ///
+    /// <para>🔴 <b>What a game reads back is its OWN fields, not the engine's.</b> An item's power and
+    /// its type are properties Core acts on and a game has no business rewriting; the bag is where a
+    /// game's own facts about that item live, and it is all a rule ever needs to ask for.</para>
+    ///
+    /// <para>1-based, as every record family is, so slot 0 is not in the answer.</para></summary>
+    private static IReadOnlyList<AttributeBag> Bags<T>(T[] records, int limit, Func<T, AttributeBag> bagOf)
+    {
+        var all = new List<AttributeBag>(limit);
+        for (int num = 1; num <= limit && num < records.Length; num++) all.Add(bagOf(records[num]));
+
+        return all;
+    }
 
     public string NameOf(EntityHandle who)
     {
@@ -431,6 +822,178 @@ public sealed class ServerWorld : IWorld
 
         return _world.Npcs[at.Record.Num].TrimmedName;
     }
+
+    public int KindOf(EntityHandle who)
+    {
+        // A player is not a copy of anything, so there is no kind to answer with — and 0 is the same
+        // answer a handle naming nobody gets, because both mean "no creature record".
+        if (!who.IsNpc) return 0;
+
+        return Locate(who) is { } at ? at.Record.Num : 0;
+    }
+
+    public bool Provoke(EntityHandle npc, EntityHandle quarry) => _ai.Rouse(npc, quarry);
+
+    public bool Forget(EntityHandle npc) => _ai.Calm(npc);
+
+    public IReadOnlyList<EntityHandle> NpcsNear(WorldPlace at, int tiles)
+    {
+        if (at.Map < 1 || at.Map > _world.Limits.Maps || tiles < 0) return [];
+
+        var found = new List<(int Gap, EntityHandle Who)>();
+
+        for (int slot = 1; slot <= Constants.MaxMapNpcs; slot++)
+        {
+            var mn = _world.MapNpcs[at.Map, slot];
+            // A reserved slot is a body that is away on another map, not a body standing here.
+            if (mn.Num <= 0 || mn.IsReservedSlot) continue;
+
+            int gap = Math.Abs(mn.X - at.X) + Math.Abs(mn.Y - at.Y);
+            if (gap > tiles) continue;
+
+            var (spawnMap, spawnSlot) = mn.GetSpawnIdentity(at.Map, slot);
+            found.Add((gap, EntityHandle.ForNpc(spawnMap, spawnSlot)));
+        }
+
+        var guests = _world.MapTraversalNpcs[at.Map];
+        for (int g = 0; g < guests.Count; g++)
+        {
+            var t = guests[g];
+            if (t.Num <= 0) continue;
+
+            int gap = Math.Abs(t.X - at.X) + Math.Abs(t.Y - at.Y);
+            if (gap > tiles) continue;
+
+            found.Add((gap, EntityHandle.ForNpc(t.SpawnMapNum, t.SpawnSlot)));
+        }
+
+        // Nearest first, because a rule that takes a few of them wants the near ones — a game asking for
+        // one body and getting whichever slot happened to be lowest would read as picking at random.
+        found.Sort((a, b) => a.Gap.CompareTo(b.Gap));
+        return [.. found.Select(f => f.Who)];
+    }
+
+    // ── Asking about the ground ───────────────────────────────────────────────
+
+    public string TileAt(WorldPlace place)
+    {
+        if (Map(place) is not { } map) return string.Empty;
+
+        return map.Tile[place.X, place.Y].Type switch
+        {
+            TileType.Blocked => "blocked",
+            TileType.Warp => "warp",
+            TileType.Item => "item",
+            TileType.NpcAvoid => "npcavoid",
+            TileType.Door => "door",
+            TileType.Plate => "plate",
+            TileType.LayerRamp => "ramp",
+            _ => "walkable",
+        };
+    }
+
+    public bool CanSee(WorldPlace from, WorldPlace to)
+    {
+        if (Map(from) is null || Map(to) is null) return false;   // one of them is not a square
+
+
+        var grid = WorldCoordHelper.BuildMapGrid(_world.Maps, from.Map);
+        var (fromX, fromY) = grid.CenterToWorld(from.X, from.Y);
+
+        // Null when the target map is not one of the nine around this one, which is further than sight
+        // is ever asked about.
+        if (grid.ToWorldRelative(to.Map, to.X, to.Y) is not { } there) return false;
+
+        return WorldCoordHelper.HasClearLineOfSight(
+            fromX, fromY, there.worldX, there.worldY,
+            new WorldLosPredicate(_world, grid, WorldLayer.Ground));
+    }
+
+    public int Distance(WorldPlace from, WorldPlace to)
+    {
+        if (Map(from) is null || Map(to) is null) return -1;
+
+        var grid = WorldCoordHelper.BuildMapGrid(_world.Maps, from.Map);
+        var (fromX, fromY) = grid.CenterToWorld(from.X, from.Y);
+
+        if (grid.ToWorldRelative(to.Map, to.X, to.Y) is not { } there) return -1;
+
+        return WorldCoordHelper.WorldManhattan(fromX, fromY, there.worldX, there.worldY);
+    }
+
+    public string WeatherOn(int mapNum)
+    {
+        if (mapNum < 1 || mapNum > _world.Limits.Maps) return string.Empty;
+
+        return _world.WeatherOn(mapNum) switch
+        {
+            WeatherType.Rain => "rain",
+            WeatherType.Snow => "snow",
+            WeatherType.HeatWave => "heatwave",
+            WeatherType.HeavyWind => "heavywind",
+            _ => "clear",
+        };
+    }
+
+    /// <summary>The map a square is on, or null for a square that is not on one.
+    ///
+    /// <para>⚠ A world holds a FIXED number of map slots and every one of them is a real map — an
+    /// unauthored one is blank rather than absent. So the only way to name no map is to name a number
+    /// outside the world's own count, and the only way to name no square is to name coordinates outside
+    /// that map's own size.</para></summary>
+    private Shared.Records.MapRecord? Map(WorldPlace place)
+    {
+        if (place.Map < 1 || place.Map > _world.Limits.Maps) return null;
+
+        var map = _world.Maps[place.Map];
+
+        return map.Contains(place.X, place.Y) ? map : null;
+    }
+
+    // ── Doing ─────────────────────────────────────────────────────────────────
+
+    public bool Wear(EntityHandle who, int itemNum)
+    {
+        if (!who.IsPlayer || !IsInWorld(who) || itemNum <= 0) return false;
+
+        return _items.WearFromBag(who.PlayerIndex, itemNum);
+    }
+
+    public bool Remove(EntityHandle who, int itemNum)
+    {
+        if (WornSlot(who, itemNum) is not { } bagSlot) return false;
+
+        _items.UnequipSlot(who.PlayerIndex, bagSlot);
+        _items.SendInventoryUpdate(who.PlayerIndex, bagSlot);
+        return true;
+    }
+
+    public bool IsRunning(EntityHandle who) =>
+        who.IsPlayer && IsInWorld(who) && _pm[who.PlayerIndex].Char.Moving == MovementType.Running;
+
+    // ── Asking what a creature was authored as ────────────────────────────────
+
+    public string BehaviorOf(EntityHandle npc) => Template(npc) switch
+    {
+        { Behavior: NpcBehavior.Stationary } => "stationary",
+        { Behavior: NpcBehavior.Pursue } => "pursue",
+        { Behavior: NpcBehavior.Flee } => "flee",
+        { Behavior: NpcBehavior.Scavenge } => "scavenge",
+        not null => "wander",
+        _ => string.Empty,
+    };
+
+    public int GroupOf(EntityHandle npc) => Template(npc)?.Group ?? 0;
+
+    public int RangeOf(EntityHandle npc) => Template(npc)?.Range ?? 0;
+
+    public bool IsChasing(EntityHandle npc) =>
+        Npc(npc) is { } body && (body.Target > 0 || body.NpcTargetSpawnSlot > 0);
+
+    /// <summary>The RECORD a body is a copy of — what an author wrote, rather than what this one body is
+    /// doing. Null for a handle naming nothing in the world.</summary>
+    private Shared.Records.NpcRecord? Template(EntityHandle npc)
+        => Npc(npc) is { Num: > 0 } body ? _world.Npcs[body.Num] : null;
 
     /// <summary>Where the NPC a handle names currently is, or null when nothing answers to that
     /// identity any more. A handle outlives the body it was made for, so this is asked rather than

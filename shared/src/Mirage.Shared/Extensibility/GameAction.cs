@@ -52,6 +52,19 @@ public sealed record GameAction
     /// captions.</para></summary>
     [JsonPropertyName("icon")] public string Icon { get; init; } = string.Empty;
 
+    /// <summary>
+    /// Whether picking this also does what Core's reach key would have done: a shop, a conversation,
+    /// or the body's own line.
+    ///
+    /// <para>🔴 <b>This exists because a game that binds E takes the reach key outright.</b> That is
+    /// deliberate — sharing a key between a game's verb and Core's reaching is worse — but without a
+    /// way to hand interaction back, binding E would silently cost the world its shops and its
+    /// conversations. A game that takes the key offers this on the menu, or on a key of its own.</para>
+    ///
+    /// <para>Only meaningful for a verb offered on a creature: there is nothing else to reach for.</para>
+    /// </summary>
+    [JsonPropertyName("interacts")] public bool Interacts { get; init; }
+
     /// <summary>Where it is offered.</summary>
     [JsonPropertyName("surface")] public ActionSurface Surface { get; init; }
 

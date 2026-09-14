@@ -1,5 +1,6 @@
 using Mirage.Editor.Services;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Records;
 using NUnit.Framework;
 using System.Collections;
@@ -43,10 +44,14 @@ public class MapPacketRoundTripTests
         return map;
     }
 
-    // The collections are populated by hand above; the scalars come from reflection.
+    // The collections are populated by hand above; the scalars come from reflection. Attributes is
+    // excluded on purpose: a game's fields on a map travel on the generic record packet, and the map
+    // packet carries only the properties the engine itself acts on. The server merges a map save field
+    // by field rather than replacing the record, so the bag survives one.
     private static PropertyInfo[] Authored() =>
         [.. typeof(MapRecord).GetProperties(BindingFlags.Public | BindingFlags.Instance)
             .Where(p => p.CanWrite && p.PropertyType != typeof(TileRecord[,])
+                        && p.PropertyType != typeof(AttributeBag)
                         && !typeof(IEnumerable).IsAssignableFrom(p.PropertyType))];
 
     // Distinct per property so a mapper that crosses two fields reads as a mismatch rather than a match.

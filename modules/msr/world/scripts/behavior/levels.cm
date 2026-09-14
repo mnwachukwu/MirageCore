@@ -1,0 +1,79 @@
+# Experience, and what it buys.
+
+shared model Levels
+
+    # ── Earning it ────────────────────────────────────────────────────────────
+
+    public function Earn(Player who, integer worth)
+        if worth < 1
+            yield;
+        end if
+
+        # A guild at level three pays its members a tenth more for everything they earn.
+        worth = worth + Perks.Bonus(who, worth);
+
+        integer level = Stats.LevelOf(who);
+
+        if level >= Stats.MaxLevel
+            who.Message("You gain " + worth + " experience.");
+            yield;
+        end if
+
+        integer held = who.Number(Stats.Exp) + worth;
+
+        who.Message("You gain " + worth + " experience.");
+
+        # ⚠ A LOOP, not an if. A kill worth more than a whole level has to carry through every level
+        # it pays for - one that granted a single level would silently eat the rest.
+        loop while held >= Stats.ToNextLevel(level) and level < Stats.MaxLevel
+            held = held - Stats.ToNextLevel(level);
+            level = level + 1;
+
+            Levels.Rise(who, level);
+        end loop
+
+        who.SetNumber(Stats.Level, level);
+        who.SetNumber(Stats.Exp, held);
+    end function
+
+    # ── What a level buys ─────────────────────────────────────────────────────
+
+    function Rise(Player who, integer level)
+        who.SetNumber(Stats.Level, level);
+        who.SetNumber(Stats.Points, who.Number(Stats.Points) + Stats.PointsPerLevel);
+
+        # The pools grow with the level, and the ceiling has to be recomputed before anybody reads it.
+        Vitals.Refresh(who);
+
+        who.Float("Level " + level, 255, 230, 120);
+        who.Message("You are level " + level + ", with " + Stats.PointsPerLevel + " points to spend.");
+
+        World.TellOn(who.Map, who.Name + " reaches level " + level + ".");
+    end function
+
+    # ── Spending it ───────────────────────────────────────────────────────────
+    #
+    # ⚠ Named as TEXT because that is what a message carries. A name that is not one of the four is
+    # refused rather than quietly spending the point on nothing.
+
+    public function Spend(Player who, string stat)
+        if who.Number(Stats.Points) < 1
+            who.Message("You have no points to spend.");
+            yield;
+        end if
+
+        if stat != Stats.Str and stat != Stats.Def and stat != Stats.Spd and stat != Stats.Int
+            who.Message("There is no stat called '" + stat + "'.");
+            yield;
+        end if
+
+        who.SetNumber(stat, who.Number(stat) + 1);
+        who.SetNumber(Stats.Points, who.Number(Stats.Points) - 1);
+
+        # Three of the four change a pool, and the fourth is cheap to recompute anyway.
+        Vitals.Refresh(who);
+
+        who.Message("You put a point into " + stat + ".");
+    end function
+
+end model
