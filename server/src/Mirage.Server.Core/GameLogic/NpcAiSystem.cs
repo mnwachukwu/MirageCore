@@ -160,7 +160,8 @@ public sealed partial class NpcAiSystem : GameSystem
     /// <summary>Fast per-NPC MOVEMENT pass (GameLoop.NpcMoveTick, Constants.NpcMoveIntervalMs — finer than the 500ms brain).
     /// Executes the STEPS for NPCs holding a lock (native + guest, player + NPC), each on its own SPD step-clock, so
     /// one runs (SPD-scaled, capped just under player max) while it has stamina and walks once SP runs out.  A
-    /// <see cref="NpcBehavior.Pursue"/> NPC steps toward, a <see cref="NpcBehavior.Flee"/> one steps away.  Closing
+    /// <see cref="NpcBehavior.Pursue"/> NPC steps toward, a <see cref="NpcBehavior.Flee"/> one steps away, and a
+    /// <see cref="NpcBehavior.Shadow"/> one does whichever keeps its standoff.  Closing
     /// includes crossing a map seam toward a body on an adjacent map (the BFS routes to the border and converts a
     /// native into a guest), so an NPC keeps its run pace through a boundary.  Only the step lives here — the brain
     /// (<see cref="RunForAllMaps"/> @ 500ms) still does noticing, give-up AND warp-follow.  Cheap: observed maps
@@ -211,7 +212,7 @@ public sealed partial class NpcAiSystem : GameSystem
     /// <para><b>Core has nothing to do next.</b> Arriving is the whole of what it knows how to do; an
     /// attack, a conversation, a battle screen and a mugging are all a game's answer to the same
     /// event.</para></summary>
-    private void MakeContact(int mapNum, int slot, MapNpcRecord npc, EntityHandle quarry)
+    private void MakeContact(int mapNum, int slot, MapNpcRecord npc, EntityHandle target)
     {
         bool arriving = !npc.HasMadeContact;
         npc.HasMadeContact = true;
@@ -219,11 +220,11 @@ public sealed partial class NpcAiSystem : GameSystem
 
         if (!arriving) return;
         var (spawnMap, spawnSlot) = npc.GetSpawnIdentity(mapNum, slot);
-        _events.Contact(EntityHandle.ForNpc(spawnMap, spawnSlot), quarry);
+        _events.Contact(EntityHandle.ForNpc(spawnMap, spawnSlot), target);
     }
 
     /// <summary>Legs-pass step for a native NPC holding a PLAYER, gated by the per-NPC step-clock.  A fleeing
-    /// NPC retreats; a pursuing one holds position when already in reach (facing its quarry) and otherwise closes
+    /// NPC retreats; a pursuing one holds position when already in reach (facing its target) and otherwise closes
     /// at run/walk pace — including across a map seam.  Runs while SP > 0 (draining it per tile), walks
     /// otherwise, so the sprint gasses out and the player pulls away.</summary>
     private void AdvanceNativeChaseStep(int mapNum, int slot, MapNpcRecord mn, long now)
@@ -235,6 +236,12 @@ public sealed partial class NpcAiSystem : GameSystem
         if (_world.Npcs[mn.Num].Behavior == NpcBehavior.Flee)
         {
             TryLegsFlee(mapNum, slot, mn, vp.Map, vp.X, vp.Y, now);
+            return;
+        }
+        if (_world.Npcs[mn.Num].Behavior == NpcBehavior.Shadow)
+        {
+            if (TryLegsShadow(mapNum, slot, mn, vp.Map, vp.X, vp.Y, vp.Layer, targetSize: 1, now))
+                MakeContact(mapNum, slot, mn, EntityHandle.ForPlayer(target));
             return;
         }
         if (_queries.IsWithinReach(mapNum, mn.X, mn.Y, _world.Npcs[mn.Num].EffectiveSize, mn.Layer, vp.Map, vp.X, vp.Y, vp.Layer) && !ChaserVacatesRampFor(mapNum, mn, vp.Layer))
@@ -269,6 +276,13 @@ public sealed partial class NpcAiSystem : GameSystem
             TryLegsFlee(mapNum, slot, mn, victimMap, victimMn.X, victimMn.Y, now);
             return;
         }
+        if (_world.Npcs[mn.Num].Behavior == NpcBehavior.Shadow)
+        {
+            if (TryLegsShadow(mapNum, slot, mn, victimMap, victimMn.X, victimMn.Y, victimMn.Layer,
+                              _world.Npcs[victimMn.Num].EffectiveSize, now))
+                MakeContact(mapNum, slot, mn, EntityHandle.ForNpc(mn.NpcTargetSpawnMap, mn.NpcTargetSpawnSlot));
+            return;
+        }
         if (_queries.IsWithinReach(mapNum, mn.X, mn.Y, _world.Npcs[mn.Num].EffectiveSize, mn.Layer, victimMap, victimMn.X, victimMn.Y, victimMn.Layer) && !ChaserVacatesRampFor(mapNum, mn, victimMn.Layer))
         {
             MakeContact(mapNum, slot, mn, EntityHandle.ForNpc(mn.NpcTargetSpawnMap, mn.NpcTargetSpawnSlot));
@@ -296,6 +310,7 @@ public sealed partial class NpcAiSystem : GameSystem
         int targetMap, targetX, targetY, targetSize = 1;
         var targetLayer = WorldLayer.Ground;
         bool flees = _world.Npcs[t.Num].Behavior == NpcBehavior.Flee;
+        bool shadows = _world.Npcs[t.Num].Behavior == NpcBehavior.Shadow;
         if (t.Target > 0)
         {
             if (!_pm[t.Target].IsPlaying) return;                   // target gone — brain drops it
@@ -303,6 +318,12 @@ public sealed partial class NpcAiSystem : GameSystem
             if (flees)
             {
                 TryLegsFlee(mapNum, listIndex, t, vp.Map, vp.X, vp.Y, now);
+                return;
+            }
+            if (shadows)
+            {
+                if (TryLegsShadow(mapNum, listIndex, t, vp.Map, vp.X, vp.Y, vp.Layer, targetSize: 1, now))
+                    MakeContact(mapNum, 0, t, EntityHandle.ForPlayer(t.Target));
                 return;
             }
             if (_queries.IsWithinReach(mapNum, t.X, t.Y, _world.Npcs[t.Num].EffectiveSize, t.Layer, vp.Map, vp.X, vp.Y, vp.Layer) && !ChaserVacatesRampFor(mapNum, t, vp.Layer))
@@ -324,6 +345,13 @@ public sealed partial class NpcAiSystem : GameSystem
             if (flees)
             {
                 TryLegsFlee(mapNum, listIndex, t, victimMap, victimMn.X, victimMn.Y, now);
+                return;
+            }
+            if (shadows)
+            {
+                if (TryLegsShadow(mapNum, listIndex, t, victimMap, victimMn.X, victimMn.Y, victimMn.Layer,
+                                  _world.Npcs[victimMn.Num].EffectiveSize, now))
+                    MakeContact(mapNum, 0, t, EntityHandle.ForNpc(t.NpcTargetSpawnMap, t.NpcTargetSpawnSlot));
                 return;
             }
             if (_queries.IsWithinReach(mapNum, t.X, t.Y, _world.Npcs[t.Num].EffectiveSize, t.Layer, victimMap, victimMn.X, victimMn.Y, victimMn.Layer) && !ChaserVacatesRampFor(mapNum, t, victimMn.Layer))
@@ -368,7 +396,7 @@ public sealed partial class NpcAiSystem : GameSystem
     /// where the in-reach early-return clears it into the hysteresis below.</para>
     ///
     /// <para>RE-CLOSE, after <see cref="MapNpcRecord.HasMadeContact"/>: a run/walk HYSTERESIS. It walks
-    /// while close and sprints only once its quarry opens
+    /// while close and sprints only once its target opens
     /// <see cref="Constants.NpcChaseSprintGapTiles"/>, holding the sprint until it regains reach — so it
     /// bursts stamina instead of gluing, and a running player can slip past.</para></summary>
     private static bool NpcWantsChaseRun(MapNpcRecord mn, NpcRecord npc, int gap)

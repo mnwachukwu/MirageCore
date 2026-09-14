@@ -133,7 +133,7 @@ public class ModuleStartTests
 
         public string NameOf(EntityHandle who) => who.IsSet ? who.ToString() : string.Empty;
         public int KindOf(EntityHandle who) => 0;
-        public bool Provoke(EntityHandle npc, EntityHandle quarry) => false;
+        public bool Provoke(EntityHandle npc, EntityHandle target) => false;
         public bool Forget(EntityHandle npc) => false;
         public IReadOnlyList<EntityHandle> NpcsNear(WorldPlace at, int tiles) => [];
         public IReadOnlyList<EntityHandle> NpcsOn(int mapNum) => [];
@@ -179,7 +179,9 @@ public class ModuleStartTests
         public string BehaviorOf(EntityHandle npc) => string.Empty;
         public int GroupOf(EntityHandle npc) => 0;
         public int RangeOf(EntityHandle npc) => 0;
+        public int StandoffOf(EntityHandle npc) => 0;
         public bool IsChasing(EntityHandle npc) => false;
+        public EntityHandle TargetOf(EntityHandle npc) => EntityHandle.None;
         public int GuildNumber(EntityHandle who) => 0;
         public string GuildName(int guild) => string.Empty;
         public int GuildNamed(string name) => 0;

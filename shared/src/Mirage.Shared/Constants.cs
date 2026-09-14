@@ -221,6 +221,16 @@ public static class Constants
     // which is almost always a slip rather than a design. Also advisory, and also called out.
     public const int MinAggressiveNpcRange = 2;
 
+    // The closest a body that keeps its distance will hold. One tile is melee reach, so a standoff of one
+    // is a pursuer; two is the first gap that is actually a gap. ENFORCED, not advisory - see
+    // NpcRecord.EffectiveStandoff.
+    public const int MinStandoffTiles = 2;
+
+    // How far either side of its standoff a shadowing body counts as "there". Without a neutral band it
+    // would step every time its target did, closing and backing off on alternate beats in place of holding
+    // station - which reads as a body that cannot settle rather than one keeping a distance.
+    public const int NpcStandoffSlackTiles = 1;
+
     // The spawn point is a server SETTING, not a constant — see ServerConfig.Spawn. It defaults to the
     // middle of map 1, which is what it was when it lived here.
 
@@ -298,7 +308,7 @@ public static class Constants
     // Chase limit-cycle damping: a chasing NPC that goes this many AI ticks without ever reducing
     // its world-distance to the target is treated as oscillating ("dancing") and damped — it holds
     // position instead of reversing its previous step, which collapses the cycle.  Only mutual/coupled
-    // pursuit (e.g. a guard pinned between an NPC and its quarry) trips this; a normal chase keeps
+    // pursuit (e.g. a guard pinned between an NPC and its target) trips this; a normal chase keeps
     // closing distance and never stalls.  3 ticks ≈ 1.5 s at the 500 ms AI cadence.
     public const int NpcChaseStallTicks = 3;
 

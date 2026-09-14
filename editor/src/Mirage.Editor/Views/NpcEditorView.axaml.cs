@@ -42,6 +42,7 @@ public partial class NpcEditorView : LocalizedUserControl
         _lightFlickerLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_LightFlickerLabel);
         _groupLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_GroupLabel);
         _rangeLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_RangeLabel);
+        _standoffLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_StandoffLabel);
         // One label for the whole table now, plus the add-row button. The per-field labels the single
         // drop had (chance / item / quantity) are column positions in the table instead.
         _dropTableLabel.Text = EditorStrings.Get(EditorStrings.NpcEditor_DropTableLabel);

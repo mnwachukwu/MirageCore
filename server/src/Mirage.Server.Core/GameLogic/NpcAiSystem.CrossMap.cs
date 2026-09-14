@@ -9,7 +9,7 @@ using Mirage.Shared.Records;
 
 namespace Mirage.Server.Core.GameLogic;
 
-/// <summary>Chasing past the edge of a map. A native that follows its quarry over a border or
+/// <summary>Chasing past the edge of a map. A native that follows its target over a border or
 /// through a warp becomes a traversal GUEST on the destination; this holds that conversion, the
 /// guest's own idle/chase/step lifecycle, and the return home that ends it.</summary>
 public sealed partial class NpcAiSystem : GameSystem
@@ -127,7 +127,7 @@ public sealed partial class NpcAiSystem : GameSystem
             ChaseSprinting = mn.ChaseSprinting,
             // A body sent after somebody was sent after them wherever they go. Dropped at the seam it would
             // hand itself back to a record with no noticing rule, which stops the chase one tile over a
-            // border — the hardest kind of bug to see, because it looks like the quarry got away.
+            // border — the hardest kind of bug to see, because it looks like the target got away.
             Roused = mn.Roused,
             // Count this cross as the guest's action for THIS pass.  Maps tick in ascending order, so a
             // native crossing UP into a higher-numbered map (e.g. 1→2) lands in the destination's
@@ -290,7 +290,7 @@ public sealed partial class NpcAiSystem : GameSystem
 
             // A guest that has had nobody for the give-up window goes home (fresh respawn on the home
             // slot).  This is the ONLY path that ends a guest's trip — losing a target alone does not,
-            // so one that loses its quarry gets the rest of the window to find another before the walk
+            // so one that loses its target gets the rest of the window to find another before the walk
             // back.  RunGuestIdle restamps the clock the moment it notices somebody, and every closing
             // step restamps it too, so the window only runs out on a guest with genuinely nothing to do.
             if (t.Target == 0 && t.NpcTargetSpawnSlot == 0
@@ -322,7 +322,7 @@ public sealed partial class NpcAiSystem : GameSystem
                 continue;
             }
 
-            // Unreached give-up — the same clock natives run.  A guest that cannot reach its quarry
+            // Unreached give-up — the same clock natives run.  A guest that cannot reach its target
             // goes straight home rather than lingering abroad.
             if (ShouldGiveUpUnreachedTarget(t, now))
             {

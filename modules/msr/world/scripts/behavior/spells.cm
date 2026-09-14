@@ -1,9 +1,9 @@
 # What casting costs, and what a cast is worth.
 #
-# A SPELL IS A SWING DELIVERED AT RANGE. Strength and mind are the same offense stat and run the same
-# curve, so a caster and a warrior of equal investment deal identical damage. What range costs is paid
-# in mana and in the wait after a cast, never in the damage - this reuses Combat.Swing rather than
-# mirroring it, so the two cannot drift.
+# A SPELL IS A SWING DELIVERED AT RANGE. Strength and intelligence are the same offense stat and run
+# the same curve, so a caster and a warrior of equal investment deal identical damage. What range costs
+# is paid in mana and in the wait after a cast, never in the damage - this reuses Combat.Swing rather
+# than mirroring it, so the two cannot drift.
 #
 # What a spell IS lives in declarations/magic.cm.
 
@@ -59,8 +59,8 @@ shared model Spells
     end function
 
     # Raw, before variance and before a crit. The caster's own contribution runs Combat.Swing because
-    # mind and strength are the same stat; the spell's magnitude separates one spell from another at
-    # equal intelligence.
+    # intelligence and strength are the same stat; the spell's magnitude separates one spell from
+    # another at equal intelligence.
     public integer function Power(integer int, integer amount)
         yield Combat.Swing(int) + Spells.Contribution(amount, int);
     end function

@@ -150,6 +150,7 @@ public sealed record EditorSaveNpcPacket : IPacket
     [JsonPropertyName("behavior")] public NpcBehavior Behavior { get; init; }
     [JsonPropertyName("group")] public int Group { get; init; }
     [JsonPropertyName("range")] public int Range { get; init; }
+    [JsonPropertyName("standoff")] public int Standoff { get; init; }
     /// <summary>The NPC's drop table. Null = drops nothing. Carries the record type directly, as
     /// <c>light</c> does with <c>LightSpec</c> — a parallel DTO would be a second shape to keep in step
     /// for no gain, since every field on a drop line is authored.</summary>

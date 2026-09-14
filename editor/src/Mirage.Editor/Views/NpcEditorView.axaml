@@ -204,6 +204,16 @@
                            Minimum="0" Maximum="255" FormatString="0"/>
           </mui:FormRow>
 
+          <!-- How far back a body that keeps its distance stands. Dimmed for every other behavior,
+               because none of them reads it - an author filling it in on a pursuer would be writing a
+               number nothing anywhere looks at. -->
+          <mui:FormRow LabelWidth="130" IsEnabled="{Binding SelectedNpc.StandoffIsUsed}">
+            <TextBlock x:Name="_standoffLabel"  Grid.Column="0" VerticalAlignment="Center"/>
+            <NumericUpDown Grid.Column="1"
+                           Value="{Binding SelectedNpc.Standoff}"
+                           Minimum="0" Maximum="255" FormatString="0"/>
+          </mui:FormRow>
+
           <!-- A reach that will read as a surprise in play, at either end: past what a player can see, or
                so short the mob notices nothing until you are beside it. Said, not refused — the record is
                legal and occasionally a deliberate one. -->

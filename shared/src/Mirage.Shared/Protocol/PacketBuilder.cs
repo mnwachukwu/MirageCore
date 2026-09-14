@@ -254,6 +254,7 @@ public static partial class PacketBuilder
             Behavior = npc.Behavior,
             Group = npc.Group,
             Range = npc.Range,
+            Standoff = npc.Standoff,
             // Copied, not aliased: a packet outlives this call and the record stays editable.
             Drops = npc.Drops is null ? null : new List<NpcDrop>(npc.Drops),
             IsBoss = npc.IsBoss,

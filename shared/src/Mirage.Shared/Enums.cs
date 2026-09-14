@@ -105,6 +105,19 @@ public enum NpcBehavior : byte
     /// <summary>Walks to player-dropped litter on its map and clears it. Wanders while the map is
     /// clean.</summary>
     Scavenge = 4,
+
+    /// <summary>Notices on the same terms as <see cref="Pursue"/> and then KEEPS ITS DISTANCE: closes
+    /// until it is <see cref="Records.NpcRecord.Standoff"/> tiles away, holds there, and gives ground when
+    /// something walks into it. Wanders while it has nobody.
+    ///
+    /// <para>The third answer to "something is over there", and the one neither of the other two gives: a
+    /// pursuer walks into arm's reach and a fleeing body runs until it has forgotten you. A body that
+    /// wants a gap and MEANS TO KEEP IT — an archer, a caster, a heckler, a bodyguard holding a
+    /// perimeter, an animal that will not be approached — has neither.</para>
+    ///
+    /// <para>⚠ Reaching the distance it wanted is what raises contact for one of these, so a game hears
+    /// about it in the same place and on the same terms as a body that closed all the way in.</para></summary>
+    Shadow = 5,
 }
 
 

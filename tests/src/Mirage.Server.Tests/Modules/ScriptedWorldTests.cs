@@ -2261,12 +2261,12 @@ public class ScriptedWorldTests
         public Dictionary<EntityHandle, EntityHandle> Chasing { get; } = [];
         public List<EntityHandle> Forgotten { get; } = [];
 
-        public bool Provoke(EntityHandle npc, EntityHandle quarry)
+        public bool Provoke(EntityHandle npc, EntityHandle target)
         {
-            if (!IsInWorld(npc) || !IsInWorld(quarry)) return false;
-            if (npc == quarry) return false;
+            if (!IsInWorld(npc) || !IsInWorld(target)) return false;
+            if (npc == target) return false;
 
-            Chasing[npc] = quarry;
+            Chasing[npc] = target;
             return true;
         }
 
@@ -2379,6 +2379,9 @@ public class ScriptedWorldTests
         /// ambles, notices nothing, and keeps to no pack — which is what an unauthored record is.</summary>
         public Dictionary<EntityHandle, (string Behavior, int Group, int Range)> Authored { get; } = [];
 
+        /// <summary>How far back each body holds, for the tests that care. Everything else keeps none.</summary>
+        public Dictionary<EntityHandle, int> Standoffs { get; } = [];
+
         public string BehaviorOf(EntityHandle npc) =>
             !IsInWorld(npc) ? string.Empty
             : Authored.TryGetValue(npc, out var authored) ? authored.Behavior : "wander";
@@ -2389,7 +2392,13 @@ public class ScriptedWorldTests
         public int RangeOf(EntityHandle npc) =>
             Authored.TryGetValue(npc, out var authored) ? authored.Range : 0;
 
+        public int StandoffOf(EntityHandle npc) =>
+            Standoffs.TryGetValue(npc, out int tiles) ? tiles : 0;
+
         public bool IsChasing(EntityHandle npc) => Chasing.ContainsKey(npc);
+
+        public EntityHandle TargetOf(EntityHandle npc) =>
+            Chasing.TryGetValue(npc, out var target) ? target : EntityHandle.None;
 
         /// <summary>Which guild each body belongs to by NUMBER, what each is called, and what is in its
         /// vault. A test that cares about guilds says so; everything else is in none.</summary>

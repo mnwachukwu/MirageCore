@@ -60,6 +60,7 @@ public static partial class EditorStrings
     public const string NpcEditor_LightFlickerLabel = nameof(NpcEditor_LightFlickerLabel);
     public const string NpcEditor_GroupLabel = nameof(NpcEditor_GroupLabel);
     public const string NpcEditor_RangeLabel = nameof(NpcEditor_RangeLabel);
+    public const string NpcEditor_StandoffLabel = nameof(NpcEditor_StandoffLabel);
     public const string NpcEditor_LightingHeader = nameof(NpcEditor_LightingHeader);
     public const string NpcEditor_SaveNpcButton = nameof(NpcEditor_SaveNpcButton);
 
@@ -185,5 +186,6 @@ public static partial class EditorStrings
     public const string NpcEditor_DropWarnChanceNoItem = nameof(NpcEditor_DropWarnChanceNoItem);  // chance set, no item
     public const string NpcEditor_RangeWarnTooShort = nameof(NpcEditor_RangeWarnTooShort);
     public const string NpcEditor_RangeWarnTooFar = nameof(NpcEditor_RangeWarnTooFar);
+    public const string NpcEditor_StandoffWarnPastReach = nameof(NpcEditor_StandoffWarnPastReach);
     public const string NpcEditor_DropWarnItemNoChance = nameof(NpcEditor_DropWarnItemNoChance);  // item set, 0 chance
 }

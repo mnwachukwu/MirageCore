@@ -33,8 +33,8 @@ shared model Combat
 
     # ── What a swing is worth ─────────────────────────────────────────────────
     #
-    # Strength and mind are the SAME offense stat. A spell is a swing delivered at range, and range is
-    # paid for by its cost rather than by dealing more.
+    # Strength and intelligence are the SAME offense stat. A spell is a swing delivered at range, and
+    # range is paid for by its cost rather than by dealing more.
 
     public integer function Swing(integer stat)
         integer raw = Math.Round(Math.Pow(stat + Combat.OffenseShift, Combat.CurveExponent) / Combat.DamageDivisor);

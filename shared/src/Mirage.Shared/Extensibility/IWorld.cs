@@ -423,7 +423,7 @@ public interface IWorld
     ///
     /// <para>False when either side is not in the world, and for a creature pointed at itself.</para>
     /// </summary>
-    bool Provoke(EntityHandle npc, EntityHandle quarry);
+    bool Provoke(EntityHandle npc, EntityHandle target);
 
     /// <summary>Let go of whatever a creature was chasing, leaving it to its record's own behavior again.
     /// False for a handle naming nobody. Harmless on a body that was chasing nothing.</summary>
@@ -561,7 +561,8 @@ public interface IWorld
     // keeps a pack together, had no way to tell them apart.
 
     /// <summary>How this body moves on its own — <c>stationary</c>, <c>wander</c>, <c>pursue</c>,
-    /// <c>flee</c>, or <c>scavenge</c>. Blank for anything that is not a creature in the world.</summary>
+    /// <c>flee</c>, <c>scavenge</c>, or <c>shadow</c>. Blank for anything that is not a creature in the
+    /// world.</summary>
     string BehaviorOf(EntityHandle npc);
 
     /// <summary>Which pack this body keeps to, or 0 for one in none. Two creatures sharing a non-zero
@@ -571,6 +572,28 @@ public interface IWorld
     /// <summary>How far it notices anything, in tiles, as its record was authored. 0 for a body that
     /// notices nobody, and for anything that is not a creature in the world.</summary>
     int RangeOf(EntityHandle npc);
+
+    /// <summary>How many tiles a body that keeps its distance holds off, as the engine reads it — the
+    /// authored number, or what it works out from the reach when the record names none. 0 for every other
+    /// behavior, because none of them keeps a distance.
+    ///
+    /// <para>⚠ A game that acts at that range wants THIS rather than its own number. The body stops
+    /// where the engine says it stops, so a rule measuring from a number of its own would be aiming at a
+    /// tile nothing is standing on.</para></summary>
+    int StandoffOf(EntityHandle npc);
+
+    /// <summary>What this creature is after right now — the body it noticed, or the one a game sent it
+    /// after — and <see cref="EntityHandle.None"/> when it is after nobody.
+    ///
+    /// <para>🔴 <b>The other half of <see cref="IsChasing"/>.</b> Whether a body is after somebody was
+    /// answerable and WHO was not, which is the whole question for anything that acts on a creature's
+    /// behalf: a bolt has to be aimed at something, and a rule with a yes-or-no had nothing to aim
+    /// at.</para>
+    ///
+    /// <para>The answer is a player or another creature, so ask the handle which it is. A game that
+    /// cares about only one kind checks and drops the other, exactly as the two contact handlers
+    /// do.</para></summary>
+    EntityHandle TargetOf(EntityHandle npc);
 
     /// <summary>Whether it is after somebody right now — one it noticed, or one a game sent it after.
     ///

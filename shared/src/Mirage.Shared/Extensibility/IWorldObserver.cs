@@ -87,7 +87,7 @@ public interface IWorldObserver
     /// <para><b>This is where a game's answer to "and then what" goes.</b> Core chases and arrives, and
     /// has nothing to do next: an attack, a conversation, a battle screen, a mugging and a footrace are
     /// all games' rules. Raised once when contact is MADE, not for every tick it is held.</para></summary>
-    void OnContact(EntityHandle npc, EntityHandle quarry) { }
+    void OnContact(EntityHandle npc, EntityHandle target) { }
 
     /// <summary>A creature has just come into the world, standing on its tile and already sent to
     /// everyone who can see it.

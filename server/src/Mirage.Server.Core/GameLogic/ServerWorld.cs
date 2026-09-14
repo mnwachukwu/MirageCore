@@ -1039,7 +1039,7 @@ public sealed class ServerWorld : IWorld
         return Locate(who) is { } at ? at.Record.Num : 0;
     }
 
-    public bool Provoke(EntityHandle npc, EntityHandle quarry) => _ai.Rouse(npc, quarry);
+    public bool Provoke(EntityHandle npc, EntityHandle target) => _ai.Rouse(npc, target);
 
     public bool Forget(EntityHandle npc) => _ai.Calm(npc);
 
@@ -1247,6 +1247,7 @@ public sealed class ServerWorld : IWorld
         { Behavior: NpcBehavior.Pursue } => "pursue",
         { Behavior: NpcBehavior.Flee } => "flee",
         { Behavior: NpcBehavior.Scavenge } => "scavenge",
+        { Behavior: NpcBehavior.Shadow } => "shadow",
         not null => "wander",
         _ => string.Empty,
     };
@@ -1254,6 +1255,21 @@ public sealed class ServerWorld : IWorld
     public int GroupOf(EntityHandle npc) => Template(npc)?.Group ?? 0;
 
     public int RangeOf(EntityHandle npc) => Template(npc)?.Range ?? 0;
+
+    // Answered only for the behavior that keeps a distance. Every other body either closes all the way in,
+    // runs, or notices nobody, so a number here would be one the engine never reads.
+    public int StandoffOf(EntityHandle npc) =>
+        Template(npc) is { Behavior: NpcBehavior.Shadow } record ? record.EffectiveStandoff : 0;
+
+    public EntityHandle TargetOf(EntityHandle npc)
+    {
+        if (Npc(npc) is not { } body) return EntityHandle.None;
+        if (body.Target > 0) return EntityHandle.ForPlayer(body.Target);
+        if (body.NpcTargetSpawnSlot > 0)
+            return EntityHandle.ForNpc(body.NpcTargetSpawnMap, body.NpcTargetSpawnSlot);
+
+        return EntityHandle.None;
+    }
 
     public bool IsChasing(EntityHandle npc) =>
         Npc(npc) is { } body && (body.Target > 0 || body.NpcTargetSpawnSlot > 0);

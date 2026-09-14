@@ -240,6 +240,65 @@ shared model Fight
         who.Float("" + damage, 220, 60, 60);
         who.Message(it.Name + " hits you for " + damage + ".");
 
+        Fight.Took(it, who, damage);
+    end function
+
+    # ── A creature that fights at range ───────────────────────────────────────
+    #
+    # The original’s casters backed out of melee and threw spells from the gap they had made. The engine
+    # keeps the gap — a body authored to keep its distance closes to its standoff and holds there — and
+    # this is what it does once it is standing where it meant to stand.
+    #
+    # ⚠ Intelligence stands in for strength, which is what it does everywhere else in this game: a bolt
+    # is a swing delivered at range, and the range is paid for by the body having to hold a gap open
+    # rather than by the bolt landing harder.
+    #
+    # ⚠ Neither a block nor a dodge answers one. Both are reactions to something arriving at arm’s
+    # reach, and the answer to a body throwing from four tiles away is to close the four tiles.
+
+    # How long between bolts. Slower than a swing, because the body is not in the fight it is shaping.
+    public integer LooseSeconds = 2;
+
+    public function Loose(Npc it, Player who)
+        integer int = it.Number(Stats.Int);
+
+        # A body authored with none has nothing to throw. It keeps its distance and does nothing, which
+        # is a heckler rather than a mistake.
+        if int < 1
+            yield;
+        end if
+
+        if it.IsWaiting
+            yield;
+        end if
+
+        it.Wait(Combat.Beat(Fight.LooseSeconds, it.Map));
+        it.Engage(Fight.EngagedSeconds);
+        who.Engage(Fight.EngagedSeconds);
+        Death.BreakGraceInFight(who);
+
+        it.ThrowAtPlayer(who, "bolt", 150, 120, 255);
+
+        # The wind takes a bolt as readily as a blow, and before anybody reacts.
+        if Combat.WindTakesIt(it.Map)
+            who.Message(it.Name + " looses wide in the wind.");
+            yield;
+        end if
+
+        integer level = Stats.LevelOf(who);
+        integer damage = Combat.Nightly(Combat.Softened(
+            Combat.Resolve(Combat.Vary(Combat.Swing(int)),
+                           Combat.Protection(level, who.Number(Stats.Def)), Combat.MinDamageFloor)));
+
+        who.Float("" + damage, 150, 120, 255);
+        who.Message(it.Name + " hits you for " + damage + ".");
+
+        Fight.Took(it, who, damage);
+    end function
+
+    # Every way a creature can hurt a person ends here — a swing, and a bolt. Two copies would be two
+    # answers to a refused death, and the forgotten one leaves a body standing at nothing.
+    function Took(Npc it, Player who, integer damage)
         integer left = who.Number(Vitals.Health) - damage;
 
         if left > 0
@@ -257,6 +316,72 @@ shared model Fight
             # ticking it back up. A refusal leaves them alive rather than neither.
             who.SetNumber(Vitals.Health, 1);
         end if
+    end function
+    # ── Which of the two a creature does ──────────────────────────────────────────
+    #
+    # Read off the record rather than carried on the body, because it is a fact about the KIND: every
+    # copy of that creature fights the same way, and one that decided at spawn would be an archer by
+    # accident.
+
+    public function Meet(Npc it, Player who)
+        if it.Behavior == Beasts.KeepsDistance
+            Fight.Loose(it, who);
+            yield;
+        end if
+
+        Fight.Maul(it, who);
+    end function
+
+    public function MeetNpc(Npc it, Npc other)
+        if it.Behavior == Beasts.KeepsDistance
+            Fight.LooseAt(it, other);
+            yield;
+        end if
+
+        Fight.Clash(it, other);
+    end function
+
+    # And the same bolt at another creature. A world with an archer and a wolf in it needs nothing
+    # further to have the archer shoot the wolf.
+    public function LooseAt(Npc it, Npc other)
+        integer int = it.Number(Stats.Int);
+
+        if int < 1
+            yield;
+        end if
+
+        if it.IsWaiting
+            yield;
+        end if
+
+        it.Wait(Combat.Beat(Fight.LooseSeconds, it.Map));
+        it.Engage(Fight.EngagedSeconds);
+        other.Engage(Fight.EngagedSeconds);
+
+        it.ThrowAtNpc(other, "bolt", 150, 120, 255);
+
+        if Combat.WindTakesIt(it.Map)
+            yield;
+        end if
+
+        # ⚠ A creature has no level of its own, so its own defence stands in for one — the same
+        # substitution every other creature-on-creature roll in this game makes.
+        integer defence = other.Number(Stats.Def);
+        integer damage = Combat.Resolve(Combat.Vary(Combat.Swing(int)),
+                                        Combat.Protection(defence, defence), Combat.PveDamageFloor);
+
+        Fight.Wound(other, damage, false);
+        Loot.CreditBeast(other, damage);
+
+        integer left = other.Number(Vitals.Health) - damage;
+
+        if left > 0
+            other.SetNumber(Vitals.Health, left);
+            Beasts.AnswerNpc(other, it);
+            yield;
+        end if
+
+        Fight.Fell(it, other);
     end function
 
     # ── What a wound looks like ───────────────────────────────────────────────

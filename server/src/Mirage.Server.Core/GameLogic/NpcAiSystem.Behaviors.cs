@@ -26,7 +26,7 @@ public sealed partial class NpcAiSystem : GameSystem
 
     // Upkeep for a map with no observers.  A native NPC here can still hold a player it noticed who
     // just LEFT or WARPED away — a true warp un-observes this map, which would otherwise freeze the
-    // pursuer the instant its quarry teleported out of sight.  Driving the warp-follow here keeps it
+    // pursuer the instant its target teleported out of sight.  Driving the warp-follow here keeps it
     // pursuing out through a warp; a player who has left the game drops the lock.
     private void RunUnobservedPursuit(int mapNum, long now)
     {
@@ -65,7 +65,10 @@ public sealed partial class NpcAiSystem : GameSystem
 
             switch (npc.Behavior)
             {
+                // One brain for both, because noticing, letting go and warp-following are the same
+                // questions either way. What differs is the STEP, which the legs pass answers.
                 case NpcBehavior.Pursue:
+                case NpcBehavior.Shadow:
                     RunPursuitAi(mapNum, slot, mn, now);
                     // Nobody to chase → look for a non-kin NPC within Range instead.
                     if (mn.Target == 0 && mn.NpcTargetSpawnSlot == 0)
@@ -97,7 +100,7 @@ public sealed partial class NpcAiSystem : GameSystem
     /// nothing left to mind.
     ///
     /// <para>It never goes looking for anybody. Noticing is what a record's own behavior does, and a body
-    /// that picked a second quarry for itself would be chasing something the game never sent it after —
+    /// that picked a second target for itself would be chasing something the game never sent it after —
     /// so when this lock ends the rousing ends with it, and the record takes the body back.</para>
     ///
     /// <para>The give-up clock still applies (see <see cref="ShouldGiveUpUnreachedTarget"/>): a body that
@@ -124,10 +127,11 @@ public sealed partial class NpcAiSystem : GameSystem
         if (mn.Target == 0 && mn.NpcTargetSpawnSlot == 0) mn.Roused = false;
     }
 
-    /// <summary>Brain tick for a <see cref="NpcBehavior.Pursue"/> native: notice a player if it has
-    /// none, let go of one it cannot hold, warp-follow one that left this map, and wander when it has
-    /// nobody at all. The chase STEP itself — same-map and cross-seam — runs on the fast legs pass
-    /// (<see cref="AdvanceNativeChaseStep"/>) at the NPC's own pace, not on this 500ms tick.</summary>
+    /// <summary>Brain tick for a <see cref="NpcBehavior.Pursue"/> or <see cref="NpcBehavior.Shadow"/>
+    /// native: notice a player if it has none, let go of one it cannot hold, warp-follow one that left
+    /// this map, and wander when it has nobody at all. The STEP itself — same-map and cross-seam, toward
+    /// or away — runs on the fast legs pass (<see cref="AdvanceNativeChaseStep"/>) at the NPC's own pace,
+    /// not on this 500ms tick.</summary>
     private void RunPursuitAi(int mapNum, int slot, MapNpcRecord mn, long now)
     {
         var npc = _world.Npcs[mn.Num];

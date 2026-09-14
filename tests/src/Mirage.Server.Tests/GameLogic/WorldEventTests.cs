@@ -35,7 +35,7 @@ public class WorldEventTests
             => Seen.Add($"moved {from} -> {to}");
         public void OnPlayerWarped(EntityHandle who, in WorldPlace from, in WorldPlace to)
             => Seen.Add($"warped {from} -> {to}");
-        public void OnContact(EntityHandle npc, EntityHandle quarry) => Seen.Add($"contact {npc} -> {quarry}");
+        public void OnContact(EntityHandle npc, EntityHandle target) => Seen.Add($"contact {npc} -> {target}");
         public void OnItemUsed(EntityHandle who, int itemNum, int invSlot)
             => Seen.Add($"used {itemNum} from {invSlot}");
     }
@@ -214,7 +214,7 @@ public class WorldEventTests
     /// <summary>Core chases and arrives and has nothing to do next. This is the event a game's answer to
     /// "and then what" hangs off, so it has to actually come out.</summary>
     [Test]
-    public void APursuerReachingItsQuarry_IsReported()
+    public void APursuerReachingItsTarget_IsReported()
     {
         var watcher = new Watcher();
         var (ai, _) = Chasing(EventsFor(watcher));

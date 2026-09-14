@@ -59,6 +59,27 @@ public sealed class NpcRecord
     /// <summary>How far it notices anything, in tiles. Free: <see cref="Constants.NpcRangeSoftCap"/> is
     /// what the editor expects it to stay within, not a limit anything enforces.</summary>
     public int Range { get; set; }
+
+    /// <summary>How many tiles a <see cref="NpcBehavior.Shadow"/> body keeps between itself and whatever it
+    /// noticed. Read by nothing else — every other behavior either closes all the way in, runs, or never
+    /// notices anybody.
+    ///
+    /// <para>0 means "work it out from <see cref="Range"/>", which is what an unset record says and what a
+    /// world authored before this field existed carries. See <see cref="EffectiveStandoff"/>.</para></summary>
+    public int Standoff { get; set; }
+
+    /// <summary><see cref="Standoff"/> as the AI reads it: at least
+    /// <see cref="Constants.MinStandoffTiles"/>, never farther than it can notice, and half of
+    /// <see cref="Range"/> when the record names none.
+    ///
+    /// <para>⚠ The ceiling matters. A body holding at the very edge of what it notices sits on the
+    /// give-up boundary, so its target flickers in and out of range and it paces on the spot.</para>
+    ///
+    /// <para>And the floor: a standoff of one tile IS melee reach, so a body authored that way would be a
+    /// pursuer with extra steps.</para></summary>
+    [JsonIgnore]
+    public int EffectiveStandoff =>
+        Math.Clamp(Standoff > 0 ? Standoff : Range / 2, Constants.MinStandoffTiles, Math.Max(Constants.MinStandoffTiles, Range));
     /// <summary>What this NPC can drop. Null or empty = drops nothing, which is a perfectly ordinary state
     /// for trash. Every entry rolls INDEPENDENTLY on a kill, so a death can yield nothing, one thing, or
     /// several — see <see cref="NpcDrop"/> for why that beats a weighted single pick.</summary>

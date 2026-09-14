@@ -76,6 +76,7 @@ shared model Rules
         Season.Tick();
         Contest.Tick();
         Beasts.Turn();
+        Beasts.Volley();
     end function
 
     # Once for each body in the world, every twentieth tick.
@@ -163,15 +164,16 @@ shared model Rules
         Beasts.Wake(it);
     end function
 
-    # A creature reached somebody it was chasing.
+    # A creature reached somebody it was chasing — or, for one that keeps its distance, reached the
+    # gap it wanted and stopped there.
     public function OnContact(Npc it, Player who)
-        Fight.Maul(it, who);
+        Fight.Meet(it, who);
     end function
 
     # And one that reached another creature. Two handlers rather than one: a rule handed the wrong
     # kind of body runs and gives a wrong answer, where one never called at least gives none.
     public function OnNpcContact(Npc it, Npc other)
-        Fight.Clash(it, other);
+        Fight.MeetNpc(it, other);
     end function
 
     # Nothing in this game refuses a death. Its refusals are asked earlier and are about who may be

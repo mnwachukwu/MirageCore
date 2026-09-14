@@ -119,7 +119,7 @@ public sealed class ScriptedWorldModule
             + "decided here. ⚠ Raised for EVERY arrival: the respawn clock, a chase guest coming "
             + "home, and a map being refilled"),
         new("OnContact", 2, "function OnContact(Npc it, Player who)",
-            "a creature reached the player it was chasing. \u26a0 Only for a PLAYER quarry \u2014 the "
+            "a creature reached the player it was chasing. \u26a0 Only for a PLAYER target \u2014 the "
             + "parameter says Player, and a handler handed the wrong kind of body is worse than one "
             + "that is not called. A creature that reached another creature raises OnNpcContact"),
         new("OnNpcContact", 2, "function OnNpcContact(Npc it, Npc other)",
@@ -409,20 +409,20 @@ public sealed class ScriptedWorldModule
     /// <summary>
     /// A creature reached what it was chasing, routed by what it caught.
     ///
-    /// <para>⚠ <b>Two handlers rather than one, because the quarry is two different kinds of body.</b> A
+    /// <para>⚠ <b>Two handlers rather than one, because the target is two different kinds of body.</b> A
     /// single handler would have to name one of them in its signature and be handed the other, and a
     /// rule that runs on the wrong kind of body is worse than one that is not called. A game that
     /// answers both the same way writes one function and calls it from each.</para>
     /// </summary>
-    public void OnContact(EntityHandle npc, EntityHandle quarry)
+    public void OnContact(EntityHandle npc, EntityHandle target)
     {
-        if (quarry.IsPlayer)
+        if (target.IsPlayer)
         {
-            if (_onContact) Run("OnContact", npc, quarry);
+            if (_onContact) Run("OnContact", npc, target);
             return;
         }
 
-        if (_onNpcContact && quarry.IsNpc) Run("OnNpcContact", npc, quarry);
+        if (_onNpcContact && target.IsNpc) Run("OnNpcContact", npc, target);
     }
 
     /// <summary>A creature is in the world, and this is the moment a game writes its numbers onto it.
@@ -1578,10 +1578,10 @@ public sealed class ScriptedWorldModule
             // 🔴 What an AUTHOR wrote on the record, as against what this one body is carrying. A rule
             // that treats a chaser differently from an ambler had no way to tell them apart.
             .Value("Behavior", ScriptType.Text, (it, _) => World.BehaviorOf(Who(it)),
-                "How it moves on its own: 'stationary', 'wander', 'pursue', 'flee', or 'scavenge'. ⚠ Five "
-                + "ways of WALKING and deliberately nothing about why - a reason is a property of the "
-                + "game, and 'hostile' means nothing in a world with no fighting in it. Empty once the "
-                + "body has left.")
+                "How it moves on its own: 'stationary', 'wander', 'pursue', 'flee', 'scavenge', or "
+                + "'shadow' - which closes to a distance and keeps it. ⚠ Six ways of WALKING and "
+                + "deliberately nothing about why - a reason is a property of the game, and 'hostile' "
+                + "means nothing in a world with no fighting in it. Empty once the body has left.")
             .Value("Group", ScriptType.Integer, (it, _) => (long)World.GroupOf(Who(it)),
                 "Which pack it keeps to, or zero for one in none. Two creatures sharing a group never "
                 + "notice each other, on top of never noticing their own kind, so a pack does not "
@@ -1589,10 +1589,26 @@ public sealed class ScriptedWorldModule
             .Value("Range", ScriptType.Integer, (it, _) => (long)World.RangeOf(Who(it)),
                 "How far it notices anything, in tiles, as its record was authored. Zero for a body "
                 + "that notices nobody.")
+            .Value("Standoff", ScriptType.Integer, (it, _) => (long)World.StandoffOf(Who(it)),
+                "How many tiles back it holds, for a body that keeps its distance - the authored number, "
+                + "or what the engine works out from its reach when the record names none. Zero for "
+                + "every other behavior, because none of them keeps a distance. ⚠ A rule that acts at "
+                + "that range wants THIS rather than a number of its own: the body stops where the "
+                + "engine says it stops.")
             .Value("IsChasing", ScriptType.Truth, (it, _) => World.IsChasing(Who(it)),
                 "Whether it is after somebody right now - one it noticed, or one you sent it after. The "
                 + "other half of Chase and Forget, which write and never read: without this a rule "
-                + "cannot tell a creature already in a fight from one standing idle.");
+                + "cannot tell a creature already in a fight from one standing idle.")
+            .Value("Target", player.AsType.OrNothing(),
+                (it, _) => World.TargetOf(Who(it)) is { IsPlayer: true } who ? who : null,
+                "The PERSON it is after, or nothing - which is also the answer when what it is after "
+                + "is another creature. \U0001f534 The other half of IsChasing: whether a body is after somebody "
+                + "was askable and WHO was not, and a bolt has to be aimed at something.")
+            .Value("TargetNpc", npc.AsType.OrNothing(),
+                (it, _) => World.TargetOf(Who(it)) is { IsNpc: true } other ? other : null,
+                "And the CREATURE it is after, or nothing. Two of them rather than one for the same "
+                + "reason there are two contact handlers: a rule handed the wrong kind of body runs and "
+                + "gives a wrong answer, where one never called at least gives none.");
 
         verb
             .Action("OnTile", [], (v, _) => Verbal(v).OnTile(),

@@ -49,12 +49,12 @@ public class NpcRousingTests
     /// <summary>⚠ <b>The half that fails silently.</b> The legs step toward whatever a body holds, so a
     /// bare lock does move it — and then the brain reads a record with no noticing rule, finds nothing to
     /// mind, and walks it somewhere else. The two passes pull in different directions and the body
-    /// twitches on the spot, which reads as the quarry having got away.
+    /// twitches on the spot, which reads as the target having got away.
     ///
     /// <para>These two are the same forty ticks with and without the rousing, and the difference between
     /// them is the whole of what the flag does.</para></summary>
     [Test]
-    public void ARousedBodyMindsItsQuarryInsteadOfAmbling()
+    public void ARousedBodyMindsItsTargetInsteadOfAmbling()
     {
         var (world, game, ai) = Build(NpcBehavior.Wander);
         world.Provoke(Creature, Player);

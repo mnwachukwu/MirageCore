@@ -12,6 +12,8 @@ model BeastRules
     public integer str;
     public integer def;
     public integer spd;
+    # ⚠ Also what a body that KEEPS ITS DISTANCE throws with. A creature authored to hold off with
+    # none of this stands there doing nothing, which is a heckler rather than a mistake.
     public integer int;
 
     public integer hp;

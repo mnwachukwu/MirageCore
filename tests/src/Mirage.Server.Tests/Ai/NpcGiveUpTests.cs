@@ -39,7 +39,7 @@ public class NpcGiveUpTests
     public void APursuer_HoldsOnWhileTheWindowIsStillOpen()
     {
         Assert.That(GivesUp(NpcBehavior.Pursue, stampedAt: 1_000, now: 1_000 + Window), Is.False,
-            "the window is inclusive — one that reached its quarry exactly a window ago has not failed yet");
+            "the window is inclusive — one that reached its target exactly a window ago has not failed yet");
     }
 
     /// <summary>An unstamped record has never noticed anybody, so an arbitrarily large clock reading must

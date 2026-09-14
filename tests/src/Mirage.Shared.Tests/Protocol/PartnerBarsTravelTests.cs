@@ -24,7 +24,7 @@ public class PartnerBarsTravelTests
 
     private static PlayerRecord Partner(params (string Key, long Value)[] values)
     {
-        var p = new PlayerRecord { Name = "Quarry", Map = 3, X = 4, Y = 5 };
+        var p = new PlayerRecord { Name = "Target", Map = 3, X = 4, Y = 5 };
         foreach (var (key, value) in values) p.Attributes.Set(key, value);
         return p;
     }
@@ -46,7 +46,7 @@ public class PartnerBarsTravelTests
             Assert.That(back.Bars, Has.Count.EqualTo(2), "one per declared bar, in declaration order");
             Assert.That(back.Bars[0], Is.EqualTo(0.25f).Within(0.001f));
             Assert.That(back.Bars[1], Is.EqualTo(0.75f).Within(0.001f));
-            Assert.That(back.Name, Is.EqualTo("Quarry"));
+            Assert.That(back.Name, Is.EqualTo("Target"));
         });
     }
 

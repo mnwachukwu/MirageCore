@@ -81,12 +81,12 @@ public sealed class WorldEvents
         }
     }
 
-    public void Contact(EntityHandle npc, EntityHandle quarry)
+    public void Contact(EntityHandle npc, EntityHandle target)
     {
         if (_observers.Length == 0) return;
         foreach (var observer in _observers)
         {
-            try { observer.OnContact(npc, quarry); }
+            try { observer.OnContact(npc, target); }
             catch (Exception ex) { Faulted(observer, nameof(IWorldObserver.OnContact), ex); }
         }
     }

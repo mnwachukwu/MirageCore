@@ -466,6 +466,7 @@ public sealed partial class EditorPacketHandler
         npc.Behavior = p.Behavior;
         npc.Group = p.Group;
         npc.Range = p.Range;
+        npc.Standoff = p.Standoff;
         // Drop table. Value only matters for a CURRENCY line; the runtime ignores it for every other item
         // type. Normalized per line on save so a bad state never persists: currency → at least 1,
         // anything else → 0. Lines naming no item are dropped by npc.Normalize() below, along with the

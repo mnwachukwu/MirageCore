@@ -41,6 +41,7 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(RangeWarning))]
     [NotifyPropertyChangedFor(nameof(HasRangeWarning))]
+    [NotifyPropertyChangedFor(nameof(StandoffIsUsed))]
     private NpcBehavior _behavior;
     /// <summary>Comrade group id — same-group NPCs come to each other's aid (0 = no group).</summary>
     [ObservableProperty] private int _group;
@@ -48,7 +49,17 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(RangeWarning))]
     [NotifyPropertyChangedFor(nameof(HasRangeWarning))]
+    [NotifyPropertyChangedFor(nameof(StandoffIsUsed))]
     private int _range;
+    /// <summary>How many tiles a body that keeps its distance holds off. 0 = work it out from
+    /// <see cref="Range"/>; read by no other behavior.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(RangeWarning))]
+    [NotifyPropertyChangedFor(nameof(HasRangeWarning))]
+    private int _standoff;
+    /// <summary>Whether the standoff field means anything for the behavior currently chosen — the form
+    /// dims it otherwise, so an author does not fill in a number nothing reads.</summary>
+    public bool StandoffIsUsed => Behavior == NpcBehavior.Shadow;
     /// <summary>This NPC's drop table — zero or more lines, each rolled independently on a kill. An empty
     /// table means "drops nothing", which is an ordinary state for trash rather than a misconfiguration.</summary>
     public ObservableCollection<NpcDropRowViewModel> Drops { get; } = [];
@@ -122,16 +133,23 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
     // The same non-blocking guard, for a reach that reads as a slip at either end. Both are advisory:
     // the record is legal and occasionally deliberate, so this says so and writes it anyway.
     //
-    // Too far is judged for every behavior; too near only for the two that read Range at all, since a
+    // Too far is judged for every behavior; too near only for the three that read Range at all, since a
     // reach under MinAggressiveNpcRange leaves an NPC unable to notice anyone standing beside it.
+    //
+    // And a standoff past the reach, which is the one an author only makes once: a body told to hold
+    // farther off than it can notice closes to the edge of its own sight and stops there, so the number
+    // it was given never shows up in play. Clamped at runtime, said here.
     /// <summary>Warning text for a reach that will read as a surprise in play; empty otherwise.</summary>
     public string RangeWarning =>
         Range > Constants.NpcRangeSoftCap
             ? EditorStrings.Format(EditorStrings.NpcEditor_RangeWarnTooFar,
                 ("Range", Range), ("Cap", Constants.NpcRangeSoftCap))
-      : Behavior is (NpcBehavior.Pursue or NpcBehavior.Flee) && Range < Constants.MinAggressiveNpcRange
+      : Behavior is (NpcBehavior.Pursue or NpcBehavior.Flee or NpcBehavior.Shadow) && Range < Constants.MinAggressiveNpcRange
             ? EditorStrings.Format(EditorStrings.NpcEditor_RangeWarnTooShort,
                 ("Range", Range), ("Min", Constants.MinAggressiveNpcRange))
+      : Behavior == NpcBehavior.Shadow && Standoff > Range
+            ? EditorStrings.Format(EditorStrings.NpcEditor_StandoffWarnPastReach,
+                ("Standoff", Standoff), ("Range", Range))
       : string.Empty;
     /// <summary>Whether to show the reach warning.</summary>
     public bool HasRangeWarning => RangeWarning.Length > 0;
@@ -220,6 +238,7 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
         _behavior = r.Behavior;
         _group = r.Group;
         _range = r.Range;
+        _standoff = r.Standoff;
         // Guarded the way every row collection is: building drop rows subscribes change handlers that
         // land on MarkDirty, so an unguarded load flags every NPC with a drop table as edited on sight.
         _loading = true;
@@ -247,6 +266,8 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
     partial void OnBehaviorChanged(NpcBehavior value) => MarkDirty();
     partial void OnGroupChanged(int value) => MarkDirty();
     partial void OnRangeChanged(int value) => MarkDirty();
+
+    partial void OnStandoffChanged(int value) => MarkDirty();
 
     private void MarkDirty()
     {
@@ -294,6 +315,7 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
             Behavior = r.Behavior;
             Group = r.Group;
             Range = r.Range;
+            Standoff = r.Standoff;
             LoadDrops(r.Drops);
             EmitsLight = r.EmitsLight;
             LightColor = ColorHex.ToColor(r.Light.Rgb);
@@ -324,6 +346,7 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
             Behavior = pkt.Behavior;
             Group = pkt.Group;
             Range = pkt.Range;
+            Standoff = pkt.Standoff;
             LoadDrops(pkt.Drops);
             EmitsLight = pkt.EmitsLight;
             LightColor = ColorHex.ToColor(pkt.Light.Rgb);
@@ -352,6 +375,7 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
         Behavior = Behavior,
         Group = Group,
         Range = Range,
+        Standoff = Standoff,
         // Empty rows are dropped here as well as server-side, so an offline save and an online save
         // produce the same file.
         Drops = Drops.Count == 0 ? null : [.. Drops.Where(d => !d.IsEmpty).Select(d => d.ToRecord())],
@@ -373,6 +397,7 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
         Behavior = Behavior,
         Group = Group,
         Range = Range,
+        Standoff = Standoff,
         Drops = Drops.Count == 0 ? null : [.. Drops.Where(d => !d.IsEmpty).Select(d => d.ToRecord())],
         EmitsLight = EmitsLight,
         Light = Light,

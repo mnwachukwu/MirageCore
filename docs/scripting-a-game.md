@@ -588,7 +588,7 @@ public function OnNpcContact(Npc it, Npc other)
 end function
 ```
 
-🔴 **Two handlers rather than one**, because the quarry is two different kinds of body. One handler
+🔴 **Two handlers rather than one**, because the target is two different kinds of body. One handler
 would have to name a `Player` or an `Npc` in its signature and be handed the other, and a rule that
 runs on the wrong kind of body is worse than one that is never called. A game that answers both the
 same way writes one function and calls it from each.

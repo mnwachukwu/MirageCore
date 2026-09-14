@@ -123,9 +123,9 @@ public class GameActionTests
     {
         var game = new Handler();
         var (handler, pm, _) = Serving(CoreRegistry.Build(new Module(game)));
-        AlsoPlaying(pm, 2, "Quarry");
+        AlsoPlaying(pm, 2, "Target");
 
-        handler.HandlePacket(Me, Line("test.do", on: "Quarry"));
+        handler.HandlePacket(Me, Line("test.do", on: "Target"));
         handler.HandlePacket(Me, Line("test.do"));
 
         Assert.Multiple(() =>

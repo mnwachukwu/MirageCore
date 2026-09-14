@@ -135,6 +135,7 @@ public sealed record UpdateNpcPacket : IPacket
     [JsonPropertyName("group")] public int Group { get; init; }
     [JsonPropertyName("spawnSecs")] public int SpawnSecs { get; init; }
     [JsonPropertyName("range")] public int Range { get; init; }
+    [JsonPropertyName("standoff")] public int Standoff { get; init; }
     [JsonPropertyName("drops")] public List<NpcDrop>? Drops { get; init; }
     [JsonPropertyName("isBoss")] public bool IsBoss { get; init; }
     [JsonPropertyName("emitsLight")] public bool EmitsLight { get; init; }

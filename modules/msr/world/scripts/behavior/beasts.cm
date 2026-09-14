@@ -1,9 +1,9 @@
 # What a creature IS, on top of how it walks.
 #
 # Core's behaviors are about locomotion and deliberately nothing else. A record says a body holds its
-# tile, ambles, closes on what it notices, opens the gap, or tidies litter — five ways of moving, none
-# of which mentions fighting. The original's five said why instead, and four of them meant something
-# about combat.
+# tile, ambles, closes on what it notices, opens the gap, keeps a distance, or tidies litter — six ways
+# of moving, none of which mentions fighting. The original's five said why instead, and four of them
+# meant something about combat.
 #
 # This file is the translation. Nothing here is new engine surface; it is the original's vocabulary
 # written out of the parts Core does offer.
@@ -13,6 +13,7 @@
 #   Friendly               Wander, with no rule pointing it at anybody
 #   Stationary             Stationary
 #   Guard                  Wander, carrying the guard key, roused by a crime  — Beasts.CallGuards
+#   Caster                 Shadow, and loose a bolt from the gap it keeps     — Beasts.Volley
 #
 # ⚠ A guard is marked on the CREATURE RECORD, in the attributes an editor hangs on the template. That
 # is where a per-species fact belongs: every copy of that creature is a guard, and a body that became
@@ -133,6 +134,45 @@ shared model Beasts
     # than leaving it walking away from a fight it is losing.
     public function AnswerNpc(Npc it, Npc attacker)
         it.ChaseNpc(attacker);
+    end function
+
+    # ── Bodies that fight from a gap ───────────────────────────────────────────────
+    #
+    # 🔴 A body that keeps its distance arrives ONCE and then stands there. Contact is raised on the beat
+    # it settles, which is the first bolt — and after that nothing happens to it again, because nothing
+    # has: it is holding station exactly as it was authored to. So the volley is driven from the world’s
+    # own beat instead, and the engine’s own cooldown is what paces it.
+    #
+    # ⚠ Whatever a body is after is read off the ENGINE rather than remembered here. It is the engine
+    # that decided who it noticed and the engine that will drop them; a copy kept in this file would be
+    # aiming at somebody who walked off the map two beats ago.
+
+    # What Core calls the behavior that closes to a distance and keeps it.
+    public string KeepsDistance = "shadow";
+
+    public function Volley()
+        loop for map = 1 to World.Records("Maps")
+            loop each body in World.NpcsOn(map)
+                if body.Behavior == Beasts.KeepsDistance
+                    Beasts.LooseFrom(body);
+                end if
+            end loop
+        end loop
+    end function
+
+    function LooseFrom(Npc it)
+        Player? at = it.Target;
+
+        if at.HasValue()
+            Fight.Loose(it, at.Value());
+            yield;
+        end if
+
+        Npc? other = it.TargetNpc;
+
+        if other.HasValue()
+            Fight.LooseAt(it, other.Value());
+        end if
     end function
 
     # ── Guards ────────────────────────────────────────────────────────────────

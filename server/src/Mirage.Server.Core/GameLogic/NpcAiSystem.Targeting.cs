@@ -131,7 +131,7 @@ public sealed partial class NpcAiSystem : GameSystem
     ///
     /// <para>False when either side is not in the world, and for a creature pointed at itself.</para>
     /// </summary>
-    public bool Rouse(EntityHandle npc, EntityHandle quarry)
+    public bool Rouse(EntityHandle npc, EntityHandle target)
     {
         if (_queries.ResolveNpc(npc) is not { } found || found.Record.Num <= 0) return false;
 
@@ -140,24 +140,24 @@ public sealed partial class NpcAiSystem : GameSystem
         // wall-clock stamp there would read as a lock held since the epoch.
         long now = Environment.TickCount64;
 
-        if (quarry.IsPlayer)
+        if (target.IsPlayer)
         {
-            if (quarry.PlayerIndex < 1 || quarry.PlayerIndex > _pm.Slots || !_pm[quarry.PlayerIndex].IsPlaying)
+            if (target.PlayerIndex < 1 || target.PlayerIndex > _pm.Slots || !_pm[target.PlayerIndex].IsPlaying)
                 return false;
 
-            mn.Target = quarry.PlayerIndex;
+            mn.Target = target.PlayerIndex;
             mn.NpcTargetSpawnMap = 0;
             mn.NpcTargetSpawnSlot = 0;
         }
-        else if (quarry.IsNpc)
+        else if (target.IsNpc)
         {
             // Pointed at itself it would chase its own tile forever, holding a lock nothing can end.
-            if (quarry.SpawnMap == npc.SpawnMap && quarry.SpawnSlot == npc.SpawnSlot) return false;
-            if (_queries.ResolveNpc(quarry) is not { } victim || victim.Record.Num <= 0) return false;
+            if (target.SpawnMap == npc.SpawnMap && target.SpawnSlot == npc.SpawnSlot) return false;
+            if (_queries.ResolveNpc(target) is not { } victim || victim.Record.Num <= 0) return false;
 
             mn.Target = 0;
-            mn.NpcTargetSpawnMap = quarry.SpawnMap;
-            mn.NpcTargetSpawnSlot = quarry.SpawnSlot;
+            mn.NpcTargetSpawnMap = target.SpawnMap;
+            mn.NpcTargetSpawnSlot = target.SpawnSlot;
         }
         else
         {
@@ -252,19 +252,19 @@ public sealed partial class NpcAiSystem : GameSystem
         SendToMap(_world, mapNum, new NpcTargetPacket { MapNum = mapNum, NpcSlot = slot, HasTarget = mn.Target != 0 });
     }
 
-    /// <summary>Give-up gate for a chasing NPC — one authored to <see cref="NpcBehavior.Pursue"/>, or any
-    /// body a game roused: true once it has held its lock for longer than
+    /// <summary>Give-up gate for a chasing NPC — one authored to <see cref="NpcBehavior.Pursue"/> or
+    /// <see cref="NpcBehavior.Shadow"/>, or any body a game roused: true once it has held its lock for longer than
     /// <see cref="NpcUnreachedGiveUpMs"/> without once reaching what it is after.
     /// <see cref="MapNpcRecord.LastReachedTargetMs"/> is stamped on acquisition and on every chase step
     /// that closed world-distance, so an NPC that is genuinely closing keeps resetting this clock and
-    /// only one that cannot act on its quarry at all times out.
+    /// only one that cannot act on its target at all times out.
     ///
     /// <para><b>This is what keeps an open world safe.</b> There is deliberately no cross-map entry
     /// restriction anywhere in the chase code — a pursuer follows a player across a border or through
     /// a warp, because seamless pursuit is the point. What stops a mob being parked somewhere it does
-    /// not belong is this clock: it either reaches its quarry or it goes home.</para></summary>
+    /// not belong is this clock: it either reaches its target or it goes home.</para></summary>
     private bool ShouldGiveUpUnreachedTarget(MapNpcRecord mn, long now)
-        => (mn.Roused || _world.Npcs[mn.Num].Behavior == NpcBehavior.Pursue)
+        => (mn.Roused || _world.Npcs[mn.Num].Behavior is NpcBehavior.Pursue or NpcBehavior.Shadow)
            && mn.LastReachedTargetMs > 0
            && now - mn.LastReachedTargetMs > NpcUnreachedGiveUpMs;
 

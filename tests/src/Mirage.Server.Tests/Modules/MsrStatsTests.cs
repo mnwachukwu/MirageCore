@@ -426,7 +426,7 @@ public class MsrStatsTests
     /// and says so when it arrives. Everything after that is the game's, and this is the whole of it
     /// reaching the shipped scripts.
     ///
-    /// <para>⚠ It arrives at its own handler rather than at the one a player quarry reaches. Routed into
+    /// <para>⚠ It arrives at its own handler rather than at the one a player target reaches. Routed into
     /// that one it would hand an Npc to a parameter that says Player, and a rule that runs on the wrong
     /// kind of body is worse than one that is not called.</para></summary>
     [Test]
@@ -469,9 +469,9 @@ public class MsrStatsTests
     public void AWoundedCreatureChasesWhoeverHitIt()
     {
         var (module, world) = Asking("""
-                    Npc? quarry = World.NpcAt(1, 4, 4);
+                    Npc? target = World.NpcAt(1, 4, 4);
 
-                    if quarry.HasValue()
+                    if target.HasValue()
                         Fight.Strike(who, 1, 4, 4);
                     end if
             """);
@@ -1343,7 +1343,7 @@ public class MsrStatsTests
             Row(("name", "Wolves"), ("giver", 3L), ("rewardExp", 100L),
                 ("rewardItem", 14L), ("rewardMany", 2L)),
         ];
-        world.Records["QuestGoal"] = [Row(("forQuest", 1L), ("quarry", 7L), ("many", 2L))];
+        world.Records["QuestGoal"] = [Row(("forQuest", 1L), ("target", 7L), ("many", 2L))];
 
         ((IWorldObserver)scripts).OnPlayerJoined(who);
         ((ITickWork)scripts).Tick(1);
@@ -1377,7 +1377,7 @@ public class MsrStatsTests
         world.Kinds[giver] = 3;
 
         world.Records["Quest"] = [Row(("name", "Wolves"), ("giver", 3L))];
-        world.Records["QuestGoal"] = [Row(("forQuest", 1L), ("quarry", 7L), ("many", 2L))];
+        world.Records["QuestGoal"] = [Row(("forQuest", 1L), ("target", 7L), ("many", 2L))];
 
         ((IWorldObserver)scripts).OnPlayerJoined(who);
         ((ITickWork)scripts).Tick(1);
@@ -1406,7 +1406,7 @@ public class MsrStatsTests
         world.Kinds[giver] = 3;
 
         world.Records["Quest"] = [Row(("name", "Wolves"), ("giver", 3L), ("rewardExp", 100L))];
-        world.Records["QuestGoal"] = [Row(("forQuest", 1L), ("quarry", 7L), ("many", 2L))];
+        world.Records["QuestGoal"] = [Row(("forQuest", 1L), ("target", 7L), ("many", 2L))];
 
         ((IWorldObserver)scripts).OnPlayerJoined(who);
         ((ITickWork)scripts).Tick(1);
@@ -1469,7 +1469,7 @@ public class MsrStatsTests
         world.Kinds[giver] = 3;
 
         world.Records["Quest"] = [Row(("name", "Wolves"), ("giver", 3L))];
-        world.Records["QuestGoal"] = [Row(("forQuest", 1L), ("quarry", 7L), ("many", 3L))];
+        world.Records["QuestGoal"] = [Row(("forQuest", 1L), ("target", 7L), ("many", 3L))];
 
         ((IWorldObserver)scripts).OnPlayerJoined(who);
         ((ITickWork)scripts).Tick(1);
@@ -3528,7 +3528,108 @@ public class MsrStatsTests
             "enrollment left every pool full, so there was nothing for it to do");
     }
 
+    // ── A creature that fights at range ──────────────────────────────────────
+    //
+    // 🔴 The original's casters backed out of melee and threw from the gap they had made. The engine
+    // keeps the gap — a body authored to keep its distance closes to its standoff and holds — and this
+    // is what it does once it is standing where it meant to stand.
+
+    /// <summary>Which of the two a creature does is read off the RECORD, not off the body: every copy
+    /// of that creature fights the same way, and one that decided at spawn would be an archer by
+    /// accident.</summary>
+    [Test]
+    public void ABodyThatKeepsItsDistanceLoosesInsteadOfSwinging()
+    {
+        var world = new ScriptedWorldTests.RecordingWorld();
+        var (module, _) = Asking("        Fight.Meet(World.NpcAt(1, 5, 5).Value(), who);", world);
+        using ScriptedWorldModule scripts = module;
+
+        var who = EntityHandle.ForPlayer(1);
+        var archer = EntityHandle.ForNpc(1, 1);
+        world.Here.Add(who);
+        world.Here.Add(archer);
+        world.Standing[new WorldPlace(1, 5, 5)] = archer;
+        world.BagFor(archer);
+        world.Authored[archer] = ("shadow", 0, 8);
+        world.SetAttribute(archer, "int", AttributeValue.From(30L));
+        world.SetAttribute(archer, "name", AttributeValue.From("Archer"));
+
+        ((IWorldObserver)scripts).OnPlayerJoined(who);
+        ((ITickWork)scripts).Tick(1);
+
+        Assert.That(world.Shown.Where(e => e.Item2.StartsWith("throw")), Is.Not.Empty,
+            "a bolt, rather than a swing");
+    }
+
+    /// <summary>And a pursuer still swings, which is the whole difference between the two.</summary>
+    [Test]
+    public void APursuerStillSwings()
+    {
+        var world = new ScriptedWorldTests.RecordingWorld();
+        var (module, _) = Asking("        Fight.Meet(World.NpcAt(1, 5, 5).Value(), who);", world);
+        using ScriptedWorldModule scripts = module;
+
+        var who = EntityHandle.ForPlayer(1);
+        var wolf = EntityHandle.ForNpc(1, 1);
+        world.Here.Add(who);
+        world.Here.Add(wolf);
+        world.Standing[new WorldPlace(1, 5, 5)] = wolf;
+        world.BagFor(wolf);
+        world.Authored[wolf] = ("pursue", 0, 8);
+        world.SetAttribute(wolf, "str", AttributeValue.From(30L));
+        world.SetAttribute(wolf, "name", AttributeValue.From("Wolf"));
+
+        ((IWorldObserver)scripts).OnPlayerJoined(who);
+        ((ITickWork)scripts).Tick(1);
+
+        Assert.That(world.Shown.Where(e => e.Item2.StartsWith("throw")), Is.Empty);
+    }
+
+    /// <summary>⚠ A body authored to hold off and given no mind stands there doing nothing. That is a
+    /// heckler, not a mistake, so it must cost no bolt and no cooldown.</summary>
+    [Test]
+    public void ABodyWithNoMindLoosesNothing()
+    {
+        var world = new ScriptedWorldTests.RecordingWorld();
+        var (module, _) = Asking("        Fight.Meet(World.NpcAt(1, 5, 5).Value(), who);", world);
+        using ScriptedWorldModule scripts = module;
+
+        var who = EntityHandle.ForPlayer(1);
+        var heckler = EntityHandle.ForNpc(1, 1);
+        world.Here.Add(who);
+        world.Here.Add(heckler);
+        world.Standing[new WorldPlace(1, 5, 5)] = heckler;
+        world.BagFor(heckler);
+        world.Authored[heckler] = ("shadow", 0, 8);
+        world.SetAttribute(heckler, "name", AttributeValue.From("Heckler"));
+
+        ((IWorldObserver)scripts).OnPlayerJoined(who);
+        ((ITickWork)scripts).Tick(1);
+
+        Assert.That(world.Shown.Where(e => e.Item2.StartsWith("throw")), Is.Empty);
+    }
+
+    /// <summary>A bolt is slower than a swing, because the body is shaping the fight rather than in
+    /// it.</summary>
+    [Test]
+    public void ABoltIsSlowerThanASwing()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(Answered("Fight.LooseSeconds"), Is.EqualTo("2"));
+            Assert.That(Answered("Fight.SwingSeconds"), Is.EqualTo("1"));
+        });
+    }
+
+    /// <summary>The name Core gives the behavior that closes to a distance and keeps it. Read off the
+    /// engine rather than guessed, because a misspelling here is a creature that quietly never
+    /// fires.</summary>
+    [Test]
+    public void TheGameKnowsWhatCoreCallsIt() =>
+        Assert.That(Answered("Beasts.KeepsDistance"), Is.EqualTo("shadow"));
+
     private static AttributeBag Row(params (string Key, object Value)[] fields)
+
 
 
     {

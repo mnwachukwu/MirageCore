@@ -710,10 +710,10 @@ abstract model Npc
     public abstract boolean function Forget();
 
     ##
-        @summary: How it moves on its own: 'stationary', 'wander', 'pursue', 'flee', or 'scavenge'.
-        ⚠ Five ways of WALKING and deliberately nothing about why - a reason is a property of the
-        game, and 'hostile' means nothing in a world with no fighting in it. Empty once the body has
-        left.
+        @summary: How it moves on its own: 'stationary', 'wander', 'pursue', 'flee', 'scavenge', or
+        'shadow' - which closes to a distance and keeps it. ⚠ Six ways of WALKING and deliberately
+        nothing about why - a reason is a property of the game, and 'hostile' means nothing in a
+        world with no fighting in it. Empty once the body has left.
     ##
     public string Behavior;
 
@@ -731,11 +731,34 @@ abstract model Npc
     public integer Range;
 
     ##
+        @summary: How many tiles back it holds, for a body that keeps its distance - the authored
+        number, or what the engine works out from its reach when the record names none. Zero for
+        every other behavior, because none of them keeps a distance. ⚠ A rule that acts at that
+        range wants THIS rather than a number of its own: the body stops where the engine says it
+        stops.
+    ##
+    public integer Standoff;
+
+    ##
         @summary: Whether it is after somebody right now - one it noticed, or one you sent it after.
         The other half of Chase and Forget, which write and never read: without this a rule cannot
         tell a creature already in a fight from one standing idle.
     ##
     public boolean IsChasing;
+
+    ##
+        @summary: The PERSON it is after, or nothing - which is also the answer when what it is
+        after is another creature. 🔴 The other half of IsChasing: whether a body is after somebody
+        was askable and WHO was not, and a bolt has to be aimed at something.
+    ##
+    public Player? Target;
+
+    ##
+        @summary: And the CREATURE it is after, or nothing. Two of them rather than one for the same
+        reason there are two contact handlers: a rule handed the wrong kind of body runs and gives a
+        wrong answer, where one never called at least gives none.
+    ##
+    public Npc? TargetNpc;
 end model
 
 ##
