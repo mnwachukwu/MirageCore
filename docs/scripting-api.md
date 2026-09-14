@@ -35,6 +35,7 @@ Held as a value and never made by a script: the engine hands one over.
 |---|---|---|
 | `Message(string line)` | — | Sends a line of text to this player, and to nobody else. |
 | `IsHere` | `boolean` | Whether they are still in the world. A handle outlives the body it names. |
+| `Guild` | `string` | The name of the guild their account belongs to, or empty for none. |
 | `Map` | `integer` | Which map they are standing on, or zero when they are nowhere. |
 | `X` | `integer` | How far across that map they are. |
 | `Y` | `integer` | How far down it. |
@@ -161,6 +162,9 @@ Reached through its own name; there are no values of it.
 | `TellOn(integer map, string line)` | — | Says a line to everybody who can SEE that map, which is the nearest thing a seamless world has to a room. Not everybody standing on it: somebody on the next map along is looking at this one. |
 | `TellNear(integer map, integer x, integer y, string line)` | — | Says a line to everybody within earshot of a square - the tighter audience, the one that hears speech rather than the one that can see the region. |
 | `Stain(integer map, integer x, integer y, integer size, integer amount)` | — | Marks the ground, which dries on its own and is drawn to everyone who can see the tile. Amount is 0 to 100. ⚠ Unlike a burst, this LASTS - it is the one worldspace mark a game makes that is still there when somebody walks back. Its color is the world's own, set once rather than per stain. |
+| `TellThese(Player[] them, string line)` | — | Says a line to a set of players, wherever they are. Anybody in it who has left the world is skipped rather than refused: a set gathered a moment ago is a set somebody may have logged out of. |
+| `Guildmates(Player who)` | `Player[]` | Everybody IN THE WORLD who shares their guild, including them. Empty for somebody in no guild - which is not the same as a guild with nobody online, and World.Guild is what tells those apart. |
+| `Party(Player who)` | `Player[]` | Everybody in their party, including them. Empty for somebody in no party. |
 | `Records(string records)` | `integer` | How many records of that kind this world holds, counting blank slots. Zero for a kind nobody declared. |
 | `Record(string records, integer number, string field)` | `string` | One field of one record, as text, or empty where the slot or the field is not there. What a game reads at run time out of the records its own editor authored. |
 | `RecordNumber(string records, integer number, string field)` | `integer` | The same, as a whole number. Zero where the slot or the field is not there. |

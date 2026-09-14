@@ -27,6 +27,11 @@ abstract model Player
     public boolean IsHere;
 
     ##
+        @summary: The name of the guild their account belongs to, or empty for none.
+    ##
+    public string Guild;
+
+    ##
         @summary: Which map they are standing on, or zero when they are nowhere.
     ##
     public integer Map;
@@ -568,6 +573,25 @@ shared abstract model World
         once rather than per stain.
     ##
     public abstract function Stain(integer map, integer x, integer y, integer size, integer amount);
+
+    ##
+        @summary: Says a line to a set of players, wherever they are. Anybody in it who has left the
+        world is skipped rather than refused: a set gathered a moment ago is a set somebody may have
+        logged out of.
+    ##
+    public abstract function TellThese(Player[] them, string line);
+
+    ##
+        @summary: Everybody IN THE WORLD who shares their guild, including them. Empty for somebody
+        in no guild - which is not the same as a guild with nobody online, and World.Guild is what
+        tells those apart.
+    ##
+    public abstract Player[] function Guildmates(Player who);
+
+    ##
+        @summary: Everybody in their party, including them. Empty for somebody in no party.
+    ##
+    public abstract Player[] function Party(Player who);
 
     ##
         @summary: How many records of that kind this world holds, counting blank slots. Zero for a

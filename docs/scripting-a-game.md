@@ -511,6 +511,20 @@ open in silence.
 ⚠ Keep `World.Tell` for the things that are genuinely everyone's business. A game that announces
 ordinary events to the world has a chat log nobody reads.
 
+**A guild is not a place**, so it takes a fourth shape: gather the set, then tell it.
+
+```
+Player[] mates = World.Guildmates(who);
+World.TellThese(mates, who.Guild + " gains a member.");
+```
+
+`World.Party(who)` is the same for a party, and `TellThese` takes any set a game gathers for its own
+reasons — a raid, everybody carrying a key. Anybody in it who has left the world is skipped rather
+than refused: a set gathered a moment ago is a set somebody may have logged out of.
+
+⚠ **An empty set and a blank `who.Guild` say different things.** No guild at all, against a guild
+with nobody else online.
+
 ### Text that floats off a body
 
 ```

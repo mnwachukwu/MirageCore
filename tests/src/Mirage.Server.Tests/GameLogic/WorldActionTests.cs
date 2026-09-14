@@ -60,6 +60,68 @@ public class WorldActionTests
         return (actions, world, pm, dispatcher);
     }
 
+    /// <summary>🔴 A guild is answered from who is IN THE WORLD, not from the roster on disk.
+    ///
+    /// <para>The two are different questions: the roster is accounts, some logged out for a week, and
+    /// the only thing a game does with this answer is act on the bodies in it.</para></summary>
+    [Test]
+    public void AGuildIsAnsweredFromWhoIsInTheWorld()
+    {
+        var (world, game, pm) = Build();
+
+        game.Guilds[7] = new GuildRecord { Index = 7, Name = "The Gathering" };
+
+        pm[Idx].Guild = 7;
+        Playing(pm, 2, guild: 7);
+        Playing(pm, 3, guild: 9);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(world.GuildOf(EntityHandle.ForPlayer(Idx)), Is.EqualTo("The Gathering"));
+
+            Assert.That(world.GuildmatesOf(EntityHandle.ForPlayer(Idx)),
+                Is.EqualTo(new[] { EntityHandle.ForPlayer(Idx), EntityHandle.ForPlayer(2) }).AsCollection,
+                "the one in another guild is not in it");
+
+            Assert.That(world.GuildOf(EntityHandle.ForPlayer(3)), Is.Empty,
+                "a guild id nothing answers to is no guild");
+
+            Assert.That(world.GuildmatesOf(EntityHandle.ForPlayer(4)), Is.Empty,
+                "and somebody who is not in the world has none");
+        });
+    }
+
+    /// <summary>A party is a pair, and it is answered the same way.</summary>
+    [Test]
+    public void APartyIsThePairItIs()
+    {
+        var (world, _, pm) = Build();
+
+        Playing(pm, 2, guild: 0);
+        pm[Idx].InParty = true;
+        pm[Idx].PartyPlayer = 2;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(world.PartyOf(EntityHandle.ForPlayer(Idx)),
+                Is.EqualTo(new[] { EntityHandle.ForPlayer(Idx), EntityHandle.ForPlayer(2) }).AsCollection);
+
+            Assert.That(world.PartyOf(EntityHandle.ForPlayer(2)), Is.Empty,
+                "the partner has to say so too - a party is not inferred from the other side");
+        });
+    }
+
+    /// <summary>Puts somebody in the world, for the group questions to find.</summary>
+    private static void Playing(PlayerManager pm, int index, int guild)
+    {
+        var sp = pm[index];
+        sp.IsConnected = true;
+        sp.InGame = true;
+        sp.CharNum = 1;
+        sp.Guild = guild;
+        sp.Char.Map = Map;
+    }
+
     // ── Creatures ───────────────────────────────────────────────────────
 
     /// <summary>🔴 The reverse of <c>PlaceOf</c>, which nothing offered.

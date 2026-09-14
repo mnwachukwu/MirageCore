@@ -139,6 +139,32 @@ public class ScriptStubTests
         });
     }
 
+    /// <summary>
+    /// 🔴 <b>The stub COMPILES.</b> Every other check here reads it as text.
+    ///
+    /// <para>That gap let a broken stub ship: <c>ScriptType.ToString</c> rendered a set as
+    /// "set of Player", which reads like a description and is not Compass. One member written that way
+    /// took the whole file down and every model after it with it — so an author opening any script in
+    /// this world would have been told <c>Values</c> does not exist, on a line they never wrote, with
+    /// all seven tests green.</para>
+    ///
+    /// <para>Compiled through the same front end a world's own rules go through, with the catalog
+    /// empty: the stub declares these types, so handing it the catalog as well would be declaring each
+    /// one twice.</para>
+    /// </summary>
+    [Test]
+    public void TheStubIsSomethingCompassCanRead()
+    {
+        string stub = ScriptStubs.Stub(Catalog());
+
+        var (_, problems) = ScriptCompiler.CompileModule(stub, "engine", ScriptCatalog.Empty);
+
+        Assert.That(
+            problems.Where(p => p.Severity == ScriptSeverity.Error).Select(p => p.Message),
+            Is.Empty,
+            "the written-down catalog is the file an author's editor reads, and it has to parse");
+    }
+
     /// <summary>Every folder holding scripts is named, because a project's source does not descend.</summary>
     [Test]
     public void TheProjectNamesEveryFolderThatHoldsScripts()

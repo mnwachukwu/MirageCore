@@ -116,7 +116,13 @@ public sealed record ScriptType
     /// <summary>True for the result of a call that hands nothing back.</summary>
     public bool IsNothing => Kind == Shape.Nothing;
 
-    /// <summary>How a script would write this type.</summary>
+    /// <summary>
+    /// How a script would write this type — <b>exactly</b>, because the stub a checker reads is built
+    /// out of these strings.
+    ///
+    /// <para>⚠ A set is <c>Player[]</c>. "set of Player" reads like a description and is not Compass;
+    /// written into the stub it takes the whole file down, and every model after it with it.</para>
+    /// </summary>
     public override string ToString()
     {
         string root = Kind switch
@@ -126,7 +132,7 @@ public sealed record ScriptType
             Shape.Text => "string",
             Shape.Truth => "boolean",
             Shape.Named => Name!,
-            Shape.Set => $"set of {Element}",
+            Shape.Set => $"{Element}[]",
             Shape.Anything => "any type",
             _ => "nothing",
         };

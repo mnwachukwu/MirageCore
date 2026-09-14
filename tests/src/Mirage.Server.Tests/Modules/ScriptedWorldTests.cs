@@ -1315,6 +1315,76 @@ public class ScriptedWorldTests
         });
     }
 
+    /// <summary>🔴 A game says something to a guild.
+    ///
+    /// <para>The other three audiences are all about PLACE — one body, a region, an earshot — and a
+    /// guild is not a place. Every MSR system that announced to one had nothing to announce
+    /// through.</para>
+    ///
+    /// <para>A set and a lookup rather than a <c>TellGuild</c>: the set tell is the primitive, and a
+    /// game gathering its own raid or everybody carrying a key wants the same call.</para></summary>
+    [Test]
+    public void AGameSaysSomethingToAGuild()
+    {
+        var world = new RecordingWorld();
+        var them = new List<EntityHandle>
+        {
+            Someone, EntityHandle.ForPlayer(4), EntityHandle.ForPlayer(9),
+        };
+
+        world.Guilds[Someone] = "The Gathering";
+        world.Groups[Someone] = them;
+
+        var (module, _) = Built("""
+            shared model Rules
+                public function OnPlayerJoined(Player who)
+                    if who.Guild == ""
+                        who.Message("You are in no guild.");
+                        yield;
+                    end if
+
+                    Player[] mates = World.Guildmates(who);
+                    World.TellThese(mates, who.Guild + " gains a member.");
+                end function
+            end model
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+        ((IWorldObserver)scripts).OnPlayerJoined(Someone);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+
+            Assert.That(world.Announced.Single().Audience,
+                Is.EqualTo("these player:1 player:4 player:9"));
+
+            Assert.That(world.Announced.Single().Text, Is.EqualTo("The Gathering gains a member."));
+        });
+    }
+
+    /// <summary>Somebody in no guild gets an empty set and a blank name, and the two say different
+    /// things: no guild at all, against a guild with nobody else online.</summary>
+    [Test]
+    public void SomebodyInNoGuild_GetsAnEmptySetAndABlankName()
+    {
+        var world = new RecordingWorld();
+
+        var (module, _) = Built("""
+            shared model Rules
+                public function OnPlayerJoined(Player who)
+                    Player[] mates = World.Guildmates(who);
+                    who.Message("guild='" + who.Guild + "' mates=" + mates.Count);
+                end function
+            end model
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+        ((IWorldObserver)scripts).OnPlayerJoined(Someone);
+
+        Assert.That(world.Said.Single(), Is.EqualTo("guild='' mates=0"));
+    }
+
     // ── A message of a game's own ────────────────────────────────────────────
 
     /// <summary>🔴 A script declares a message, and a line nobody compiled a type for arrives as the

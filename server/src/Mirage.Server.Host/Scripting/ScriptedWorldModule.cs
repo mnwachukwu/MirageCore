@@ -642,6 +642,28 @@ public sealed class ScriptedWorldModule
                 + "tile. Amount is 0 to 100. \u26a0 Unlike a burst, this LASTS - it is the one worldspace "
                 + "mark a game makes that is still there when somebody walks back. Its color is the "
                 + "world's own, set once rather than per stain.")
+            // 🔴 The audience the other three cannot express. Those are all about PLACE - one body,
+            // a region, an earshot - and a guild is not a place.
+            .Action("TellThese",
+                [ScriptType.SetOf(player.AsType).Named("them"), ScriptType.Text.Named("line")],
+                (_, a) =>
+                {
+                    World.TellThese(Bodies(a, 0), a.AsText(1));
+                    return null;
+                },
+                "Says a line to a set of players, wherever they are. Anybody in it who has left the "
+                + "world is skipped rather than refused: a set gathered a moment ago is a set somebody "
+                + "may have logged out of.")
+            .Function("Guildmates", ScriptType.SetOf(player.AsType), [player.AsType.Named("who")],
+                (_, a) => ScriptValue.Set(World.GuildmatesOf(Who(a.As<object>(0)))
+                                               .Select(h => (object?)h)),
+                "Everybody IN THE WORLD who shares their guild, including them. Empty for somebody in "
+                + "no guild - which is not the same as a guild with nobody online, and World.Guild is "
+                + "what tells those apart.")
+            .Function("Party", ScriptType.SetOf(player.AsType), [player.AsType.Named("who")],
+                (_, a) => ScriptValue.Set(World.PartyOf(Who(a.As<object>(0)))
+                                               .Select(h => (object?)h)),
+                "Everybody in their party, including them. Empty for somebody in no party.")
             .Function("Records", ScriptType.Integer, [ScriptType.Text.Named("records")],
                 (_, a) => (long)World.RecordsOf(a.AsText(0)).Count,
                 "How many records of that kind this world holds, counting blank slots. Zero for a kind "
@@ -856,6 +878,8 @@ public sealed class ScriptedWorldModule
             }, "Sends a line of text to this player, and to nobody else.")
             .Value("IsHere", ScriptType.Truth, (who, _) => World.IsInWorld(Who(who)),
                 "Whether they are still in the world. A handle outlives the body it names.")
+            .Value("Guild", ScriptType.Text, (who, _) => World.GuildOf(Who(who)),
+                "The name of the guild their account belongs to, or empty for none.")
             .Value("Map", ScriptType.Integer, (who, _) => (long)World.PlaceOf(Who(who)).Map,
                 "Which map they are standing on, or zero when they are nowhere.")
             .Value("X", ScriptType.Integer, (who, _) => (long)World.PlaceOf(Who(who)).X,
@@ -1094,6 +1118,29 @@ public sealed class ScriptedWorldModule
         "parcel" => ProjectileStyle.Parcel,
         _ => ProjectileStyle.Bolt,
     };
+
+    /// <summary>
+    /// A set a script passed, as handles.
+    ///
+    /// <para>Anything in it that is not one of the engine's own bodies is dropped rather than
+    /// refused. A script cannot construct a Player, so the only way a stray value gets in is a set
+    /// built from two sources, and dropping it is what the receiving end does with an absent body
+    /// anyway.</para>
+    /// </summary>
+    private static List<EntityHandle> Bodies(IReadOnlyList<object?> arguments, int at)
+    {
+        var found = new List<EntityHandle>();
+
+        if (arguments[at] is System.Collections.IEnumerable given and not string)
+        {
+            foreach (object? one in given)
+            {
+                if (one is EntityHandle handle && handle.IsSet) found.Add(handle);
+            }
+        }
+
+        return found;
+    }
 
     /// <summary>Three channels a script wrote as separate numbers, packed the way the wire carries
     /// one. Each is clamped rather than refused: a game doing arithmetic on a color should get a color
