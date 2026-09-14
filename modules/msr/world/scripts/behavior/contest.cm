@@ -1,0 +1,950 @@
+# War night, and the fight over a territory.
+#
+# Once a week the land is up for grabs. Every territory somebody registered a challenge against, or
+# that its holder left undefended, is settled that evening — and a territory with two sides or more
+# is settled by a live fight over capture points rather than by arithmetic.
+#
+# The evening runs in three phases, per territory:
+#
+#   setup      ten minutes    the flags appear, the creatures go, nobody may swing
+#   contest    twenty         king of the hill, scored every five seconds
+#   cooldown   ten            it is over, the winner is announced, nobody may swing
+#
+# ⚠ The trivial cases never start one. A lone claimant takes unclaimed land, an unchallenged holder
+# keeps theirs, and land nobody wants falls to nobody — all decided the moment the evening opens, so a
+# world with one guild in it never sits through an hour of empty phases.
+#
+# 🔴 A RESTART ABANDONS A LIVE CONTEST, as the original's did. The maps come back with their creatures
+# because nothing keeps a map empty across a restart, so a contest resumed against a refilled region
+# would be a different fight than the one that was interrupted.
+
+shared model Contest
+
+    # ── When ──────────────────────────────────────────────────────────────────
+    #
+    # Saturday evening, and the week resets the Sunday after — so a war night's result is what the new
+    # week is built on. Day zero was a Thursday, which is what the two remainders below count from.
+
+    public integer NightRemainder = 2;
+    public integer NightHour = 20;
+
+    public boolean function IsWarNight(integer day)
+        yield day % 7 == Contest.NightRemainder;
+    end function
+
+    # ── The phases ────────────────────────────────────────────────────────────
+
+    public integer SetupSeconds = 600;
+    public integer FightSeconds = 1200;
+    public integer CooldownSeconds = 600;
+    public integer BeatSeconds = 5;
+
+    public integer Waiting = 0;
+    public integer Setup = 1;
+    public integer Underway = 2;
+    public integer Cooling = 3;
+
+    # ── The capture points ────────────────────────────────────────────────────
+
+    public integer MapsPerPoint = 5;
+    public integer FewestPoints = 2;
+    public integer MostPoints = 5;
+
+    # How far a point reaches, in tiles. Nine across, so the whole of one fits the viewport and can be
+    # read at a glance — and it is what makes the trade between a caster and a swordsman on a point
+    # work out: a caster outside reaches the center exactly and nothing past it, and a swordsman
+    # answering that closes to the edge and is still inside.
+    public integer Radius = 4;
+
+    # The meter runs from held to taken across twice this many beats, so a full swing is about half a
+    # minute. Below the band around nothing, the holder is scoring; inside it, nobody is.
+    public integer Full = 3;
+    public integer Band = 1;
+
+    public integer HeldScore = 1;
+    public integer DefenderScore = 1;
+
+    # Up to this many challengers, so five guilds at most with the holder.
+    public integer MostChallengers = 4;
+
+    public integer UnclaimedCost = 35000;
+
+    public string ClaimVerb = "msr.territory.claim";
+
+    # ── What the engine is told ───────────────────────────────────────────────
+
+    # On the HUD rather than on a square: laying claim is about a REGION, and a region is not somewhere
+    # anybody is standing. Which region is the one they are standing in.
+    public function Declare(Builder game)
+        Verb claim = game.Action(Contest.ClaimVerb, "Lay claim to this land", "Guild");
+        claim.OnHud();
+        claim.Icon("flag");
+    end function
+
+    # The verb, answered where they stand. A leader speaks for the guild; anybody else is told so.
+    public function Claim(Player who)
+        integer region = Territory.Under(who.Map);
+
+        if region < 1
+            who.Message("Nobody fights over this land.");
+            yield;
+        end if
+
+        if World.GuildRank(who) != "leader"
+            who.Message("Only your guild's leader may lay claim to land.");
+            yield;
+        end if
+
+        string refused = Contest.Register(who, region);
+
+        if refused != ""
+            who.Message(refused);
+            yield;
+        end if
+
+        who.Message("Your guild will fight for " + Territory.NameOf(region) + " on war night.");
+    end function
+
+    # ── Where it is all written ───────────────────────────────────────────────
+    #
+    # The schedule and the registrations are the world's, because they outlive every player and belong
+    # to no guild. The live contest is the world's too, and is thrown away on a restart.
+
+    public string ScheduledFor = "warnight";
+    public string Walked = "warwalked";
+
+    public string function Phase(integer region)
+        yield "c" + region + ".phase";
+    end function
+
+    public string function PhaseEnds(integer region)
+        yield "c" + region + ".ends";
+    end function
+
+    public string function Defender(integer region)
+        yield "c" + region + ".def";
+    end function
+
+    public string function Points(integer region)
+        yield "c" + region + ".points";
+    end function
+
+    public string function Beat(integer region)
+        yield "c" + region + ".beat";
+    end function
+
+    public string function Score(integer region, integer guild)
+        yield "c" + region + ".score." + guild;
+    end function
+
+    public string function Challenger(integer region, integer slot)
+        yield "c" + region + ".ch" + slot;
+    end function
+
+    # One capture point's own state. The place is kept as well as the mark, because a mark is drawn
+    # from it and a rule has to ask who is standing inside it.
+    public string function PointMap(integer region, integer at)
+        yield "c" + region + ".p" + at + ".map";
+    end function
+
+    public string function PointX(integer region, integer at)
+        yield "c" + region + ".p" + at + ".x";
+    end function
+
+    public string function PointY(integer region, integer at)
+        yield "c" + region + ".p" + at + ".y";
+    end function
+
+    public string function PointRaised(integer region, integer at)
+        yield "c" + region + ".p" + at + ".up";
+    end function
+
+    public string function PointOwner(integer region, integer at)
+        yield "c" + region + ".p" + at + ".own";
+    end function
+
+    public string function PointMeter(integer region, integer at)
+        yield "c" + region + ".p" + at + ".meter";
+    end function
+
+    public string function Mark(integer region, integer at)
+        yield "msr.point." + region + "." + at;
+    end function
+
+    # ── Who may fight whom, while one is on ───────────────────────────────────
+    #
+    # A contest suspends the ordinary rules over the land it is fought on, in both directions. While the
+    # flags are up but the fight has not started — and again once it is over — the sides may not touch
+    # each other, so the setup is a truce and the cooldown is not a chance to settle scores. While it is
+    # on, they may fight anywhere in the territory, protected ground included: the land IS the fight, and
+    # a town in the middle of it would otherwise be a place to stand that nobody could be pushed out of.
+
+    # Which live contest both of them are part of, standing on its land. Nothing when there is none,
+    # when they share a guild, or when either of them is somewhere else.
+    public integer function Between(Player who, Player them)
+        integer region = Territory.Under(who.Map);
+
+        if region < 1 or Territory.Under(them.Map) != region
+            yield 0;
+        end if
+
+        if World.Number(Contest.Phase(region)) == Contest.Waiting
+            yield 0;
+        end if
+
+        integer ours = World.GuildOf(who);
+        integer theirs = World.GuildOf(them);
+
+        if ours < 1 or theirs < 1 or ours == theirs
+            yield 0;
+        end if
+
+        if not Contest.IsSide(region, ours) or not Contest.IsSide(region, theirs)
+            yield 0;
+        end if
+
+        yield region;
+    end function
+
+    public boolean function IsSide(integer region, integer guild)
+        if World.Number(Contest.Defender(region)) == guild
+            yield true;
+        end if
+
+        loop for slot = 1 to Contest.MostChallengers
+            if World.Number(Contest.Challenger(region, slot)) == guild
+                yield true;
+            end if
+        end loop
+
+        yield false;
+    end function
+
+    # Two sides of a live fight, with the fight actually on.
+    public boolean function Fighting(Player who, Player them)
+        integer region = Contest.Between(who, them);
+
+        if region < 1
+            yield false;
+        end if
+
+        yield World.Number(Contest.Phase(region)) == Contest.Underway;
+    end function
+
+    # And the two phases that hold them apart. Answers WHICH, because the two mean opposite things to
+    # somebody who has just been refused: one is about to lift, and the other is not.
+    public string function Truce(Player who, Player them)
+        integer region = Contest.Between(who, them);
+
+        if region < 1
+            yield "";
+        end if
+
+        if World.Number(Contest.Phase(region)) == Contest.Setup
+            yield "The fight for this land has not started yet.";
+        end if
+
+        if World.Number(Contest.Phase(region)) == Contest.Cooling
+            yield "The fight for this land is over.";
+        end if
+
+        yield "";
+    end function
+
+    # ── The beat ──────────────────────────────────────────────────────────────
+
+    boolean started = false;
+
+    public function Tick()
+        # 🔴 A live contest does not survive a restart. The maps came back with their creatures on
+        # them, so the fight that was interrupted cannot be the fight that carries on.
+        if not Contest.started
+            Contest.started = true;
+
+            Contest.AbandonEverything();
+        end if
+
+        Contest.Schedule();
+        Contest.Run();
+    end function
+
+    # ── The schedule ──────────────────────────────────────────────────────────
+    #
+    # Walked day by day like the season, so a server that was off over a war night still holds it when
+    # it comes back rather than skipping a week of land.
+
+    function Schedule()
+        integer today = Calendar.Today();
+        integer last = World.Number(Contest.Walked);
+
+        # A world nobody has run before starts from today rather than from 1970.
+        if last < 1
+            last = today - 1;
+        end if
+
+        loop while last < today
+            last = last + 1;
+
+            if Contest.IsWarNight(last)
+                World.SetNumber(Contest.ScheduledFor, last * Calendar.SecondsPerDay
+                                                      + Contest.NightHour * 3600);
+            end if
+        end loop
+
+        World.SetNumber(Contest.Walked, today);
+
+        integer due = World.Number(Contest.ScheduledFor);
+
+        if due < 1
+            yield;
+        end if
+
+        # ⚠ Compared against the SERVER's own clock, shifted the same way the day was, so the evening
+        # falls at eight in the operator's evening rather than at eight in Greenwich.
+        if World.Now() + World.LocalOffset() < due
+            yield;
+        end if
+
+        World.SetNumber(Contest.ScheduledFor, 0);
+
+        Contest.Open();
+    end function
+
+    # ── Opening the evening ───────────────────────────────────────────────────
+
+    function Open()
+        World.Tell("War night has begun.");
+
+        loop for region = 1 to World.Records(Territory.Of)
+            if Territory.IsContested(region)
+                Contest.OpenOne(region);
+            end if
+        end loop
+    end function
+
+    function OpenOne(integer region)
+        integer holder = Territory.OwnerOf(region);
+        integer sides = Contest.Challengers(region);
+
+        if holder > 0
+            sides = sides + 1;
+        end if
+
+        # Nobody to fight: the holder keeps it, a lone claimant takes it, and land nobody wants falls.
+        if sides < 2
+            Contest.Settle(region, Contest.LoneSide(region, holder));
+            yield;
+        end if
+
+        Contest.Begin(region, holder);
+    end function
+
+    # How many guilds registered against it, and who the only side is when there is one.
+
+    public integer function Challengers(integer region)
+        integer many = 0;
+
+        loop for slot = 1 to Contest.MostChallengers
+            if World.Number(Contest.Challenger(region, slot)) > 0
+                many = many + 1;
+            end if
+        end loop
+
+        yield many;
+    end function
+
+    integer function LoneSide(integer region, integer holder)
+        if holder > 0
+            yield holder;
+        end if
+
+        loop for slot = 1 to Contest.MostChallengers
+            integer guild = World.Number(Contest.Challenger(region, slot));
+
+            if guild > 0
+                yield guild;
+            end if
+        end loop
+
+        yield 0;
+    end function
+
+    # ── Starting a fight ──────────────────────────────────────────────────────
+
+    function Begin(integer region, integer holder)
+        World.SetNumber(Contest.Phase(region), Contest.Setup);
+        World.SetNumber(Contest.PhaseEnds(region), World.Now() + Contest.SetupSeconds);
+        World.SetNumber(Contest.Defender(region), holder);
+        World.SetNumber(Contest.Beat(region), 0);
+
+        Contest.ClearScores(region);
+        Contest.LayPoints(region, holder);
+
+        # ⚠ The creatures go for the whole evening. Land being fought over is not land anybody is
+        # farming, and a contest with a wolf wandering through it is a contest decided by the wolf.
+        Contest.EmptyLand(region);
+
+        World.Tell(Territory.NameOf(region) + " is being fought over. The flags are up.");
+    end function
+
+    # Where the flags go: spread across the region by walking distance, on maps an author said may
+    # hold one. One per five maps, never fewer than two and never more than five.
+    function LayPoints(integer region, integer holder)
+        integer wanted = Math.Min(Contest.MostPoints,
+                                  Math.Max(Contest.FewestPoints,
+                                           Contest.MapsIn(region) / Contest.MapsPerPoint));
+        integer at = 0;
+
+        loop each spot in World.SpreadOver(region, wanted, Territory.HoldsPoint)
+            at = at + 1;
+
+            World.SetNumber(Contest.PointMap(region, at), spot.Map);
+            World.SetNumber(Contest.PointX(region, at), spot.X);
+            World.SetNumber(Contest.PointY(region, at), spot.Y);
+            World.SetTruth(Contest.PointRaised(region, at), spot.IsRaised);
+
+            # ⚠ The holder starts every point SECURELY held, which is what makes defending different
+            # from attacking: a challenger has to swing the meter the whole way, and a holder who does
+            # nothing keeps what they have.
+            World.SetNumber(Contest.PointOwner(region, at), holder);
+            World.SetNumber(Contest.PointMeter(region, at), 0 - Contest.Full);
+        end loop
+
+        World.SetNumber(Contest.Points(region), at);
+
+        Contest.DrawPoints(region);
+    end function
+
+    public integer function MapsIn(integer region)
+        integer many = 0;
+
+        loop for map = 1 to World.Records("Maps")
+            if World.RegionOf(map) == region
+                many = many + 1;
+            end if
+        end loop
+
+        yield many;
+    end function
+
+    # ── The flags themselves ──────────────────────────────────────────────────
+    #
+    # Drawn for the people fighting and for nobody else: a contest is a private thing between the
+    # guilds in it, and a bystander watching flags change color learns who is winning land they have
+    # nothing to do with.
+
+    function DrawPoints(integer region)
+        loop for at = 1 to World.Number(Contest.Points(region))
+            Marker flag = World.Marker(Contest.Mark(region, at), Contest.Where(region, at));
+
+            flag.Label(Contest.Letter(at));
+            flag.Ring(Contest.Radius);
+            flag.Meter(World.Number(Contest.PointMeter(region, at)) + Contest.Full, Contest.Full * 2);
+
+            # ⚠ Shown to the guilds in this contest and to nobody else. A bystander watching flags
+            # change color learns who is winning land they have nothing to do with. Said once per side,
+            # because saying it adds rather than replaces.
+            Contest.ShowTo(region, flag);
+
+            integer owner = World.Number(Contest.PointOwner(region, at));
+
+            if owner < 1
+                flag.Color(180, 180, 180);
+            end if
+
+            if owner > 0
+                if owner == World.Number(Contest.Defender(region))
+                    flag.Color(80, 140, 230);
+                end if
+
+                if owner != World.Number(Contest.Defender(region))
+                    flag.Color(220, 80, 80);
+                end if
+            end if
+        end loop
+    end function
+
+    public Spot function Where(integer region, integer at)
+        integer map = World.Number(Contest.PointMap(region, at));
+        integer x = World.Number(Contest.PointX(region, at));
+        integer y = World.Number(Contest.PointY(region, at));
+
+        if World.Truth(Contest.PointRaised(region, at))
+            yield World.SpotRaised(map, x, y);
+        end if
+
+        yield World.Spot(map, x, y);
+    end function
+
+    string function Letter(integer at)
+        if at == 1
+            yield "Alpha";
+        end if
+
+        if at == 2
+            yield "Bravo";
+        end if
+
+        if at == 3
+            yield "Charlie";
+        end if
+
+        if at == 4
+            yield "Delta";
+        end if
+
+        yield "Echo";
+    end function
+
+    # Every guild in this contest, one at a time.
+    function ShowTo(integer region, Marker flag)
+        integer holder = World.Number(Contest.Defender(region));
+
+        if holder > 0
+            flag.SeenBy(World.GuildMembers(holder));
+        end if
+
+        loop for slot = 1 to Contest.MostChallengers
+            integer guild = World.Number(Contest.Challenger(region, slot));
+
+            if guild > 0
+                flag.SeenBy(World.GuildMembers(guild));
+            end if
+        end loop
+    end function
+
+    # And what everybody in it is told.
+    public function TellSides(integer region, string line)
+        integer holder = World.Number(Contest.Defender(region));
+
+        if holder > 0
+            World.TellThese(World.GuildMembers(holder), line);
+        end if
+
+        loop for slot = 1 to Contest.MostChallengers
+            integer guild = World.Number(Contest.Challenger(region, slot));
+
+            if guild > 0
+                World.TellThese(World.GuildMembers(guild), line);
+            end if
+        end loop
+    end function
+
+    # ── Running the fight ─────────────────────────────────────────────────────
+
+    function Run()
+        loop for region = 1 to World.Records(Territory.Of)
+            integer phase = World.Number(Contest.Phase(region));
+
+            if phase > Contest.Waiting
+                Contest.RunOne(region, phase);
+            end if
+        end loop
+    end function
+
+    function RunOne(integer region, integer phase)
+        # The fight itself is scored on its own beat rather than every tick: a meter that moved twenty
+        # times a second would be at one end or the other before anybody could walk to a flag.
+        if phase == Contest.Underway
+            if World.Now() >= World.Number(Contest.Beat(region))
+                World.SetNumber(Contest.Beat(region), World.Now() + Contest.BeatSeconds);
+
+                Contest.Strike(region);
+            end if
+        end if
+
+        if World.Now() < World.Number(Contest.PhaseEnds(region))
+            yield;
+        end if
+
+        if phase == Contest.Setup
+            World.SetNumber(Contest.Phase(region), Contest.Underway);
+            World.SetNumber(Contest.PhaseEnds(region), World.Now() + Contest.FightSeconds);
+            World.SetNumber(Contest.Beat(region), World.Now());
+
+            Contest.TellSides(region, "The fight for " + Territory.NameOf(region) + " is on.");
+            yield;
+        end if
+
+        if phase == Contest.Underway
+            World.SetNumber(Contest.Phase(region), Contest.Cooling);
+            World.SetNumber(Contest.PhaseEnds(region), World.Now() + Contest.CooldownSeconds);
+
+            Contest.Decide(region);
+            yield;
+        end if
+
+        Contest.Close(region);
+    end function
+
+    # ── One beat of the fight ─────────────────────────────────────────────────
+
+    # ⚠ The meters move BEFORE anything is scored, so a point taken on this beat pays its new holder
+    # from this beat. Scoring first would pay the old one for ground they had just lost.
+    function Strike(integer region)
+        loop for at = 1 to World.Number(Contest.Points(region))
+            Contest.Advance(region, at);
+        end loop
+
+        Contest.Tally(region);
+        Contest.DrawPoints(region);
+    end function
+
+    # One point, one beat. The guild with more bodies inside the ring than anybody else pushes it;
+    # a tie or an empty ring drifts back toward nothing.
+    #
+    # ⚠ A challenger's push KEEPS the meter where it is when the pushing guild changes, so a full swing
+    # from held to taken costs the same whether one guild did it or three did it in turn.
+    function Advance(integer region, integer at)
+        integer pushing = Contest.Majority(region, at);
+        integer owner = World.Number(Contest.PointOwner(region, at));
+        integer meter = World.Number(Contest.PointMeter(region, at));
+
+        if pushing < 1
+            World.SetNumber(Contest.PointMeter(region, at), Contest.Drift(meter));
+            yield;
+        end if
+
+        if pushing == owner
+            World.SetNumber(Contest.PointMeter(region, at), Math.Max(0 - Contest.Full, meter - 1));
+            yield;
+        end if
+
+        integer pushed = meter + 1;
+
+        if pushed < Contest.Full
+            World.SetNumber(Contest.PointMeter(region, at), pushed);
+            yield;
+        end if
+
+        # Taken. It changes hands and is securely held from this beat, so taking it back is the same
+        # whole swing the taker just made.
+        World.SetNumber(Contest.PointOwner(region, at), pushing);
+        World.SetNumber(Contest.PointMeter(region, at), 0 - Contest.Full);
+
+        Contest.TellSides(region, World.GuildName(pushing) + " has taken " + Contest.Letter(at) + ".");
+    end function
+
+    public integer function Drift(integer meter)
+        if meter > 0
+            yield meter - 1;
+        end if
+
+        if meter < 0
+            yield meter + 1;
+        end if
+
+        yield 0;
+    end function
+
+    # Whose guild has the most bodies standing inside the ring. Nobody when it is empty, and nobody
+    # when two guilds are level — a contested point moves for neither of them.
+    integer function Majority(integer region, integer at)
+        Spot where = Contest.Where(region, at);
+        string mark = Contest.Mark(region, at);
+
+        integer best = 0;
+        integer most = 0;
+        boolean tied = false;
+
+        loop each who in World.PlayersNear(where.Map, where.X, where.Y, Contest.Radius)
+            integer guild = World.GuildOf(who);
+
+            if guild > 0
+                if World.InsideMark(mark, who.Where)
+                    integer standing = Contest.CountFor(region, at, guild);
+
+                    if standing > most
+                        most = standing;
+                        best = guild;
+                        tied = false;
+                    end if
+
+                    if standing == most and guild != best
+                        tied = true;
+                    end if
+                end if
+            end if
+        end loop
+
+        if tied
+            yield 0;
+        end if
+
+        yield best;
+    end function
+
+    # How many of that guild are standing inside the ring. Counted rather than accumulated, because a
+    # walk that tallied as it went would have to hold a count per guild and a script holds no table.
+    integer function CountFor(integer region, integer at, integer guild)
+        Spot where = Contest.Where(region, at);
+        string mark = Contest.Mark(region, at);
+        integer many = 0;
+
+        loop each who in World.PlayersNear(where.Map, where.X, where.Y, Contest.Radius)
+            if World.GuildOf(who) == guild
+                if World.InsideMark(mark, who.Where)
+                    many = many + 1;
+                end if
+            end if
+        end loop
+
+        yield many;
+    end function
+
+    # ── Keeping score ─────────────────────────────────────────────────────────
+    #
+    # A point pays its holder every beat it is SECURELY held — inside the band around nothing it pays
+    # nobody, which is the ten seconds in the middle of a swing where it is genuinely up for grabs.
+    # The territory's defender is paid double for a point, so holding is worth more than taking.
+
+    function Tally(integer region)
+        loop for at = 1 to World.Number(Contest.Points(region))
+            integer owner = World.Number(Contest.PointOwner(region, at));
+            integer meter = World.Number(Contest.PointMeter(region, at));
+
+            if owner > 0 and meter <= 0 - Contest.Band
+                integer worth = Contest.HeldScore;
+
+                if owner == World.Number(Contest.Defender(region))
+                    worth = worth + Contest.DefenderScore;
+                end if
+
+                World.SetNumber(Contest.Score(region, owner),
+                                World.Number(Contest.Score(region, owner)) + worth);
+            end if
+        end loop
+    end function
+
+    function ClearScores(integer region)
+        integer holder = World.Number(Contest.Defender(region));
+
+        if holder > 0
+            World.SetNumber(Contest.Score(region, holder), 0);
+        end if
+
+        loop for slot = 1 to Contest.MostChallengers
+            integer guild = World.Number(Contest.Challenger(region, slot));
+
+            if guild > 0
+                World.SetNumber(Contest.Score(region, guild), 0);
+            end if
+        end loop
+    end function
+
+    # ── Who won ───────────────────────────────────────────────────────────────
+    #
+    # The strict top scorer takes it. Any tie goes to whoever was defending, and an unclaimed contest
+    # that ties stays unclaimed — a draw is not a reason to move land.
+
+    function Decide(integer region)
+        integer holder = World.Number(Contest.Defender(region));
+        integer best = holder;
+        integer most = 0 - 1;
+        boolean tied = false;
+
+        if holder > 0
+            most = World.Number(Contest.Score(region, holder));
+        end if
+
+        loop for slot = 1 to Contest.MostChallengers
+            integer guild = World.Number(Contest.Challenger(region, slot));
+
+            if guild > 0
+                integer scored = World.Number(Contest.Score(region, guild));
+
+                if scored > most
+                    most = scored;
+                    best = guild;
+                    tied = false;
+                end if
+
+                if scored == most and guild != best
+                    tied = true;
+                end if
+            end if
+        end loop
+
+        if tied
+            best = holder;
+        end if
+
+        Contest.TellSides(region, "The fight for " + Territory.NameOf(region) + " is over.");
+        Contest.Settle(region, best);
+    end function
+
+    # ── Ending it ─────────────────────────────────────────────────────────────
+
+    # The land changes hands, the registrations are torn up, and the scores are done with. Called for
+    # a fight that was fought and for one that never needed to be.
+    public function Settle(integer region, integer winner)
+        Territory.Handover(region, winner);
+        Contest.Unregister(region);
+    end function
+
+    # And the last of it: the flags come down, the creatures come back, and the phase goes quiet. Only
+    # after the cooldown, so nobody is fighting over ground that has already been decided.
+    function Close(integer region)
+        Contest.TakeDownPoints(region);
+        Contest.RefillLand(region);
+
+        World.SetNumber(Contest.Phase(region), Contest.Waiting);
+        World.SetNumber(Contest.PhaseEnds(region), 0);
+        World.SetNumber(Contest.Defender(region), 0);
+        World.SetNumber(Contest.Points(region), 0);
+    end function
+
+    function TakeDownPoints(integer region)
+        loop for at = 1 to World.Number(Contest.Points(region))
+            World.Unmark(Contest.Mark(region, at));
+        end loop
+    end function
+
+    public function Unregister(integer region)
+        loop for slot = 1 to Contest.MostChallengers
+            World.SetNumber(Contest.Challenger(region, slot), 0);
+        end loop
+    end function
+
+    # ── The land itself ───────────────────────────────────────────────────────
+
+    function EmptyLand(integer region)
+        loop for map = 1 to World.Records("Maps")
+            if World.RegionOf(map) == region
+                World.Empty(map);
+            end if
+        end loop
+    end function
+
+    function RefillLand(integer region)
+        loop for map = 1 to World.Records("Maps")
+            if World.RegionOf(map) == region
+                World.Refill(map);
+            end if
+        end loop
+    end function
+
+    # Everything a restart interrupted. The flags are gone with the server that drew them and the maps
+    # came back full, so what is left is the phase saying a fight is on when none is.
+    function AbandonEverything()
+        loop for region = 1 to World.Records(Territory.Of)
+            if World.Number(Contest.Phase(region)) > Contest.Waiting
+                Contest.TakeDownPoints(region);
+                Contest.Unregister(region);
+
+                World.SetNumber(Contest.Phase(region), Contest.Waiting);
+                World.SetNumber(Contest.PhaseEnds(region), 0);
+                World.SetNumber(Contest.Defender(region), 0);
+                World.SetNumber(Contest.Points(region), 0);
+            end if
+        end loop
+    end function
+
+    # ── Registering a challenge ───────────────────────────────────────────────
+    #
+    # A leader puts their guild's name down against a territory for the next war night, and the vault
+    # pays for the privilege. The price is a sink: it is gone whether they win, lose, or never turn up.
+
+    public string function Register(Player who, integer region)
+        integer guild = World.GuildOf(who);
+
+        if guild < 1
+            yield "You are not in a guild.";
+        end if
+
+        if not Territory.IsContested(region)
+            yield "Nobody fights over that.";
+        end if
+
+        if World.Number(Contest.Phase(region)) > Contest.Waiting
+            yield "That is being fought over right now.";
+        end if
+
+        if Territory.OwnerOf(region) == guild
+            yield "Your guild already holds it.";
+        end if
+
+        integer slot = Contest.FreeSlot(region, guild);
+
+        if slot < 1
+            yield "There is no room left in that fight.";
+        end if
+
+        # ⚠ One at a time, and challenging elsewhere ABANDONS what you hold. A guild cannot defend one
+        # territory and attack another on the same evening, and the land it walks away from goes to
+        # war night with no defender.
+        if Contest.IsChallengingSomething(guild)
+            yield "Your guild is already challenging somewhere.";
+        end if
+
+        integer cost = Contest.Cost(region, guild);
+
+        if not World.SpendGuildGold(guild, cost, who)
+            yield "Your vault cannot cover the " + cost + " gold that costs.";
+        end if
+
+        Contest.Abandon(guild);
+
+        World.SetNumber(Contest.Challenger(region, slot), guild);
+        World.SetGuildNumber(guild, Ledger.WeeklyWarCosts,
+                             World.GuildNumber(guild, Ledger.WeeklyWarCosts) + cost);
+
+        World.Tell(World.GuildName(guild) + " lays claim to " + Territory.NameOf(region) + ".");
+
+        yield "";
+    end function
+
+    # Unclaimed land is a flat price; taking land off somebody is priced the way declaring a war on
+    # them is, so challenging a large guild costs what fighting one costs.
+    public integer function Cost(integer region, integer guild)
+        integer holder = Territory.OwnerOf(region);
+
+        if holder < 1
+            yield Contest.UnclaimedCost;
+        end if
+
+        yield Guilds.DeclareCost(Guilds.LevelOf(guild), Guilds.LevelOf(holder));
+    end function
+
+    integer function FreeSlot(integer region, integer guild)
+        loop for slot = 1 to Contest.MostChallengers
+            if World.Number(Contest.Challenger(region, slot)) == guild
+                yield 0;
+            end if
+        end loop
+
+        loop for slot = 1 to Contest.MostChallengers
+            if World.Number(Contest.Challenger(region, slot)) < 1
+                yield slot;
+            end if
+        end loop
+
+        yield 0;
+    end function
+
+    boolean function IsChallengingSomething(integer guild)
+        loop for region = 1 to World.Records(Territory.Of)
+            loop for slot = 1 to Contest.MostChallengers
+                if World.Number(Contest.Challenger(region, slot)) == guild
+                    yield true;
+                end if
+            end loop
+        end loop
+
+        yield false;
+    end function
+
+    # What a guild gives up by attacking: the land it holds goes to war night undefended.
+    function Abandon(integer guild)
+        loop for region = 1 to World.Records(Territory.Of)
+            if Territory.OwnerOf(region) == guild
+                World.SetRecordNumber(Territory.Of, region, Territory.Owner, 0);
+                World.SetRecordNumber(Territory.Of, region, Territory.WeeksHeld, 0);
+
+                World.TellThese(World.GuildMembers(guild),
+                                "Your guild has left " + Territory.NameOf(region) + " undefended.");
+            end if
+        end loop
+    end function
+
+end model

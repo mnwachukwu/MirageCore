@@ -38,6 +38,15 @@ abstract model Player
     public string Guild;
 
     ##
+        @summary: The account behind them - the ONE name here that outlives a session. A handle
+        stops meaning anything the moment they log out and a character can be deleted; this is what
+        the engine files mail and guild membership under, so it is what to write down when the thing
+        you are promising will be settled later. ⚠ NOT a character name and NOT for showing to
+        players: it is how they sign in. Print Name in anything anybody reads.
+    ##
+    public string Account;
+
+    ##
         @summary: Which map they are standing on, or zero when they are nowhere.
     ##
     public integer Map;
@@ -752,6 +761,15 @@ shared abstract model World
     public abstract Npc[] function NpcsNear(integer map, integer x, integer y, integer tiles);
 
     ##
+        @summary: Every creature standing on that map. The whole population rather than a
+        neighborhood, which is what a SWEEP asks for and NpcsNear cannot answer: telling every body
+        that night fell, counting what is still alive, clearing something a spell left behind. ⚠
+        Visitors on the map are in and natives away chasing elsewhere are out, so a body appears
+        exactly once across a walk of every map.
+    ##
+    public abstract Npc[] function NpcsOn(integer map);
+
+    ##
         @summary: Every player standing within that many tiles of the square, nearest first - the
         mirror of NpcsNear, and what a rule about the PEOPLE around something starts from: who
         shared a kill, who heard a shout, who was standing too close. ⚠ On that map only, so
@@ -836,6 +854,15 @@ shared abstract model World
     public abstract integer function Distance(integer fromMap, integer fromX, integer fromY, integer toMap, integer toX, integer toY);
 
     ##
+        @summary: What time of day it is - 'day', 'dusk', 'night' or 'dawn'. The engine runs the
+        cycle and the client paints it, and a game with anything that is different after dark has
+        nothing to read otherwise: creatures that hunt at night, a shop that shuts, a spell that
+        only works under a moon. ⚠ One answer for the WHOLE WORLD, unlike the weather - a cycle the
+        server runs rather than a property of a place.
+    ##
+    public abstract string function TimeOfDay();
+
+    ##
         @summary: What the sky is doing over that map: 'clear', 'rain', 'snow', 'heatwave', or
         'heavywind'. Empty for a map that is not there.
     ##
@@ -903,6 +930,75 @@ shared abstract model World
         online, which is not the same as a guild that is not there.
     ##
     public abstract Player[] function GuildMembers(integer guild);
+
+    ##
+        @summary: Every guild there is, by number. ⚠ WHAT ANYTHING RANKED STARTS FROM: every other
+        guild call takes a number you already had, off a body or off a name, and a standing, a
+        league table or a sweep over all of them has none. Counting upward and hoping does not work
+        either - a guild that disbanded leaves a hole in the numbering.
+    ##
+    public abstract integer[] function Guilds();
+
+    ##
+        @summary: Whoever is signed in to that account right now, or nothing. The way back: a rule
+        that wrote an account down reaches the person again with this, and nothing is the answer
+        that says to POST rather than to tell.
+    ##
+    public abstract Player? function WhoIs(string account);
+
+    ##
+        @summary: Every account in a guild, SIGNED IN OR NOT. ⚠ A guild's roster outlives its
+        members' sessions, and World.GuildMembers answers only with the part of it that is here.
+        Anything about the guild rather than about the people in front of you starts from this - a
+        dividend, a census, a rule about who has stopped turning up.
+    ##
+    public abstract string[] function AccountsIn(integer guild);
+
+    ##
+        @summary: Whether that account is a LIVE member of the guild rather than a name on its
+        roster: signed in for long enough, recently enough, by the engine's own measure. What to ask
+        before counting somebody - who votes, who makes a quorum, who is worth counting when a guild
+        is sized up.
+    ##
+    public abstract boolean function IsActiveIn(integer guild, string account);
+
+    ##
+        @summary: Sends an ACCOUNT a letter, whether or not anybody is signed in to it. What
+        World.Mail cannot do: reach somebody who is not here. A rule that wrote an account down when
+        it had the person settles up afterwards, and they find it waiting.
+    ##
+    public abstract boolean function MailTo(string account, string subject, string body);
+
+    ##
+        @summary: The same, with something attached. A sale settled, a refund, a prize drawn while
+        they were away.
+    ##
+    public abstract boolean function MailItemTo(string account, integer item, integer many, string subject, string body);
+
+    ##
+        @summary: Sends them a letter. ⚠ THE ONE THING A RULE CAN SAY THAT OUTLIVES THE MOMENT: a
+        line of chat is gone when they log out, and a letter waits - through a logout, a restart,
+        and a server that was down for a week.
+    ##
+    public abstract boolean function Mail(Player who, string subject, string body);
+
+    ##
+        @summary: The same, with something attached, and the thing waits with it. What a reward that
+        was EARNED rather than picked up looks like - a refund, a prize, a delivery, the rest of a
+        payout that would not fit in a bag. Player.Give is the other one, and it needs room in the
+        bag right now.
+    ##
+    public abstract boolean function MailItem(Player who, integer item, integer many, string subject, string body);
+
+    ##
+        @summary: Sends every member of a guild that item, and REACHES THE ONES WHO ARE NOT HERE.
+        The only way to pay somebody offline: everything else reaches a body in the world, and what
+        a GROUP earned is owed to its members whether or not they happened to be logged in. It
+        arrives as mail, so it waits for them. 'onlyActive' narrows it to members who have really
+        been playing, by the engine's own measure of a live roster - a payout split among a hundred
+        names nobody has used is a payout nobody feels. Yields how many it reached.
+    ##
+    public abstract integer function MailMembers(integer guild, integer item, integer many, string subject, string body, boolean onlyActive);
 
     ##
         @summary: What is in that guild's vault.
@@ -1316,9 +1412,10 @@ abstract model Marker
 
     ##
         @summary: Makes it private to those bodies. Left unsaid, everybody who can see the square
-        sees it. ⚠ A SNAPSHOT rather than a rule: somebody who joins afterwards is not on it until
-        the mark is placed again. A side whose members come and go says this each time it moves the
-        mark, which it is doing anyway.
+        sees it. Said AGAIN it adds them rather than replacing, so a mark for several sides is one
+        call per side. ⚠ A SNAPSHOT rather than a rule: somebody who joins afterwards is not on it
+        until the mark is placed again. A side whose members come and go says this each time it
+        moves the mark, which it is doing anyway.
     ##
     public abstract function SeenBy(Player[] them);
 end model

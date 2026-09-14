@@ -367,6 +367,11 @@ public static class Constants
     // offline gap longer than this (see GuildMember.ActiveSeconds).
     public const long GuildActiveMemberWindowSeconds = 3 * 24 * 3600;
 
+    // And how much of that window a member has to have been online for, for the roster to call them a
+    // live member rather than a name on it. Three hours in three days: low enough that somebody who
+    // plays a couple of evenings a week counts, high enough that a name nobody has used does not.
+    public const long GuildActiveMemberMinSeconds = 3 * 3600;
+
     /// <summary>The share of a mob's damage a player deals for the kill to count toward their quest
     /// objectives — player and guild alike, and the valor rolled for advancing one.
     ///

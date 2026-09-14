@@ -45,6 +45,77 @@ shared model Vitals
         game.Meter(Vitals.Stamina, Vitals.MaxStamina, "Stamina", 60, 170, 70);
     end function
 
+    # ── Drinking something ────────────────────────────────────────────────────
+    #
+    # A draught puts something back, and a negative amount TAKES it instead, which is the original’s
+    # other half: one that trades health for mana is one item rather than two rules.
+    #
+    # ⚠ One that would do nothing is REFUSED rather than drunk. A full bar, or an empty one to take
+    # from, costs neither the item nor the beat — the engine paces a draught by the item leaving the
+    # bag rather than by the use being offered.
+
+    public function Drink(Player who, integer item)
+        integer health = World.RecordNumber(Gear.Of, item, "restoresHealth");
+        integer mana = World.RecordNumber(Gear.Of, item, "restoresMana");
+        integer stamina = World.RecordNumber(Gear.Of, item, "restoresStamina");
+
+        if health == 0 and mana == 0 and stamina == 0
+            yield;
+        end if
+
+        boolean any = false;
+
+        if Vitals.Pour(who, Vitals.Health, Vitals.MaxHealth, health)
+            any = true;
+        end if
+
+        if Vitals.Pour(who, Vitals.Mana, Vitals.MaxMana, mana)
+            any = true;
+        end if
+
+        if Vitals.Pour(who, Vitals.Stamina, Vitals.MaxStamina, stamina)
+            any = true;
+        end if
+
+        if not any
+            who.Message("It would do nothing for you.");
+            yield;
+        end if
+
+        who.Take(item, 1);
+    end function
+
+    # One pool. False when there was nothing to do, which is what decides whether the draught is spent.
+    boolean function Pour(Player who, string key, string ceiling, integer amount)
+        if amount == 0
+            yield false;
+        end if
+
+        integer have = who.Number(key);
+        integer most = who.Number(ceiling);
+        integer want = have + amount;
+
+        if want > most
+            want = most;
+        end if
+
+        if want < 0
+            want = 0;
+        end if
+
+        if want == have
+            yield false;
+        end if
+
+        who.SetNumber(key, want);
+
+        if amount > 0
+            who.Float("+" + (want - have), 120, 220, 120);
+        end if
+
+        yield true;
+    end function
+
     # ── The ceilings ──────────────────────────────────────────────────────────
 
     # Recomputed from the formulas, and the pools topped up to match where they grew.
@@ -65,7 +136,7 @@ shared model Vitals
         # ⚠ Snow shrinks what a body can hold, health least of the three. Applied to the ceiling
         # rather than to regen, so a blizzard is felt at once; the cap below takes the current value
         # down with it, so walking into one is noticed rather than worked out later.
-        if World.Weather(who.Map) == "snow"
+        if World.Weather(who.Map) == Combat.Snowy
             health = Math.Round(health * Vitals.SnowHealth);
             mana = Math.Round(mana * Vitals.SnowOther);
             stamina = Math.Round(stamina * Vitals.SnowOther);

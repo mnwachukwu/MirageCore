@@ -94,10 +94,23 @@ shared model Duel
             end if
         end if
 
+        # ⚠ A contest suspends both of the rules below it, in both directions. Asked BEFORE the
+        # protected-ground refusal, because the land being fought over is the whole point and a town in
+        # the middle of it would otherwise be a place nobody could be pushed out of.
+        string truce = Contest.Truce(who, them);
+
+        if truce != ""
+            yield truce;
+        end if
+
+        if Contest.Fighting(who, them)
+            yield "";
+        end if
+
         # A protected map on either side stops it, unless the target is already a murderer or has
         # just started a fight themselves — neither of those is protected anywhere.
         if Places.EitherProtected(who, them)
-            if not Death.IsMurderer(them) and not them.IsAggressor
+            if not Death.IsHunted(them) and not them.IsAggressor
                 yield "This is a safe place.";
             end if
         end if
@@ -140,9 +153,15 @@ shared model Duel
             yield;
         end if
 
-        who.Wait(Fight.SwingSeconds);
+        who.Wait(Combat.Beat(Fight.SwingSeconds, who.Map));
         who.Engage(Fight.EngagedSeconds);
         them.Engage(Fight.EngagedSeconds);
+
+        # ⚠ A fight between PEOPLE ends the breathing space on both sides wherever it happens, a
+        # protected map included. The minute is there so somebody can walk away from where they fell,
+        # not so they can swing from behind it.
+        Death.BreakGrace(who);
+        Death.BreakGrace(them);
 
         # Whoever swings first started it, and wears the flag that says so.
         Death.StartedIt(who);

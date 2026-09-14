@@ -6,6 +6,7 @@ using Mirage.Shared;
 using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
+using Mirage.Shared.Records;
 
 namespace Mirage.Server.Core.GameLogic;
 
@@ -38,6 +39,10 @@ public sealed class ServerWorld : IWorld
     /// is clear only in the sense that nothing ever put anything on it.</summary>
     private readonly SpawnSystem? _spawns;
     private readonly SpreadSystem _spread;
+
+    /// <summary>How a reward reaches somebody who is not here. Null in a harness with no post, where
+    /// nothing can be sent and MailMembers reaches nobody.</summary>
+    private readonly MailSystem? _mail;
     private readonly NpcAiSystem _ai;
 
     /// <summary>The engine's own guild bookkeeping, for the two things a game cannot do by
@@ -56,7 +61,8 @@ public sealed class ServerWorld : IWorld
                        MovementSystem movement, ItemSystem items, JoinLeaveSystem joinLeave,
                        DecalSystem decals, NpcAiSystem ai, GuildSystem guilds,
                        IPacketDispatcher dispatcher, MarkerSystem? markers = null,
-                       SpawnSystem? spawns = null, SpreadSystem? spread = null, IClock? clock = null,
+                       SpawnSystem? spawns = null, SpreadSystem? spread = null,
+                       MailSystem? mail = null, IClock? clock = null,
                        IPersistenceService? persistence = null, IBackgroundPersistence? bg = null)
     {
         _ai = ai;
@@ -75,6 +81,7 @@ public sealed class ServerWorld : IWorld
         _markers = markers ?? new MarkerSystem(world, pm, dispatcher);
         _spawns = spawns;
         _spread = spread ?? new SpreadSystem(world, dispatcher);
+        _mail = mail;
         _queries = new WorldQueries(world, pm);
         _clock = clock ?? SystemClock.Instance;
     }
@@ -249,6 +256,82 @@ public sealed class ServerWorld : IWorld
         }
 
         return found;
+    }
+
+    public IReadOnlyList<int> Guilds() => [.. _world.Guilds.Keys];
+
+    public string AccountOf(EntityHandle who) =>
+        who.IsPlayer && IsInWorld(who) ? _pm[who.PlayerIndex].Login : string.Empty;
+
+    public EntityHandle WhoIs(string account)
+    {
+        if (string.IsNullOrWhiteSpace(account)) return EntityHandle.None;
+
+        int index = _pm.FindOnlineByLogin(account);
+        return index > 0 && _pm[index].IsPlaying ? EntityHandle.ForPlayer(index) : EntityHandle.None;
+    }
+
+    public IReadOnlyList<string> AccountsIn(int guild) =>
+        Guild(guild) is { } found
+            ? [.. found.Members.Where(m => !string.IsNullOrEmpty(m.Login)).Select(m => m.Login)]
+            : [];
+
+    public bool IsActiveIn(int guild, string account)
+    {
+        if (Guild(guild) is not { } found || string.IsNullOrWhiteSpace(account)) return false;
+
+        long nowUtc = _clock.UtcNowUnix;
+
+        foreach (var member in found.Members)
+        {
+            if (string.Equals(member.Login, account, StringComparison.Ordinal)) return member.IsActive(nowUtc);
+        }
+
+        return false;
+    }
+
+    public bool Mail(EntityHandle who, string subject, string body, int itemNum = 0, int quantity = 0) =>
+        MailTo(AccountOf(who), subject, body, itemNum, quantity);
+
+    public bool MailTo(string account, string subject, string body, int itemNum = 0, int quantity = 0)
+    {
+        if (string.IsNullOrWhiteSpace(account) || _mail is null) return false;
+
+        // An item of nothing is a letter on its own, which is an ordinary thing for a game to send.
+        var parcel = itemNum >= 1 && itemNum <= _world.Limits.Items && quantity >= 1
+            ? new List<MailAttachment> { new() { ItemNum = itemNum, Quantity = quantity } }
+            : null;
+
+        // An account this server has never heard of loads as nothing and is written nothing, so a name
+        // a game made up costs a lookup and leaves no trace.
+        _mail.Deliver(account, Localization.ServerStrings.Get(Localization.ServerStrings.Mail_SystemSender),
+                      subject ?? string.Empty, body ?? string.Empty, parcel);
+
+        return true;
+    }
+
+    public int MailMembers(int guild, int itemNum, int quantity, string subject, string body,
+                           bool onlyActive = false)
+    {
+        if (Guild(guild) is not { } found || _mail is null) return 0;
+        if (itemNum < 1 || itemNum > _world.Limits.Items || quantity < 1) return 0;
+
+        long nowUtc = _clock.UtcNowUnix;
+        int reached = 0;
+
+        foreach (var member in found.Members)
+        {
+            if (string.IsNullOrEmpty(member.Login)) continue;
+            if (onlyActive && !member.IsActive(nowUtc)) continue;
+
+            // One attachment per member rather than one shared: mail is per account, and a stack the
+            // engine handed to two people would be the same stack claimed twice.
+            _mail.Deliver(member.Login, GuildName(guild), subject ?? string.Empty, body ?? string.Empty,
+                          [new MailAttachment { ItemNum = itemNum, Quantity = quantity }]);
+            reached++;
+        }
+
+        return reached;
     }
 
     public long GuildGold(int guild) => Guild(guild)?.VaultGold ?? 0L;
@@ -1020,6 +1103,36 @@ public sealed class ServerWorld : IWorld
         return [.. found.Select(f => f.Who)];
     }
 
+    public IReadOnlyList<EntityHandle> NpcsOn(int mapNum)
+    {
+        if (mapNum < 1 || mapNum > _world.Limits.Maps) return [];
+
+        var found = new List<EntityHandle>();
+
+        for (int slot = 1; slot <= Constants.MaxMapNpcs; slot++)
+        {
+            var mn = _world.MapNpcs[mapNum, slot];
+            // A reserved slot is a body that is away on another map, and it is answered for THERE — counting
+            // it here would hand the same creature back twice in a walk of every map.
+            if (mn.Num <= 0 || mn.IsReservedSlot) continue;
+
+            var (spawnMap, spawnSlot) = mn.GetSpawnIdentity(mapNum, slot);
+            found.Add(EntityHandle.ForNpc(spawnMap, spawnSlot));
+        }
+
+        var guests = _world.MapTraversalNpcs[mapNum];
+        for (int g = 0; g < guests.Count; g++)
+        {
+            var t = guests[g];
+            if (t.Num <= 0) continue;
+
+            found.Add(EntityHandle.ForNpc(t.SpawnMapNum, t.SpawnSlot));
+        }
+
+        return found;
+    }
+
+
     // ── Asking about the ground ───────────────────────────────────────────────
 
     public string TileAt(WorldPlace place)
@@ -1067,6 +1180,14 @@ public sealed class ServerWorld : IWorld
 
         return WorldCoordHelper.WorldManhattan(fromX, fromY, there.worldX, there.worldY);
     }
+
+    public string TimeOfDay() => _world.TimePhase switch
+    {
+        TimePhase.Dusk => "dusk",
+        TimePhase.Night => "night",
+        TimePhase.Dawn => "dawn",
+        _ => "day",
+    };
 
     public string WeatherOn(int mapNum)
     {

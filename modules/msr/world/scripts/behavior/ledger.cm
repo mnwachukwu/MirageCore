@@ -100,6 +100,13 @@ shared model Ledger
     public function Settle(Player who, integer guild, integer day)
         Ledger.ResetWeek(guild, day);
 
+        # Land pays on the same midnight everything else is charged on. Credited below the debits, like
+        # the guild's own income: a day's takings must not cover the same day's tax.
+        Territory.Settle(day);
+
+        # And the week's leaderboard points for the land each guild is holding, on the same Sunday.
+        Season.ScoreWeek(day);
+
         if Ledger.IsTaxDay(guild, day)
             if World.GuildNumber(guild, Ledger.TaxedOn) != day
                 Ledger.Tax(who, guild, day);

@@ -87,9 +87,11 @@ public sealed partial class ItemSystem : GameSystem
         long useNow = Environment.TickCount64;
         if (isConsumable && useNow < sp.ConsumableTimer + Constants.ConsumableCooldownMs * useWindMult) return;
 
-        // Set by the potion branches that actually spend the item, so one refused — a full bar, a vital
-        // with nothing left to give — costs neither the item nor the beat.
-        bool consumed = false;
+        // How much of it they were carrying before the game had its say. Whether a use SPENT one is what
+        // paces the clock, and Core cannot decide that for itself: what using a consumable does is a game's
+        // rule, and a use it refused — a full bar, a vital with nothing left to give — costs neither the
+        // item nor the beat. Counted only for a consumable, because nothing else here is paced.
+        long held = isConsumable ? CountItem(p, _world.Items, itemNum) : 0;
 
         switch (item.Type)
         {
@@ -133,11 +135,13 @@ public sealed partial class ItemSystem : GameSystem
                 break;
         }
 
-        if (consumed) sp.ConsumableTimer = useNow;
-
         // Wearing something and opening a door are the engine's; everything else is a game's. Raised for
         // every use, so an observer sees the equip and the key too and decides for itself what matters.
         _events.ItemUsed(index, itemNum, invSlot);
+
+        // And the clock starts only if the use actually cost them one, which is knowable only now that the
+        // game has run.
+        if (isConsumable && CountItem(p, _world.Items, itemNum) < held) sp.ConsumableTimer = useNow;
     }
 
     /// <summary>Put the item in this bag slot on, or take it off when it is already worn there.

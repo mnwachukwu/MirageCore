@@ -89,6 +89,23 @@ public interface IWorldObserver
     /// all games' rules. Raised once when contact is MADE, not for every tick it is held.</para></summary>
     void OnContact(EntityHandle npc, EntityHandle quarry) { }
 
+    /// <summary>A creature has just come into the world, standing on its tile and already sent to
+    /// everyone who can see it.
+    ///
+    /// <para>🔴 <b>This is where a creature GETS ITS NUMBERS.</b> Core spawns a body carrying a copy of
+    /// its template's values and nothing else — it has never heard of health, of a level, of what one is
+    /// worth to kill. A game with any of those has one moment to write them onto the body, and without
+    /// this seam there is no such moment: the first thing that reads a creature's health would be
+    /// reading a number nobody ever put there.</para>
+    ///
+    /// <para>It is also the only place a fresh body can be told apart from the one before it, so
+    /// anything that varies per spawn — a champion, a night-time boost, a scaled reward — is decided
+    /// here.</para>
+    ///
+    /// <para>⚠ Raised for EVERY arrival: the respawn clock, a chase guest coming home, and a game asking
+    /// a map to refill. A body that failed to find a tile is not one of them.</para></summary>
+    void OnNpcSpawned(EntityHandle npc) { }
+
     /// <summary>A player used an item Core has no rule for.
     ///
     /// <para>Equipment is worn, a key opens a door, and those are the engine's. Everything else is a

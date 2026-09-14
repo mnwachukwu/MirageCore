@@ -355,8 +355,9 @@ shared model Book
 
         Book.Burn(who, exact);
 
-        who.Wait(Fight.SwingSeconds);
+        who.Wait(Combat.Beat(Fight.SwingSeconds, who.Map));
         who.Engage(Fight.EngagedSeconds);
+        Death.BreakGraceInFight(who);
     end function
 
     # A spell aimed at whatever is standing there.

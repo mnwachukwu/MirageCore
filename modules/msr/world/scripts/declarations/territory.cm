@@ -1,0 +1,60 @@
+# What this game hangs on a REGION the engine owns.
+#
+# A region is Core's map group: several maps sharing a name and some settings. What makes one a
+# territory — that it can be fought over, who holds it, what it has earned — is this game's, and it
+# belongs on the region rather than in a second family keyed by region number.
+
+model TerritoryRules
+    # ⚠ Tick this and the region becomes land guilds fight over on war night. A region nobody ticked is
+    # scenery: it has an owner of nobody forever, and no contest is ever scheduled for it.
+    public boolean contested;
+
+    # ── Who holds it ──────────────────────────────────────────────────────────
+    #
+    # Written by the game, never by an author. They are on the form anyway, because a region whose
+    # owner is invisible is a region an operator cannot check.
+
+    # The guild that holds it, by number. Nobody at nothing.
+    public integer owner;
+
+    # How many war nights running that guild has kept it. Drives what the land earns, and resets to
+    # nothing the moment it changes hands.
+    public integer weeksHeld;
+
+    # ── What it earns ─────────────────────────────────────────────────────────
+
+    # Gold the land has made since the last settlement, capped a day at a time. Paid into the owner's
+    # vault at midnight and zeroed.
+    public integer pending;
+
+    # What it has paid this week, and what it paid last week. The second is the column an operator and
+    # a guild both read; the first is what becomes it at the weekly reset.
+    public integer earnedThisWeek;
+    public integer earnedLastWeek;
+
+    public shared function Describe(Records these)
+        these.Extend("MapGroups");
+
+        these.Caption("contested", "Fought over on war night");
+        these.Caption("owner", "Held by guild");
+        these.Caption("weeksHeld", "War nights held");
+        these.Caption("pending", "Gold owing");
+        these.Caption("earnedThisWeek", "Earned this week");
+        these.Caption("earnedLastWeek", "Earned last week");
+    end function
+end model
+
+# And what it hangs on a MAP.
+
+model TerritoryMapRules
+    # ⚠ Tick this and a capture point may stand on this map. A map inside a territory that nobody
+    # ticked is walked THROUGH rather than fought on — which is what a town in the middle of a region
+    # is, and why the two are separate questions from whether the region is contested at all.
+    public boolean holdsPoint;
+
+    public shared function Describe(Records these)
+        these.Extend("Maps");
+
+        these.Caption("holdsPoint", "May hold a capture point");
+    end function
+end model

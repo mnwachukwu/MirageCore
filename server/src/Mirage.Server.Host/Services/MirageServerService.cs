@@ -146,11 +146,11 @@ public sealed class MirageServerService : IHostedService
         LocalizedLog.Info(_logger, ServerStrings.Server_RuntimeDataSummary,
             ("Guilds", _world.Guilds.Count), ("MapItems", mapItemCount));
 
+        StartModules();
+
         // Spawn NPC slots
         _logger.LogInformation(ServerStrings.Get(ServerStrings.Server_SpawningNpcs));
         _spawn.SpawnAllMapNpcs();
-
-        StartModules();
 
         _gameLoop.Start();
 
@@ -166,6 +166,11 @@ public sealed class MirageServerService : IHostedService
     /// <para>Here and not earlier: the engine is built and the world is loaded, so a module setting
     /// itself up reads what a player would. Here and not later: the loop has not started and the
     /// acceptor is not listening, so nothing it does can race anything.</para>
+    ///
+    /// <para>⚠ And BEFORE the world's creatures are spawned, because the first thing a game is told
+    /// about is a body arriving. A module handed the world afterwards misses every creature the server
+    /// started with — which is most of them, and none of them would carry the numbers the game gives
+    /// one.</para>
     ///
     /// <para>A module that throws on the way in stops the server. Unlike a fault on the tick, this one
     /// happens before a single player is served, and a game whose setup failed is not a game.</para></summary>

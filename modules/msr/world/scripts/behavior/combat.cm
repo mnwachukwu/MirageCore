@@ -205,6 +205,108 @@ shared model Combat
         yield chance;
     end function
 
+    # ── After dark ────────────────────────────────────────────────────────────
+    #
+    # ⚠ One answer for the WHOLE WORLD, unlike the weather: the hour is a cycle the engine runs rather
+    # than a property of a place. Between dusk and dawn a creature hits harder, holds more, and is worth
+    # more to kill — the original's answer to a world that would otherwise play the same at every hour.
+
+    public string Night = "night";
+    public string Snowy = "snow";
+
+    public real NightDamage = 1.10;
+    public real NightHealth = 1.10;
+    public real NightWorth = 1.20;
+
+    public boolean function AfterDark()
+        yield World.TimeOfDay() == Combat.Night;
+    end function
+
+    # ⚠ Applied AFTER mitigation, so the number floated over the body is the number taken off it.
+    public integer function Nightly(integer damage)
+        if damage < 1 or not Combat.AfterDark()
+            yield damage;
+        end if
+
+        yield Math.Round(damage * Combat.NightDamage);
+    end function
+
+    # ── What a creature takes off a PERSON ────────────────────────────────────
+    #
+    # ⚠ A creature hits a person softer than it hits anything else, and only a person. An on-level body
+    # holds far more than a player does, so without this a fight that ought to wear somebody down spikes
+    # a light build off the map instead. Creature against creature, and player against creature, stay a
+    # full mirror.
+
+    public real PveDisfavor = 0.70;
+
+    public integer function Softened(integer damage)
+        if damage < 1
+            yield damage;
+        end if
+
+        yield Math.Round(damage * Combat.PveDisfavor);
+    end function
+
+    # ── What the sky is worth ─────────────────────────────────────────────────
+    #
+    # Foul weather pays, because it is harder to fight in: a blow torn off course, a pool that will not
+    # fill, gear that wears at twice the rate. A gale is the worst of the four and pays the most. It
+    # compounds with the hour, so a kill made in one after dark is worth both.
+
+    public real RainWorth = 1.05;
+    public real HeatWorth = 1.15;
+    public real SnowWorth = 1.15;
+    public real WindWorth = 1.25;
+
+    public real function SkyWorth(integer map)
+        string sky = World.Weather(map);
+
+        if sky == Gear.Rainy
+            yield Combat.RainWorth;
+        end if
+
+        if sky == Combat.Hot
+            yield Combat.HeatWorth;
+        end if
+
+        if sky == Combat.Snowy
+            yield Combat.SnowWorth;
+        end if
+
+        if sky == Combat.Windy
+            yield Combat.WindWorth;
+        end if
+
+        yield 1.0;
+    end function
+
+    # And what a kill is worth once the hour and the sky have both had their say.
+    public integer function Worth(integer earned, integer map)
+        real times = Combat.SkyWorth(map);
+
+        if Combat.AfterDark()
+            times = times * Combat.NightWorth;
+        end if
+
+        yield Math.Round(earned * times);
+    end function
+
+    # ── How long before you may do that again ─────────────────────────────────
+    #
+    # ⚠ A gale doubles every beat — a swing, a cast, and the drink between them — so weather slows a
+    # fight down as well as making it less certain.
+
+    public integer WindBeatMultiplier = 2;
+
+    public integer function Beat(integer seconds, integer map)
+        if World.Weather(map) == Combat.Windy
+            yield seconds * Combat.WindBeatMultiplier;
+        end if
+
+        yield seconds;
+    end function
+
     # ── The roll ──────────────────────────────────────────────────────────────
 
     # ⚠ One generator for the whole game rather than one per swing. A new one per call is seeded from

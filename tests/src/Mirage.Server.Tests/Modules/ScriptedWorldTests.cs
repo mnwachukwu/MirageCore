@@ -1415,7 +1415,7 @@ public class ScriptedWorldTests
             Someone, EntityHandle.ForPlayer(4), EntityHandle.ForPlayer(9),
         };
 
-        world.Guilds[Someone] = "The Gathering";
+        world.GuildOfBody[Someone] = "The Gathering";
         world.Groups[Someone] = them;
 
         var (module, _) = Built("""
@@ -2103,12 +2103,12 @@ public class ScriptedWorldTests
         /// <summary>Which guild a test put somebody in, who else is in it with them, and who is in
         /// their party. Guildmates and partymates are kept apart: a rule that treats the two
         /// differently is one a double answering both from one list could not be asked about.</summary>
-        public Dictionary<EntityHandle, string> Guilds { get; } = [];
+        public Dictionary<EntityHandle, string> GuildOfBody { get; } = [];
         public Dictionary<EntityHandle, List<EntityHandle>> Groups { get; } = [];
         public Dictionary<EntityHandle, List<EntityHandle>> Parties { get; } = [];
 
         public string GuildOf(EntityHandle who) =>
-            Guilds.TryGetValue(who, out string? name) ? name : string.Empty;
+            GuildOfBody.TryGetValue(who, out string? name) ? name : string.Empty;
 
         public IReadOnlyList<EntityHandle> GuildmatesOf(EntityHandle who) =>
             Groups.TryGetValue(who, out var mates) ? mates : [];
@@ -2483,6 +2483,11 @@ public class ScriptedWorldTests
 
         public int LocalOffset() => Offset;
 
+        /// <summary>What a test says the time of day is. Day unless it cares.</summary>
+        public string Hour { get; set; } = "day";
+
+        public string TimeOfDay() => Hour;
+
         /// <summary>What a game has marked on the ground, by the name it marked under.</summary>
         public Dictionary<string, WorldMarker> Marked { get; } = [];
 
@@ -2508,6 +2513,68 @@ public class ScriptedWorldTests
         public bool Refill(int mapNum) => Emptied.Remove(mapNum);
 
         public bool IsEmptied(int mapNum) => Emptied.Contains(mapNum);
+
+        /// <summary>Which guilds a test says exist, and what was posted to their members.</summary>
+        public List<int> AllGuilds { get; } = [];
+        public List<(int Guild, int ItemNum, int Quantity, string Subject, bool OnlyActive)> Posted { get; } = [];
+
+        /// <summary>How many members a test says each guild has, for MailMembers to answer with.</summary>
+        public Dictionary<int, int> Roster { get; } = [];
+
+        public IReadOnlyList<int> Guilds() => AllGuilds;
+
+        /// <summary>What was posted to one body, and what was attached.</summary>
+        public List<(EntityHandle Who, string Subject, int ItemNum, int Quantity)> Letters { get; } = [];
+
+        public bool Mail(EntityHandle who, string subject, string body, int itemNum = 0, int quantity = 0)
+        {
+            if (!who.IsPlayer || !IsInWorld(who)) return false;
+
+            Letters.Add((who, subject, itemNum, quantity));
+            return true;
+        }
+
+        /// <summary>What a test says each body's account is called, and who belongs to each guild's
+        /// roster whether or not they are here.</summary>
+        public Dictionary<EntityHandle, string> Accounts { get; } = [];
+        public Dictionary<int, List<string>> Rosters { get; } = [];
+        public HashSet<(int Guild, string Account)> Live { get; } = [];
+        public List<(string Account, string Subject, int ItemNum, int Quantity)> PostedTo { get; } = [];
+
+        public string AccountOf(EntityHandle who) =>
+            Accounts.TryGetValue(who, out string? login) ? login : string.Empty;
+
+        public EntityHandle WhoIs(string account)
+        {
+            foreach (var (who, login) in Accounts)
+            {
+                if (login == account && IsInWorld(who)) return who;
+            }
+
+            return EntityHandle.None;
+        }
+
+        public IReadOnlyList<string> AccountsIn(int guild) =>
+            Rosters.TryGetValue(guild, out var roster) ? roster : [];
+
+        public bool IsActiveIn(int guild, string account) => Live.Contains((guild, account));
+
+        public bool MailTo(string account, string subject, string body, int itemNum = 0, int quantity = 0)
+        {
+            if (string.IsNullOrWhiteSpace(account)) return false;
+
+            PostedTo.Add((account, subject, itemNum, quantity));
+            return true;
+        }
+
+        public int MailMembers(int guild, int itemNum, int quantity, string subject, string body,
+                               bool onlyActive = false)
+        {
+            if (guild < 1 || itemNum < 1 || quantity < 1) return 0;
+
+            Posted.Add((guild, itemNum, quantity, subject, onlyActive));
+            return Roster.TryGetValue(guild, out int many) ? many : 0;
+        }
 
         public bool InsideMark(string id, WorldPlace place)
         {
@@ -2570,6 +2637,11 @@ public class ScriptedWorldTests
         public IReadOnlyList<EntityHandle> NpcsNear(WorldPlace at, int tiles) => Near(at, tiles, wanted: true);
 
         public IReadOnlyList<EntityHandle> PlayersNear(WorldPlace at, int tiles) => Near(at, tiles, wanted: false);
+
+        public IReadOnlyList<EntityHandle> NpcsOn(int mapNum) =>
+        [
+            .. Standing.Where(s => s.Key.Map == mapNum && s.Value.IsNpc).Select(s => s.Value),
+        ];
 
         private IReadOnlyList<EntityHandle> Near(WorldPlace at, int tiles, bool wanted) =>
         [

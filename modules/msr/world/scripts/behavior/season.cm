@@ -66,10 +66,253 @@ shared model Season
             yield;
         end if
 
+        # ⚠ The season that is finishing is ended BEFORE the number moves on, because everything the
+        # ending reads — who scored what, who placed where — is about that one.
+        Season.End(Season.Which());
+        Season.Clear();
+
         World.SetNumber(Season.Began, day);
         World.SetNumber(Season.Key, Season.Which() + 1);
 
         World.Tell("Season " + Season.Which() + " begins.");
+    end function
+
+    # ── The leaderboard ───────────────────────────────────────────────────────
+    #
+    # A guild scores for the land it holds, once a week, and the longer it has held a piece the more
+    # that week is worth. Thirteen weeks later the season ends: the scorers are ranked, paid, written
+    # into a record that is never overwritten, and set back to nothing.
+    #
+    # ⚠ Scoring SKIPS the season's first week, so control established before the season began carries
+    # in rather than paying from the first Sunday.
+
+    public integer ScoringFromWeek = 1;
+
+    public integer PointsPerWeek = 100;
+    public integer HoldBonusPercent = 25;
+    public integer HoldBonusCapWeeks = 12;
+
+    # What a guild scores for one territory this week, held that many war nights running. The bonus
+    # compounds a quarter a week and stops climbing after a quarter of a year.
+    public integer function HoldScore(integer weeksHeld)
+        integer streak = Math.Min(Math.Max(weeksHeld, 0), Season.HoldBonusCapWeeks);
+
+        yield Math.Round(Season.PointsPerWeek * (1.0 + Season.HoldBonusPercent / 100.0 * streak));
+    end function
+
+    # What each placing is worth: gold into the vault now, and gold to each member who has actually
+    # been playing. Fourth and below take the flat scorer's share; a guild that scored nothing takes
+    # nothing.
+
+    public integer function VaultPrize(integer placing)
+        if placing == 1
+            yield 700000;
+        end if
+
+        if placing == 2
+            yield 350000;
+        end if
+
+        if placing == 3
+            yield 175000;
+        end if
+
+        if placing > 3
+            yield 35000;
+        end if
+
+        yield 0;
+    end function
+
+    public integer function MemberPrize(integer placing)
+        if placing == 1
+            yield 175000;
+        end if
+
+        if placing == 2
+            yield 87500;
+        end if
+
+        if placing == 3
+            yield 35000;
+        end if
+
+        if placing > 3
+            yield 17500;
+        end if
+
+        yield 0;
+    end function
+
+    # ── Where a season's running total is kept ────────────────────────────────
+
+    public string Scored = "gseason";
+    public string ScoredOn = "gscoredon";
+
+    public integer function ScoreOf(integer guild)
+        yield World.GuildNumber(guild, Season.Scored);
+    end function
+
+    # ── Scoring a week ────────────────────────────────────────────────────────
+    #
+    # Walked from the same weekly reset the guild ledger runs on, so a week's score lands on the same
+    # Sunday the week's books close.
+    #
+    # ⚠ Guarded by the day it last ran on, PER GUILD, so settling a day twice scores nothing twice.
+
+    public function ScoreWeek(integer day)
+        if not Calendar.IsSunday(day)
+            yield;
+        end if
+
+        if Season.Which() < 1
+            yield;
+        end if
+
+        if Season.WeeksIn(day) < Season.ScoringFromWeek
+            yield;
+        end if
+
+        loop for region = 1 to World.Records(Territory.Of)
+            if Territory.IsContested(region)
+                Season.ScoreOne(region, day);
+            end if
+        end loop
+    end function
+
+    # How many whole weeks into the season this day is.
+    public integer function WeeksIn(integer day)
+        integer began = World.Number(Season.Began);
+
+        if began < 1
+            yield 0;
+        end if
+
+        yield Math.Max(0, (day - began) / 7);
+    end function
+
+    function ScoreOne(integer region, integer day)
+        integer holder = Territory.OwnerOf(region);
+
+        if holder < 1
+            yield;
+        end if
+
+        if World.GuildNumber(holder, Season.ScoredOn) == day
+            yield;
+        end if
+
+        World.SetGuildNumber(holder, Season.ScoredOn, day);
+        World.SetGuildNumber(holder, Season.Scored,
+                             Season.ScoreOf(holder) + Season.HoldScore(Territory.HeldFor(region)));
+    end function
+
+    # ── Ending one ────────────────────────────────────────────────────────────
+    #
+    # Called the moment the number changes. Everything it does reads the season that just finished, so
+    # it runs BEFORE the number moves on.
+
+    public function End(integer number)
+        integer placing = 0;
+        integer previous = 0 - 1;
+
+        # Ranked by walking the guilds once per placing: a script holds no table to sort, and the
+        # number of guilds that scored anything in a season is small.
+        loop while true
+            integer best = Season.NextBelow(previous);
+
+            if best < 1
+                yield;
+            end if
+
+            previous = best;
+
+            loop each guild in World.Guilds()
+                if Season.ScoreOf(guild) == best
+                    placing = placing + 1;
+
+                    Season.Pay(guild, placing, number);
+                end if
+            end loop
+        end loop
+    end function
+
+    # The highest score below the one just paid out, or nothing when there are none left. Anything at
+    # or below zero never places: a guild that held no land all season did not compete.
+    integer function NextBelow(integer ceiling)
+        integer best = 0;
+
+        loop each guild in World.Guilds()
+            integer scored = Season.ScoreOf(guild);
+
+            if scored > 0 and scored > best
+                if ceiling < 0 or scored < ceiling
+                    best = scored;
+                end if
+            end if
+        end loop
+
+        yield best;
+    end function
+
+    # What a placing is worth, and the line that goes into the record.
+    function Pay(integer guild, integer placing, integer number)
+        integer vault = Season.VaultPrize(placing);
+        integer apiece = Season.MemberPrize(placing);
+
+        if vault > 0
+            World.GiveGuildGold(guild, vault);
+            World.SetGuildNumber(guild, Ledger.WeeklyIncome,
+                                 World.GuildNumber(guild, Ledger.WeeklyIncome) + vault);
+        end if
+
+        # ⚠ By POST, and only to members who have been playing. Everything else a rule can do reaches
+        # a body in the world, and what a guild earned over thirteen weeks is owed to the people who
+        # earned it whether or not they happened to be logged in tonight.
+        integer reached = World.MailMembers(guild, Gear.Coin(), apiece,
+                                            "Season " + number,
+                                            "Your guild placed " + placing + " in season " + number
+                                            + ". Here is your share.", true);
+
+        Season.Record(number, placing, guild);
+
+        World.Tell(World.GuildName(guild) + " placed " + placing + " in season " + number
+                   + " with " + Season.ScoreOf(guild) + " points.");
+
+        World.TellThese(World.GuildMembers(guild),
+                        "Your guild placed " + placing + ". The vault takes " + vault
+                        + " gold, and " + reached + " of you were sent " + apiece + " apiece.");
+    end function
+
+    # ── The record ────────────────────────────────────────────────────────────
+    #
+    # Kept on the world, one line per placing, and never overwritten — a season's final table is the
+    # only thing left of it once the counters are back at nothing.
+
+    public string function Placed(integer number, integer placing)
+        yield "s" + number + ".place" + placing;
+    end function
+
+    public string function PlacedScore(integer number, integer placing)
+        yield "s" + number + ".score" + placing;
+    end function
+
+    public string function Placings(integer number)
+        yield "s" + number + ".placings";
+    end function
+
+    function Record(integer number, integer placing, integer guild)
+        World.SetText(Season.Placed(number, placing), World.GuildName(guild));
+        World.SetNumber(Season.PlacedScore(number, placing), Season.ScoreOf(guild));
+        World.SetNumber(Season.Placings(number), placing);
+    end function
+
+    # And the counters go back to nothing. Land and streaks survive — a season is a scoreboard, not a
+    # map, and resetting who holds what would hand every territory back on the same evening.
+    function Clear()
+        loop each guild in World.Guilds()
+            World.SetGuildNumber(guild, Season.Scored, 0);
+        end loop
     end function
 
 end model

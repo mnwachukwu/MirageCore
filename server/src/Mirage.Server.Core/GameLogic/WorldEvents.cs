@@ -91,6 +91,16 @@ public sealed class WorldEvents
         }
     }
 
+    public void NpcSpawned(EntityHandle npc)
+    {
+        if (_observers.Length == 0) return;
+        foreach (var observer in _observers)
+        {
+            try { observer.OnNpcSpawned(npc); }
+            catch (Exception ex) { Faulted(observer, nameof(IWorldObserver.OnNpcSpawned), ex); }
+        }
+    }
+
     public void ItemUsed(int index, int itemNum, int invSlot)
     {
         if (_observers.Length == 0) return;

@@ -455,6 +455,20 @@ public interface IWorld
     /// </summary>
     IReadOnlyList<EntityHandle> PlayersNear(WorldPlace at, int tiles);
 
+    /// <summary>
+    /// Every creature standing on a map, in no particular order.
+    ///
+    /// <para>The whole population rather than a neighborhood, which is a different question from
+    /// <see cref="NpcsNear"/> and the one a SWEEP asks: every creature has to be told that night fell,
+    /// counted for a census, checked for a boss that is still alive, cleared of something a spell left
+    /// on it. A rule like that has no square to measure from.</para>
+    ///
+    /// <para>⚠ Visitors standing on the map are included and natives away chasing on another map are
+    /// not, so a body appears exactly once across every map. Ask <see cref="RecordsOf"/> on the map family
+    /// for how many maps there are to walk.</para>
+    /// </summary>
+    IReadOnlyList<EntityHandle> NpcsOn(int mapNum);
+
     // ── Asking about the ground ─────────────────────────────────────────
     //
     // 🔴 A game is given squares constantly — a verb was used on one, a body is standing on one — and
@@ -497,6 +511,18 @@ public interface IWorld
     /// <summary>What the weather is over that map — <c>clear</c>, <c>rain</c>, <c>snow</c>,
     /// <c>heatwave</c>, or <c>heavywind</c>. Blank for a map that is not there.</summary>
     string WeatherOn(int mapNum);
+
+    /// <summary>What time of day it is across the world — <c>day</c>, <c>dusk</c>, <c>night</c>, or
+    /// <c>dawn</c>.
+    ///
+    /// <para>The engine runs the cycle and the client paints it, and until a game can ask, the sky is
+    /// scenery. It is the other half of the weather: a game with anything that is different after dark —
+    /// creatures that hunt at night, a shop that shuts, a spell that only works under a moon — has
+    /// nothing to read otherwise.</para>
+    ///
+    /// <para>⚠ One answer for the whole world, unlike the weather. Time of day is a cycle the server
+    /// runs, not a property of a place.</para></summary>
+    string TimeOfDay();
 
     /// <summary>Which map group that map belongs to, or 0 for a map in none.
     ///
@@ -604,6 +630,102 @@ public interface IWorld
     /// <summary>Everybody IN THE WORLD who belongs to that guild. Empty for a guild with nobody
     /// online, which is not the same as a guild that is not there.</summary>
     IReadOnlyList<EntityHandle> MembersOf(int guild);
+
+    /// <summary>Every guild there is, by number.
+    ///
+    /// <para>🔴 <b>What anything RANKED starts from.</b> Every other guild call here takes a number a game
+    /// already had — off a body, off a name. A standing, a league table, a tax sweep, an award for the
+    /// best of them: none of those has a number to start from, and a game cannot count upward and hope,
+    /// because a disbanded guild leaves a hole in the numbering.</para></summary>
+    IReadOnlyList<int> Guilds();
+
+    /// <summary>
+    /// The ACCOUNT behind a body — the name a game keeps when it needs to find this person again.
+    ///
+    /// <para>🔴 <b>The one identity here that outlives a session.</b> A handle names a body in the
+    /// world and stops meaning anything the moment they log out; a character can be deleted; a name can
+    /// be taken by somebody else. An account is what the engine files mail, guild membership and a
+    /// market listing under, and it is what a game writes down when the thing it is promising will be
+    /// settled later — a sale, a refund, a prize drawn next week.</para>
+    ///
+    /// <para>⚠ <b>Not a character name, and not for showing to players.</b> It is how somebody signs in.
+    /// Print a character's name in anything a player reads; keep this for looking them up.</para>
+    ///
+    /// <para>Empty for a body that is not a player in the world.</para>
+    /// </summary>
+    string AccountOf(EntityHandle who);
+
+    /// <summary>The body signed in to that account right now, or nobody.
+    ///
+    /// <para>The way back: a game that wrote an account down reaches the person again with this, and
+    /// gets <see cref="EntityHandle.None"/> when they are not here — which is the answer that tells it
+    /// to post rather than tell.</para></summary>
+    EntityHandle WhoIs(string account);
+
+    /// <summary>Every account in a guild, whether or not anybody is signed in to them.
+    ///
+    /// <para>🔴 <b>A guild's roster outlives its members' sessions, and until now a game could only see
+    /// the part of it that happened to be online.</b> Anything about the guild rather than about the
+    /// people standing in front of you — a dividend, a census, a rule about who has stopped turning up —
+    /// starts here. <see cref="MembersOf"/> is the other one, and it answers with bodies.</para></summary>
+    IReadOnlyList<string> AccountsIn(int guild);
+
+    /// <summary>Whether that account is a live member of the guild rather than a name on its roster:
+    /// signed in for long enough, recently enough, by the engine's own measure.
+    ///
+    /// <para>The same question <see cref="MailMembers"/> asks when it is narrowed, offered on its own so
+    /// a game can apply it to something else — who votes, who counts toward a quorum, who is worth
+    /// counting when a guild is sized up.</para></summary>
+    bool IsActiveIn(int guild, string account);
+
+    /// <summary>
+    /// Sends an ACCOUNT a letter, with something attached or without, whether or not anybody is signed
+    /// in to it.
+    ///
+    /// <para>What <see cref="Mail"/> cannot do: reach somebody who is not here. A game that wrote an
+    /// account down when it had the person settles up with them afterwards, and they find it waiting
+    /// the next time they play.</para>
+    ///
+    /// <para>False for an account this server has never heard of.</para>
+    /// </summary>
+    bool MailTo(string account, string subject, string body, int itemNum = 0, int quantity = 0);
+
+    /// <summary>
+    /// Sends one player a letter, with something attached or without.
+    ///
+    /// <para>🔴 <b>The one thing a game can say that OUTLIVES the moment.</b> Everything else here is
+    /// spoken to somebody who is standing there: a line of chat is gone when they log out, and a thing
+    /// handed over needs a bag with room in it. A letter waits — through a logout, a restart, and a
+    /// server that was down for a week — and what is attached to it waits with it.</para>
+    ///
+    /// <para>So it is what a reward that was earned rather than picked up looks like: a refund, a prize,
+    /// a delivery, the rest of a payout that would not fit. An item of nothing sends the letter
+    /// alone.</para>
+    ///
+    /// <para>False for a body that is not a player in the world. A game can only name somebody it can
+    /// see; <see cref="MailMembers"/> is the one way to reach people it cannot, because a guild is the
+    /// only roster the engine keeps that outlives its members' sessions.</para>
+    /// </summary>
+    bool Mail(EntityHandle who, string subject, string body, int itemNum = 0, int quantity = 0);
+
+    /// <summary>
+    /// Sends every member of a guild an item, reaching the ones who are not here.
+    ///
+    /// <para>🔴 <b>The only way to pay somebody who is offline.</b> Everything else a game can do reaches
+    /// a body in the world, and a reward earned by a GROUP is owed to its members whether or not they
+    /// happened to be logged in when it was earned — a season payout, a war dividend, a founder's
+    /// bonus. It arrives as mail, so it waits for them.</para>
+    ///
+    /// <para><paramref name="onlyActive"/> narrows it to members who have actually been playing: online
+    /// long enough, recently enough, by the engine's own measure of a live roster. What that measure is
+    /// belongs to the engine, because it is the same question the roster itself answers — and a payout
+    /// split among a hundred names that have not logged in for a year is a payout nobody feels.</para>
+    ///
+    /// <para>Returns how many members it reached. Zero for a guild that is not there, an item that is
+    /// not there, or an amount of nothing.</para>
+    /// </summary>
+    int MailMembers(int guild, int itemNum, int quantity, string subject, string body,
+                    bool onlyActive = false);
 
     /// <summary>What is in that guild's vault. 0 for a number naming none.</summary>
     long GuildGold(int guild);

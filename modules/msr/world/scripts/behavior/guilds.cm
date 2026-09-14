@@ -1118,7 +1118,16 @@ shared model Guilds
 
         # Everybody on the winning side who put damage in rolls for a point of valor. That is what a
         # war pays the people fighting it.
-        Valor.Award(victim, ours);
+        #
+        # ⚠ A kill over LAND pays five times as often, which is what makes holding territory the richer
+        # source of valor. A grudge war pays a trickle; a war night pays properly.
+        if Contest.Fighting(killer, victim)
+            Valor.AwardAt(victim, ours, Valor.TerritoryChancePercent);
+        end if
+
+        if not Contest.Fighting(killer, victim)
+            Valor.Award(victim, ours);
+        end if
 
         integer slot = Guilds.SlotFor(theirs, ours);
         boolean bears = World.GuildNumber(theirs, Guilds.WeDeclared(slot)) > 0;

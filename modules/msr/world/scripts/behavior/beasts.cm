@@ -30,6 +30,91 @@ shared model Beasts
     # How many answer. A whole map converging on one body reads as a bug rather than as law.
     public integer GuardsWhoAnswer = 3;
 
+    # ── What a fresh body is made of ──────────────────────────────────────────
+    #
+    # A creature arrives carrying a copy of its record and nothing else: the engine has never heard of
+    # health, so the pool is written on here from the number its author wrote. The ceiling goes on with
+    # it, because the CLIENT draws a bar from the pair and has no way to run a formula.
+    #
+    # ⚠ The authored number lives under the same key the pool does, so a body starts with what the
+    # record says and has it overwritten here rather than read out of somewhere else.
+
+    public function Wake(Npc it)
+        integer full = it.Number(Vitals.Health);
+
+        if full < 1
+            yield;
+        end if
+
+        if Combat.AfterDark()
+            full = Math.Max(1, Math.Round(full * Combat.NightHealth));
+        end if
+
+        it.SetNumber(Vitals.MaxHealth, full);
+        it.SetNumber(Vitals.Health, full);
+    end function
+
+    # ── Night falling, and lifting ────────────────────────────────────────────
+    #
+    # Everything already standing is re-scaled at the boundary, IN PROPORTION: a creature at half
+    # health is at half health afterwards, and its bar does not jump. Without this a body that has been
+    # alive since the afternoon is the only thing in the world that night does not touch.
+    #
+    # ⚠ Which hour it was is kept as a world value rather than in a field, because it has to survive
+    # a restart. A server that came up at midnight and read nothing would scale everything a second
+    # time at dawn.
+
+    public string Hour = "beastshour";
+
+    public function Turn()
+        string now = World.TimeOfDay();
+        string was = World.Text(Beasts.Hour);
+
+        if now == was
+            yield;
+        end if
+
+        World.SetText(Beasts.Hour, now);
+
+        boolean before = was == Combat.Night;
+        boolean after = now == Combat.Night;
+
+        # Dusk to night is a boundary. Dusk to dawn, somehow, is not.
+        if before == after
+            yield;
+        end if
+
+        real ratio = Combat.NightHealth;
+
+        if not after
+            ratio = 1.0 / Combat.NightHealth;
+        end if
+
+        loop for map = 1 to World.Records("Maps")
+            loop each body in World.NpcsOn(map)
+                Beasts.Scale(body, ratio);
+            end loop
+        end loop
+    end function
+
+    function Scale(Npc it, real ratio)
+        integer ceiling = it.Number(Vitals.MaxHealth);
+
+        if ceiling < 1
+            yield;
+        end if
+
+        integer full = Math.Max(1, Math.Round(ceiling * ratio));
+        integer left = Math.Max(1, Math.Round(it.Number(Vitals.Health) * ratio));
+
+        if left > full
+            left = full;
+        end if
+
+        it.SetNumber(Vitals.MaxHealth, full);
+        it.SetNumber(Vitals.Health, left);
+    end function
+
     # ── Fighting back ─────────────────────────────────────────────────────────
 
     # Every creature answers a hit, whatever its record says about noticing.

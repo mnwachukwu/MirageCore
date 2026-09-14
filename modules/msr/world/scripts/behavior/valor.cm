@@ -14,6 +14,10 @@ shared model Valor
     # A member of the killing guild who dealt damage has this chance of a point for the kill.
     public integer GrudgeChancePercent = 10;
 
+    # ⚠ And half the time on a kill over LAND, which is what makes holding territory the richer source
+    # of it. A grudge war pays a trickle; a war night pays properly.
+    public integer TerritoryChancePercent = 50;
+
     public string DonateVerb = "msr.guild.donate";
 
     # ── Which item it is ──────────────────────────────────────────────────────
@@ -47,6 +51,10 @@ shared model Valor
     # separately, so a group is worth more than one person and nobody's roll takes from anybody else's.
 
     public function Award(Player victim, integer guild)
+        Valor.AwardAt(victim, guild, Valor.GrudgeChancePercent);
+    end function
+
+    public function AwardAt(Player victim, integer guild, integer chance)
         integer item = Valor.Item();
 
         if item < 1 or guild < 1
@@ -55,7 +63,7 @@ shared model Valor
 
         loop each member in World.GuildMembers(guild)
             if Valor.Helped(member, victim)
-                if Combat.Rolls(Valor.GrudgeChancePercent)
+                if Combat.Rolls(chance)
                     member.Give(item, 1);
                     member.Message("You earn a point of valor.");
                 end if

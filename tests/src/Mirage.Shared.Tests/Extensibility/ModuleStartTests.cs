@@ -136,6 +136,7 @@ public class ModuleStartTests
         public bool Provoke(EntityHandle npc, EntityHandle quarry) => false;
         public bool Forget(EntityHandle npc) => false;
         public IReadOnlyList<EntityHandle> NpcsNear(WorldPlace at, int tiles) => [];
+        public IReadOnlyList<EntityHandle> NpcsOn(int mapNum) => [];
 
         public IReadOnlyList<EntityHandle> PlayersNear(WorldPlace at, int tiles) => [];
 
@@ -148,6 +149,15 @@ public class ModuleStartTests
         public bool Empty(int mapNum) => false;
         public bool Refill(int mapNum) => false;
         public bool IsEmptied(int mapNum) => false;
+        public IReadOnlyList<int> Guilds() => [];
+        public bool Mail(EntityHandle who, string subject, string body, int itemNum = 0, int quantity = 0) => false;
+        public string AccountOf(EntityHandle who) => string.Empty;
+        public EntityHandle WhoIs(string account) => EntityHandle.None;
+        public IReadOnlyList<string> AccountsIn(int guild) => [];
+        public bool IsActiveIn(int guild, string account) => false;
+        public bool MailTo(string account, string subject, string body, int itemNum = 0, int quantity = 0) => false;
+        public int MailMembers(int guild, int itemNum, int quantity, string subject, string body,
+                               bool onlyActive = false) => 0;
         public bool InsideMark(string id, WorldPlace place) => false;
         public AttributeBag WorldValues() => new();
         public void SetWorldValue(string key, AttributeValue value) { }
@@ -155,6 +165,7 @@ public class ModuleStartTests
         public bool CanSee(WorldPlace from, WorldPlace to) => false;
         public int Distance(WorldPlace from, WorldPlace to) => -1;
         public string WeatherOn(int mapNum) => string.Empty;
+        public string TimeOfDay() => string.Empty;
         public int MapGroupOf(int mapNum) => 0;
         public bool Wear(EntityHandle who, int itemNum) => false;
         public bool Remove(EntityHandle who, int itemNum) => false;

@@ -1102,7 +1102,11 @@ public class MsrStatsTests
         Assert.Multiple(() =>
         {
             Assert.That(items.Fields.Select(f => f.Key),
-                Is.EquivalentTo(new[] { "levelReq", "teaches", "valor", "coin", "reagent" }));
+                Is.EquivalentTo(new[]
+                {
+                    "levelReq", "teaches", "valor", "coin", "reagent",
+                    "restoresHealth", "restoresMana", "restoresStamina",
+                }));
             Assert.That(_declared.Schema.Families.Any(f => f.Id == "ItemRules"), Is.False,
                 "the fields joined Items rather than becoming a family of their own");
 
@@ -2229,6 +2233,146 @@ public class MsrStatsTests
         Answered($"Quests.PeriodOf({cadence}, {first})")
         == Answered($"Quests.PeriodOf({cadence}, {later})");
 
+    // ── Land, and what holding it is worth ───────────────────────────────────
+
+    /// <summary>🔴 Weeks held multiply what the land pays: fresh land pays once over, and a month of
+    /// holding pays four times. Capped there, so land held since the server opened is not an economy of
+    /// its own.</summary>
+    [TestCase(0, ExpectedResult = "1")]
+    [TestCase(1, ExpectedResult = "2")]
+    [TestCase(2, ExpectedResult = "3")]
+    [TestCase(3, ExpectedResult = "4")]
+    [TestCase(9, ExpectedResult = "4")]
+    public string HoldingLandPaysMoreTheLongerItIsHeld(int weeks) =>
+        Answered($"Territory.HoldMultiplier({weeks})");
+
+    /// <summary>A kill on held land pays its holder whoever did the killing, and a member of the holding
+    /// guild is worth double — which is what makes holding land worth more to the people who hold it
+    /// than to anybody passing through.</summary>
+    [TestCase("false", 0, ExpectedResult = "35")]
+    [TestCase("true", 0, ExpectedResult = "70")]
+    [TestCase("false", 3, ExpectedResult = "140")]
+    [TestCase("true", 3, ExpectedResult = "280")]
+    public string AKillOnHeldLandPaysItsHolder(string byOwner, int weeks) =>
+        Answered($"Territory.KillWorth({byOwner}, {weeks})");
+
+    // ── War night ────────────────────────────────────────────────────────────
+
+    /// <summary>Saturday evening, and the week resets the Sunday after — so a war night's result is what
+    /// the new week is built on. Day 3 was the epoch's first Sunday, so day 2 was its first Saturday.</summary>
+    [TestCase(2, ExpectedResult = "true")]
+    [TestCase(9, ExpectedResult = "true")]
+    [TestCase(3, ExpectedResult = "false")]
+    [TestCase(20_710, ExpectedResult = "false")]
+    public string WarNightIsSaturday(int day) => Answered($"Contest.IsWarNight({day})");
+
+    /// <summary>⚠ The meter DRIFTS toward nothing when a point is contested or empty, rather than
+    /// staying put. A point two guilds are standing on in equal numbers is nobody's, and one both sides
+    /// walked away from goes back to being up for grabs rather than freezing mid-swing.</summary>
+    [TestCase(3, ExpectedResult = "2")]
+    [TestCase(1, ExpectedResult = "0")]
+    [TestCase(0, ExpectedResult = "0")]
+    [TestCase(-1, ExpectedResult = "0")]
+    [TestCase(-3, ExpectedResult = "-2")]
+    public string AnEmptyPointDriftsBackTowardNothing(int meter) =>
+        Answered($"Contest.Drift({meter})");
+
+    /// <summary>🔴 A full swing from securely held to taken is twice the meter's depth — six beats at
+    /// five seconds, so about half a minute of standing on a flag. Short enough that a fight over one
+    /// point is a fight, long enough that walking past does not take it.</summary>
+    [Test]
+    public void AFullSwingIsTwiceTheMetersDepth()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(Answered("Contest.Full * 2"), Is.EqualTo("6"));
+            Assert.That(Answered("Contest.Full * 2 * Contest.BeatSeconds"), Is.EqualTo("30"));
+        });
+    }
+
+    /// <summary>The three phases, as the original ran them: ten minutes of setup, twenty of fighting, ten
+    /// of cooling off.</summary>
+    [Test]
+    public void TheEveningRunsFortyMinutes()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(Answered("Contest.SetupSeconds"), Is.EqualTo("600"));
+            Assert.That(Answered("Contest.FightSeconds"), Is.EqualTo("1200"));
+            Assert.That(Answered("Contest.CooldownSeconds"), Is.EqualTo("600"));
+        });
+    }
+
+    // ── The leaderboard ──────────────────────────────────────────────────────
+
+    /// <summary>🔴 What a week of holding is worth climbs the longer it has been held, compounding a
+    /// quarter a week — so the guild that keeps land beats the guild that keeps taking it. It stops
+    /// climbing after twelve weeks, which is a season's worth of streak.</summary>
+    [TestCase(0, ExpectedResult = "100")]
+    [TestCase(1, ExpectedResult = "125")]
+    [TestCase(4, ExpectedResult = "200")]
+    [TestCase(12, ExpectedResult = "400")]
+    [TestCase(40, ExpectedResult = "400")]
+    public string AWeekOfHoldingIsWorthMoreTheLongerItIsHeld(int weeks) =>
+        Answered($"Season.HoldScore({weeks})");
+
+    /// <summary>The placings, as the original paid them. Fourth and below take the flat scorer's share;
+    /// a guild that scored nothing takes nothing at all.</summary>
+    [TestCase(1, ExpectedResult = "700000")]
+    [TestCase(2, ExpectedResult = "350000")]
+    [TestCase(3, ExpectedResult = "175000")]
+    [TestCase(4, ExpectedResult = "35000")]
+    [TestCase(9, ExpectedResult = "35000")]
+    [TestCase(0, ExpectedResult = "0")]
+    public string APlacingPaysTheVault(int placing) => Answered($"Season.VaultPrize({placing})");
+
+    [TestCase(1, ExpectedResult = "175000")]
+    [TestCase(2, ExpectedResult = "87500")]
+    [TestCase(3, ExpectedResult = "35000")]
+    [TestCase(4, ExpectedResult = "17500")]
+    [TestCase(0, ExpectedResult = "0")]
+    public string APlacingPaysEachMember(int placing) => Answered($"Season.MemberPrize({placing})");
+
+    /// <summary>⚠ Scoring SKIPS the season's first week, so control established before the season began
+    /// carries in rather than paying from its first Sunday.</summary>
+    [Test]
+    public void TheSeasonsFirstWeekScoresNothing()
+    {
+        var world = new ScriptedWorldTests.RecordingWorld();
+        var (module, _) = Asking("""
+                    who.Message("" + Season.WeeksIn(Calendar.Today()));
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+
+        world.Here.Add(EntityHandle.ForPlayer(1));
+
+        // A season that began on the first Sunday the epoch saw, read three weeks later.
+        world.Kept.Set("seasonbegan", 3L);
+        world.Clock = (3L + 21L) * 86_400L + 12L * 3_600L;
+
+        ((ITickWork)scripts).Tick(1);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(world.Said[^1], Is.EqualTo("3"));
+            Assert.That(Answered("Season.ScoringFromWeek"), Is.EqualTo("1"),
+                "and the first week of one pays nothing");
+        });
+    }
+
+    /// <summary>⚠ A kill over LAND pays valor five times as often as a grudge war does, which is what
+    /// makes holding territory the richer source of it.</summary>
+    [Test]
+    public void LandPaysValorFiveTimesAsOftenAsAGrudge()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(Answered("Valor.GrudgeChancePercent"), Is.EqualTo("10"));
+            Assert.That(Answered("Valor.TerritoryChancePercent"), Is.EqualTo("50"));
+        });
+    }
+
     // ── Whose midnight ───────────────────────────────────────────────────────
 
     private string TodayAt(long moment, int offset)
@@ -3209,7 +3353,184 @@ public class MsrStatsTests
         });
     }
 
+    // ── After dark ───────────────────────────────────────────────────────────
+    //
+    // 🔴 The original boosts creatures at night on three counts at once, and every one of them is a
+    // bare multiplier that looks like nothing in a diff. Damage ×1.10, effective health ×1.10, and the
+    // experience a kill pays ×1.20. A port that dropped one of the three would play almost right, and
+    // the difference would show up as a world that feels the same at every hour.
+
+    /// <summary>A creature hits harder after dark, and by the original's exact factor.</summary>
+    [TestCase("day", 100, ExpectedResult = "100")]
+    [TestCase("dusk", 100, ExpectedResult = "100")]
+    [TestCase("dawn", 100, ExpectedResult = "100")]
+    [TestCase("night", 100, ExpectedResult = "110")]
+    [TestCase("night", 1, ExpectedResult = "1")]
+    [TestCase("night", 5, ExpectedResult = "6")]
+    public string ACreatureHitsHarderAtNight(string hour, int damage) =>
+        Asks(new ScriptedWorldTests.RecordingWorld { Hour = hour }, $"Combat.Nightly({damage})");
+
+    /// <summary>⚠ And hits a PERSON softer than it hits anything else, which is the disfavor the
+    /// original applies to the NPC-versus-player path alone. The two stack, in that order.</summary>
+    [TestCase(100, ExpectedResult = "70")]
+    [TestCase(1, ExpectedResult = "1")]
+    [TestCase(0, ExpectedResult = "0")]
+    public string ACreatureLaysASofterHandOnAPerson(int damage) => Answered($"Combat.Softened({damage})");
+
+    [Test]
+    public void TheDisfavorAndTheHourStack()
+    {
+        var world = new ScriptedWorldTests.RecordingWorld { Hour = "night" };
+
+        Assert.That(Asks(world, "Combat.Nightly(Combat.Softened(100))"), Is.EqualTo("77"));
+    }
+
+    /// <summary>Foul weather pays, and the gale pays most. Clear weather pays nothing extra.</summary>
+    [TestCase("clear", ExpectedResult = "100")]
+    [TestCase("rain", ExpectedResult = "105")]
+    [TestCase("heatwave", ExpectedResult = "115")]
+    [TestCase("snow", ExpectedResult = "115")]
+    [TestCase("heavywind", ExpectedResult = "125")]
+    public string TheSkyPaysForAKill(string weather) =>
+        Asks(new ScriptedWorldTests.RecordingWorld { Weather = weather },
+             "Math.Round(Combat.SkyWorth(1) * 100)");
+
+    /// <summary>And the hour pays on top of the sky, multiplicatively: a kill made in a gale after dark
+    /// is worth both.</summary>
+    [TestCase("day", "clear", 100, ExpectedResult = "100")]
+    [TestCase("night", "clear", 100, ExpectedResult = "120")]
+    [TestCase("day", "heavywind", 100, ExpectedResult = "125")]
+    [TestCase("night", "heavywind", 100, ExpectedResult = "150")]
+    public string AKillIsWorthTheHourAndTheSkyTogether(string hour, string weather, int earned) =>
+        Asks(new ScriptedWorldTests.RecordingWorld { Hour = hour, Weather = weather },
+             $"Combat.Worth({earned}, 1)");
+
+    /// <summary>⚠ A gale doubles every beat as well — a swing, a cast, and the drink between them — so
+    /// the sky slows a fight as well as making it less certain.</summary>
+    [TestCase("clear", 1, ExpectedResult = "1")]
+    [TestCase("rain", 1, ExpectedResult = "1")]
+    [TestCase("heavywind", 1, ExpectedResult = "2")]
+    [TestCase("heavywind", 3, ExpectedResult = "6")]
+    public string AGaleDoublesEveryBeat(string weather, int seconds) =>
+        Asks(new ScriptedWorldTests.RecordingWorld { Weather = weather },
+             $"Combat.Beat({seconds}, 1)");
+
+    // ── A murderer's minute ──────────────────────────────────────────────────
+
+    /// <summary>🔴 <b>A murderer who has just died is treated as though they were not one.</b> They come
+    /// back on open ground wearing a flag anybody may swing at, and without the minute they are killed
+    /// again where they land — a sentence nobody chose the length of. It is the one thing that reads
+    /// the flag differently, so nothing else asks IsMurderer to decide whether the world is hunting
+    /// somebody.</summary>
+    [Test]
+    public void AMurderersMinuteHidesTheFlagWithoutClearingIt()
+    {
+        var world = new ScriptedWorldTests.RecordingWorld();
+        var (module, _) = Asking("""
+                    Death.MarkMurderer(who);
+                    who.Message("" + Death.IsMurderer(who));
+                    who.Message("" + Death.IsHunted(who));
+                    Death.BeginGrace(who);
+                    who.Message("" + Death.IsMurderer(who));
+                    who.Message("" + Death.IsHunted(who));
+                    Death.BreakGrace(who);
+                    who.Message("" + Death.IsHunted(who));
+            """, world);
+        using ScriptedWorldModule scripts = module;
+
+        ((ITickWork)scripts).Tick(1);
+
+        Assert.That(world.Said[^7..], Is.EqualTo(new[]
+        {
+            "true", "true",
+            "You have a minute before the world comes for you again.",
+            "true", "false",
+            "Your minute is up.",
+            "true",
+        }), "flagged and hunted, then flagged and not hunted, then hunted again");
+    }
+
+    /// <summary>The whole minute, as the original counted it.</summary>
+    [Test]
+    public void TheMinuteIsAMinute() => Assert.That(Answered("Death.GraceSeconds"), Is.EqualTo("60"));
+
+    // ── Something to drink ───────────────────────────────────────────────────
+
+    /// <summary>🔴 A draught puts a pool back, never past its ceiling, and a NEGATIVE amount takes
+    /// instead — which is the original's other half, and one item rather than two rules.
+    ///
+    /// <para>⚠ One that would do nothing is REFUSED rather than drunk. Core paces a consumable by the
+    /// item leaving the bag, so a full bar costs neither the draught nor the beat.</para></summary>
+    [Test]
+    public void ADraughtFillsAPoolAndStopsAtTheCeiling()
+    {
+        var world = new ScriptedWorldTests.RecordingWorld();
+        var (module, _) = Asking("        Vitals.Drink(who, 1);", world);
+        using ScriptedWorldModule scripts = module;
+
+        var who = EntityHandle.ForPlayer(1);
+        world.Here.Add(who);
+        world.Records["Items"] = [Row(("restoresHealth", 50L), ("restoresMana", 0L), ("restoresStamina", 0L))];
+
+        ((IWorldObserver)scripts).OnPlayerJoined(who);
+        world.SetAttribute(who, "hp", AttributeValue.From(1L));
+        long ceiling = Held(world, "maxhp");
+
+        ((ITickWork)scripts).Tick(1);
+        long afterOne = Held(world, "hp");
+
+        ((ITickWork)scripts).Tick(1);
+        ((ITickWork)scripts).Tick(1);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(afterOne, Is.EqualTo(Math.Min(51L, ceiling)));
+            Assert.That(Held(world, "hp"), Is.EqualTo(ceiling), "and never past what the body can hold");
+            Assert.That(world.Taken.Where(t => t.Item == 1), Is.Not.Empty, "a draught that worked is spent");
+        });
+    }
+
+    /// <summary>An item with nothing on the three fields is not a draught, so drinking it does nothing
+    /// and costs nothing.</summary>
+    [Test]
+    public void SomethingThatIsNotADraughtIsLeftAlone()
+    {
+        var world = new ScriptedWorldTests.RecordingWorld();
+        var (module, _) = Asking("        Vitals.Drink(who, 1);", world);
+        using ScriptedWorldModule scripts = module;
+
+        var who = EntityHandle.ForPlayer(1);
+        world.Here.Add(who);
+        world.Records["Items"] = [Row(("restoresHealth", 0L), ("restoresMana", 0L), ("restoresStamina", 0L))];
+
+        ((IWorldObserver)scripts).OnPlayerJoined(who);
+        ((ITickWork)scripts).Tick(1);
+
+        Assert.That(world.Taken.Where(t => t.Item == 1), Is.Empty);
+    }
+
+    /// <summary>A pool already full refuses, so the draught stays in the bag.</summary>
+    [Test]
+    public void AFullPoolRefusesTheDraught()
+    {
+        var world = new ScriptedWorldTests.RecordingWorld();
+        var (module, _) = Asking("        Vitals.Drink(who, 1);", world);
+        using ScriptedWorldModule scripts = module;
+
+        var who = EntityHandle.ForPlayer(1);
+        world.Here.Add(who);
+        world.Records["Items"] = [Row(("restoresHealth", 50L), ("restoresMana", 0L), ("restoresStamina", 0L))];
+
+        ((IWorldObserver)scripts).OnPlayerJoined(who);
+        ((ITickWork)scripts).Tick(1);
+
+        Assert.That(world.Taken.Where(t => t.Item == 1), Is.Empty,
+            "enrollment left every pool full, so there was nothing for it to do");
+    }
+
     private static AttributeBag Row(params (string Key, object Value)[] fields)
+
+
     {
         var bag = new AttributeBag();
         foreach (var (key, value) in fields)

@@ -110,6 +110,14 @@ public sealed class ScriptedWorldModule
             "their connection dropped; yield how many seconds the body stays in the world"),
         new("OnMessage", 3, "function OnMessage(Player who, string message, Values values)",
             "a client sent one of this game's own messages, carrying the fields its model declared"),
+        new("OnNpcSpawned", 1, "function OnNpcSpawned(Npc it)",
+            "a creature has just come into the world and is already standing on its tile. 🔴 This is "
+            + "where a creature GETS ITS NUMBERS: Core spawns a body carrying a copy of its template and "
+            + "has never heard of health or of what one is worth to kill, so a game with either writes "
+            + "them on here. It is also the only place a fresh body can be told apart from the one "
+            + "before it, so anything that varies per spawn - a champion, a night-time boost - is "
+            + "decided here. ⚠ Raised for EVERY arrival: the respawn clock, a chase guest coming "
+            + "home, and a map being refilled"),
         new("OnContact", 2, "function OnContact(Npc it, Player who)",
             "a creature reached the player it was chasing. \u26a0 Only for a PLAYER quarry \u2014 the "
             + "parameter says Player, and a handler handed the wrong kind of body is worse than one "
@@ -144,7 +152,7 @@ public sealed class ScriptedWorldModule
     private LoadedScript? _loaded;
     private bool _onJoined, _onLeft, _onMoved, _onTick, _onPlayerTick, _onMayDie, _onDied, _onLinger;
     private bool _onLoot;
-    private bool _onAction, _onMessage, _onContact, _onNpcContact, _onItemUsed, _onWarped;
+    private bool _onAction, _onMessage, _onContact, _onNpcContact, _onNpcSpawned, _onItemUsed, _onWarped;
     private bool _onMayUse;
 
     /// <summary>The messages this world's rules declared, which is also what this route owns.</summary>
@@ -383,6 +391,7 @@ public sealed class ScriptedWorldModule
         _onMessage = _offered.Contains("OnMessage");
         _onContact = _offered.Contains("OnContact");
         _onNpcContact = _offered.Contains("OnNpcContact");
+        _onNpcSpawned = _offered.Contains("OnNpcSpawned");
         _onItemUsed = _offered.Contains("OnItemUsed");
         _onMayUse = _offered.Contains("OnMayUse");
         _onWarped = _offered.Contains("OnPlayerWarped");
@@ -414,6 +423,15 @@ public sealed class ScriptedWorldModule
         }
 
         if (_onNpcContact && quarry.IsNpc) Run("OnNpcContact", npc, quarry);
+    }
+
+    /// <summary>A creature is in the world, and this is the moment a game writes its numbers onto it.
+    ///
+    /// <para>Raised after everyone who can see the body has been sent it, so anything the handler sets
+    /// reaches people who already have something to hang it on.</para></summary>
+    public void OnNpcSpawned(EntityHandle npc)
+    {
+        if (_onNpcSpawned) Run("OnNpcSpawned", npc);
     }
 
     /// <summary>They used something out of their bag.
@@ -792,9 +810,10 @@ public sealed class ScriptedWorldModule
             .Action("SeenBy", [ScriptType.SetOf(player.AsType).Named("them")],
                 (m, a) => Marked(m).SeenBy(Everyone(a, 0)),
                 "Makes it private to those bodies. Left unsaid, everybody who can see the square sees it. "
-                + "⚠ A SNAPSHOT rather than a rule: somebody who joins afterwards is not on it until the "
-                + "mark is placed again. A side whose members come and go says this each time it moves "
-                + "the mark, which it is doing anyway.");
+                + "Said AGAIN it adds them rather than replacing, so a mark for several sides is one call "
+                + "per side. ⚠ A SNAPSHOT rather than a rule: somebody who joins afterwards is not on it "
+                + "until the mark is placed again. A side whose members come and go says this each time it "
+                + "moves the mark, which it is doing anyway.");
 
         // 🔴 Read what the world authored; write what this kill makes of it. Three writers rather than a
         // yielded answer, because a handler with an opinion about one of the three would otherwise have
@@ -864,6 +883,13 @@ public sealed class ScriptedWorldModule
                 + "herd that scatters when one of them is startled. ⚠ On that map only, so a body one "
                 + "tile over a border is close and is not in the answer; ask for each map to reach "
                 + "those.")
+            .Function("NpcsOn", ScriptType.SetOf(npc.AsType), [ScriptType.Integer.Named("map")],
+                (_, a) => ScriptValue.Set(World.NpcsOn((int)a.AsInteger(0)).Select(h => (object?)h)),
+                "Every creature standing on that map. The whole population rather than a neighborhood, "
+                + "which is what a SWEEP asks for and NpcsNear cannot answer: telling every body that "
+                + "night fell, counting what is still alive, clearing something a spell left behind. "
+                + "⚠ Visitors on the map are in and natives away chasing elsewhere are out, so a body "
+                + "appears exactly once across a walk of every map.")
             .Function("PlayersNear", ScriptType.SetOf(player.AsType),
                 [ScriptType.Integer.Named("map"), ScriptType.Integer.Named("x"),
                  ScriptType.Integer.Named("y"), ScriptType.Integer.Named("tiles")],
@@ -968,6 +994,13 @@ public sealed class ScriptedWorldModule
                 + "contiguously, so a body one tile over a border is one tile away, where arithmetic on "
                 + "the coordinates calls it another map and unreachable. Every range rule wants this "
                 + "rather than subtraction. -1 when the two are too far apart to compare.")
+            .Function("TimeOfDay", ScriptType.Text, [],
+                (_, _) => World.TimeOfDay(),
+                "What time of day it is - 'day', 'dusk', 'night' or 'dawn'. The engine runs the cycle and "
+                + "the client paints it, and a game with anything that is different after dark has nothing "
+                + "to read otherwise: creatures that hunt at night, a shop that shuts, a spell that only "
+                + "works under a moon. ⚠ One answer for the WHOLE WORLD, unlike the weather - a cycle the "
+                + "server runs rather than a property of a place.")
             .Function("Weather", ScriptType.Text, [ScriptType.Integer.Named("map")],
                 (_, a) => World.WeatherOn((int)a.AsInteger(0)),
                 "What the sky is doing over that map: 'clear', 'rain', 'snow', 'heatwave', or "
@@ -1032,6 +1065,77 @@ public sealed class ScriptedWorldModule
                 (_, a) => ScriptValue.Set(World.MembersOf((int)a.AsInteger(0)).Select(h => (object?)h)),
                 "Everybody IN THE WORLD who belongs to that guild. Empty for one with nobody online, "
                 + "which is not the same as a guild that is not there.")
+            .Function("Guilds", ScriptType.SetOf(ScriptType.Integer), [],
+                (_, _) => ScriptValue.Set(World.Guilds().Select(g => (object?)(long)g)),
+                "Every guild there is, by number. ⚠ WHAT ANYTHING RANKED STARTS FROM: every other guild "
+                + "call takes a number you already had, off a body or off a name, and a standing, a "
+                + "league table or a sweep over all of them has none. Counting upward and hoping does "
+                + "not work either - a guild that disbanded leaves a hole in the numbering.")
+            .Function("WhoIs", player.AsType.OrNothing(), [ScriptType.Text.Named("account")],
+                (_, a) => World.WhoIs(a.AsText(0)) is { IsSet: true } who ? who : null,
+                "Whoever is signed in to that account right now, or nothing. The way back: a rule that "
+                + "wrote an account down reaches the person again with this, and nothing is the answer "
+                + "that says to POST rather than to tell.")
+            .Function("AccountsIn", ScriptType.SetOf(ScriptType.Text),
+                [ScriptType.Integer.Named("guild")],
+                (_, a) => ScriptValue.Set(World.AccountsIn((int)a.AsInteger(0)).Select(s => (object?)s)),
+                "Every account in a guild, SIGNED IN OR NOT. ⚠ A guild's roster outlives its members' "
+                + "sessions, and World.GuildMembers answers only with the part of it that is here. "
+                + "Anything about the guild rather than about the people in front of you starts from "
+                + "this - a dividend, a census, a rule about who has stopped turning up.")
+            .Function("IsActiveIn", ScriptType.Truth,
+                [ScriptType.Integer.Named("guild"), ScriptType.Text.Named("account")],
+                (_, a) => World.IsActiveIn((int)a.AsInteger(0), a.AsText(1)),
+                "Whether that account is a LIVE member of the guild rather than a name on its roster: "
+                + "signed in for long enough, recently enough, by the engine's own measure. What to ask "
+                + "before counting somebody - who votes, who makes a quorum, who is worth counting when "
+                + "a guild is sized up.")
+            .Function("MailTo", ScriptType.Truth,
+                [ScriptType.Text.Named("account"), ScriptType.Text.Named("subject"),
+                 ScriptType.Text.Named("body")],
+                (_, a) => World.MailTo(a.AsText(0), a.AsText(1), a.AsText(2)),
+                "Sends an ACCOUNT a letter, whether or not anybody is signed in to it. What World.Mail "
+                + "cannot do: reach somebody who is not here. A rule that wrote an account down when it "
+                + "had the person settles up afterwards, and they find it waiting.")
+            .Function("MailItemTo", ScriptType.Truth,
+                [ScriptType.Text.Named("account"), ScriptType.Integer.Named("item"),
+                 ScriptType.Integer.Named("many"), ScriptType.Text.Named("subject"),
+                 ScriptType.Text.Named("body")],
+                (_, a) => World.MailTo(a.AsText(0), a.AsText(3), a.AsText(4),
+                                       (int)a.AsInteger(1), (int)a.AsInteger(2)),
+                "The same, with something attached. A sale settled, a refund, a prize drawn while they "
+                + "were away.")
+            .Function("Mail", ScriptType.Truth,
+                [player.AsType.Named("who"), ScriptType.Text.Named("subject"),
+                 ScriptType.Text.Named("body")],
+                (_, a) => World.Mail(Who(a.As<object>(0)), a.AsText(1), a.AsText(2)),
+                "Sends them a letter. ⚠ THE ONE THING A RULE CAN SAY THAT OUTLIVES THE MOMENT: a line of "
+                + "chat is gone when they log out, and a letter waits - through a logout, a restart, and "
+                + "a server that was down for a week.")
+            .Function("MailItem", ScriptType.Truth,
+                [player.AsType.Named("who"), ScriptType.Integer.Named("item"),
+                 ScriptType.Integer.Named("many"), ScriptType.Text.Named("subject"),
+                 ScriptType.Text.Named("body")],
+                (_, a) => World.Mail(Who(a.As<object>(0)), a.AsText(3), a.AsText(4),
+                                     (int)a.AsInteger(1), (int)a.AsInteger(2)),
+                "The same, with something attached, and the thing waits with it. What a reward that was "
+                + "EARNED rather than picked up looks like - a refund, a prize, a delivery, the rest of "
+                + "a payout that would not fit in a bag. Player.Give is the other one, and it needs room "
+                + "in the bag right now.")
+            .Function("MailMembers", ScriptType.Integer,
+                [ScriptType.Integer.Named("guild"), ScriptType.Integer.Named("item"),
+                 ScriptType.Integer.Named("many"), ScriptType.Text.Named("subject"),
+                 ScriptType.Text.Named("body"), ScriptType.Truth.Named("onlyActive")],
+                (_, a) => (long)World.MailMembers((int)a.AsInteger(0), (int)a.AsInteger(1),
+                                                  (int)a.AsInteger(2), a.AsText(3), a.AsText(4),
+                                                  a.AsTruth(5)),
+                "Sends every member of a guild that item, and REACHES THE ONES WHO ARE NOT HERE. The only "
+                + "way to pay somebody offline: everything else reaches a body in the world, and what a "
+                + "GROUP earned is owed to its members whether or not they happened to be logged in. It "
+                + "arrives as mail, so it waits for them. 'onlyActive' narrows it to members who have "
+                + "really been playing, by the engine's own measure of a live roster - a payout split "
+                + "among a hundred names nobody has used is a payout nobody feels. Yields how many it "
+                + "reached.")
             .Function("GuildGold", ScriptType.Integer, [ScriptType.Integer.Named("guild")],
                 (_, a) => World.GuildGold((int)a.AsInteger(0)),
                 "What is in that guild's vault.")
@@ -1611,6 +1715,12 @@ public sealed class ScriptedWorldModule
                 "Whether they are still in the world. A handle outlives the body it names.")
             .Value("Guild", ScriptType.Text, (who, _) => World.GuildOf(Who(who)),
                 "The name of the guild their account belongs to, or empty for none.")
+            .Value("Account", ScriptType.Text, (who, _) => World.AccountOf(Who(who)),
+                "The account behind them - the ONE name here that outlives a session. A handle stops "
+                + "meaning anything the moment they log out and a character can be deleted; this is what "
+                + "the engine files mail and guild membership under, so it is what to write down when "
+                + "the thing you are promising will be settled later. ⚠ NOT a character name and NOT for "
+                + "showing to players: it is how they sign in. Print Name in anything anybody reads.")
             .Value("Map", ScriptType.Integer, (who, _) => (long)World.PlaceOf(Who(who)).Map,
                 "Which map they are standing on, or zero when they are nowhere.")
             .Value("X", ScriptType.Integer, (who, _) => (long)World.PlaceOf(Who(who)).X,
@@ -1987,7 +2097,7 @@ public sealed class ScriptedWorldModule
         private int _radius;
         private long _value;
         private long _ceiling;
-        private IReadOnlyCollection<EntityHandle> _seenBy = [];
+        private readonly HashSet<EntityHandle> _seenBy = [];
 
         public string Id => id;
 
@@ -2018,9 +2128,11 @@ public sealed class ScriptedWorldModule
             return Put();
         }
 
+        /// <summary>Adds bodies to the audience. Adds rather than replaces, because a mark for several
+        /// sides is otherwise unsayable: a script cannot build one set out of two.</summary>
         public object? SeenBy(IEnumerable<EntityHandle> them)
         {
-            _seenBy = [.. them];
+            foreach (var who in them) _seenBy.Add(who);
             return Put();
         }
 
@@ -2037,7 +2149,7 @@ public sealed class ScriptedWorldModule
                 Radius = _radius,
                 Value = _value,
                 Ceiling = _ceiling,
-                SeenBy = _seenBy,
+                SeenBy = [.. _seenBy],
             });
 
             return null;

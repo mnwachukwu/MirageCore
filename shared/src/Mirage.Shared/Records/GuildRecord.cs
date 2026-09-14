@@ -117,6 +117,18 @@ public sealed class GuildMember
 
     // Snapshot of the account's most-recently-active character, for the roster row when offline.
     public string CharName { get; set; } = "";
+    /// <summary>Whether this is a live member rather than a name on the roster: online for long enough,
+    /// recently enough.
+    ///
+    /// <para>Both halves are needed. The seconds alone would keep somebody who played hard a year ago;
+    /// the last-seen alone would keep somebody who logs in for a minute a day. Together they answer
+    /// "is this person actually playing", which is what anything shared out among a guild has to
+    /// ask.</para></summary>
+    public bool IsActive(long nowUtc) =>
+        LastSeenUtc > 0
+        && nowUtc - LastSeenUtc <= Constants.GuildActiveMemberWindowSeconds
+        && ActiveSeconds >= Constants.GuildActiveMemberMinSeconds;
+
     /// <summary>A shallow copy is a full copy — every field is a value type or an immutable string.</summary>
     public GuildMember Clone() => (GuildMember)MemberwiseClone();
 }

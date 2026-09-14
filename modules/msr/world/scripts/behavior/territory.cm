@@ -1,0 +1,225 @@
+# Land a guild holds, and what holding it is worth.
+#
+# A territory is one of the engine's map groups with a box ticked on it. Who holds it, how long they
+# have held it, and what it has earned all live on the region itself — so an operator opening the map
+# group in the editor sees the answer, and a region that was never meant to be fought over is simply
+# one nobody ticked.
+#
+# Three things happen to a territory, and they are on three different clocks:
+#
+#   a kill on it      pays the owner, capped a day at a time            behavior/loot.cm calls Earned
+#   midnight          the day's takings go into the vault               ledger.cm calls Settle
+#   war night         it is defended, taken, or falls unclaimed         contest.cm
+#
+# ⚠ What is NOT here is the contest. Holding land is bookkeeping; fighting over it is a live thing with
+# phases and a clock of its own, and it is behavior/contest.cm.
+
+shared model Territory
+
+    public string Of = "MapGroups";
+
+    # ── What a region carries ─────────────────────────────────────────────────
+
+    public string Contested = "contested";
+    public string Owner = "owner";
+    public string WeeksHeld = "weeksHeld";
+    public string Pending = "pending";
+    public string ThisWeek = "earnedThisWeek";
+    public string LastWeek = "earnedLastWeek";
+
+    # And what a map carries.
+    public string HoldsPoint = "holdsPoint";
+
+    # ── Reading one ───────────────────────────────────────────────────────────
+
+    public boolean function IsContested(integer region)
+        yield World.RecordTruth(Territory.Of, region, Territory.Contested);
+    end function
+
+    public integer function OwnerOf(integer region)
+        yield World.RecordNumber(Territory.Of, region, Territory.Owner);
+    end function
+
+    public integer function HeldFor(integer region)
+        yield World.RecordNumber(Territory.Of, region, Territory.WeeksHeld);
+    end function
+
+    public string function NameOf(integer region)
+        yield World.RecordName(Territory.Of, region);
+    end function
+
+    # Which territory a map belongs to, or nothing. A map in a region nobody ticked is not on land
+    # anybody is fighting over, which is most of every world.
+    public integer function Under(integer map)
+        integer region = World.RegionOf(map);
+
+        if region < 1
+            yield 0;
+        end if
+
+        if not Territory.IsContested(region)
+            yield 0;
+        end if
+
+        yield region;
+    end function
+
+    # ── What it earns ─────────────────────────────────────────────────────────
+    #
+    # A creature killed on held land pays its owner, whoever did the killing. One kill in four pays,
+    # and a member of the holding guild is worth double — which is what makes holding land worth more
+    # to the people who hold it than to anybody passing through.
+    #
+    # ⚠ Capped a day at a time. Without it a guild that holds good hunting ground out-earns every other
+    # source of money in the game put together, and the cap is what keeps the land a supplement rather
+    # than the economy.
+
+    public integer PaysPercent = 25;
+    public integer StrangerGold = 35;
+    public integer OwnerGold = 70;
+    public integer DailyCap = 17500;
+
+    # Weeks held multiply it: fresh land pays once over, and a month of holding pays four times.
+    public integer HoldCap = 4;
+
+    public integer function HoldMultiplier(integer weeks)
+        yield Math.Min(Math.Max(weeks, 0), Territory.HoldCap - 1) + 1;
+    end function
+
+    public integer function KillWorth(boolean byOwner, integer weeks)
+        integer rate = Territory.StrangerGold;
+
+        if byOwner
+            rate = Territory.OwnerGold;
+        end if
+
+        yield rate * Territory.HoldMultiplier(weeks);
+    end function
+
+    # Called wherever a creature dies. Nothing happens off held land, which is the common case, so the
+    # two cheap questions come first.
+    public function Earned(Player who, integer map)
+        integer region = Territory.Under(map);
+
+        if region < 1
+            yield;
+        end if
+
+        integer owner = Territory.OwnerOf(region);
+
+        if owner < 1
+            yield;
+        end if
+
+        if not Combat.Rolls(Territory.PaysPercent)
+            yield;
+        end if
+
+        integer worth = Territory.KillWorth(World.GuildOf(who) == owner, Territory.HeldFor(region));
+        integer owing = World.RecordNumber(Territory.Of, region, Territory.Pending);
+
+        World.SetRecordNumber(Territory.Of, region, Territory.Pending,
+                              Math.Min(Territory.DailyCap, owing + worth));
+    end function
+
+    # ── Settling ──────────────────────────────────────────────────────────────
+    #
+    # Walked from the guild ledger's own daily settlement, so land pays on the same midnight everything
+    # else is charged on.
+    #
+    # ⚠ A CREDIT, and it runs after the debits for the same reason the guild's own income does: a day's
+    # takings must not cover the same day's tax.
+
+    public function Settle(integer day)
+        loop for region = 1 to World.Records(Territory.Of)
+            if Territory.IsContested(region)
+                Territory.SettleOne(region, day);
+            end if
+        end loop
+    end function
+
+    function SettleOne(integer region, integer day)
+        Territory.RollWeek(region, day);
+
+        integer owing = World.RecordNumber(Territory.Of, region, Territory.Pending);
+
+        if owing < 1
+            yield;
+        end if
+
+        integer owner = Territory.OwnerOf(region);
+
+        World.SetRecordNumber(Territory.Of, region, Territory.Pending, 0);
+
+        # Land nobody holds earns nothing, and anything it accrued before it fell is forgotten rather
+        # than kept for whoever takes it next.
+        if owner < 1
+            yield;
+        end if
+
+        World.GiveGuildGold(owner, owing);
+        World.SetRecordNumber(Territory.Of, region, Territory.ThisWeek,
+                              World.RecordNumber(Territory.Of, region, Territory.ThisWeek) + owing);
+
+        World.TellThese(World.GuildMembers(owner),
+                        Territory.NameOf(region) + " paid the vault " + owing + " gold.");
+    end function
+
+    # What the week earned becomes what LAST week earned, and this week starts again from nothing.
+    # Guarded by the day it last ran on, so settling a day twice changes nothing the second time.
+    public string RolledOn = "rolled";
+
+    function RollWeek(integer region, integer day)
+        if not Calendar.IsSunday(day)
+            yield;
+        end if
+
+        if World.RecordNumber(Territory.Of, region, Territory.RolledOn) == day
+            yield;
+        end if
+
+        World.SetRecordNumber(Territory.Of, region, Territory.RolledOn, day);
+        World.SetRecordNumber(Territory.Of, region, Territory.LastWeek,
+                              World.RecordNumber(Territory.Of, region, Territory.ThisWeek));
+        World.SetRecordNumber(Territory.Of, region, Territory.ThisWeek, 0);
+    end function
+
+    # ── Changing hands ────────────────────────────────────────────────────────
+
+    # What a war night's answer does to the region. Called once per territory when its contest ends,
+    # and the only place ownership ever moves.
+    #
+    # ⚠ Holding it AGAIN is what advances the streak, so the multiplier counts war nights survived
+    # rather than days owned. Taking it starts at nothing, and losing it leaves nothing behind.
+    public function Handover(integer region, integer winner)
+        integer held = Territory.OwnerOf(region);
+
+        if winner == held
+            if winner > 0
+                World.SetRecordNumber(Territory.Of, region, Territory.WeeksHeld,
+                                      Territory.HeldFor(region) + 1);
+
+                World.TellThese(World.GuildMembers(winner),
+                                "Your guild held " + Territory.NameOf(region) + ".");
+            end if
+
+            yield;
+        end if
+
+        World.SetRecordNumber(Territory.Of, region, Territory.Owner, winner);
+        World.SetRecordNumber(Territory.Of, region, Territory.WeeksHeld, 0);
+
+        if held > 0
+            World.TellThese(World.GuildMembers(held),
+                            "Your guild has lost " + Territory.NameOf(region) + ".");
+        end if
+
+        if winner < 1
+            World.Tell(Territory.NameOf(region) + " is held by nobody.");
+            yield;
+        end if
+
+        World.Tell(World.GuildName(winner) + " has taken " + Territory.NameOf(region) + ".");
+    end function
+
+end model

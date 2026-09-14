@@ -16,17 +16,19 @@ public sealed class SpawnSystem : GameSystem
     private readonly WorldQueries _queries;
     private readonly SelectionTracking _selection;
     private readonly IReadOnlyList<ILootPolicy> _loot;
+    private readonly WorldEvents _events;
     private const int SpawnSearchAttempts = 100;
 
     public SpawnSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher,
                        ItemSystem items, IRandomSource? rng = null,
-                       IReadOnlyList<ILootPolicy>? loot = null)
+                       IReadOnlyList<ILootPolicy>? loot = null, WorldEvents? events = null)
         : base(dispatcher, rng: rng)
     {
         _world = world;
         _pm = pm;
         _items = items;
         _loot = loot ?? [];
+        _events = events ?? WorldEvents.None;
         _queries = new WorldQueries(world, pm);
         _selection = new SelectionTracking(pm);
     }
@@ -152,6 +154,12 @@ public sealed class SpawnSystem : GameSystem
                 Dir = mn.Dir,
                 Layer = mn.Layer,
             });
+
+            // After the packet, so a game writing the body's numbers from here sends them to people who
+            // already have a body to hang them on. The identity is the spawn post rather than the slot,
+            // which is what every other seam names a creature by.
+            var (spawnMap, spawnSlot) = mn.GetSpawnIdentity(mapNum, mapNpcSlot);
+            _events.NpcSpawned(EntityHandle.ForNpc(spawnMap, spawnSlot));
         }
     }
 

@@ -14,6 +14,7 @@
 #   declarations/quests.cm      a quest, what finishing it takes, and who may take it
 #   declarations/places.cm      this game's own fields on the engine's maps
 #   declarations/beasts.cm      this game's own fields on the engine's creatures
+#   declarations/territory.cm   this game's own fields on the engine's map groups
 #
 #   behavior/stats.cm      the four stats, the pool curves, and the experience table
 #   behavior/sheet.cm      the keys the engine carries, and what a new character starts with
@@ -23,7 +24,7 @@
 #   behavior/duel.cm       two players, and who is allowed to fight whom
 #   behavior/death.cm      what dying costs, and where you wake up
 #   behavior/places.cm     what a map means to a fight
-#   behavior/beasts.cm     what a creature is, on top of how it walks
+#   behavior/beasts.cm     what a creature is made of, on top of how it walks
 #   behavior/classes.cm    applying the class they chose, and what it is worth afterwards
 #   behavior/spells.cm     what casting costs, and what a cast is worth
 #   behavior/book.cm       what a character knows, has ready, and does with it
@@ -37,6 +38,8 @@
 #   behavior/bounty.cm     a standing bounty, and what filling it pays
 #   behavior/calendar.cm   the calendar, worked out from the clock
 #   behavior/season.cm     which season it is, and when the next one starts
+#   behavior/territory.cm  land a guild holds, and what holding it is worth
+#   behavior/contest.cm    war night, and the fight over a territory
 #   behavior/levels.cm     experience, and what it buys
 #
 # The original is a .NET solution of some hundreds of files. What is reproduced here is the game —
@@ -54,6 +57,7 @@ shared model Rules
         Quests.Declare(game);
         Guilds.Declare(game);
         Bounty.Declare(game);
+        Contest.Declare(game);
 
         # Once a second rather than once a tick. Regen is a rate, and twenty writes a second per
         # player is traffic nobody can see the difference in.
@@ -70,6 +74,8 @@ shared model Rules
     # it is settled here; anything about a person is below.
     public function OnTick()
         Season.Tick();
+        Contest.Tick();
+        Beasts.Turn();
     end function
 
     # Once for each body in the world, every twentieth tick.
@@ -121,6 +127,10 @@ shared model Rules
         if action == Bounty.DropVerb
             Bounty.Drop(who);
         end if
+
+        if action == Contest.ClaimVerb
+            Contest.Claim(who);
+        end if
     end function
 
     # Asked BEFORE anything happens, so a reason here stops the use outright.
@@ -128,9 +138,10 @@ shared model Rules
         yield Gear.Judge(who, item);
     end function
 
-    # And afterwards, once the engine has done its own half. A scroll is this game's.
+    # And afterwards, once the engine has done its own half. A scroll and a draught are this game's.
     public function OnItemUsed(Player who, integer item, integer slot)
         Book.Read(who, item);
+        Vitals.Drink(who, item);
     end function
 
     # The Prepare button on the spellbook. A form rather than a verb per page: twenty verbs would be
@@ -146,6 +157,12 @@ shared model Rules
         end if
     end function
 
+    # A creature is in the world. Everything a fight reads off one is written here, because the engine
+    # spawns a body carrying a copy of its record and has never heard of health.
+    public function OnNpcSpawned(Npc it)
+        Beasts.Wake(it);
+    end function
+
     # A creature reached somebody it was chasing.
     public function OnContact(Npc it, Player who)
         Fight.Maul(it, who);
@@ -157,8 +174,8 @@ shared model Rules
         Fight.Clash(it, other);
     end function
 
-    # Nothing stops a death here yet. The original had a grace timer, which belongs beside the
-    # respawn rule rather than on its own.
+    # Nothing in this game refuses a death. Its refusals are asked earlier and are about who may be
+    # fought at all, which is duel.cm - a murderer's minute of grace included.
     public string function OnMayDie(Player who, string cause)
         yield "";
     end function

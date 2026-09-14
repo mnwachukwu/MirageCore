@@ -64,9 +64,10 @@ shared model Fight
             yield;
         end if
 
-        who.Wait(Fight.SwingSeconds);
+        who.Wait(Combat.Beat(Fight.SwingSeconds, who.Map));
         who.Engage(Fight.EngagedSeconds);
         target.Engage(Fight.EngagedSeconds);
+        Death.BreakGraceInFight(who);
 
         # The wind takes it before anything else is rolled.
         if Combat.WindTakesIt(who.Map)
@@ -141,7 +142,7 @@ shared model Fight
             yield;
         end if
 
-        it.Wait(Fight.SwingSeconds);
+        it.Wait(Combat.Beat(Fight.SwingSeconds, it.Map));
         it.Engage(Fight.EngagedSeconds);
         other.Engage(Fight.EngagedSeconds);
 
@@ -191,9 +192,10 @@ shared model Fight
             yield;
         end if
 
-        it.Wait(Fight.SwingSeconds);
+        it.Wait(Combat.Beat(Fight.SwingSeconds, it.Map));
         it.Engage(Fight.EngagedSeconds);
         who.Engage(Fight.EngagedSeconds);
+        Death.BreakGraceInFight(who);
 
         # The wind takes it before anybody reacts, so a blow it took costs the body nothing.
         if Combat.WindTakesIt(it.Map)
@@ -228,7 +230,11 @@ shared model Fight
             raw = Combat.Crit(raw);
         end if
 
-        integer damage = Combat.Resolve(raw, Combat.Protection(level, defence), Combat.MinDamageFloor);
+        # ⚠ Three steps rather than one, in the original's order: what a body turns aside, then the
+        # softer hand a creature lays on a PERSON, then the hour. The last two stack, so a blow after
+        # dark is the disfavored number boosted rather than the raw one.
+        integer damage = Combat.Nightly(Combat.Softened(
+            Combat.Resolve(raw, Combat.Protection(level, defence), Combat.MinDamageFloor)));
 
         it.Sweep(true);
         who.Float("" + damage, 220, 60, 60);
@@ -319,7 +325,9 @@ shared model Fight
         # fight it would have been; this is the same shape with the stats it had.
         integer worth = Combat.Swing(target.Number(Stats.Def)) + Combat.Swing(target.Number(Stats.Str));
 
-        Levels.Earn(who, worth);
+        # The hour and the sky both pay, and they compound: a kill made in a gale after dark is worth
+        # both. The guild trickle below is untouched by either, being one point whatever the kill was.
+        Levels.Earn(who, Combat.Worth(worth, map));
 
         # ⚠ A guild earns ONE point for a kill, whatever the kill was worth to the player. The two
         # curves have nothing to do with each other: a guild's runs to hundreds of millions and is
@@ -332,6 +340,9 @@ shared model Fight
         # not surface until a quest refused to finish.
         Quests.Killed(who, kind);
         Bounty.Killed(who, kind);
+
+        # And the land it died on pays whoever holds it, which is what makes holding any worth doing.
+        Territory.Earned(who, map);
     end function
 
 end model

@@ -54,6 +54,66 @@ shared model Death
         yield who.Number(Death.MurdererUntil) > World.Now();
     end function
 
+    # ── The breathing space after one ─────────────────────────────────────────
+    #
+    # A murderer who has just died is treated as though they were not one for a minute. They come back
+    # on open ground wearing a flag everybody may swing at, and without this they are killed again
+    # where they land — which is a sentence nobody chose the length of.
+    #
+    # ⚠ It is the ONE thing that reads the flag differently, so nothing asks IsMurderer to decide
+    # whether the world is hunting somebody. IsHunted is that question, and it is the one a protected
+    # map and a guard both ask.
+
+    public string GraceUntil = "graceuntil";
+
+    public integer GraceSeconds = 60;
+
+    public function BeginGrace(Player who)
+        who.SetNumber(Death.GraceUntil, World.Now() + Death.GraceSeconds);
+
+        # The name plate comes off with it. A murderer nobody may touch who still wears the mark is a
+        # body everybody keeps swinging at for nothing.
+        who.Mark(0);
+        who.Message("You have a minute before the world comes for you again.");
+    end function
+
+    public boolean function InGrace(Player who)
+        yield who.Number(Death.GraceUntil) > World.Now();
+    end function
+
+    # It ends the moment they are in a fight, and the mark goes back on for whatever is left of the
+    # sentence.
+    public function BreakGrace(Player who)
+        if not Death.InGrace(who)
+            yield;
+        end if
+
+        who.SetNumber(Death.GraceUntil, 0);
+
+        integer left = who.Number(Death.MurdererUntil) - World.Now();
+
+        if left > 0
+            who.Mark(left);
+        end if
+
+        who.Message("Your minute is up.");
+    end function
+
+    # ⚠ A skirmish with a creature in a town does NOT end it. The minute is for walking away from
+    # where you fell, and a wolf wandering through a safe place is not what it was given against.
+    public function BreakGraceInFight(Player who)
+        if Places.IsProtected(who.Map)
+            yield;
+        end if
+
+        Death.BreakGrace(who);
+    end function
+
+    # Whether the world is hunting them.
+    public boolean function IsHunted(Player who)
+        yield Death.IsMurderer(who) and not Death.InGrace(who);
+    end function
+
     public function MarkMurderer(Player who)
         integer now = World.Now();
         integer expiry = now;
@@ -68,6 +128,10 @@ shared model Death
         who.Mark(expiry - now);
 
         World.Tell(who.Name + " has murdered somebody.");
+
+        # And the town answers. The guards standing near enough to have seen it come after them, which
+        # is the whole of what a guard is for.
+        Beasts.CallGuards(who, who.Map, who.X, who.Y);
     end function
 
     # Killing a murderer takes half an hour off their sentence. Two deaths clear a fresh flag.
@@ -101,6 +165,11 @@ shared model Death
         # point the player bought for themselves. A war death overrides it again, below.
         Death.SendHome(who);
 
+        # A murderer gets their minute, whatever the death cost them below.
+        if Death.IsMurderer(who)
+            Death.BeginGrace(who);
+        end if
+
         # The bout ends here whatever it cost, so nothing dealt before now counts toward the next one.
         string creditedTo = Duel.CreditedTo(who);
         Duel.ClearCredit(who);
@@ -122,11 +191,14 @@ shared model Death
 
         # A war death: the credited killer's guild is the one at war, not whoever landed the last
         # blow. Worn gear is the only thing it costs.
+        #
+        # ⚠ A death in a territory contest is a war death too, and for the same reason — it is agreed
+        # hostility over land rather than murder, so it costs a kit and nothing else.
         if byPlayer
             Player? credited = who.Find(creditedTo);
 
             if credited.HasValue()
-                if Guilds.AtWar(who, credited.Value())
+                if Guilds.AtWar(who, credited.Value()) or Contest.Fighting(credited.Value(), who)
                     # A grudge war has no ground of its own, so they come back where they fell and
                     # the fight carries on. The body has not moved yet, so the tile is still readable.
                     who.RespawnAt(who.Map, who.X, who.Y);

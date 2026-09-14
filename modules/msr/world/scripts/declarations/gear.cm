@@ -32,6 +32,13 @@ model ItemRules
     # who fight for free.
     public boolean reagent;
 
+    # ⚠ What drinking one puts back, and a NEGATIVE amount takes instead: a draught that trades
+    # health for mana is one item rather than two rules. An item with all three at nothing is not a
+    # draught, and drinking it does nothing.
+    public integer restoresHealth;
+    public integer restoresMana;
+    public integer restoresStamina;
+
     public shared function Describe(Records these)
         these.Extend("Items");
 
@@ -40,6 +47,9 @@ model ItemRules
         these.Caption("valor", "This is valor");
         these.Caption("coin", "This is the coin");
         these.Caption("reagent", "This is the casting reagent");
+        these.Caption("restoresHealth", "Health it restores");
+        these.Caption("restoresMana", "Mana it restores");
+        these.Caption("restoresStamina", "Stamina it restores");
 
         these.Range("levelReq", 0, 255);
     end function
