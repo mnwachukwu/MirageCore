@@ -159,7 +159,7 @@ public class ScriptStubTests
                 "@summary: Whether they are still in the world. A handle outlives the body it names."),
                 "a member's");
 
-            Assert.That(stub, Does.Contain("@summary: Somebody in the world, as a handle"), "a model's");
+            Assert.That(stub, Does.Contain("@summary: A handle to somebody in the world."), "a model's");
         });
     }
 

@@ -9,10 +9,10 @@
 # question without leaving the file.
 
 ##
-    @summary: Somebody in the world, as a handle rather than a copy. Every question it answers
-    is asked of the world at the moment you ask it, so a handle kept across a tick is still
-    about whoever it named. One arrives as a handler's first argument, or from Builder.Find; a
-    script cannot make one. Ask IsHere whether the body is still there.
+    @summary: A handle to somebody in the world. It reads the world live, so a handle held
+    across a tick still answers about the person it named. One arrives as a handler's first
+    argument or from Builder.Find; a script cannot construct one. Check IsHere before using one
+    you have held on to.
 ##
 abstract model Player
 
@@ -38,10 +38,10 @@ abstract model Player
     public string Guild;
 
     ##
-        @summary: The account behind them - the ONE name here that outlives a session. A handle
+        @summary: The account behind them - the one name here that outlives a session. A handle
         stops meaning anything the moment they log out and a character can be deleted; this is what
         the engine files mail and guild membership under, so it is what to write down when the thing
-        you are promising will be settled later. ⚠ NOT a character name and NOT for showing to
+        you are promising will be settled later. not a character name and not for showing to
         players: it is how they sign in. Print Name in anything anybody reads.
     ##
     public string Account;
@@ -57,7 +57,7 @@ abstract model Player
     public integer X;
 
     ##
-        @summary: The square they are standing on, as a value - map, tile and PLANE together. What
+        @summary: The square they are standing on, as a value - map, tile and plane together. What
         to hand anything that puts something where somebody is, because a bridge and the water under
         it are the same three numbers and two different places.
     ##
@@ -119,7 +119,7 @@ abstract model Player
     ##
         @summary: Puts something they are carrying on, taking off whatever was in its slot. A game
         that hands somebody a sword has no other way to put it in their hand - an opening kit, a
-        quest reward, a curse that arms them against their will. ⚠ None of the refusals a player
+        quest reward, a curse that arms them against their will. None of the refusals a player
         pressing the button meets apply: a rule arming somebody mid-fight meant to. False for a body
         not carrying it, and for a piece naming a slot this world does not declare.
     ##
@@ -133,13 +133,13 @@ abstract model Player
     public abstract boolean function TakeOff(integer item);
 
     ##
-        @summary: Whether they are running rather than walking right now. What running COSTS is
-        yours; the engine moves the body and this is how a rule hears about it.
+        @summary: Whether they are running or walking right now. What running costs is up to you;
+        the engine moves the body, and this is how a rule finds out.
     ##
     public boolean IsRunning;
 
     ##
-        @summary: Marks them as in a fight for that many seconds. What being in a fight MEANS is the
+        @summary: Marks them as in a fight for that many seconds. What being in a fight means is the
         game's; the engine keeps the clock and the client shows it.
     ##
     public abstract function Engage(integer seconds);
@@ -167,14 +167,14 @@ abstract model Player
 
     ##
         @summary: Floats a line off them, to everybody who can see it happen - a number, a word, a
-        name. The color is red, green and blue, each 0 to 255. ⚠ The one place a script asks the
-        client to DRAW: everything else it does sets state and lets the client decide what that
+        name. The color is red, green and blue, each 0 to 255. The one place a script asks the
+        client to draw: everything else it does sets state and lets the client decide what that
         looks like, and a number that happened once is not state.
     ##
     public abstract function Float(string line, integer red, integer green, integer blue);
 
     ##
-        @summary: Whether they are in a fight right now. What being in one MEANS is yours - holding
+        @summary: Whether they are in a fight right now. What being in one means is yours - holding
         regenthrough it, refusing a warp out of it - and this is the clock you set, read back.
     ##
     public boolean IsEngaged;
@@ -195,49 +195,49 @@ abstract model Player
     public boolean IsAggressor;
 
     ##
-        @summary: Whether they are still held off acting. ⚠ Measured FORWARD from when the
-        cooldownstarted, which is the direction the bar drawing it measures.
+        @summary: Whether they are still held off acting. Measured forward from when the cooldown
+        started, matching the direction the bar drawing it fills.
     ##
     public boolean IsWaiting;
 
     ##
-        @summary: Sweeps a crescent over them, the way they are facing. True flings sparks with it,
-        so the swing reads as having hit something rather than passing through air. What the
-        crescent means is yours: a sword, a claw, a thrown net.
+        @summary: Sweeps a crescent over them, in the direction they are facing. Pass true to fling
+        sparks with it, so the swing reads as connecting instead of passing through air. What the
+        crescent depicts is up to you: a sword, a claw, a thrown net.
     ##
     public abstract function Sweep(boolean connected);
 
     ##
-        @summary: Throws something at a creature: 'bolt', 'glitter' or 'parcel', and a color. ⚠ A
-        number floated at the same target waits until it LANDS, so the hit and the damage read as
+        @summary: Throws something at a creature: 'bolt', 'glitter' or 'parcel', and a color. A
+        number floated at the same target waits until it lands, so the hit and the damage read as
         one event - which is most of why this is worth using over a bare burst.
     ##
     public abstract function ThrowAtNpc(Npc at, string look, integer red, integer green, integer blue);
 
     ##
-        @summary: Throws something at another player: 'bolt', 'glitter' or 'parcel', and a color. ⚠
-        A number floated at the same target waits until it LANDS, so the hit and the damage read as
+        @summary: Throws something at another player: 'bolt', 'glitter' or 'parcel', and a color. A
+        number floated at the same target waits until it lands, so the hit and the damage read as
         one event - which is most of why this is worth using over a bare burst.
     ##
     public abstract function ThrowAtPlayer(Player at, string look, integer red, integer green, integer blue);
 
     ##
         @summary: Bursts droplets from them - power is 0 to 100. Deliberately color-blind: blood,
-        sparks off an anvil, water and dust are one burst with a different color. ⚠ Nothing here
+        sparks off an anvil, water and dust are one burst with a different color. Nothing here
         lasts; something still there a minute later is World.Stain.
     ##
     public abstract function Burst(integer red, integer green, integer blue, integer power);
 
     ##
-        @summary: Takes them out of the world, with a cause OnMayDie can read. False where something
-        refused to let them die, which is what a death policy may do.
+        @summary: Takes them out of the world, with a cause OnMayDie can read. False when something
+        refused the death, which a death policy is allowed to do.
     ##
     public abstract boolean function Kill(string cause);
 
     ##
-        @summary: Says where this body comes back. ⚠ Only from inside OnDied, and only about the
-        body that died - it is read the moment that handler returns, and anywhere else it does
-        nothing. Say nothing and they come back where the world puts them.
+        @summary: Says where this body comes back. Only from inside OnDied, and only about the body
+        that died - it is read the moment that handler returns, and anywhere else it does nothing.
+        Say nothing and they come back where the world puts them.
     ##
     public abstract function RespawnAt(integer map, integer x, integer y);
 
@@ -315,13 +315,13 @@ abstract model Builder
     public abstract Verb function Action(string id, string caption, string heading);
 
     ##
-        @summary: Something to ask BEFORE a character exists - a class, a bloodline, a starting
+        @summary: Something to ask before a character exists - a class, a bloodline, a starting
         town. The one question a game cannot ask any other way: everything else it wants to know it
         asks of a body already in the world, and what a character is has to be settled before there
         is one. The player picks from the records you name, listed by their own names, and the
         number they picked is written onto them under your key before OnPlayerJoined runs, so you
-        read it the ordinary way and need no handler. ⚠ A blank record is not offered, because a
-        list of unnamed slots is a screen nobody can use.
+        read it the ordinary way and need no handler. A blank record is not offered, because a list
+        of unnamed slots is a screen nobody can use.
     ##
     public abstract function AskAtCreation(string key, string caption, string records);
 
@@ -354,13 +354,13 @@ abstract model Records
     public abstract function Icon(string glyph);
 
     ##
-        @summary: Adds this model's fields to records that already exist rather than declaring a
-        kind of its own - the engine's 'Items' or 'NPCs', or another module's. This is how a game
-        hangs its own facts on a record the engine owns: which classes may wield a sword, which
-        spell is written on a scroll. An item's own properties are a closed set because Core cannot
-        act on one it has never heard of; yours are open, and they belong on the sword rather than
-        in a table beside it. ⚠ What these records are called, where they live and how many there
-        may be are the other family's answers, so Are and Stored say nothing here.
+        @summary: Adds this model's fields to a family that already exists - the engine's 'Items' or
+        'NPCs', or another module's - instead of declaring one of its own. This is how a game hangs
+        its own facts on a record the engine owns: which classes may wield a sword, which spell is
+        written on a scroll. The engine's own item properties are a closed set, because Core cannot
+        act on one it has never heard of; yours are open, and they belong on the sword itself rather
+        than in a second table keyed by item number. The other family decides what these records are
+        called, where they live and how many there may be, so Are and Stored do nothing here.
     ##
     public abstract function Extend(string records);
 
@@ -391,7 +391,7 @@ abstract model Records
         @summary: Makes a whole-number field a picker over another kind of record, listing them by
         name. Use it to point at the engine's own records - 'Items', 'NPCs', 'Maps', 'Shops',
         'Conversations' - which have no model to type a field as. A field typed as one of your own
-        models already does this and needs nothing here. ⚠ The number is still what is stored: this
+        models already does this and needs nothing here. The number is still what is stored: this
         changes what the form draws and nothing about what a rule reads back.
     ##
     public abstract function Points(string field, string records);
@@ -421,8 +421,8 @@ abstract model Verb
     public abstract function OnNpc();
 
     ##
-        @summary: Offer it as a button on the HUD, which is about the player rather than about
-        anything they are pointing at.
+        @summary: Offer it as a button on the HUD, for a verb about the player rather than about
+        something they are pointing at.
     ##
     public abstract function OnHud();
 
@@ -442,20 +442,20 @@ abstract model Verb
 
     ##
         @summary: Picking it also does what the engine's own reach key would have done - a shop, a
-        conversation, or the body's own line. ⚠ A game that binds E takes that key outright, so this
+        conversation, or the body's own line. A game that binds E takes that key outright, so this
         is how it hands interaction back. Only meaningful on a creature.
     ##
     public abstract function Interacts();
 
     ##
-        @summary: The panel it opens, by the id given to game.Panel. One that was never declared is
-        refused by name rather than drawing a button that does nothing.
+        @summary: The panel it opens, by the id given to game.Panel. A panel that was never declared
+        is refused by name, so you get an error instead of a button that does nothing.
     ##
     public abstract function Opens(string panel);
 
     ##
         @summary: Offered only to a body carrying at least that much under that key. Below it the
-        entry is grayed rather than missing, so a player can see the verb exists.
+        entry is grayed out instead of hidden, so a player can still see the verb exists.
     ##
     public abstract function NeedsAtLeast(string key, integer least);
 
@@ -465,7 +465,7 @@ abstract model Verb
     public abstract function NeedsCarrying(string key);
 
     ##
-        @summary: Offered only to a body that does NOT carry that key.
+        @summary: Offered only to a body that does not carry that key.
     ##
     public abstract function NeedsNothing(string key);
 end model
@@ -554,7 +554,7 @@ abstract model Npc
     public integer X;
 
     ##
-        @summary: The square it is standing on, as a value - map, tile and PLANE together. What to
+        @summary: The square it is standing on, as a value - map, tile and plane together. What to
         hand anything that puts something where a body is, because a bridge and the water under it
         are the same three numbers and two different places.
     ##
@@ -592,14 +592,14 @@ abstract model Npc
 
     ##
         @summary: Floats a line off them, to everybody who can see it happen - a number, a word, a
-        name. The color is red, green and blue, each 0 to 255. ⚠ The one place a script asks the
-        client to DRAW: everything else it does sets state and lets the client decide what that
+        name. The color is red, green and blue, each 0 to 255. The one place a script asks the
+        client to draw: everything else it does sets state and lets the client decide what that
         looks like, and a number that happened once is not state.
     ##
     public abstract function Float(string line, integer red, integer green, integer blue);
 
     ##
-        @summary: Whether they are in a fight right now. What being in one MEANS is yours - holding
+        @summary: Whether they are in a fight right now. What being in one means is yours - holding
         regenthrough it, refusing a warp out of it - and this is the clock you set, read back.
     ##
     public boolean IsEngaged;
@@ -615,8 +615,8 @@ abstract model Npc
     public boolean IsAggressor;
 
     ##
-        @summary: Whether they are still held off acting. ⚠ Measured FORWARD from when the
-        cooldownstarted, which is the direction the bar drawing it measures.
+        @summary: Whether they are still held off acting. Measured forward from when the cooldown
+        started, matching the direction the bar drawing it fills.
     ##
     public boolean IsWaiting;
 
@@ -643,29 +643,29 @@ abstract model Npc
     public abstract function Wait(integer seconds);
 
     ##
-        @summary: Sweeps a crescent over them, the way they are facing. True flings sparks with it,
-        so the swing reads as having hit something rather than passing through air. What the
-        crescent means is yours: a sword, a claw, a thrown net.
+        @summary: Sweeps a crescent over them, in the direction they are facing. Pass true to fling
+        sparks with it, so the swing reads as connecting instead of passing through air. What the
+        crescent depicts is up to you: a sword, a claw, a thrown net.
     ##
     public abstract function Sweep(boolean connected);
 
     ##
-        @summary: Throws something at a player: 'bolt', 'glitter' or 'parcel', and a color. ⚠ A
-        number floated at the same target waits until it LANDS, so the hit and the damage read as
-        one event - which is most of why this is worth using over a bare burst.
+        @summary: Throws something at a player: 'bolt', 'glitter' or 'parcel', and a color. A number
+        floated at the same target waits until it lands, so the hit and the damage read as one event
+        - which is most of why this is worth using over a bare burst.
     ##
     public abstract function ThrowAtPlayer(Player at, string look, integer red, integer green, integer blue);
 
     ##
         @summary: Throws something at another creature: 'bolt', 'glitter' or 'parcel', and a color.
-        ⚠ A number floated at the same target waits until it LANDS, so the hit and the damage read
-        as one event - which is most of why this is worth using over a bare burst.
+        A number floated at the same target waits until it lands, so the hit and the damage read as
+        one event - which is most of why this is worth using over a bare burst.
     ##
     public abstract function ThrowAtNpc(Npc at, string look, integer red, integer green, integer blue);
 
     ##
         @summary: Bursts droplets from them - power is 0 to 100. Deliberately color-blind: blood,
-        sparks off an anvil, water and dust are one burst with a different color. ⚠ Nothing here
+        sparks off an anvil, water and dust are one burst with a different color. Nothing here
         lasts; something still there a minute later is World.Stain.
     ##
     public abstract function Burst(integer red, integer green, integer blue, integer power);
@@ -678,20 +678,20 @@ abstract model Npc
 
     ##
         @summary: Which creature it is a copy of - the number of its record in this world's
-        creatures. ⚠ What a rule about a species keys on: a bounty per creature, a drop table, which
-        bodies a quest counts. Name answers with what a player READS, and two records may share a
+        creatures. What a rule about a species keys on: a bounty per creature, a drop table, which
+        bodies a quest counts. Name answers with what a player reads, and two records may share a
         name, so a rule written against one silently follows an editor rename. Zero for a body that
         has left the world.
     ##
     public integer Kind;
 
     ##
-        @summary: Sends it after a player, whether or not it would ever have noticed them itself -
-        which is how a creature that only fights back gets written: author it to amble, and chase
-        whoever hits it. It commits to the approach rather than walking in, because a body that was
-        SENT is not deciding whether to be interested. ⚠ It overrides the noticing, not the legs:
-        one authored to hold its tile still holds it, and one authored to open the gap runs from
-        them instead. False where either body has left the world.
+        @summary: Sends it after a player, whether or not it would have noticed them on its own.
+        This is how you write a creature that only fights back: author it to amble, then chase
+        whoever hits it. It runs the approach rather than walking in, because it was sent rather
+        than tempted. It overrides the noticing and not the legs, so one authored to hold its tile
+        still holds it and one authored to open the gap runs away instead. False when either body
+        has left the world.
     ##
     public abstract boolean function Chase(Player who);
 
@@ -709,7 +709,7 @@ abstract model Npc
 
     ##
         @summary: How it moves on its own: 'stationary', 'wander', 'pursue', 'flee', 'scavenge', or
-        'shadow' - which closes to a distance and keeps it. ⚠ Six ways of WALKING and deliberately
+        'shadow' - which closes to a distance and keeps it. Six ways of walking and deliberately
         nothing about why - a reason is a property of the game, and 'hostile' means nothing in a
         world with no fighting in it. Empty once the body has left.
     ##
@@ -729,11 +729,10 @@ abstract model Npc
     public integer Range;
 
     ##
-        @summary: How many tiles back it holds, for a body that keeps its distance - the authored
-        number, or what the engine works out from its reach when the record names none. Zero for
-        every other behavior, because none of them keeps a distance. ⚠ A rule that acts at that
-        range wants THIS rather than a number of its own: the body stops where the engine says it
-        stops.
+        @summary: How many tiles back it holds, for a body that keeps its distance: the authored
+        number, or what the engine derives from its reach when the record names none. Zero for every
+        other behavior, none of which keeps a distance. Use this to aim rather than a number of your
+        own, because the body stops where the engine says it stops.
     ##
     public integer Standoff;
 
@@ -745,16 +744,16 @@ abstract model Npc
     public boolean IsChasing;
 
     ##
-        @summary: The PERSON it is after, or nothing - which is also the answer when what it is
-        after is another creature. 🔴 The other half of IsChasing: whether a body is after somebody
-        was askable and WHO was not, and a bolt has to be aimed at something.
+        @summary: The person it is after, or nothing - which is also the answer when what it is
+        after is another creature. The other half of IsChasing: whether a body is after somebody was
+        askable and who was not, and a bolt has to be aimed at something.
     ##
     public Player? Target;
 
     ##
-        @summary: And the CREATURE it is after, or nothing. Two of them rather than one for the same
-        reason there are two contact handlers: a rule handed the wrong kind of body runs and gives a
-        wrong answer, where one never called at least gives none.
+        @summary: And the creature it is after, or nothing. Split in two for the same reason there
+        are two contact handlers: a rule handed the wrong kind of body runs and returns nonsense,
+        where one that is never called at least returns nothing.
     ##
     public Npc? TargetNpc;
 end model
@@ -774,26 +773,25 @@ shared abstract model World
 
     ##
         @summary: Every creature standing within that many tiles of the square, nearest first -
-        which is what a rule about the bodies AROUND something starts from: guards answering a call,
-        a herd that scatters when one of them is startled. ⚠ On that map only, so a body one tile
-        over a border is close and is not in the answer; ask for each map to reach those.
+        which is what a rule about the bodies around something starts from: guards answering a call,
+        a herd that scatters when one of them is startled. On that map only, so a body one tile over
+        a border is close and is not in the answer; ask for each map to reach those.
     ##
     public abstract Npc[] function NpcsNear(integer map, integer x, integer y, integer tiles);
 
     ##
-        @summary: Every creature standing on that map. The whole population rather than a
-        neighborhood, which is what a SWEEP asks for and NpcsNear cannot answer: telling every body
-        that night fell, counting what is still alive, clearing something a spell left behind. ⚠
-        Visitors on the map are in and natives away chasing elsewhere are out, so a body appears
-        exactly once across a walk of every map.
+        @summary: Every creature standing on that map. Use it for a sweep NpcsNear cannot answer:
+        telling every creature that night fell, counting what is still alive, clearing something a
+        spell left behind. Visitors on the map are included and natives away chasing elsewhere are
+        not, so walking every map hands you each creature once.
     ##
     public abstract Npc[] function NpcsOn(integer map);
 
     ##
         @summary: Every player standing within that many tiles of the square, nearest first - the
-        mirror of NpcsNear, and what a rule about the PEOPLE around something starts from: who
-        shared a kill, who heard a shout, who was standing too close. ⚠ On that map only, so
-        somebody one tile over a border is close and is not in the answer.
+        mirror of NpcsNear, and what a rule about the people around something starts from: who
+        shared a kill, who heard a shout, who was standing too close. On that map only, so somebody
+        one tile over a border is close and is not in the answer.
     ##
     public abstract Player[] function PlayersNear(integer map, integer x, integer y, integer tiles);
 
@@ -811,35 +809,34 @@ shared abstract model World
     public abstract function Tell(string line);
 
     ##
-        @summary: Says a line to everybody who can SEE that map, which is the nearest thing a
-        seamless world has to a room. Not everybody standing on it: somebody on the next map along
-        is looking at this one.
+        @summary: Says a line to everybody who can see that map - the nearest thing a seamless world
+        has to a room. That is wider than the people standing on it: somebody on the next map along
+        is looking at this one too.
     ##
     public abstract function TellOn(integer map, string line);
 
     ##
-        @summary: Says a line to everybody within earshot of a square - the tighter audience, the
-        one that hears speech rather than the one that can see the region.
+        @summary: Says a line to everybody within earshot of a square. A tighter audience than
+        TellOn: who can hear speech, not who can see the region.
     ##
     public abstract function TellNear(integer map, integer x, integer y, string line);
 
     ##
-        @summary: Marks the ground, which dries on its own and is drawn to everyone who can see the
-        tile. Amount is 0 to 100. ⚠ Unlike a burst, this LASTS - it is the one worldspace mark a
-        game makes that is still there when somebody walks back. Its color is the world's own, set
-        once rather than per stain.
+        @summary: Marks the ground. The stain dries on its own and is drawn to everyone who can see
+        the tile; amount is 0 to 100. Unlike a burst it persists, so it is still there when somebody
+        walks back. The color is the world's, set once for the whole world.
     ##
     public abstract function Stain(integer map, integer x, integer y, integer size, integer amount);
 
     ##
-        @summary: Says a line to a set of players, wherever they are. Anybody in it who has left the
-        world is skipped rather than refused: a set gathered a moment ago is a set somebody may have
-        logged out of.
+        @summary: Says a line to a set of players, wherever they are. Anybody in the set who has
+        since left the world is skipped, not refused, because a set gathered a moment ago may
+        already be out of date.
     ##
     public abstract function TellThese(Player[] them, string line);
 
     ##
-        @summary: Everybody IN THE WORLD who shares their guild, including them. Empty for somebody
+        @summary: Everybody in the world who shares their guild, including them. Empty for somebody
         in no guild - which is not the same as a guild with nobody online, and World.Guild is what
         tells those apart.
     ##
@@ -852,33 +849,32 @@ shared abstract model World
 
     ##
         @summary: What kind of ground is there: 'walkable', 'blocked', 'warp', 'item', 'npcavoid',
-        'door', 'plate', or 'ramp'. Empty for a square that is not on a real map. ⚠ The GROUND layer
-        - a bridge deck is a different answer at the same coordinates.
+        'door', 'plate', or 'ramp'. Empty for a square that is not on a real map. The ground layer -
+        a bridge deck is a different answer at the same coordinates.
     ##
     public abstract string function TileAt(integer map, integer x, integer y);
 
     ##
-        @summary: Whether a straight line between two squares crosses nothing that stops sight. The
-        engine runs the same trace the client colors its target arrow with, so a rule gating on this
-        agrees with what the player was shown rather than nearly agreeing. A wall stops sight only
-        if it was authored to: a railing is blocked to walk through and clear to see through.
+        @summary: Whether a straight line between two squares crosses anything that stops sight.
+        This is the same trace the client colors its target arrow with, so a rule gating on it
+        agrees exactly with what the player was shown. A wall stops sight only if it was authored
+        to: a railing blocks walking and not seeing.
     ##
     public abstract boolean function CanSee(integer fromMap, integer fromX, integer fromY, integer toMap, integer toX, integer toY);
 
     ##
         @summary: How far apart two squares are, in tiles, counting across map borders. The world
-        scrolls contiguously, so a body one tile over a border is one tile away, where arithmetic on
-        the coordinates calls it another map and unreachable. Every range rule wants this rather
-        than subtraction. -1 when the two are too far apart to compare.
+        scrolls contiguously, so a body one tile over a border is one tile away; subtracting
+        coordinates would call it another map and unreachable. Use this for any range rule. -1 when
+        the two are too far apart to compare.
     ##
     public abstract integer function Distance(integer fromMap, integer fromX, integer fromY, integer toMap, integer toX, integer toY);
 
     ##
-        @summary: What time of day it is - 'day', 'dusk', 'night' or 'dawn'. The engine runs the
-        cycle and the client paints it, and a game with anything that is different after dark has
-        nothing to read otherwise: creatures that hunt at night, a shop that shuts, a spell that
-        only works under a moon. ⚠ One answer for the WHOLE WORLD, unlike the weather - a cycle the
-        server runs rather than a property of a place.
+        @summary: What time of day it is: 'day', 'dusk', 'night' or 'dawn'. The engine runs the
+        cycle and the client paints it. Read it for anything that changes after dark - creatures
+        that hunt at night, a shop that shuts, a spell that needs a moon. One answer for the whole
+        world, unlike the weather, which is per map.
     ##
     public abstract string function TimeOfDay();
 
@@ -889,10 +885,9 @@ shared abstract model World
     public abstract string function Weather(integer map);
 
     ##
-        @summary: Which guild they belong to, as its number, or zero for none. The number rather
-        than the guild is a record rather than a body: it has no place, nothing walks it, and it
-        name, because a guild outlives every member. Player.Guild answers with the name, which reads
-        rather than what a rule keys on.
+        @summary: Which guild they belong to, as its number, or zero for none. Rules key on the
+        number because a guild is a record, not a body: it has no place, nothing walks it, and it
+        outlives every member. Player.Guild gives the name, which is for showing people.
     ##
     public abstract integer function GuildOf(Player who);
 
@@ -918,12 +913,12 @@ shared abstract model World
 
     ##
         @summary: What rank they hold: 'leader', 'officer', 'member', or empty for somebody in no
-        guild. The engine keeps the rank and moves it; what a rank may DO is yours.
+        guild. The engine keeps the rank and moves it; what a rank may do is yours.
     ##
     public abstract string function GuildRank(Player who);
 
     ##
-        @summary: One of the values YOUR GAME hangs on a guild - a war, a level, a season score.
+        @summary: One of the values your game hangs on a guild - a war, a level, a season score.
         Zero for a key it does not carry, and for a number naming no guild.
     ##
     public abstract integer function GuildNumber(integer guild, string key);
@@ -934,9 +929,9 @@ shared abstract model World
     public abstract string function GuildText(integer guild, string key);
 
     ##
-        @summary: Writes one of them, and gets the guild onto disk. ⚠ Saved on EVERY write, because
-        a guild is not a body: nothing logs it out, so there is no later moment where its values
-        would be written anyway.
+        @summary: Writes one of them, and gets the guild onto disk. Saved on every write, because a
+        guild is not a body: nothing logs it out, so there is no later moment where its values would
+        be written anyway.
     ##
     public abstract function SetGuildNumber(integer guild, string key, integer amount);
 
@@ -946,13 +941,13 @@ shared abstract model World
     public abstract function SetGuildText(integer guild, string key, string value);
 
     ##
-        @summary: Everybody IN THE WORLD who belongs to that guild. Empty for one with nobody
+        @summary: Everybody in the world who belongs to that guild. Empty for one with nobody
         online, which is not the same as a guild that is not there.
     ##
     public abstract Player[] function GuildMembers(integer guild);
 
     ##
-        @summary: Every guild there is, by number. ⚠ WHAT ANYTHING RANKED STARTS FROM: every other
+        @summary: Every guild there is, by number. what anything ranked starts from: every other
         guild call takes a number you already had, off a body or off a name, and a standing, a
         league table or a sweep over all of them has none. Counting upward and hoping does not work
         either - a guild that disbanded leaves a hole in the numbering.
@@ -960,30 +955,29 @@ shared abstract model World
     public abstract integer[] function Guilds();
 
     ##
-        @summary: Whoever is signed in to that account right now, or nothing. The way back: a rule
-        that wrote an account down reaches the person again with this, and nothing is the answer
-        that says to POST rather than to tell.
+        @summary: Whoever is signed in to that account right now, or nothing. Use it to reach the
+        person again after writing an account down; nothing means they are offline, so post to them
+        instead of telling them.
     ##
     public abstract Player? function WhoIs(string account);
 
     ##
-        @summary: Every account in a guild, SIGNED IN OR NOT. ⚠ A guild's roster outlives its
-        members' sessions, and World.GuildMembers answers only with the part of it that is here.
-        Anything about the guild rather than about the people in front of you starts from this - a
-        dividend, a census, a rule about who has stopped turning up.
+        @summary: Every account in a guild, signed in or not. World.GuildMembers answers only with
+        the members currently online; this is the whole roster, which outlives their sessions. Use
+        it for anything about the guild itself: a dividend, a census, a rule about who has stopped
+        turning up.
     ##
     public abstract string[] function AccountsIn(integer guild);
 
     ##
-        @summary: Whether that account is a LIVE member of the guild rather than a name on its
-        roster: signed in for long enough, recently enough, by the engine's own measure. What to ask
-        before counting somebody - who votes, who makes a quorum, who is worth counting when a guild
-        is sized up.
+        @summary: Whether that account is an active member of the guild or just a name on its
+        roster: signed in for long enough, recently enough, by the engine's own measure. Ask it
+        before counting somebody - who votes, who makes a quorum, how big a guild really is.
     ##
     public abstract boolean function IsActiveIn(integer guild, string account);
 
     ##
-        @summary: Sends an ACCOUNT a letter, whether or not anybody is signed in to it. What
+        @summary: Sends an account a letter, whether or not anybody is signed in to it. What
         World.Mail cannot do: reach somebody who is not here. A rule that wrote an account down when
         it had the person settles up afterwards, and they find it waiting.
     ##
@@ -996,24 +990,23 @@ shared abstract model World
     public abstract boolean function MailItemTo(string account, integer item, integer many, string subject, string body);
 
     ##
-        @summary: Sends them a letter. ⚠ THE ONE THING A RULE CAN SAY THAT OUTLIVES THE MOMENT: a
-        line of chat is gone when they log out, and a letter waits - through a logout, a restart,
-        and a server that was down for a week.
+        @summary: Sends them a letter. the one thing A rule can say that outlives the moment: a line
+        of chat is gone when they log out, and a letter waits - through a logout, a restart, and a
+        server that was down for a week.
     ##
     public abstract boolean function Mail(Player who, string subject, string body);
 
     ##
-        @summary: The same, with something attached, and the thing waits with it. What a reward that
-        was EARNED rather than picked up looks like - a refund, a prize, a delivery, the rest of a
-        payout that would not fit in a bag. Player.Give is the other one, and it needs room in the
-        bag right now.
+        @summary: The same, with an item attached, which waits in the message until it is collected.
+        Use it for a refund, a prize, a delivery, or a payout too big for a bag. Player.Give is the
+        alternative and needs room in the bag right now.
     ##
     public abstract boolean function MailItem(Player who, integer item, integer many, string subject, string body);
 
     ##
-        @summary: Sends every member of a guild that item, and REACHES THE ONES WHO ARE NOT HERE.
+        @summary: Sends every member of a guild that item, and reaches the ones who are not here.
         The only way to pay somebody offline: everything else reaches a body in the world, and what
-        a GROUP earned is owed to its members whether or not they happened to be logged in. It
+        a group earned is owed to its members whether or not they happened to be logged in. It
         arrives as mail, so it waits for them. 'onlyActive' narrows it to members who have really
         been playing, by the engine's own measure of a live roster - a payout split among a hundred
         names nobody has used is a payout nobody feels. Yields how many it reached.
@@ -1039,8 +1032,8 @@ shared abstract model World
 
     ##
         @summary: Which bag slots they have something in, in slot order. Carrying asks about an
-        ITEM; this asks about SLOTS, which is what a rule about somebody's bag needs - two copies of
-        one sword are two slots and two amounts of wear.
+        item; this asks about slots, which is what a rule about the bag itself needs - two copies of
+        one sword are two slots with their own wear.
     ##
     public abstract integer[] function BagOf(Player who);
 
@@ -1070,14 +1063,14 @@ shared abstract model World
     public abstract boolean function DropSlot(Player who, integer slot, integer many);
 
     ##
-        @summary: What they are wearing in ONE slot, by item number. Zero for an empty slot, and for
-        a slot this world does not declare. A rule about one place on the body asks this rather than
-        walking the list - whether a shield is up, whether a hand is free.
+        @summary: What they are wearing in one slot, by item number. Zero for an empty slot, and for
+        a slot this world does not declare. Ask it instead of walking the whole list when you care
+        about one place on the body - whether a shield is up, whether a hand is free.
     ##
     public abstract integer function WornIn(Player who, string slot);
 
     ##
-        @summary: How much wear is left in the copy they are WEARING. Zero when they are not wearing
+        @summary: How much wear is left in the copy they are wearing. Zero when they are not wearing
         one - two copies in a bag are two different amounts of wear, and this means the one that was
         on them.
     ##
@@ -1092,7 +1085,7 @@ shared abstract model World
     ##
         @summary: Wears out that many points of the copy they are wearing, never past nothing.
         Yields how many were actually taken, which is fewer than asked for when it was nearly worn
-        out. ⚠ An item worn to nothing is NOT destroyed: it stays in the bag, unusable, until it is
+        out. An item worn to nothing is not destroyed: it stays in the bag, unusable, until it is
         repaired.
     ##
     public abstract integer function WearOut(Player who, integer item, integer points);
@@ -1118,11 +1111,11 @@ shared abstract model World
     public abstract boolean function DropClaimed(Spot where, integer item, integer many, Player who, integer seconds);
 
     ##
-        @summary: Gold one point of durability costs on ON-TIER gear at that tier, priced off a
-        reference piece rather than off anything anybody is holding. Fractional on purpose: near the
-        bottom of the ladder a point is worth a fraction of a coin. A game charging upkeep in
-        something that is not durability - a reagent, a charge, a ration - prices it against this,
-        so its number follows the repair shop instead of drifting away from it silently.
+        @summary: What one point of durability costs in gold at that tier, priced off a reference
+        piece rather than off any particular item. Fractional on purpose: near the bottom of the
+        ladder a point is worth less than a coin. Price other kinds of upkeep - a reagent, a charge,
+        a ration - against this, and they will track the repair shop instead of drifting away from
+        it.
     ##
     public abstract real function RepairRate(integer tier);
 
@@ -1153,9 +1146,10 @@ shared abstract model World
     public abstract integer function ExitY(integer map);
 
     ##
-        @summary: One of YOUR OWN fields on a map, as a whole number - a field you added with
-        Records.Extend("Maps"). The map's own value, and its region's where the map leaves it unset,
-        which is how every property a map inherits already works. Zero where neither carries it.
+        @summary: One of your own fields on a map, as a whole number - a field you added with
+        Records.Extend("Maps"). Answers with the map's own value, falling back to its region's where
+        the map leaves it unset, the same way every inherited map property works. Zero when neither
+        carries it.
     ##
     public abstract integer function MapNumber(integer map, string field);
 
@@ -1170,10 +1164,10 @@ shared abstract model World
     public abstract boolean function MapTruth(integer map, string field);
 
     ##
-        @summary: Writes one of YOUR OWN fields on a record, and saves it. Where a game keeps what
+        @summary: Writes one of your own fields on a record, and saves it. Where a game keeps what
         belongs to no body and no guild: the last day it settled accounts, a season number, who
-        holds a territory. ⚠ Your own fields only - the engine's properties are written through
-        their own paths, which normalize what they are given.
+        holds a territory. Your own fields only - the engine's properties are written through their
+        own paths, which normalize what they are given.
     ##
     public abstract function SetRecordNumber(string records, integer number, string field, integer amount);
 
@@ -1196,19 +1190,19 @@ shared abstract model World
     public abstract Spot function Spot(integer map, integer x, integer y);
 
     ##
-        @summary: The same square on the RAISED surface rather than on the ground - a bridge, a
-        ledge, a gantry, whatever a world built up there. The two are one tile and two places.
+        @summary: The same square on the raised surface - a bridge, a ledge, a gantry - instead of
+        the ground. One tile, two places.
     ##
     public abstract Spot function SpotRaised(integer map, integer x, integer y);
 
     ##
-        @summary: That many squares spread across a region, every one reachable ON FOOT from every
-        other. ⚠ Measured by WALKING, across the region's seams - not in a straight line, which is a
+        @summary: That many squares spread across a region, every one reachable on foot from every
+        other. Measured by walking, across the region's seams - not in a straight line, which is a
         lie wherever a wall or water stands between two tiles that are near on paper, and not by map
         number, which piles everything into whichever corner was drawn first. 'onlyWhere' names one
-        of YOUR OWN truth fields on Maps and a square goes only on a map carrying it; blank puts one
+        of your own truth fields on Maps and a square goes only on a map carrying it; blank puts one
         anywhere in the region. The walk crosses the whole region either way, so a town in the
-        middle of one is walked THROUGH. Fewer than asked for means there was nowhere else to put
+        middle of one is walked through. Fewer than asked for means there was nowhere else to put
         one.
     ##
     public abstract Spot[] function SpreadOver(integer region, integer count, string onlyWhere);
@@ -1222,8 +1216,8 @@ shared abstract model World
     public abstract boolean function Empty(integer map);
 
     ##
-        @summary: Lets it hold creatures again, and puts its own back at once rather than leaving it
-        bare until each slot's clock comes round.
+        @summary: Lets the map hold creatures again and spawns its own back immediately, instead of
+        leaving it bare until each slot's respawn clock comes round.
     ##
     public abstract boolean function Refill(integer map);
 
@@ -1233,10 +1227,10 @@ shared abstract model World
     public abstract boolean function IsEmptied(integer map);
 
     ##
-        @summary: Puts a mark on that square and hands it back, so its ring, its label, its meter
-        and who sees it are each a line of their own. The twin of an overhead bar, for a PLACE.
-        Marking again under a name already used REPLACES what is there, which is how a mark moves
-        and how its meter counts - one call rather than a remove and a place.
+        @summary: Puts a mark on that square and hands it back, so you can set its ring, label,
+        meter and audience on the lines below. The equivalent of an overhead bar, for a place.
+        Marking again under a name already in use replaces what is there, which is how a mark moves
+        and how its meter advances - one call, not a remove and a place.
     ##
     public abstract Marker function Marker(string id, Spot where);
 
@@ -1247,16 +1241,17 @@ shared abstract model World
     public abstract boolean function Unmark(string id);
 
     ##
-        @summary: Whether that square is inside the mark's ring. ⚠ ASK THIS rather than doing the
-        arithmetic: the ring a player can see and the ring a rule scores are then the same mark, and
-        two answers drifting apart is invisible - the line on the screen would sit somewhere other
-        than the line that counts. False for a mark with no ring, and for another map.
+        @summary: Whether that square is inside the mark's ring. Ask it instead of doing the
+        arithmetic yourself, so the ring the player sees and the ring the rule scores stay the same
+        one - if they drift apart, the line on screen sits somewhere other than the line that
+        counts, and nothing reports it. False for a mark with no ring, and for a square on another
+        map.
     ##
     public abstract boolean function InsideMark(string id, Spot where);
 
     ##
         @summary: How far the server's own civil day is from UTC right now, in seconds - east of it
-        positive, west of it negative. ⚠ ANYTHING THAT TURNS OVER AT MIDNIGHT wants this: a daily
+        positive, west of it negative. anything that turns over at midnight wants this: a daily
         reset, a weekly tax, a season all mean the operator's own midnight, and dividing World.Now
         by a day gives the wrong one everywhere but Greenwich. Add it before dividing. Read fresh,
         so a place that keeps summer time answers differently in July than in January - which is
@@ -1265,7 +1260,7 @@ shared abstract model World
     public abstract integer function LocalOffset();
 
     ##
-        @summary: One of YOUR OWN values about the world itself, as a whole number, or zero for one
+        @summary: One of your own values about the world itself, as a whole number, or zero for one
         never written. The place for what belongs to no body and no record - which season it is,
         whether an event is running, how many times something has happened. Read back as it was left
         when the server starts again.
@@ -1324,10 +1319,9 @@ shared abstract model World
     public abstract integer function RecordNumber(string records, integer number, string field);
 
     ##
-        @summary: What a record is CALLED - an item's name, a creature's, a map's. The one property
-        of the engine's own a record can be asked for, because a rule that PICKS a record rather
-        than being handed one has to be able to say which. Blank for a slot nobody authored. For
-        your own records it is their name field.
+        @summary: What a record is called - an item's name, a creature's, a map's. The one engine
+        property a record can be asked for, so that a rule choosing between records can say which it
+        means. Blank for a slot nobody authored. For your own records this is their name field.
     ##
     public abstract string function RecordName(string records, integer number);
 
@@ -1391,9 +1385,9 @@ abstract model Spot
     public integer Y;
 
     ##
-        @summary: Whether it is on the RAISED surface rather than on the ground - a bridge, a ledge,
-        a gantry. ⚠ A bridge and the water under it are the same three numbers and two different
-        places, so a rule that acts on a square asks this before deciding it knows where it is.
+        @summary: Whether it is on the raised surface - a bridge, a ledge, a gantry - or on the
+        ground. A bridge and the water beneath it share their coordinates, so a rule that acts on a
+        square needs this to tell the two apart.
     ##
     public boolean IsRaised;
 end model
@@ -1418,24 +1412,23 @@ abstract model Marker
     public abstract function Color(integer red, integer green, integer blue);
 
     ##
-        @summary: Draws the ground within that many tiles of it. ⚠ Drawn as the STAIRCASE of tiles
+        @summary: Draws the ground within that many tiles of it. Drawn as the staircase of tiles
         actually inside, never as a circle - so the line on the screen and World.InsideMark are one
         statement. Nothing at or below zero draws no ring.
     ##
     public abstract function Ring(integer tiles);
 
     ##
-        @summary: A bar over it, that full out of that. A ceiling of nothing draws no meter, which
-        is how a mark that is only a pin says so.
+        @summary: A bar over the mark, that full out of that. Set the ceiling to zero for a mark
+        that is only a pin, with no bar at all.
     ##
     public abstract function Meter(integer value, integer ceiling);
 
     ##
-        @summary: Makes it private to those bodies. Left unsaid, everybody who can see the square
-        sees it. Said AGAIN it adds them rather than replacing, so a mark for several sides is one
-        call per side. ⚠ A SNAPSHOT rather than a rule: somebody who joins afterwards is not on it
-        until the mark is placed again. A side whose members come and go says this each time it
-        moves the mark, which it is doing anyway.
+        @summary: Makes the mark private to those bodies. Leave it unset and everybody who can see
+        the square sees it. Calling it again adds to the list, so a mark for several sides is one
+        call per side. The list is a snapshot: somebody who joins after it is placed will not see
+        the mark until it is placed again.
     ##
     public abstract function SeenBy(Player[] them);
 end model
@@ -1453,7 +1446,7 @@ abstract model Spoils
     public integer Item;
 
     ##
-        @summary: How many of it. ⚠ Only an item that STACKS reads this; anything else lands as one
+        @summary: How many of it. Only an item that stacks reads this; anything else lands as one
         however large the number is.
     ##
     public integer Many;
@@ -1465,13 +1458,13 @@ abstract model Spoils
     public integer Chance;
 
     ##
-        @summary: Which creature this was a copy of. What a rule about a KIND of creature keys on,
+        @summary: Which creature this was a copy of. What a rule about a kind of creature keys on,
         and it outlives the body - which is about to stop being there.
     ##
     public integer Kind;
 
     ##
-        @summary: The body itself, still standing on the tile it fell on. ⚠ For this call only: the
+        @summary: The body itself, still standing on the tile it fell on. For this call only: the
         slot is cleared the moment the table finishes rolling, and a handle kept past that answers
         IsHere with no.
     ##
@@ -1483,8 +1476,8 @@ abstract model Spoils
     public Player? Killer;
 
     ##
-        @summary: Makes the line land that often instead. Nothing at or below zero drops the line
-        without rolling it at all, which is how a rule says this creature owes this player nothing.
+        @summary: Sets how often the line lands, as a percentage. Zero or less skips the line
+        without rolling it, so this kill owes this player nothing.
     ##
     public abstract function Rolls(integer chance);
 
