@@ -446,7 +446,7 @@ public sealed class JoinLeaveSystem : GameSystem
                 Y = t.Y,
                 Dir = t.Dir,
                 Movement = MovementType.None,
-                MsSinceCombat = int.MaxValue,
+                MsSinceCombat = PacketBuilder.MsSinceCombat(t.CombatExpiresAt, Environment.TickCount64, 0),
                 HasTarget = t.Target > 0,
                 Attacking = false,
                 Layer = t.Layer,
@@ -894,7 +894,7 @@ public sealed class JoinLeaveSystem : GameSystem
                 return new MapNpcsPacket.MapNpcData(
                     i, mn.Num,
                     mn.X, mn.Y, mn.Dir,
-                    int.MaxValue,
+                    PacketBuilder.MsSinceCombat(mn.CombatExpiresAt, now, 0),
                     mn.Target > 0, mn.Layer);
             })
             .ToArray();

@@ -82,6 +82,75 @@ abstract model Player
     public abstract function Take(integer item, integer many);
 
     ##
+        @summary: Marks them as in a fight for that many seconds. What being in a fight MEANS is the
+        game's; the engine keeps the clock and the client shows it.
+    ##
+    public abstract function Engage(integer seconds);
+
+    ##
+        @summary: Marks them as out of the fight for that many seconds.
+    ##
+    public abstract function Down(integer seconds);
+
+    ##
+        @summary: Marks them for that many seconds - a target somebody else's rule put a flag on.
+    ##
+    public abstract function Mark(integer seconds);
+
+    ##
+        @summary: Marks them as the one who started it, for that many seconds. What that costs them
+        is the game's to decide.
+    ##
+    public abstract function Flag(integer seconds);
+
+    ##
+        @summary: Holds them off acting again for that many seconds.
+    ##
+    public abstract function Wait(integer seconds);
+
+    ##
+        @summary: Floats a line off them, to everybody who can see it happen - a number, a word, a
+        name. The color is red, green and blue, each 0 to 255. ⚠ The one place a script asks the
+        client to DRAW: everything else it does sets state and lets the client decide what that
+        looks like, and a number that happened once is not state.
+    ##
+    public abstract function Float(string line, integer red, integer green, integer blue);
+
+    ##
+        @summary: Sweeps a crescent over them, the way they are facing. True flings sparks with it,
+        which is what makes a swing read as having HIT something rather than passing through air.
+        What the crescent means is yours: a sword, a claw, a thrown net.
+    ##
+    public abstract function Sweep(boolean connected);
+
+    ##
+        @summary: Throws something at a creature: 'bolt', 'glitter' or 'parcel', and a color. ⚠ A
+        number floated at the same target waits until it LANDS, so the hit and the damage read as
+        one event - which is most of why this is worth using over a bare burst.
+    ##
+    public abstract function ThrowAtNpc(Npc at, string look, integer red, integer green, integer blue);
+
+    ##
+        @summary: Throws something at another player: 'bolt', 'glitter' or 'parcel', and a color. ⚠
+        A number floated at the same target waits until it LANDS, so the hit and the damage read as
+        one event - which is most of why this is worth using over a bare burst.
+    ##
+    public abstract function ThrowAtPlayer(Player at, string look, integer red, integer green, integer blue);
+
+    ##
+        @summary: Bursts droplets from them - power is 0 to 100. Deliberately color-blind: blood,
+        sparks off an anvil, water and dust are one burst with a different color. ⚠ Nothing here
+        lasts; something still there a minute later is World.Stain.
+    ##
+    public abstract function Burst(integer red, integer green, integer blue, integer power);
+
+    ##
+        @summary: Takes them out of the world, with a cause OnMayDie can read. False where something
+        refused to let them die, which is what a death policy is for.
+    ##
+    public abstract boolean function Kill(string cause);
+
+    ##
         @summary: The body behind a name, or nothing if no one is using it. OnAction hands you a
         name; this turns it into a player you can read and write.
     ##
@@ -327,6 +396,195 @@ abstract model Panel
         @summary: A bar on this panel, filled by one key against another.
     ##
     public abstract function Meter(string key, string outOf, string caption, integer red, integer green, integer blue);
+end model
+
+##
+    @summary: A creature, as a handle rather than a copy - the same kind of thing a Player is,
+    for a body the engine owns. One comes from World.NpcAt; a script cannot make one. It is
+    named by where it SPAWNS rather than by where it stands, so a handle kept while it walks
+    onto another map still names it. IsHere is what says the body is still there.
+##
+abstract model Npc
+
+    ##
+        @summary: What it is called - the name on its record, trimmed. Blank once the body has left.
+    ##
+    public string Name;
+
+    ##
+        @summary: Whether the body is still in the world. A handle outlives what it names.
+    ##
+    public boolean IsHere;
+
+    ##
+        @summary: Which map it is standing on, or zero when it is nowhere.
+    ##
+    public integer Map;
+
+    ##
+        @summary: How far across that map it is.
+    ##
+    public integer X;
+
+    ##
+        @summary: How far down it.
+    ##
+    public integer Y;
+
+    ##
+        @summary: Whether it carries that key at all, which is what tells absence from zero.
+    ##
+    public abstract boolean function Has(string key);
+
+    ##
+        @summary: What it carries under that key, or zero where it carries nothing.
+    ##
+    public abstract integer function Number(string key);
+
+    ##
+        @summary: The same, as text, or empty where it carries nothing.
+    ##
+    public abstract string function Text(string key);
+
+    ##
+        @summary: Writes that key, and ships it to everyone entitled to see it.
+    ##
+    public abstract function SetNumber(string key, integer amount);
+
+    ##
+        @summary: The same, with text.
+    ##
+    public abstract function SetText(string key, string value);
+
+    ##
+        @summary: Floats a line off them, to everybody who can see it happen - a number, a word, a
+        name. The color is red, green and blue, each 0 to 255. ⚠ The one place a script asks the
+        client to DRAW: everything else it does sets state and lets the client decide what that
+        looks like, and a number that happened once is not state.
+    ##
+    public abstract function Float(string line, integer red, integer green, integer blue);
+
+    ##
+        @summary: Marks it as in a fight for that many seconds, which is what makes its overhead
+        bars appear. What being in a fight MEANS is the game's; the engine keeps the clock.
+    ##
+    public abstract function Engage(integer seconds);
+
+    ##
+        @summary: Marks it for that many seconds - a flag a game puts on a body and reads back
+        later, which is how a kill gets claimed by whoever earned it.
+    ##
+    public abstract function Mark(integer seconds);
+
+    ##
+        @summary: Marks it as the one that started it, for that many seconds.
+    ##
+    public abstract function Flag(integer seconds);
+
+    ##
+        @summary: Holds it off acting again for that many seconds.
+    ##
+    public abstract function Wait(integer seconds);
+
+    ##
+        @summary: Sweeps a crescent over them, the way they are facing. True flings sparks with it,
+        which is what makes a swing read as having HIT something rather than passing through air.
+        What the crescent means is yours: a sword, a claw, a thrown net.
+    ##
+    public abstract function Sweep(boolean connected);
+
+    ##
+        @summary: Throws something at a player: 'bolt', 'glitter' or 'parcel', and a color. ⚠ A
+        number floated at the same target waits until it LANDS, so the hit and the damage read as
+        one event - which is most of why this is worth using over a bare burst.
+    ##
+    public abstract function ThrowAtPlayer(Player at, string look, integer red, integer green, integer blue);
+
+    ##
+        @summary: Throws something at another creature: 'bolt', 'glitter' or 'parcel', and a color.
+        ⚠ A number floated at the same target waits until it LANDS, so the hit and the damage read
+        as one event - which is most of why this is worth using over a bare burst.
+    ##
+    public abstract function ThrowAtNpc(Npc at, string look, integer red, integer green, integer blue);
+
+    ##
+        @summary: Bursts droplets from them - power is 0 to 100. Deliberately color-blind: blood,
+        sparks off an anvil, water and dust are one burst with a different color. ⚠ Nothing here
+        lasts; something still there a minute later is World.Stain.
+    ##
+    public abstract function Burst(integer red, integer green, integer blue, integer power);
+
+    ##
+        @summary: Takes it out of the world, with a cause the death policy can read. False for a
+        body that was not there, or that something refused to let die.
+    ##
+    public abstract boolean function Kill(string cause);
+end model
+
+##
+    @summary: The world as it is right now, rather than what the game IS. Reached through its
+    own name from any handler, and useful nowhere in Configure - there is no world yet. What it
+    answers is the reverse of what a handle answers: a handler is given a square, and this turns
+    a square back into whoever is standing on it.
+##
+shared abstract model World
+
+    ##
+        @summary: The creature standing on that square, or nothing. A verb declared OnNpc arrives at
+        OnAction with the square it was used on, and this is what turns that into the body.
+    ##
+    public abstract Npc? function NpcAt(integer map, integer x, integer y);
+
+    ##
+        @summary: The player standing on that square, or nothing. Answered before a creature when
+        both somehow occupy one tile.
+    ##
+    public abstract Player? function PlayerAt(integer map, integer x, integer y);
+
+    ##
+        @summary: Says a line to everybody in the world. For the handful of things that are
+        genuinely everyone's business - a season turning, somebody finishing what only one person
+        can finish. A game that announces ordinary events this way has an unreadable chat log.
+    ##
+    public abstract function Tell(string line);
+
+    ##
+        @summary: Says a line to everybody who can SEE that map, which is the nearest thing a
+        seamless world has to a room. Not everybody standing on it: somebody on the next map along
+        is looking at this one.
+    ##
+    public abstract function TellOn(integer map, string line);
+
+    ##
+        @summary: Says a line to everybody within earshot of a square - the tighter audience, the
+        one that hears speech rather than the one that can see the region.
+    ##
+    public abstract function TellNear(integer map, integer x, integer y, string line);
+
+    ##
+        @summary: Marks the ground, which dries on its own and is drawn to everyone who can see the
+        tile. Amount is 0 to 100. ⚠ Unlike a burst, this LASTS - it is the one worldspace mark a
+        game makes that is still there when somebody walks back. Its color is the world's own, set
+        once rather than per stain.
+    ##
+    public abstract function Stain(integer map, integer x, integer y, integer size, integer amount);
+
+    ##
+        @summary: How many records of that kind this world holds, counting blank slots. Zero for a
+        kind nobody declared.
+    ##
+    public abstract integer function Records(string records);
+
+    ##
+        @summary: One field of one record, as text, or empty where the slot or the field is not
+        there. What a game reads at run time out of the records its own editor authored.
+    ##
+    public abstract string function Record(string records, integer number, string field);
+
+    ##
+        @summary: The same, as a whole number. Zero where the slot or the field is not there.
+    ##
+    public abstract integer function RecordNumber(string records, integer number, string field);
 end model
 
 ##

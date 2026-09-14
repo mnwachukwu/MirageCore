@@ -253,7 +253,7 @@ public sealed partial class NpcAiSystem : GameSystem
             Dir = t.Dir,
             Movement = t.Moving,
             Stepped = stepped,
-            MsSinceCombat = int.MaxValue,
+            MsSinceCombat = PacketBuilder.MsSinceCombat(t.CombatExpiresAt, now, 0),
             HasTarget = t.Target > 0,
             Attacking = t.Attacking,
             Layer = t.Layer,

@@ -1,4 +1,5 @@
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 
 namespace Mirage.Client.Core.Logic;
 
@@ -19,20 +20,6 @@ public enum ParticleKind : byte
     Arc,          // crescent sweep over a tile, oriented by a facing direction
     Orbit,        // landing swirl: motes circle the sprite briefly, then fade
     Splatter,     // one droplet of a burst: arcs under gravity, colored by whoever fired it
-}
-
-/// <summary>What a projectile looks like on its way. Describes the VISUAL, not what caused it — which is
-/// the whole reason a game can use these without Core knowing what it is making.</summary>
-public enum ProjectileStyle : byte
-{
-    /// <summary>A single bullet that homes on its target and bursts on arrival.</summary>
-    Bolt = 0,
-
-    /// <summary>A scattered cluster of motes that land spread around the target.</summary>
-    Glitter = 1,
-
-    /// <summary>A carried box, for something visibly changing hands.</summary>
-    Parcel = 2,
 }
 
 /// <summary>One pooled particle, world-anchored (world pixels) so night-dimming, camera parallax, and

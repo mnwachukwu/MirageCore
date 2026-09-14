@@ -17,6 +17,10 @@ public sealed partial class ClientPacketHandler : IClientEvents
 
     private void HandleChatMsg(ChatMsgPacket p) => ChatMessage?.Invoke(p);
 
+    private void HandleFloatingText(FloatingTextPacket p) => FloatingText?.Invoke(p);
+
+    private void HandleGameEffect(GameEffectPacket p) => GameEffect?.Invoke(p);
+
     // ── Chat bubbles ──────────────────────────────────────────────────────────
 
     private void HandleChatBubble(ChatBubblePacket p)

@@ -26,6 +26,20 @@ public interface IClientEvents
     /// right-click span; system messages leave those fields null.</summary>
     event Action<ChatMsgPacket>? ChatMessage;
 
+    /// <summary>A line of text floats up off a body, because the loaded GAME said so.
+    ///
+    /// <para>Core spawns none of its own — what the text says is a game's business. What the shell
+    /// contributes is where it goes: centered on an oversize footprint, anchored across a seam, and
+    /// held back until an in-flight projectile lands.</para></summary>
+    event Action<FloatingTextPacket>? FloatingText;
+
+    /// <summary>The loaded GAME asked for something to be shown once — a sweep, a throw, a burst.
+    ///
+    /// <para>Core asks for none of its own. What it means is the game's; what it looks like, and the
+    /// timing that keeps a thrown thing and the number it earns reading as one event, is the
+    /// shell's.</para></summary>
+    event Action<GameEffectPacket>? GameEffect;
+
     /// <summary>Inventory contents changed (full sync or single slot update).</summary>
     event Action? InventoryChanged;
 

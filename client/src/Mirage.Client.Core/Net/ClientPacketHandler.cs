@@ -29,6 +29,8 @@ public sealed partial class ClientPacketHandler : IClientEvents
     public event Action? InGame;
     public event Action? MapReady;
     public event Action<ChatMsgPacket>? ChatMessage;
+    public event Action<FloatingTextPacket>? FloatingText;
+    public event Action<GameEffectPacket>? GameEffect;
     public event Action? InventoryChanged;
     public event Action? CharacterListReceived;
     public event Action<int>? MapItemChanged;
@@ -195,6 +197,14 @@ public sealed partial class ClientPacketHandler : IClientEvents
             case AttributeSyncPacket p:
                 HandleAttributeSync(p);
                 break;
+            case FloatingTextPacket p:
+                HandleFloatingText(p);
+                break;
+
+            case GameEffectPacket p:
+                HandleGameEffect(p);
+                break;
+
             case DecalUpdatePacket p:
                 HandleDecalUpdate(p);
                 break;

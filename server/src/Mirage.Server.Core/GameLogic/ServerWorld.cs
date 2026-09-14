@@ -4,6 +4,7 @@ using Mirage.Server.Core.World;
 using Mirage.Shared;
 using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
+using Mirage.Shared.Protocol.Packets;
 
 namespace Mirage.Server.Core.GameLogic;
 
@@ -88,6 +89,92 @@ public sealed class ServerWorld : IWorld
         _dispatcher.SendTo(who.PlayerIndex, PacketBuilder.ChatMsg(text, color, channel));
     }
 
+    public void TellEveryone(string text, ChatChannel channel, int color)
+    {
+        if (string.IsNullOrEmpty(text)) return;
+
+        _dispatcher.SendToAll(PacketBuilder.ChatMsg(text, color, channel));
+    }
+
+    public void TellEveryoneOn(int mapNum, string text, ChatChannel channel, int color)
+    {
+        if (string.IsNullOrEmpty(text) || mapNum <= 0 || mapNum > _world.Limits.Maps) return;
+
+        // The observers of a map, not its occupants: the world scrolls contiguously, so the audience
+        // for something happening here includes whoever is standing on the next map looking at it.
+        _dispatcher.SendToObservers(_world.MapObservers[mapNum], PacketBuilder.ChatMsg(text, color, channel));
+    }
+
+    public void TellEveryoneNear(WorldPlace at, string text, ChatChannel channel, int color)
+    {
+        if (string.IsNullOrEmpty(text) || at.Map <= 0) return;
+
+        _dispatcher.SendToViewportAt(at.Map, at.X, at.Y, PacketBuilder.ChatMsg(text, color, channel));
+    }
+
+    public void TellThese(IReadOnlyCollection<EntityHandle> them, string text,
+                          ChatChannel channel, int color)
+    {
+        if (them is null || them.Count == 0 || string.IsNullOrEmpty(text)) return;
+
+        // Built once and sent many times: the line is the same for everybody, and a game announcing
+        // to a large guild would otherwise serialize it per recipient.
+        var line = PacketBuilder.ChatMsg(text, color, channel);
+
+        foreach (EntityHandle who in them)
+        {
+            if (who.IsPlayer && IsInWorld(who)) _dispatcher.SendTo(who.PlayerIndex, line);
+        }
+    }
+
+    // ── Who somebody is with ───────────────────────────────────────────
+
+    public string GuildOf(EntityHandle who)
+    {
+        if (!who.IsPlayer || !IsInWorld(who)) return string.Empty;
+
+        int id = _pm[who.PlayerIndex].Guild;
+        return id >= 1 && _world.Guilds.TryGetValue(id, out var guild) ? guild.Name : string.Empty;
+    }
+
+    /// <summary>
+    /// Everybody in the world sharing this body's guild.
+    ///
+    /// <para>Walked off the online roster rather than read from the guild's member list, and the two
+    /// are different questions: the list is accounts, some of them logged out for a week, and the only
+    /// thing a game does with this answer is act on the bodies in it.</para>
+    /// </summary>
+    public IReadOnlyList<EntityHandle> GuildmatesOf(EntityHandle who)
+    {
+        if (!who.IsPlayer || !IsInWorld(who)) return [];
+
+        int guild = _pm[who.PlayerIndex].Guild;
+        if (guild < 1) return [];
+
+        var found = new List<EntityHandle>();
+        for (int i = 1; i <= _pm.Slots; i++)
+        {
+            if (_pm[i].IsPlaying && _pm[i].Guild == guild) found.Add(EntityHandle.ForPlayer(i));
+        }
+
+        return found;
+    }
+
+    /// <summary>
+    /// This body's party, which is two people: a party is a pair here, and the partner is named
+    /// rather than gathered.
+    /// </summary>
+    public IReadOnlyList<EntityHandle> PartyOf(EntityHandle who)
+    {
+        if (!who.IsPlayer || !IsInWorld(who)) return [];
+
+        var me = _pm[who.PlayerIndex];
+        if (!me.InParty || me.PartyPlayer < 1 || !HasSlot(me.PartyPlayer)) return [];
+
+        EntityHandle partner = EntityHandle.ForPlayer(me.PartyPlayer);
+        return IsInWorld(partner) ? [who, partner] : [who];
+    }
+
     // ── What a body carries ───────────────────────────────────────────────────
 
     public AttributeBag? AttributesOf(EntityHandle who) => _attributes.BagOf(who);
@@ -104,10 +191,18 @@ public sealed class ServerWorld : IWorld
 
     public void SetEngaged(EntityHandle who, int seconds)
     {
-        if (!who.IsPlayer || !IsInWorld(who)) return;
-        _pm[who.PlayerIndex].CombatExpiresAt = seconds > 0 ? Environment.TickCount64 + seconds * 1000L : 0;
+        long until = seconds > 0 ? Environment.TickCount64 + seconds * 1000L : 0;
+
+        if (who.IsPlayer && IsInWorld(who)) _pm[who.PlayerIndex].CombatExpiresAt = until;
+        else if (Npc(who) is { } npc) npc.CombatExpiresAt = until;
     }
 
+    /// <summary>
+    /// ⚠ <b>Players only, and deliberately.</b> Downed is a body lying there waiting to get up, and a
+    /// creature has no such state: one that runs out of health is despawned and its slot counts down to
+    /// a respawn, which <see cref="Kill"/> and the spawn clock already own. Giving this an NPC meaning
+    /// would be inventing a second, conflicting answer to "when does it come back".
+    /// </summary>
     public void SetDowned(EntityHandle who, int seconds)
     {
         if (!who.IsPlayer || !IsInWorld(who)) return;
@@ -119,14 +214,18 @@ public sealed class ServerWorld : IWorld
 
     public void SetMarked(EntityHandle who, int seconds)
     {
-        if (!who.IsPlayer || !IsInWorld(who)) return;
-        _pm[who.PlayerIndex].Char.PkExpiryUtc = seconds > 0 ? _clock.UtcNowUnix + seconds : 0;
+        long until = seconds > 0 ? _clock.UtcNowUnix + seconds : 0;
+
+        if (who.IsPlayer && IsInWorld(who)) _pm[who.PlayerIndex].Char.PkExpiryUtc = until;
+        else if (Npc(who) is { } npc) npc.MarkedUntilUtc = until;
     }
 
     public void SetAggressor(EntityHandle who, int seconds)
     {
-        if (!who.IsPlayer || !IsInWorld(who)) return;
-        _pm[who.PlayerIndex].PvpAttackerUntil = seconds > 0 ? Environment.TickCount64 + seconds * 1000L : 0;
+        long until = seconds > 0 ? Environment.TickCount64 + seconds * 1000L : 0;
+
+        if (who.IsPlayer && IsInWorld(who)) _pm[who.PlayerIndex].PvpAttackerUntil = until;
+        else if (Npc(who) is { } npc) npc.AggressorUntil = until;
     }
 
     /// <summary>The cooldown is a START stamp the bar measures forward from, not an expiry, so clearing
@@ -179,6 +278,139 @@ public sealed class ServerWorld : IWorld
 
     public void Stain(WorldPlace at, int size, WorldLayer layer, float amount)
         => _decals.Deposit(at.Map, at.X, at.Y, size, layer, amount);
+
+    /// <summary>
+    /// Whoever is standing on that square.
+    ///
+    /// <para>Players first, and the roster is walked rather than indexed by tile: nothing keeps a
+    /// tile-to-player map, and the count is bounded by the slot limit.</para>
+    ///
+    /// <para>NPCs come from the viewport sweep around the square rather than from the map's own slots,
+    /// because a body near a border stands on a map it has no slot on. The sweep already handles guests
+    /// and the 3x3 grid, so asking it and filtering to the exact tile is the answer that stays right
+    /// when somebody walks across a seam.</para>
+    /// </summary>
+    public EntityHandle At(WorldPlace place)
+    {
+        if (place.Map <= 0) return EntityHandle.None;
+
+        // ⚠ This server's roster, not the protocol's ceiling. The shared maximum is the largest any
+        // server may be configured for; indexing past _pm.Slots walks off the end of the array.
+        for (int i = 1; i <= _pm.Slots; i++)
+        {
+            var player = _pm[i];
+            if (!player.IsPlaying) continue;
+
+            var c = player.Char;
+            if (c.Map == place.Map && c.X == place.X && c.Y == place.Y) return EntityHandle.ForPlayer(i);
+        }
+
+        foreach (var found in _queries.NpcsInViewport(place.Map, place.X, place.Y))
+        {
+            if (found.CurrentMap == place.Map && found.Record.X == place.X && found.Record.Y == place.Y)
+            {
+                // Named by where it SPAWNS, not by where it is standing: a handle has to outlive the
+                // body walking onto another map, and the current slot is the thing that changes.
+                return EntityHandle.ForNpc(found.CurrentMap, found.CurrentSlot);
+            }
+        }
+
+        return EntityHandle.None;
+    }
+
+    /// <summary>
+    /// Floats a line off a body, to everybody who can see it happen.
+    ///
+    /// <para>Addressed by SLOT rather than by tile, so the client can follow the body: an NPC travels
+    /// as its CURRENT slot and map, which is what the client's own roster is keyed by — the spawn
+    /// identity a handle carries means nothing to a client that has never seen it.</para>
+    /// </summary>
+    public void Float(EntityHandle who, string text, uint rgb, float splatter)
+    {
+        if (string.IsNullOrEmpty(text) && splatter <= 0f) return;
+
+        WorldPlace at = PlaceOf(who);
+        if (at.Map <= 0) return;
+
+        var packet = new FloatingTextPacket
+        {
+            Text = text, Rgb = rgb, Splatter = splatter,
+            MapNum = at.Map, X = at.X, Y = at.Y,
+        };
+
+        if (who.IsPlayer && IsInWorld(who))
+        {
+            packet = packet with { IsNpc = false, Index = who.PlayerIndex };
+        }
+        else if (Locate(who) is { } found)
+        {
+            packet = packet with { IsNpc = true, Index = found.CurrentSlot, NpcMap = found.CurrentMap };
+        }
+        else
+        {
+            return;
+        }
+
+        _dispatcher.SendToViewportAt(at.Map, at.X, at.Y, packet);
+    }
+
+    public void Sweep(EntityHandle who, bool connected) =>
+        Show(who, EntityHandle.None, GameEffect.Sweep, default, 0, connected ? 1f : 0f);
+
+    public void Throw(EntityHandle from, EntityHandle to, ProjectileStyle style, uint rgb) =>
+        Show(from, to, GameEffect.Throw, style, rgb, 0f);
+
+    public void Burst(EntityHandle who, uint rgb, float intensity) =>
+        Show(who, EntityHandle.None, GameEffect.Burst, default, rgb, Math.Clamp(intensity, 0f, 1f));
+
+    /// <summary>
+    /// One effect, to everybody who can see where it happens.
+    ///
+    /// <para>The viewport rather than the observers of a map: this is a thing you watch happen to
+    /// somebody, at the range you would see them.</para>
+    ///
+    /// <para>Sent from where the ACTOR is, even when it is aimed somewhere else — a throw is seen by
+    /// whoever can see it leave, and the client already follows the target itself.</para>
+    /// </summary>
+    private void Show(EntityHandle from, EntityHandle to, GameEffect effect,
+                      ProjectileStyle style, uint rgb, float intensity)
+    {
+        if (Sighted(from) is not { } origin) return;
+
+        _dispatcher.SendToViewportAt(origin.MapNum, origin.X, origin.Y, new GameEffectPacket
+        {
+            Effect = effect,
+            From = origin,
+            To = Sighted(to) ?? GameEffectPacket.Body.None,
+            Style = style,
+            Rgb = rgb,
+            Intensity = intensity,
+        });
+    }
+
+    /// <summary>
+    /// A body as the client's own roster knows it, or null when nothing is there.
+    ///
+    /// <para>An NPC travels as the slot and map it is standing on RIGHT NOW, not as the spawn identity
+    /// its handle carries: a client has never seen a spawn identity.</para>
+    /// </summary>
+    private GameEffectPacket.Body? Sighted(EntityHandle who)
+    {
+        if (who.IsPlayer && IsInWorld(who))
+        {
+            var c = _pm[who.PlayerIndex].Char;
+            return new GameEffectPacket.Body(false, who.PlayerIndex, 0, c.Map, c.X, c.Y, c.Dir);
+        }
+
+        if (Locate(who) is { } found)
+        {
+            return new GameEffectPacket.Body(
+                true, found.CurrentSlot, found.CurrentMap,
+                found.CurrentMap, found.Record.X, found.Record.Y, found.Record.Dir);
+        }
+
+        return null;
+    }
 
     public IReadOnlyList<AttributeBag> RecordsOf(string familyId) => _world.ModuleRecords.All(familyId);
 

@@ -6,6 +6,7 @@ using Mirage.Client.Core.Net;
 using Mirage.Client.Core.State;
 using Mirage.Client.Shell.Config;
 using Mirage.Client.Shell.Input;
+using Mirage.Shared.Extensibility;
 using Mirage.Client.Shell.Localization;
 using Mirage.Client.Shell.Panels;
 using Mirage.Client.Shell.Rendering;
@@ -225,6 +226,51 @@ public sealed partial class GameplayScreen : IGameScreen
         Direction.Right => (1, 0),
         _ => (0, 0),
     };
+
+    /// <summary>
+    /// Something the loaded GAME asked to be shown, once.
+    ///
+    /// <para>🔴 <b>The three calls below were all written for this and none of them had a caller.</b>
+    /// Core asks for no effects of its own — what a crescent MEANS is a sword or a claw or a shop door,
+    /// and that belongs to the game. This is the wire that was missing between them.</para>
+    ///
+    /// <para>Each body arrives as the client's own roster knows it, so the geometry — footprint
+    /// centering, a target still moving, the layer a tile is on — is worked out here where it is known,
+    /// exactly as it is for an effect the shell raises itself.</para>
+    /// </summary>
+    public void ShowGameEffect(GameEffectPacket fx)
+    {
+        var from = Bodied(fx.From);
+
+        switch (fx.Effect)
+        {
+            case GameEffect.Sweep:
+                (int dx, int dy) = DirDelta(fx.From.Facing);
+                _particles.EmitArc(
+                    fx.From.X * Constants.PicX, fx.From.Y * Constants.PicY, dx, dy,
+                    sparks: fx.Intensity > 0f, LayerAtTile(fx.From.MapNum, fx.From.X, fx.From.Y));
+                break;
+
+            case GameEffect.Throw:
+                SpawnProjectile(fx.Style, fx.Rgb, fx.From.MapNum, fx.From.X, fx.From.Y, 0f, 0f,
+                                TargetFootprintSize(from), Bodied(fx.To));
+                break;
+
+            case GameEffect.Burst:
+                // Through the deferring path rather than straight at the particle system, so a burst
+                // owed to a target still in flight lands with the thing that caused it.
+                SpawnOrDeferEntityText(
+                    fx.From.IsNpc, fx.From.Index, fx.From.NpcMap, fx.From.MapNum, fx.From.X, fx.From.Y,
+                    0f, 0f, text: null, Color.White, fx.Intensity);
+                break;
+        }
+    }
+
+    /// <summary>One body off the wire, as this client's roster names it.</summary>
+    private static TargetRef Bodied(GameEffectPacket.Body body) =>
+        !body.IsSet ? default
+        : body.IsNpc ? new TargetRef(TargetKind.Npc, body.Index, body.NpcMap)
+        : new TargetRef(TargetKind.Player, body.Index, 0);
 
     /// <summary>Throws a projectile from one entity to another, and holds any number owed to the target
     /// until it lands.

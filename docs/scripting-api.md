@@ -46,6 +46,17 @@ Held as a value and never made by a script: the engine hands one over.
 | `WarpTo(integer map, integer x, integer y)` | `boolean` | Puts them on that map, x and y. False for a square that is not a real tile. |
 | `Give(integer item, integer many)` | — | Puts that many of an item in their bag. |
 | `Take(integer item, integer many)` | — | Takes that many out of it, worn ones included. |
+| `Engage(integer seconds)` | — | Marks them as in a fight for that many seconds. What being in a fight MEANS is the game's; the engine keeps the clock and the client shows it. |
+| `Down(integer seconds)` | — | Marks them as out of the fight for that many seconds. |
+| `Mark(integer seconds)` | — | Marks them for that many seconds - a target somebody else's rule put a flag on. |
+| `Flag(integer seconds)` | — | Marks them as the one who started it, for that many seconds. What that costs them is the game's to decide. |
+| `Wait(integer seconds)` | — | Holds them off acting again for that many seconds. |
+| `Float(string line, integer red, integer green, integer blue)` | — | Floats a line off them, to everybody who can see it happen - a number, a word, a name. The color is red, green and blue, each 0 to 255. ⚠ The one place a script asks the client to DRAW: everything else it does sets state and lets the client decide what that looks like, and a number that happened once is not state. |
+| `Sweep(boolean connected)` | — | Sweeps a crescent over them, the way they are facing. True flings sparks with it, which is what makes a swing read as having HIT something rather than passing through air. What the crescent means is yours: a sword, a claw, a thrown net. |
+| `ThrowAtNpc(Npc at, string look, integer red, integer green, integer blue)` | — | Throws something at a creature: 'bolt', 'glitter' or 'parcel', and a color. ⚠ A number floated at the same target waits until it LANDS, so the hit and the damage read as one event - which is most of why this is worth using over a bare burst. |
+| `ThrowAtPlayer(Player at, string look, integer red, integer green, integer blue)` | — | Throws something at another player: 'bolt', 'glitter' or 'parcel', and a color. ⚠ A number floated at the same target waits until it LANDS, so the hit and the damage read as one event - which is most of why this is worth using over a bare burst. |
+| `Burst(integer red, integer green, integer blue, integer power)` | — | Bursts droplets from them - power is 0 to 100. Deliberately color-blind: blood, sparks off an anvil, water and dust are one burst with a different color. ⚠ Nothing here lasts; something still there a minute later is World.Stain. |
+| `Kill(string cause)` | `boolean` | Takes them out of the world, with a cause OnMayDie can read. False where something refused to let them die, which is what a death policy is for. |
 | `Find(string name)` | `Player?` | The body behind a name, or nothing if no one is using it. OnAction hands you a name; this turns it into a player you can read and write. |
 
 ### Builder
@@ -110,6 +121,49 @@ Held as a value and never made by a script: the engine hands one over.
 | `Field(string key, string caption, integer red, integer green, integer blue)` | — | A row on this panel: a key read live off the player, a caption, and a color as red, green, and blue. All three zero leaves the color to the client. |
 | `Badge(string key, string caption, integer red, integer green, integer blue)` | — | The same, drawn as a small tag with no caption. |
 | `Meter(string key, string outOf, string caption, integer red, integer green, integer blue)` | — | A bar on this panel, filled by one key against another. |
+
+### Npc
+
+Held as a value and never made by a script: the engine hands one over.
+
+| Written | Yields | What it does |
+|---|---|---|
+| `Name` | `string` | What it is called - the name on its record, trimmed. Blank once the body has left. |
+| `IsHere` | `boolean` | Whether the body is still in the world. A handle outlives what it names. |
+| `Map` | `integer` | Which map it is standing on, or zero when it is nowhere. |
+| `X` | `integer` | How far across that map it is. |
+| `Y` | `integer` | How far down it. |
+| `Has(string key)` | `boolean` | Whether it carries that key at all, which is what tells absence from zero. |
+| `Number(string key)` | `integer` | What it carries under that key, or zero where it carries nothing. |
+| `Text(string key)` | `string` | The same, as text, or empty where it carries nothing. |
+| `SetNumber(string key, integer amount)` | — | Writes that key, and ships it to everyone entitled to see it. |
+| `SetText(string key, string value)` | — | The same, with text. |
+| `Float(string line, integer red, integer green, integer blue)` | — | Floats a line off them, to everybody who can see it happen - a number, a word, a name. The color is red, green and blue, each 0 to 255. ⚠ The one place a script asks the client to DRAW: everything else it does sets state and lets the client decide what that looks like, and a number that happened once is not state. |
+| `Engage(integer seconds)` | — | Marks it as in a fight for that many seconds, which is what makes its overhead bars appear. What being in a fight MEANS is the game's; the engine keeps the clock. |
+| `Mark(integer seconds)` | — | Marks it for that many seconds - a flag a game puts on a body and reads back later, which is how a kill gets claimed by whoever earned it. |
+| `Flag(integer seconds)` | — | Marks it as the one that started it, for that many seconds. |
+| `Wait(integer seconds)` | — | Holds it off acting again for that many seconds. |
+| `Sweep(boolean connected)` | — | Sweeps a crescent over them, the way they are facing. True flings sparks with it, which is what makes a swing read as having HIT something rather than passing through air. What the crescent means is yours: a sword, a claw, a thrown net. |
+| `ThrowAtPlayer(Player at, string look, integer red, integer green, integer blue)` | — | Throws something at a player: 'bolt', 'glitter' or 'parcel', and a color. ⚠ A number floated at the same target waits until it LANDS, so the hit and the damage read as one event - which is most of why this is worth using over a bare burst. |
+| `ThrowAtNpc(Npc at, string look, integer red, integer green, integer blue)` | — | Throws something at another creature: 'bolt', 'glitter' or 'parcel', and a color. ⚠ A number floated at the same target waits until it LANDS, so the hit and the damage read as one event - which is most of why this is worth using over a bare burst. |
+| `Burst(integer red, integer green, integer blue, integer power)` | — | Bursts droplets from them - power is 0 to 100. Deliberately color-blind: blood, sparks off an anvil, water and dust are one burst with a different color. ⚠ Nothing here lasts; something still there a minute later is World.Stain. |
+| `Kill(string cause)` | `boolean` | Takes it out of the world, with a cause the death policy can read. False for a body that was not there, or that something refused to let die. |
+
+### World
+
+Reached through its own name; there are no values of it.
+
+| Written | Yields | What it does |
+|---|---|---|
+| `NpcAt(integer map, integer x, integer y)` | `Npc?` | The creature standing on that square, or nothing. A verb declared OnNpc arrives at OnAction with the square it was used on, and this is what turns that into the body. |
+| `PlayerAt(integer map, integer x, integer y)` | `Player?` | The player standing on that square, or nothing. Answered before a creature when both somehow occupy one tile. |
+| `Tell(string line)` | — | Says a line to everybody in the world. For the handful of things that are genuinely everyone's business - a season turning, somebody finishing what only one person can finish. A game that announces ordinary events this way has an unreadable chat log. |
+| `TellOn(integer map, string line)` | — | Says a line to everybody who can SEE that map, which is the nearest thing a seamless world has to a room. Not everybody standing on it: somebody on the next map along is looking at this one. |
+| `TellNear(integer map, integer x, integer y, string line)` | — | Says a line to everybody within earshot of a square - the tighter audience, the one that hears speech rather than the one that can see the region. |
+| `Stain(integer map, integer x, integer y, integer size, integer amount)` | — | Marks the ground, which dries on its own and is drawn to everyone who can see the tile. Amount is 0 to 100. ⚠ Unlike a burst, this LASTS - it is the one worldspace mark a game makes that is still there when somebody walks back. Its color is the world's own, set once rather than per stain. |
+| `Records(string records)` | `integer` | How many records of that kind this world holds, counting blank slots. Zero for a kind nobody declared. |
+| `Record(string records, integer number, string field)` | `string` | One field of one record, as text, or empty where the slot or the field is not there. What a game reads at run time out of the records its own editor authored. |
+| `RecordNumber(string records, integer number, string field)` | `integer` | The same, as a whole number. Zero where the slot or the field is not there. |
 
 ### Values
 

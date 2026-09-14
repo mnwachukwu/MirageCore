@@ -124,6 +124,8 @@ sealed class TestClientEvents : IClientEvents
     public event Action? InGame;
     public event Action? MapReady;
     public event Action<ChatMsgPacket>? ChatMessage;
+    public event Action<FloatingTextPacket>? FloatingText;
+    public event Action<GameEffectPacket>? GameEffect;
     public event Action? InventoryChanged;
     public event Action<int>? VitalsChanged;
     public event Action? CharacterListReceived;

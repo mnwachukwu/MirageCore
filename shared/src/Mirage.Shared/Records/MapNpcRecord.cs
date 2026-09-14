@@ -22,6 +22,22 @@ public class MapNpcRecord
     public WorldLayer Layer { get; set; }
     public long SpawnWait { get; set; }
     public long AttackTimer { get; set; }
+
+    // 🔴 The timed states a GAME puts on a creature, and the reason they live here rather than beside
+    // the player ones: a player's are on ServerPlayer because they survive a logout and ride in save
+    // data, and none of that is true of a body rebuilt from its template on restart. Runtime, not
+    // persisted, like everything else above.
+    //
+    // Monotonic milliseconds, matching ServerPlayer.CombatExpiresAt, because the client computes its own
+    // stamp from how long ago rather than from a wall clock it does not share.
+    public long CombatExpiresAt { get; set; }
+
+    // Seconds since the epoch, matching PlayerRecord.PkExpiryUtc: a mark is the kind of thing a game
+    // shows on a name, and the player side of it already reads a UTC stamp.
+    public long MarkedUntilUtc { get; set; }
+
+    // Monotonic milliseconds, matching ServerPlayer.PvpAttackerUntil.
+    public long AggressorUntil { get; set; }
     // Seamless chase: true while this home slot's NPC is away visiting a neighbor map.
     // Blocks respawn into the slot until the traveler returns or dies.
     public bool IsReservedSlot { get; set; }

@@ -555,6 +555,18 @@ public sealed class ScriptedWorldModule
             + "compiled for this game: the rows read live off the player, and Asks turns a model into "
             + "a form the player can fill in and send.");
 
+        var npc = c.Type("Npc",
+            "A creature, as a handle rather than a copy - the same kind of thing a Player is, for a "
+            + "body the engine owns. One comes from World.NpcAt; a script cannot make one. It is named "
+            + "by where it SPAWNS rather than by where it stands, so a handle kept while it walks onto "
+            + "another map still names it. IsHere is what says the body is still there.");
+
+        var here = c.Shared("World",
+            "The world as it is right now, rather than what the game IS. Reached through its own name "
+            + "from any handler, and useful nowhere in Configure - there is no world yet. What it "
+            + "answers is the reverse of what a handle answers: a handler is given a square, and this "
+            + "turns a square back into whoever is standing on it.");
+
         var values = c.Type("Values",
             "What a message carried, handed to OnMessage. Read the way a player's own keys are read: "
             + "a field the line left out is absent rather than zero, and Has is what tells the two "
@@ -576,6 +588,179 @@ public sealed class ScriptedWorldModule
             .Function("Truth", ScriptType.Truth, [ScriptType.Text.Named("field")],
                 (v, a) => Sent(v).TryGet(a.AsText(0), out var f) && f.AsBool(),
                 "The same, as a yes or no. False where it carried nothing.");
+
+        // 🔴 The reverse of a handle. OnAction hands a game the SQUARE a verb was used on, so
+        // without these a game can say what happened and cannot say who it happened to.
+        here
+            .Function("NpcAt", npc.AsType.OrNothing(),
+                [ScriptType.Integer.Named("map"), ScriptType.Integer.Named("x"), ScriptType.Integer.Named("y")],
+                (_, a) => Standing(a, wanted: EntitySort.Npc),
+                "The creature standing on that square, or nothing. A verb declared OnNpc arrives at "
+                + "OnAction with the square it was used on, and this is what turns that into the body.")
+            .Function("PlayerAt", player.AsType.OrNothing(),
+                [ScriptType.Integer.Named("map"), ScriptType.Integer.Named("x"), ScriptType.Integer.Named("y")],
+                (_, a) => Standing(a, wanted: EntitySort.Player),
+                "The player standing on that square, or nothing. Answered before a creature when both "
+                + "somehow occupy one tile.")
+            // 🔴 Who HEARS something is not who is standing on a tile. The world scrolls
+            // contiguously, so somebody on the next map along is looking at this one; an announcement
+            // scoped to occupants would let them watch an event happen in silence.
+            .Action("Tell", [ScriptType.Text.Named("line")],
+                (_, a) => { World.TellEveryone(a.AsText(0)); return null; },
+                "Says a line to everybody in the world. For the handful of things that are genuinely "
+                + "everyone's business - a season turning, somebody finishing what only one person "
+                + "can finish. A game that announces ordinary events this way has an unreadable chat "
+                + "log.")
+            .Action("TellOn", [ScriptType.Integer.Named("map"), ScriptType.Text.Named("line")],
+                (_, a) => { World.TellEveryoneOn((int)a.AsInteger(0), a.AsText(1)); return null; },
+                "Says a line to everybody who can SEE that map, which is the nearest thing a seamless "
+                + "world has to a room. Not everybody standing on it: somebody on the next map along "
+                + "is looking at this one.")
+            .Action("TellNear",
+                [ScriptType.Integer.Named("map"), ScriptType.Integer.Named("x"), ScriptType.Integer.Named("y"),
+                 ScriptType.Text.Named("line")],
+                (_, a) =>
+                {
+                    World.TellEveryoneNear(
+                        new WorldPlace((int)a.AsInteger(0), (int)a.AsInteger(1), (int)a.AsInteger(2)),
+                        a.AsText(3));
+                    return null;
+                },
+                "Says a line to everybody within earshot of a square - the tighter audience, the one "
+                + "that hears speech rather than the one that can see the region.")
+            .Action("Stain",
+                [ScriptType.Integer.Named("map"), ScriptType.Integer.Named("x"), ScriptType.Integer.Named("y"),
+                 ScriptType.Integer.Named("size"), ScriptType.Integer.Named("amount")],
+                (_, a) =>
+                {
+                    World.Stain(
+                        new WorldPlace((int)a.AsInteger(0), (int)a.AsInteger(1), (int)a.AsInteger(2)),
+                        (int)a.AsInteger(3), WorldLayer.Ground, (float)a.AsInteger(4) / 100f);
+                    return null;
+                },
+                "Marks the ground, which dries on its own and is drawn to everyone who can see the "
+                + "tile. Amount is 0 to 100. \u26a0 Unlike a burst, this LASTS - it is the one worldspace "
+                + "mark a game makes that is still there when somebody walks back. Its color is the "
+                + "world's own, set once rather than per stain.")
+            .Function("Records", ScriptType.Integer, [ScriptType.Text.Named("records")],
+                (_, a) => (long)World.RecordsOf(a.AsText(0)).Count,
+                "How many records of that kind this world holds, counting blank slots. Zero for a kind "
+                + "nobody declared.")
+            .Function("Record", ScriptType.Text,
+                [ScriptType.Text.Named("records"), ScriptType.Integer.Named("number"), ScriptType.Text.Named("field")],
+                (_, a) => World.RecordAt(a.AsText(0), (int)a.AsInteger(1)) is { } row
+                          && row.TryGet(a.AsText(2), out AttributeValue held)
+                          ? held.AsText() : string.Empty,
+                "One field of one record, as text, or empty where the slot or the field is not there. "
+                + "What a game reads at run time out of the records its own editor authored.")
+            .Function("RecordNumber", ScriptType.Integer,
+                [ScriptType.Text.Named("records"), ScriptType.Integer.Named("number"), ScriptType.Text.Named("field")],
+                (_, a) => World.RecordAt(a.AsText(0), (int)a.AsInteger(1)) is { } row
+                          && row.TryGet(a.AsText(2), out AttributeValue held)
+                          ? held.AsLong() : 0L,
+                "The same, as a whole number. Zero where the slot or the field is not there.");
+
+        npc
+            .Value("Name", ScriptType.Text, (it, _) => World.NameOf(Who(it)),
+                "What it is called - the name on its record, trimmed. Blank once the body has left.")
+            .Value("IsHere", ScriptType.Truth, (it, _) => World.IsInWorld(Who(it)),
+                "Whether the body is still in the world. A handle outlives what it names.")
+            .Value("Map", ScriptType.Integer, (it, _) => (long)World.PlaceOf(Who(it)).Map,
+                "Which map it is standing on, or zero when it is nowhere.")
+            .Value("X", ScriptType.Integer, (it, _) => (long)World.PlaceOf(Who(it)).X,
+                "How far across that map it is.")
+            .Value("Y", ScriptType.Integer, (it, _) => (long)World.PlaceOf(Who(it)).Y,
+                "How far down it.")
+            .Function("Has", ScriptType.Truth, [ScriptType.Text.Named("key")],
+                (it, a) => World.AttributesOf(Who(it))?.Has(a.AsText(0)) ?? false,
+                "Whether it carries that key at all, which is what tells absence from zero.")
+            .Function("Number", ScriptType.Integer, [ScriptType.Text.Named("key")],
+                (it, a) => Attribute(it, a.AsText(0)) is { } v ? v.AsLong() : 0L,
+                "What it carries under that key, or zero where it carries nothing.")
+            .Function("Text", ScriptType.Text, [ScriptType.Text.Named("key")],
+                (it, a) => Attribute(it, a.AsText(0))?.AsText() ?? string.Empty,
+                "The same, as text, or empty where it carries nothing.")
+            .Action("SetNumber", [ScriptType.Text.Named("key"), ScriptType.Integer.Named("amount")], (it, a) =>
+            {
+                World.SetAttribute(Who(it), a.AsText(0), AttributeValue.From(a.AsInteger(1)));
+                return null;
+            }, "Writes that key, and ships it to everyone entitled to see it.")
+            .Action("SetText", [ScriptType.Text.Named("key"), ScriptType.Text.Named("value")], (it, a) =>
+            {
+                World.SetAttribute(Who(it), a.AsText(0), AttributeValue.From(a.AsText(1)));
+                return null;
+            }, "The same, with text.")
+            .Action("Float",
+                [ScriptType.Text.Named("line"), ScriptType.Integer.Named("red"),
+                 ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
+                (it, a) =>
+                {
+                    World.Float(Who(it), a.AsText(0), Packed(a, 1));
+                    return null;
+                },
+                "Floats a line off them, to everybody who can see it happen - a number, a word, a name. The color is red, green and blue, each 0 to 255. \u26a0 The one place a script asks the client to DRAW: everything else it does sets state and lets the client decide what that looks like, and a number that happened once is not state.")
+            // ⚠ Four of the five. `Down` is a body lying there waiting to get up, and a creature has
+            // no such state: one that runs out of health despawns and its slot counts down to a
+            // respawn, which Kill and the spawn clock already own.
+            .Action("Engage", [ScriptType.Integer.Named("seconds")],
+                (it, a) => { World.SetEngaged(Who(it), (int)a.AsInteger(0)); return null; },
+                "Marks it as in a fight for that many seconds, which is what makes its overhead bars "
+                + "appear. What being in a fight MEANS is the game's; the engine keeps the clock.")
+            .Action("Mark", [ScriptType.Integer.Named("seconds")],
+                (it, a) => { World.SetMarked(Who(it), (int)a.AsInteger(0)); return null; },
+                "Marks it for that many seconds - a flag a game puts on a body and reads back later, "
+                + "which is how a kill gets claimed by whoever earned it.")
+            .Action("Flag", [ScriptType.Integer.Named("seconds")],
+                (it, a) => { World.SetAggressor(Who(it), (int)a.AsInteger(0)); return null; },
+                "Marks it as the one that started it, for that many seconds.")
+            .Action("Wait", [ScriptType.Integer.Named("seconds")],
+                (it, a) => { World.SetActionCooldown(Who(it), (int)a.AsInteger(0)); return null; },
+                "Holds it off acting again for that many seconds.")
+            // 🔴 The only draws a game may call. Everything else it does sets state and lets the
+            // client decide what that looks like - and a swing is not state, it is a thing that
+            // happened once with nothing to derive it from.
+            .Action("Sweep", [ScriptType.Truth.Named("connected")],
+                (it, a) => { World.Sweep(Who(it), a.AsTruth(0)); return null; },
+                "Sweeps a crescent over them, the way they are facing. True flings sparks with it, "
+                + "which is what makes a swing read as having HIT something rather than passing "
+                + "through air. What the crescent means is yours: a sword, a claw, a thrown net.")
+            .Action("ThrowAtPlayer",
+                [player.AsType.Named("at"), ScriptType.Text.Named("look"),
+                 ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
+                (it, a) =>
+                {
+                    World.Throw(Who(it), Who(a.As<object>(0)), Looks(a.AsText(1)), Packed(a, 2));
+                    return null;
+                },
+                "Throws something at a player: 'bolt', 'glitter' or 'parcel', and a color. \u26a0 A "
+                + "number floated at the same target waits until it LANDS, so the hit and the damage "
+                + "read as one event - which is most of why this is worth using over a bare burst.")
+            .Action("ThrowAtNpc",
+                [npc.AsType.Named("at"), ScriptType.Text.Named("look"),
+                 ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
+                (it, a) =>
+                {
+                    World.Throw(Who(it), Who(a.As<object>(0)), Looks(a.AsText(1)), Packed(a, 2));
+                    return null;
+                },
+                "Throws something at another creature: 'bolt', 'glitter' or 'parcel', and a color. \u26a0 A "
+                + "number floated at the same target waits until it LANDS, so the hit and the damage "
+                + "read as one event - which is most of why this is worth using over a bare burst.")
+            .Action("Burst",
+                [ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue"),
+                 ScriptType.Integer.Named("power")],
+                (it, a) =>
+                {
+                    World.Burst(Who(it), Packed(a, 0), (float)a.AsInteger(3) / 100f);
+                    return null;
+                },
+                "Bursts droplets from them - power is 0 to 100. Deliberately color-blind: blood, "
+                + "sparks off an anvil, water and dust are one burst with a different color. "
+                + "\u26a0 Nothing here lasts; something still there a minute later is World.Stain.")
+            .Function("Kill", ScriptType.Truth, [ScriptType.Text.Named("cause")],
+                (it, a) => World.Kill(Who(it), EntityHandle.None, a.AsText(0)),
+                "Takes it out of the world, with a cause the death policy can read. False for a body "
+                + "that was not there, or that something refused to let die.");
 
         verb
             .Action("OnTile", [], (v, _) => Verbal(v).OnTile(),
@@ -715,6 +900,80 @@ public sealed class ScriptedWorldModule
                 return null;
             }, "Takes that many out of it, worn ones included.")
 
+            // ⚠ The five the engine already keeps, and it keeps them for PLAYERS. An NPC's engaged
+            // state has nowhere to live yet, so these are here and not on Npc.
+            .Action("Engage", [ScriptType.Integer.Named("seconds")],
+                (who, a) => { World.SetEngaged(Who(who), (int)a.AsInteger(0)); return null; },
+                "Marks them as in a fight for that many seconds. What being in a fight MEANS is the "
+                + "game's; the engine keeps the clock and the client shows it.")
+            .Action("Down", [ScriptType.Integer.Named("seconds")],
+                (who, a) => { World.SetDowned(Who(who), (int)a.AsInteger(0)); return null; },
+                "Marks them as out of the fight for that many seconds.")
+            .Action("Mark", [ScriptType.Integer.Named("seconds")],
+                (who, a) => { World.SetMarked(Who(who), (int)a.AsInteger(0)); return null; },
+                "Marks them for that many seconds - a target somebody else's rule put a flag on.")
+            .Action("Flag", [ScriptType.Integer.Named("seconds")],
+                (who, a) => { World.SetAggressor(Who(who), (int)a.AsInteger(0)); return null; },
+                "Marks them as the one who started it, for that many seconds. What that costs them is "
+                + "the game's to decide.")
+            .Action("Wait", [ScriptType.Integer.Named("seconds")],
+                (who, a) => { World.SetActionCooldown(Who(who), (int)a.AsInteger(0)); return null; },
+                "Holds them off acting again for that many seconds.")
+            .Action("Float",
+                [ScriptType.Text.Named("line"), ScriptType.Integer.Named("red"),
+                 ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
+                (who, a) =>
+                {
+                    World.Float(Who(who), a.AsText(0), Packed(a, 1));
+                    return null;
+                },
+                "Floats a line off them, to everybody who can see it happen - a number, a word, a name. The color is red, green and blue, each 0 to 255. \u26a0 The one place a script asks the client to DRAW: everything else it does sets state and lets the client decide what that looks like, and a number that happened once is not state.")
+            // 🔴 The only draws a game may call. Everything else it does sets state and lets the
+            // client decide what that looks like - and a swing is not state, it is a thing that
+            // happened once with nothing to derive it from.
+            .Action("Sweep", [ScriptType.Truth.Named("connected")],
+                (who, a) => { World.Sweep(Who(who), a.AsTruth(0)); return null; },
+                "Sweeps a crescent over them, the way they are facing. True flings sparks with it, "
+                + "which is what makes a swing read as having HIT something rather than passing "
+                + "through air. What the crescent means is yours: a sword, a claw, a thrown net.")
+            .Action("ThrowAtNpc",
+                [npc.AsType.Named("at"), ScriptType.Text.Named("look"),
+                 ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
+                (who, a) =>
+                {
+                    World.Throw(Who(who), Who(a.As<object>(0)), Looks(a.AsText(1)), Packed(a, 2));
+                    return null;
+                },
+                "Throws something at a creature: 'bolt', 'glitter' or 'parcel', and a color. \u26a0 A "
+                + "number floated at the same target waits until it LANDS, so the hit and the damage "
+                + "read as one event - which is most of why this is worth using over a bare burst.")
+            .Action("ThrowAtPlayer",
+                [player.AsType.Named("at"), ScriptType.Text.Named("look"),
+                 ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
+                (who, a) =>
+                {
+                    World.Throw(Who(who), Who(a.As<object>(0)), Looks(a.AsText(1)), Packed(a, 2));
+                    return null;
+                },
+                "Throws something at another player: 'bolt', 'glitter' or 'parcel', and a color. \u26a0 A "
+                + "number floated at the same target waits until it LANDS, so the hit and the damage "
+                + "read as one event - which is most of why this is worth using over a bare burst.")
+            .Action("Burst",
+                [ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue"),
+                 ScriptType.Integer.Named("power")],
+                (who, a) =>
+                {
+                    World.Burst(Who(who), Packed(a, 0), (float)a.AsInteger(3) / 100f);
+                    return null;
+                },
+                "Bursts droplets from them - power is 0 to 100. Deliberately color-blind: blood, "
+                + "sparks off an anvil, water and dust are one burst with a different color. "
+                + "\u26a0 Nothing here lasts; something still there a minute later is World.Stain.")
+            .Function("Kill", ScriptType.Truth, [ScriptType.Text.Named("cause")],
+                (who, a) => World.Kill(Who(who), EntityHandle.None, a.AsText(0)),
+                "Takes them out of the world, with a cause OnMayDie can read. False where something "
+                + "refused to let them die, which is what a death policy is for.")
+
             // 🔴 The other half of a verb used ON somebody. OnAction carries the target as a NAME,
             // because the boundary has no way to say "somebody, or nobody" in an argument — but it can
             // say it in a RESULT, which is what makes this the shape that works.
@@ -806,6 +1065,47 @@ public sealed class ScriptedWorldModule
 
     private AttributeValue? Attribute(object? who, string key) =>
         World.AttributesOf(Who(who)) is { } bag && bag.TryGet(key, out AttributeValue value) ? value : null;
+
+    /// <summary>
+    /// Whoever is standing on the square three arguments name, when they are the kind asked for.
+    ///
+    /// <para>Null for an empty square, for a body of the other kind, and for a square that is not a
+    /// real tile — all three are the same answer to a script, which is "there is nobody there".</para>
+    /// </summary>
+    private object? Standing(IReadOnlyList<object?> arguments, EntitySort wanted)
+    {
+        var place = new WorldPlace(
+            (int)arguments.AsInteger(0), (int)arguments.AsInteger(1), (int)arguments.AsInteger(2));
+
+        EntityHandle found = World.At(place);
+        return found.Sort == wanted ? found : null;
+    }
+
+    /// <summary>
+    /// What a thrown thing looks like, named as TEXT because Compass has no type values.
+    ///
+    /// <para>An unknown name falls back to a bolt rather than refusing. A projectile is decoration:
+    /// a game that misspells one should throw something visible and read its own typo on screen,
+    /// rather than have the hit it belongs to silently not happen.</para>
+    /// </summary>
+    private static ProjectileStyle Looks(string name) => name.ToLowerInvariant() switch
+    {
+        "glitter" => ProjectileStyle.Glitter,
+        "parcel" => ProjectileStyle.Parcel,
+        _ => ProjectileStyle.Bolt,
+    };
+
+    /// <summary>Three channels a script wrote as separate numbers, packed the way the wire carries
+    /// one. Each is clamped rather than refused: a game doing arithmetic on a color should get a color
+    /// out of it, not a refusal.</summary>
+    private static uint Packed(IReadOnlyList<object?> arguments, int at)
+    {
+        static uint Channel(long value) => (uint)Math.Clamp(value, 0, 255);
+
+        return (Channel(arguments.AsInteger(at)) << 16)
+             | (Channel(arguments.AsInteger(at + 1)) << 8)
+             | Channel(arguments.AsInteger(at + 2));
+    }
 
     /// <summary>The handle behind a script's <c>Player</c>. Nothing a script can write reaches this.</summary>
     private static EntityHandle Who(object? value) => value is EntityHandle handle ? handle : EntityHandle.None;

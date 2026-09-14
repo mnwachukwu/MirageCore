@@ -58,6 +58,48 @@ public interface IWorld
     void Tell(EntityHandle who, string text,
               ChatChannel channel = ChatChannel.System, int color = GameColor.White);
 
+    /// <summary>
+    /// Says something to everybody in the world.
+    ///
+    /// <para>For the handful of things that are genuinely everyone's business — a season turning, a
+    /// server notice, somebody finishing the thing only one person can finish. A game that announces
+    /// ordinary events this way is a game whose chat log is unreadable.</para>
+    /// </summary>
+    void TellEveryone(string text, ChatChannel channel = ChatChannel.System,
+                      int color = GameColor.White);
+
+    /// <summary>
+    /// Says something to everybody who can SEE <paramref name="mapNum"/> — the room, as near as a
+    /// seamless world has one.
+    ///
+    /// <para>🔴 <b>Not "everybody standing on it".</b> The world scrolls contiguously, so somebody on
+    /// the next map along is looking at this one and would watch an event happen in silence. The
+    /// audience for an event is who can see it, which is what the observer set is.</para>
+    /// </summary>
+    void TellEveryoneOn(int mapNum, string text, ChatChannel channel = ChatChannel.System,
+                        int color = GameColor.White);
+
+    /// <summary>
+    /// Says something to everybody within earshot of a square — the tighter audience, the one that
+    /// hears speech rather than the one that can see the region.
+    /// </summary>
+    void TellEveryoneNear(WorldPlace at, string text, ChatChannel channel = ChatChannel.System,
+                          int color = GameColor.White);
+
+    /// <summary>
+    /// Says something to a set of bodies, wherever they are.
+    /// </summary>
+    ///
+    /// <para>🔴 <b>The audience nothing else here can express.</b> The other three are all about
+    /// PLACE — one body, a region, an earshot — and a guild is not a place. Anything a game gathers
+    /// for its own reasons, a raid, a party, everyone carrying a key, is this.</para>
+    ///
+    /// <para>Bodies that are not players in the world are skipped rather than refused: a set collected
+    /// a moment ago is a set somebody may have logged out of.</para>
+    /// </summary>
+    void TellThese(IReadOnlyCollection<EntityHandle> them, string text,
+                   ChatChannel channel = ChatChannel.System, int color = GameColor.White);
+
     // ── What a body carries ───────────────────────────────────────────────────
 
     /// <summary>The body's attribute bag, or null when it is not in the world.
@@ -133,12 +175,97 @@ public interface IWorld
     /// the tile. What stains and why is a game's.</summary>
     void Stain(WorldPlace at, int size, WorldLayer layer, float amount);
 
+    /// <summary>
+    /// Floats a line of text up off a body, to everybody within sight of it.
+    /// </summary>
+    ///
+    /// <para>🔴 <b>The one place a game asks the client to DRAW.</b> Everything else here sets state and
+    /// lets the client decide what that looks like — but a damage number is not state, it is an event
+    /// that happened once, and there is nothing for a client to derive it from.</para>
+    ///
+    /// <para>Addressed to a BODY, not a tile, because that is what makes it follow: the client centers
+    /// it on an oversize footprint, keeps it anchored across a seam crossing, and holds it until an
+    /// in-flight projectile lands so the text and the impact read as one event.</para>
+    ///
+    /// <param name="who">Whose head it floats over.</param>
+    /// <param name="text">What it says, already in the words a player will read.</param>
+    /// <param name="rgb">Packed 0xRRGGBB, from <see cref="GameColor"/> or a game's own.</param>
+    /// <param name="splatter">How much of a burst comes with it, 0 for none. Drawn in the world's own
+    /// decal color, so what a splatter looks like is decided once rather than per hit.</param>
+    void Float(EntityHandle who, string text, uint rgb, float splatter = 0f);
+
+    /// <summary>
+    /// Sweeps a crescent over a body, oriented by the way it is facing.
+    /// </summary>
+    /// <param name="who">Who is swinging.</param>
+    /// <param name="connected">True flings sparks with it, which is what makes a sweep read as having
+    /// hit something rather than passing through air.</param>
+    void Sweep(EntityHandle who, bool connected = true);
+
+    /// <summary>
+    /// Throws something from one body to another, and holds any number owed to the target until it
+    /// lands.
+    /// </summary>
+    ///
+    /// <para>🔴 <b>The timing is the part worth having.</b> A damage number that appears before its
+    /// bolt arrives reads as two unrelated events, so a hit on that target is registered as pending and
+    /// released when the thing would land — several throws at one target stagger across their own
+    /// arrivals. A target that resolves to nowhere gets the effect in place rather than no effect.</para>
+    ///
+    /// <param name="from">Who is throwing.</param>
+    /// <param name="to">What it is aimed at.</param>
+    /// <param name="style">What it looks like on its way.</param>
+    /// <param name="rgb">Packed 0xRRGGBB.</param>
+    void Throw(EntityHandle from, EntityHandle to, ProjectileStyle style, uint rgb);
+
+    /// <summary>
+    /// Bursts a spray of droplets from a body, arcing down under gravity.
+    /// </summary>
+    ///
+    /// <para>Deliberately color-blind: blood, sparks off a struck anvil, water from a splash and dust
+    /// off a rockfall are one burst with a different <paramref name="rgb"/>.</para>
+    ///
+    /// <param name="intensity">How big, 0 to 1. A trickle and a spray out of one call.</param>
+    void Burst(EntityHandle who, uint rgb, float intensity = 0.5f);
+
+    /// <summary>
+    /// The body standing on that square, or <see cref="EntityHandle.None"/> for an empty one.
+    ///
+    /// <para>🔴 <b>The reverse of <see cref="PlaceOf"/>, and a game cannot do without it.</b> Everything
+    /// else here starts from a handle the engine already gave out. A verb used on a square gives a game
+    /// coordinates, so without this it can say what happened and cannot say who it happened to.</para>
+    ///
+    /// <para>A player is answered before an NPC when both somehow occupy one tile, because a rule aimed
+    /// at a square is aimed at whoever is standing there and a player is the one who will notice.</para>
+    /// </summary>
+    EntityHandle At(WorldPlace place);
+
     /// <summary>Every record of one of this game's own families, 1-based, blanks included. Empty for a
     /// family this world does not hold.</summary>
     IReadOnlyList<AttributeBag> RecordsOf(string familyId);
 
     /// <summary>One record of one of this game's own families, or null for a slot that is not there.</summary>
     AttributeBag? RecordAt(string familyId, int num);
+
+    // ── Who somebody is with ───────────────────────────────────────────
+    //
+    // Two standing groups the engine already keeps, and had no way to answer about. Both answer with
+    // who is IN THE WORLD rather than with a roster on disk, because the only thing a game does with
+    // the answer is act on them — and a body that logged out an hour ago cannot be acted on.
+
+    /// <summary>The name of the guild this body's account belongs to, or blank for none.</summary>
+    string GuildOf(EntityHandle who);
+
+    /// <summary>
+    /// Everybody in the world who shares this body's guild, including it.
+    ///
+    /// <para>Empty for a body in no guild, which is not the same as a guild with nobody online — and
+    /// a game that needs to tell them apart asks <see cref="GuildOf"/>.</para>
+    /// </summary>
+    IReadOnlyList<EntityHandle> GuildmatesOf(EntityHandle who);
+
+    /// <summary>Everybody in this body's party, including it. Empty for somebody in no party.</summary>
+    IReadOnlyList<EntityHandle> PartyOf(EntityHandle who);
 
     /// <summary>What to call this body — a player's character name, or an NPC's record name. Blank for a
     /// handle naming nobody, and for one whose body has left the world.

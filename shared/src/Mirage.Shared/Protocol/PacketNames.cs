@@ -216,6 +216,12 @@ public static class PacketNames
     public const string SendPlayerData = "playerdata";
     // A map's stains, whole-list. Sent only when the list changes; drying needs no wire.
     public const string DecalUpdate = "decals";
+
+    /// <summary>S→C: a line of text floats up off a body. Spawned only by a game.</summary>
+    public const string FloatingText = "float";
+
+    /// <summary>S→C: something a game asked to be shown once - a sweep, a throw, a burst.</summary>
+    public const string GameEffect = "fx";
     // The loaded game's attribute keys and their wire numbering, sent once before anything is synced.
     public const string AttributeSchema = "attrschema";
     // One body's changed attributes, already filtered to what the receiver may see.

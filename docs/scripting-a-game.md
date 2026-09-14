@@ -436,7 +436,153 @@ compose.
 ⚠ **Asking is enough.** A panel that asks declares the message too, so `game.Message` is only wanted
 when something other than a panel also sends it. Writing both is fine, in either order.
 
-## 9. Changing it
+## 9. Creatures, and the world as it is
+
+`Builder` says what the game IS, once, before there is a world. **`World` answers about the world
+running right now**, and is reached by its own name from any handler:
+
+```
+public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+    Npc? it = World.NpcAt(map, x, y);
+
+    if not it.HasValue()
+        who.Message("There is nothing there.");
+        yield;
+    end if
+
+    who.Message("You hit " + it.Name + ".");
+    it.SetNumber("hp", it.Number("hp") - 3);
+
+    if it.Number("hp") <= 0
+        it.Kill("slain");
+    end if
+end function
+```
+
+🔴 **A handler is given a SQUARE, and this is what turns a square back into a body.** Everything else
+a script holds — the `Player` a handler opens with — was handed over by the engine. A verb used on a
+creature arrives at `OnAction` with the square it was used on, and nothing else, so without `NpcAt` a
+game can say what happened and cannot say who it happened to.
+
+| | |
+|---|---|
+| `World.NpcAt(map, x, y)` | the creature there, or nothing |
+| `World.PlayerAt(map, x, y)` | the player there, or nothing |
+| `World.Records(kind)` | how many records of that kind the world holds |
+| `World.Record(kind, number, field)` | one field of one record, as text |
+| `World.RecordNumber(kind, number, field)` | the same, as a whole number |
+
+⚠ **`OnAction` has not changed and will not.** A handler is matched by name AND arity, so retyping
+its `on` parameter would leave every script already written matching, loading, and being handed a
+value of a type its body does not expect. The reach was ADDED beside it.
+
+**An `Npc` is a handle, exactly as a `Player` is.** It answers `Name`, `IsHere`, `Map`, `X`, `Y`, the
+same four attribute members a player has, and `Kill`. It is named by where it SPAWNS rather than where
+it stands, so one kept while the body walks onto the next map still names it — and `IsHere` is what
+says the body is still there.
+
+### Reading the records your own editor authored
+
+Declaring a kind of record has been covered above. `World.Record` is how a rule reads one back while
+the world runs — a game whose class stats or species traits live in records can do nothing with them
+until it can.
+
+```
+integer span = World.RecordNumber("Species", 1, "wingspan");
+```
+
+Slots are 1-based and may be blank, which is what `World.Records` counts. A slot or a field that is
+not there answers empty or zero rather than failing.
+
+### Saying it to more than one person
+
+`who.Message` is a whisper. Three audiences cover the rest:
+
+```
+World.Tell("The season turns.");                  # everybody in the world
+World.TellOn(who.Map, "The gate grinds open.");   # everybody who can SEE that map
+World.TellNear(map, x, y, "Something snaps.");    # everybody within earshot
+```
+
+🔴 **A room is who can SEE the map, not who is standing on it.** The world scrolls contiguously, so
+somebody on the next map along is looking at this one — scoped to occupants, they would watch the gate
+open in silence.
+
+⚠ Keep `World.Tell` for the things that are genuinely everyone's business. A game that announces
+ordinary events to the world has a chat log nobody reads.
+
+### Text that floats off a body
+
+```
+it.Float("-12", 255, 80, 80);
+who.Float("hit!", 0, 255, 0);
+```
+
+Red, green, and blue, each 0 to 255, and out-of-range numbers are clamped rather than refused.
+
+🔴 **This is the one place a script asks the client to DRAW.** Everything else a game does sets state
+and lets the client decide what that looks like. A damage number is not state — it happened once, and
+there is nothing for a client to derive it from.
+
+It is addressed to a BODY rather than to a square, which is what makes it follow: the client centers it
+on an oversize footprint, keeps it anchored across a seam crossing, and holds it until an in-flight
+projectile lands so the text and the impact read as one event.
+
+### What a fight looks like
+
+Three effects, and they are the **only** draws a game may call:
+
+```
+who.Sweep(true);                                  # a crescent, the way they face
+who.ThrowAtNpc(it, "bolt", 255, 220, 90);         # bolt, glitter, or parcel
+it.Burst(190, 20, 20, 70);                        # droplets, power 0 to 100
+World.Stain(map, x, y, 2, 80);                    # and this one LASTS
+```
+
+🔴 **A throw is named for what it is aimed at** — `ThrowAtNpc` and `ThrowAtPlayer`, on both —
+because Compass has no union type and a player throwing at a creature is the common case.
+
+🔴 **A number floated at a target waits for the throw to LAND.** That is most of why a throw is
+worth using over a burst: a damage number that appears before its bolt arrives reads as two unrelated
+events. Several throws at one target stagger across their own arrivals.
+
+**None of them means anything on its own.** A crescent is a sword, a claw, a thrown net, or a shop door
+opening; a burst is blood, sparks off an anvil, water, or dust. Which one it is belongs to the game,
+which is what lets Core carry a genre it has never heard of.
+
+| | |
+|---|---|
+| `Sweep(connected)` | true flings sparks, which is what makes a swing read as having HIT something |
+| `ThrowAtNpc` / `ThrowAtPlayer` | style as text; an unknown one falls back to a bolt rather than refusing |
+| `Burst(r, g, b, power)` | power 0 to 100 |
+| `World.Stain(map, x, y, size, amount)` | still there when somebody walks back; the world's own color |
+
+⚠ **Weather is not on this list and is not yours.** It runs on the world's clock and every client
+draws it from state it already holds, so there is nothing to ask for.
+
+### What a fight costs
+
+The engine keeps five clocks about a player, and a game says when they start:
+
+| | |
+|---|---|
+| `who.Engage(seconds)` | they are in a fight |
+| `who.Down(seconds)` | they are out of it |
+| `who.Mark(seconds)` | somebody's rule has flagged them |
+| `who.Flag(seconds)` | they started it |
+| `who.Wait(seconds)` | they may not act again yet |
+| `who.Kill(cause)` | they die, unless `OnMayDie` refuses |
+
+What any of them MEANS is the game's. The engine keeps the clock and the client draws it.
+
+**A creature takes four of the five.** `it.Engage`, `it.Mark`, `it.Flag`, `it.Wait` — and engaging
+one is what makes its overhead bars appear, which is most of what a fight looks like.
+
+⚠ **`Down` stays a player's.** Downed is a body lying there waiting to get up; a creature that runs
+out of health despawns and its slot counts down to a respawn, which the spawn clock already owns. A
+second answer to "when does it come back" would be two clocks disagreeing.
+
+## 10. Changing it
 
 Edit the file, restart the server. There is no build step and no redeploy. The world folder is the
 game — copy it, hand it to somebody, and they have your game.

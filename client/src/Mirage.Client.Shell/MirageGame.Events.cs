@@ -328,6 +328,24 @@ public sealed partial class MirageGame : Game
                 _pendingChat.Enqueue((pkt.Msg, pkt.Color));
         };
 
+        // Only while somebody is standing in the world: text floating over a body needs a body on
+        // screen, and a packet arriving mid-load has nothing to float off.
+        _handler.FloatingText += pkt =>
+        {
+            if (_screens.Current is not GameplayScreen playing) return;
+
+            playing.SpawnOrDeferEntityText(
+                pkt.IsNpc, pkt.Index, pkt.NpcMap, pkt.MapNum, pkt.X, pkt.Y, 0f, 0f,
+                pkt.Text.Length > 0 ? pkt.Text : null,
+                new Color((int)((pkt.Rgb >> 16) & 0xFF), (int)((pkt.Rgb >> 8) & 0xFF), (int)(pkt.Rgb & 0xFF)),
+                pkt.Splatter);
+        };
+
+        _handler.GameEffect += pkt =>
+        {
+            if (_screens.Current is GameplayScreen showing) showing.ShowGameEffect(pkt);
+        };
+
         _handler.GuildOffer += p =>
             _guildOffer.Show(p.GuildName, p.OtherName, p.Kind,
                 accept => _sender.SendGuildOfferResponse(accept));

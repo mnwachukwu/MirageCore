@@ -886,6 +886,435 @@ public class ScriptedWorldTests
         });
     }
 
+    // ── Creatures ───────────────────────────────────────────────────────
+
+    /// <summary>🔴 A verb used on a creature reaches the creature.
+    ///
+    /// <para>A script could OFFER a verb on one — <c>OnNpc</c> has always worked — and then do nothing
+    /// with it: <c>OnAction</c> hands over the target's NAME, and the only lookup was over players. So
+    /// "Attack" could sit on a wolf's menu and no rule could touch the wolf.</para>
+    ///
+    /// <para>⚠ <c>OnAction</c> is not the thing that changed, and must not be. A handler is matched by
+    /// name AND arity, so retyping its third parameter would leave every script already written
+    /// matching, loading, and being handed a value of a type its body does not expect. The square it
+    /// already carries is turned back into a body instead.</para></summary>
+    [Test]
+    public void AVerbUsedOnACreature_ReachesTheCreature()
+    {
+        var world = new RecordingWorld();
+        var wolf = EntityHandle.ForNpc(spawnMap: 1, spawnSlot: 3);
+        world.Standing[new WorldPlace(1, 5, 7)] = wolf;
+
+        var (module, registry) = Built("""
+            shared model Rules
+                public string Bite = "wild.bite";
+
+                public function Configure(Builder game)
+                    Verb bite = game.Action(Rules.Bite, "Bite it", "Wild");
+                    bite.OnNpc();
+                end function
+
+                public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+                    Npc? it = World.NpcAt(map, x, y);
+
+                    if not it.HasValue()
+                        who.Message("There is nothing there.");
+                        yield;
+                    end if
+
+                    who.Message("You bite " + it.Name + " at " + it.X + "," + it.Y + ".");
+                    it.SetNumber("wild.bitten", it.Number("wild.bitten") + 1);
+                    it.Kill("bitten");
+                end function
+            end model
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+
+        Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+
+        ((IActionHandler)scripts).Invoke(
+            Someone, "wild.bite", EntityHandle.None, new WorldPlace(1, 5, 7));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(world.Said.Single(), Does.Contain("npc:1/3").And.Contains("5,7"));
+            Assert.That(world.Killed.Single().Who, Is.EqualTo(wolf));
+            Assert.That(world.Killed.Single().Cause, Is.EqualTo("bitten"));
+        });
+    }
+
+    /// <summary>An empty square answers nothing rather than a body that is not there — and so does one
+    /// holding the other kind of body, because "there is no creature here" is what a rule aimed at
+    /// creatures needs to hear.</summary>
+    [Test]
+    public void AnEmptySquare_AndOneHoldingAPlayer_AnswerNoCreature()
+    {
+        var world = new RecordingWorld();
+        world.Standing[new WorldPlace(1, 2, 2)] = EntityHandle.ForPlayer(4);
+
+        var (module, _) = Built("""
+            shared model Rules
+                public function Configure(Builder game)
+                    Verb look = game.Action("wild.look", "Look", "Wild");
+                    look.OnTile();
+                end function
+
+                public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+                    Npc? it = World.NpcAt(map, x, y);
+                    Player? them = World.PlayerAt(map, x, y);
+
+                    who.Message("creature=" + it.HasValue() + " player=" + them.HasValue());
+                end function
+            end model
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+        var verbs = (IActionHandler)scripts;
+
+        verbs.Invoke(Someone, "wild.look", EntityHandle.None, new WorldPlace(1, 9, 9));
+        verbs.Invoke(Someone, "wild.look", EntityHandle.None, new WorldPlace(1, 2, 2));
+
+        Assert.That(world.Said, Is.EqualTo(new[]
+        {
+            "creature=false player=false",
+            "creature=false player=true",
+        }).AsCollection);
+    }
+
+    /// <summary>A game reads the records its own editor authored, at run time.
+    ///
+    /// <para>Declaring a kind of record has worked for a while; READING one back while the world runs
+    /// had no seam at all, and a game whose class stats or species traits live in records cannot do
+    /// anything with them until it can.</para></summary>
+    [Test]
+    public void AGameReadsItsOwnRecords_WhileTheWorldRuns()
+    {
+        var world = new RecordingWorld();
+        var heron = new AttributeBag();
+        heron.Set("name", AttributeValue.From("Heron"));
+        heron.Set("wingspan", AttributeValue.From(180L));
+        world.Records["Species"] = [heron];
+
+        var (module, _) = Built("""
+            model Species
+                public string name;
+                public integer wingspan;
+
+                public shared function Describe(Records these)
+                    these.Are("Species", "Species", 50);
+                end function
+            end model
+
+            shared model Rules
+                public function OnPlayerJoined(Player who)
+                    who.Message("kinds=" + World.Records("Species")
+                            + " first=" + World.Record("Species", 1, "name")
+                            + " span=" + World.RecordNumber("Species", 1, "wingspan")
+                            + " missing=" + World.Record("Species", 9, "name"));
+                end function
+            end model
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+        ((IWorldObserver)scripts).OnPlayerJoined(Someone);
+
+        Assert.That(world.Said.Single(),
+            Is.EqualTo("kinds=1 first=Heron span=180 missing="));
+    }
+
+    /// <summary>🔴 A game can say something to more than one person.
+    ///
+    /// <para><c>Tell</c> carried literal text to ONE player, and every system worth announcing
+    /// announces to a room: somebody died here, the gate opened, the season turned. A rule that can
+    /// only whisper is a rule nobody else sees the result of.</para>
+    ///
+    /// <para>⚠ <b>A room is who can SEE the map, not who is standing on it.</b> The world scrolls
+    /// contiguously, so a player on the next map along is looking at this one — scoped to occupants,
+    /// they would watch the event happen in silence. Earshot is the tighter third audience.</para>
+    /// </summary>
+    [Test]
+    public void AGameAnnouncesToARoom_ToEarshot_AndToEverybody()
+    {
+        var world = new RecordingWorld();
+
+        var (module, _) = Built("""
+            shared model Rules
+                public function OnPlayerJoined(Player who)
+                    World.Tell("A season turns.");
+                    World.TellOn(who.Map, "Somebody arrives.");
+                    World.TellNear(who.Map, who.X, who.Y, "You hear footsteps.");
+                    who.Message("And this is only for you.");
+                end function
+            end model
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+        world.Place = new WorldPlace(3, 4, 5);
+
+        ((IWorldObserver)scripts).OnPlayerJoined(Someone);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+
+            Assert.That(world.Announced, Is.EqualTo(new[]
+            {
+                ("everyone", "A season turns."),
+                ("map 3", "Somebody arrives."),
+                ("near 3,4,5", "You hear footsteps."),
+            }).AsCollection);
+
+            Assert.That(world.Said.Single(), Is.EqualTo("And this is only for you."),
+                "the one-player path is untouched");
+        });
+    }
+
+    /// <summary>🔴 A game floats a number off a body.
+    ///
+    /// <para>The client has always known how to do this — centering on an oversize footprint, holding
+    /// the text until an in-flight projectile lands — and its own comment said Core spawns none,
+    /// because what the text SAYS is a game's. There was simply no wire between them, so a fight
+    /// happened in silence and the numbers only existed in a chat line.</para>
+    ///
+    /// <para>⚠ It is the one place a script asks the client to DRAW. Everything else a game does sets
+    /// state and lets the client decide what that looks like; a number that happened once is not state
+    /// and there is nothing to derive it from.</para></summary>
+    [Test]
+    public void AGameFloatsANumberOffABody()
+    {
+        var world = new RecordingWorld();
+        var wolf = EntityHandle.ForNpc(spawnMap: 1, spawnSlot: 2);
+        world.Standing[new WorldPlace(1, 3, 4)] = wolf;
+
+        var (module, _) = Built("""
+            shared model Rules
+                public function Configure(Builder game)
+                    Verb hit = game.Action("wild.hit", "Hit it", "Wild");
+                    hit.OnNpc();
+                end function
+
+                public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+                    Npc? it = World.NpcAt(map, x, y);
+
+                    if not it.HasValue()
+                        yield;
+                    end if
+
+                    it.Float("-12", 255, 80, 80);
+                    who.Float("hit!", 0, 255, 0);
+                end function
+            end model
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+
+        Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+
+        ((IActionHandler)scripts).Invoke(
+            Someone, "wild.hit", EntityHandle.None, new WorldPlace(1, 3, 4));
+
+        Assert.That(world.Floated, Is.EqualTo(new[]
+        {
+            (wolf, "-12", 0xFF5050u),
+            (Someone, "hit!", 0x00FF00u),
+        }).AsCollection);
+    }
+
+    /// <summary>A channel outside 0-255 is clamped rather than refused. A game doing arithmetic on a
+    /// color should get a color out of it.</summary>
+    [Test]
+    public void AColorChannelOutOfRange_IsClamped()
+    {
+        var world = new RecordingWorld();
+
+        var (module, _) = Built("""
+            shared model Rules
+                public function OnPlayerJoined(Player who)
+                    who.Float("ow", 999, 0 - 40, 128);
+                end function
+            end model
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+        ((IWorldObserver)scripts).OnPlayerJoined(Someone);
+
+        Assert.That(world.Floated.Single().Rgb, Is.EqualTo(0xFF0080u));
+    }
+
+    /// <summary>🔴 A creature can be put in the four timed states a creature has.
+    ///
+    /// <para>The engine already kept these clocks and the client already drew them — an NPC's
+    /// overhead bars appear while it is engaged, and the packet has carried a <c>combatMs</c> field
+    /// the whole time. The server simply always sent "never", because nothing could set one. A fight
+    /// with a wolf ran with the wolf's bars hidden.</para>
+    ///
+    /// <para>⚠ Four, not five. <c>Down</c> is a body lying there waiting to get up; a creature that
+    /// runs out of health despawns and its slot counts down to a respawn, which the spawn clock
+    /// already owns. Giving it an NPC meaning would be a second, conflicting answer to "when does it
+    /// come back".</para></summary>
+    [Test]
+    public void ACreatureCanBeEngaged_Marked_Flagged_AndHeldOff()
+    {
+        var world = new RecordingWorld();
+        var wolf = EntityHandle.ForNpc(spawnMap: 1, spawnSlot: 6);
+        world.Standing[new WorldPlace(2, 8, 8)] = wolf;
+
+        var (module, _) = Built("""
+            shared model Rules
+                public function Configure(Builder game)
+                    Verb hit = game.Action("wild.hit", "Hit it", "Wild");
+                    hit.OnNpc();
+                end function
+
+                public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+                    Npc? it = World.NpcAt(map, x, y);
+
+                    if not it.HasValue()
+                        yield;
+                    end if
+
+                    it.Engage(10);
+                    it.Mark(60);
+                    it.Flag(5);
+                    it.Wait(2);
+                end function
+            end model
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+
+        Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+
+        ((IActionHandler)scripts).Invoke(
+            Someone, "wild.hit", EntityHandle.None, new WorldPlace(2, 8, 8));
+
+        Assert.That(world.Timed, Is.EqualTo(new[]
+        {
+            (wolf, "engaged", 10),
+            (wolf, "marked", 60),
+            (wolf, "aggressor", 5),
+            (wolf, "cooldown", 2),
+        }).AsCollection);
+    }
+
+    /// <summary>🔴 A game can ask the client to show a swing, a throw and a burst.
+    ///
+    /// <para>All three were written for a game to call and none had a caller — <c>EmitArc</c>,
+    /// <c>SpawnProjectile</c> and <c>EmitSplatter</c> each say so in their own header. There was no
+    /// wire between the game and the machinery, so a fight had no picture at all.</para>
+    ///
+    /// <para>⚠ These are the ONLY draws a game may call, and they are one kind of thing: an event
+    /// that happened once with nothing for a client to derive it from. A swing is not state.</para>
+    ///
+    /// <para>A throw is named for what it is aimed AT rather than taking "a body", because Compass has
+    /// no union type — and a player throwing at a creature is the common case, so a throw that only
+    /// accepted its own kind would be the wrong half.</para></summary>
+    [Test]
+    public void AGameShowsASwing_AThrow_AndABurst()
+    {
+        var world = new RecordingWorld();
+        var wolf = EntityHandle.ForNpc(spawnMap: 1, spawnSlot: 5);
+        world.Standing[new WorldPlace(1, 6, 6)] = wolf;
+
+        var (module, _) = Built("""
+            shared model Rules
+                public function Configure(Builder game)
+                    Verb hit = game.Action("wild.hit", "Hit it", "Wild");
+                    hit.OnNpc();
+                end function
+
+                public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+                    Npc? it = World.NpcAt(map, x, y);
+
+                    if not it.HasValue()
+                        who.Sweep(false);
+                        yield;
+                    end if
+
+                    who.Sweep(true);
+                    who.ThrowAtNpc(it, "bolt", 255, 220, 90);
+                    it.Burst(190, 20, 20, 70);
+                    it.ThrowAtPlayer(who, "glitter", 0, 0, 255);
+                end function
+            end model
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+
+        Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+
+        var verbs = (IActionHandler)scripts;
+        verbs.Invoke(Someone, "wild.hit", EntityHandle.None, new WorldPlace(1, 6, 6));
+        verbs.Invoke(Someone, "wild.hit", EntityHandle.None, new WorldPlace(1, 9, 9));
+
+        Assert.That(world.Shown, Is.EqualTo(new[]
+        {
+            (Someone, "sweep hit", EntityHandle.None, 0u),
+            (Someone, "throw Bolt", wolf, 0xFFDC5Au),
+            (wolf, "burst 0.7", EntityHandle.None, 0xBE1414u),
+            (wolf, "throw Glitter", Someone, 0x0000FFu),
+
+            // The second call found nothing there, so the swing whiffed.
+            (Someone, "sweep", EntityHandle.None, 0u),
+        }).AsCollection);
+    }
+
+    /// <summary>A style nobody offers falls back to a bolt rather than refusing. A projectile is
+    /// decoration: a misspelled one should throw something visible and read as the author's own typo,
+    /// rather than take the hit it belongs to down with it.</summary>
+    [Test]
+    public void AnUnknownProjectileStyle_FallsBackRatherThanRefusing()
+    {
+        var world = new RecordingWorld();
+        world.Standing[new WorldPlace(1, 2, 2)] = EntityHandle.ForPlayer(3);
+
+        var (module, _) = Built("""
+            shared model Rules
+                public function OnPlayerJoined(Player who)
+                    Player? them = World.PlayerAt(1, 2, 2);
+
+                    if them.HasValue()
+                        who.ThrowAtPlayer(them, "banana", 1, 2, 3);
+                    end if
+                end function
+            end model
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+        ((IWorldObserver)scripts).OnPlayerJoined(Someone);
+
+        Assert.That(world.Shown.Single().What, Is.EqualTo("throw Bolt"));
+    }
+
+    /// <summary>⚠ A stain is the one worldspace mark that LASTS. Everything else a game shows is gone
+    /// the moment it has played.</summary>
+    [Test]
+    public void AStainOutlastsEverythingElseAGameShows()
+    {
+        var world = new RecordingWorld();
+
+        var (module, _) = Built("""
+            shared model Rules
+                public function OnPlayerJoined(Player who)
+                    World.Stain(who.Map, who.X, who.Y, 2, 80);
+                end function
+            end model
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+        world.Place = new WorldPlace(4, 7, 8);
+
+        ((IWorldObserver)scripts).OnPlayerJoined(Someone);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(world.Stained.Single().At, Is.EqualTo(new WorldPlace(4, 7, 8)));
+            Assert.That(world.Stained.Single().Size, Is.EqualTo(2));
+            Assert.That(world.Stained.Single().Amount, Is.EqualTo(0.8f).Within(0.001f));
+        });
+    }
+
     // ── A message of a game's own ────────────────────────────────────────────
 
     /// <summary>🔴 A script declares a message, and a line nobody compiled a type for arrives as the
@@ -1476,8 +1905,75 @@ public class ScriptedWorldTests
 
         public void Tell(EntityHandle who, string text, ChatChannel channel, int color) => Said.Add(text);
 
-        public bool IsInWorld(EntityHandle who) => who.IsPlayer;
-        public WorldPlace PlaceOf(EntityHandle who) => Place;
+        public bool IsInWorld(EntityHandle who) => who.IsSet;
+        /// <summary>Where a test put this body, or <see cref="Place"/> for one it said nothing
+        /// about — which is most of them, and is what every test written before Standing existed
+        /// relies on.</summary>
+        public WorldPlace PlaceOf(EntityHandle who)
+        {
+            foreach (var (at, body) in Standing)
+            {
+                if (body == who) return at;
+            }
+
+            return Place;
+        }
+
+        /// <summary>Whoever a test put on that square, by the place it is standing at.</summary>
+        public Dictionary<WorldPlace, EntityHandle> Standing { get; } = [];
+
+        /// <summary>What was announced, and to whom — "everyone", "map 3", or "near 1,4,5".</summary>
+        public List<(string Audience, string Text)> Announced { get; } = [];
+
+        public void TellEveryone(string text, ChatChannel channel, int color) =>
+            Announced.Add(("everyone", text));
+
+        public void TellEveryoneOn(int mapNum, string text, ChatChannel channel, int color) =>
+            Announced.Add(($"map {mapNum}", text));
+
+        public void TellEveryoneNear(WorldPlace at, string text, ChatChannel channel, int color) =>
+            Announced.Add(($"near {at.Map},{at.X},{at.Y}", text));
+
+        public void TellThese(IReadOnlyCollection<EntityHandle> them, string text,
+                              ChatChannel channel, int color) =>
+            Announced.Add(($"these {string.Join(' ', them)}", text));
+
+        /// <summary>Which guild a test put somebody in, and who else is in the world with them.</summary>
+        public Dictionary<EntityHandle, string> Guilds { get; } = [];
+        public Dictionary<EntityHandle, List<EntityHandle>> Groups { get; } = [];
+
+        public string GuildOf(EntityHandle who) =>
+            Guilds.TryGetValue(who, out string? name) ? name : string.Empty;
+
+        public IReadOnlyList<EntityHandle> GuildmatesOf(EntityHandle who) =>
+            Groups.TryGetValue(who, out var mates) ? mates : [];
+
+        public IReadOnlyList<EntityHandle> PartyOf(EntityHandle who) =>
+            Groups.TryGetValue(who, out var mates) ? mates : [];
+
+        /// <summary>What floated off whom, and in what color.</summary>
+        public List<(EntityHandle Who, string Text, uint Rgb)> Floated { get; } = [];
+
+        public void Float(EntityHandle who, string text, uint rgb, float splatter) =>
+            Floated.Add((who, text, rgb));
+
+        /// <summary>Which state was put on whom, and for how long.</summary>
+        public List<(EntityHandle Who, string State, int Seconds)> Timed { get; } = [];
+
+        /// <summary>What the game asked to be shown, as "sweep", "throw" or "burst".</summary>
+        public List<(EntityHandle From, string What, EntityHandle To, uint Rgb)> Shown { get; } = [];
+
+        public void Sweep(EntityHandle who, bool connected) =>
+            Shown.Add((who, connected ? "sweep hit" : "sweep", EntityHandle.None, 0u));
+
+        public void Throw(EntityHandle from, EntityHandle to, ProjectileStyle style, uint rgb) =>
+            Shown.Add((from, $"throw {style}", to, rgb));
+
+        public void Burst(EntityHandle who, uint rgb, float intensity) =>
+            Shown.Add((who, $"burst {intensity:0.##}", EntityHandle.None, rgb));
+
+        public EntityHandle At(WorldPlace place) =>
+            Standing.TryGetValue(place, out var who) ? who : EntityHandle.None;
         public AttributeBag? AttributesOf(EntityHandle who) => Bag;
 
         public bool SetAttribute(EntityHandle who, string key, AttributeValue value)
@@ -1493,12 +1989,19 @@ public class ScriptedWorldTests
         }
 
         public bool RemoveAttribute(EntityHandle who, string key) => Bag.Remove(key);
-        public void SetEngaged(EntityHandle who, int seconds) { }
-        public void SetDowned(EntityHandle who, int seconds) { }
-        public void SetMarked(EntityHandle who, int seconds) { }
-        public void SetAggressor(EntityHandle who, int seconds) { }
-        public void SetActionCooldown(EntityHandle who, int seconds) { }
-        public bool Kill(EntityHandle who, EntityHandle killer = default, string causeKey = "") => false;
+        public void SetEngaged(EntityHandle who, int seconds) => Timed.Add((who, "engaged", seconds));
+        public void SetDowned(EntityHandle who, int seconds) => Timed.Add((who, "downed", seconds));
+        public void SetMarked(EntityHandle who, int seconds) => Timed.Add((who, "marked", seconds));
+        public void SetAggressor(EntityHandle who, int seconds) => Timed.Add((who, "aggressor", seconds));
+        public void SetActionCooldown(EntityHandle who, int seconds) => Timed.Add((who, "cooldown", seconds));
+        /// <summary>What a rule asked to die, and why.</summary>
+        public List<(EntityHandle Who, string Cause)> Killed { get; } = [];
+
+        public bool Kill(EntityHandle who, EntityHandle killer = default, string causeKey = "")
+        {
+            Killed.Add((who, causeKey));
+            return true;
+        }
 
         public bool Warp(EntityHandle who, WorldPlace to)
         {
@@ -1509,9 +2012,20 @@ public class ScriptedWorldTests
         public void Give(EntityHandle who, int itemNum, int quantity = 1) { }
         public void Take(EntityHandle who, int itemNum, int quantity = 1) { }
         public void ReleaseGhost(EntityHandle who) { }
-        public void Stain(WorldPlace at, int size, WorldLayer layer, float amount) { }
-        public IReadOnlyList<AttributeBag> RecordsOf(string familyId) => [];
-        public AttributeBag? RecordAt(string familyId, int num) => null;
+        /// <summary>What was marked on the ground, which unlike everything else shown, lasts.</summary>
+        public List<(WorldPlace At, int Size, float Amount)> Stained { get; } = [];
+
+        public void Stain(WorldPlace at, int size, WorldLayer layer, float amount) =>
+            Stained.Add((at, size, amount));
+        /// <summary>What a test authored, by the kind of record it belongs to. 1-based on the wire,
+        /// so slot 1 is index 0 here.</summary>
+        public Dictionary<string, IReadOnlyList<AttributeBag>> Records { get; } = [];
+
+        public IReadOnlyList<AttributeBag> RecordsOf(string familyId) =>
+            Records.TryGetValue(familyId, out var rows) ? rows : [];
+
+        public AttributeBag? RecordAt(string familyId, int num) =>
+            RecordsOf(familyId) is { } rows && num >= 1 && num <= rows.Count ? rows[num - 1] : null;
 
         public string NameOf(EntityHandle who) => who.IsSet ? who.ToString() : string.Empty;
     }

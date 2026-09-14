@@ -60,6 +60,90 @@ public class WorldActionTests
         return (actions, world, pm, dispatcher);
     }
 
+    // ── Creatures ───────────────────────────────────────────────────────
+
+    /// <summary>🔴 The reverse of <c>PlaceOf</c>, which nothing offered.
+    ///
+    /// <para>Everything else a game holds was handed to it by the engine. A verb used on a square
+    /// gives a game coordinates, so without this it can say what happened and not who it happened
+    /// to.</para></summary>
+    [Test]
+    public void ABodyIsFoundByTheSquareItStandsOn()
+    {
+        var (world, game, pm) = Build();
+
+        game.MapNpcs[Map, 4].Num = 1;
+        game.MapNpcs[Map, 4].X = 9;
+        game.MapNpcs[Map, 4].Y = 3;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(world.At(new WorldPlace(Map, 5, 5)), Is.EqualTo(EntityHandle.ForPlayer(Idx)),
+                "the player standing there");
+
+            Assert.That(world.At(new WorldPlace(Map, 9, 3)), Is.EqualTo(EntityHandle.ForNpc(Map, 4)),
+                "and the creature");
+
+            Assert.That(world.At(new WorldPlace(Map, 1, 1)), Is.EqualTo(EntityHandle.None),
+                "an empty square is nobody");
+
+            Assert.That(world.At(WorldPlace.Nowhere), Is.EqualTo(EntityHandle.None),
+                "and so is nowhere");
+        });
+    }
+
+    /// <summary>🔴 A creature's timed states land on the body, where a client can be told about them.
+    ///
+    /// <para>The packet has carried a <c>combatMs</c> field the whole time and the server always sent
+    /// "never", because nothing could set one — so a fight with a wolf ran with the wolf's overhead
+    /// bars hidden.</para></summary>
+    [Test]
+    public void ACreaturesTimedStatesLandOnTheBody()
+    {
+        var (world, game, _) = Build();
+
+        game.MapNpcs[Map, 2].Num = 1;
+        game.MapNpcs[Map, 2].X = 4;
+        game.MapNpcs[Map, 2].Y = 4;
+
+        var wolf = EntityHandle.ForNpc(Map, 2);
+        world.SetEngaged(wolf, 10);
+        world.SetMarked(wolf, 60);
+        world.SetAggressor(wolf, 5);
+
+        var body = game.MapNpcs[Map, 2];
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(body.CombatExpiresAt, Is.GreaterThan(Environment.TickCount64));
+            Assert.That(body.MarkedUntilUtc, Is.GreaterThan(0L));
+            Assert.That(body.AggressorUntil, Is.GreaterThan(Environment.TickCount64));
+
+            // What the client is actually told, which is the half that was always "never".
+            Assert.That(
+                JoinLeaveSystem.BuildMapNpcs(game, Map).Npcs.Single(n => n.Slot == 2).MsSinceCombat,
+                Is.Not.EqualTo(int.MaxValue));
+        });
+
+        world.SetEngaged(wolf, 0);
+        Assert.That(game.MapNpcs[Map, 2].CombatExpiresAt, Is.Zero, "zero seconds clears it");
+    }
+
+    /// <summary>⚠ Downed stays a player's state. A creature that runs out of health despawns and its
+    /// slot counts down to a respawn, which the spawn clock owns — a second answer to "when does it
+    /// come back" would be two clocks disagreeing.</summary>
+    [Test]
+    public void ACreatureIsNotDowned()
+    {
+        var (world, game, _) = Build();
+
+        game.MapNpcs[Map, 3].Num = 1;
+        world.SetDowned(EntityHandle.ForNpc(Map, 3), 30);
+
+        Assert.That(game.MapNpcs[Map, 3].SpawnWait, Is.Zero, "nothing was touched");
+    }
+
+
     private static EntityHandle Me => EntityHandle.ForPlayer(Idx);
     private static EntityHandle Nobody => EntityHandle.ForPlayer(Constants.MaxPlayers);
 
