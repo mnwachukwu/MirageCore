@@ -606,8 +606,15 @@ public sealed class ServerWorld : IWorld
     }
 
     /// <summary>
-    /// ⚠ The cooldown is a START stamp rather than an expiry, so "still waiting" is measured FORWARD
-    /// from it — the same direction the bar drawing it measures.
+    /// Whether a body is still held off acting. The cooldown is a START stamp rather than an expiry,
+    /// so this measures FORWARD from it — the same direction the bar drawing it measures.
+    ///
+    /// <para>The length is what the game asked for. <see cref="SetActionCooldown"/> takes a number of
+    /// seconds, and until this read it, every cooldown in every world ran for the engine's own beat
+    /// instead: a rule asking for two seconds got one, and a rule asking for ten got one.</para>
+    ///
+    /// <para>A gale stretches it, matching what the client already draws. The two halves disagreeing
+    /// is a bar that empties while the body is still waiting.</para>
     /// </summary>
     public bool IsWaiting(EntityHandle who)
     {
@@ -615,13 +622,20 @@ public sealed class ServerWorld : IWorld
 
         if (who.IsPlayer && IsInWorld(who))
         {
-            long started = _pm[who.PlayerIndex].AttackTimer;
-            return started > 0 && now - started < Constants.PlayerAttackCooldownMs;
+            var sp = _pm[who.PlayerIndex];
+            return sp.AttackTimer > 0
+                && now - sp.AttackTimer < Holding(sp.AttackHoldMs, Constants.PlayerAttackCooldownMs, PlaceOf(who).Map);
         }
 
         return Npc(who) is { } npc && npc.AttackTimer > 0
-            && now - npc.AttackTimer < Constants.NpcAttackCooldownMs;
+            && now - npc.AttackTimer < Holding(npc.AttackHoldMs, Constants.NpcAttackCooldownMs, PlaceOf(who).Map);
     }
+
+    /// <summary>How long a cooldown runs: what the game asked for, or the engine's own beat when it
+    /// asked for nothing, stretched by a gale either way.</summary>
+    private long Holding(long asked, long beat, int mapNum) =>
+        (asked > 0 ? asked : beat)
+        * (WeatherOn(mapNum) == "heavywind" ? Constants.WeatherHeavyWindCooldownMultiplier : 1L);
 
     /// <summary>The cooldown is a START stamp the bar measures forward from, not an expiry, so clearing
     /// it is zeroing the stamp rather than setting one in the past.</summary>
@@ -629,20 +643,32 @@ public sealed class ServerWorld : IWorld
     {
         if (seconds <= 0)
         {
-            if (who.IsPlayer && IsInWorld(who)) _pm[who.PlayerIndex].AttackTimer = 0;
-            else if (Npc(who) is { } clearing) clearing.AttackTimer = 0;
+            if (who.IsPlayer && IsInWorld(who))
+            {
+                _pm[who.PlayerIndex].AttackTimer = 0;
+                _pm[who.PlayerIndex].AttackHoldMs = 0;
+            }
+            else if (Npc(who) is { } clearing)
+            {
+                clearing.AttackTimer = 0;
+                clearing.AttackHoldMs = 0;
+            }
+
             return;
         }
 
         long startedAt = Environment.TickCount64;
+        long holdMs = seconds * 1000L;
         if (who.IsPlayer && IsInWorld(who))
         {
             _pm[who.PlayerIndex].AttackTimer = startedAt;
+            _pm[who.PlayerIndex].AttackHoldMs = holdMs;
             _pm[who.PlayerIndex].Char.AttackTimer = startedAt;
         }
         else if (Npc(who) is { } npc)
         {
             npc.AttackTimer = startedAt;
+            npc.AttackHoldMs = holdMs;
         }
     }
 

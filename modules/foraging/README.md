@@ -35,7 +35,7 @@ That is the engine working.
 **As a script.** Copy the scripts folder into a world and restart:
 
 ```bash
-Copy-Item -Recurse "D:\Repos\MirageSourceRemasteredCore\modules\foraging\world\scripts" "C:\Users\<you>\AppData\Local\Mirage Source Remastered Core Server\world\"
+Copy-Item -Recurse "D:\Repos\MirageSourceRemasteredCore\modules\foraging\world\scripts" "C:\Users\<you>\AppData\Local\Mirage Core Server\world\"
 ```
 
 The shipped world already carries Survey's scripts, so empty that folder first or point the server at

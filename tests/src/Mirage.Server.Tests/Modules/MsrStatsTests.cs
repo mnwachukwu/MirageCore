@@ -3670,6 +3670,82 @@ public class MsrStatsTests
     public void TheGameKnowsWhatCoreCallsIt() =>
         Assert.That(Answered("Beasts.KeepsDistance"), Is.EqualTo("shadow"));
 
+    /// <summary>The repeat fire, which is what makes a caster a caster.
+    ///
+    /// <para>Contact is raised once, on the beat it reaches the distance it wanted. Everything after
+    /// that comes off the world tick: a sweep of every creature that keeps its distance, each loosing
+    /// at whatever the engine says it is after. Without the sweep a caster throws one bolt and stands
+    /// there.</para>
+    /// </summary>
+    [Test]
+    public void ACasterKeepsLoosingOffTheWorldTick()
+    {
+        var world = new ScriptedWorldTests.RecordingWorld();
+        var (module, _) = Asking("        yield;", world);
+        using ScriptedWorldModule scripts = module;
+
+        var who = EntityHandle.ForPlayer(1);
+        var archer = EntityHandle.ForNpc(1, 1);
+        world.Here.Add(who);
+        world.Here.Add(archer);
+        world.Standing[new WorldPlace(1, 9, 5)] = archer;
+        world.BagFor(archer);
+        world.Authored[archer] = ("shadow", 0, 8);
+        world.SetAttribute(archer, "int", AttributeValue.From(22L));
+        world.SetAttribute(archer, "name", AttributeValue.From("Adept"));
+
+        // The sweep walks every map, so there has to be one to walk.
+        world.Records["Maps"] = [Row(("name", "East Walk"))];
+
+        // What the engine says it is after. The rule reads this rather than remembering a target.
+        world.Chasing[archer] = who;
+
+        ((IWorldObserver)scripts).OnPlayerJoined(who);
+
+        int before = world.Shown.Count(e => e.Item2.StartsWith("throw"));
+        for (int tick = 1; tick <= 6; tick++) ((ITickWork)scripts).Tick(tick);
+        int after = world.Shown.Count(e => e.Item2.StartsWith("throw"));
+
+        Assert.That(after - before, Is.GreaterThan(0), "the world tick has to keep it firing");
+    }
+
+    /// <summary>A body comes back whole.
+    ///
+    /// <para>The original set all three pools to their ceiling on every respawn, before anything about
+    /// what the death cost. Without it a player who died walked around on nothing: the bar read 0 out
+    /// of 29 and stayed there, which is not a state the game has any other way to be in — every rule
+    /// that reads health treats nought as dead, and nothing sweeps for a body sitting at it.</para>
+    ///
+    /// <para>Checked on the ordinary death and on the one that costs nothing, because the fill sits
+    /// above every branch that returns early.</para>
+    /// </summary>
+    [TestCase(1, Description = "too low a level to lose anything")]
+    [TestCase(20, Description = "an ordinary death, with a cost")]
+    public void DyingPutsTheBodyBackTogether(int level)
+    {
+        var world = new ScriptedWorldTests.RecordingWorld();
+        var (module, _) = Asking("        yield;", world);
+        using ScriptedWorldModule scripts = module;
+
+        var who = EntityHandle.ForPlayer(1);
+        world.Here.Add(who);
+        ((IWorldObserver)scripts).OnPlayerJoined(who);
+
+        world.SetAttribute(who, "level", AttributeValue.From((long)level));
+        foreach (string key in (string[])["hp", "mp", "sp"])
+            world.SetAttribute(who, key, AttributeValue.From(0L));
+
+        ((IDeathPolicy)scripts).OnDied(new Death(who, EntityHandle.None, "slain"));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(Held(world, "hp"), Is.EqualTo(Held(world, "maxhp")), "health");
+            Assert.That(Held(world, "mp"), Is.EqualTo(Held(world, "maxmp")), "mana");
+            Assert.That(Held(world, "sp"), Is.EqualTo(Held(world, "maxsp")), "stamina");
+            Assert.That(Held(world, "hp"), Is.GreaterThan(0), "and not full of nothing");
+        });
+    }
+
     private static AttributeBag Row(params (string Key, object Value)[] fields)
 
 

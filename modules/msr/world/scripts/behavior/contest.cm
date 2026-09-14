@@ -76,8 +76,10 @@ shared model Contest
     # On the HUD rather than on a square: laying claim is about a REGION, and a region is not somewhere
     # anybody is standing. Which region is the one they are standing in.
     public function Declare(Builder game)
+        # On the GROUND, which is what is being claimed. A sidebar button would offer it everywhere,
+        # including on every map that is nobody's to take.
         Verb claim = game.Action(Contest.ClaimVerb, "Lay claim to this land", "Guild");
-        claim.OnHud();
+        claim.OnTile();
         claim.Icon("flag");
     end function
 

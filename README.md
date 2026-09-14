@@ -1,4 +1,4 @@
-# Mirage Source Remastered — C# Rewrite
+# Mirage Core
 
 [![Build and test](https://github.com/mnwachukwu/MirageSourceRemasteredCore/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/mnwachukwu/MirageSourceRemasteredCore/actions/workflows/ci.yml)
 
@@ -172,9 +172,9 @@ from source there is no bundled copy, so the first Open is yours to aim.
 >
 > `data/` is what one installation accumulated — accounts, guilds, market listings, trade journals, seasons, dropped items, the name registry, the ban lists, the clock, and the MOTD. It belongs to that server on that machine and means nothing beside a different world. Keeping the two apart is what stops a copied world carrying somebody's password hashes with it.
 >
-> Both are set independently, `WorldDir` and `DataDir`, and both default to a per-user folder — `%LocalAppData%\Mirage Source Remastered Server\` on Windows, `~/.local/share/mirage-source-remastered-server/` on Linux, `~/Library/Application Support/` on macOS. Not beside the executable: an installed server runs out of a folder the updater replaces wholesale, so a world and a set of accounts kept there would last exactly one update.
+> Both are set independently, `WorldDir` and `DataDir`, and both default to a per-user folder — `%LocalAppData%\Mirage Core Server\` on Windows, `~/.local/share/mirage-core-server/` on Linux, `~/Library/Application Support/` on macOS. Not beside the executable: an installed server runs out of a folder the updater replaces wholesale, so a world and a set of accounts kept there would last exactly one update.
 >
-> **Seed data:** `server/src/Mirage.Server.Host/world/` holds a demo world — 4 maps, 8 items, 2 NPCs, 1 conversation, 1 shop, and the 5 species the loaded game reads. Any collection you leave out is created empty and written on first save, so a partial world folder boots fine.
+> **Seed data:** `server/src/Mirage.Server.Host/world/` holds a demo world — 4 maps, 8 items, 3 NPCs, 1 conversation, 1 shop, and the 5 species the loaded game reads. Any collection you leave out is created empty and written on first save, so a partial world folder boots fine.
 >
 > Those counts are checked against the folder by `.github/checks/check-seed-counts.mjs`, which CI runs — they have gone stale twice.
 >
@@ -214,11 +214,11 @@ Two things worth knowing before writing one:
 
 ## Known limitation: the client has no name until a server gives it one
 
-The client ships branded **Mirage Source Remastered** — the engine's name. It has no game identity of its
+The client ships branded **Mirage Core** — the engine's name. It has no game identity of its
 own, because one client is meant to reach every server. On connect, before you log in, the server tells it
 the game's name, and the window title, the menu, and the HUD show that from then on.
 
-So launching "Mirage Source Remastered" and arriving in "Brightwater" is expected. It is a handshake, not
+So launching "Mirage Core" and arriving in "Brightwater" is expected. It is a handshake, not
 a rebrand and not a bait and switch: the engine cannot know what to call itself until a server says.
 
 Two things deliberately do **not** follow the server's name:

@@ -64,14 +64,28 @@ public class DisplayFieldsReachTheSurfaceTests
         });
     }
 
-    /// <summary>🔴 The rows stop where the buttons start. Without the bound a game that declares ten
-    /// fields draws over its own Logout button, and the player cannot leave.</summary>
+    /// <summary>🔴 The rows and the buttons never overlap. A game that declares ten fields must not
+    /// draw over its own Logout button, or the player cannot leave.
+    ///
+    /// <para>The buttons give way rather than the rows: the block starts under whatever the rows used,
+    /// so a twelfth row costs a button position instead of the row. MSR declares twelve and six fitted
+    /// under the old fixed line, which silently cost it intelligence and all three vital bars.</para>
+    ///
+    /// <para>The rows are still bounded, by the panel's own height. That is a wall rather than a line
+    /// partway up an empty sidebar.</para></summary>
     [Test]
-    public void TheHudStopsBeforeItsButtons()
+    public void TheHudRowsAndItsButtonsNeverOverlap()
     {
         string hud = Source("client", "src", "Mirage.Client.Shell", "Panels", "HudPanel.cs");
 
-        Assert.That(hud, Does.Contain("y + DisplayRowH <= ButtonBaseY"),
-            "nothing bounds the declared rows, so enough of them cover the buttons below");
+        Assert.Multiple(() =>
+        {
+            Assert.That(hud, Does.Contain("y + DisplayRowH <= SidebarRowCeiling"),
+                "nothing bounds the declared rows, so enough of them run off the panel");
+            Assert.That(hud, Does.Contain("Math.Max(ButtonFloorY, _rowsBottom)"),
+                "the buttons no longer start under the rows, so enough rows cover them");
+            Assert.That(hud, Does.Contain("_rowsBottom = y + Pad;"),
+                "the rows never report where they ended, so the buttons cannot follow them");
+        });
     }
 }

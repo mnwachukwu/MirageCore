@@ -103,9 +103,12 @@ public class NpcStandoffTests
         };
     }
 
-    /// <summary>One legs pass, with the step-clock already due.</summary>
+    /// <summary>One beat of the world: the brain pass, then the legs, with the step-clock already due.
+    /// Both, because the two share state - the legs read the target the brain holds, and the stepper
+    /// stamps the give-up clock from the brain's own timestamp.</summary>
     private static void Step(Harness h, long now = 1_000_000)
     {
+        h.Ai.RunForAllMaps(now);
         h.Body.NextMoveMs = 0;
         h.Ai.RunMovement(now);
     }
@@ -244,6 +247,42 @@ public class NpcStandoffTests
         Step(h, now: 5_000_000);
 
         Assert.That(h.Body.LastReachedTargetMs, Is.EqualTo(5_000_000));
+    }
+
+    /// <summary>\U0001f534 And so does GIVING GROUND, which is the one that got away.
+    ///
+    /// <para>Only holding used to refresh the clock. A body backing off every beat — because somebody
+    /// kept walking into it — never reached the holding branch, so after ten seconds it decided it could
+    /// not reach its quarry and went home. In play that looked like a caster that stopped firing and
+    /// wandered off the moment you closed on it, which is the opposite of keeping its distance.</para>
+    ///
+    /// <para>Approaching is covered too: acting on the gap at all is acting on its quarry.</para></summary>
+    [TestCase(10, Description = "too close, so it gives ground")]
+    [TestCase(2, Description = "too far, so it closes")]
+    public void ActingOnTheGapAtAllKeepsTheClockAlive(int npcX)
+    {
+        var h = Build(NpcBehavior.Shadow, range: 8, standoff: 4, npcX: npcX, playerX: 12);
+
+        Step(h, now: 7_000_000);
+
+        Assert.That(h.Body.LastReachedTargetMs, Is.EqualTo(7_000_000));
+    }
+
+    /// <summary>The whole of it, at the cadence the bug showed up at: somebody walks into the body a
+    /// step at a time for longer than the give-up window, and it must still be theirs at the end.</summary>
+    [Test]
+    public void ItDoesNotGiveUpOnSomebodyWalkingIntoIt()
+    {
+        var h = Build(NpcBehavior.Shadow, range: 8, standoff: 4, npcX: 6, playerX: 12);
+
+        // Twenty seconds of the player closing one tile at a time - twice the give-up window.
+        for (int second = 1; second <= 20; second++)
+        {
+            if (h.Target.X > h.Body.X + 1) h.Target.X--;
+            Step(h, now: second * 1_000L);
+        }
+
+        Assert.That(h.Body.Target, Is.EqualTo(Index), "it still has them");
     }
 
     // ── Who it is minding ─────────────────────────────────────────────────────

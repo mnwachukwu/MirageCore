@@ -88,6 +88,9 @@ public sealed class ServerPlayer
     public int CharNum { get; set; }
 
     public long AttackTimer { get; set; }
+    /// <summary>How long the current cooldown runs for, in milliseconds, or 0 to use the engine's own
+    /// beat. Set from what a game asked for: a rule that says two seconds gets two seconds.</summary>
+    public long AttackHoldMs { get; set; }
 
     /// <summary>When this player last drank. Separate from <see cref="AttackTimer"/> so a potion and a
     /// swing never spend each other's turn — see <see cref="Constants.ConsumableCooldownMs"/>.</summary>

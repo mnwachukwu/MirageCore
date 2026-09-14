@@ -45,24 +45,43 @@ public sealed class NewCharScreen : IGameScreen
     private const long WalkAnimMs = 250;
 
     // ── Layout ────────────────────────────────────────────────────────────────
-    // The standard menu dialog: there is a name, a list, and a preview, and nothing that needs the
-    // wide template's second column.
-    private static readonly Rectangle Dlg = UiHelper.MenuDialogRect;
+    //
+    // The WIDE dialog, which exists for this screen: it is the only one carrying a text field, two
+    // lists and a sprite preview at once, and the narrow template has one content column to put them
+    // in. Everything below is measured from the content column so nothing is ever drawn over the art
+    // panel, which is what the narrow rectangle did to all of it.
+    private static readonly Rectangle Dlg = UiHelper.WideMenuDialogRect;
 
-    private const int ColLX = 261;
-    private const int ColLW = 210;
+    // Where the art stops and the screen's own space begins.
+    private static readonly int ContentX = Dlg.X + UiHelper.MenuDlgArtW;
+
+    private const int Pad = 16;
     private const int RowH = 16;
 
-    private static readonly Rectangle NameRect = new(305, 152, 166, 22);
-    private static readonly Rectangle AppearanceListRect = new(ColLX, 220, ColLW, 100);   // 5 rows
+    // Two columns of controls under a full-width name row, with the preview framed in the top right.
+    private const int ColW = 200;
+    private static readonly int ColAX = ContentX + Pad;
+    private static readonly int ColBX = ColAX + ColW + 24;
+
+    private static readonly Rectangle NameRect = new(ColAX, Dlg.Y + 62, 300, 24);
+
+    private static readonly Rectangle AppearanceListRect = new(ColAX, Dlg.Y + 126, ColW, 100);
+
+    // Framed, so it reads as part of the dialog instead of floating loose beside it.
+    private static readonly Rectangle SpriteFrame =
+        new(Dlg.Right - Pad - 80, Dlg.Y + 44, 80, 80);
     private static readonly Rectangle SpriteRect =
-        new(ColLX + ColLW + 40, 220, Constants.PicX * 2, Constants.PicY * 2);
+        new(SpriteFrame.X + (SpriteFrame.Width - Constants.PicX * 2) / 2,
+            SpriteFrame.Y + (SpriteFrame.Height - Constants.PicY * 2) / 2,
+            Constants.PicX * 2, Constants.PicY * 2);
 
     public NewCharScreen(ShellContext ctx)
     {
         _ctx = ctx;
-        _createBtn = new Button { Bounds = new Rectangle(295, 414, 96, 28), Label = ClientStrings.Get(ClientStrings.Common_Create) };
-        _cancelBtn = new Button { Bounds = new Rectangle(395, 414, 96, 28), Label = ClientStrings.Get(ClientStrings.Common_Cancel) };
+        // Centred under the content column, which is where every other menu dialog puts its buttons.
+        int pairX = ContentX + (Dlg.Right - ContentX - 200) / 2;
+        _createBtn = new Button { Bounds = new Rectangle(pairX, Dlg.Bottom - 46, 96, 30), Label = ClientStrings.Get(ClientStrings.Common_Create) };
+        _cancelBtn = new Button { Bounds = new Rectangle(pairX + 104, Dlg.Bottom - 46, 96, 30), Label = ClientStrings.Get(ClientStrings.Common_Cancel) };
     }
 
     private void RefreshLabels()
@@ -121,12 +140,12 @@ public sealed class NewCharScreen : IGameScreen
         }
     }
 
-    /// <summary>Where the list for the Nth question sits. Stacked under the appearance list, and the
-    /// dialog is tall enough for two — a game asking more than that wants a screen of its own.</summary>
+    /// <summary>Where the list for the Nth question sits: the second column, stacked. The dialog has
+    /// room for two — a game asking more than that wants a screen of its own.</summary>
     private static Rectangle AskedRect(int which) =>
-        new(ColLX + ColLW + 40, 300 + which * (AskedListH + RowH + 6), ColLW, AskedListH);
+        new(ColBX, AppearanceListRect.Y + which * (AskedListH + RowH + 6), ColW, AskedListH);
 
-    private const int AskedListH = 60;
+    private const int AskedListH = 44;
 
     public void OnExit() { }
 
@@ -188,9 +207,9 @@ public sealed class NewCharScreen : IGameScreen
         UiHelper.DrawMenuTitle(sb, _ctx.TitleFont ?? font, ClientStrings.Get(ClientStrings.NewCharScreen_Title), Dlg);
 
         sb.DrawString(font, ClientStrings.Get(ClientStrings.Common_NameLabel),
-                      new Vector2(ColLX, NameRect.Y + 4), UiHelper.DlgLabelColor);
+                      new Vector2(ColAX, NameRect.Y - RowH), UiHelper.DlgLabelColor);
         sb.DrawString(font, ClientStrings.Get(ClientStrings.NewCharScreen_AppearanceLabel),
-                      new Vector2(ColLX, AppearanceListRect.Y - RowH), UiHelper.DlgLabelColor);
+                      new Vector2(ColAX, AppearanceListRect.Y - RowH), UiHelper.DlgLabelColor);
 
         _nameField.Draw(sb, font, NameRect, focused: true, now);
         _appearanceList.Draw(sb, font, AppearanceListRect);
@@ -215,6 +234,9 @@ public sealed class NewCharScreen : IGameScreen
     /// <summary>The selected appearance, walking in place.</summary>
     private void DrawAppearancePreview(SpriteBatch sb, long nowMs)
     {
+        UiHelper.DrawFilledRect(sb, SpriteFrame, UiHelper.DlgArtColor);
+        UiHelper.DrawBorder(sb, SpriteFrame, UiHelper.DlgBorderColor);
+
         var offered = _ctx.State.Appearances;
         int i = _appearanceList.SelectedIndex;
         if (i < 0 || i >= offered.Count) return;

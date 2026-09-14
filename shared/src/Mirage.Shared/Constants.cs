@@ -14,7 +14,7 @@ public static class Constants
     /// from its copy; this copy names the per-user settings folders and is what the server shell
     /// composes its server's filename from. The two disagreeing is not a build error and not a test
     /// failure on its own — it is a shell that cannot find the server sitting beside it.</para></summary>
-    public const string GameName = "Mirage Source Remastered Core";
+    public const string GameName = "Mirage Core";
     public const int GamePort = 4000;
 
     // Version sourced from the running exe's assembly metadata (set in Directory.Build.props).

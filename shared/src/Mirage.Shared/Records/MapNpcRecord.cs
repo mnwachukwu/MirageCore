@@ -22,6 +22,9 @@ public class MapNpcRecord
     public WorldLayer Layer { get; set; }
     public long SpawnWait { get; set; }
     public long AttackTimer { get; set; }
+    /// <summary>How long the current cooldown runs for, in milliseconds, or 0 to use the engine's own
+    /// beat. Set from what a game asked for: a rule that says two seconds gets two seconds.</summary>
+    public long AttackHoldMs { get; set; }
 
     // 🔴 The timed states a GAME puts on a creature, and the reason they live here rather than beside
     // the player ones: a player's are on ServerPlayer because they survive a logout and ride in save

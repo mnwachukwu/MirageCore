@@ -165,6 +165,12 @@ shared model Death
         # point the player bought for themselves. A war death overrides it again, below.
         Death.SendHome(who);
 
+        # Everything full again, before anything below decides what the death COST. A body comes back
+        # whole in every one of the five kinds of death the original had, so this is unconditional and
+        # sits above every branch that returns early - an arena bout, a war death and a murder all end
+        # with a body that can walk away.
+        Vitals.Fill(who);
+
         # A murderer gets their minute, whatever the death cost them below.
         if Death.IsMurderer(who)
             Death.BeginGrace(who);

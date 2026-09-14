@@ -1,0 +1,23 @@
+{
+  "name": "Adept",
+  "says": "Keep your distance.",
+  "sprite": 3,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 30,
+  "behavior": "Shadow",
+  "group": 0,
+  "range": 6,
+  "standoff": 4,
+  "emitsLight": false,
+  "attributes": {
+    "str": 5,
+    "def": 8,
+    "spd": 6,
+    "int": 22,
+    "hp": 60,
+    "hostile": true,
+    "guard": false,
+    "boss": false
+  }
+}

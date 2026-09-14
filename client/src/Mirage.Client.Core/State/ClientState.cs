@@ -150,7 +150,7 @@ public sealed partial class ClientState
     /// <para><b>A client has no game identity of its own.</b> It ships branded with the ENGINE's name
     /// (<see cref="Constants.GameName"/>) and wears it until a server's pre-login hello names the game,
     /// from which point it shows that. This is a deliberate handshake, not a bait and switch: launching
-    /// "Mirage Source Remastered" and arriving in "Brightwater" is how a single client reaches every
+    /// "Mirage Core" and arriving in "Brightwater" is how a single client reaches every
     /// server, and it is documented as a known limitation.</para>
     ///
     /// <para>NOT a file path, ever. <c>AppPaths</c> stays on the engine name so a player's settings folder

@@ -155,9 +155,19 @@ public sealed class HudPanel
     // Exponential lerp spd — ~95% of gap closed in ~0.6 s
     private const float LerpSpeed = 5f;
 
-    // Top Y of the 2-column action-button grid, measured from the sidebar top.
-    // +18 vs original: the ToD phase label sits between map name and HP bar, adding one NameRowH row.
-    private const int ButtonBaseY = 175;
+    // Where the button block starts when a game declares nothing to show here.
+    //
+    // It is a FLOOR rather than a fixed line. The buttons used to sit here whatever a game declared, so
+    // the rows got the gap above and a game with more to say than fits lost the rest silently: MSR
+    // declares twelve rows and six fitted, which cost it intelligence and all three vital bars while
+    // the sidebar below the buttons sat empty.
+    private const int ButtonFloorY = 175;
+
+    // Where the rows actually ended last frame, so the buttons can start under them. Static for the
+    // same reason _declaredButtons is: there is one HUD, drawn on one thread.
+    private static int _rowsBottom;
+
+    private static int ButtonBaseY => Math.Max(ButtonFloorY, _rowsBottom);
     // Vertical spacing between stacked name rows (player name, class+level, map name).
     private const int NameRowH = 18;
 
@@ -348,6 +358,13 @@ public sealed class HudPanel
         // below it when a game put nothing.
         DrawDisplayRows(sb, font, state, x, ref y, barW);
 
+        // Placed now rather than in the constructor, because where the block starts is only known once
+        // the rows above it have been laid out.
+        _invBtn.Bounds = BtnRect(0);
+        _socialBtn.Bounds = BtnRect(1);
+        for (int i = 0; i < _gameBtns.Count; i++) _gameBtns[i].Btn.Bounds = BtnRect(2 + i);
+        _quitBtn.Bounds = BtnRect(LogoutRow);
+
         // Panel buttons: row0=Inventory, row1=Social, row2=Logout (centered)
         _invBtn.Draw(sb, font, input);
         _socialBtn.Draw(sb, font, input);
@@ -355,22 +372,31 @@ public sealed class HudPanel
         _quitBtn.Draw(sb, font, input);
     }
 
-    /// <summary>The rows a game declared for the HUD, in declaration order, for as many as fit above the
-    /// buttons.
+    /// <summary>The rows a game declared for the HUD, in declaration order.
     ///
-    /// <para><b>The surface decides how much it can show.</b> A game orders its fields and the engine
-    /// takes the prefix that fits, so declaring a tenth row costs the tenth row rather than the buttons
-    /// underneath.</para></summary>
+    /// <para>All of them. The buttons underneath move down to make room, so declaring a twelfth row
+    /// costs a button position rather than the row — a game that says a character has intelligence and
+    /// three vital pools gets to show them.</para>
+    ///
+    /// <para>The sidebar still ends somewhere, so a game that declares more than the screen holds loses
+    /// the tail. That is a wall rather than an arbitrary line partway up an empty panel.</para></summary>
     private static void DrawDisplayRows(SpriteBatch sb, SpriteFont font, ClientState state,
                                         int x, ref int y, int width)
     {
         var rows = state.DisplayFields.Project(DisplaySurfaces.Hud, state.Me.Attributes).Rows;
-        for (int i = 0; i < rows.Count && y + DisplayRowH <= ButtonBaseY - Pad; i++)
+        for (int i = 0; i < rows.Count && y + DisplayRowH <= SidebarRowCeiling; i++)
         {
             DrawDisplayRow(sb, font, rows[i], x, y, width);
             y += DisplayRowH;
         }
+
+        _rowsBottom = y + Pad;
     }
+
+    /// <summary>How far down the sidebar rows may run before the buttons would have nowhere to go: the
+    /// panel's own height, less the block they need.</summary>
+    private static int SidebarRowCeiling =>
+        UiHelper.RefH - (3 + _declaredButtons) * (BtnH + 4) - Pad * 2;
 
     private static void DrawDisplayRow(SpriteBatch sb, SpriteFont font, DisplayRow row,
                                        int x, int y, int width)

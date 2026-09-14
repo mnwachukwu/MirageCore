@@ -59,12 +59,15 @@ shared model Bounty
     # ── Declaring ─────────────────────────────────────────────────────────────
 
     public function Declare(Builder game)
+        # Taken FROM somebody, the way the original's were: a board, a keeper, whoever a world puts
+        # them behind. On the sidebar it would be a button on every screen, most of them nowhere near
+        # anyone offering work.
         Verb take = game.Action(Bounty.TakeVerb, "Take a bounty", "Guild");
-        take.OnHud();
+        take.OnNpc();
         take.Icon("scroll");
 
         Verb drop = game.Action(Bounty.DropVerb, "Abandon the bounty", "Guild");
-        drop.OnHud();
+        drop.OnNpc();
         drop.Icon("clock");
     end function
 

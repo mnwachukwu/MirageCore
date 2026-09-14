@@ -85,8 +85,10 @@ shared model Valor
     # ── Giving it to the guild ────────────────────────────────────────────────
 
     public function Declare(Builder game)
+        # Handed to somebody, the way anything paid in is. A sidebar button would ask for it on
+        # every screen, most of them nowhere near a vault.
         Verb give = game.Action(Valor.DonateVerb, "Donate valor", "Guild");
-        give.OnHud();
+        give.OnNpc();
         give.Icon("flame");
     end function
 

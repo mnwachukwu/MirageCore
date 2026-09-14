@@ -54,15 +54,17 @@ public sealed partial class NpcAiSystem : GameSystem
         // body whose distance is unknown would be stepping at random.
         if (gap == int.MaxValue) return false;
 
+        // Acting on the gap IS reaching its quarry, whichever way it is about to step. Only the Held
+        // branch used to say so, which meant a body giving ground every beat - because somebody kept
+        // walking into it - never refreshed the clock and went home after ten seconds of doing exactly
+        // what it was authored to do.
+        mn.MarkReachedTarget(now);
+
         switch (StationFor(gap, npc.EffectiveStandoff))
         {
             case Station.Held:
                 FaceNpcToward(mapNum, slot, mn, targetMap, targetX, targetY);
                 mn.ChaseSprinting = false;
-                // Standing where it meant to stand IS reaching its target, so the give-up clock resets
-                // here. Without this a body doing exactly what it was authored to do would time out and
-                // go home after a minute of holding station.
-                mn.MarkReachedTarget(now);
                 return true;
 
             case Station.Withdraw:

@@ -1273,7 +1273,14 @@
       }
     ]
   ],
-  "npcs": [],
+  "npcs": [
+    {
+      "npc": 3,
+      "pinX": 9,
+      "pinY": 5,
+      "pinDir": "Left"
+    }
+  ],
   "lights": [
     {
       "id": "1d0ddf6e-37eb-5d7c-b422-fa318578db76",
