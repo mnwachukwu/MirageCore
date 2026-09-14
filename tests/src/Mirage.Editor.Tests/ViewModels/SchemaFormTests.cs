@@ -69,7 +69,7 @@ public class SchemaFormTests
     ///
     /// <para>This used to fall back to the id, and the first module ever connected to a running editor
     /// made that visible: Survey declares "Common name", "Habitat" and "Field notes", and the form drew
-    /// "name", "habitat", "notes". The captions were declared, they travelled, and the editor threw them
+    /// "name", "habitat", "notes". The captions were declared, they traveled, and the editor threw them
     /// away at the last step.</para>
     ///
     /// <para>It is the bargain the whole engine already takes — the client shows a game's caption as

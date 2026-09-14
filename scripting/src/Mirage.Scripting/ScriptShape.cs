@@ -37,13 +37,28 @@ public sealed record ScriptModelField(
 /// same way <see cref="ScriptType"/> keeps its type vocabulary in: an engine that named a
 /// <c>ModelSymbol</c> would be an engine that breaks when the language reorganizes its compiler.</para>
 ///
-/// <para>Only fields are described. A model's functions are reachable through
-/// <see cref="LoadedScript.Offers"/> and <see cref="LoadedScript.Call"/>, which is a different
-/// question.</para>
+/// <para>Functions are named but not described. What one DOES is reached through
+/// <see cref="LoadedScript.Call"/>; what is here is enough to decide whether to call it.</para>
 /// </summary>
-public sealed record ScriptModelInfo(string Name, IReadOnlyList<ScriptModelField> Fields)
+public sealed record ScriptModelInfo(
+    string Name,
+    IReadOnlyList<ScriptModelField> Fields,
+    IReadOnlyList<ScriptModelFunction> Functions)
 {
     /// <summary>The field with this name, or null. Ordinal, because a script's names are its own.</summary>
     public ScriptModelField? Field(string name)
         => Fields.FirstOrDefault(f => string.Equals(f.Name, name, StringComparison.Ordinal));
+
+    /// <summary>The function of this name and arity, or null.</summary>
+    public ScriptModelFunction? Function(string name, int arity)
+        => Functions.FirstOrDefault(
+            f => f.Arity == arity && string.Equals(f.Name, name, StringComparison.Ordinal));
 }
+
+/// <summary>One function a model declared, as something a host can decide whether to call.</summary>
+/// <param name="Name">What it is called.</param>
+/// <param name="Arity">How many arguments it takes, which is half of what a host matches on.</param>
+/// <param name="IsShared">Whether a host can reach it. 🔴 An instance function needs an instance the
+/// host has no way to name, so one is declared and never called — which is invisible from inside the
+/// module, and worth telling an author about rather than skipping.</param>
+public sealed record ScriptModelFunction(string Name, int Arity, bool IsShared);

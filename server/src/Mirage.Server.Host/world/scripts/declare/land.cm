@@ -8,28 +8,31 @@ end enumeration
 
 # A kind of record this game authors. The editor grows a section for it and builds the form from these
 # fields: their names, in this order, in the shapes they hold.
+#
 # Its fields are public because the ENGINE reads them and nothing in these scripts does. A private
 # field nothing names is one Compass will tell you to delete.
 model Species
     public string name;
     public Habitat habitat;
     public string notes;
-end model
 
-shared model Land
-
-    public function Declare(Builder game)
-        Records sp = game.Records("Species", "Species", "Species", 200);
+    # Everything the fields above could not say, said about the fields above. The engine calls this
+    # once while the game is being declared, and nothing else ever does.
+    #
+    # ⚠ It has to be `shared`. This describes a KIND of record rather than one record, so there is no
+    # particular Species to hand it — and an instance function of this name would compile, load, and
+    # never be called.
+    public shared function Describe(Records these)
+        these.Are("Species", "Species", 200);
 
         # The five species that ship with this world are already on disk as species/species1.json, so
         # this says so. A new game would leave it out and let the model's own name decide.
-        sp.Stored("species", "species");
+        these.Stored("species", "species");
 
-        sp.Caption("name", "Common name");
-        sp.Length("name", 40);
+        these.Caption("name", "Common name");
+        these.Length("name", 40);
 
-        sp.Caption("notes", "Field notes");
-        sp.Length("notes", 240);
+        these.Caption("notes", "Field notes");
+        these.Length("notes", 240);
     end function
-
 end model

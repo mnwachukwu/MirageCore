@@ -178,7 +178,7 @@ public sealed class PlayerRecord
 
     /// <summary>Observer mode: this character passes through everything, spends no stamina, cannot act on
     /// anyone and cannot be acted on. The one flag both sides read — the server's rules gate on it, and the
-    /// client sets it from the wire to render the overhead name grey.
+    /// client sets it from the wire to render the overhead name gray.
     ///
     /// <para>PERSISTED, so a character left in observer mode is still in it at the next login. Access is
     /// re-checked on join via <see cref="MayUseGodMode"/>, which covers a demotion that happened while the

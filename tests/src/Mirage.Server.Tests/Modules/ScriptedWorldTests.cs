@@ -387,7 +387,7 @@ public class ScriptedWorldTests
     /// <para>The MODEL is the declaration. Its fields, in order, in the shapes they hold, are the rows
     /// of the form — a field typed as an enumeration is a drop-down over that enumeration's members,
     /// and one typed as another model is a picker over that model's records. What is left is what a
-    /// model cannot say, and it is said about the records the call handed back.</para>
+    /// model cannot say, and the model says it in <c>Describe</c>.</para>
     /// </summary>
     [Test]
     public void AScriptDeclaresItsOwnRecords()
@@ -398,21 +398,19 @@ public class ScriptedWorldTests
             end enumeration
 
             model Species
-                string commonName;
-                Habitat habitat;
-                integer height;
-                boolean protection;
-                real spread;
-                Species nearest;
-            end model
+                public string commonName;
+                public Habitat habitat;
+                public integer height;
+                public boolean protection;
+                public real spread;
+                public Species nearest;
 
-            shared model Rules
-                public function Configure(Builder game)
-                    Records species = game.Records("Species", "Species", "Species", 200);
+                public shared function Describe(Records these)
+                    these.Are("Species", "Species", 200);
 
-                    species.Caption("commonName", "Common name");
-                    species.Length("commonName", 60);
-                    species.Range("height", 0, 400);
+                    these.Caption("commonName", "Common name");
+                    these.Length("commonName", 60);
+                    these.Range("height", 0, 400);
                 end function
             end model
             """);
@@ -458,18 +456,16 @@ public class ScriptedWorldTests
         });
     }
 
-    /// <summary>A model the script says nothing else about still gets a section, named after itself.</summary>
+    /// <summary>A model the script says nothing else about still gets a section, named after itself.
+    /// An empty <c>Describe</c> is the whole of what a game has to write to author a kind of record.</summary>
     [Test]
     public void RecordsNothingElseIsSaidAbout_StillGetASection()
     {
         var (module, registry) = Built("""
             model SurveySite
-                string siteName;
-            end model
+                public string siteName;
 
-            shared model Rules
-                public function Configure(Builder game)
-                    game.Records("SurveySite", "", "", 0);
+                public shared function Describe(Records these)
                 end function
             end model
             """);
@@ -488,29 +484,29 @@ public class ScriptedWorldTests
 
     /// <summary>🔴 No line depends on the one above it.
     ///
-    /// <para>Every line names the field it is about, on the records it is about, so a file may be
-    /// written in whatever order reads best and mean the same thing. An order that quietly decided
-    /// which records a line landed on would be invisible: both forms would render, one short a bound
-    /// and one carrying a bound that makes no sense on it.</para></summary>
+    /// <para>Every line names the field it is about, and the model it is written in is the records it
+    /// is about, so a file may be written in whatever order reads best and mean the same thing. An
+    /// order that quietly decided which records a line landed on would be invisible: both forms would
+    /// render, one short a bound and one carrying a bound that makes no sense on it.</para></summary>
     [Test]
     public void NoLineDependsOnTheOneAboveIt()
     {
         var (module, registry) = Built("""
             model Species
-                integer height;
+                public integer height;
+
+                public shared function Describe(Records these)
+                    these.Range("height", 0, 400);
+                    these.Are("Species", "Species", 50);
+                end function
             end model
 
             model Site
-                integer visits;
-            end model
+                public integer visits;
 
-            shared model Rules
-                public function Configure(Builder game)
-                    Records species = game.Records("Species", "Species", "Species", 50);
-                    Records sites = game.Records("Site", "Sites", "Site", 20);
-
-                    sites.Range("visits", 0, 9);
-                    species.Range("height", 0, 400);
+                public shared function Describe(Records these)
+                    these.Are("Sites", "Site", 20);
+                    these.Range("visits", 0, 9);
                 end function
             end model
             """);
@@ -528,27 +524,21 @@ public class ScriptedWorldTests
         });
     }
 
-    /// <summary>A model nobody declared, a field nothing can edit, and a name a model has not got are
-    /// each refused BY NAME.
+    /// <summary>A field nothing can edit, and a name a model has not got, are each refused BY NAME.
     ///
-    /// <para>Compass has no type values, so the model arrives as text and a typo cannot be a compile
-    /// error. It has to be a message that says which models DO exist — otherwise the editor simply has
-    /// no section, which reads as a broken engine rather than a misspelled word.</para></summary>
+    /// <para>Compass has no type values, so a field arrives as text and a typo cannot be a compile
+    /// error. It has to be a message that says which fields DO exist — otherwise the row is simply
+    /// missing from the form, which reads as a broken engine rather than a misspelled word.</para></summary>
     [Test]
-    public void AModelThatIsNotThere_AFieldThatIsNot_AndOneNothingCanEdit_AreRefusedByName()
+    public void AFieldNothingCanEdit_AndOneTheModelHasNotGot_AreRefusedByName()
     {
         var (module, registry) = Built("""
             model Species
-                string commonName;
-                string[] tags;
-            end model
+                public string commonName;
+                public string[] tags;
 
-            shared model Rules
-                public function Configure(Builder game)
-                    game.Records("Speceis", "Species", "Species", 5);
-
-                    Records species = game.Records("Species", "Species", "Species", 5);
-                    species.Caption("commonNmae", "Common name");
+                public shared function Describe(Records these)
+                    these.Caption("commonNmae", "Common name");
                 end function
             end model
             """);
@@ -558,8 +548,6 @@ public class ScriptedWorldTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(refused, Does.Contain("Speceis"), "a model nobody declared says so");
-            Assert.That(refused, Does.Contain("this world has: Species"), "and names the ones that exist");
             Assert.That(refused, Does.Contain("tags"), "a field no form could edit");
             Assert.That(refused, Does.Contain("commonNmae"), "and a field the model has not got");
 
@@ -570,27 +558,56 @@ public class ScriptedWorldTests
         });
     }
 
+    /// <summary>🔴 A <c>Describe</c> that is not <c>shared</c> is refused BY NAME.
+    ///
+    /// <para>It compiles, it loads, and the engine has no record to hand it, so it is never called —
+    /// which from inside the script looks exactly like working code and produces an editor with no
+    /// section for records the author has already written fields for.</para></summary>
+    [Test]
+    public void ADescribeThatIsNotShared_IsRefusedByName()
+    {
+        var (module, registry) = Built("""
+            model Species
+                public string commonName;
+
+                public function Describe(Records these)
+                    these.Are("Species", "Species", 5);
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+        string refused = string.Join("\n", module.Problems.Select(p => p.Message));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(refused, Does.Contain("Species"), "the records nobody will see");
+            Assert.That(refused, Does.Contain("shared"), "and the one word that fixes it");
+
+            Assert.That(registry.Schema.Families.Any(f => f.Id == "Species"), Is.False,
+                "nothing half-declared: the section is absent, and so is the reason it is absent");
+        });
+    }
+
     /// <summary>🔴 A field typed as a model nobody declared records for is dropped and NAMED.
     ///
     /// <para>The picker would otherwise list nothing, which reads as a game holding no records rather
-    /// than as a <c>game.Records</c> line somebody forgot to write. Both halves have to be there and
-    /// only one of them is in the type.</para></summary>
+    /// than as a <c>Describe</c> somebody forgot to write on the model being pointed at. Both halves
+    /// have to be there and only one of them is in the type.</para></summary>
     [Test]
     public void AFieldPointingAtRecordsNobodyDeclared_IsDroppedAndNamed()
     {
         var (module, registry) = Built("""
             model Habitat
-                string name;
+                public string name;
             end model
 
             model Species
-                string commonName;
-                Habitat home;
-            end model
+                public string commonName;
+                public Habitat home;
 
-            shared model Rules
-                public function Configure(Builder game)
-                    game.Records("Species", "Species", "Species", 5);
+                public shared function Describe(Records these)
+                    these.Are("Species", "Species", 5);
                 end function
             end model
             """);
@@ -617,19 +634,19 @@ public class ScriptedWorldTests
     {
         var (module, registry) = Built("""
             model Items
-                string name;
+                public string name;
+
+                public shared function Describe(Records these)
+                    these.Are("Things", "Thing", 10);
+                    these.Caption("name", "Name");
+                end function
             end model
 
             model Mine
-                string name;
-            end model
+                public string name;
 
-            shared model Rules
-                public function Configure(Builder game)
-                    Records items = game.Records("Items", "Things", "Thing", 10);
-                    items.Caption("name", "Name");
-
-                    game.Records("Mine", "Mine", "Mine", 10);
+                public shared function Describe(Records these)
+                    these.Are("Mine", "Mine", 10);
                 end function
             end model
             """);
@@ -735,7 +752,7 @@ public class ScriptedWorldTests
         });
     }
 
-    /// <summary>Each surface a verb may be offered on, and the condition that greys one.</summary>
+    /// <summary>Each surface a verb may be offered on, and the condition that grays one.</summary>
     [Test]
     public void AVerbIsOfferedOnTheSurfaceItNames_AndOnlyWhenItsConditionHolds()
     {
@@ -866,6 +883,129 @@ public class ScriptedWorldTests
             Assert.That(scripts.MayDie(new Death(EntityHandle.ForPlayer(1), EntityHandle.None, "")).Allowed,
                 Is.True);
             Assert.That(scripts.LingerFor(EntityHandle.ForPlayer(1)).IsSet, Is.False);
+        });
+    }
+
+    // ── A message of a game's own ────────────────────────────────────────────
+
+    /// <summary>🔴 A script declares a message, and a line nobody compiled a type for arrives as the
+    /// fields its model named.
+    ///
+    /// <para>The registry takes a PARSE DELEGATE rather than a type — <c>Register&lt;T&gt;</c> is only
+    /// the convenience overload — so nothing about a packet requires an assembly. What the model adds
+    /// is which field is a number and which is text, because a line is text either way.</para></summary>
+    [Test]
+    public void AScriptDeclaresAMessage_AndIsHandedItsFields()
+    {
+        var (module, registry) = Built("""
+            model Note
+                public integer species;
+                public string comment;
+                public boolean sure;
+            end model
+
+            shared model Rules
+                public function Configure(Builder game)
+                    game.Message("Note");
+                end function
+
+                public function OnMessage(Player who, string message, Values values)
+                    who.Message(message
+                            + ": " + values.Number("species")
+                            + " / " + values.Text("comment")
+                            + " / " + values.Truth("sure")
+                            + " / missing=" + values.Has("nothing"));
+                end function
+            end model
+            """);
+
+        var world = new RecordingWorld();
+        using ScriptedWorldModule scripts = module;
+        scripts.Start(world);
+
+        var route = (IPacketRoute)scripts;
+        var packet = registry.Packets.Deserialize(
+            "Note", """{"cmd":"Note","species":3,"comment":"by the shore","sure":true}""", false);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+
+            Assert.That(registry.Packets.Knows("Note"), Is.True, "the command deserializes");
+            Assert.That(route.Commands, Is.EqualTo(new[] { "Note" }).AsCollection, "and is routed");
+            Assert.That(packet, Is.Not.Null, "a line nobody compiled a type for still reads");
+        });
+
+        route.Handle(EntityHandle.ForPlayer(1), packet!);
+
+        Assert.That(world.Said.Single(),
+            Is.EqualTo("Note: 3 / by the shore / true / missing=false"));
+    }
+
+    /// <summary>A line carrying a field the model never named leaves it behind.
+    ///
+    /// <para>A script reads what it declared, so a sender cannot reach past what the rules said they
+    /// may send — and a field the line simply left out is absent rather than zero.</para></summary>
+    [Test]
+    public void AMessageCarriesOnlyWhatItsModelNamed()
+    {
+        var (module, registry) = Built("""
+            model Note
+                public integer species;
+            end model
+
+            shared model Rules
+                public function Configure(Builder game)
+                    game.Message("Note");
+                end function
+
+                public function OnMessage(Player who, string message, Values values)
+                    who.Message("species=" + values.Has("species")
+                            + " smuggled=" + values.Has("admin"));
+                end function
+            end model
+            """);
+
+        var world = new RecordingWorld();
+        using ScriptedWorldModule scripts = module;
+        scripts.Start(world);
+
+        var packet = registry.Packets.Deserialize(
+            "Note", """{"cmd":"Note","admin":true}""", false);
+
+        ((IPacketRoute)scripts).Handle(EntityHandle.ForPlayer(1), packet!);
+
+        Assert.That(world.Said.Single(), Is.EqualTo("species=false smuggled=false"));
+    }
+
+    /// <summary>A model that cannot travel, and one that is not there, are refused BY NAME — and a
+    /// world that declares no message registers no route at all.</summary>
+    [Test]
+    public void AMessageThatCannotTravel_IsRefusedByName()
+    {
+        var (module, registry) = Built("""
+            model Note
+                public string[] tags;
+            end model
+
+            shared model Rules
+                public function Configure(Builder game)
+                    game.Message("Note");
+                    game.Message("Note2");
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+        string refused = string.Join("\n", module.Problems.Select(p => p.Message));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(refused, Does.Contain("tags"), "a field no message could carry");
+            Assert.That(refused, Does.Contain("Note2"), "and a model nobody declared");
+            Assert.That(registry.Packets.Knows("Note"), Is.False,
+                "a message with nothing left to carry is not registered");
+            Assert.That(((IPacketRoute)scripts).Commands, Is.Empty);
         });
     }
 

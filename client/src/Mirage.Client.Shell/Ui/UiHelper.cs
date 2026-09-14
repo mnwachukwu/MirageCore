@@ -112,7 +112,7 @@ public static class UiHelper
     public static readonly Color DlgLabelColor = new(120, 140, 255); // cornflower label
 
     // The action-cooldown bar, drawn below a body. A light neutral gray, so it reads as a state rather
-    // than as one of the values a game declared — those carry colours of the game's own choosing.
+    // than as one of the values a game declared — those carry colors of the game's own choosing.
     public static readonly Color CooldownBarColor = new(180, 184, 194);
     // Unfilled bar background — HudPanel
     public static readonly Color BarBg = new(20, 20, 20);
@@ -320,7 +320,7 @@ public static class UiHelper
     public static readonly Color ContestNeutralColor = new(175, 175, 175);
 
     /// <summary>Draw a plain circle outline as a ring of straight segments centered at <paramref name="center"/>
-    /// — the territory capture-radius marker, the client analogue of the editor's light-radius circle.</summary>
+    /// — the territory capture-radius marker, the client analog of the editor's light-radius circle.</summary>
     public static void DrawCircleOutline(SpriteBatch sb, Vector2 center, float radius, Color color, float thickness = 1f, int segments = 48)
     {
         if (radius <= 0f || segments < 3) return;

@@ -124,7 +124,7 @@ public sealed class SurveyRoute : IPacketRoute, IActionHandler
         // a client saying something the world cannot support, which is refused by doing nothing.
         if (species > 0 && world.RecordAt(Survey.Species, species) is null) return;
 
-        // Tiring: a note costs what a step costs, so a surveyor cannot stand still and catalogue forever.
+        // Tiring: a note costs what a step costs, so a surveyor cannot stand still and catalog forever.
         long stamina = bag.TryGet(Survey.Stamina, out var left) ? left.AsLong() : 0;
         if (stamina <= 0) return;
 

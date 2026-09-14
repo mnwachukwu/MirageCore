@@ -101,7 +101,7 @@ public class RecordShapeChangeTests
 
     /// <summary>🔴 RENAMING an enum member is as fatal as changing its type, and for the same reason:
     /// <see cref="System.Text.Json.Serialization.JsonStringEnumConverter"/> throws on a name it does not
-    /// recognise rather than defaulting. A file naming the old member does not load AT ALL — the record is
+    /// recognize rather than defaulting. A file naming the old member does not load AT ALL — the record is
     /// lost whole, not one field of it.
     ///
     /// <para>So an enum member is renamed only in a change that also remaps every authored file naming it.
@@ -118,7 +118,7 @@ public class RecordShapeChangeTests
 
     /// <summary>The tile converter is the exception, and the difference is worth knowing before relying on
     /// either. It is hand-written, and it FALLS BACK to <see cref="TileType.Walkable"/> on a name it does not
-    /// recognise — so a renamed tile type does not stop a map loading. It silently retypes every tile that
+    /// recognize — so a renamed tile type does not stop a map loading. It silently retypes every tile that
     /// carried the old name, which no error reports and no reader notices.</summary>
     [Test]
     public void AMapNamingAnUndefinedTileType_FallsBackSilently()

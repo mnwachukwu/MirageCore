@@ -21,7 +21,7 @@ shared model Notes
         # value it shows, so the server has nothing to add.
     end function
 
-    # Writing something down costs what a step costs, so a surveyor cannot stand still and catalogue
+    # Writing something down costs what a step costs, so a surveyor cannot stand still and catalog
     # forever.
     function Write(Player who)
         integer stamina = who.Number(Surveyor.Stamina);
@@ -32,7 +32,7 @@ shared model Notes
         end if
 
         who.SetNumber(Surveyor.Stamina, stamina - Surveyor.StepCost);
-        Surveyor.Catalogued(who, who.Number(Surveyor.Specimens) + 1);
+        Surveyor.Cataloged(who, who.Number(Surveyor.Specimens) + 1);
 
         who.Message("You write down what is in front of you.");
     end function

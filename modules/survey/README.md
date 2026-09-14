@@ -21,7 +21,7 @@ other, and it is the stronger choice for a game that should ship without a toolc
 [Choosing between them](../../docs/implementing-a-game.md) is the honest comparison.
 
 You walk a world writing down what grows in it. Walking is tiring; resting gives it back. Every twelfth
-step turns up something worth cataloguing, and enough of those earn you a rank.
+step turns up something worth cataloging, and enough of those earn you a rank.
 
 Nothing fights, nothing levels, nothing dies.
 
@@ -48,7 +48,7 @@ opposite reason, no change to Core.
 | `AddOverheadBar` | stamina, over every surveyor's head |
 | `AddDisplayField` | a heading, rank, specimen count, and a stamina meter on the sidebar |
 | `AddTickWork` | stamina recovery |
-| `AddObserver` | joining enrols a surveyor; stepping spends stamina and sometimes finds something |
+| `AddObserver` | joining enrolls a surveyor; stepping spends stamina and sometimes finds something |
 | `AddDeathPolicy` | refuses every death |
 | `AddLingerPolicy` | the body stays half a minute after a dropped connection |
 | `Packets` + `AddPacketRoute` | `survey.note` — the typed message a client compiled against this game sends |

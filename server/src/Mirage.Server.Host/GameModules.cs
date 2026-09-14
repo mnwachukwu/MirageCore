@@ -21,7 +21,7 @@ namespace Mirage.Server.Host;
 /// is Core alone.</para>
 ///
 /// <para><b>Nothing ships in this list, and that is the shipped configuration.</b> The game this
-/// source carries — Survey, a small game about cataloguing plants — is a SCRIPT rather than an
+/// source carries — Survey, a small game about cataloging plants — is a SCRIPT rather than an
 /// assembly: it is content the world folder carries, read by <see cref="ScriptedWorldModule"/>, so it
 /// changes without a rebuild and ships without a toolchain. <c>modules/survey/</c> holds the same game
 /// written the other way, as the worked example for the compiled route; it is built and tested and

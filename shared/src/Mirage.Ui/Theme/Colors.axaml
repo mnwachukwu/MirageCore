@@ -2,11 +2,11 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
   <!-- The palette. Neutrals sit in the ACCENT'S OWN HUE, which is what makes the surfaces read as violet
-       rather than as grey — the accent itself is unchanged and is the same #9AA8F5 the site, the favicon
+       rather than as gray — the accent itself is unchanged and is the same #9AA8F5 the site, the favicon
        and all three app icons already use.
 
        CHROMA IS THE WHOLE POINT HERE. A tint of five or ten points off neutral measures as violet and
-       still reads as black on a screen; these sit far enough out to be seen. The three semantic colours
+       still reads as black on a screen; these sit far enough out to be seen. The three semantic colors
        stay outside the family on purpose: their job is to not look like everything else.
 
        Flat rather than under ThemeDictionaries: both apps are dark-only by design, so a variant lookup
@@ -52,8 +52,8 @@
   <SolidColorBrush x:Key="MirageWarnBrush" Color="{StaticResource MirageWarn}"/>
   <SolidColorBrush x:Key="MirageBadBrush" Color="{StaticResource MirageBad}"/>
 
-  <!-- The semantic colours as a GROUND rather than as ink: the same hue at low alpha, so a badge or a
-       button reads as one object instead of as coloured text sitting on a coloured chip. Alpha rather
+  <!-- The semantic colors as a GROUND rather than as ink: the same hue at low alpha, so a badge or a
+       button reads as one object instead of as colored text sitting on a colored chip. Alpha rather
        than a mixed solid, because these sit on three different surfaces and have to tint whichever one
        they land on. Hi is the pointer-over step. -->
   <SolidColorBrush x:Key="MirageOkFillBrush" Color="#244ADE80"/>
@@ -63,10 +63,10 @@
   <!-- ── FluentAvalonia's own keys, repointed at the ramp ─────────────────── -->
   <!-- The WinUI names every built-in control theme reads. Overriding them is what moves the whole
        control set onto this palette; restyling controls one at a time leaves the ones nobody
-       remembered still wearing stock grey.
+       remembered still wearing stock gray.
 
        Each appears TWICE, as a Color and as a Brush. Not redundant: the theme builds its brushes from
-       its own colours with StaticResource, so a brush is resolved once and replacing the colour beneath
+       its own colors with StaticResource, so a brush is resolved once and replacing the color beneath
        it changes nothing. There is no way to tell from outside which form a given control theme binds
        to, so both are replaced. -->
 
@@ -100,13 +100,13 @@
   <Color x:Key="SubtleFillColorTransparent">#00000000</Color>
   <Color x:Key="SubtleFillColorSecondary">#FF332B57</Color>
   <Color x:Key="SubtleFillColorTertiary">#FF2C254B</Color>
-  <!-- Text ON the accent has to be dark: #9AA8F5 is a light colour, so white on it fails contrast. -->
+  <!-- Text ON the accent has to be dark: #9AA8F5 is a light color, so white on it fails contrast. -->
   <Color x:Key="TextOnAccentFillColorPrimary">#FF14122B</Color>
   <Color x:Key="TextOnAccentFillColorSecondary">#CC14122B</Color>
 
   <!-- ── The accent ramp, stated rather than derived ──────────────────────── -->
   <!-- FluentAvaloniaTheme.CustomAccentColor does not reach every control: a ToggleSwitch's ON track
-       came through white while its knob correctly took the on-accent colour, so the shades are written
+       came through white while its knob correctly took the on-accent color, so the shades are written
        out here instead of trusted to be computed. The Light/Dark variants are what the WinUI control
        themes actually reference. -->
   <Color x:Key="SystemAccentColor">#FF9AA8F5</Color>

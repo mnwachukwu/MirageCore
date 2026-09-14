@@ -121,7 +121,7 @@ public class AssetCategorySwitchTests
     }
 
     /// <summary>And if a selection is ever cleared anyway, the folder falls back rather than being read
-    /// as null. Nothing binds to the folder, so this is the last line rather than the defence.</summary>
+    /// as null. Nothing binds to the folder, so this is the last line rather than the defense.</summary>
     [Test]
     public void AClearedSizeSelectionStillResolvesAFolder()
     {

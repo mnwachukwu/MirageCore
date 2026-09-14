@@ -23,6 +23,7 @@
     <!-- The compiled Survey, which the server no longer loads. Referenced here so it still compiles and
          is still checked: a worked example nobody builds is a worked example that has rotted. -->
     <ProjectReference Include="..\..\..\modules\survey\src\Mirage.Modules.Survey\Mirage.Modules.Survey.csproj" />
+    <ProjectReference Include="..\..\..\modules\foraging\src\Mirage.Modules.Foraging\Mirage.Modules.Foraging.csproj" />
   </ItemGroup>
 
   <!-- Baked in at build time for the checks that read repository FILES rather than the assembly -

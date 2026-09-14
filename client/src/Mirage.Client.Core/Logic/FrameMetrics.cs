@@ -170,7 +170,7 @@ public sealed class FrameMetrics
     }
 
     // Nearest-rank: the smallest sample at or above the given share of the window. No interpolation — with
-    // 600 samples the neighbours are close enough that averaging them only makes the number harder to relate
+    // 600 samples the neighbors are close enough that averaging them only makes the number harder to relate
     // back to a frame that actually happened.
     private static double At(double[] sorted, int n, double q) =>
         sorted[Math.Clamp((int)Math.Ceiling(q * n) - 1, 0, n - 1)];

@@ -1,16 +1,16 @@
 # Survey — a small game built on Core, written entirely in Compass.
 #
-# ⚠ THIS FILE IS THE ENGINE'S DOOR, AND NOTHING ELSE. Every function the engine calls is here, and each
-# one hands the work to the model that owns it. The engine only ever looks at `Rules`, so a game that
-# put its whole self in this file would be a game in one file — the folders beside it are what the
-# organizing looks like:
+# ⚠ THIS FILE IS THE ENGINE'S DOOR, AND NOTHING ELSE. Every function the engine calls is here, and
+# each one hands the work to the model that owns it. The engine only ever looks at `Rules`, so a game
+# that put its whole self in this file would be a game in one file. The folders beside it are how
+# this one is organized:
 #
 #   declare/    what the game IS, said once before the world exists
 #   rules/      what happens to somebody, said every time it does
 #   ranks.cm    a lookup this game owns and nothing else has an opinion about
 #
-# Every .cm under the scripts folder is one module, however deep it sits, so a folder is an organizing
-# idea rather than a boundary. A model in one file reaches a model in another by name.
+# Every .cm under the scripts folder is one module, however deep it sits. Folders organize; they do
+# not divide. A model in one file reaches a model in another by name.
 
 shared model Rules
 
@@ -18,24 +18,23 @@ shared model Rules
     # about anybody in it — there is nobody in it yet.
     public function Configure(Builder game)
         Surveyor.Declare(game);
-        Land.Declare(game);
         Book.Declare(game);
 
-        # Resting is the half of stamina nothing in the world triggers: it happens as time passes. Once
-        # a second rather than once a tick, because a point a second is the rate this game wants.
+        # Nothing in the world triggers resting; it happens as time passes. Once a second rather
+        # than once a tick, because a point a second is the rate this game wants.
         game.TickEvery(20);
     end function
 
     public function OnPlayerJoined(Player who)
-        Surveyor.Enrol(who);
+        Surveyor.Enroll(who);
     end function
 
     public function OnPlayerMoved(Player who, integer fromX, integer fromY)
         Walking.Stepped(who);
     end function
 
-    # Once for each body in the world, every twentieth tick. This is the only way a script can walk the
-    # roster, which is why resting is written per-player rather than as a sweep.
+    # Once for each body in the world, every twentieth tick. A script has no other way to walk the
+    # roster, so resting is written per-player rather than as a sweep.
     public function OnPlayerTick(Player who)
         Recovery.Rest(who);
     end function
@@ -45,14 +44,14 @@ shared model Rules
         Notes.Did(who, action, on);
     end function
 
-    # Nothing dies on a botanical survey. A refusal is a real answer rather than an absence: Core's
-    # death path exists and works, and this game says it never runs.
+    # Nothing dies on a botanical survey. Core's death path exists and works; this game says it
+    # never runs.
     public string function OnMayDie(Player who, string cause)
         yield "Nobody dies out here.";
     end function
 
-    # A dropped line is not a lost afternoon. Long enough that reconnecting puts a surveyor back where
-    # they were, short enough that nobody is left standing in a meadow overnight.
+    # A dropped line is not a lost afternoon. Long enough that reconnecting puts a surveyor back
+    # where they were, short enough that no one is left standing in a meadow overnight.
     public integer function OnLinger(Player who)
         yield 30;
     end function

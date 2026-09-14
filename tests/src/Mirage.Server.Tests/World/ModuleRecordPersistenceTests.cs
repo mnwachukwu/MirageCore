@@ -91,7 +91,7 @@ public class ModuleRecordPersistenceTests
             Assert.That(records[2]["name"].AsText(), Is.EqualTo("Vulpine"));
             Assert.That(records[2]["baseSpeed"].AsLong(), Is.EqualTo(65));
             Assert.That(records[2]["evolves"].AsBool(), Is.True);
-            Assert.That(records[1].IsEmpty, Is.True, "and its neighbours are still blank");
+            Assert.That(records[1].IsEmpty, Is.True, "and its neighbors are still blank");
         });
     }
 

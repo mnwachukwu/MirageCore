@@ -14,7 +14,7 @@ namespace Mirage.Server.Tests.World;
 /// built from answers for a world nobody is standing in: it refuses spawns on decks that are reachable,
 /// and puts them on decks that are not.
 ///
-/// <para>The behaviour half is straightforward. The other half is a SOURCE SCAN, because nothing else would
+/// <para>The behavior half is straightforward. The other half is a SOURCE SCAN, because nothing else would
 /// notice: a new path that swaps a map in compiles perfectly, spawns keep working, and the world simply
 /// goes on answering with the map it saw at boot. There are only ever a handful of such paths, so the rule
 /// is that a file which replaces a map or rewrites its tiles or links must also drop the cache.</para>

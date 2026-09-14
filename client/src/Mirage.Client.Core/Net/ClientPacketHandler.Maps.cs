@@ -295,7 +295,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
         {
             // 🔴 Only a BLOCKING load owes the arrival beat, which is why this reads the flag before
             // clearing it. A seamless crossing arrives here too — it asks for a region re-sync, and that
-            // carries the new centre's NPC snapshot — but a crossing is one continuous walk, and charging
+            // carries the new center's NPC snapshot — but a crossing is one continuous walk, and charging
             // it the beat stalls the player at every seam. The stall is invisible at a 400 ms walk and
             // plainly visible at a sprint, where a step is shorter than the beat.
             bool wasBlockingLoad = _state.GettingMap;

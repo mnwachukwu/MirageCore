@@ -14,7 +14,7 @@ namespace Mirage.Server.Tests.Net;
 /// A verb a game invented, offered by a client that was never compiled against it.
 ///
 /// <para>🔴 What crosses the wire is a caption and an id, and that is the whole design. A seam that let a
-/// game send BEHAVIOUR to a client would ship code to every player and make the client run it; a seam
+/// game send BEHAVIOR to a client would ship code to every player and make the client run it; a seam
 /// that sends a name means the rule stays where every other rule is. The cost is that the client cannot
 /// decide anything about the verb — not whether it applies, not whether the player is close enough — and
 /// every one of those questions therefore belongs to the game.</para>
@@ -157,7 +157,7 @@ public class GameActionTests
 
     /// <summary>🔴 The condition is the SERVER's rule, not a hint to the client.
     ///
-    /// <para>The client greys the entry out, and a client that did not — an old one, a modified one —
+    /// <para>The client grays the entry out, and a client that did not — an old one, a modified one —
     /// still gets nowhere. A predicate only the client enforced would be a game's own declaration that
     /// anybody could opt out of, and the game would never learn it had happened.</para></summary>
     [Test]

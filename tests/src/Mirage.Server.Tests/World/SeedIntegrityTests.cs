@@ -610,7 +610,7 @@ public class SeedIntegrityTests
     /// <summary>Every mob on a CREATURE row is on the same side. Each of these rows draws one family — the
     /// wolves, the birdmen, the gravebound, the orcs, the birds — and a family fights as one, so a lone orc
     /// carrying a company's number is a mis-set group. The human rows say nothing either way: a company, a
-    /// cult and a lone scavenger all wear them, since the roster strides neighbours across the pool so they
+    /// cult and a lone scavenger all wear them, since the roster strides neighbors across the pool so they
     /// do not arrive looking like twins.</summary>
     [Test]
     public void EveryCreatureRow_IsOneSide()

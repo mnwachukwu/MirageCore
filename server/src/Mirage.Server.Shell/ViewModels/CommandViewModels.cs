@@ -138,7 +138,7 @@ public sealed partial class ShellCommand : ObservableObject
     [ObservableProperty]
     public partial bool IsConfirming { get; private set; }
 
-    /// <summary>Nothing required is blank. What the operator sees is a greyed Run rather than a line
+    /// <summary>Nothing required is blank. What the operator sees is a grayed Run rather than a line
     /// posted for the server to reject into a console nobody is reading.</summary>
     public bool CanRun => !Parameters.Any(p => p.IsMissing);
 

@@ -38,7 +38,8 @@ field by field. "The script says the same thing the C# said" is therefore a test
 
 | Module | What it is | Seams it uses |
 |---|---|---|
-| [`survey/`](survey/) | Cataloguing plants. Deliberately not an RPG. | all fifteen seams |
+| [`foraging/`](foraging/) | Picking things. About fifty lines, written twice. | six seams |
+| [`survey/`](survey/) | Cataloging plants. Deliberately not an RPG. | all fifteen seams |
 
 ## Turning a game off
 
@@ -80,7 +81,7 @@ nothing is deployed alongside it.
 
 That includes what the player DOES, not only what they read. A game declares an action — an id, a caption,
 and where it is offered — and a stock client puts it in the menu and sends the id back when it is picked.
-The rule behind the verb runs on the server, so nothing about the behaviour crosses the wire and nothing
+The rule behind the verb runs on the server, so nothing about the behavior crosses the wire and nothing
 is deployed beside the client.
 
 **What a module still cannot do is bring its own screen.** A panel of its own layout, a control Core has

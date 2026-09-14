@@ -89,7 +89,7 @@ public sealed class SurveyModule : ICoreModule
         // that meant both would have to ask which it got.
         //
         // And the one verb here with a CONDITION: comparing notes needs notes. A surveyor who has written
-        // nothing down sees the entry greyed rather than missing, so they can tell the verb exists and
+        // nothing down sees the entry grayed rather than missing, so they can tell the verb exists and
         // that they are not ready for it — and it lights up the moment they record something.
         builder.AddAction(new GameAction
         {
@@ -115,12 +115,12 @@ public sealed class SurveyModule : ICoreModule
 
         // The authored species, read once. They are AttributeBags rather than a type this assembly
         // compiled, because the editor that wrote them never referenced this assembly either.
-        var catalogue = world.RecordsOf(Survey.Species)
+        var catalog = world.RecordsOf(Survey.Species)
             .Select(r => r.TryGet("name", out var n) ? n.AsText() : "")
             .Where(n => n.Length > 0)
             .ToArray();
 
-        _observer.Begin(world, catalogue);
+        _observer.Begin(world, catalog);
         _recovery.Begin(world);
         _notes.Begin(world);
     }
@@ -234,7 +234,7 @@ public sealed class SurveyModule : ICoreModule
         });
         builder.AddDisplayField(new DisplayField
         {
-            Surface = Survey.BookSurface, ValueKey = Survey.Specimens, LabelKey = "Specimens catalogued",
+            Surface = Survey.BookSurface, ValueKey = Survey.Specimens, LabelKey = "Specimens cataloged",
             Ordinal = 2, Rgb = GameColor.Pack(200, 200, 160),
         });
         builder.AddDisplayField(new DisplayField

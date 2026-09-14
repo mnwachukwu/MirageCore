@@ -86,7 +86,7 @@ public class AssetSeedingTests
     {
         EditorPaths.SeedAssetsFrom(_bundled, _assets);
         var sheet = SheetLibrary.Scan(Path.Combine(_assets, "tiles"), 256, Path.Combine(_bundled, "tiles")).Sheets[0];
-        Assert.That(sheet.IsBundled, Is.True, "the sheet has to be recognised as a shipped one");
+        Assert.That(sheet.IsBundled, Is.True, "the sheet has to be recognized as a shipped one");
 
         SheetLibrary.Delete(sheet, _bin, "tiles/0_Tiles.bmp");
         EditorPaths.SeedAssetsFrom(_bundled, _assets);

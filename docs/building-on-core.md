@@ -128,11 +128,11 @@ target:
 | `Hud` | a button on the sidebar, above Logout | nothing but the square the player is on |
 
 **A verb can say when it is offered at all**, as a question about an attribute the player already
-carries: `AtLeast("harvest.baskets", 1)`, `Carrying("harvest.satchel")`, `NotCarrying("harvest.licence")`.
+carries: `AtLeast("harvest.baskets", 1)`, `Carrying("harvest.satchel")`, `NotCarrying("harvest.license")`.
 Core cannot be asked "may they do this" — it has no idea what the verb means — but it can be asked
 whether a number it is already syncing passes a comparison.
 
-🔴 **Both ends ask it, through the same code.** The client greys the entry out and the server refuses
+🔴 **Both ends ask it, through the same code.** The client grays the entry out and the server refuses
 the invoke. A predicate the client alone enforced would be a rule any modified client could ignore; one
 the server alone enforced would be a menu item that fails when it is picked. It reads the ACTOR, never
 the target — whether the thing they clicked is a valid target is the game's question.

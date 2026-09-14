@@ -107,7 +107,7 @@ public class ParticleSystemTests
     /// A bolt in the air when the player crosses a seam still arrives at its victim.
     ///
     /// <para>Both ends of a projectile are stored relative to the 3x3 grid's origin, and a crossing
-    /// re-anchors that grid onto a different centre map — sliding the whole space by one map, which is
+    /// re-anchors that grid onto a different center map — sliding the whole space by one map, which is
     /// 16 tiles across at 32px a tile. Carrying the POSITION without the TARGET leaves the bolt correctly
     /// placed and aimed half a screen from anything, which is what a spell flying off in a random
     /// direction actually is.</para>

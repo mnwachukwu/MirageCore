@@ -1,6 +1,7 @@
 using Mirage.Scripting;
 using Mirage.Shared;
 using Mirage.Shared.Extensibility;
+using Mirage.Shared.Protocol;
 using Serilog;
 
 namespace Mirage.Server.Host.Scripting;
@@ -43,13 +44,23 @@ namespace Mirage.Server.Host.Scripting;
 /// without an editor.</para>
 /// </summary>
 public sealed class ScriptedWorldModule
-    : ICoreModule, IWorldObserver, ITickWork, IActionHandler, IDeathPolicy, ILingerPolicy, IDisposable
+    : ICoreModule, IWorldObserver, ITickWork, IActionHandler, IPacketRoute,
+      IDeathPolicy, ILingerPolicy, IDisposable
 {
     /// <summary>The folder inside a world that holds its rules.</summary>
     public const string ScriptsFolder = "scripts";
 
     /// <summary>The shared model the engine looks for its handlers on.</summary>
     public const string Rules = "Rules";
+
+    /// <summary>The function a model writes to say it is a kind of record this game authors.
+    ///
+    /// <para>On the model rather than on <c>Rules</c>, so everything about a kind of record sits in
+    /// one place: the fields, what they are called, and what they may hold.</para>
+    ///
+    /// <para>⚠ It must be <c>shared</c>. A model describes a TYPE, and there is no particular record
+    /// to describe — so the function needs no receiver, and the engine has no instance to give it.</para></summary>
+    public const string Describes = "Describe";
 
 
     /// <summary>
@@ -74,25 +85,31 @@ public sealed class ScriptedWorldModule
         new("OnAction", 6,
             "function OnAction(Player who, string action, string on, integer map, integer x, integer y)",
             "the player picked one of this module's own verbs; 'on' names the body it was used on, "
-            + "or is blank for a verb offered on a square or on the HUD"),
+            + "and is blank for a verb offered on a square or on the HUD"),
         new("OnTick", 0, "function OnTick()",
             "the module's tick came round, however often game.TickEvery asked for"),
         new("OnPlayerTick", 1, "function OnPlayerTick(Player who)",
-            "the same tick, once for each player in the world — which is the list a script has no "
-            + "other way to walk"),
+            "the same tick, once for each player in the world, which a script has no other way "
+            + "to walk"),
         new("OnMayDie", 2, "string function OnMayDie(Player who, string cause)",
             "somebody is about to die; yield a reason to stop it, or blank to let it happen"),
         new("OnLinger", 1, "integer function OnLinger(Player who)",
             "their connection dropped; yield how many seconds the body stays in the world"),
+        new("OnMessage", 3, "function OnMessage(Player who, string message, Values values)",
+            "a client sent one of this game's own messages, carrying the fields its model declared"),
     ];
 
+    private readonly string _worldDir;
     private readonly string _folder;
     private readonly List<string> _actions = [];
     private readonly HashSet<string> _offered = new(StringComparer.Ordinal);
     private IWorld? _world;
     private LoadedScript? _loaded;
     private bool _onJoined, _onLeft, _onMoved, _onTick, _onPlayerTick, _onMayDie, _onLinger;
-    private bool _onAction;
+    private bool _onAction, _onMessage;
+
+    /// <summary>The messages this world's rules declared, which is also what this route owns.</summary>
+    private readonly List<string> _messages = [];
 
     // How often the tick comes round, which a script sets while it declares. One, until it says
     // otherwise: a module asked more often than it needs is work the loop does for nothing.
@@ -102,6 +119,7 @@ public sealed class ScriptedWorldModule
     public ScriptedWorldModule(string worldDir)
     {
         ArgumentNullException.ThrowIfNull(worldDir);
+        _worldDir = worldDir;
         _folder = Path.Combine(worldDir, ScriptsFolder);
     }
 
@@ -145,7 +163,10 @@ public sealed class ScriptedWorldModule
 
         if (!Directory.Exists(_folder)) return;
 
-        var (module, problems) = ScriptCompiler.CompileFolder(_folder, Catalog());
+        ScriptCatalog catalog = Catalog();
+        WriteTheStubs(catalog);
+
+        var (module, problems) = ScriptCompiler.CompileFolder(_folder, catalog);
         Problems = problems;
 
         foreach (ScriptProblem problem in problems)
@@ -179,12 +200,51 @@ public sealed class ScriptedWorldModule
         if (_onMayDie) builder.AddDeathPolicy(this);
         if (_onLinger) builder.AddLingerPolicy(this);
 
+        // 🔴 Both halves, or the message goes nowhere. Registering the command is what makes a line
+        // deserialize; the route is what delivers what it became. The commands were registered while
+        // the script declared, so this is the half that had to wait for the list to be complete.
+        if (_messages.Count > 0) builder.AddPacketRoute(this);
+
         Log.Information("Scripts: loaded {Module} ({Handlers} handler(s), {Actions} action(s)).",
                         module.Name, _offered.Count(h => h != "Configure"), _actions.Count);
     }
 
     /// <summary>
-    /// Lets the script declare, with each declaration guarded on its own.
+    /// Writes the engine's own types into the world, so a checker outside the server can read them.
+    ///
+    /// <para>🔴 Without this, every declaring line in a world's rules is reported as an unknown
+    /// type by <c>cm check</c> and by the VS Code extension — <c>Builder</c>, <c>Player</c> and the
+    /// rest exist only while a server is running. An author told their correct code is wrong on every
+    /// line that matters learns to ignore the tooling.</para>
+    ///
+    /// <para>⚠ A world that cannot be written to still runs. A read-only world, a locked file, a
+    /// folder somebody is watching — none of those is a reason to refuse to serve the game.</para>
+    /// </summary>
+    private void WriteTheStubs(ScriptCatalog catalog)
+    {
+        try
+        {
+            // Every folder holding scripts, because a project's `source` does not descend.
+            var folders = Directory.EnumerateDirectories(_folder, "*", SearchOption.AllDirectories)
+                .Prepend(_folder)
+                .Where(d => Directory.EnumerateFiles(d, "*" + ScriptModule.Extension).Any())
+                .Select(d => Path.GetRelativePath(_worldDir, d).Replace('\\', '/'))
+                .OrderBy(d => d, StringComparer.Ordinal);
+
+            if (ScriptStubs.Write(_worldDir, catalog, folders))
+            {
+                Log.Information("Scripts: wrote {Folder}/ and {Project} so an editor can check this world.",
+                                ScriptStubs.Folder, ScriptStubs.ProjectFile);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Log.Warning("Scripts: could not write the editor stubs into {World} - {Why}. The world "
+                        + "still runs; an editor will not know the engine's types.", _worldDir, ex.Message);
+        }
+    }
+
+    /// <summary>Lets the script declare, with each declaration guarded on its own.
     ///
     /// <para>🔴 <b>A collision cannot be allowed to stop the server.</b> Two modules claiming one
     /// attribute key is an error the engine raises at startup, which is right when both are assemblies
@@ -197,18 +257,24 @@ public sealed class ScriptedWorldModule
     /// </summary>
     private void Declare(ICoreBuilder builder)
     {
-        if (!_offered.Contains("Configure")) return;
+        var declaring = new Declaring(
+            builder, _actions, _messages, _loaded!.Models, n => _everyTicks = n);
 
-        var declaring = new Declaring(builder, _actions, _loaded!.Models, n => _everyTicks = n);
-        ScriptOutcome outcome = _loaded.Call(Rules, "Configure", declaring);
-        declaring.Close();
+        DescribeRecords(declaring);
 
-        if (outcome.Output.Length > 0) Log.Information("Scripts: {Output}", outcome.Output.TrimEnd());
-
-        if (outcome.Fault is not null)
+        if (_offered.Contains("Configure"))
         {
-            Log.Error("Scripts: Configure failed - {Fault}", outcome.Fault);
+            ScriptOutcome outcome = _loaded.Call(Rules, "Configure", declaring);
+
+            if (outcome.Output.Length > 0) Log.Information("Scripts: {Output}", outcome.Output.TrimEnd());
+
+            if (outcome.Fault is not null)
+            {
+                Log.Error("Scripts: Configure failed - {Fault}", outcome.Fault);
+            }
         }
+
+        declaring.Close();
 
         foreach (string refused in declaring.Refused)
         {
@@ -219,6 +285,41 @@ public sealed class ScriptedWorldModule
             r => new ScriptProblem("MS0004", ScriptSeverity.Warning, r, _loaded.Name, 0, 0))];
     }
 
+
+    /// <summary>
+    /// Lets every model that describes itself declare the records it is.
+    ///
+    /// <para>🔴 <b>Describe has to be shared, and one that is not is refused BY NAME.</b> A model
+    /// describes a TYPE, so there is no particular record to hand the function and the engine has no
+    /// instance to give it. An instance function of that name compiles, loads, and is never called —
+    /// which from inside the module looks exactly like working code.</para>
+    /// </summary>
+    private void DescribeRecords(Declaring declaring)
+    {
+        foreach (ScriptModelInfo model in _loaded!.Models)
+        {
+            if (model.Function(Describes, 1) is not { } describe) continue;
+
+            if (!describe.IsShared)
+            {
+                declaring.Refuse($"the records '{model.Name}'",
+                    $"{Describes} has to be shared - write 'public shared function {Describes}' - "
+                    + "because a model describes a kind of record rather than one record");
+                continue;
+            }
+
+            if (declaring.Begin(model) is { } describing)
+            {
+                ScriptOutcome outcome = _loaded.Call(model.Name, Describes, describing);
+
+                if (outcome.Fault is not null)
+                {
+                    Log.Error("Scripts: {Model}.{Describes} failed - {Fault}",
+                              model.Name, Describes, outcome.Fault);
+                }
+            }
+        }
+    }
 
     // The flags the event path reads. Taken from the set rather than asked of it each time, because
     // one of these is checked on every tick and every step of every player.
@@ -232,6 +333,7 @@ public sealed class ScriptedWorldModule
         _onPlayerTick = _offered.Contains("OnPlayerTick");
         _onMayDie = _offered.Contains("OnMayDie");
         _onLinger = _offered.Contains("OnLinger");
+        _onMessage = _offered.Contains("OnMessage");
     }
 
     /// <summary>Hands the module the world. Everything a binding does goes through this.</summary>
@@ -262,7 +364,7 @@ public sealed class ScriptedWorldModule
     /// The player picked one of the script's own verbs.
     ///
     /// <para>The square carries its MAP as well as its coordinates, because a client can name a square on
-    /// a neighbouring map — everything within the seamless view is pointable, and a handler given only
+    /// a neighboring map — everything within the seamless view is pointable, and a handler given only
     /// x and y would act on the wrong tile the moment somebody stood near a border.</para>
     ///
     /// <para><b>How far a verb reaches is the game's question.</b> The engine re-checks that the square is
@@ -305,6 +407,22 @@ public sealed class ScriptedWorldModule
         }
     }
 
+    // ── What a client sends it ──────────────────────────────────────────
+
+    /// <summary>The messages this world's rules declared. Empty for a world that declared none, which
+    /// is why the route is only registered when there is something for it to own.</summary>
+    IReadOnlyCollection<string> IPacketRoute.Commands => _messages;
+
+    /// <summary>One of this game's own messages, from a client that knew how to send it.
+    ///
+    /// <para>The values arrive as the model declared them rather than as the line wrote them, and a
+    /// field the model did not name never made it this far — so a sender cannot reach past what the
+    /// rules said they may send.</para></summary>
+    public void Handle(EntityHandle from, IPacket packet)
+    {
+        if (_onMessage && packet is ScriptedPacket sent) Run("OnMessage", from, sent.Cmd, sent.Values);
+    }
+
     // ── What it decides ────────────────────────────────────────────────
 
     /// <summary>Whether somebody dies, asked of the rules.
@@ -325,7 +443,7 @@ public sealed class ScriptedWorldModule
         return reason.Length > 0 ? Refusal.Deny(reason) : Refusal.Allow;
     }
 
-    /// <summary>How long a dropped player's body stays, asked of the rules. Nought takes them out at
+    /// <summary>How long a dropped player's body stays, asked of the rules. Zero takes them out at
     /// once, which is what the engine does with no policy at all.</summary>
     public Deadline LingerFor(EntityHandle who)
     {
@@ -413,6 +531,24 @@ public sealed class ScriptedWorldModule
         var records = c.Type("Records");
         var verb = c.Type("Verb");
         var panel = c.Type("Panel");
+        var values = c.Type("Values");
+
+        // What a message carried, read the way a player's own keys are read: a field the line left out
+        // is absent rather than zero, and Has is what tells the two apart.
+        values
+            .Function("Has", ScriptType.Truth, [ScriptType.Text.Named("field")],
+                (v, a) => Sent(v).Has(a.AsText(0)),
+                "Whether the message carried that field at all, which is what tells absence from zero.")
+            .Function("Number", ScriptType.Integer, [ScriptType.Text.Named("field")],
+                (v, a) => Sent(v).TryGet(a.AsText(0), out var n) ? n.AsLong() : 0L,
+                "What it carried under that name, or zero where it carried nothing.")
+            .Function("Text", ScriptType.Text, [ScriptType.Text.Named("field")],
+                (v, a) => Sent(v).TryGet(a.AsText(0), out var t) ? t.AsText() : string.Empty,
+                "The same, as text, or empty where it carried nothing. An enumeration field arrives as "
+                + "the member's own name.")
+            .Function("Truth", ScriptType.Truth, [ScriptType.Text.Named("field")],
+                (v, a) => Sent(v).TryGet(a.AsText(0), out var f) && f.AsBool(),
+                "The same, as a yes or no. False where it carried nothing.");
 
         verb
             .Action("OnTile", [], (v, _) => Verbal(v).OnTile(),
@@ -425,64 +561,68 @@ public sealed class ScriptedWorldModule
             .Action("OnHud", [], (v, _) => Verbal(v).OnHud(),
                 "Offer it as a button on the HUD, which is about the player rather than about anything "
                 + "they are pointing at.")
-            .Action("Key", [ScriptType.Text], (v, a) => Verbal(v).Key(a.AsText(0)),
+            .Action("Key", [ScriptType.Text.Named("key")], (v, a) => Verbal(v).Key(a.AsText(0)),
                 "A key that reaches it without the menu: B, E, J, K, N, P, Q, R, T, U, Y, or Z. The key "
                 + "acts on the square the player faces.")
-            .Action("Opens", [ScriptType.Text], (v, a) => Verbal(v).Opens(a.AsText(0)),
+            .Action("Opens", [ScriptType.Text.Named("panel")], (v, a) => Verbal(v).Opens(a.AsText(0)),
                 "The panel it opens, by the id given to game.Panel. One that was never declared is "
                 + "refused by name rather than drawing a button that does nothing.")
-            .Action("NeedsAtLeast", [ScriptType.Text, ScriptType.Integer],
+            .Action("NeedsAtLeast", [ScriptType.Text.Named("key"), ScriptType.Integer.Named("least")],
                 (v, a) => Verbal(v).NeedsAtLeast(a.AsText(0), a.AsInteger(1)),
                 "Offered only to a body carrying at least that much under that key. Below it the entry "
-                + "is greyed rather than missing, so a player can tell the verb exists.")
-            .Action("NeedsCarrying", [ScriptType.Text],
+                + "is grayed rather than missing, so a player can see the verb exists.")
+            .Action("NeedsCarrying", [ScriptType.Text.Named("key")],
                 (v, a) => Verbal(v).NeedsCarrying(a.AsText(0)),
                 "Offered only to a body that carries that key at all.")
-            .Action("NeedsNothing", [ScriptType.Text],
+            .Action("NeedsNothing", [ScriptType.Text.Named("key")],
                 (v, a) => Verbal(v).NeedsNothing(a.AsText(0)),
                 "Offered only to a body that does NOT carry that key.");
 
         panel
-            .Action("Key", [ScriptType.Text], (p, a) => Screen(p).Key(a.AsText(0)),
+            .Action("Key", [ScriptType.Text.Named("key")], (p, a) => Screen(p).Key(a.AsText(0)),
                 "A key that opens it: B, E, J, K, N, P, Q, R, T, U, Y, or Z.")
-            .Action("Button", [ScriptType.Text, ScriptType.Text],
+            .Action("Button", [ScriptType.Text.Named("caption"), ScriptType.Text.Named("verb")],
                 (p, a) => Screen(p).Button(a.AsText(0), a.AsText(1)),
                 "A button along its bottom: a caption, and the id of a verb it calls.")
-            .Action("Heading", [ScriptType.Text], (p, a) => Screen(p).Heading(a.AsText(0)),
+            .Action("Heading", [ScriptType.Text.Named("caption")], (p, a) => Screen(p).Heading(a.AsText(0)),
                 "A heading on this panel, separating the rows under it.")
-            .Action("Field", [ScriptType.Text, ScriptType.Text, ScriptType.Integer, ScriptType.Integer, ScriptType.Integer],
+            .Action("Field", [ScriptType.Text.Named("key"), ScriptType.Text.Named("caption"), ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
                 (p, a) => Screen(p).Field(a.AsText(0), a.AsText(1),
                     (int)a.AsInteger(2), (int)a.AsInteger(3), (int)a.AsInteger(4)),
                 "A row on this panel: a key read live off the player, a caption, and a color as red, "
-                + "green, and blue. All three nought leaves the color to the client.")
-            .Action("Badge", [ScriptType.Text, ScriptType.Text, ScriptType.Integer, ScriptType.Integer, ScriptType.Integer],
+                + "green, and blue. All three zero leaves the color to the client.")
+            .Action("Badge", [ScriptType.Text.Named("key"), ScriptType.Text.Named("caption"), ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
                 (p, a) => Screen(p).Badge(a.AsText(0), a.AsText(1),
                     (int)a.AsInteger(2), (int)a.AsInteger(3), (int)a.AsInteger(4)),
                 "The same, drawn as a small tag with no caption.")
-            .Action("Meter", [ScriptType.Text, ScriptType.Text, ScriptType.Text, ScriptType.Integer, ScriptType.Integer, ScriptType.Integer],
+            .Action("Meter", [ScriptType.Text.Named("key"), ScriptType.Text.Named("outOf"), ScriptType.Text.Named("caption"), ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
                 (p, a) => Screen(p).Meter(a.AsText(0), a.AsText(1), a.AsText(2),
                     (int)a.AsInteger(3), (int)a.AsInteger(4), (int)a.AsInteger(5)),
                 "A bar on this panel, filled by one key against another.");
 
         records
-            .Action("Stored", [ScriptType.Text, ScriptType.Text],
+            .Action("Are", [ScriptType.Text.Named("plural"), ScriptType.Text.Named("singular"), ScriptType.Integer.Named("limit")],
+                (r, a) => Shape(r).Are(a.AsText(0), a.AsText(1), a.AsInteger(2)),
+                "What these records are called in the editor — the plural, then the singular — and how "
+                + "many there may be. A caption left blank keeps the model's own name.")
+            .Action("Stored", [ScriptType.Text.Named("folder"), ScriptType.Text.Named("prefix")],
                 (r, a) => Shape(r).Stored(a.AsText(0), a.AsText(1)),
                 "Where these records live: the folder under the world, and what each file is called "
-                + "before its number. Only wanted for records that already exist on disk — a new game "
-                + "says nothing and lets the model's name decide.")
-            .Action("Caption", [ScriptType.Text, ScriptType.Text],
+                + "before its number. Only needed for records already on disk. A new game leaves it "
+                + "out, and the model's name decides.")
+            .Action("Caption", [ScriptType.Text.Named("field"), ScriptType.Text.Named("caption")],
                 (r, a) => Shape(r).Caption(a.AsText(0), a.AsText(1)),
-                "What one field is called on the form. Only wanted where the field's own name is not "
+                "What one field is called on the form. Only needed where the field's own name is not "
                 + "the words an author should read.")
-            .Action("Range", [ScriptType.Text, ScriptType.Integer, ScriptType.Integer],
+            .Action("Range", [ScriptType.Text.Named("field"), ScriptType.Integer.Named("least"), ScriptType.Integer.Named("greatest")],
                 (r, a) => Shape(r).Range(a.AsText(0), a.AsInteger(1), a.AsInteger(2)),
                 "The bounds of a whole-number field. Equal bounds mean unbounded.")
-            .Action("Length", [ScriptType.Text, ScriptType.Integer],
+            .Action("Length", [ScriptType.Text.Named("field"), ScriptType.Integer.Named("characters")],
                 (r, a) => Shape(r).Length(a.AsText(0), a.AsInteger(1)),
                 "How long a text field may be. Zero means no limit.");
 
         player
-            .Action("Message", [ScriptType.Text], (who, a) =>
+            .Action("Message", [ScriptType.Text.Named("line")], (who, a) =>
             {
                 World.Tell(Who(who), a.AsText(0));
                 return null;
@@ -499,35 +639,35 @@ public sealed class ScriptedWorldModule
             // The attribute bag, which is where everything a GAME counts lives. A key a body does not
             // have reads as zero or as empty text, with Has for the question that tells them apart —
             // a rule asking "how much stamina" wants a number, not a decision about absence.
-            .Function("Has", ScriptType.Truth, [ScriptType.Text],
+            .Function("Has", ScriptType.Truth, [ScriptType.Text.Named("key")],
                 (who, a) => World.AttributesOf(Who(who))?.Has(a.AsText(0)) ?? false,
                 "Whether they carry that key at all, which is what tells absence from zero.")
-            .Function("Number", ScriptType.Integer, [ScriptType.Text],
+            .Function("Number", ScriptType.Integer, [ScriptType.Text.Named("key")],
                 (who, a) => Attribute(who, a.AsText(0)) is { } v ? v.AsLong() : 0L,
                 "What they carry under that key, or zero where they carry nothing.")
-            .Function("Text", ScriptType.Text, [ScriptType.Text],
+            .Function("Text", ScriptType.Text, [ScriptType.Text.Named("key")],
                 (who, a) => Attribute(who, a.AsText(0))?.AsText() ?? string.Empty,
                 "The same, as text, or empty where they carry nothing.")
-            .Action("SetNumber", [ScriptType.Text, ScriptType.Integer], (who, a) =>
+            .Action("SetNumber", [ScriptType.Text.Named("key"), ScriptType.Integer.Named("amount")], (who, a) =>
             {
                 World.SetAttribute(Who(who), a.AsText(0), AttributeValue.From(a.AsInteger(1)));
                 return null;
             }, "Writes that key, and ships it to everyone entitled to see it.")
-            .Action("SetText", [ScriptType.Text, ScriptType.Text], (who, a) =>
+            .Action("SetText", [ScriptType.Text.Named("key"), ScriptType.Text.Named("value")], (who, a) =>
             {
                 World.SetAttribute(Who(who), a.AsText(0), AttributeValue.From(a.AsText(1)));
                 return null;
             }, "The same, with text.")
 
-            .Function("WarpTo", ScriptType.Truth, [ScriptType.Integer, ScriptType.Integer, ScriptType.Integer],
+            .Function("WarpTo", ScriptType.Truth, [ScriptType.Integer.Named("map"), ScriptType.Integer.Named("x"), ScriptType.Integer.Named("y")],
                 (who, a) => World.Warp(Who(who), new WorldPlace((int)a.AsInteger(0), (int)a.AsInteger(1), (int)a.AsInteger(2))),
                 "Puts them on that map, x and y. False for a square that is not a real tile.")
-            .Action("Give", [ScriptType.Integer, ScriptType.Integer], (who, a) =>
+            .Action("Give", [ScriptType.Integer.Named("item"), ScriptType.Integer.Named("many")], (who, a) =>
             {
                 World.Give(Who(who), (int)a.AsInteger(0), (int)a.AsInteger(1));
                 return null;
             }, "Puts that many of an item in their bag.")
-            .Action("Take", [ScriptType.Integer, ScriptType.Integer], (who, a) =>
+            .Action("Take", [ScriptType.Integer.Named("item"), ScriptType.Integer.Named("many")], (who, a) =>
             {
                 World.Take(Who(who), (int)a.AsInteger(0), (int)a.AsInteger(1));
                 return null;
@@ -536,63 +676,60 @@ public sealed class ScriptedWorldModule
             // 🔴 The other half of a verb used ON somebody. OnAction carries the target as a NAME,
             // because the boundary has no way to say "somebody, or nobody" in an argument — but it can
             // say it in a RESULT, which is what makes this the shape that works.
-            .Function("Find", player.AsType.OrNothing(), [ScriptType.Text],
+            .Function("Find", player.AsType.OrNothing(), [ScriptType.Text.Named("name")],
                 (_, a) => Somebody(a.AsText(0)),
-                "The body behind a name, or nothing where nobody is answering to it. What OnAction's "
-                + "'on' is for: a name is what arrives, and this is what reads and writes through it.");
+                "The body behind a name, or nothing if no one is using it. OnAction hands you a "
+                + "name; this turns it into a player you can read and write.");
 
         game
-            .Function("Records", records.AsType,
-                [ScriptType.Text, ScriptType.Text, ScriptType.Text, ScriptType.Integer],
-                (b, a) => Build(b).Records(a.AsText(0), a.AsText(1), a.AsText(2), a.AsInteger(3)),
-                "A kind of record this game authors, taken from one of this world's own models: the "
-                + "model's name, a plural caption, a singular one, and how many there may be. Every "
-                + "field of the model becomes a row on the form — an enumeration as a drop-down over "
-                + "its members, another model as a picker over that model's records. Hands the records "
-                + "back, so the rest can be said about them.")
-            .Action("Attribute", [ScriptType.Text, ScriptType.Text],
+            .Action("Attribute", [ScriptType.Text.Named("key"), ScriptType.Text.Named("seenBy")],
                 (b, a) => Build(b).Attribute(a.AsText(0), a.AsText(1)),
                 "Declares a key this game counts, and who may see it: none, owner, or viewport.")
-            .Action("TickEvery", [ScriptType.Integer],
+            .Action("Message", [ScriptType.Text.Named("modelName")],
+                (b, a) => Build(b).Message(a.AsText(0)),
+                "A message a client may send this game, taking its fields from one of this world's "
+                + "own models. It arrives at OnMessage with those fields as values. A stock client "
+                + "cannot compose one, so this is for a client, a tool, or a bot that knows it.")
+            .Action("TickEvery", [ScriptType.Integer.Named("ticks")],
                 (b, a) => Build(b).TickEvery(a.AsInteger(0)),
-                "How often OnTick and OnPlayerTick come round, in ticks. One by default, which is every "
-                + "tick — a rule about resting or the weather wants far less than that.")
-            .Action("EquipSlot", [ScriptType.Text, ScriptType.Text],
+                "How often OnTick and OnPlayerTick come round, in ticks. One by default, meaning "
+                + "every tick. A rule about resting or the weather wants far less.")
+            .Action("EquipSlot", [ScriptType.Text.Named("key"), ScriptType.Text.Named("caption")],
                 (b, a) => Build(b).EquipSlot(a.AsText(0), a.AsText(1)),
                 "A place on a body something can be worn. A caption left blank becomes the key, as "
                 + "words.")
-            .Action("Heading", [ScriptType.Text],
+            .Action("Heading", [ScriptType.Text.Named("caption")],
                 (b, a) => Build(b).Row(DisplaySurfaces.Hud, DisplayStyle.Heading,
                     string.Empty, string.Empty, a.AsText(0), 0, 0, 0),
                 "A heading on the sidebar, separating the rows under it.")
-            .Action("Field", [ScriptType.Text, ScriptType.Text, ScriptType.Integer, ScriptType.Integer, ScriptType.Integer],
+            .Action("Field", [ScriptType.Text.Named("key"), ScriptType.Text.Named("caption"), ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
                 (b, a) => Build(b).Row(DisplaySurfaces.Hud, DisplayStyle.Text,
                     a.AsText(0), string.Empty, a.AsText(1),
                     (int)a.AsInteger(2), (int)a.AsInteger(3), (int)a.AsInteger(4)),
                 "A sidebar row: a key read live off the player, a caption, and a color as red, green, "
-                + "and blue. All three nought leaves the color to the client.")
-            .Action("Badge", [ScriptType.Text, ScriptType.Text, ScriptType.Integer, ScriptType.Integer, ScriptType.Integer],
+                + "and blue. All three zero leaves the color to the client.")
+            .Action("Badge", [ScriptType.Text.Named("key"), ScriptType.Text.Named("caption"), ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
                 (b, a) => Build(b).Row(DisplaySurfaces.Hud, DisplayStyle.Badge,
                     a.AsText(0), string.Empty, a.AsText(1),
                     (int)a.AsInteger(2), (int)a.AsInteger(3), (int)a.AsInteger(4)),
                 "The same, drawn as a small tag with no caption.")
-            .Action("Meter", [ScriptType.Text, ScriptType.Text, ScriptType.Text, ScriptType.Integer, ScriptType.Integer, ScriptType.Integer],
+            .Action("Meter", [ScriptType.Text.Named("key"), ScriptType.Text.Named("outOf"), ScriptType.Text.Named("caption"), ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
                 (b, a) => Build(b).Row(DisplaySurfaces.Hud, DisplayStyle.Meter,
                     a.AsText(0), a.AsText(1), a.AsText(2),
                     (int)a.AsInteger(3), (int)a.AsInteger(4), (int)a.AsInteger(5)),
                 "A sidebar bar, filled by one key against another.")
             .Action("Bar",
-                [ScriptType.Text, ScriptType.Text, ScriptType.Integer, ScriptType.Integer, ScriptType.Integer],
+                [ScriptType.Text.Named("key"), ScriptType.Text.Named("outOf"), ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
                 (b, a) => Build(b).Bar(a.AsText(0), a.AsText(1),
                     (int)a.AsInteger(2), (int)a.AsInteger(3), (int)a.AsInteger(4)),
                 "A bar over every body's head, in a color given as red, green, and blue, each 0 to 255.")
-            .Function("Action", verb.AsType, [ScriptType.Text, ScriptType.Text, ScriptType.Text],
+            .Function("Action", verb.AsType, [ScriptType.Text.Named("id"), ScriptType.Text.Named("caption"), ScriptType.Text.Named("heading")],
                 (b, a) => Build(b).Action(a.AsText(0), a.AsText(1), a.AsText(2)),
                 "A verb this game offers, under a heading of its own. Picking it calls OnAction. Offered "
-                + "in a square's menu until the verb says otherwise, and handed back so what it is "
-                + "offered on, what key reaches it, and what it needs are each a line of their own.")
+                + "in a square's menu until the verb says otherwise, and handed back so where "
+                + "it is offered, what key reaches it, and what it needs are each their own line.")
             .Function("Panel", panel.AsType,
-                [ScriptType.Text, ScriptType.Text, ScriptType.Integer, ScriptType.Integer],
+                [ScriptType.Text.Named("id"), ScriptType.Text.Named("title"), ScriptType.Integer.Named("width"), ScriptType.Integer.Named("height")],
                 (b, a) => Build(b).Panel(a.AsText(0), a.AsText(1), a.AsInteger(2), a.AsInteger(3)),
                 "A screen of this game's own: an id, a title, and how wide and tall it is. Handed back, "
                 + "so its rows and its buttons are written underneath it.");
@@ -643,6 +780,9 @@ public sealed class ScriptedWorldModule
     private static Panel Screen(object? value) =>
         value as Panel ?? throw new InvalidOperationException("This is not a panel.");
 
+    private static AttributeBag Sent(object? value) =>
+        value as AttributeBag ?? throw new InvalidOperationException("These are not values.");
+
     /// <summary>
     /// One verb, handed back so what it is offered on, what reaches it, and what it needs are each a
     /// line of their own.
@@ -672,9 +812,9 @@ public sealed class ScriptedWorldModule
             return null;
         }
 
-        /// <summary>What a body must be carrying for this to be offered rather than greyed.
+        /// <summary>What a body must be carrying for this to be offered rather than grayed.
         ///
-        /// <para>Both halves are this one condition: the client greys the entry and the server refuses
+        /// <para>Both halves are this one condition: the client grays the entry and the server refuses
         /// the call, and neither is told separately. A verb a player can see but cannot use yet reads as
         /// a game with more in it than a verb that is simply missing.</para></summary>
         public object? NeedsAtLeast(string key, long howMany)
@@ -757,6 +897,12 @@ public sealed class ScriptedWorldModule
     /// </summary>
     private sealed class Describing(Declaring declaring, string model, bool declared)
     {
+        public object? Are(string label, string singular, long limit)
+        {
+            if (declared) declaring.Are(model, label, singular, limit);
+            return null;
+        }
+
         public object? Stored(string folder, string prefix)
         {
             if (declared) declaring.Stored(model, folder, prefix);
@@ -794,6 +940,7 @@ public sealed class ScriptedWorldModule
     private sealed class Declaring(
         ICoreBuilder builder,
         List<string> actions,
+        List<string> messages,
         IReadOnlyList<ScriptModelInfo> models,
         System.Action<int> everyTicks)
     {
@@ -966,28 +1113,13 @@ public sealed class ScriptedWorldModule
         /// <c>Items</c> and <c>Npcs</c> in one list and in one folder each, so a model named for
         /// something already there has to read as the collision it is.</para>
         ///
-        /// <para>⚠ The model is named as TEXT, because Compass has no type values. A typo is a refusal
-        /// at load rather than an error at compile, so the refusal lists the models that do exist.</para>
         /// </summary>
-        public Describing Records(string modelName, string label, string singular, long limit)
+        public Describing? Begin(ScriptModelInfo shape)
         {
-            ScriptModelInfo? shape = models.FirstOrDefault(
-                m => string.Equals(m.Name, modelName, StringComparison.Ordinal));
-
-            if (shape is null)
-            {
-                string known = string.Join(", ", models.Select(m => m.Name));
-                Refuse($"the records '{modelName}'",
-                       known.Length > 0
-                           ? $"no model of that name is declared - this world has: {known}"
-                           : "this world declares no models at all");
-                return new Describing(this, modelName, declared: false);
-            }
-
             if (Described(shape.Name) is not null)
             {
                 Refuse($"the records '{shape.Name}'", "they are already declared");
-                return new Describing(this, modelName, declared: false);
+                return null;
             }
 
             var fields = new List<FieldDescriptor>();
@@ -999,17 +1131,22 @@ public sealed class ScriptedWorldModule
             if (fields.Count == 0)
             {
                 Refuse($"the records '{shape.Name}'", "none of its fields can be authored");
-                return new Describing(this, modelName, declared: false);
+                return null;
             }
 
-            var records = new PendingRecords(shape.Name) { Fields = fields };
+            _records.Add(new PendingRecords(shape.Name) { Fields = fields });
+            return new Describing(this, shape.Name, declared: true);
+        }
+
+        /// <summary>What these records are called, and how many there may be. A caption left blank
+        /// keeps the model's own name, and a limit of zero keeps the default.</summary>
+        public void Are(string model, string label, string singular, long limit)
+        {
+            if (Described(model) is not { } records) return;
 
             if (label.Length > 0) records.Label = label;
             if (singular.Length > 0) records.Singular = singular;
             if (limit > 0) records.Limit = limit;
-
-            _records.Add(records);
-            return new Describing(this, shape.Name, declared: true);
         }
 
         /// <summary>One model field as a row on a form, or null for one nothing could edit.</summary>
@@ -1190,6 +1327,60 @@ public sealed class ScriptedWorldModule
         public object? Attribute(string key, string visibility) => Guard($"the attribute '{key}'", () =>
             builder.Attributes.Declare(key, Visibility(visibility)));
 
+        /// <summary>A message a client may send this game, taking its fields from one of this world's
+        /// own models — the same way records do, and for the same reason: the model already says what
+        /// the fields are called and what they hold.
+        ///
+        /// <para>🔴 <b>A typed packet is not what a message needs.</b> The registry takes a parse
+        /// delegate, so the line is read into the shapes the model declared and handed over as values.
+        /// Nothing is compiled, and a field the model did not name is dropped rather than carried.</para>
+        ///
+        /// <para>⚠ A stock client cannot COMPOSE one — it only originates verbs, which carry an action
+        /// id and a square and no values of their own. This is for a client, a tool, or a bot that
+        /// knows the message, which is the same audience a compiled module's packet has.</para></summary>
+        public object? Message(string modelName)
+        {
+            ScriptModelInfo? shape = models.FirstOrDefault(
+                m => string.Equals(m.Name, modelName, StringComparison.Ordinal));
+
+            if (shape is null)
+            {
+                string known = string.Join(", ", models.Select(m => m.Name));
+                Refuse($"the message '{modelName}'",
+                       known.Length > 0
+                           ? $"no model of that name is declared - this world has: {known}"
+                           : "this world declares no models at all");
+                return null;
+            }
+
+            var carried = new List<ScriptModelField>();
+            foreach (ScriptModelField field in shape.Fields)
+            {
+                if (field.Shape is ScriptFieldShape.Unsupported or ScriptFieldShape.Reference)
+                {
+                    Refuse($"the field '{modelName}.{field.Name}'",
+                           $"a {field.TypeName} is not something a message can carry");
+                    continue;
+                }
+
+                carried.Add(field);
+            }
+
+            if (carried.Count == 0)
+            {
+                Refuse($"the message '{modelName}'", "none of its fields can travel");
+                return null;
+            }
+
+            return Guard($"the message '{modelName}'", () =>
+            {
+                builder.Packets.Register(
+                    modelName, (json, _) => ScriptedPacket.Read(modelName, json, carried));
+
+                messages.Add(modelName);
+            });
+        }
+
         /// <summary>How often this world's tick comes round, in ticks. Below one is one.</summary>
         public object? TickEvery(long ticks)
         {
@@ -1230,7 +1421,7 @@ public sealed class ScriptedWorldModule
         // ── Rows, on whichever surface ──────────────────────────────────────────
 
         /// <summary>One row. The surface decides where it is drawn — the sidebar, or a panel of this
-        /// game's own — and a color of nought leaves it to the client.</summary>
+        /// game's own — and a color of zero leaves it to the client.</summary>
         public object? Row(
             string surface, DisplayStyle style, string valueKey, string maxKey, string label,
             int red, int green, int blue)
@@ -1330,7 +1521,7 @@ public sealed class ScriptedWorldModule
         /// verb opening a panel nobody declared, a field nothing could edit. Logged exactly like a
         /// collision is, because from the author's side it is the same event: something they wrote did
         /// not take.</summary>
-        private void Refuse(string what, string why) => _refused.Add($"{what} was refused - {why}");
+        public void Refuse(string what, string why) => _refused.Add($"{what} was refused - {why}");
 
         // ── What is being described, until Close ───────────────────────────────────
 

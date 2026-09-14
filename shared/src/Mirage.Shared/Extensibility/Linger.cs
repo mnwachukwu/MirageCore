@@ -10,7 +10,7 @@ namespace Mirage.Shared.Extensibility;
 /// mid-conversation are four games' answers to the same moment, and none of them is in here.</para>
 ///
 /// <para><b>The default is no ghost at all</b>, so an engine with no game loaded takes a dropped player
-/// straight out of the world — which is the honest behaviour for a world with nothing worth staying
+/// straight out of the world — which is the honest behavior for a world with nothing worth staying
 /// for.</para>
 /// </summary>
 public interface ILingerPolicy

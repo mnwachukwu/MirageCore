@@ -102,7 +102,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [ObservableProperty] private string _connectionEndpoint = "";
 
     // ── Section rail ──────────────────────────────────────────────────────────
-    // Expanded is nine labelled rows; collapsed is nine icons. The width is stated here rather than in
+    // Expanded is nine labeled rows; collapsed is nine icons. The width is stated here rather than in
     // the view so both states come from one place — 64 is the icon, the unsaved-work dot, and the row
     // padding, and nothing more.
     private const double RailExpandedWidth = 188;

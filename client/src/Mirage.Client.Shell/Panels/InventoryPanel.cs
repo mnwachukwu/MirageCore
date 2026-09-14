@@ -175,7 +175,7 @@ public sealed class InventoryPanel : IGamePanel
         // items in the count — NPC loot piles don't block voluntary drops server-side either.
         _dropBtn.Enabled = _list.SelectedIndex >= 0 && PlayerDroppedCountOnCurrentMap(state) < Constants.MaxMapItems;
 
-        // Use greys out while the beat is still running, so the button reads the way the action bar's
+        // Use grays out while the beat is still running, so the button reads the way the action bar's
         // sweep does rather than silently sending something the server will drop.
         _useBtn.Enabled = UseReady(state);
 

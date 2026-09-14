@@ -42,8 +42,8 @@ demonstration; it is how "either route, same game" stays true as the engine chan
 | **Attributes, bars, sidebar rows** | yes | yes |
 | **Death and linger policies** | yes | yes |
 | **Equip slots** | yes | yes |
-| **A packet of your own** | **no** | yes |
-| **Arbitrary .NET** | no — the sandbox refuses the filesystem and the clock | yes |
+| **A message of its own** | yes — `game.Message` | yes |
+| **Arbitrary .NET in a handler** | no — the sandbox refuses the filesystem and the clock | yes |
 | **Performance ceiling** | an interpreter, called across a boundary | native, in-process |
 
 ## What each is actually good at
@@ -83,9 +83,16 @@ is an interface not implemented. This is the difference worth knowing about, and
 `ScriptedWorldModule.Offered` is exposed and why a test holds what Survey wrote against what the engine
 took.
 
-**Typed packets are only here.** A message of your own on the wire needs a client compiled against it.
-A stock client can be told about verbs, panels, and values — which is most of a game — but a game that
-wants to send something the engine has no shape for wants this route.
+**Both routes can own a message on the wire.** A script declares one from a model —
+`game.Message("Note")` — and the engine registers a parse that reads the line into the shapes that
+model named. No type is compiled, because `PacketRegistry.Register` takes a parse delegate and
+`Register<T>` is only the convenience overload for a shape somebody did compile.
+
+⚠ **What neither route gives you is a STOCK CLIENT that can send one.** The only thing a stock client
+originates for a game is a verb — an action id and the square or body it was used on, carrying no
+values. A message is for a client, a tool, or a bot that knows it, and that is equally true of a
+compiled module's packet. The difference between the routes here is narrower than it looks: C# gets a
+TYPED packet, checked by the compiler on both ends when the client is built from the same source.
 
 **It scales further.** For a game with hundreds of rules, thousands of records, and work on every tick,
 native code in-process is the one that does not have to be thought about.
@@ -110,12 +117,12 @@ twice is it colliding with itself. See
 ## Moving from one to the other
 
 **Script to C#** is the easy direction and does not need rewriting. Everything a script declares has a
-one-to-one C# counterpart — `game.Records(...)` is `builder.AddFamily(...)`, `game.Action(...)` is
+one-to-one C# counterpart — a model's `Describe` is `builder.AddFamily(...)`, `game.Action(...)` is
 `builder.AddAction(...)` — and the records on disk do not move. Read Survey both ways side by side; the
 shapes line up line for line.
 
-**C# to script** is harder only where you used something the script route has not got: a typed packet,
-or arbitrary .NET in a handler. Everything else transfers.
+**C# to script** is harder only where you used arbitrary .NET in a handler. A typed packet becomes a
+model and a `game.Message` line; everything else transfers.
 
 **The records never move either way.** They are authored content, written by the editor, owned by the
 world rather than by either module.

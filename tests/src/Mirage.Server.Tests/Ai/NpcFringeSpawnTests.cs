@@ -197,7 +197,7 @@ public class NpcFringeSpawnTests
     // BOTH answers wrong: it refuses every map in such a chain but the one holding the ramp, and it accepts
     // a stranded deck on a map that happens to have a ramp somewhere else on it.
 
-    /// <summary>Links Map (1) to its east neighbour (2), both ways, so the seam is real.</summary>
+    /// <summary>Links Map (1) to its east neighbor (2), both ways, so the seam is real.</summary>
     static void LinkEast(GameWorld world, int west, int east)
     {
         world.Maps[west].Right = east;

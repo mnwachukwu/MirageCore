@@ -136,7 +136,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial string StateLabel { get; private set; } = ShellStrings.Get(ShellStrings.State_Stopped);
 
-    // Colour is on top of the label, never instead of it — the word is what works for a colourblind
+    // Color is on top of the label, never instead of it — the word is what works for a colourblind
     // reader and in a screenshot.
     private static readonly IImmutableSolidColorBrush RunningBrush = new ImmutableSolidColorBrush(Color.FromRgb(0x4A, 0xDE, 0x80));
     private static readonly IImmutableSolidColorBrush StoppingBrush = new ImmutableSolidColorBrush(Color.FromRgb(0xFB, 0xBF, 0x24));
@@ -146,7 +146,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     public partial IImmutableSolidColorBrush StateBrush { get; private set; } = StoppedBrush;
 
     // The pill's ground: the same hue at low alpha, so the badge reads as one object rather than as a
-    // coloured word sitting on a coloured chip.
+    // colored word sitting on a colored chip.
     private static readonly IImmutableSolidColorBrush RunningFill = new ImmutableSolidColorBrush(Color.FromArgb(0x24, 0x4A, 0xDE, 0x80));
     private static readonly IImmutableSolidColorBrush StoppingFill = new ImmutableSolidColorBrush(Color.FromArgb(0x24, 0xFB, 0xBF, 0x24));
     private static readonly IImmutableSolidColorBrush StoppedFill = new ImmutableSolidColorBrush(Color.FromArgb(0x24, 0xF8, 0x71, 0x71));
@@ -1029,7 +1029,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     // ── Logging ───────────────────────────────────────────────────────────────
     // The other config file. appsettings.json is hand-authored structure; only these five values are
-    // edited here, and each is greyed out rather than guessed at when the file does not expose it.
+    // edited here, and each is grayed out rather than guessed at when the file does not expose it.
 
     public string LoggingHeading => ShellStrings.Get(ShellStrings.Logging_Heading);
     public string LoggingBlurb => ShellStrings.Get(ShellStrings.Logging_Blurb);
@@ -1303,7 +1303,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         ManagementToken = System.Security.Cryptography.RandomNumberGenerator.GetHexString(48, lowercase: true);
 
     /// <summary>Said in the status line rather than a toast: it is the one place on this tab that already
-    /// reports what just happened, and a copy with no acknowledgement reads as a dead button.</summary>
+    /// reports what just happened, and a copy with no acknowledgment reads as a dead button.</summary>
     public void ReportTokenCopied() => ConfigStatus = ShellStrings.Get(ShellStrings.Management_TokenCopied);
 
     [RelayCommand]

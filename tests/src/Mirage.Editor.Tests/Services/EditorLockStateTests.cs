@@ -41,7 +41,7 @@ public class EditorLockStateTests
         var state = With(new EditorLocksPacket.Held(Section, 70, "matt", "theirs"));
 
         Assert.That(state.IsHeldByOther(Section, 70), Is.True,
-            "Same account, different window — two sets of changes, so the row greys out.");
+            "Same account, different window — two sets of changes, so the row grays out.");
         Assert.That(state.IsHeldByMyAccountElsewhere(Section, 70), Is.True,
             "And the tooltip has to say which window, because the account name is the reader's own.");
         Assert.That(state.HolderOf(Section, 70), Is.EqualTo("matt"));

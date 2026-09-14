@@ -17,7 +17,7 @@
     <StackPanel Grid.Row="0" Spacing="8">
       <TextBlock Classes="hint" Text="{Binding Blurb}" TextWrapping="Wrap"/>
       <!-- The warning is the one line here that costs somebody something if it is missed, so it is the
-           one line that is not grey. -->
+           one line that is not gray. -->
       <TextBlock Text="{Binding Warning}" TextWrapping="Wrap" FontSize="12"
                  Foreground="{DynamicResource MirageWarnBrush}"/>
       <TextBlock Classes="hint" Text="{Binding Caveat}" TextWrapping="Wrap"/>

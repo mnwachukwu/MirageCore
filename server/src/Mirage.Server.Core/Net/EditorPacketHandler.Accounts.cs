@@ -108,7 +108,7 @@ public sealed partial class EditorPacketHandler
 
         // Nobody edits their OWN access. A Creator who demotes themselves by mistake locks themselves
         // out of the section that could put it back, and the only repair is a hand-edited JSON file. The
-        // editor greys the picker too, but this is the check that counts.
+        // editor grays the picker too, but this is the check that counts.
         bool self = string.Equals(byLogin, login, StringComparison.OrdinalIgnoreCase);
         if (self)
         {

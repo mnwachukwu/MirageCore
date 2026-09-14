@@ -62,7 +62,7 @@ public class ClearingTheMotdIsSilentTests
             string body = Body(path, signature);
 
             Assert.That(body, Does.Match(@"bool clearing = string\.IsNullOrWhiteSpace"),
-                $"{what} does not recognise an empty message as a clear");
+                $"{what} does not recognize an empty message as a clear");
 
             int guard = body.IndexOf("if (!clearing)", StringComparison.Ordinal);
             int broadcast = body.IndexOf("SendLocalizedChatToAll(ServerStrings.AdminCommand_MotdChanged", StringComparison.Ordinal);

@@ -50,15 +50,27 @@ public sealed class CompassScript
             if (type is not ModelSymbol model || model.Members.Count == 0) continue;
 
             var fields = new List<ScriptModelField>();
+            var functions = new List<ScriptModelFunction>();
+
             foreach (var (_, members) in model.Members)
             {
                 foreach (Symbol member in members)
                 {
-                    if (member is FieldSymbol field) fields.Add(Describe(field));
+                    switch (member)
+                    {
+                        case FieldSymbol field:
+                            fields.Add(Describe(field));
+                            break;
+
+                        case FunctionSymbol function:
+                            functions.Add(new ScriptModelFunction(
+                                function.Name, function.Parameters.Count, function.IsShared));
+                            break;
+                    }
                 }
             }
 
-            if (fields.Count > 0) found.Add(new ScriptModelInfo(model.Name, fields));
+            if (fields.Count > 0) found.Add(new ScriptModelInfo(model.Name, fields, functions));
         }
 
         return found;

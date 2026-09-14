@@ -90,7 +90,7 @@ public class ConnectDialogPinTests
     }
 
     /// <summary>The mirror of the above: dropping the saved server leaves the pin in place. This is the
-    /// behaviour that stranded the user, and it stays — the pin now has its own way out.</summary>
+    /// behavior that stranded the user, and it stays — the pin now has its own way out.</summary>
     [Test]
     public void ForgettingTheServerStillLeavesThePinBehind()
     {

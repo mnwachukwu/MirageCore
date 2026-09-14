@@ -131,7 +131,7 @@ public class GamePanelTests
     /// <summary>
     /// 🔴 The panel a verb opens has to REACH the client, which is the half that is easy to miss.
     ///
-    /// <para>An action is projected into a wire row by hand rather than travelling whole, so a field
+    /// <para>An action is projected into a wire row by hand rather than traveling whole, so a field
     /// added to <see cref="GameAction"/> is not on the wire until the projection is taught about it.
     /// A declaration that never arrives is silent: the menu still lists the verb, the click still sends
     /// the id, and the window simply never appears.</para>

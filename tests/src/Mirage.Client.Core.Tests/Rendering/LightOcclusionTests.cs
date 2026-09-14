@@ -16,7 +16,7 @@ namespace Mirage.Client.Core.Tests.Rendering;
 [TestFixture]
 public class LightOcclusionTests
 {
-    private const int W = WorldCoordHelper.MapTilesX;   // one map's width, so the centre cell starts here
+    private const int W = WorldCoordHelper.MapTilesX;   // one map's width, so the center cell starts here
 
     private static ClientState StateWithWalls(params (int X, int Y)[] walls)
     {
@@ -29,7 +29,7 @@ public class LightOcclusionTests
         return state;
     }
 
-    // World coordinates of a tile in the centre map.
+    // World coordinates of a tile in the center map.
     private static (int X, int Y) At(int x, int y) => (W + x, WorldCoordHelper.MapTilesY + y);
 
     [Test]

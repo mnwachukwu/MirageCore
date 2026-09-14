@@ -329,7 +329,7 @@ public sealed partial class EditorPacketHandler
     private void BroadcastLocks() => _dispatcher.SendToAllEditors(_locks.Snapshot());
 
     /// <summary>Refuses a save for a record another SESSION is holding — including one signed in as the same
-    /// account, which is two sets of unsaved changes and not one. The editor already greys those out, so
+    /// account, which is two sets of unsaved changes and not one. The editor already grays those out, so
     /// reaching here means a stale client or a hand-rolled one; either way the holder's work wins.</summary>
     private bool LockedByAnother(int editorIndex, string section, int num)
     {

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>Mirage.Modules.Foraging</AssemblyName>
+    <RootNamespace>Mirage.Modules.Foraging</RootNamespace>
+  </PropertyGroup>
+
+  <!-- A module references the SHARED assembly and nothing else. Not the server, not the client, not
+       the editor: everything a module says is said through Mirage.Shared.Extensibility. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\shared\src\Mirage.Shared\Mirage.Shared.csproj" />
+  </ItemGroup>
+
+  <!-- The script half of the same game, listed so the IDE shows it beside the C#. Not built: it is
+       read by a server at startup, and copied into a world rather than compiled. -->
+  <ItemGroup>
+    <None Include="..\..\world\scripts\**\*.cm" />
+  </ItemGroup>
+
+</Project>

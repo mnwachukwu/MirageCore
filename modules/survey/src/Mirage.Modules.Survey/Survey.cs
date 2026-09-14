@@ -19,7 +19,7 @@ public static class Survey
     /// is useless if only they can see the numbers behind it.</summary>
     public const string StaminaMax = "staminaMax";
 
-    /// <summary>How many distinct species they have catalogued.</summary>
+    /// <summary>How many distinct species they have cataloged.</summary>
     public const string Specimens = "specimens";
 
     /// <summary>What that count has earned them. A word rather than a number, so the display field that

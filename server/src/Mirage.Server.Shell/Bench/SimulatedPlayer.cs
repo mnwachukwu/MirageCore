@@ -240,11 +240,11 @@ public sealed class SimulatedPlayer : IDisposable
     /// player that skipped this measured several hundred connections whose traffic was being discarded,
     /// and reported a machine that could take any number of them.</para>
     ///
-    /// <para><b>The centre cell and the eight neighbours are different questions.</b> A join asks about
-    /// all nine, but only the centre is answered with <c>needmap</c>: that reply re-syncs the whole
-    /// region, which asks about all nine again. Answering a neighbour with it is an infinite handshake
-    /// that ends with the server aborting the connection. Neighbours get <c>needneighbormap</c>, which
-    /// names its cell, and a neighbour already in cache gets no reply at all.</para></summary>
+    /// <para><b>The center cell and the eight neighbors are different questions.</b> A join asks about
+    /// all nine, but only the center is answered with <c>needmap</c>: that reply re-syncs the whole
+    /// region, which asks about all nine again. Answering a neighbor with it is an infinite handshake
+    /// that ends with the server aborting the connection. Neighbors get <c>needneighbormap</c>, which
+    /// names its cell, and a neighbor already in cache gets no reply at all.</para></summary>
     private void AnswerMapCheck(JsonElement root)
     {
         int mapNum = root.TryGetProperty("mapNum", out var m) ? m.GetInt32() : 0;

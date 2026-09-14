@@ -47,7 +47,7 @@ public static class TileAttrRules
         DoorY = UsesDoor(t.Type) ? t.DoorY : (ushort)0,
         DoorLayer = UsesDoor(t.Type) ? t.DoorLayer : default,
         RampGroundSide = UsesRamp(t.Type) ? t.RampGroundSide : default,
-        // Reset to stopping everything, so a tile that is not a wall carries no permission a wall would honour.
+        // Reset to stopping everything, so a tile that is not a wall carries no permission a wall would honor.
         BlocksLight = !UsesBlocked(t.Type) || t.BlocksLight,
         BlocksSight = !UsesBlocked(t.Type) || t.BlocksSight,
     };

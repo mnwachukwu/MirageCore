@@ -9,7 +9,7 @@ namespace Mirage.Client.Core.Tests.Rendering;
 ///
 /// <para>The mask holds one texel per tile and is sampled with linear filtering, so a wall's edge arrives as
 /// a ramp across a tile instead of the 32px stair a per-tile draw leaves behind. That only works if a texel's
-/// CENTRE sits on its tile's centre — half a texel out and every shadow is offset by half a tile, which
+/// CENTER sits on its tile's center — half a texel out and every shadow is offset by half a tile, which
 /// looks like the light is lying about where the wall is.</para>
 ///
 /// <para>The other half of it is that the mask is anchored to the tile the occlusion was TRACED from, not to
@@ -45,7 +45,7 @@ public class LightMaskUvTests
                             tileX + Tile / 2f - radiusPx, tileY + Tile / 2f - radiusPx,
                             radiusPx * 2f, radiusPx * 2f, tileX, tileY, r);
 
-        // Texel r's centre — the middle of a 7-wide mask — is at (r + 0.5) / 7.
+        // Texel r's center — the middle of a 7-wide mask — is at (r + 0.5) / 7.
         Assert.That(u, Is.EqualTo((r + 0.5f) / side).Within(1e-5f));
         Assert.That(v, Is.EqualTo((r + 0.5f) / side).Within(1e-5f));
     }

@@ -20,12 +20,14 @@ files as they are being typed — so a type error, an unassigned local, a switch
 member, or an optional read without proving it holds something are all reported where you wrote them.
 Breakpoints, stepping, a call stack, and a variables pane work too.
 
-⚠ **One thing does not work yet, and it is on this repository's side.** The engine's own types —
-`Builder`, `Player`, `Records`, `Verb`, `Panel` — are handed to the compiler by the SERVER while the
-world loads, so a standalone `cm check` has never heard of them and reports *"There is no type named
-'Builder'"* on every declaring line. Everything else resolves, cross-file references included. Until the
-engine exports its catalog for the tooling to read, **trust the editor about your code and ignore it
-about the engine's**; the server's own log is what tells you whether a declaration landed.
+**The engine's own types resolve too.** `Builder`, `Player`, `Records`, `Verb`, and `Panel` are
+handed to the compiler by the SERVER while a world loads, so a checker outside the server would never
+have heard of them. The server writes them down instead: `world/.mirage/engine.cm` declares each one
+as an abstract model, and `world/world.cmp` ties that folder to your scripts so opening any of them
+brings the whole thing in. Both files are generated — do not edit either.
+
+What each member does is written above it as a documentation comment, so hovering a call in the
+editor answers what it does and what each parameter is called without leaving the file.
 
 🔴 **A handler is matched by NAME AND ARITY.** A function whose signature drifts by one parameter is
 not a broken handler — it is a function nobody calls. It compiles, it loads, and the rule it served
@@ -140,7 +142,7 @@ game.Meter("stamina", "staminaMax", "Stamina", 120, 190, 90);
 ```
 
 Four row shapes — `Heading`, `Field`, `Badge`, `Meter` — each reading a key live off the player. The
-three numbers are red, green, and blue; all three nought leaves the color to the client.
+three numbers are red, green, and blue; all three zero leaves the color to the client.
 
 ### Records of your own
 
@@ -156,19 +158,20 @@ model Species
     public string name;
     public Habitat habitat;
     public string notes;
+
+    public shared function Describe(Records these)
+        these.Are("Species", "Species", 200);
+
+        these.Caption("name", "Common name");
+        these.Length("name", 40);
+        these.Length("notes", 240);
+    end function
 end model
 ```
 
-```
-Records sp = game.Records("Species", "Species", "Species", 200);
-
-sp.Caption("name", "Common name");
-sp.Length("name", 40);
-sp.Length("notes", 240);
-```
-
 That is one editor section, one folder on disk, load and save, row locking, hot reload, world transfer,
-and the world check — for a kind of record the engine has never heard of.
+and the world check — for a kind of record the engine has never heard of. Nothing in `Configure`
+mentions it; the engine calls `Describe` on every model that has one, before your rules run.
 
 | In the model | On the form |
 |---|---|
@@ -185,8 +188,12 @@ typed as another model declares its own link. Neither is named twice, so neither
 ⚠ **A schema model's fields must be `public`.** The engine reads them and your script does not, and a
 private field nothing names is one Compass will tell you to delete.
 
-⚠ **The model is named as TEXT**, because Compass has no type values. A typo is a refusal at load, not
-an error at compile — the message lists the models that do exist.
+⚠ **`Describe` has to be `shared`.** It describes a KIND of record rather than one record, so there is
+no particular `Species` to hand it. An instance function of that name compiles, loads, and is never
+called; the engine refuses it by name so that does not read as a broken editor.
+
+⚠ **A field is named as TEXT**, because Compass has no type values. A typo in `Caption` or `Length` is
+a refusal at load, not an error at compile — the message lists the fields that do exist.
 
 ⚠ **`Stored` is only for records that already exist.** Left unsaid, the folder is the model's name
 lowercased and the files are that without a trailing "s" — right for `sites/site1.json`, wrong for
@@ -219,7 +226,7 @@ compare.NeedsAtLeast("specimens", 1);
 | `OnHud()` | a button on the HUD, about the player rather than about the ground |
 | `Key("Q")` | a key that reaches it without the menu |
 | `Opens(panel)` | it opens one of your panels instead of calling `OnAction` |
-| `NeedsAtLeast(key, n)` | greyed below that, and lit the moment they have it |
+| `NeedsAtLeast(key, n)` | grayed below that, and lit the moment they have it |
 
 Bindable keys are **B, E, J, K, N, P, Q, R, T, U, Y, and Z**. Anything the engine reserves, or a key
 another declaration already took, is refused by name rather than quietly overriding.
@@ -326,11 +333,48 @@ could open a file could read the accounts beside it.
 There is no way to name a type the engine did not register. Everything reachable is on
 [the reference page](scripting-api.md).
 
-**A packet of your own is the one thing this route cannot do.** A typed message needs a client compiled
-against it, which is the compiled route by definition. Verbs, panels, and attributes cover what a stock
-client can be told about, and that is most of a game.
+## 8. A message of your own
 
-## 8. Changing it
+A verb is the only thing a STOCK client originates for a game, and it carries an action id and a square
+and nothing else. When you want a client to send you values, declare a message — from a model, the same
+way records are declared:
+
+```
+model Note
+    public integer species;
+    public string comment;
+    public boolean sure;
+end model
+```
+
+```
+game.Message("Note");
+```
+
+```
+public function OnMessage(Player who, string message, Values values)
+    if message != "Note"
+        yield;
+    end if
+
+    integer species = values.Number("species");
+    string comment = values.Text("comment");
+end function
+```
+
+A line arriving as `{"cmd":"Note","species":3,"comment":"by the shore","sure":true}` reaches that
+handler with those three fields. **Nothing is compiled** — the registry takes a parse delegate, so the
+model is what says which field is a number and which is text.
+
+⚠ **A stock client cannot compose one.** This is for a client, a tool, or a bot that knows the message.
+A compiled module's packet has exactly the same audience; what C# adds is that the packet is TYPED, so
+a client built from the same source is checked against it.
+
+🔴 **A field the model did not name is dropped rather than carried.** A sender cannot reach past what
+the rules said they may send, and a field the line left out is absent rather than zero —
+`values.Has(name)` is what tells the two apart.
+
+## 9. Changing it
 
 Edit the file, restart the server. There is no build step and no redeploy. The world folder is the
 game — copy it, hand it to somebody, and they have your game.

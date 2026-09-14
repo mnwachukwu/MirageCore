@@ -26,7 +26,7 @@ public class WorldObserverTests
         public void Configure(ICoreBuilder builder) => configure(builder);
     }
 
-    /// <summary>An engine with no game loaded tells nobody anything, which is the correct behaviour
+    /// <summary>An engine with no game loaded tells nobody anything, which is the correct behavior
     /// rather than a gap — the same answer it gives for equipment slots and tick work.</summary>
     [Test]
     public void CoreAlone_ObservesNothingAndSaysNothingAboutDying()

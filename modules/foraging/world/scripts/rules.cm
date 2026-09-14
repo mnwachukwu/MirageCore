@@ -1,0 +1,86 @@
+# Foraging — the smallest complete game on this engine, written in Compass.
+#
+# You walk around picking things. Each pick adds a basket, the count sits on your sidebar, and Q picks
+# without opening a menu. The world also gets a kind of record it did not have: berries, with a name,
+# a ripeness, and a note about where they grow, which an author fills in through the map editor.
+#
+# One file, on purpose. Survey is the same engine used properly — several files, several folders, a
+# panel, two policies. This is the one you read first.
+#
+# The same game exists in C# at ../../src/Mirage.Modules.Foraging, and one test holds both to the
+# same assertions. To run this one: copy the scripts folder into a world and restart the server.
+
+enumeration Ripeness
+    Green, Ripe, Overripe
+end enumeration
+
+# The model IS the declaration: you write what a record holds once, and the engine reads it. A field
+# typed as an enumeration becomes a drop-down with nothing else declared.
+#
+# The fields are public because the ENGINE reads them and this script does not. The compiler asks you
+# to delete a private field nothing names.
+model Berry
+    public string name;
+    public Ripeness ripeness;
+    public string where;
+
+    # One line for an editor section, a folder on disk, loading and saving, row locking, hot reload,
+    # world transfer, and the world check.
+    #
+    # ⚠ It has to be `shared`. This describes a KIND of record rather than one berry, so there is no
+    # particular Berry to hand it.
+    public shared function Describe(Records these)
+        these.Are("Berries", "Berry", 50);
+
+        these.Caption("where", "Found where");
+        these.Length("name", 40);
+    end function
+end model
+
+shared model Rules
+
+    # These names reach a save file and a socket, so they are written once here.
+    public string Baskets = "forage.baskets";
+    public string Pick = "forage.pick";
+
+    # Runs once, before the world exists. Everything it says is about what the game is, never about a
+    # player: there are none yet.
+    #
+    # The berries are not here: Berry describes itself, above.
+    public function Configure(Builder game)
+        game.Attribute(Rules.Baskets, "owner");
+
+        game.Heading("Foraging");
+        game.Field(Rules.Baskets, "Baskets", 200, 200, 160);
+
+        Verb pick = game.Action(Rules.Pick, "Pick here", "Foraging");
+        pick.Key("Q");
+    end function
+
+    # Somebody who has been here before keeps what they had, because their values were saved with
+    # their character. The guard is the whole of it.
+    public function OnPlayerJoined(Player who)
+        if who.Has(Rules.Baskets)
+            yield;
+        end if
+
+        who.SetNumber(Rules.Baskets, 0);
+        who.Message("You have a basket and an afternoon.");
+    end function
+
+    # Picking the menu item, or pressing Q, arrives here with the square it was used on.
+    #
+    # ⚠ Count the parameters. A handler is matched by name AND arity, so one that is a parameter off
+    # still compiles and still loads, and the engine never calls it.
+    public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+        if action != Rules.Pick
+            yield;
+        end if
+
+        integer picked = who.Number(Rules.Baskets) + 1;
+
+        who.SetNumber(Rules.Baskets, picked);
+        who.Message("You pick what is here. That is " + picked + " so far.");
+    end function
+
+end model

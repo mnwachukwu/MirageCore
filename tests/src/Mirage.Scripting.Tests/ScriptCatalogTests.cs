@@ -29,16 +29,17 @@ public class ScriptCatalogTests
 
         player
             .Value("Name", ScriptType.Text, (who, _) => ((Person)who!).Name)
-            .Action("Message", [ScriptType.Text], (who, args) =>
+            .Action("Message", [ScriptType.Text.Named("line")], (who, args) =>
             {
                 ((Person)who!).Heard.Add(args.AsText(0));
                 return null;
             });
 
         world
-            .Function("PlayerNamed", player.AsType.OrNothing(), [ScriptType.Text],
+            .Function("PlayerNamed", player.AsType.OrNothing(), [ScriptType.Text.Named("name")],
                 (_, args) => found is not null && found.Name == args.AsText(0) ? found : null)
-            .Function("Doubled", ScriptType.Integer, [ScriptType.Integer], (_, args) => args.AsInteger(0) * 2);
+            .Function("Doubled", ScriptType.Integer, [ScriptType.Integer.Named("value")],
+                (_, args) => args.AsInteger(0) * 2);
     });
 
     private static ScriptOutcome Call(

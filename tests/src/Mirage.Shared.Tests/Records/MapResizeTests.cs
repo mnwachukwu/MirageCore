@@ -175,7 +175,7 @@ public class MapResizeTests
 
     // ── The link rule ─────────────────────────────────────────────────────────
     // A neighbourhood measures in one size, so a linked map cannot be resized on its own. Both directions
-    // of a link count: naming a neighbour and being named by one are the same join seen from either end.
+    // of a link count: naming a neighbor and being named by one are the same join seen from either end.
 
     [Test]
     public void AMapWithNoLinks_IsFreeToResize()

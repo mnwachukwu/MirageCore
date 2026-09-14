@@ -198,7 +198,7 @@
     <Setter Property="Foreground" Value="{DynamicResource MirageAccentBrush}"/>
   </Style>
 
-  <!-- Icons only. The row's side padding goes, and what is left is centred — a rail narrowed around a
+  <!-- Icons only. The row's side padding goes, and what is left is centered — a rail narrowed around a
        left-aligned icon reads as a column that failed to load rather than as a deliberate shape. The
        selected row keeps BOTH its accent bar and its accent icon here, because with the labels gone the
        fill alone is the only other thing saying which section you are in. -->
@@ -211,7 +211,7 @@
   </Style>
 
   <!-- ── Status pill ───────────────────────────────────────────────────────── -->
-  <!-- State as a shape, not just coloured text: it survives a screenshot and a colourblind reader,
+  <!-- State as a shape, not just colored text: it survives a screenshot and a colourblind reader,
        where a hue on its own does not. -->
 
   <Style Selector="Border.pill">
@@ -222,7 +222,7 @@
   </Style>
 
   <!-- Good and bad as classes, so a view can state its condition (Classes.ok="{Binding IsOnline}") and
-       never name a colour. The dot and the word are reached by descent rather than carrying a brush each,
+       never name a color. The dot and the word are reached by descent rather than carrying a brush each,
        which is what keeps a pill to one binding at the call site. -->
 
   <Style Selector="Border.pill.ok">
@@ -248,7 +248,7 @@
   </Style>
 
   <!-- ── Buttons that mean something ───────────────────────────────────────── -->
-  <!-- Colour here encodes the KIND of action, never its scope — "Save" and "Save All" are the same verb
+  <!-- Color here encodes the KIND of action, never its scope — "Save" and "Save All" are the same verb
        and wear the same treatment, because the scope is already in the label. Two classes is the whole
        vocabulary; a third hue would only add a distinction nobody can name.
 
@@ -259,7 +259,7 @@
   <Style Selector="Button.primary /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="Background" Value="{DynamicResource MirageAccentBrush}"/>
     <Setter Property="BorderBrush" Value="{DynamicResource MirageAccentBrush}"/>
-    <!-- The accent is a LIGHT colour, so its text has to be dark. -->
+    <!-- The accent is a LIGHT color, so its text has to be dark. -->
     <Setter Property="Foreground" Value="{DynamicResource TextOnAccentFillColorPrimaryBrush}"/>
   </Style>
   <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
@@ -344,7 +344,7 @@
        onto the control, and since it is a plain hit-testable Popup it takes the click aimed at the
        control underneath. Anchoring keeps the popup outside the control's own bounds whichever side it
        ends up on, and the offset goes to zero because Top would otherwise push it back down over the
-       control. One of the few global rules here: the stock behaviour is wrong for anything clickable. -->
+       control. One of the few global rules here: the stock behavior is wrong for anything clickable. -->
   <Style Selector=":is(Control)">
     <Setter Property="ToolTip.Placement" Value="Top"/>
     <Setter Property="ToolTip.VerticalOffset" Value="0"/>

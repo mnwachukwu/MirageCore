@@ -10,7 +10,7 @@ namespace Mirage.Client.Core.Tests.Net;
 /// 🔴 Only a BLOCKING map load charges the arrival beat. A seamless crossing must not.
 ///
 /// <para>The two meet in one place. A crossing asks the server for a region re-sync, and that carries the
-/// new centre map's NPC snapshot — the very packet that ends a blocking load. Charging the beat there
+/// new center map's NPC snapshot — the very packet that ends a blocking load. Charging the beat there
 /// stalls the player at every seam.</para>
 ///
 /// <para><b>How long the stall is decides whether anyone sees it</b>, which is why this is worth a test
@@ -33,7 +33,7 @@ public class SeamCrossingOwesNoBeatTests
         return (state, new ClientPacketHandler(state, null!, null!));
     }
 
-    /// <summary>The centre map's snapshot, which both paths end on.</summary>
+    /// <summary>The center map's snapshot, which both paths end on.</summary>
     private static string CentreSnapshot(int mapNum) =>
         PacketSerializer.Serialize(new MapNpcsPacket { MapNum = mapNum });
 
@@ -64,7 +64,7 @@ public class SeamCrossingOwesNoBeatTests
         });
     }
 
-    /// <summary>A NEIGHBOUR's snapshot is a pre-load and settles nothing — it must not end the load or
+    /// <summary>A NEIGHBOR's snapshot is a pre-load and settles nothing — it must not end the load or
     /// charge anything, however many of them arrive.</summary>
     [Test]
     public void ANeighbourSnapshotChargesNothingAndEndsNothing()
@@ -72,12 +72,12 @@ public class SeamCrossingOwesNoBeatTests
         var (state, handler) = Playing();
         state.GettingMap = true;
 
-        handler.Handle(CentreSnapshot(9));   // not the centre map
+        handler.Handle(CentreSnapshot(9));   // not the center map
 
         Assert.Multiple(() =>
         {
             Assert.That(state.ArrivedAtMs, Is.Zero);
-            Assert.That(state.GettingMap, Is.True, "still waiting on the centre");
+            Assert.That(state.GettingMap, Is.True, "still waiting on the center");
         });
     }
 }

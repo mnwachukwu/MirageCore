@@ -130,9 +130,9 @@ public class CameraTests
     // ── Arriving somewhere new ───────────────────────────────────────────────
 
     /// <summary>
-    /// A neighbour that EXISTS but has not finished loading still lets the camera scroll toward it.
+    /// A neighbor that EXISTS but has not finished loading still lets the camera scroll toward it.
     ///
-    /// <para>This is what stops a warp from lurching. The eight neighbour numbers land together the moment
+    /// <para>This is what stops a warp from lurching. The eight neighbor numbers land together the moment
     /// the server describes the new surroundings, while each map's data resolves separately over however
     /// many frames the cache or the wire takes. If the reach were computed from what had finished loading,
     /// it would widen one arrival at a time and snap the view with each — most visibly where the destination

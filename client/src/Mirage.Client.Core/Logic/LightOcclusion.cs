@@ -27,7 +27,7 @@ public static class LightOcclusion
     /// where the graphic's edge is.
     ///
     /// <para>At <see cref="Constants.PicX"/> that is a four-pixel texel. A linear sampler ramps between texel
-    /// CENTRES, so a shadow's boundary is four pixels wide: enough to read as an edge rather than a stair,
+    /// CENTERS, so a shadow's boundary is four pixels wide: enough to read as an edge rather than a stair,
     /// narrow enough to sit on the silhouette it came from.</para>
     /// </summary>
     public const int SubSamples = TileOpacity.SubCells;
@@ -52,7 +52,7 @@ public static class LightOcclusion
     /// put.</para>
     ///
     /// <para>Texel <c>i</c> of the mask covers the whole of tile <c>i - r</c>, so mapping the mask's rectangle
-    /// onto 0..1 puts each texel's CENTRE on its tile's centre — which is what makes a linear sample between
+    /// onto 0..1 puts each texel's CENTER on its tile's center — which is what makes a linear sample between
     /// two texels a ramp across the boundary between their tiles.</para>
     /// </summary>
     public static (float ScaleX, float ScaleY, float OffsetX, float OffsetY) MaskUv(
@@ -97,12 +97,12 @@ public static class LightOcclusion
 
     /// <summary>
     /// Whether light from the tile at <paramref name="lightWX"/>,<paramref name="lightWY"/> reaches the
-    /// CENTRE of the tile at <paramref name="tileWX"/>,<paramref name="tileWY"/> — the tile-level read of the
+    /// CENTER of the tile at <paramref name="tileWX"/>,<paramref name="tileWY"/> — the tile-level read of the
     /// same per-texel trace <see cref="Fill"/> runs, and the value <see cref="Fill"/> writes at that tile's
     /// middle texel.
     ///
     /// <para>A tile is now lit in PARTS, so this answers for one point in it rather than for the whole
-    /// square: a tile half in a mountain's shadow reaches at its centre and not at its edge.</para>
+    /// square: a tile half in a mountain's shadow reaches at its center and not at its edge.</para>
     /// </summary>
     public static bool Reaches(ClientState state, int lightWX, int lightWY, WorldLayer layer,
                                int tileWX, int tileWY, bool mounted = true)
@@ -133,8 +133,8 @@ public static class LightOcclusion
     /// row-major over <see cref="MaskTexels"/> — texel <c>(tx, ty)</c> sits in the tile at offset
     /// <c>(tx / SubSamples - r, ty / SubSamples - r)</c> from the light's own.
     ///
-    /// <para>Every texel is traced separately, from the light's own centre, against the coverage the tiles
-    /// around it coloured in. A texel standing on art is dark, and so is any texel whose line to the light
+    /// <para>Every texel is traced separately, from the light's own center, against the coverage the tiles
+    /// around it colored in. A texel standing on art is dark, and so is any texel whose line to the light
     /// crosses art — which is what puts a shadow's edge on the silhouette rather than on the tile border.</para>
     ///
     /// <para>Open ground costs nothing: with no shadow anywhere in the light's square there is nothing to
@@ -197,7 +197,7 @@ public static class LightOcclusion
             }
         }
 
-        // The light stands at the centre tile; its ray starts at that tile's middle texel.
+        // The light stands at the center tile; its ray starts at that tile's middle texel.
         int lightTX = r * SubSamples + SubSamples / 2;
         int lightTY = r * SubSamples + SubSamples / 2;
 
@@ -239,8 +239,8 @@ public static class LightOcclusion
     /// the edge, above it is lit, below it is dark.
     ///
     /// <para>🔴 This is what makes a sharp shadow possible at all. A mask of 0s and 1s sampled with LINEAR
-    /// filtering ramps from lit to dark across the space between two texel CENTRES — four world pixels wide
-    /// and centred on the boundary, so half of it falls on the art itself and every silhouette wears a
+    /// filtering ramps from lit to dark across the space between two texel CENTERS — four world pixels wide
+    /// and centered on the boundary, so half of it falls on the art itself and every silhouette wears a
     /// hairline of light. Interpolating a DISTANCE is different: the blend of two distances is still very
     /// nearly the distance, so the shader can threshold it and land the edge on the boundary to a fraction
     /// of a texel. The same trick reads crisp glyphs out of a small font atlas.</para>
@@ -259,7 +259,7 @@ public static class LightOcclusion
     /// Turns the traced lit/dark bits into the signed distance field the shader reads.
     ///
     /// <para>Distances are measured to the nearest texel of the OTHER kind and then pulled in by half a
-    /// texel, which puts zero on the boundary BETWEEN two texel centres — where the art's edge actually is,
+    /// texel, which puts zero on the boundary BETWEEN two texel centers — where the art's edge actually is,
     /// and where the old binary mask's halfway point already sat. The edge does not move; it only stops
     /// being smeared across four pixels.</para>
     /// </summary>

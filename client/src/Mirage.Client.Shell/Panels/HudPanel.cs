@@ -239,7 +239,7 @@ public sealed class HudPanel
         if (_invBtn.IsClicked(input)) return HudAction.ToggleInventory;
         if (_socialBtn.IsClicked(input)) return HudAction.ToggleSocial;
 
-        // A button whose condition has stopped holding goes grey rather than away: a button that
+        // A button whose condition has stopped holding goes gray rather than away: a button that
         // vanishes takes every button below it up a row, and the player's aim with it.
         var mine = state.AttributesOf(EntityHandle.ForPlayer(state.MyIndex));
         foreach (var (button, _, _, when) in _gameBtns) button.Enabled = when.Holds(mine);

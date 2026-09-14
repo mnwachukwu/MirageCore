@@ -10,7 +10,7 @@ namespace Mirage.Shared.Tests.Ui;
 /// itself: a renamed key, a duplicate key, a reference to a resource nobody defines.
 ///
 /// <para>Avalonia resolves those at RUNTIME. A <c>{StaticResource}</c> naming a key that does not exist
-/// throws only when the control is realised, and a duplicate key silently picks one — neither is a build
+/// throws only when the control is realized, and a duplicate key silently picks one — neither is a build
 /// error, and both reach a screenshot before they reach a compiler. These read the dictionaries as XML,
 /// which needs no Avalonia app, no display and no UI thread.</para>
 /// </summary>
@@ -63,9 +63,9 @@ public class ThemeResourceTests
     }
 
     /// <summary>Every <c>SolidColorBrush</c> resolves to a key declared as a <c>Color</c>. Pointing one at
-    /// a missing key, or at a resource that is not a colour, throws only when the control is realised.
+    /// a missing key, or at a resource that is not a color, throws only when the control is realized.
     ///
-    /// <para>Not every Color has a brush, and that is intended: a handful are consumed as colours —
+    /// <para>Not every Color has a brush, and that is intended: a handful are consumed as colors —
     /// gradient stops, and the FluentAvalonia overrides that are typed <c>Color</c> by the control set.</para></summary>
     [Test]
     public void EveryBrushWrapsADeclaredColor()
@@ -93,7 +93,7 @@ public class ThemeResourceTests
         });
     }
 
-    /// <summary>Colours are written <c>#AARRGGBB</c> throughout. A six-digit value is still valid XAML and
+    /// <summary>Colors are written <c>#AARRGGBB</c> throughout. A six-digit value is still valid XAML and
     /// still opaque, so the inconsistency is invisible until someone edits the alpha of the odd one out.</summary>
     [Test]
     public void EveryColorIsFullyQualifiedHex()

@@ -230,7 +230,7 @@ public sealed partial class GameplayScreen : IGameScreen
     /// until it lands.
     ///
     /// <para><b>Nothing in Core calls this.</b> It is the client half of an effect a game asks for:
-    /// <paramref name="style"/> and <paramref name="rgb"/> say what flies and what colour it is, and the
+    /// <paramref name="style"/> and <paramref name="rgb"/> say what flies and what color it is, and the
     /// engine handles the rest — footprint centring, a target that moves or is not observable, and the
     /// timing.</para>
     ///
@@ -243,8 +243,8 @@ public sealed partial class GameplayScreen : IGameScreen
     {
         if (!TryEntityScreen(fromMap, fromX, fromY, fromXOff, fromYOff, out float csx, out float csy)) return;
 
-        // Centre on each body's FOOTPRINT (size*Pic/2) so an oversize NPC throws from, and is hit at, its
-        // centre of mass rather than its top-left anchor tile.
+        // Center on each body's FOOTPRINT (size*Pic/2) so an oversize NPC throws from, and is hit at, its
+        // center of mass rather than its top-left anchor tile.
         int size = fromSize < 1 ? 1 : fromSize;
         float sx = csx + _camera.CameraX + size * Constants.PicX / 2f;
         float sy = csy + _camera.CameraY + size * Constants.PicY / 2f;

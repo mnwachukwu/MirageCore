@@ -15,7 +15,7 @@ namespace Mirage.Server.Tests.GameLogic;
 /// What a game can actually do.
 ///
 /// <para><b>Every one of these was already implemented and unreachable.</b> The engine enforced a downed
-/// body, coloured a marked name, drew an engaged border and kept a disconnected body in the world — and
+/// body, colored a marked name, drew an engaged border and kept a disconnected body in the world — and
 /// a module holding only <c>ICoreBuilder</c> could enter none of those states. These pin the way in, and
 /// they pin it through <see cref="IWorld"/> rather than through the systems behind it, because that
 /// interface is the promise a game is written against.</para>

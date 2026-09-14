@@ -19,7 +19,7 @@ public readonly record struct PanelButton(
 /// <para><b>What it is not is a layout language.</b> Rows stack, buttons sit under them, and the engine
 /// decides the rest. A game wanting columns, a grid, an image or a list of its own is asking for a UI
 /// toolkit on the wire, which is a different and much larger thing than this. What is here covers the
-/// shape most game screens actually are: a titled window of labelled values, with verbs under it.</para>
+/// shape most game screens actually are: a titled window of labeled values, with verbs under it.</para>
 /// </summary>
 public sealed record GamePanel
 {

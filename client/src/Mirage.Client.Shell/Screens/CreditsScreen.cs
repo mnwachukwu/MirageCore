@@ -16,9 +16,9 @@ public sealed class CreditsScreen : IGameScreen
 
     /// <summary>The studio name, as a link to the site.
     ///
-    /// <para>Stock <see cref="Link"/> styling — bracketed, grey, brightening on hover — because that is
+    /// <para>Stock <see cref="Link"/> styling — bracketed, gray, brightening on hover — because that is
     /// what a link looks like everywhere else in this client ([Mail], [Options], [Help]). Drawn bare and
-    /// in the same colour as the copyright line beside it, it reads as more of the sentence.</para>
+    /// in the same color as the copyright line beside it, it reads as more of the sentence.</para>
     ///
     /// <para>Its box is measured and positioned in <see cref="Draw"/>: it sits immediately after the
     /// copyright prefix, so its left edge depends on the rendered width of text in whatever font and

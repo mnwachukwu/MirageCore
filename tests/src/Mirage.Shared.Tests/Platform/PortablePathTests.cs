@@ -45,7 +45,7 @@ public class PortablePathTests
     }
 
     /// <summary>A backslash is a legal character in a POSIX filename, so this is genuinely ambiguous — the
-    /// reading that serves a travelling settings file is chosen, and pinned so it is not changed by accident.</summary>
+    /// reading that serves a traveling settings file is chosen, and pinned so it is not changed by accident.</summary>
     [Test]
     public void ABackslashIsAlwaysASeparator_EvenWhereItCouldBeAName()
     {

@@ -34,7 +34,7 @@ reach past what the engine offers is refused before it runs — see [docs/script
 **A C# module, by building from source.** Fork the repository, write an assembly against
 `Mirage.Shared.Extensibility`, and list it in `GameModules.Load()`. The compiler checks every declaration
 and the debugger steps through your rules. This works today, and
-[`modules/survey/`](modules/README.md) is a complete worked example — a small game about cataloguing
+[`modules/survey/`](modules/README.md) is a complete worked example — a small game about cataloging
 plants, shipped loaded, using every seam the engine offers.
 
 Both produce the same thing: a registry the engine reads once at startup. Neither edits a file in Core.
@@ -75,7 +75,7 @@ of the tree is not source: `tests/` holds the suites in `src/` and their drivers
 the packaging drivers, `modules/` holds the games built on the engine, and `assets/`, `docs/`, `tools/`,
 and `.github/checks/` hold what is neither.
 
-The root `Mirage.slnx` ties all 27 projects together, and the split is lopsided on purpose: **eleven of the twenty-seven are the engine and the game on it. The other sixteen exist to test and publish those eleven.**
+The root `Mirage.slnx` ties all 28 projects together, and the split is lopsided on purpose: **eleven of the twenty-seven are the engine and the game on it. The other sixteen exist to test and publish those eleven.**
 
 | | Count | What |
 |---|---|---|

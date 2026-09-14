@@ -57,8 +57,8 @@ public sealed partial class GameplayScreen
             if (!GameKeyMap.TryResolve(action.Key, out var actionKey)) continue;
             if (!input.IsKeyPressed(actionKey)) continue;
 
-            // A shortcut obeys the verb's condition, or it would be the way around a greyed-out menu
-            // entry. Silently: there is nothing to grey out on a keyboard.
+            // A shortcut obeys the verb's condition, or it would be the way around a grayed-out menu
+            // entry. Silently: there is nothing to gray out on a keyboard.
             if (!action.When.Holds(
                 _ctx.State.AttributesOf(EntityHandle.ForPlayer(_ctx.State.MyIndex)))) return;
 
@@ -91,7 +91,7 @@ public sealed partial class GameplayScreen
     /// <summary>The square in front of the player, as the server names it.
     ///
     /// <para>Resolved in world space rather than on the center map, so facing across a seam names the
-    /// neighbour's tile instead of one past the edge of your own.</para></summary>
+    /// neighbor's tile instead of one past the edge of your own.</para></summary>
     private bool TryFacedSquare(out int mapNum, out int tileX, out int tileY)
     {
         mapNum = tileX = tileY = 0;

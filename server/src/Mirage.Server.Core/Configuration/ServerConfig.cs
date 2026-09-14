@@ -219,7 +219,7 @@ public sealed record SpawnConfig
 /// </summary>
 public sealed record QueueConfig
 {
-    /// <summary>How many may wait. <b>0 turns queueing off</b> and restores the old behaviour, a refusal
+    /// <summary>How many may wait. <b>0 turns queueing off</b> and restores the old behavior, a refusal
     /// at the door. Capped rather than open because queued sockets cost memory and file handles, and an
     /// unbounded line is a denial of service with extra steps.</summary>
     public int MaxDepth

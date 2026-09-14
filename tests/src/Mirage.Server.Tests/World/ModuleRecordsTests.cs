@@ -77,7 +77,7 @@ public class ModuleRecordsTests
         Assert.Multiple(() =>
         {
             Assert.That(store.Get("Species", 2)!["name"].AsText(), Is.EqualTo("Vulpine"));
-            Assert.That(store.Get("Species", 1)!.IsEmpty, Is.True, "and leaves its neighbours alone");
+            Assert.That(store.Get("Species", 1)!.IsEmpty, Is.True, "and leaves its neighbors alone");
         });
     }
 

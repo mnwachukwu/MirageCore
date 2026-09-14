@@ -1,7 +1,7 @@
 namespace Mirage.Server.Core.Configuration;
 
 /// <summary>Which knobs the file actually exposed. A path that does not resolve is reported rather than
-/// guessed at, so a restructured appsettings.json greys a control out instead of being overwritten.</summary>
+/// guessed at, so a restructured appsettings.json grays a control out instead of being overwritten.</summary>
 [Flags]
 public enum LogKnobs
 {

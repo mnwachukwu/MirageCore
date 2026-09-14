@@ -46,7 +46,7 @@ public interface ICoreBuilder
     AttributeSchema.Builder Attributes { get; }
 
     /// <summary>Packet commands this module can read. Registering one makes a line naming it
-    /// deserialize; <see cref="AddPacketRoute"/> is what then delivers it somewhere.</summary>
+    /// deserialize; <see cref="AddPacketRoute"/> then delivers it.</summary>
     PacketRegistry.Builder Packets { get; }
 
     /// <summary>Record families this module adds, and the choice sets their fields draw from.</summary>
@@ -56,17 +56,15 @@ public interface ICoreBuilder
     void AddChoiceSet(ChoiceSet choices);
 
     /// <summary>A place on a character where something can be worn. Declare none and nothing in this
-    /// game is equippable, which is a perfectly ordinary thing for a game to be.</summary>
+    /// game is equippable, which is a supported configuration.</summary>
     void AddEquipSlot(EquipSlot slot);
 
     /// <summary>A value to show the player, read off a body's attributes wherever the named surface is
-    /// drawn. Declare none and every surface stays as Core draws it, which is a game that tells the
-    /// player nothing it invented.</summary>
+    /// drawn. Declare none and every surface stays as Core draws it.</summary>
     void AddDisplayField(DisplayField field);
 
     /// <summary>A row over a body's head, reading two of that body's attributes. Declare none and
-    /// nothing is drawn over anyone, which is what a game with nothing to show at a glance wants.
-    /// At most <see cref="OverheadBarSet.Max"/>.</summary>
+    /// nothing is drawn over anyone. At most <see cref="OverheadBarSet.Max"/>.</summary>
     void AddOverheadBar(OverheadBar bar);
 
     /// <summary>A screen this game paints: a title, the display surface that fills it, the verbs under
@@ -75,22 +73,22 @@ public interface ICoreBuilder
     void AddPanel(GamePanel panel);
 
     /// <summary>Something the player may do that this game invented. A stock client offers it by
-    /// caption and sends its id back; <see cref="AddActionHandler"/> is what then does the thing. It may
-    /// carry a key from <see cref="GameKey.Offered"/>, which reaches it without opening a menu.</summary>
+    /// caption and sends its id back; <see cref="AddActionHandler"/> then handles it. It may carry a
+    /// key from <see cref="GameKey.Offered"/>, which reaches it without opening a menu.</summary>
     void AddAction(GameAction action);
 
     /// <inheritdoc cref="AddAction"/>
     void AddActionHandler(IActionHandler handler);
 
     /// <summary>Where this module's own packets go. Declare none and a command registered above
-    /// deserializes and is delivered to nobody.</summary>
+    /// deserializes and then reaches nothing.</summary>
     void AddPacketRoute(IPacketRoute route);
 
     /// <summary>Work this module wants done on the tick.</summary>
     void AddTickWork(ITickWork work);
 
     /// <summary>Something to be told what happened in the world. Declare none and the engine runs
-    /// exactly as it does now, telling nobody anything.</summary>
+    /// exactly as it does now and tells nothing.</summary>
     void AddObserver(IWorldObserver observer);
 
     /// <summary>What this game says about dying — whether it happens, what it costs, where the body

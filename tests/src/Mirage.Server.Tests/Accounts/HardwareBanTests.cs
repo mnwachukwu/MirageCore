@@ -161,7 +161,7 @@ public class HardwareBanTests
     // ── The enforcement mode ──────────────────────────────────────────────────
 
     /// <summary>A stock server REFUSES a machine-ban match. Pinned in three places at once because the
-    /// default is the whole behaviour of the feature and it can be changed by accident from any of them:
+    /// default is the whole behavior of the feature and it can be changed by accident from any of them:
     /// reordering the enum, editing the record, or shipping a config without the node.</summary>
     [Test]
     public void BlockIsTheDefault_HoweverAServerArrivesAtIt()

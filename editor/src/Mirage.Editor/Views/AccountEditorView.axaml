@@ -93,7 +93,7 @@
             <Grid ColumnDefinitions="120,220,Auto" RowDefinitions="Auto,Auto">
               <TextBlock Grid.Row="0" Grid.Column="0" x:Name="_accessLabel" VerticalAlignment="Center"/>
               <!-- Disabled on your OWN account: the server refuses a self-change, and a live-looking
-                   control that silently does nothing is worse than one plainly greyed out. -->
+                   control that silently does nothing is worse than one plainly grayed out. -->
               <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding AccessLevels}"
                         SelectedItem="{Binding Access}" HorizontalAlignment="Stretch"
                         IsEnabled="{Binding CanEditAccess}"/>

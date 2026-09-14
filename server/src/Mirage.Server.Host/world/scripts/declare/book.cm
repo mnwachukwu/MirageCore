@@ -21,7 +21,7 @@ shared model Book
 
         book.Heading("Field record");
         book.Field(Surveyor.Rank, "Rank", 200, 200, 160);
-        book.Field(Surveyor.Specimens, "Specimens catalogued", 200, 200, 160);
+        book.Field(Surveyor.Specimens, "Specimens cataloged", 200, 200, 160);
         book.Meter(Surveyor.Stamina, Surveyor.StaminaMax, "Stamina", 120, 190, 90);
 
         # What a surveyor does to a square in front of them. Q reaches it without the menu.
@@ -40,8 +40,8 @@ shared model Book
         name.OnNpc();
 
         # The same shape aimed at a person, and the one verb here with a CONDITION: comparing notes
-        # needs notes. A surveyor who has written nothing down sees the entry greyed rather than
-        # missing, so they can tell the verb exists and that they are not ready for it.
+        # needs notes. A surveyor who has written nothing down sees the entry grayed rather than
+        # missing, so they can see the verb exists and that they are not ready for it.
         Verb compare = game.Action(Book.Compare, "Compare notes", "Survey");
         compare.OnPlayer();
         compare.NeedsAtLeast(Surveyor.Specimens, 1);

@@ -7,13 +7,13 @@ namespace Mirage.Client.Core.Tests.Rendering;
 /// The mask is a signed distance field, and this is why.
 ///
 /// <para>A mask of 0s and 1s sampled with LINEAR filtering ramps from lit to dark across the gap between two
-/// texel CENTRES — four world pixels, centred on the boundary, so half of it lands on the art itself and
+/// texel CENTERS — four world pixels, centered on the boundary, so half of it lands on the art itself and
 /// every silhouette wears a hairline of light. Shifting the mask cannot fix that: the artifact is a spread
 /// around the boundary, not an offset from it, and a texel is the smallest thing you can shift by.</para>
 ///
 /// <para>Interpolating a DISTANCE is different. The blend of two distances is still very nearly the distance,
 /// so the shader thresholds it and lands the edge on the boundary to a fraction of a texel. What has to hold
-/// for that to work is checked here: the encoding is centred on the edge, the field crosses it exactly at the
+/// for that to work is checked here: the encoding is centered on the edge, the field crosses it exactly at the
 /// boundary between a lit texel and a dark one, and the halfway sample of that pair reads as the edge.</para>
 /// </summary>
 [TestFixture]
@@ -52,7 +52,7 @@ public class LightDistanceFieldTests
 
     /// <summary>
     /// 🔴 The whole point. Across a straight edge, the two texels either side sit the SAME distance from it,
-    /// so the linear blend the sampler takes halfway between their centres — which is where the art's edge
+    /// so the linear blend the sampler takes halfway between their centers — which is where the art's edge
     /// is — comes out exactly on the threshold.
     /// </summary>
     [Test]

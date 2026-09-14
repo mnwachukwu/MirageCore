@@ -158,7 +158,7 @@ public sealed partial class GameplayScreen : IGameScreen
     /// per mask, a standing lamp uploads once and a street of them uploads nothing.</para>
     ///
     /// <para>One byte a texel, not four: the mask is a single bit and a radius-3 light is 56x56 of them, so a
-    /// colour format spends three quarters of the upload on nothing.</para>
+    /// color format spends three quarters of the upload on nothing.</para>
     ///
     /// <para>🔴 <see cref="SurfaceFormat.Alpha8"/> lands in a DIFFERENT CHANNEL per backend, so the format
     /// and the shader have to be changed together. On DesktopGL — which is every platform this ships on —

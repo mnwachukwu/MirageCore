@@ -25,7 +25,7 @@ public class NonDefaultMapSizeTests
     private const int Center = 1, Right = 2, Down = 3;
     private const int Idx = 1;
 
-    /// <summary>Three linked maps at 24x20: the center, its right neighbour, and the one below.</summary>
+    /// <summary>Three linked maps at 24x20: the center, its right neighbor, and the one below.</summary>
     private static GameWorld WideWorld()
     {
         var world = new GameWorld();
@@ -80,7 +80,7 @@ public class NonDefaultMapSizeTests
         });
     }
 
-    /// <summary>The center map's (0,0) sits one whole map in on each axis, so neighbours fit on every side.
+    /// <summary>The center map's (0,0) sits one whole map in on each axis, so neighbors fit on every side.
     /// At 24x20 that is (24,20) — the number a default-sized stride would get wrong on both axes.</summary>
     [Test]
     public void TheCenterMapsOriginIsOneMapInOnEachAxis()
@@ -91,12 +91,12 @@ public class NonDefaultMapSizeTests
         {
             Assert.That(grid.CenterToWorld(0, 0), Is.EqualTo((W, H)));
             Assert.That(grid.ToWorld(1, 1, 0, 0), Is.EqualTo((W, H)), "the center cell and CenterToWorld agree");
-            Assert.That(grid.ToWorld(2, 1, 0, 0), Is.EqualTo((2 * W, H)), "the right neighbour starts one map over");
+            Assert.That(grid.ToWorld(2, 1, 0, 0), Is.EqualTo((2 * W, H)), "the right neighbor starts one map over");
             Assert.That(grid.ToWorld(1, 2, 0, 0), Is.EqualTo((W, 2 * H)), "the map below starts one map down");
         });
     }
 
-    /// <summary>The tile just past the center map's right edge is the right neighbour's column 0 — the seam
+    /// <summary>The tile just past the center map's right edge is the right neighbor's column 0 — the seam
     /// the whole scrolling world turns on.</summary>
     [Test]
     public void AWorldCoordinateResolvesAcrossTheSeamAtTheRightSize()
@@ -106,7 +106,7 @@ public class NonDefaultMapSizeTests
         Assert.Multiple(() =>
         {
             Assert.That(grid.ResolveWorldTile(W + W - 1, H), Is.EqualTo((Center, W - 1, 0)), "the center's last column");
-            Assert.That(grid.ResolveWorldTile(W + W, H), Is.EqualTo((Right, 0, 0)), "one further is the neighbour's first");
+            Assert.That(grid.ResolveWorldTile(W + W, H), Is.EqualTo((Right, 0, 0)), "one further is the neighbor's first");
             Assert.That(grid.ResolveWorldTile(W, H + H), Is.EqualTo((Down, 0, 0)), "and downward likewise");
         });
     }
@@ -189,7 +189,7 @@ public class NonDefaultMapSizeTests
 
         move.PlayerMove(Idx, Direction.Right, MovementType.Walking);
 
-        Assert.That((p.Map, p.X, p.Y), Is.EqualTo((Right, 0, 5)), "crossed onto the neighbour's first column");
+        Assert.That((p.Map, p.X, p.Y), Is.EqualTo((Right, 0, 5)), "crossed onto the neighbor's first column");
     }
 
     [Test]
@@ -202,7 +202,7 @@ public class NonDefaultMapSizeTests
         Assert.That((p.Map, p.X, p.Y), Is.EqualTo((Down, 5, 0)));
     }
 
-    /// <summary>Coming back the other way lands on the neighbour's own last column — which is what makes a
+    /// <summary>Coming back the other way lands on the neighbor's own last column — which is what makes a
     /// seam crossing reversible at any size.</summary>
     [Test]
     public void CrossingBackLandsOnTheOtherMapsOwnLastColumn()

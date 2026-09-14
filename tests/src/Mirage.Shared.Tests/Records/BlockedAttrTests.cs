@@ -110,7 +110,7 @@ public class BlockedAttrTests
     }
 
     /// <summary>Repainting a wall as something else takes its permissions with it: a tile that is not a
-    /// wall must not carry a "lets light through" it would honour the moment it became one.</summary>
+    /// wall must not carry a "lets light through" it would honor the moment it became one.</summary>
     [Test]
     public void RepaintingAWall_ResetsWhatItStops()
     {

@@ -45,7 +45,7 @@ public sealed partial class GameplayScreen : IGameScreen
     {
         long release = ClaimRelease(target);
         bool onScreen = TryEntityScreen(mapNum, lx, ly, xoff, yoff, out float sx, out float sy);
-        int tsize = TargetFootprintSize(target);   // centre the text/splatter on an oversize body, not its anchor tile
+        int tsize = TargetFootprintSize(target);   // center the text/splatter on an oversize body, not its anchor tile
         if (release > 0 && onScreen)
         {
             float cx = sx + tsize * Constants.PicX / 2f;

@@ -22,10 +22,10 @@ public sealed class SurveyObserver : IWorldObserver
     public string Name => "Survey rules";
 
     /// <summary>Handed the world and the authored species once the engine is built.</summary>
-    public void Begin(IWorld world, string[] catalogue)
+    public void Begin(IWorld world, string[] catalog)
     {
         _world = world;
-        _catalogue = catalogue;
+        _catalogue = catalog;
     }
 
     /// <summary>A surveyor arrives. One that has never been here before is enrolled; one coming back

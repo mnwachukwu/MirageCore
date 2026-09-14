@@ -28,11 +28,11 @@ public enum ActionSurface : byte
 ///
 /// <para><b>This is a declaration, not code.</b> A stock client draws the label where the surface says,
 /// and invoking it sends the action's id back with whatever the player was pointing at. The game's rule
-/// runs on the server, where every other rule runs. Nothing about the behaviour crosses the wire, so
+/// runs on the server, where every other rule runs. Nothing about the behavior crosses the wire, so
 /// nothing has to be deployed beside the client.</para>
 ///
 /// <para><b>That is the whole trade, and it is what makes it possible at all.</b> A seam that let a game
-/// send BEHAVIOUR to a client would be a seam that shipped code to every player, and the client would
+/// send BEHAVIOR to a client would be a seam that shipped code to every player, and the client would
 /// have to run it. What travels here is a name and a caption; what happens is the server's business.</para>
 /// </summary>
 public sealed record GameAction
@@ -57,7 +57,7 @@ public sealed record GameAction
     /// <summary>When it is offered at all, as a question about what the player already carries. The
     /// default asks nothing, so a verb that says nothing about this is always offered.
     ///
-    /// <para>Read by the client to grey the entry out and by the server to refuse the invoke, through
+    /// <para>Read by the client to gray the entry out and by the server to refuse the invoke, through
     /// the same <see cref="ActionCondition.Holds"/>. A shortcut bound to a verb whose condition does not
     /// hold does nothing, for the same reason.</para></summary>
     [JsonPropertyName("when")] public ActionCondition When { get; init; } = ActionCondition.Always;

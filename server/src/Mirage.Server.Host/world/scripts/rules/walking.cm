@@ -40,7 +40,7 @@ shared model Walking
             yield;
         end if
 
-        Surveyor.Catalogued(who, who.Number(Surveyor.Specimens) + 1);
+        Surveyor.Cataloged(who, who.Number(Surveyor.Specimens) + 1);
         who.Message("You spot something worth writing down.");
     end function
 

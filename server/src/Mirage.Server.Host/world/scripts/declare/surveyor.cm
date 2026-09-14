@@ -2,8 +2,8 @@
 
 shared model Surveyor
 
-    # ⚠ Every one of these names reaches a save file and a socket. Renaming one is a data change rather
-    # than a rename, which is why they are written once here and read everywhere else.
+    # ⚠ Every one of these names reaches a save file and a socket. Renaming one is a data change
+    # rather than a rename, so they are written once here and read everywhere else.
     public string Stamina = "stamina";
     public string StaminaMax = "staminaMax";
     public string Specimens = "specimens";
@@ -34,7 +34,7 @@ shared model Surveyor
 
     # A surveyor arrives. One who has never been here is enrolled; one coming back keeps what they had,
     # because their attributes were persisted with their character.
-    public function Enrol(Player who)
+    public function Enroll(Player who)
         if who.Has(Surveyor.StaminaMax)
             yield;
         end if
@@ -47,8 +47,8 @@ shared model Surveyor
         who.Message("The survey is yours to run. Walk, look, and write down what grows here.");
     end function
 
-    # One more thing catalogued, and whatever that has earned.
-    public function Catalogued(Player who, integer found)
+    # One more thing cataloged, and whatever that has earned.
+    public function Cataloged(Player who, integer found)
         who.SetNumber(Surveyor.Specimens, found);
         who.SetText(Surveyor.Rank, Ranks.For(found));
     end function

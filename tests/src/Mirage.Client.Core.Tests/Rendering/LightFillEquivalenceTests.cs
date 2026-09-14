@@ -49,7 +49,7 @@ public class LightFillEquivalenceTests
     private static void AssertMatches(string what, Func<int, int, bool> wall, int r)
     {
         var state = StateWhere(wall);
-        int lx = W + W / 2, ly = H + H / 2;                 // stand in the centre map
+        int lx = W + W / 2, ly = H + H / 2;                 // stand in the center map
         var mask = new byte[LightOcclusion.MaskCells(r)];
         LightOcclusion.Fill(state, lx, ly, WorldLayer.Ground, r, mask, mounted: true);
 
@@ -63,7 +63,7 @@ public class LightFillEquivalenceTests
                 bool filled = LightOcclusion.IsLit(mask[ty * texels + tx]);
                 bool reaches = LightOcclusion.Reaches(state, lx, ly, WorldLayer.Ground, lx + dx, ly + dy);
                 if (filled == reaches) continue;
-                Assert.Fail($"{what} (r={r}): the mask says {filled} at the centre of tile ({dx},{dy}) "
+                Assert.Fail($"{what} (r={r}): the mask says {filled} at the center of tile ({dx},{dy}) "
                           + $"but tracing to it alone says {reaches}");
             }
         }

@@ -14,6 +14,7 @@
     <Project Path="client/src/Mirage.Client.Shell/Mirage.Client.Shell.csproj" />
   </Folder>
   <Folder Name="/Modules/">
+    <Project Path="modules/foraging/src/Mirage.Modules.Foraging/Mirage.Modules.Foraging.csproj" />
     <Project Path="modules/survey/src/Mirage.Modules.Survey/Mirage.Modules.Survey.csproj" />
   </Folder>
   <Folder Name="/Scripting/">

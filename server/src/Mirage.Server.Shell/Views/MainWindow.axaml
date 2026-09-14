@@ -44,7 +44,7 @@
         <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
           <Button Content="{Binding StartLabel}" Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}" MinWidth="88"/>
           <Button Content="{Binding StopLabel}" Command="{Binding StopCommand}" IsEnabled="{Binding CanStop}" MinWidth="88"/>
-          <!-- State as a SHAPE as well as a colour: a pill with a dot survives a screenshot and a
+          <!-- State as a SHAPE as well as a color: a pill with a dot survives a screenshot and a
                colourblind reader, where a hue on its own does not. -->
           <Border Classes="pill" Background="{Binding StateFillBrush}" BorderBrush="{Binding StateBrush}"
                   Margin="6,0,0,0">
@@ -766,7 +766,7 @@
 
           <!-- ── Logging ────────────────────────────────────────────────────
                The only part of appsettings.json this window touches. Everything else in that file is
-               structure, and a control that cannot find its value greys out rather than overwriting
+               structure, and a control that cannot find its value grays out rather than overwriting
                something it did not understand. -->
           <StackPanel Classes="section">
             <TextBlock Classes="heading" Text="{Binding LoggingHeading}"/>

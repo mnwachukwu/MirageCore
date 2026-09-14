@@ -192,7 +192,7 @@ public sealed class GameWorld
     /// <para>Size 1 rather than a footprint — an item occupies its own tile and nothing more.</para>
     ///
     /// <para>Note this is a strictly WIDER gate than standing on the item, which is the point: the reason
-    /// loot was scattered across neighbouring tiles in other engines is that a player could stand on the
+    /// loot was scattered across neighboring tiles in other engines is that a player could stand on the
     /// pile and deny it. Reaching from r=5 removes the problem at its source instead.</para></summary>
     public bool IsMapItemInReach(int index, PlayerRecord pc, int mapNum, MapItemRecord mi)
     {
@@ -340,7 +340,7 @@ public sealed class GameWorld
             var here = map.Tile[x, y];
             foreach (var (dx, dy, dir) in _adjacent)
             {
-                // Off an edge is not off the world: step onto the neighbour's opposite edge. A map only ever
+                // Off an edge is not off the world: step onto the neighbor's opposite edge. A map only ever
                 // links to maps its own size, so the crossing keeps its index.
                 int nx = x + dx, ny = y + dy, nm = m;
                 if (nx < 0) { nm = map.Left; nx = map.Width - 1; }

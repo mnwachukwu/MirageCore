@@ -21,7 +21,7 @@ namespace Mirage.Server.Tests.Accounts;
 /// <para>Dirtying an item claims it, every editor is told, and a save from anyone but the holder is refused
 /// with a notice rather than accepted quietly. Giving it back opens it again.</para>
 ///
-/// <para>The refusal is the part that matters most. Greying the panel in the other editor is an affordance
+/// <para>The refusal is the part that matters most. Graying the panel in the other editor is an affordance
 /// and lives in the client, which this engine ships the source of — so a stale build, a hand-rolled client
 /// or a race between the claim and the keystroke all end here, and here is where the holder's work is
 /// actually protected.</para>

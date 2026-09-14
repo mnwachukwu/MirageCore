@@ -52,7 +52,7 @@ public sealed class EditorLockState
     public string? HolderOf(string section, int num) =>
         _held.TryGetValue((section, num), out var h) ? h.Login : null;
 
-    /// <summary>Another SESSION has it. What greys a row out and refuses an edit — a lock this session took
+    /// <summary>Another SESSION has it. What grays a row out and refuses an edit — a lock this session took
     /// is just its own unsaved work, and must never lock it out of it.</summary>
     public bool IsHeldByOther(string section, int num) =>
         _held.TryGetValue((section, num), out var h)

@@ -82,7 +82,7 @@ public sealed class MovementSystem : GameSystem
         bool moved = false;
         WorldLayer newLayer;    // the logical layer the in-map step lands on (committed to p.Layer)
 
-        // The map's own edges. Every step is either inside them or a crossing, and a neighbour's opposite
+        // The map's own edges. Every step is either inside them or a crossing, and a neighbor's opposite
         // edge is read off THAT map — the link rule keeps the two equal, and reading each map's own is what
         // keeps a hand-edited world from indexing past a tile array.
         var here = _world.Maps[p.Map];

@@ -40,15 +40,15 @@ public sealed class Camera
     /// side's row/column names any map at all; it clamps only when the whole row/column is empty.
     ///
     /// <para><b>Map NUMBERS, not loaded map records, and that distinction is the whole point.</b> The
-    /// numbers for all eight neighbours arrive together in one batch the moment the server describes the
+    /// numbers for all eight neighbors arrive together in one batch the moment the server describes the
     /// new surroundings; each map's DATA then resolves separately, from disk cache or over the wire, over
     /// however many frames that takes. Clamping on what has finished loading makes the camera's reach grow
     /// one arrival at a time, so a warp into a town wide enough to scroll snaps the view repeatedly as its
-    /// neighbours land — worst where the destination's clamping differs from the origin's, which is exactly
+    /// neighbors land — worst where the destination's clamping differs from the origin's, which is exactly
     /// a single-room interior opening onto open ground. Clamping on what EXISTS settles the bounds once.</para>
     ///
     /// <para>A cell that is named but not yet loaded renders black, which is the same thing that already
-    /// happens for a diagonal-only neighbour — an accepted, momentary state rather than a new one.</para>
+    /// happens for a diagonal-only neighbor — an accepted, momentary state rather than a new one.</para>
     /// </summary>
     public void Update(int playerLocalX, int playerLocalY, float xOffset, float yOffset, int[,] neighborMapNums,
                        int mapTilesX, int mapTilesY)

@@ -22,7 +22,7 @@ public readonly record struct MapResizeCost(int AuthoredTiles, int Lights, int N
 /// </summary>
 public static class MapResize
 {
-    /// <summary>Every map joined to <paramref name="mapNum"/> — the ones it names as neighbours, and the
+    /// <summary>Every map joined to <paramref name="mapNum"/> — the ones it names as neighbors, and the
     /// ones naming it. Ascending, each listed once.
     ///
     /// <para>A linked map cannot be resized. World coordinates run continuously across a seam, so every map

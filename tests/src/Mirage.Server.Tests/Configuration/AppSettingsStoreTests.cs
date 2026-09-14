@@ -162,7 +162,7 @@ public class AppSettingsStoreTests
     [Test]
     public void AMissingKnob_IsReportedNotInvented()
     {
-        // A restructured file must grey the control out. Defaulting the value would mean offering to
+        // A restructured file must gray the control out. Defaulting the value would mean offering to
         // overwrite a file the store did not understand, which is the one unrecoverable outcome here.
         string path = Write("no-sinks.json", """
             { "Serilog": { "MinimumLevel": { "Default": "Debug", "Override": { } } } }

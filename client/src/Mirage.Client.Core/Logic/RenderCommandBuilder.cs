@@ -414,8 +414,8 @@ public static class RenderCommandBuilder
 
         var (isx, isy) = camera.WorldTileToScreen(wx, wy, 0, 0);
         var into = CachedReach(state, wx, wy, layer, r, mounted: true);
-        float travelled = MathF.Max(MathF.Abs(xOffset), MathF.Abs(yOffset)) / Constants.PicX;
-        return new LightReach(r, from, fsx, fsy, into, isx, isy, Math.Clamp(1f - travelled, 0f, 1f));
+        float traveled = MathF.Max(MathF.Abs(xOffset), MathF.Abs(yOffset)) / Constants.PicX;
+        return new LightReach(r, from, fsx, fsy, into, isx, isy, Math.Clamp(1f - traveled, 0f, 1f));
     }
 
     /// <summary>
@@ -1035,7 +1035,7 @@ public static class RenderCommandBuilder
 
         long nowUtcForGrace = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         bool showAsPk = p.IsPk(nowUtcForGrace) && p.PkGraceUntilUtc <= nowUtcForGrace;
-        // Observer mode reads as a bystander: grey overhead, whatever the access colour would have been.
+        // Observer mode reads as a bystander: gray overhead, whatever the access color would have been.
         // Only the world name — chat and the HUD keep PlayerNameColor so an admin stays identifiable there.
         int nameColor = p.GodMode ? GameColor.Gray : PlayerNameColor.For(showAsPk, p.Access);
         // Aggressor flash: when the player has thrown the first hit at a clean target inside

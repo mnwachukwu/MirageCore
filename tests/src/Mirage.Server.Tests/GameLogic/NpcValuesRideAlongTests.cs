@@ -28,8 +28,8 @@ public class NpcValuesRideAlongTests
                                              "GameLogic", "JoinLeaveSystem.cs"));
     }
 
-    /// <summary>Three places push a map's NPCs: the region sync's centre map, each of its eight
-    /// neighbours, and the refresh an editor save broadcasts. A body's values go out at all three or a
+    /// <summary>Three places push a map's NPCs: the region sync's center map, each of its eight
+    /// neighbors, and the refresh an editor save broadcasts. A body's values go out at all three or a
     /// player arrives to bars that are blank on one map and filled on the next.</summary>
     [Test]
     public void EverySiteThatPushesAMapsNpcs_PushesWhatTheyCarry()

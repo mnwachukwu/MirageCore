@@ -122,7 +122,7 @@ public partial class MainWindow : FAAppWindow
     private async void AutoSaveConfigure_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not MainWindowViewModel vm) return;
-        // The menu item is already disabled while connected; this is the second line of defence, since a
+        // The menu item is already disabled while connected; this is the second line of defense, since a
         // dialog that cannot be acted on is worse than no dialog at all.
         if (vm.IsOnline) return;
         var dlgVm = new AutoSaveDialogViewModel(vm.IsOnline);

@@ -90,7 +90,7 @@ public class CorpsesAreWalkedOverTests
         var (s, t, sender) = Setup();
         s.Map.Down = 2;
         s.NeighborMapNums[1, 2] = 2;
-        // The map RECORD too, not just its number: an unloaded neighbour is allowed through on purpose
+        // The map RECORD too, not just its number: an unloaded neighbor is allowed through on purpose
         // (the server corrects it), which would let this pass without deciding anything.
         s.NeighborMaps[1, 2] = new MapRecord { Down = 0, Up = 1 };
         s.Me.Y = s.Map.Height - 1;

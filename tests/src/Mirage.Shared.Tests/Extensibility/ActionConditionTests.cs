@@ -6,7 +6,7 @@ namespace Mirage.Shared.Tests.Extensibility;
 /// <summary>
 /// When a declared verb is offered, asked of an attribute bag.
 ///
-/// <para>🔴 <b>This is the one implementation, and that is the point.</b> The client greys the entry out
+/// <para>🔴 <b>This is the one implementation, and that is the point.</b> The client grays the entry out
 /// and the server refuses the invoke; both call this. Two readings of one predicate would be a verb the
 /// menu offers and the server rejects, or worse, the other way round.</para>
 /// </summary>
@@ -36,7 +36,7 @@ public class ActionConditionTests
         Assert.Multiple(() =>
         {
             Assert.That(when.Holds(Carrying("harvest.satchel", 0)), Is.True,
-                "carrying nought of a thing is still carrying it — the key is what was asked about");
+                "carrying zero of a thing is still carrying it — the key is what was asked about");
             Assert.That(when.Holds(new AttributeBag()), Is.False);
             Assert.That(when.Holds(null), Is.False);
         });
@@ -45,13 +45,13 @@ public class ActionConditionTests
     [Test]
     public void Absent_IsWhatAVerbThatGrantsSomethingWants()
     {
-        var when = ActionCondition.NotCarrying("harvest.licence");
+        var when = ActionCondition.NotCarrying("harvest.license");
 
         Assert.Multiple(() =>
         {
             Assert.That(when.Holds(new AttributeBag()), Is.True, "offered until they have one");
             Assert.That(when.Holds(null), Is.True, "and to a body with no attributes at all");
-            Assert.That(when.Holds(Carrying("harvest.licence", 1)), Is.False, "and gone afterwards");
+            Assert.That(when.Holds(Carrying("harvest.license", 1)), Is.False, "and gone afterwards");
         });
     }
 

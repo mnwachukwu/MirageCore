@@ -34,7 +34,7 @@ public enum ConditionTest : byte
 /// clicking. Whether the thing they clicked is a valid target is a question about a verb Core has no
 /// name for, and belongs to the game's handler.</para>
 ///
-/// <para>🔴 <b>Both sides ask the same question with the same code.</b> The client greys the entry out
+/// <para>🔴 <b>Both sides ask the same question with the same code.</b> The client grays the entry out
 /// and the server refuses the invoke, and they agree because <see cref="Holds"/> is the only
 /// implementation. A predicate the client enforced alone would be a rule any modified client could
 /// ignore; one the server enforced alone would be a menu item that fails when it is picked.</para>

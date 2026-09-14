@@ -110,7 +110,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
     private void Undo()
     {
         // Tested before the pop, so a refusal leaves the history where it was. A RelayCommand runs whether
-        // or not CanExecute agrees, so the greyed button and the hotkey's own check are both affordances.
+        // or not CanExecute agrees, so the grayed button and the hotkey's own check are both affordances.
         if (IsSelectedLocked || !_undoStack.TryPop(out var batch) || SelectedMap is null) return;
         var map = SelectedMap.Record;
         for (int i = batch.Count - 1; i >= 0; i--)

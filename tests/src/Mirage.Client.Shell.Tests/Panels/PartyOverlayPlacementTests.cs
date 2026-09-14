@@ -10,7 +10,7 @@ namespace Mirage.Client.Shell.Tests.Panels;
 ///
 /// <para>Layout is the one thing a green build says nothing about. A rectangle placed off-screen, over the
 /// world, or on top of the buttons compiles perfectly and is only found by looking at it, so these pin the
-/// four things that make that space usable — the panel is inside the sidebar, centred across it, clear of
+/// four things that make that space usable — the panel is inside the sidebar, centered across it, clear of
 /// the button block above and clear of the link strip below.</para>
 ///
 /// <para>Everything is read off the real panels rather than restated here, so the checks follow the layout
@@ -112,7 +112,7 @@ public class PartyOverlayPlacementTests
         }
     }
 
-    /// <summary>The free space is a rule, not one measurement: a panel of any width centres in it and hangs
+    /// <summary>The free space is a rule, not one measurement: a panel of any width centers in it and hangs
     /// from the same line.</summary>
     [Test]
     public void AnyWidthCentresAndHangsFromTheSameLine()
@@ -122,7 +122,7 @@ public class PartyOverlayPlacementTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(narrow.X + 50, Is.EqualTo(wide.X + 100).Within(1), "they do not share a centre line");
+            Assert.That(narrow.X + 50, Is.EqualTo(wide.X + 100).Within(1), "they do not share a center line");
             Assert.That(narrow.Y, Is.EqualTo(wide.Y), "the top of the free space depends on width");
         });
     }

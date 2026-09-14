@@ -154,7 +154,7 @@ public sealed record MapItemsPacket : IPacket
         // MILLISECONDS FROM RECEIPT rather than as a server timestamp — TickCount64 is meaningless on
         // another machine's clock, and the client only needs to know when to stop calling it somebody's.
         //
-        // Sent so the tile menu can group a pile into "your loot" and grey out what belongs to
+        // Sent so the tile menu can group a pile into "your loot" and gray out what belongs to
         // somebody else. It is not authoritative for anything: the server re-checks the claim on every
         // pick-up, so a client that ignores this gains nothing but a refusal.
         [property: JsonPropertyName("tag"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] int TaggedTo = 0,

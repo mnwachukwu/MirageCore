@@ -11,7 +11,7 @@ namespace Mirage.Shared.Extensibility;
 /// <para>So a game chooses from this list and nothing else. A key outside it is refused when it is
 /// declared, with the list in the message, rather than accepted and quietly ignored by the client.</para>
 ///
-/// <para><b>Letters only, deliberately.</b> The digits neighbour the action bar, and a verb one key
+/// <para><b>Letters only, deliberately.</b> The digits neighbor the action bar, and a verb one key
 /// along from a row of item slots is a verb the player will press by accident.</para>
 /// </summary>
 public static class GameKey

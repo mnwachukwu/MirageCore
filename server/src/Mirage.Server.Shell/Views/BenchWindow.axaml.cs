@@ -8,7 +8,7 @@ namespace Mirage.Server.Shell.Views;
 /// The load benchmark's window.
 ///
 /// <para>A plain <see cref="Window"/>, not the app window the shell itself uses: this is a dialog, and a
-/// dialog wants the system's own frame and close behaviour.</para>
+/// dialog wants the system's own frame and close behavior.</para>
 /// </summary>
 public sealed partial class BenchWindow : Window
 {

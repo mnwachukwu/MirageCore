@@ -527,7 +527,7 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
 
     /// <summary>Every state a quest can be put into, including NotStarted — which takes it out of the log.</summary>
 
-    /// <summary>The item to hand over. Null until one is picked, which is what keeps Give greyed out.</summary>
+    /// <summary>The item to hand over. Null until one is picked, which is what keeps Give grayed out.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanGiveItem))]
     private NamedEntry? _giveItem;
@@ -579,7 +579,7 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
         if (!string.Equals(_name, row.Name, StringComparison.Ordinal))
         {
             _name = row.Name;
-            RenameTo = row.Name;            // the box tracks the accepted name, so Rename greys out again
+            RenameTo = row.Name;            // the box tracks the accepted name, so Rename grays out again
             OnPropertyChanged(nameof(Name));
             OnPropertyChanged(nameof(CanRename));
         }

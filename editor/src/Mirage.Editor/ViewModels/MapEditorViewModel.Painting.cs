@@ -501,7 +501,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
     }
 
     // Map id behind a neighbor cell. Orthogonal cells read the active map's link directly, so navigation
-    // works even before that neighbor has loaded (online). Diagonal cells mirror the diagonal neighbour ids
+    // works even before that neighbor has loaded (online). Diagonal cells mirror the diagonal neighbor ids
     // getters: follow the vertical-then-horizontal hop, else horizontal-then-vertical.
     private int NeighborTargetId(NeighborCell cell) => cell switch
     {
@@ -516,7 +516,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
         _ => 0,
     };
 
-    // Diagonal target id, matching the diagonal neighbour ids exactly: each hop requires the in-between map to be
+    // Diagonal target id, matching the diagonal neighbor ids exactly: each hop requires the in-between map to be
     // resolved (loaded), so the id is that of the map actually shown in the diagonal cell.
     private int DiagonalTargetId(int firstOrtho, Func<MapRecord, int> firstPick,
                                  int secondOrtho, Func<MapRecord, int> secondPick)

@@ -151,7 +151,7 @@ public class ScriptedSurveyTests
             Assert.That(book.Buttons.Single().ActionId, Is.EqualTo("survey.note"));
 
             Assert.That(rows.Select(r => r.LabelKey),
-                Is.EqualTo(new[] { "Field record", "Rank", "Specimens catalogued", "Stamina" }).AsCollection);
+                Is.EqualTo(new[] { "Field record", "Rank", "Specimens cataloged", "Stamina" }).AsCollection);
             Assert.That(rows.Single(r => r.LabelKey == "Stamina").Style, Is.EqualTo(DisplayStyle.Meter));
 
             var opener = registry.Actions.All.Single(a => a.Id == "survey.openbook");

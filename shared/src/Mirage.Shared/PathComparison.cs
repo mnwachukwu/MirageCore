@@ -9,7 +9,7 @@ namespace Mirage.Shared;
 /// Linux merges worlds that are genuinely different, and comparing case-sensitively on Windows lists one
 /// world twice and fails to forget it when it goes missing.</para>
 ///
-/// <para>This reads the DEFAULT behaviour of each platform's usual filesystem. A case-sensitive volume on
+/// <para>This reads the DEFAULT behavior of each platform's usual filesystem. A case-sensitive volume on
 /// macOS, or a case-insensitive mount on Linux, is not detected — that needs probing the volume itself, a
 /// filesystem round trip per comparison, which buys nothing for the recent-worlds list this serves.</para>
 /// </summary>

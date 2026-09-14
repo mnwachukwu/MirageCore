@@ -97,7 +97,7 @@ public sealed class ScriptCatalog
         new(
             member.Name,
             Resolve(member.Yields, catalog, result: true),
-            [.. member.Takes.Select(t => Resolve(t, catalog, result: false))],
+            [.. member.Takes.Select(p => Resolve(p.Type, catalog, result: false))],
             IsValue: member.IsValue,
             // A type with no instances is reached only through its name; one with instances only through
             // a value. Nothing here wants both, which is a language convenience for Random and not a
@@ -185,8 +185,8 @@ public sealed class ScriptCatalog
     }
 
     internal sealed record DeclaredMember(
-        string Name, ScriptType Yields, IReadOnlyList<ScriptType> Takes, bool IsValue, ScriptCall Run,
-        string Note);
+        string Name, ScriptType Yields, IReadOnlyList<ScriptParameter> Takes, bool IsValue,
+        ScriptCall Run, string Note);
 
     internal sealed record DeclaredType(string Name, bool Shared, List<DeclaredMember> Members);
 }
@@ -237,14 +237,34 @@ public sealed class ScriptTypeBuilder
     /// <summary>This type, for naming in another member's signature.</summary>
     public ScriptType AsType => ScriptType.Of(_type.Name);
 
-    /// <summary>Something a script calls, with parentheses.</summary>
+    /// <summary>
+    /// Something a script calls, with parentheses.
+    ///
+    /// <para>🔴 <b>A parameter is named, not just typed.</b> The name is written into the stub the
+    /// checker reads, so it is what an author sees in the editor while they are typing the call —
+    /// <c>Field(string key, string caption, ...)</c> rather than six positions they have to count.</para>
+    /// </summary>
+    /// <exception cref="ArgumentException">A parameter is named for one of Compass's own reserved
+    /// words, which would not parse in the stub.</exception>
     public ScriptTypeBuilder Function(
-        string name, ScriptType yields, ScriptType[] takes, ScriptCall run, string note = "")
+        string name, ScriptType yields, ScriptParameter[] takes, ScriptCall run, string note = "")
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(yields);
         ArgumentNullException.ThrowIfNull(takes);
         ArgumentNullException.ThrowIfNull(run);
+
+        foreach (ScriptParameter parameter in takes)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(parameter.Name);
+
+            if (ScriptWords.IsReserved(parameter.Name))
+            {
+                throw new ArgumentException(
+                    $"'{name}' names a parameter '{parameter.Name}', which Compass reserves. "
+                    + "The stub written for the checker would not parse.", nameof(takes));
+            }
+        }
 
         _type.Members.Add(new ScriptCatalog.DeclaredMember(
             name, yields, [.. takes], IsValue: false, run, note ?? string.Empty));
@@ -253,7 +273,8 @@ public sealed class ScriptTypeBuilder
     }
 
     /// <summary>A call that yields nothing.</summary>
-    public ScriptTypeBuilder Action(string name, ScriptType[] takes, ScriptCall run, string note = "") =>
+    public ScriptTypeBuilder Action(
+        string name, ScriptParameter[] takes, ScriptCall run, string note = "") =>
         Function(name, ScriptType.Nothing, takes, run, note);
 
     /// <summary>
@@ -338,6 +359,15 @@ public static class ScriptValue
 /// <param name="Members">What it offers, in the order it was declared.</param>
 public sealed record ScriptTypeInfo(string Name, bool Shared, IReadOnlyList<ScriptMemberInfo> Members);
 
+/// <summary>One parameter of a member: what it is called, and what it takes.</summary>
+/// <param name="Name">What it is called. Reaches an author, so it is words rather than a position.</param>
+/// <param name="Type">What it takes.</param>
+public sealed record ScriptParameter(string Name, ScriptType Type)
+{
+    /// <summary>As it is written in a signature.</summary>
+    public override string ToString() => $"{Type} {Name}";
+}
+
 /// <summary>One member of a registered type.</summary>
 /// <param name="Name">What a script writes.</param>
 /// <param name="Yields">What it hands back, or nothing.</param>
@@ -345,9 +375,9 @@ public sealed record ScriptTypeInfo(string Name, bool Shared, IReadOnlyList<Scri
 /// <param name="IsValue">True for one read without parentheses.</param>
 /// <param name="Note">What it does, for the reference. Empty where nobody has said yet.</param>
 public sealed record ScriptMemberInfo(
-    string Name, ScriptType Yields, IReadOnlyList<ScriptType> Takes, bool IsValue, string Note)
+    string Name, ScriptType Yields, IReadOnlyList<ScriptParameter> Takes, bool IsValue, string Note)
 {
-    /// <summary>How a script writes this member: a value has no parentheses, a call names its types.</summary>
+    /// <summary>How a script writes this member: a value has no parentheses, a call names its own.</summary>
     public string Signature =>
         IsValue ? Name : $"{Name}({string.Join(", ", Takes)})";
 }

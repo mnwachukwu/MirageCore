@@ -110,7 +110,7 @@ public sealed record DisplayFieldsPacket : IPacket
 /// S→C, once per session: what this game lets the player do.
 ///
 /// <para><b>A caption and an id, and nothing else.</b> The client offers the label where the surface
-/// says and sends the id back when it is picked. No behaviour crosses the wire, which is what lets a
+/// says and sends the id back when it is picked. No behavior crosses the wire, which is what lets a
 /// stock client offer a verb it has never heard of without anything being deployed beside it.</para>
 ///
 /// <para>A world whose game declares none sends an empty list, and every menu holds only Core's own

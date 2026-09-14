@@ -91,8 +91,8 @@ public class TileOpacityTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(TileOpacity.Covers(pillar, mid - 1, 0), Is.True, "the cell left of centre");
-            Assert.That(TileOpacity.Covers(pillar, mid, 0), Is.True, "the cell right of centre");
+            Assert.That(TileOpacity.Covers(pillar, mid - 1, 0), Is.True, "the cell left of center");
+            Assert.That(TileOpacity.Covers(pillar, mid, 0), Is.True, "the cell right of center");
             Assert.That(TileOpacity.Covers(pillar, 0, 0), Is.False, "the tile's own left edge is open");
             Assert.That(TileOpacity.Covers(pillar, TileOpacity.SubCells - 1, 0), Is.False, "and so is its right");
         });

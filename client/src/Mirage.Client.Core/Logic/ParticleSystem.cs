@@ -74,7 +74,7 @@ public sealed class ParticleSystem
     /// stay pinned to their world spot instead of jumping when the observable area shifts.
     ///
     /// <para><b>The homing target moves with the particle, and must.</b> These coordinates are relative to
-    /// the 3x3 grid's own origin, which a seam cross re-anchors onto a different centre map — so BOTH ends
+    /// the 3x3 grid's own origin, which a seam cross re-anchors onto a different center map — so BOTH ends
     /// of a projectile's flight are expressed in a space that just slid by a whole map, 16 tiles across or
     /// 12 down. Carrying the position without the target leaves a bolt correctly placed and aimed 512 pixels
     /// from its victim, which reads in play as a spell flying off in a random direction.</para></summary>
@@ -389,10 +389,10 @@ public sealed class ParticleSystem
 
     /// <summary>Something that travels from (sx,sy) to (tx,ty) and bursts where it lands.
     ///
-    /// <para><paramref name="style"/> picks what flies and <paramref name="rgb"/> what colour it is, so one
+    /// <para><paramref name="style"/> picks what flies and <paramref name="rgb"/> what color it is, so one
     /// call covers a thrown bolt, a handful of glitter and a parcel changing hands. A start and end close
     /// enough together — a self-cast, a target that is not observable — arrives in place instead of
-    /// travelling, rather than being refused.</para></summary>
+    /// traveling, rather than being refused.</para></summary>
     public void EmitProjectile(ProjectileStyle style, float sx, float sy, float tx, float ty, uint rgb,
                                WorldLayer layer = WorldLayer.Ground)
     {
