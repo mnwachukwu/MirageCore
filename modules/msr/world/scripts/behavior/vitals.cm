@@ -33,6 +33,12 @@ shared model Vitals
         game.Attribute(Vitals.Stamina, "viewport");
         game.Attribute(Vitals.MaxStamina, "viewport");
 
+        # Nobody sees what a pool is owed; it rides along with the character so a reconnect does not
+        # lose a part-paid tick.
+        game.Attribute(Vitals.HealthOwed, "owner");
+        game.Attribute(Vitals.ManaOwed, "owner");
+        game.Attribute(Vitals.StaminaOwed, "owner");
+
         # Three bars over every head, in the colors MSR drew them.
         game.Bar(Vitals.Health, Vitals.MaxHealth, 190, 40, 40);
         game.Bar(Vitals.Mana, Vitals.MaxMana, 60, 90, 200);
@@ -173,23 +179,40 @@ shared model Vitals
     # lost, and retreating is a decision. Mana and stamina do come back mid-fight, at half rate, so a
     # caster can sustain without casting for free.
 
-    public integer InCombatShare = 2;
+    # ── How often the original paid, in hundredths of a second ──────────────────────────
+    #
+    # The original ran five clocks rather than one rate. Each pool was paid a whole amount when its own
+    # clock came round, and which clock applied depended on where you were standing and whether you
+    # were in a fight.
+    #
+    # The tick here is one second, so a pool is paid the share of an interval that a tick is worth and
+    # the fraction left over is carried to the next one. Over any stretch of time the total matches the
+    # original exactly, and no pool is handed an interval's worth all at once.
+    #
+    # Hundredths rather than tenths because 1.25 seconds is not a whole number of tenths, and rounding
+    # the safe-ground clock is rounding the one rate a player notices.
+    #
+    # Being in a fight beats being somewhere protected. Fighting inside a town gets ordinary combat
+    # regen rather than a fast one, which is what stops a safe tile being a place to fight from.
+
+    public integer HealthEvery = 250;
+    public integer HealthSafeEvery = 125;
+    public integer OtherEvery = 250;
+    public integer OtherSafeEvery = 100;
+    public integer InCombatEvery = 500;
+
+    # One tick, in the same hundredths. Change Rules.TickEvery and this follows it.
+    public integer TickHundredths = 100;
+
+    # What a pool is owed but has not been paid yet, in thousandths of a point. Carried because a slow
+    # clock on a small pool would otherwise round away to nothing every tick and never pay at all.
+    public string HealthOwed = "hpowed";
+    public string ManaOwed = "mpowed";
+    public string StaminaOwed = "spowed";
 
     # What snow costs. Health suffers least because being cold is not being hurt.
     public real SnowHealth = 0.9;
     public real SnowOther = 0.8;
-
-    # ── Resting somewhere protected ───────────────────────────────────────────
-    #
-    # The original ticked health every 2.5 seconds and every 1.25 on protected ground, and mana and
-    # stamina every 2.5 and every 1. Here the tick is a fixed second and the AMOUNT carries the
-    # difference, so the same two ratios appear as multipliers.
-    #
-    # ⚠ Being in a fight beats being somewhere protected. Fighting inside a town gets ordinary combat
-    # regen rather than a fast one, which is what stops a safe tile being a place to fight from.
-
-    public real SafeHealth = 2.0;
-    public real SafeOther = 2.5;
 
     public function Rest(Player who)
         integer def = who.Number(Stats.Def);
@@ -204,29 +227,51 @@ shared model Vitals
             legs = 0;
         end if
 
+        # Health does not come back in a fight at all, and the other two come back on the slow clock.
         if who.IsEngaged
-            Vitals.Give(who, Vitals.Mana, Vitals.MaxMana, Stats.ManaRegen(int) / Vitals.InCombatShare);
-            Vitals.Give(who, Vitals.Stamina, Vitals.MaxStamina, legs / Vitals.InCombatShare);
+            Vitals.Owe(who, Vitals.Mana, Vitals.MaxMana, Vitals.ManaOwed,
+                       Stats.ManaRegen(int), Vitals.InCombatEvery);
+            Vitals.Owe(who, Vitals.Stamina, Vitals.MaxStamina, Vitals.StaminaOwed,
+                       legs, Vitals.InCombatEvery);
             yield;
         end if
 
-        real heart = 1.0;
-        real other = 1.0;
+        integer heart = Vitals.HealthEvery;
+        integer other = Vitals.OtherEvery;
 
         if Places.IsProtected(who.Map)
-            heart = Vitals.SafeHealth;
-            other = Vitals.SafeOther;
+            heart = Vitals.HealthSafeEvery;
+            other = Vitals.OtherSafeEvery;
         end if
 
-        Vitals.Give(who, Vitals.Health, Vitals.MaxHealth, Math.Round(Stats.HealthRegen(def) * heart));
-        Vitals.Give(who, Vitals.Mana, Vitals.MaxMana, Math.Round(Stats.ManaRegen(int) * other));
-        Vitals.Give(who, Vitals.Stamina, Vitals.MaxStamina, Math.Round(legs * other));
+        Vitals.Owe(who, Vitals.Health, Vitals.MaxHealth, Vitals.HealthOwed,
+                   Stats.HealthRegen(def), heart);
+        Vitals.Owe(who, Vitals.Mana, Vitals.MaxMana, Vitals.ManaOwed, Stats.ManaRegen(int), other);
+        Vitals.Owe(who, Vitals.Stamina, Vitals.MaxStamina, Vitals.StaminaOwed, legs, other);
     end function
 
-    # One pool, one tick's worth, never past its ceiling.
-    #
-    # ⚠ It writes only when the value CHANGES. Every write ships an attribute to everybody who can see
-    # the body, and a full bar rewritten every tick is that traffic for nothing.
+    # One pool, one tick of its own clock. `amount` is what the original paid when that clock came
+    # round and `every` is how long it took to come round, both as the original wrote them. This pays
+    # the share one tick is worth and keeps the remainder for the next.
+    function Owe(Player who, string key, string ceilingKey, string owedKey,
+                 integer amount, integer every)
+        if amount < 1 or every < 1
+            yield;
+        end if
+
+        integer owed = who.Number(owedKey) + amount * Vitals.TickHundredths * 1000 / every;
+        integer whole = owed / 1000;
+
+        who.SetNumber(owedKey, owed - whole * 1000);
+
+        if whole > 0
+            Vitals.Give(who, key, ceilingKey, whole);
+        end if
+    end function
+
+    # One pool, never past its ceiling. It writes only when the value changes: every write ships an
+    # attribute to everybody who can see the body, and a full bar rewritten every tick is that traffic
+    # for nothing.
     public function Give(Player who, string key, string ceilingKey, integer back)
         integer ceiling = who.Number(ceilingKey);
         integer now = who.Number(key);

@@ -59,9 +59,9 @@ shared model Rules
         Bounty.Declare(game);
         Contest.Declare(game);
 
-        # Once a second rather than once a tick. Regen is a rate, and twenty writes a second per
-        # player is traffic nobody can see the difference in.
-        game.TickEvery(20);
+        # Once a second. A tick is a tenth of a second, so ten of them is the beat everything below
+        # is written against - see Vitals.TickHundredths, which has to agree with this.
+        game.TickEvery(10);
     end function
 
     # Somebody who has been here before keeps what they had; their values were saved with their

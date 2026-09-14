@@ -7,7 +7,7 @@
     assembly version, and the in-game welcome message all update together.
   -->
   <PropertyGroup>
-    <GameName>Mirage Source Remastered Core</GameName>
+    <GameName>Mirage Core</GameName>
     <GameNameSlug>$(GameName.Replace(' ', '-'))</GameNameSlug>
     <GameAuthor>Matt Nwachukwu</GameAuthor>
   </PropertyGroup>

@@ -702,60 +702,56 @@ public sealed class ScriptedWorldModule
             + "script cannot make one. Ask IsHere whether the body is still there.");
 
         var game = c.Type("Builder",
-            "What this game IS, said once before the world exists. Handed to Configure and useful "
-            + "nowhere else - everything it declares is about the game rather than about anybody in "
-            + "it, because there is nobody in it yet. Calls that hand something back do so in order "
-            + "that the rest can be said about that thing on lines of its own.");
+            "Declares what the game is. Handed to Configure, which runs once before the world exists, "
+            + "so nothing here can refer to a player. Calls that hand something back let you configure "
+            + "that thing on the lines below.");
 
         var records = c.Type("Records",
-            "A kind of record this game authors, handed to a model's Describe so the model can say "
-            + "what its fields could not. The fields ARE the form; what is here is captions, bounds, "
-            + "and where the files live. Describe has to be shared, because this describes a kind of "
-            + "record rather than one record.");
+            "A kind of record this game authors, handed to a model's Describe. The model's fields "
+            + "become the editor form; this adds captions, bounds and the folder the files live in. "
+            + "Describe must be shared: it configures the record type, not one record.");
 
         var verb = c.Type("Verb",
-            "Something the player can DO, handed back by Builder.Action so that where it is offered, "
-            + "what key reaches it, and what it needs are each their own line. Picking it calls "
-            + "OnAction with the verb's id. Nothing here depends on the line above it.");
+            "An action the player can take, handed back by Builder.Action. Set where it is offered, "
+            + "what key reaches it and what it requires on separate lines, in any order. Picking it "
+            + "calls OnAction with the verb's id.");
 
         var panel = c.Type("Panel",
-            "A screen of this game's own, handed back by Builder.Panel so its rows, its buttons, and "
-            + "what it asks for are written underneath it. A stock client draws it without having been "
-            + "compiled for this game: the rows read live off the player, and Asks turns a model into "
-            + "a form the player can fill in and send.");
+            "A screen of this game's own, handed back by Builder.Panel. Add its rows, buttons and forms "
+            + "on the lines below. A stock client draws it with no build of its own: rows read live off "
+            + "the player, and Asks turns a model into a form the player can fill in and send.");
 
         var npc = c.Type("Npc",
-            "A creature, as a handle rather than a copy - the same kind of thing a Player is, for a "
-            + "body the engine owns. One comes from World.NpcAt; a script cannot make one. It is named "
-            + "by where it SPAWNS rather than by where it stands, so a handle kept while it walks onto "
-            + "another map still names it. Ask IsHere whether the body is still there.");
+            "A handle to a creature, the counterpart of Player. Get one from World.NpcAt; a script "
+            + "cannot construct one. A handle identifies a creature by its spawn post, not its current "
+            + "tile, so it stays valid when the creature walks onto another map. Check IsHere before "
+            + "using one you have held on to.");
 
         var here = c.Shared("World",
-            "The world as it is right now, rather than what the game IS. Reached through its own name "
-            + "from any handler, and useful nowhere in Configure - there is no world yet. What it "
-            + "answers is the reverse of what a handle answers: a handler is given a square, and this "
-            + "turns a square back into whoever is standing on it.");
+            "The live world. Reached by name from any handler; unavailable in Configure, which runs "
+            + "before the world exists. Where a handle tells you about a body, World goes the other "
+            + "way: give it a square and it tells you who is standing there.");
 
         var values = c.Type("Values",
-            "What a message carried, handed to OnMessage. Read the way a player's own keys are read: "
-            + "a field the line left out is absent rather than zero, and Has is what tells the two "
-            + "apart. Nothing the message's model did not name is in here at all.");
+            "The fields a message carried, handed to OnMessage. Read like a player's own keys: an "
+            + "omitted field is absent, not zero, and Has distinguishes the two. Only fields the "
+            + "message's model declared appear here.");
 
         var spot = c.Type("Spot",
-            "A square, as a value rather than as three numbers. Handed back by World.SpreadOver so a rule "
-            + "can carry one around, hold a set of them, and put something on each - which three loose "
-            + "numbers cannot be made to do.");
+            "A square as a single value: map, tile and plane together. Handed back by World.SpreadOver. "
+            + "Use it to pass a location around or hold a set of them, which loose coordinates cannot "
+            + "do.");
 
         var mark = c.Type("Marker",
-            "Something drawn on a PLACE rather than over a body, handed back by World.Marker so its ring, "
-            + "its label, its meter and who sees it are each a line of their own. The twin of an overhead "
-            + "bar, for a square: a flag on a capture point, a ring around somewhere dangerous, a name over "
-            + "a doorway. What is not said is not drawn.");
+            "Something drawn on a square rather than over a body, handed back by World.Marker. Set its "
+            + "ring, label, meter and audience on the lines below; anything you leave unset is not "
+            + "drawn. Use it for a flag on a capture point, a ring around a hazard, or a name over a "
+            + "doorway.");
 
         var spoils = c.Type("Spoils",
-            "One line of a dead creature's drop table, on its way to the ground, handed to OnLoot "
-            + "before it is rolled. What the world authored is readable; what this kill makes of it is "
-            + "written back. A line left alone lands exactly as authored, free to whoever reaches it.");
+            "One line of a dead creature's drop table, handed to OnLoot before it is rolled. Read what "
+            + "the world authored and write back what this kill should make of it. A line you do not "
+            + "change drops exactly as authored, free to whoever reaches it.");
 
         // What a message carried, read the way a player's own keys are read: a field the line left out
         // is absent rather than zero, and Has is what tells the two apart.
@@ -1923,8 +1919,9 @@ public sealed class ScriptedWorldModule
                 + "cannot compose one, so this is for a client, a tool, or a bot that knows it.")
             .Action("TickEvery", [ScriptType.Integer.Named("ticks")],
                 (b, a) => Build(b).TickEvery(a.AsInteger(0)),
-                "How often OnTick and OnPlayerTick come round, in ticks. One by default, meaning "
-                + "every tick. A rule about resting or the weather wants far less.")
+                "How many ticks between calls to OnTick and OnPlayerTick. A tick is 100ms, so the "
+                + "default of 1 calls them ten times a second, 10 calls them once a second, and 600 "
+                + "calls them once a minute. This sets the rate for the whole module.")
             .Action("EquipSlot", [ScriptType.Text.Named("key"), ScriptType.Text.Named("caption")],
                 (b, a) => Build(b).EquipSlot(a.AsText(0), a.AsText(1)),
                 "A place on a body something can be worn. A caption left blank becomes the key, as "

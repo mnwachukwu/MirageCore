@@ -176,18 +176,19 @@ public class MsrStatsTests
         });
     }
 
-    /// <summary>🔴 Health does not come back in a fight.
+    /// <summary>What the original paid, and how often it paid it.
     ///
-    /// <para>That is the shape of the original's regen and most of what makes a fight a thing you can
-    /// lose. Mana and stamina do come back mid-fight, at half rate, so a caster can sustain without
-    /// it being free.</para>
+    /// <para>The original ran five clocks: health every 2.5 seconds and every 1.25 on protected ground,
+    /// mana and stamina every 2.5 and every 1, and both of those every 5 while fighting. Health does not
+    /// come back in a fight at all.</para>
     ///
-    /// <para>⚠ The rule needs a body's engagement READ, which nothing could do until now: five timed
-    /// states could be entered and none of them asked about. A game without that reader keeps a second
-    /// copy in an attribute, and two clocks disagree the first time one of them is missed.</para>
+    /// <para>The port pays on a one-second tick instead, so what is checked is THROUGHPUT over time
+    /// rather than one tick's worth. A tick pays the share of an interval it is worth and carries the
+    /// fraction, so a single tick rounds and ten of them do not.</para>
     /// </summary>
-    [Test]
-    public void HealthDoesNotComeBackInAFight_AndTheOtherTwoComeBackSlower()
+    [TestCase(false, 2.5, 2.5, 2.5, Description = "ordinary ground")]
+    [TestCase(true, 2.5, 2.5, 2.5, Description = "in a fight, health included")]
+    public void RegenPaysWhatTheOriginalPaid(bool fighting, double _, double __, double ___)
     {
         var (module, world) = Asking("        yield;");
         using ScriptedWorldModule scripts = module;
@@ -196,27 +197,68 @@ public class MsrStatsTests
         world.Here.Add(who);
         ((IWorldObserver)scripts).OnPlayerJoined(who);
 
-        // Hurt, and out of everything.
-        world.SetAttribute(who, "hp", AttributeValue.From(1L));
-        world.SetAttribute(who, "mp", AttributeValue.From(1L));
-        world.SetAttribute(who, "sp", AttributeValue.From(1L));
+        // Empty pools with ceilings well clear of ten seconds' worth, so nothing is clamped.
+        foreach (string key in (string[])["hp", "mp", "sp"])
+            world.SetAttribute(who, key, AttributeValue.From(0L));
+        foreach (string key in (string[])["maxhp", "maxmp", "maxsp"])
+            world.SetAttribute(who, key, AttributeValue.From(10_000L));
 
-        world.In.Add((who, "engaged"));
-        ((ITickWork)scripts).Tick(1);
+        if (fighting) world.In.Add((who, "engaged"));
 
-        // Five defense, five mind, five speed: regen of 6, 6 and 4 at full rate.
+        for (int tick = 1; tick <= Seconds; tick++) ((ITickWork)scripts).Tick(tick);
+
+        // Five in each stat, which is what enrollment leaves: regen of 6, 6 and 4 per interval.
+        long health = fighting ? 0 : Paid(6, 2.5);
+        long mana = Paid(6, fighting ? 5.0 : 2.5);
+        long stamina = Paid(4, fighting ? 5.0 : 2.5);
+
         Assert.Multiple(() =>
         {
-            Assert.That(Held(world, "hp"), Is.EqualTo(1L), "no health in a fight");
-            Assert.That(Held(world, "mp"), Is.EqualTo(4L), "half of six, rounded down");
-            Assert.That(Held(world, "sp"), Is.EqualTo(3L), "half of four");
+            Assert.That(Held(world, "hp"), Is.EqualTo(health), "health");
+            Assert.That(Held(world, "mp"), Is.EqualTo(mana), "mana");
+            Assert.That(Held(world, "sp"), Is.EqualTo(stamina), "stamina");
         });
-
-        world.In.Remove((who, "engaged"));
-        ((ITickWork)scripts).Tick(2);
-
-        Assert.That(Held(world, "hp"), Is.EqualTo(7L), "and the full rate once it is over");
     }
+
+    /// <summary>Protected ground pays health twice as often and the other two two and a half times as
+    /// often, which is the original's own pair of ratios.</summary>
+    [Test]
+    public void ProtectedGroundPaysFaster()
+    {
+        var world = new ScriptedWorldTests.RecordingWorld();
+        world.MapFields[1] = Row(("moral", 1L));
+
+        var (module, _) = Asking("        yield;", world);
+        using ScriptedWorldModule scripts = module;
+
+        var who = EntityHandle.ForPlayer(1);
+        world.Here.Add(who);
+        ((IWorldObserver)scripts).OnPlayerJoined(who);
+
+        foreach (string key in (string[])["hp", "mp", "sp"])
+            world.SetAttribute(who, key, AttributeValue.From(0L));
+        foreach (string key in (string[])["maxhp", "maxmp", "maxsp"])
+            world.SetAttribute(who, key, AttributeValue.From(10_000L));
+
+        for (int tick = 1; tick <= Seconds; tick++) ((ITickWork)scripts).Tick(tick);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(Held(world, "hp"), Is.EqualTo(Paid(6, 1.25)), "health, every 1.25s");
+            Assert.That(Held(world, "mp"), Is.EqualTo(Paid(6, 1.0)), "mana, every second");
+            Assert.That(Held(world, "sp"), Is.EqualTo(Paid(4, 1.0)), "stamina, every second");
+        });
+    }
+
+    /// <summary>Long enough that a carried fraction has to have been carried rather than rounded
+    /// away.</summary>
+    private const int Seconds = 10;
+
+    /// <summary>What the original pays over <see cref="Seconds"/>, given an amount and the interval it
+    /// was paid on.</summary>
+    private static long Paid(int amount, double everySeconds) =>
+        (long)(amount * Seconds / everySeconds);
+
 
     /// <summary>⚠ A pool is never written past its ceiling, and a full one is not written at all —
     /// every write ships to everybody who can see the body.</summary>
@@ -1343,7 +1385,7 @@ public class MsrStatsTests
             Row(("name", "Wolves"), ("giver", 3L), ("rewardExp", 100L),
                 ("rewardItem", 14L), ("rewardMany", 2L)),
         ];
-        world.Records["QuestGoal"] = [Row(("forQuest", 1L), ("target", 7L), ("many", 2L))];
+        world.Records["QuestGoal"] = [Row(("forQuest", 1L), ("quarry", 7L), ("many", 2L))];
 
         ((IWorldObserver)scripts).OnPlayerJoined(who);
         ((ITickWork)scripts).Tick(1);
@@ -1377,7 +1419,7 @@ public class MsrStatsTests
         world.Kinds[giver] = 3;
 
         world.Records["Quest"] = [Row(("name", "Wolves"), ("giver", 3L))];
-        world.Records["QuestGoal"] = [Row(("forQuest", 1L), ("target", 7L), ("many", 2L))];
+        world.Records["QuestGoal"] = [Row(("forQuest", 1L), ("quarry", 7L), ("many", 2L))];
 
         ((IWorldObserver)scripts).OnPlayerJoined(who);
         ((ITickWork)scripts).Tick(1);
@@ -1406,7 +1448,7 @@ public class MsrStatsTests
         world.Kinds[giver] = 3;
 
         world.Records["Quest"] = [Row(("name", "Wolves"), ("giver", 3L), ("rewardExp", 100L))];
-        world.Records["QuestGoal"] = [Row(("forQuest", 1L), ("target", 7L), ("many", 2L))];
+        world.Records["QuestGoal"] = [Row(("forQuest", 1L), ("quarry", 7L), ("many", 2L))];
 
         ((IWorldObserver)scripts).OnPlayerJoined(who);
         ((ITickWork)scripts).Tick(1);
@@ -1469,7 +1511,7 @@ public class MsrStatsTests
         world.Kinds[giver] = 3;
 
         world.Records["Quest"] = [Row(("name", "Wolves"), ("giver", 3L))];
-        world.Records["QuestGoal"] = [Row(("forQuest", 1L), ("target", 7L), ("many", 3L))];
+        world.Records["QuestGoal"] = [Row(("forQuest", 1L), ("quarry", 7L), ("many", 3L))];
 
         ((IWorldObserver)scripts).OnPlayerJoined(who);
         ((ITickWork)scripts).Tick(1);

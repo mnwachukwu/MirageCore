@@ -89,7 +89,7 @@ Held as a value and never made by a script: the engine hands one over.
 |---|---|---|
 | `Attribute(string key, string seenBy)` | — | Declares a key this game counts, and who may see it: none, owner, or viewport. |
 | `Message(string modelName)` | — | A message a client may send this game, taking its fields from one of this world's own models. It arrives at OnMessage with those fields as values. A stock client cannot compose one, so this is for a client, a tool, or a bot that knows it. |
-| `TickEvery(integer ticks)` | — | How often OnTick and OnPlayerTick come round, in ticks. One by default, meaning every tick. A rule about resting or the weather wants far less. |
+| `TickEvery(integer ticks)` | — | How many ticks between calls to OnTick and OnPlayerTick. A tick is 100ms, so the default of 1 calls them ten times a second, 10 calls them once a second, and 600 calls them once a minute. This sets the rate for the whole module. |
 | `EquipSlot(string key, string caption)` | — | A place on a body something can be worn. A caption left blank becomes the key, as words. |
 | `Heading(string caption)` | — | A heading on the sidebar, separating the rows under it. |
 | `Field(string key, string caption, integer red, integer green, integer blue)` | — | A sidebar row: a key read live off the player, a caption, and a color as red, green, and blue. All three zero leaves the color to the client. |

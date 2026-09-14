@@ -150,15 +150,22 @@ public class NpcStandoffTests
         Assert.That(h.Body.X, Is.EqualTo(3), "a step toward, exactly as a pursuer would take");
     }
 
+    /// <summary>⚠ The gap, not the tile. A retreat is deliberately zig-zagged — it may lead with a
+    /// perpendicular rather than step straight back — so what is pinned is that it gave ground.</summary>
     [Test]
     public void TooClose_ItGivesGround()
     {
         var h = Build(NpcBehavior.Shadow, range: 8, standoff: 4, npcX: 10, playerX: 12);
+        int was = Gap(h);
 
         Step(h);
 
-        Assert.That(h.Body.X, Is.EqualTo(9), "a step back, away from what walked into it");
+        Assert.That(Gap(h), Is.GreaterThan(was), "it gave ground to what walked into it");
     }
+
+    /// <summary>Tiles between the two bodies, the way the AI measures it.</summary>
+    private static int Gap(Harness h) =>
+        Math.Abs(h.Body.X - h.Target.X) + Math.Abs(h.Body.Y - h.Target.Y);
 
     /// <summary>Standing where it meant to stand, it stands there. The neutral band either side is what
     /// keeps it from stepping on every beat its target does.</summary>
