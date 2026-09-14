@@ -19,6 +19,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\editor\src\Mirage.Editor\Mirage.Editor.csproj" />
+
+    <!-- One icon vocabulary, two tables drawing it: the editor fills paths and the client draws
+         pixels. GameIconTests holds both against Core's list, and neither side's own tests would
+         notice a glyph that exists on one surface only. -->
+    <ProjectReference Include="..\..\..\client\src\Mirage.Client.Shell\Mirage.Client.Shell.csproj" />
   </ItemGroup>
 
   <!-- Hands the editor's source path to LocalizationConventionTests. Reflection can tell us a type's

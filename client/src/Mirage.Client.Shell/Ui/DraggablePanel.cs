@@ -103,7 +103,10 @@ public sealed class DraggablePanel
         }
     }
 
-    public void Draw(SpriteBatch sb, SpriteFont font, string title, bool isActive = false)
+    /// <param name="icon">A glyph from <c>GameIcon.Offered</c>, shown before the title. Blank shows
+    /// none and the title keeps the whole bar, which is every panel Core itself declares.</param>
+    public void Draw(SpriteBatch sb, SpriteFont font, string title, bool isActive = false,
+                     string? icon = null)
     {
         UiHelper.DrawFilledRect(sb, _bounds, PanelBg);
         UiHelper.DrawBorder(sb, _bounds, Color.DimGray);
@@ -111,7 +114,18 @@ public sealed class DraggablePanel
         // Title bar — brighter when this panel has focus
         Color titleBg = isActive ? UiHelper.PanelTitleActiveBg : UiHelper.PanelTitleBg;
         UiHelper.DrawFilledRect(sb, TitleBarRect, titleBg);
-        UiHelper.DrawLabel(sb, font, title, new Vector2(_bounds.X + TitlePad, _bounds.Y + 1), Color.Gold, _bounds.Width - (_showClose ? TitleH : 0) - TitlePad * 2);
+
+        int left = _bounds.X + TitlePad;
+
+        if (!string.IsNullOrEmpty(icon))
+        {
+            const int Glyph = 11;
+            GameIcons.Draw(sb, icon,
+                new Rectangle(left, _bounds.Y + (TitleH - Glyph) / 2, Glyph, Glyph), Color.Gold);
+            left += Glyph + TitlePad;
+        }
+
+        UiHelper.DrawLabel(sb, font, title, new Vector2(left, _bounds.Y + 1), Color.Gold, _bounds.Right - left - (_showClose ? TitleH : 0) - TitlePad);
 
         // Close button (top-right corner of title bar) — hidden for uncloseable panels (e.g. the death overlay).
         if (_showClose)

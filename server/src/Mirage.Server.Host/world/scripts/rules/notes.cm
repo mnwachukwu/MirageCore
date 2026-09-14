@@ -21,6 +21,36 @@ shared model Notes
         # value it shows, so the server has nothing to add.
     end function
 
+    # A sighting, filled in on the field book and sent.
+    #
+    # ⚠ The message is named as TEXT, the same way every other name a script writes is. A game with
+    # one message could skip the guard; one with two cannot, and the guard is one line either way.
+    public function Recorded(Player who, string message, Values values)
+        if message != "Sighting"
+            yield;
+        end if
+
+        string what = values.Text("what");
+
+        if what == ""
+            who.Message("A sighting needs something to have seen.");
+            yield;
+        end if
+
+        # A field the line left out is ABSENT rather than zero, and Has is what tells the two apart.
+        # Here the difference does not matter and one is a sensible default, so it is not asked.
+        integer many = values.Number("howMany");
+
+        if many < 1
+            many = 1;
+        end if
+
+        who.Message("Recorded: " + many + " x " + what
+                + " (" + values.Text("certainty") + ").");
+
+        Notes.Write(who);
+    end function
+
     # Writing something down costs what a step costs, so a surveyor cannot stand still and catalog
     # forever.
     function Write(Player who)

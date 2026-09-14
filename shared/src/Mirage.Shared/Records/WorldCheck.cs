@@ -58,11 +58,6 @@ public enum WorldIssueKind
     /// <summary>Something names an item that is not there.</summary>
     ItemMissing,
 
-
-
-    /// <summary>Something restricts itself to a class that is not there.</summary>
-    ClassMissing,
-
     /// <summary>A conversation names a node it does not contain.</summary>
     ConversationNodeMissing,
 

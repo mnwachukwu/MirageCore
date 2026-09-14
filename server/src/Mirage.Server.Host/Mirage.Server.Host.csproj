@@ -27,8 +27,7 @@
     <ProjectReference Include="..\..\..\scripting\src\Mirage.Scripting\Mirage.Scripting.csproj" />
   </ItemGroup>
 
-  <!-- The tracked world, listed so the IDE shows it. Not copied anywhere: the installers ship it as
-       seed/ (see publish/), and a source run reads it wherever WorldDir points. -->
+  <!-- The tracked world, listed so the IDE shows it. Copied to the output by _SeedFromSource below. -->
   <ItemGroup>
     <None Include="world\*.json" />
     <Content Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
@@ -36,6 +35,29 @@
          default, so deleting it changes nothing. -->
     <Content Include="serverconfig.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <!-- 🔴 A SOURCE RUN SEEDS ITSELF, the same way an installed one does.
+
+       Program.cs lays `seed-world/` down beside the executable into the world directory, but only the
+       publish projects produced that folder — so `dotnet run` resolved the per-user world, found
+       nothing, and padded it blank. A developer got an empty world and had to point WorldDir somewhere
+       or copy the folder by hand, while every installed copy started on the demo world.
+
+       The names matter and are the same at both ends: `seed-world` is never named `world`, so nothing a
+       build or an update writes can land on top of an authored world. SeedIfAbsent copies only where
+       the target directory does NOT EXIST, and an empty one is somebody's blank canvas.
+
+       ⚠ SkipUnchangedFiles, or every build recopies the whole world. -->
+  <Target Name="_SeedFromSource" AfterTargets="Build">
+    <ItemGroup>
+      <_SeedWorld Include="world/**/*" />
+      <_SeedData Include="data/motd.json" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_SeedWorld)" SkipUnchangedFiles="true"
+          DestinationFolder="$(OutDir)seed-world/%(RecursiveDir)" />
+    <Copy SourceFiles="@(_SeedData)" SkipUnchangedFiles="true"
+          DestinationFolder="$(OutDir)seed-data/%(RecursiveDir)" />
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="Velopack" Version="1.2.0" />

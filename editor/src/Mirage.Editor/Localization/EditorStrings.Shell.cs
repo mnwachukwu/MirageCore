@@ -495,7 +495,6 @@ public static partial class EditorStrings
     public const string WorldCheck_ExitMapMissing = nameof(WorldCheck_ExitMapMissing);
     public const string WorldCheck_NpcMissing = nameof(WorldCheck_NpcMissing);
     public const string WorldCheck_ItemMissing = nameof(WorldCheck_ItemMissing);
-    public const string WorldCheck_ClassMissing = nameof(WorldCheck_ClassMissing);
     public const string WorldCheck_ConversationNodeMissing = nameof(WorldCheck_ConversationNodeMissing);
     public const string WorldCheck_ShopHasNoKeeper = nameof(WorldCheck_ShopHasNoKeeper);
     public const string WorldCheck_ConversationOpensNoShop = nameof(WorldCheck_ConversationOpensNoShop);

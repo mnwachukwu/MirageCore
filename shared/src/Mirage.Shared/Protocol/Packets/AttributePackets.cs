@@ -133,7 +133,8 @@ public sealed record GameActionsPacket : IPacket
         [property: JsonPropertyName("group")] string GroupKey,
         [property: JsonPropertyName("opens")] string OpensPanel,
         [property: JsonPropertyName("key")] string Key,
-        [property: JsonPropertyName("when")] ActionCondition When);
+        [property: JsonPropertyName("when")] ActionCondition When,
+        [property: JsonPropertyName("icon")] string Icon);
 }
 
 /// <summary>

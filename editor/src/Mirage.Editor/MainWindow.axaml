@@ -181,7 +181,7 @@
                     Background="Transparent"
                     ToolTip.Tip="{Binding TooltipText}">
                 <PathIcon Grid.Column="0"
-                          Data="{Binding Name, Converter={StaticResource SectionIcon}}"
+                          Data="{Binding Icon, Converter={StaticResource SectionIcon}}"
                           Width="15" Height="15"
                           VerticalAlignment="Center"/>
                 <!-- The gap belongs to the label, not the icon — hiding the label has to take its

@@ -21,6 +21,11 @@ public sealed class ContextMenu
         public readonly Func<bool>? EnabledFn;   // optional LIVE per-frame enabled state (e.g. an in-range check)
         public bool IsEnabled => EnabledFn?.Invoke() ?? Enabled;
 
+        /// <summary>A glyph from <c>GameIcon.Offered</c>, drawn before the label. Blank draws none,
+        /// which is every row Core itself builds — a menu where each entry wears the same placeholder
+        /// reads worse than one of captions alone.</summary>
+        public readonly string Icon;
+
         public Item(string label, Action? onClick)
         {
             Label = label;
@@ -28,6 +33,7 @@ public sealed class ContextMenu
             SubItems = null;
             Enabled = true;
             EnabledFn = null;
+            Icon = "";
         }
         public Item(string label, Action? onClick, bool enabled)
         {
@@ -36,14 +42,16 @@ public sealed class ContextMenu
             SubItems = null;
             Enabled = enabled;
             EnabledFn = null;
+            Icon = "";
         }
-        public Item(string label, Action? onClick, Func<bool> enabledFn)
+        public Item(string label, Action? onClick, Func<bool> enabledFn, string icon = "")
         {
             Label = label;
             OnClick = onClick;
             SubItems = null;
             Enabled = true;
             EnabledFn = enabledFn;
+            Icon = icon;
         }
         public Item(string label, IReadOnlyList<Item> subItems)
         {
@@ -52,6 +60,7 @@ public sealed class ContextMenu
             SubItems = subItems;
             Enabled = true;
             EnabledFn = null;
+            Icon = "";
         }
     }
 
@@ -245,7 +254,18 @@ public sealed class ContextMenu
             if (i == hoverIndex && items[i].IsEnabled)
                 UiHelper.DrawFilledRect(sb, rowRect, UiHelper.ButtonHoverBg);
             Color labelColor = items[i].IsEnabled ? Color.White : Color.DarkGray;
-            sb.DrawString(font, items[i].Label, new Vector2(rowRect.X + PadX, rowRect.Y + RowTextYOffset), labelColor);
+            int textX = rowRect.X + PadX;
+
+            if (items[i].Icon.Length > 0)
+            {
+                const int Glyph = 10;
+                GameIcons.Draw(sb, items[i].Icon,
+                    new Rectangle(textX, rowRect.Y + (rowRect.Height - Glyph) / 2, Glyph, Glyph),
+                    labelColor);
+                textX += Glyph + PadX / 2;
+            }
+
+            sb.DrawString(font, items[i].Label, new Vector2(textX, rowRect.Y + RowTextYOffset), labelColor);
             if (items[i].SubItems is not null)
             {
                 sb.DrawString(font, SubmenuMarker,

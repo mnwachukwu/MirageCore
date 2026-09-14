@@ -409,6 +409,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
     /// recognises from their own game, and the only one available.</summary>
     internal static string SectionLabel(string id) => EditorStrings.GameLabel(SectionLabelKey(id), id);
 
+    /// <summary>The glyph a section draws. Accounts are not world content and so are not a family;
+    /// everything else names its own, and a family that named none falls back with the rest.</summary>
+    private static string SectionIcon(string id) =>
+        id == AccountsSection ? "key" : WorldFamilies.Find(id)?.Icon ?? "";
+
     /// <summary>The rail row for a section, made once and kept.
     ///
     /// <para>A module's family names a label key this build has never heard of, so the row falls back to
@@ -418,7 +423,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     {
         if (_sectionMap.TryGetValue(id, out var existing)) return existing;
 
-        var row = new SectionViewModel(id, SectionLabelKey(id), fallbackLabel: id)
+        var row = new SectionViewModel(id, SectionLabelKey(id), fallbackLabel: id, icon: SectionIcon(id))
         {
             IsLabelVisible = !IsRailCollapsed,
         };

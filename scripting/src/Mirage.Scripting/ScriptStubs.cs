@@ -49,7 +49,7 @@ public static class ScriptStubs
 
         foreach (ScriptTypeInfo type in catalog.Types)
         {
-            text.Append('\n');
+            text.Append('\n').Append(Note(type.Note, indent: 0));
 
             // Shared where the catalog says shared, so a script reaches it by its own name; abstract
             // either way, because only an abstract model may carry a function with no body.
@@ -58,7 +58,8 @@ public static class ScriptStubs
 
             foreach (ScriptMemberInfo member in type.Members)
             {
-                text.Append(Note(member)).Append("    ").Append(Member(member)).Append('\n');
+                text.Append(Note(member.Note, indent: 4))
+                    .Append("    ").Append(Member(member)).Append('\n');
             }
 
             text.Append("end model\n");
@@ -83,26 +84,30 @@ public static class ScriptStubs
     }
 
     /// <summary>
-    /// What a member does, as the documentation comment an editor shows on hover.
+    /// What a model or a member is, as the documentation comment an editor shows on hover.
     ///
     /// <para>A Compass documentation comment is a block opening with <c>@summary:</c> — a block that
     /// does not is ordinary prose, which is how a remark above a declaration stays a remark. The
     /// language server finds it by the line it sits above, so the member follows immediately.</para>
     ///
-    /// <para>Empty for a member nobody has written a note for, rather than an empty comment.</para>
+    /// <para>Empty for anything nobody has written a note for, rather than an empty comment.</para>
     /// </summary>
-    private static string Note(ScriptMemberInfo member)
+    private static string Note(string note, int indent)
     {
-        if (member.Note.Length == 0) return string.Empty;
+        if (note.Length == 0) return string.Empty;
 
-        var text = new StringBuilder("\n    ##\n");
+        string pad = new(' ', indent);
 
-        foreach (string line in Wrapped(member.Note, 92))
+        // A model's comment opens the block it belongs to, so it takes the blank line the loop
+        // already wrote. A member's has to make its own, or every member runs into the one above it.
+        var text = new StringBuilder(indent == 0 ? "##\n" : "\n" + pad + "##\n");
+
+        foreach (string line in Wrapped(note, 92))
         {
-            text.Append("        ").Append(line).Append('\n');
+            text.Append(pad).Append("    ").Append(line).Append('\n');
         }
 
-        return text.Append("    ##\n").ToString();
+        return text.Append(pad).Append("##\n").ToString();
     }
 
     /// <summary>A note as lines that fit, the first one carrying the label.</summary>

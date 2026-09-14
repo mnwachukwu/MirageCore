@@ -46,7 +46,6 @@ public sealed class WorldIssueRowViewModel(WorldIssue issue, string ownerName, A
         WorldIssueKind.LightOutside => EditorStrings.WorldCheck_LightOutside,
         WorldIssueKind.NpcMissing => EditorStrings.WorldCheck_NpcMissing,
         WorldIssueKind.ItemMissing => EditorStrings.WorldCheck_ItemMissing,
-        WorldIssueKind.ClassMissing => EditorStrings.WorldCheck_ClassMissing,
         WorldIssueKind.ConversationNodeMissing => EditorStrings.WorldCheck_ConversationNodeMissing,
         WorldIssueKind.ShopHasNoKeeper => EditorStrings.WorldCheck_ShopHasNoKeeper,
         WorldIssueKind.ConversationOpensNoShop => EditorStrings.WorldCheck_ConversationOpensNoShop,

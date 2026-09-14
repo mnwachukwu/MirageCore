@@ -36,13 +36,14 @@ demonstration; it is how "either route, same game" stays true as the engine chan
 | **Errors found** | as you type, by the language server | as you type, by the language service |
 | **A mistake the checker cannot see** | refused at server start, named, and the rest still declares | there is no server start to reach |
 | **Debugger** | breakpoints, stepping, call stack, variables | breakpoints, stepping, call stack, variables |
-| **The engine's own types in the editor** | **not yet** — see below | yes |
+| **The engine's own types in the editor** | yes — the server writes them down | yes |
 | **Records of your own** | yes | yes |
 | **Panels, verbs, conditions, keys** | yes | yes |
 | **Attributes, bars, sidebar rows** | yes | yes |
 | **Death and linger policies** | yes | yes |
 | **Equip slots** | yes | yes |
 | **A message of its own** | yes — `game.Message` | yes |
+| **A form the player fills in and sends** | yes — `panel.Asks` | yes, the same panel |
 | **Arbitrary .NET in a handler** | no — the sandbox refuses the filesystem and the clock | yes |
 | **Performance ceiling** | an interpreter, called across a boundary | native, in-process |
 
@@ -61,13 +62,11 @@ rules do, because the rules are a text file in the world they are serving.
 **The sandbox is a feature, not a limitation.** A world folder is something one person hands to another.
 A module that could open a file could read the accounts beside it, so it cannot.
 
-⚠ **The one thing genuinely missing today is not a language problem.** The engine's registered types
-— `Builder`, `Player`, `Records`, `Verb`, `Panel` — exist only inside the server, handed to the compiler
-by `ScriptCatalog` while the world loads. A standalone `cm check` has never heard of them, so opening a
-Mirage world script in VS Code reports *"There is no type named 'Builder'"* on every declaring line.
-Everything else resolves correctly, cross-file references included. Exporting the catalog so the tooling
-can read it is work on this repository's side, and until it is done, **the editor is right about your
-own code and wrong about the engine's**.
+**The engine's own types resolve in the editor.** `Builder`, `Player`, `Records`, `Verb`, and
+`Panel` exist only inside the server, handed to the compiler by `ScriptCatalog` while the world loads
+— so the server writes them down as it goes. `world/.mirage/engine.cm` declares each one, with what
+every member does above it, and `world/world.cmp` ties that folder to the scripts. Hovering a call in
+VS Code answers what it does and what each parameter is called. Both files are generated.
 
 ### A C# module
 
@@ -88,11 +87,14 @@ took.
 model named. No type is compiled, because `PacketRegistry.Register` takes a parse delegate and
 `Register<T>` is only the convenience overload for a shape somebody did compile.
 
-⚠ **What neither route gives you is a STOCK CLIENT that can send one.** The only thing a stock client
-originates for a game is a verb — an action id and the square or body it was used on, carrying no
-values. A message is for a client, a tool, or a bot that knows it, and that is equally true of a
-compiled module's packet. The difference between the routes here is narrower than it looks: C# gets a
-TYPED packet, checked by the compiler on both ends when the client is built from the same source.
+**A stock client can send one, through a panel that asks for it.** `panel.Asks(model, caption)`
+draws a control per field of the model and a button under them, and pressing it sends the line. The
+client is composing a message for a game it was never built against: the controls, the field names,
+and the command all arrived from the server.
+
+The difference between the routes here is narrower than it looks. C# gets a TYPED packet, checked by
+the compiler on both ends when the client is built from the same source; a script gets one read
+through a parse delegate, checked against the model at the moment it arrives.
 
 **It scales further.** For a game with hundreds of rules, thousands of records, and work on every tick,
 native code in-process is the one that does not have to be thought about.

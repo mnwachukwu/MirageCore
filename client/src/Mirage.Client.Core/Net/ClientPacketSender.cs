@@ -124,6 +124,12 @@ public sealed class ClientPacketSender
             TargetName = targetName, NpcSlot = npcSlot,
         });
 
+    /// <summary>One of the loaded game's own messages, from a panel that asked the player to fill it
+    /// in. The command is the model's name and the values are its fields, both learned from the
+    /// server; this client never knows what either means.</summary>
+    public void SendGameMessage(string message, Dictionary<string, object> values)
+        => _transport.Send(new GameMessage { Cmd = message, Values = values });
+
     // The client picks the target opportunistically from the rendered viewport (sprite-pixel
     // hit test) and sends its identity proposal along with the clicked tile.  The server
     // validates the proposal by identity (not by tile), so a moving entity mid-step is still

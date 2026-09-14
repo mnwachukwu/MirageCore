@@ -25,6 +25,11 @@ model Species
     public shared function Describe(Records these)
         these.Are("Species", "Species", 200);
 
+        # Without this every game's records wear the same glyph, so a world with two kinds of record
+        # has two sections a reader cannot tell apart. The names the engine offers are in the error
+        # you get for one it does not.
+        these.Icon("leaf");
+
         # The five species that ship with this world are already on disk as species/species1.json, so
         # this says so. A new game would leave it out and let the model's own name decide.
         these.Stored("species", "species");

@@ -73,6 +73,7 @@ Held as a value and never made by a script: the engine hands one over.
 | Written | Yields | What it does |
 |---|---|---|
 | `Are(string plural, string singular, integer limit)` | — | What these records are called in the editor — the plural, then the singular — and how many there may be. A caption left blank keeps the model's own name. |
+| `Icon(string glyph)` | — | The glyph beside it. One of: grid, quads, pin, flag, bag, gem, coin, sword, flask, cog, person, paw, leaf, heart, book, scroll, list, bubble, key, shield, star, spark, flame, clock, note, dice, shop. A name that is not one of those is refused, because a glyph nobody drew is a section that looks like every other section. |
 | `Stored(string folder, string prefix)` | — | Where these records live: the folder under the world, and what each file is called before its number. Only needed for records already on disk. A new game leaves it out, and the model's name decides. |
 | `Caption(string field, string caption)` | — | What one field is called on the form. Only needed where the field's own name is not the words an author should read. |
 | `Range(string field, integer least, integer greatest)` | — | The bounds of a whole-number field. Equal bounds mean unbounded. |
@@ -89,6 +90,7 @@ Held as a value and never made by a script: the engine hands one over.
 | `OnNpc()` | — | Offer it in the menu of a creature. Declaring one is what gives a plain creature a menu at all. |
 | `OnHud()` | — | Offer it as a button on the HUD, which is about the player rather than about anything they are pointing at. |
 | `Key(string key)` | — | A key that reaches it without the menu: B, E, J, K, N, P, Q, R, T, U, Y, or Z. The key acts on the square the player faces. |
+| `Icon(string glyph)` | — | The glyph beside it. One of: grid, quads, pin, flag, bag, gem, coin, sword, flask, cog, person, paw, leaf, heart, book, scroll, list, bubble, key, shield, star, spark, flame, clock, note, dice, shop. A name that is not one of those is refused, because a glyph nobody drew is a section that looks like every other section. |
 | `Opens(string panel)` | — | The panel it opens, by the id given to game.Panel. One that was never declared is refused by name rather than drawing a button that does nothing. |
 | `NeedsAtLeast(string key, integer least)` | — | Offered only to a body carrying at least that much under that key. Below it the entry is grayed rather than missing, so a player can see the verb exists. |
 | `NeedsCarrying(string key)` | — | Offered only to a body that carries that key at all. |
@@ -102,6 +104,8 @@ Held as a value and never made by a script: the engine hands one over.
 |---|---|---|
 | `Key(string key)` | — | A key that opens it: B, E, J, K, N, P, Q, R, T, U, Y, or Z. |
 | `Button(string caption, string verb)` | — | A button along its bottom: a caption, and the id of a verb it calls. |
+| `Icon(string glyph)` | — | The glyph beside it. One of: grid, quads, pin, flag, bag, gem, coin, sword, flask, cog, person, paw, leaf, heart, book, scroll, list, bubble, key, shield, star, spark, flame, clock, note, dice, shop. A name that is not one of those is refused, because a glyph nobody drew is a section that looks like every other section. |
+| `Asks(string modelName, string caption)` | — | Asks the player to fill one of this world's own models in, and send it. Every field of the model becomes a control — a number a spinner, a truth a checkbox, an enumeration a drop-down over its members — and the caption names the button under them. What they send arrives at OnMessage under the model's name. A panel asks for one message. |
 | `Heading(string caption)` | — | A heading on this panel, separating the rows under it. |
 | `Field(string key, string caption, integer red, integer green, integer blue)` | — | A row on this panel: a key read live off the player, a caption, and a color as red, green, and blue. All three zero leaves the color to the client. |
 | `Badge(string key, string caption, integer red, integer green, integer blue)` | — | The same, drawn as a small tag with no caption. |

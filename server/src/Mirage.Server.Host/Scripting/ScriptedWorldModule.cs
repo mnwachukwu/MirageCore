@@ -526,12 +526,39 @@ public sealed class ScriptedWorldModule
     /// </summary>
     public ScriptCatalog Catalog() => ScriptCatalog.Declare(c =>
     {
-        var player = c.Type("Player");
-        var game = c.Type("Builder");
-        var records = c.Type("Records");
-        var verb = c.Type("Verb");
-        var panel = c.Type("Panel");
-        var values = c.Type("Values");
+        var player = c.Type("Player",
+            "Somebody in the world, as a handle rather than a copy. Every question it answers is asked "
+            + "of the world at the moment you ask it, so a handle kept across a tick is still about "
+            + "whoever it named. One arrives as a handler's first argument, or from Builder.Find; a "
+            + "script cannot make one. IsHere is what says the body is still there.");
+
+        var game = c.Type("Builder",
+            "What this game IS, said once before the world exists. Handed to Configure and useful "
+            + "nowhere else - everything it declares is about the game rather than about anybody in "
+            + "it, because there is nobody in it yet. Calls that hand something back do so in order "
+            + "that the rest can be said about that thing on lines of its own.");
+
+        var records = c.Type("Records",
+            "A kind of record this game authors, handed to a model's Describe so the model can say "
+            + "what its fields could not. The fields ARE the form; what is here is captions, bounds, "
+            + "and where the files live. Describe has to be shared, because this describes a kind of "
+            + "record rather than one record.");
+
+        var verb = c.Type("Verb",
+            "Something the player can DO, handed back by Builder.Action so that where it is offered, "
+            + "what key reaches it, and what it needs are each their own line. Picking it calls "
+            + "OnAction with the verb's id. Nothing here depends on the line above it.");
+
+        var panel = c.Type("Panel",
+            "A screen of this game's own, handed back by Builder.Panel so its rows, its buttons, and "
+            + "what it asks for are written underneath it. A stock client draws it without having been "
+            + "compiled for this game: the rows read live off the player, and Asks turns a model into "
+            + "a form the player can fill in and send.");
+
+        var values = c.Type("Values",
+            "What a message carried, handed to OnMessage. Read the way a player's own keys are read: "
+            + "a field the line left out is absent rather than zero, and Has is what tells the two "
+            + "apart. Nothing the message's model did not name is in here at all.");
 
         // What a message carried, read the way a player's own keys are read: a field the line left out
         // is absent rather than zero, and Has is what tells the two apart.
@@ -564,6 +591,8 @@ public sealed class ScriptedWorldModule
             .Action("Key", [ScriptType.Text.Named("key")], (v, a) => Verbal(v).Key(a.AsText(0)),
                 "A key that reaches it without the menu: B, E, J, K, N, P, Q, R, T, U, Y, or Z. The key "
                 + "acts on the square the player faces.")
+            .Action("Icon", [ScriptType.Text.Named("glyph")], (v, a) => Verbal(v).Icon(a.AsText(0)),
+                "The glyph beside it. One of: " + GameIcon.Listed + ". A name that is not one of those is refused, because a glyph nobody drew is a section that looks like every other section.")
             .Action("Opens", [ScriptType.Text.Named("panel")], (v, a) => Verbal(v).Opens(a.AsText(0)),
                 "The panel it opens, by the id given to game.Panel. One that was never declared is "
                 + "refused by name rather than drawing a button that does nothing.")
@@ -584,6 +613,16 @@ public sealed class ScriptedWorldModule
             .Action("Button", [ScriptType.Text.Named("caption"), ScriptType.Text.Named("verb")],
                 (p, a) => Screen(p).Button(a.AsText(0), a.AsText(1)),
                 "A button along its bottom: a caption, and the id of a verb it calls.")
+            .Action("Icon", [ScriptType.Text.Named("glyph")],
+                (p, a) => Screen(p).Icon(a.AsText(0)),
+                "The glyph beside it. One of: " + GameIcon.Listed + ". A name that is not one of those is refused, because a glyph nobody drew is a section that looks like every other section.")
+            .Action("Asks", [ScriptType.Text.Named("modelName"), ScriptType.Text.Named("caption")],
+                (p, a) => Screen(p).Asks(a.AsText(0), a.AsText(1)),
+                "Asks the player to fill one of this world's own models in, and send it. Every field "
+                + "of the model becomes a control — a number a spinner, a truth a checkbox, an "
+                + "enumeration a drop-down over its members — and the caption names the button under "
+                + "them. What they send arrives at OnMessage under the model's name. A panel asks for "
+                + "one message.")
             .Action("Heading", [ScriptType.Text.Named("caption")], (p, a) => Screen(p).Heading(a.AsText(0)),
                 "A heading on this panel, separating the rows under it.")
             .Action("Field", [ScriptType.Text.Named("key"), ScriptType.Text.Named("caption"), ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
@@ -605,6 +644,9 @@ public sealed class ScriptedWorldModule
                 (r, a) => Shape(r).Are(a.AsText(0), a.AsText(1), a.AsInteger(2)),
                 "What these records are called in the editor — the plural, then the singular — and how "
                 + "many there may be. A caption left blank keeps the model's own name.")
+            .Action("Icon", [ScriptType.Text.Named("glyph")],
+                (r, a) => Shape(r).Icon(a.AsText(0)),
+                "The glyph beside it. One of: " + GameIcon.Listed + ". A name that is not one of those is refused, because a glyph nobody drew is a section that looks like every other section.")
             .Action("Stored", [ScriptType.Text.Named("folder"), ScriptType.Text.Named("prefix")],
                 (r, a) => Shape(r).Stored(a.AsText(0), a.AsText(1)),
                 "Where these records live: the folder under the world, and what each file is called "
@@ -790,8 +832,14 @@ public sealed class ScriptedWorldModule
     /// <para>A surface is chosen by CALLING one rather than by naming one, so a word that is not a
     /// surface cannot be written. The default is the square, which is where most verbs belong.</para>
     /// </summary>
-    private sealed class Verb(Declaring.PendingVerb verb)
+    private sealed class Verb(Declaring declaring, Declaring.PendingVerb verb)
     {
+        public object? Icon(string icon)
+        {
+            if (declaring.Glyph($"the verb '{verb.Id}'", icon)) verb.Icon = icon;
+            return null;
+        }
+
         public object? OnTile() => Offered(ActionSurface.Tile);
 
         public object? OnPlayer() => Offered(ActionSurface.Player);
@@ -856,10 +904,39 @@ public sealed class ScriptedWorldModule
             return null;
         }
 
+        public object? Icon(string icon)
+        {
+            if (declaring.Glyph($"the panel '{panel.Id}'", icon)) panel.Icon = icon;
+            return null;
+        }
+
         public object? Button(string label, string actionId)
         {
             panel.Buttons.Add(new PanelButton(label, actionId));
             return null;
+        }
+
+        /// <summary>
+        /// This panel asks the player to fill one of this world's own models in, and send it.
+        ///
+        /// <para>🔴 <b>Both halves at once, because either one alone is silent.</b> Inputs with no
+        /// message collect values nothing sends; a message with no inputs is one a stock client still
+        /// cannot compose. One line declares the message, the controls, and the button.</para>
+        ///
+        /// <para>⚠ One message to a panel. A second is refused by name rather than quietly adding a
+        /// row group whose button nobody could tell from the first one's.</para>
+        /// </summary>
+        public object? Asks(string modelName, string label)
+        {
+            if (panel.Asks.Length > 0)
+            {
+                declaring.Refuse($"the message '{modelName}'",
+                    $"the panel '{panel.Id}' already asks for '{panel.Asks}' - "
+                    + "a panel asks for one message, because one button sends what one panel holds");
+                return null;
+            }
+
+            return declaring.Asks(panel, modelName, label);
         }
 
         public object? Heading(string label) =>
@@ -900,6 +977,12 @@ public sealed class ScriptedWorldModule
         public object? Are(string label, string singular, long limit)
         {
             if (declared) declaring.Are(model, label, singular, limit);
+            return null;
+        }
+
+        public object? Icon(string icon)
+        {
+            if (declared) declaring.Icon(model, icon);
             return null;
         }
 
@@ -1021,6 +1104,7 @@ public sealed class ScriptedWorldModule
                     Directory = records.Folder,
                     FilePrefix = records.Prefix,
                     LabelKey = records.Label,
+                    Icon = records.Icon,
                     SingularLabelKey = records.Singular.Length > 0 ? records.Singular : records.Label,
                     DefaultLimit = records.Limit > 0
                         ? (int)Math.Min(records.Limit, int.MaxValue)
@@ -1041,7 +1125,11 @@ public sealed class ScriptedWorldModule
                     Width = panel.Width,
                     Height = panel.Height,
                     Key = panel.Key,
+                    Icon = panel.Icon,
                     Buttons = [.. panel.Buttons],
+                    Asks = panel.Asks,
+                    SendLabelKey = panel.SendLabel,
+                    Inputs = [.. panel.Inputs],
                 }));
             }
 
@@ -1089,6 +1177,7 @@ public sealed class ScriptedWorldModule
                 Surface = verb.Surface,
                 Ordinal = verb.Ordinal,
                 Key = verb.Key,
+                Icon = verb.Icon,
                 OpensPanel = opens,
                 When = verb.When,
             }));
@@ -1239,6 +1328,13 @@ public sealed class ScriptedWorldModule
         /// lowercased and the file name is that without a trailing "s" — which is right for
         /// <c>sites/site1.json</c> and wrong for <c>species/species1.json</c>, because English is not a
         /// rule. A new game should say nothing here and let the default name the files.</para></summary>
+        /// <summary>The glyph these records wear in the editor's rail.</summary>
+        public void Icon(string model, string icon)
+        {
+            if (Described(model) is not { } records) return;
+            if (Glyph($"the records '{model}'", icon)) records.Icon = icon;
+        }
+
         public void Stored(string model, string folder, string prefix)
         {
             if (Described(model) is not { } records)
@@ -1321,6 +1417,8 @@ public sealed class ScriptedWorldModule
 
             public long Limit { get; set; } = 1000;
 
+            public string Icon { get; set; } = string.Empty;
+
             public List<FieldDescriptor> Fields { get; init; } = [];
         }
 
@@ -1339,6 +1437,93 @@ public sealed class ScriptedWorldModule
         /// id and a square and no values of their own. This is for a client, a tool, or a bot that
         /// knows the message, which is the same audience a compiled module's packet has.</para></summary>
         public object? Message(string modelName)
+        {
+            if (Carried(modelName) is not { } carried) return null;
+
+            // A panel that asks for it has already put it on the wire, and a second row for one
+            // command is refused by the registry rather than shadowing the first.
+            if (Declared(modelName)) return null;
+
+            Register(modelName, carried);
+            return null;
+        }
+
+        /// <summary>
+        /// A panel's inputs, the message they compose, and the button that sends it.
+        ///
+        /// <para>The message is declared here if nothing has declared it yet, so a panel that asks for
+        /// one is the whole of what a game writes. A game that also wants a bot or a tool to send the
+        /// same message writes <c>game.Message</c> as well, in either order.</para>
+        /// </summary>
+        public object? Asks(PendingPanel panel, string modelName, string label)
+        {
+            if (Carried(modelName) is not { } carried) return null;
+
+            var inputs = new List<PanelInput>();
+            foreach (ScriptModelField field in carried)
+            {
+                inputs.Add(new PanelInput
+                {
+                    Field = field.Name,
+                    LabelKey = WordsFor(field.Name),
+                    Kind = field.Shape switch
+                    {
+                        ScriptFieldShape.Whole => FieldKind.Integer,
+                        ScriptFieldShape.Fraction => FieldKind.Real,
+                        ScriptFieldShape.Truth => FieldKind.Flag,
+                        ScriptFieldShape.Choice => FieldKind.Choice,
+                        _ => FieldKind.Text,
+                    },
+                    Choices = [.. field.Choices],
+                });
+            }
+
+            if (!Declared(modelName)) Register(modelName, carried);
+
+            panel.Asks = modelName;
+            panel.SendLabel = label.Length > 0 ? label : WordsFor(modelName);
+            panel.Inputs.AddRange(inputs);
+
+            return null;
+        }
+
+        /// <summary>
+        /// Whether this is a glyph the engine offers, refusing it BY NAME when it is not.
+        ///
+        /// <para>⚠ <b>Refused here, tolerated when drawn.</b> A typo is otherwise a section that looks
+        /// like every other section, which reads as an engine that ignores the line rather than as a
+        /// misspelled word. The renderers fall back instead, so a client older than the game it joined
+        /// still draws something.</para>
+        /// </summary>
+        public bool Glyph(string what, string icon)
+        {
+            if (GameIcon.IsOffered(icon)) return true;
+
+            Refuse(what, $"'{icon}' is not a glyph this engine draws - one of: {GameIcon.Listed}");
+            return false;
+        }
+
+        /// <summary>Whether a message of this name is already on the wire.</summary>
+        private bool Declared(string modelName) =>
+            messages.Contains(modelName, StringComparer.Ordinal);
+
+        /// <summary>Reads this command into the shapes the model declared.</summary>
+        private void Register(string modelName, List<ScriptModelField> carried) =>
+            Guard($"the message '{modelName}'", () =>
+            {
+                builder.Packets.Register(
+                    modelName, (json, _) => ScriptedPacket.Read(modelName, json, carried));
+
+                messages.Add(modelName);
+            });
+
+        /// <summary>
+        /// The fields of a model that can travel, or null where the model or its fields cannot.
+        ///
+        /// <para>⚠ The model is named as TEXT, because Compass has no type values — so a typo cannot
+        /// be a compile error and has to be a refusal that lists the models which do exist.</para>
+        /// </summary>
+        private List<ScriptModelField>? Carried(string modelName)
         {
             ScriptModelInfo? shape = models.FirstOrDefault(
                 m => string.Equals(m.Name, modelName, StringComparison.Ordinal));
@@ -1372,13 +1557,7 @@ public sealed class ScriptedWorldModule
                 return null;
             }
 
-            return Guard($"the message '{modelName}'", () =>
-            {
-                builder.Packets.Register(
-                    modelName, (json, _) => ScriptedPacket.Read(modelName, json, carried));
-
-                messages.Add(modelName);
-            });
+            return carried;
         }
 
         /// <summary>How often this world's tick comes round, in ticks. Below one is one.</summary>
@@ -1457,7 +1636,7 @@ public sealed class ScriptedWorldModule
 
             _verbs.Add(verb);
             actions.Add(id);
-            return new Verb(verb);
+            return new Verb(this, verb);
         }
 
         // ── Panels ────────────────────────────────────────────────────────
@@ -1544,6 +1723,7 @@ public sealed class ScriptedWorldModule
             public int Ordinal { get; init; }
             public ActionSurface Surface { get; set; } = ActionSurface.Tile;
             public string Key { get; set; } = string.Empty;
+            public string Icon { get; set; } = string.Empty;
             public string Opens { get; set; } = string.Empty;
             public ActionCondition When { get; set; } = ActionCondition.Always;
         }
@@ -1555,7 +1735,11 @@ public sealed class ScriptedWorldModule
             public int Width { get; init; }
             public int Height { get; init; }
             public string Key { get; set; } = string.Empty;
+            public string Icon { get; set; } = string.Empty;
             public List<PanelButton> Buttons { get; } = [];
+            public string Asks { get; set; } = string.Empty;
+            public string SendLabel { get; set; } = string.Empty;
+            public List<PanelInput> Inputs { get; } = [];
         }
     }
 }

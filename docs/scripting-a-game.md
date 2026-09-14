@@ -15,10 +15,22 @@ snippet below is from it.
 
 ## 1. Writing it
 
-**Install the VS Code extension.** Compass has a language server — the compiler's own, answering about
-files as they are being typed — so a type error, an unassigned local, a switch missing an enumeration
-member, or an optional read without proving it holds something are all reported where you wrote them.
-Breakpoints, stepping, a call stack, and a variables pane work too.
+**Install the VS Code extension, and the compiler it runs.** Compass has a language server — the
+compiler's own, answering about files as they are being typed — so a type error, an unassigned local,
+a switch missing an enumeration member, or an optional read without proving it holds something are all
+reported where you wrote them. Breakpoints, stepping, a call stack, and a variables pane work too.
+
+⚠ **Two installs, not one.** The extension is a front end: coloring works on its own, and the
+language server, the debugger, and the build commands all shell out to `cm`. Without the compiler on
+the path the extension does almost nothing, which reads as a broken extension rather than a missing
+one. Both are one command:
+
+```
+code --install-extension Pluperfect.compass-editor
+```
+
+The compiler is one command per platform at <https://compass.pluperfect.dev/install>, self-contained,
+with nothing to install first.
 
 **The engine's own types resolve too.** `Builder`, `Player`, `Records`, `Verb`, and `Panel` are
 handed to the compiler by the SERVER while a world loads, so a checker outside the server would never
@@ -195,6 +207,31 @@ called; the engine refuses it by name so that does not read as a broken editor.
 ⚠ **A field is named as TEXT**, because Compass has no type values. A typo in `Caption` or `Length` is
 a refusal at load, not an error at compile — the message lists the fields that do exist.
 
+### The glyph beside it
+
+Records, panels, and verbs each pick one, from a list the engine offers:
+
+```
+these.Icon("leaf");          # on a model's Describe
+book.Icon("book");           # on a panel
+note.Icon("scroll");         # on a verb
+```
+
+🔴 **Without one, every game's records wear the same glyph** — so a world with two kinds of record
+has two editor sections a reader cannot tell apart, and cannot tell from one of Core's own.
+
+A **name** travels and each surface draws its own shape for it: a game cannot ship geometry to a
+client or to an editor it does not control, which is the same bargain the key list makes. Twenty-seven
+of them, chosen so no genre is stuck:
+
+`grid` `quads` `pin` `flag` · `bag` `gem` `coin` `sword` `flask` `cog` · `person` `paw` `leaf` `heart`
+· `book` `scroll` `list` `bubble` · `key` `shield` `star` `spark` `flame` `clock` `note` `dice` `shop`
+
+⚠ **A name that is not one of those is refused at load, with the list.** A typo would otherwise be a
+section that looks like every other section, which reads as an engine ignoring the line rather than as
+a misspelled word. A RENDERER is the tolerant one: it falls back, so a client older than the game it
+joined still draws something.
+
 ⚠ **`Stored` is only for records that already exist.** Left unsaid, the folder is the model's name
 lowercased and the files are that without a trailing "s" — right for `sites/site1.json`, wrong for
 `species/species1.json`, because English is not a rule. A new game should say nothing and let the
@@ -366,13 +403,38 @@ A line arriving as `{"cmd":"Note","species":3,"comment":"by the shore","sure":tr
 handler with those three fields. **Nothing is compiled** — the registry takes a parse delegate, so the
 model is what says which field is a number and which is text.
 
-⚠ **A stock client cannot compose one.** This is for a client, a tool, or a bot that knows the message.
-A compiled module's packet has exactly the same audience; what C# adds is that the packet is TYPED, so
-a client built from the same source is checked against it.
-
 🔴 **A field the model did not name is dropped rather than carried.** A sender cannot reach past what
 the rules said they may send, and a field the line left out is absent rather than zero —
 `values.Has(name)` is what tells the two apart.
+
+### A form on a panel, which is where one comes from
+
+`game.Message` puts a command on the wire for a client, a tool, or a bot that knows it. To have the
+PLAYER send one, a panel asks for it:
+
+```
+Panel book = game.Panel("survey.fieldbook", "Field Book", 240, 180);
+book.Asks("Note", "Record it");
+```
+
+One line, and the stock client draws a control for every field of the model — text a box, a whole
+number a box that takes digits, a truth a checkbox, an enumeration a drop-down over its members —
+with a button underneath carrying that caption. Pressing it sends the line, and the line arrives at
+`OnMessage` under the model's name.
+
+🔴 **Both halves come from the one call, because either alone is silent.** Controls with no message
+would collect values nothing sends; a message with no controls is one the player has no way to
+compose.
+
+| | |
+|---|---|
+| A field typed as another **model** | left out — a picker needs the records, which a client does not hold |
+| A **set** field | left out, and named, the same as it is for records |
+| A caption | the field's own name as words, unless `Caption` said otherwise |
+| A second `Asks` on one panel | refused by name — one panel, one message, one button |
+
+⚠ **Asking is enough.** A panel that asks declares the message too, so `game.Message` is only wanted
+when something other than a panel also sends it. Writing both is fine, in either order.
 
 ## 9. Changing it
 

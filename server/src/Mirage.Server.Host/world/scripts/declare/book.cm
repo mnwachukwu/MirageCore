@@ -3,6 +3,23 @@
 # A verb is declared once and then told what it is offered ON, what key reaches it, and what it needs.
 # Nothing here depends on the line above it: each line names the verb it is about.
 
+# How sure a surveyor is about what they wrote down. An enumeration IS a closed set, so a field
+# typed as one becomes a drop-down over these members with nothing else declared.
+enumeration Certainty
+    Sure, Probably, Guessing
+end enumeration
+
+# 🔴 A MESSAGE, not records. The same kind of model says what a LINE carries rather than what a row
+# holds, and `book.Asks` below turns it into controls on the panel, a button under them, and a
+# command on the wire. What the surveyor sends arrives at `OnMessage` under this model's name.
+#
+# Its fields are public because the ENGINE reads them and nothing in these scripts does.
+model Sighting
+    public string what;
+    public integer howMany;
+    public Certainty certainty;
+end model
+
 shared model Book
 
     public string Note = "survey.note";
@@ -15,9 +32,15 @@ shared model Book
     public function Declare(Builder game)
         # A screen of this game's own. Its rows go on a surface derived from its id, so the sidebar and
         # the book can show different amounts of the same thing without either naming a surface.
-        Panel book = game.Panel(Book.Screen, "Field Book", 240, 180);
+        Panel book = game.Panel(Book.Screen, "Field Book", 260, 300);
         book.Key("B");
+        book.Icon("book");
         book.Button("Note this down", Book.Note);
+
+        # One line for a form: a control per field of Sighting, a button under them, and the command
+        # that carries what they hold. A stock client composes it — nothing here was compiled for this
+        # game, and the client has never heard of a sighting.
+        book.Asks("Sighting", "Record a sighting");
 
         book.Heading("Field record");
         book.Field(Surveyor.Rank, "Rank", 200, 200, 160);
@@ -27,22 +50,26 @@ shared model Book
         # What a surveyor does to a square in front of them. Q reaches it without the menu.
         Verb note = game.Action(Book.Note, "Note this down", "Survey");
         note.Key("Q");
+        note.Icon("scroll");
 
         # On the HUD rather than in a square's menu: a book is about the surveyor, not about the ground
         # they happen to be standing on.
         Verb open = game.Action(Book.Open, "Field Book", "Survey");
+        open.Icon("book");
         open.OnHud();
         open.Opens(Book.Screen);
 
         # And a verb about a BODY, which is what a survey is mostly for. Offered on any creature,
         # including one with nothing else to say — declaring this is what gives a plain creature a menu.
         Verb name = game.Action(Book.Identify, "Identify", "Survey");
+        name.Icon("paw");
         name.OnNpc();
 
         # The same shape aimed at a person, and the one verb here with a CONDITION: comparing notes
         # needs notes. A surveyor who has written nothing down sees the entry grayed rather than
         # missing, so they can see the verb exists and that they are not ready for it.
         Verb compare = game.Action(Book.Compare, "Compare notes", "Survey");
+        compare.Icon("person");
         compare.OnPlayer();
         compare.NeedsAtLeast(Surveyor.Specimens, 1);
     end function

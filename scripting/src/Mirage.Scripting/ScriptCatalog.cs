@@ -81,7 +81,8 @@ public sealed class ScriptCatalog
             Types = [.. declared.Select(t => new ScriptTypeInfo(
                 t.Name,
                 t.Shared,
-                [.. t.Members.Select(m => new ScriptMemberInfo(m.Name, m.Yields, m.Takes, m.IsValue, m.Note))]))],
+                [.. t.Members.Select(m => new ScriptMemberInfo(m.Name, m.Yields, m.Takes, m.IsValue, m.Note))],
+                t.Note))],
         };
     }
 
@@ -188,7 +189,10 @@ public sealed class ScriptCatalog
         string Name, ScriptType Yields, IReadOnlyList<ScriptParameter> Takes, bool IsValue,
         ScriptCall Run, string Note);
 
-    internal sealed record DeclaredType(string Name, bool Shared, List<DeclaredMember> Members);
+    internal sealed record DeclaredType(string Name, bool Shared, List<DeclaredMember> Members)
+    {
+        public string Note { get; set; } = string.Empty;
+    }
 }
 
 /// <summary>Declares the types a script may name. See <see cref="ScriptCatalog.Declare"/>.</summary>
@@ -203,15 +207,19 @@ public sealed class ScriptCatalogBuilder
     /// declared, extended, or constructed by a script; values of it arrive from somewhere else and are
     /// opaque.
     /// </summary>
-    public ScriptTypeBuilder Type(string name) => Add(name, shared: false);
+    /// <param name="note">What it IS. Reaches the reference and the stub an editor reads, so hovering
+    /// the type answers the question a list of its members does not: what a value of it stands for and
+    /// where one comes from.</param>
+    public ScriptTypeBuilder Type(string name, string note = "") => Add(name, shared: false, note);
 
     /// <summary>
     /// A type with no instances, whose members are reached through its name — <c>World</c>. This is how
     /// the engine offers something that is not about one particular thing.
     /// </summary>
-    public ScriptTypeBuilder Shared(string name) => Add(name, shared: true);
+    /// <inheritdoc cref="Type" path="/param[@name='note']"/>
+    public ScriptTypeBuilder Shared(string name, string note = "") => Add(name, shared: true, note);
 
-    private ScriptTypeBuilder Add(string name, bool shared)
+    private ScriptTypeBuilder Add(string name, bool shared, string note = "")
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -220,7 +228,7 @@ public sealed class ScriptCatalogBuilder
             throw new ArgumentException($"'{name}' is declared twice. A name belongs to one type.", nameof(name));
         }
 
-        var type = new ScriptCatalog.DeclaredType(name, shared, []);
+        var type = new ScriptCatalog.DeclaredType(name, shared, []) { Note = note ?? string.Empty };
         _types.Add(type);
 
         return new ScriptTypeBuilder(type);
@@ -357,7 +365,10 @@ public static class ScriptValue
 /// <param name="Name">What a script writes.</param>
 /// <param name="Shared">True for a type with no instances, whose members are reached through its name.</param>
 /// <param name="Members">What it offers, in the order it was declared.</param>
-public sealed record ScriptTypeInfo(string Name, bool Shared, IReadOnlyList<ScriptMemberInfo> Members);
+/// <param name="Note">What it IS, for the reference and for the stub an editor reads. Empty where
+/// nobody has said yet.</param>
+public sealed record ScriptTypeInfo(
+    string Name, bool Shared, IReadOnlyList<ScriptMemberInfo> Members, string Note = "");
 
 /// <summary>One parameter of a member: what it is called, and what it takes.</summary>
 /// <param name="Name">What it is called. Reaches an author, so it is words rather than a position.</param>

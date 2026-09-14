@@ -103,29 +103,39 @@ public class ScriptStubTests
             Throws.ArgumentException.With.Message.Contains("model"));
     }
 
-    /// <summary>What a member does is written above it, so the editor can show it on hover.
+    /// <summary>What a model and a member each ARE is written above them, so the editor can show it
+    /// on hover.
     ///
     /// <para>A Compass documentation comment is a block opening with <c>@summary:</c>. A block that
     /// does not is ordinary prose, which is how a remark above a declaration stays a remark.</para>
+    ///
+    /// <para>⚠ The MODEL's note is the one a list of its members cannot supply: what a value of it
+    /// stands for and where one comes from. Hovering <c>Player</c> is a different question from
+    /// hovering <c>Player.Message</c>.</para>
     /// </summary>
     [Test]
-    public void EveryMemberCarriesItsNoteAsADocumentationComment()
+    public void EveryModelAndMemberCarriesItsNoteAsADocumentationComment()
     {
         ScriptCatalog catalog = Catalog();
         string stub = ScriptStubs.Stub(catalog);
 
-        int noted = catalog.Types.SelectMany(t => t.Members).Count(m => m.Note.Length > 0);
+        int members = catalog.Types.SelectMany(t => t.Members).Count(m => m.Note.Length > 0);
+        int models = catalog.Types.Count(t => t.Note.Length > 0);
 
         Assert.Multiple(() =>
         {
-            Assert.That(noted, Is.GreaterThan(40), "the catalog itself has notes to write down");
+            Assert.That(members, Is.GreaterThan(40), "the catalog itself has notes to write down");
+            Assert.That(models, Is.EqualTo(catalog.Types.Count), "and every type says what it is");
 
             Assert.That(
-                stub.Split("@summary:").Length - 1, Is.EqualTo(noted),
-                "every member with a note carries one, and nothing else does");
+                stub.Split("@summary:").Length - 1, Is.EqualTo(members + models),
+                "everything with a note carries one, and nothing else does");
 
             Assert.That(stub, Does.Contain(
-                "@summary: Whether they are still in the world. A handle outlives the body it names."));
+                "@summary: Whether they are still in the world. A handle outlives the body it names."),
+                "a member's");
+
+            Assert.That(stub, Does.Contain("@summary: Somebody in the world, as a handle"), "a model's");
         });
     }
 

@@ -44,6 +44,12 @@ shared model Rules
         Notes.Did(who, action, on);
     end function
 
+    # A form the surveyor filled in on the field book and sent. `values` carries the fields the
+    # message's own model named, in the shapes it declared them.
+    public function OnMessage(Player who, string message, Values values)
+        Notes.Recorded(who, message, values);
+    end function
+
     # Nothing dies on a botanical survey. Core's death path exists and works; this game says it
     # never runs.
     public string function OnMayDie(Player who, string cause)

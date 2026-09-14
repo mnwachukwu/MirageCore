@@ -259,7 +259,8 @@ public sealed partial class GameplayScreen : IGameScreen
             items.Add(new ContextMenu.Item(
                 ClientStrings.GetOrFallback(action.LabelKey, action.LabelKey) + GameKeyMap.Hint(shortcut),
                 () => InvokeGameAction(id, opens, mapNum, tileX, tileY, targetName, npcSlot),
-                (Func<bool>)(() => Offered(when))));
+                (Func<bool>)(() => Offered(when)),
+                action.Icon));
         }
 
         return items;
@@ -302,7 +303,8 @@ public sealed partial class GameplayScreen : IGameScreen
                     ClientStrings.GetOrFallback(action.LabelKey, action.LabelKey)
                         + GameKeyMap.Hint(shortcut),
                     () => InvokeGameAction(id, opens, mapNum, tileX, tileY),
-                    (Func<bool>)(() => Offered(when))));
+                    (Func<bool>)(() => Offered(when)),
+                    action.Icon));
             }
 
             if (items.Count > 0) groups.Add((heading, items));

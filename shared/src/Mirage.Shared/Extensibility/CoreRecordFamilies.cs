@@ -38,6 +38,7 @@ public static class CoreRecordFamilies
         new()
         {
             Id = Maps,
+            Icon = "grid",
             LabelKey = "MainWindow_Section_Maps",
             Directory = "maps",
             FilePrefix = "map",
@@ -47,6 +48,7 @@ public static class CoreRecordFamilies
         new()
         {
             Id = MapGroups,
+            Icon = "quads",
             LabelKey = "MainWindow_Section_MapGroups",
             Directory = "map_groups",
             FilePrefix = "map_group",
@@ -56,6 +58,7 @@ public static class CoreRecordFamilies
         new()
         {
             Id = Items,
+            Icon = "bag",
             LabelKey = "MainWindow_Section_Items",
             Directory = "items",
             FilePrefix = "item",
@@ -64,6 +67,7 @@ public static class CoreRecordFamilies
         new()
         {
             Id = Npcs,
+            Icon = "person",
             LabelKey = "MainWindow_Section_Npcs",
             Directory = "npcs",
             FilePrefix = "npc",
@@ -72,6 +76,7 @@ public static class CoreRecordFamilies
         new()
         {
             Id = Shops,
+            Icon = "shop",
             LabelKey = "MainWindow_Section_Shops",
             Directory = "shops",
             FilePrefix = "shop",
@@ -80,6 +85,7 @@ public static class CoreRecordFamilies
         new()
         {
             Id = Conversations,
+            Icon = "bubble",
             LabelKey = "MainWindow_Section_Conversations",
             Directory = "conversations",
             FilePrefix = "conversation",

@@ -44,6 +44,14 @@ public sealed record GameAction
     /// <summary>Localization key for what the player reads.</summary>
     [JsonPropertyName("labelKey")] public string LabelKey { get; init; } = string.Empty;
 
+    /// <summary>The glyph beside it, named from <see cref="GameIcon.Offered"/>. Blank draws none.
+    ///
+    /// <para>A NAME crosses the wire and the client draws its own shape for it: a game cannot ship
+    /// geometry to a client it does not control. Blank rather than a default here, unlike a panel or a
+    /// family — a menu of verbs all wearing the same placeholder glyph is worse than a menu of
+    /// captions.</para></summary>
+    [JsonPropertyName("icon")] public string Icon { get; init; } = string.Empty;
+
     /// <summary>Where it is offered.</summary>
     [JsonPropertyName("surface")] public ActionSurface Surface { get; init; }
 

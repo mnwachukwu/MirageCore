@@ -8,6 +8,12 @@
 # What each member does is written above it, so hovering one in the editor answers the
 # question without leaving the file.
 
+##
+    @summary: Somebody in the world, as a handle rather than a copy. Every question it answers
+    is asked of the world at the moment you ask it, so a handle kept across a tick is still
+    about whoever it named. One arrives as a handler's first argument, or from Builder.Find; a
+    script cannot make one. IsHere is what says the body is still there.
+##
 abstract model Player
 
     ##
@@ -82,6 +88,12 @@ abstract model Player
     public abstract Player? function Find(string name);
 end model
 
+##
+    @summary: What this game IS, said once before the world exists. Handed to Configure and
+    useful nowhere else - everything it declares is about the game rather than about anybody in
+    it, because there is nobody in it yet. Calls that hand something back do so in order that
+    the rest can be said about that thing on lines of its own.
+##
 abstract model Builder
 
     ##
@@ -149,6 +161,12 @@ abstract model Builder
     public abstract Panel function Panel(string id, string title, integer width, integer height);
 end model
 
+##
+    @summary: A kind of record this game authors, handed to a model's Describe so the model can
+    say what its fields could not. The fields ARE the form; what is here is captions, bounds,
+    and where the files live. Describe has to be shared, because this describes a kind of record
+    rather than one record.
+##
 abstract model Records
 
     ##
@@ -156,6 +174,14 @@ abstract model Records
         how many there may be. A caption left blank keeps the model's own name.
     ##
     public abstract function Are(string plural, string singular, integer limit);
+
+    ##
+        @summary: The glyph beside it. One of: grid, quads, pin, flag, bag, gem, coin, sword, flask,
+        cog, person, paw, leaf, heart, book, scroll, list, bubble, key, shield, star, spark, flame,
+        clock, note, dice, shop. A name that is not one of those is refused, because a glyph nobody
+        drew is a section that looks like every other section.
+    ##
+    public abstract function Icon(string glyph);
 
     ##
         @summary: Where these records live: the folder under the world, and what each file is called
@@ -181,6 +207,11 @@ abstract model Records
     public abstract function Length(string field, integer characters);
 end model
 
+##
+    @summary: Something the player can DO, handed back by Builder.Action so that where it is
+    offered, what key reaches it, and what it needs are each their own line. Picking it calls
+    OnAction with the verb's id. Nothing here depends on the line above it.
+##
 abstract model Verb
 
     ##
@@ -212,6 +243,14 @@ abstract model Verb
     public abstract function Key(string key);
 
     ##
+        @summary: The glyph beside it. One of: grid, quads, pin, flag, bag, gem, coin, sword, flask,
+        cog, person, paw, leaf, heart, book, scroll, list, bubble, key, shield, star, spark, flame,
+        clock, note, dice, shop. A name that is not one of those is refused, because a glyph nobody
+        drew is a section that looks like every other section.
+    ##
+    public abstract function Icon(string glyph);
+
+    ##
         @summary: The panel it opens, by the id given to game.Panel. One that was never declared is
         refused by name rather than drawing a button that does nothing.
     ##
@@ -234,6 +273,12 @@ abstract model Verb
     public abstract function NeedsNothing(string key);
 end model
 
+##
+    @summary: A screen of this game's own, handed back by Builder.Panel so its rows, its
+    buttons, and what it asks for are written underneath it. A stock client draws it without
+    having been compiled for this game: the rows read live off the player, and Asks turns a
+    model into a form the player can fill in and send.
+##
 abstract model Panel
 
     ##
@@ -245,6 +290,22 @@ abstract model Panel
         @summary: A button along its bottom: a caption, and the id of a verb it calls.
     ##
     public abstract function Button(string caption, string verb);
+
+    ##
+        @summary: The glyph beside it. One of: grid, quads, pin, flag, bag, gem, coin, sword, flask,
+        cog, person, paw, leaf, heart, book, scroll, list, bubble, key, shield, star, spark, flame,
+        clock, note, dice, shop. A name that is not one of those is refused, because a glyph nobody
+        drew is a section that looks like every other section.
+    ##
+    public abstract function Icon(string glyph);
+
+    ##
+        @summary: Asks the player to fill one of this world's own models in, and send it. Every
+        field of the model becomes a control — a number a spinner, a truth a checkbox, an
+        enumeration a drop-down over its members — and the caption names the button under them. What
+        they send arrives at OnMessage under the model's name. A panel asks for one message.
+    ##
+    public abstract function Asks(string modelName, string caption);
 
     ##
         @summary: A heading on this panel, separating the rows under it.
@@ -268,6 +329,11 @@ abstract model Panel
     public abstract function Meter(string key, string outOf, string caption, integer red, integer green, integer blue);
 end model
 
+##
+    @summary: What a message carried, handed to OnMessage. Read the way a player's own keys are
+    read: a field the line left out is absent rather than zero, and Has is what tells the two
+    apart. Nothing the message's model did not name is in here at all.
+##
 abstract model Values
 
     ##

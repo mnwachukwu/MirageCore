@@ -942,6 +942,176 @@ public class ScriptedWorldTests
             Is.EqualTo("Note: 3 / by the shore / true / missing=false"));
     }
 
+    /// <summary>🔴 A panel asks the player to fill a model in, and a stock client can send it.
+    ///
+    /// <para>This is the half that was missing. A client originates a VERB — an action id and the
+    /// square it was used on — and nothing else, so "they filled this in and sent it" had no carrier
+    /// and three documents said so. A panel that asks carries the controls, and the line it sends is
+    /// read by the parse delegate the same model registered.</para>
+    ///
+    /// <para>⚠ Both halves come from one line on purpose. Inputs with no message would collect values
+    /// nothing sends; a message with no inputs is one a stock client still could not compose.</para>
+    /// </summary>
+    [Test]
+    public void APanelAsksForAMessage_AndCarriesTheControlsToFillIt()
+    {
+        var (module, registry) = Built("""
+            enumeration Habitat
+                Shore, Woodland
+            end enumeration
+
+            model Sighting
+                public string comment;
+                public integer count;
+                public Habitat where;
+                public boolean sure;
+            end model
+
+            shared model Rules
+                public function Configure(Builder game)
+                    Panel book = game.Panel("survey.book", "Field Book", 240, 200);
+                    book.Asks("Sighting", "Record it");
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        var panel = registry.Panels.Find("survey.book")!;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+
+            Assert.That(panel.Asks, Is.EqualTo("Sighting"));
+            Assert.That(panel.SendLabelKey, Is.EqualTo("Record it"));
+
+            // Declaration order, because that is the order the form is drawn in.
+            Assert.That(panel.Inputs.Select(i => i.Field),
+                Is.EqualTo(new[] { "comment", "count", "where", "sure" }).AsCollection);
+
+            Assert.That(panel.Inputs.Select(i => i.Kind), Is.EqualTo(new[]
+            {
+                FieldKind.Text, FieldKind.Integer, FieldKind.Choice, FieldKind.Flag,
+            }).AsCollection);
+
+            // 🔴 The members travel with the input. Choice sets go to the EDITOR and not to a
+            // player's client, so an id here would be a drop-down with nothing in it.
+            Assert.That(panel.Inputs[2].Choices,
+                Is.EqualTo(new[] { "Shore", "Woodland" }).AsCollection);
+
+            Assert.That(panel.Inputs[0].LabelKey, Is.EqualTo("Comment"), "a caption nobody gave");
+
+            // Asking for it is what puts it on the wire: nothing else had to be written.
+            Assert.That(registry.Packets.Knows("Sighting"), Is.True);
+            Assert.That(((IPacketRoute)scripts).Commands,
+                Is.EqualTo(new[] { "Sighting" }).AsCollection);
+        });
+    }
+
+    /// <summary>What a panel sends reaches the game's own handler, values and all.</summary>
+    [Test]
+    public void WhatAPanelSends_ArrivesAtOnMessage()
+    {
+        var (module, registry) = Built("""
+            model Sighting
+                public string comment;
+                public integer count;
+            end model
+
+            shared model Rules
+                public function Configure(Builder game)
+                    Panel book = game.Panel("survey.book", "Field Book", 240, 200);
+                    book.Asks("Sighting", "Record it");
+                end function
+
+                public function OnMessage(Player who, string message, Values values)
+                    who.Message(message + ": " + values.Number("count")
+                            + " x " + values.Text("comment"));
+                end function
+            end model
+            """);
+
+        var world = new RecordingWorld();
+        using ScriptedWorldModule scripts = module;
+        scripts.Start(world);
+
+        var packet = registry.Packets.Deserialize(
+            "Sighting", """{"cmd":"Sighting","comment":"herons","count":4}""", false);
+
+        ((IPacketRoute)scripts).Handle(EntityHandle.ForPlayer(1), packet!);
+
+        Assert.That(world.Said.Single(), Is.EqualTo("Sighting: 4 x herons"));
+    }
+
+    /// <summary>⚠ A panel asks for ONE message. A second is refused by name rather than adding a row
+    /// group whose button nobody could tell from the first one's.</summary>
+    [Test]
+    public void APanelAskingTwice_HasTheSecondRefusedByName()
+    {
+        var (module, registry) = Built("""
+            model Sighting
+                public string comment;
+            end model
+
+            model Correction
+                public string comment;
+            end model
+
+            shared model Rules
+                public function Configure(Builder game)
+                    Panel book = game.Panel("survey.book", "Field Book", 240, 200);
+                    book.Asks("Sighting", "Record it");
+                    book.Asks("Correction", "Fix it");
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+        string refused = string.Join("\n", module.Problems.Select(p => p.Message));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(refused, Does.Contain("Correction"), "the one that was refused");
+            Assert.That(refused, Does.Contain("Sighting"), "and the one already there");
+
+            Assert.That(registry.Panels.Find("survey.book")!.Asks, Is.EqualTo("Sighting"),
+                "the first still stands");
+            Assert.That(registry.Packets.Knows("Correction"), Is.False,
+                "and the refused one is not on the wire either");
+        });
+    }
+
+    /// <summary>Asking for a message and declaring it outright is one message, in either order — a
+    /// game wanting a bot to send the same thing writes both.</summary>
+    [Test]
+    public void AMessageAskedForAndDeclared_IsOneMessage()
+    {
+        var (module, registry) = Built("""
+            model Sighting
+                public string comment;
+            end model
+
+            shared model Rules
+                public function Configure(Builder game)
+                    Panel book = game.Panel("survey.book", "Field Book", 240, 200);
+                    book.Asks("Sighting", "Record it");
+                    game.Message("Sighting");
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty,
+                "saying it twice is not an error");
+            Assert.That(((IPacketRoute)scripts).Commands,
+                Is.EqualTo(new[] { "Sighting" }).AsCollection, "and registers one route");
+        });
+    }
+
     /// <summary>A line carrying a field the model never named leaves it behind.
     ///
     /// <para>A script reads what it declared, so a sender cannot reach past what the rules said they

@@ -50,7 +50,7 @@ public class GameActionTests
             builder.AddAction(new GameAction
             {
                 Id = "test.do", LabelKey = "Do the thing", GroupKey = "Testing",
-                Surface = ActionSurface.Tile, When = When,
+                Surface = ActionSurface.Tile, When = When, Icon = "sword",
             });
             builder.AddActionHandler(handler);
         }
@@ -237,8 +237,14 @@ public class GameActionTests
         => Assert.That(() => CoreRegistry.Build(new Module(new Handler()), new Module(new Handler())),
                        Throws.TypeOf<CoreModuleException>());
 
+    /// <summary>🔴 Every part of a declaration a client draws survives the wire.
+    ///
+    /// <para>An action is projected onto a hand-written row rather than sent whole, so a property
+    /// added to <see cref="GameAction"/> and not to the row is carried nowhere — and nothing fails.
+    /// The declaration is right, the client is right, and the thing simply does not appear. That has
+    /// happened twice here: a panel id, and then a glyph.</para></summary>
     [Test]
-    public void TheDeclarationSurvivesTheWireWithItsCaptionAndItsGroup()
+    public void TheDeclarationSurvivesTheWireWithEveryPartAClientDraws()
     {
         var actions = CoreRegistry.Build(new Module(new Handler())).Actions;
 
@@ -252,7 +258,31 @@ public class GameActionTests
             Assert.That(back.Actions[0].LabelKey, Is.EqualTo("Do the thing"));
             Assert.That(back.Actions[0].GroupKey, Is.EqualTo("Testing"));
             Assert.That(back.Actions[0].Surface, Is.EqualTo(ActionSurface.Tile));
+            Assert.That(back.Actions[0].Icon, Is.EqualTo("sword"));
         });
+    }
+
+    /// <summary>🔴 The row carries a field for every part of the declaration.
+    ///
+    /// <para>The check above names what it looks for, so it only catches what somebody remembered to
+    /// add to it. This one counts, and fails when <see cref="GameAction"/> grows a property the row
+    /// has no place for — which is the moment the drop happens, rather than whenever a reader next
+    /// notices something missing on screen.</para>
+    ///
+    /// <para>⚠ <c>OpensPanel</c> is called <c>opens</c> on the row and <c>Ordinal</c> is the server's
+    /// own ordering, so the two are named here rather than matched. Anything else new is a field the
+    /// row needs.</para></summary>
+    [Test]
+    public void TheRowHasAPlaceForEveryPartOfADeclaration()
+    {
+        var declared = typeof(GameAction).GetProperties().Select(p => p.Name).ToHashSet(StringComparer.Ordinal);
+        var carried = typeof(GameActionsPacket.Row).GetProperties().Select(p => p.Name).ToHashSet(StringComparer.Ordinal);
+
+        // Ordered by the server before it sends, so the client never reads it.
+        declared.Remove("Ordinal");
+
+        Assert.That(declared.Except(carried), Is.Empty,
+            "GameAction grew a property the wire row has no place for, so it reaches no client");
     }
 
     private sealed class SilentDispatcher : IPacketDispatcher

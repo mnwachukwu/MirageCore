@@ -160,8 +160,6 @@ public static partial class EditorStrings
     public const string References_None = nameof(References_None);
     public const string References_DroppedBy = nameof(References_DroppedBy);
     public const string References_SoldBy = nameof(References_SoldBy);
-    public const string References_RewardedBy = nameof(References_RewardedBy);
-    public const string References_KilledFor = nameof(References_KilledFor);
     public const string References_KeepsShop = nameof(References_KeepsShop);
     public const string References_Speaks = nameof(References_Speaks);
     public const string References_SpawnsOn = nameof(References_SpawnsOn);
