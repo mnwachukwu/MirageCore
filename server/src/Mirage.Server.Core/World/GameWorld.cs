@@ -69,6 +69,10 @@ public sealed class GameWorld
     /// </summary>
     public AttributeBag Values { get; set; } = new();
 
+    /// <summary>A game's own stores: store name, then key, then the bag under it.</summary>
+    public Dictionary<string, Dictionary<string, AttributeBag>> Kept { get; set; }
+        = new(StringComparer.Ordinal);
+
     /// <summary>What a game has marked on the ground, by map. Runtime only: a marker says what is
     /// happening right now, and a server that stopped is not still contesting anything.</summary>
     public Dictionary<int, List<WorldMarker>> Markers { get; } = new();

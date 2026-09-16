@@ -115,6 +115,19 @@ shared model Quests
 
         loop for line = 1 to Quests.Shown
             game.Attribute(Quests.LineAt(line), "owner");
+            game.Attribute(Quests.LineIdAt(line), "owner");
+        end loop
+
+        game.Attribute(Quests.Carried, "owner");
+
+        game.Attribute(Quests.OfferName, "owner");
+        game.Attribute(Quests.OfferText, "owner");
+        game.Attribute(Quests.OfferWants, "owner");
+        game.Attribute(Quests.OfferPays, "owner");
+
+        loop for line = 1 to Quests.Offers
+            game.Attribute(Quests.OfferLineAt(line), "owner");
+            game.Attribute(Quests.OfferIdAt(line), "owner");
         end loop
 
         # A conversation choice reaches these. A choice names a verb by the id it was declared with,
@@ -123,20 +136,68 @@ shared model Quests
         Verb ask = game.Action(Quests.Offer, "Ask about work", "Quests");
         ask.OnNpc();
         ask.Icon("scroll");
-        ask.Opens("msr.journal");
+        ask.Opens("msr.offer");
 
+        # Both act on the line picked off the board rather than on anything in the world, so neither is
+        # offered anywhere a body could be pointed at.
+        Verb read = game.Action(Quests.ReadVerb, "What it involves", "Quests");
+        read.Nowhere();
+        read.Icon("scroll");
+
+        Verb take = game.Action(Quests.TakeVerb, "Take it on", "Quests");
+        take.Nowhere();
+        take.Icon("coin");
+
+        Verb drop = game.Action(Quests.DropVerb, "Give it up", "Quests");
+        drop.Nowhere();
+        drop.Icon("clock");
+
+        # Offered only while there is something to hand in, which is the original's rule: its menu
+        # listed the quests you could actually turn in at that body and nothing else.
+        #
+        # ⚠ A condition reads the ASKER and not the body asked, so this is "you are carrying work"
+        # rather than "this one wants it back". The narrower half is the handler's, which answers a
+        # wrong giver by saying so.
         Verb hand = game.Action(Quests.Hand, "Hand it in", "Quests");
         hand.OnNpc();
+        hand.NeedsAtLeast(Quests.Carried, 1);
         hand.Icon("coin");
 
-        Panel journal = game.Panel("msr.journal", "Journal", 300, 220);
-        journal.Key("U");
+        # What one giver had when you asked, and the window on whichever of them you picked. The
+        # original opened this per quest off the NPC's own menu; here the menu asks, and the board is
+        # what it answers with.
+        Panel offer = game.Panel("msr.offer", "On offer", 330, 300);
+        offer.Smallest(300, 200);
+        offer.Icon("scroll");
+
+        loop for line = 1 to Quests.Offers
+            offer.Row(Quests.OfferLineAt(line), Quests.OfferIdAt(line));
+        end loop
+
+        offer.Field(Quests.OfferName, "", 240, 220, 160);
+        offer.Field(Quests.OfferText, "", 200, 200, 160);
+        offer.Field(Quests.OfferWants, "Wants", 220, 190, 140);
+        offer.Field(Quests.OfferPays, "Pays", 240, 210, 120);
+        offer.Button("What it involves", Quests.ReadVerb);
+        offer.Button("Take it on", Quests.TakeVerb);
+
+        Verb log = game.Action(Quests.LogVerb, "Journal", "Quests");
+        log.OnHud();
+        log.Icon("scroll");
+        log.Opens("msr.journal");
+
+        # J, which is the key the original opened its log with.
+        Panel journal = game.Panel("msr.journal", "Journal", 320, 320);
+        journal.Smallest(280, 220);
+        journal.Key("J");
         journal.Icon("scroll");
         journal.Heading("Underway");
 
         loop for line = 1 to Quests.Shown
-            journal.Field(Quests.LineAt(line), "", 200, 200, 160);
+            journal.Row(Quests.LineAt(line), Quests.LineIdAt(line));
         end loop
+
+        journal.Button("Give it up", Quests.DropVerb);
     end function
 
     public string function At(integer slot)
@@ -145,6 +206,18 @@ shared model Quests
 
     public string function CountAt(integer row)
         yield "qcount" + row;
+    end function
+
+    # How many are underway. Carried on the body because the verb that hands one in is offered off it:
+    # a condition is a question about an attribute, so the count has to BE one.
+    public string Carried = "qheld";
+
+    public string DropVerb = "msr.quest.drop";
+    public string LogVerb = "msr.quest.log";
+
+    # The journal's own rows carry the quest's number, so giving one up knows which.
+    public string function LineIdAt(integer line)
+        yield "qjid" + line;
     end function
 
     public string function LineAt(integer line)
@@ -164,24 +237,203 @@ shared model Quests
             yield;
         end if
 
+        # ⚠ The board is cleared whoever they asked, so a window left open over yesterday's offers
+        # cannot be accepted from. What is on it is what THIS body has, now.
+        who.SetText(Quests.OfferName, "");
+        who.SetText(Quests.OfferText, "");
+        who.SetText(Quests.OfferWants, "");
+        who.SetText(Quests.OfferPays, "");
+
+        if Quests.Post(who, giver.Value()) < 1
+            who.Message(giver.Value().Name + " has nothing for you.");
+        end if
+    end function
+    # ── What is on offer ──────────────────────────────────────────────────────
+    #
+    # 🔴 The original NAMED each quest on the giver's own menu and opened a window on the one you
+    # picked - its description, what it wants, and what it pays - with a button to take it. A verb is
+    # declared ONCE, at load, so a menu entry per quest per giver is the one shape this engine cannot
+    # make. The list is the same choice moved one step in: ask, see what they have, read one, take it.
+    #
+    # ⚠ Written onto the ASKER rather than looked up on the giver, because a panel reads a body and the
+    # body it reads is the player's. So the offer is a picture of what one NPC had when they asked.
+
+    public integer Offers = 5;
+
+    public string OfferName = "qoname";
+    public string OfferText = "qotext";
+    public string OfferWants = "qowants";
+    public string OfferPays = "qopays";
+
+    public string function OfferLineAt(integer line)
+        yield "qoline" + line;
+    end function
+
+    public string function OfferIdAt(integer line)
+        yield "qoid" + line;
+    end function
+
+    public string ReadVerb = "msr.quest.read";
+    public string TakeVerb = "msr.quest.take";
+
+    # What one NPC has for this body right now, as lines to pick from. Everything they could take, and
+    # nothing they could not: a quest they have already finished this period is not on offer.
+    public integer function Post(Player who, Npc giver)
         integer kind = giver.Kind;
         integer many = World.Records(Quests.Of);
-        integer took = 0;
+        integer line = 0;
 
         loop for number = 1 to many
-            if World.RecordNumber(Quests.Of, number, "giver") == kind
-                if Quests.Take(who, number)
-                    took = took + 1;
+            if number <= Quests.Tracked and World.RecordNumber(Quests.Of, number, "giver") == kind
+                if Quests.Offerable(who, number) and line < Quests.Offers
+                    line = line + 1;
+                    who.SetText(Quests.OfferLineAt(line), World.Record(Quests.Of, number, "name"));
+                    who.SetText(Quests.OfferIdAt(line), "" + number);
                 end if
             end if
         end loop
 
-        if took < 1
-            who.Message(giver.Name + " has nothing for you.");
+        loop for blank = line + 1 to Quests.Offers
+            who.SetText(Quests.OfferLineAt(blank), "");
+            who.SetText(Quests.OfferIdAt(blank), "");
+        end loop
+
+        yield line;
+    end function
+
+    # Whether it could be taken if they asked for it. The same gates Take applies, asked before rather
+    # than after - a board listing work you cannot accept is a board that lies.
+    boolean function Offerable(Player who, integer number)
+        integer holding = who.Number(Quests.At(number));
+
+        if holding == Quests.Taken or holding == Quests.Repeating
+            yield false;
+        end if
+
+        if holding == Quests.Finished and not Quests.ComeRound(who, number)
+            yield false;
+        end if
+
+        yield Quests.Allows(who, number);
+    end function
+
+    # The window on one of them, written when they ask to read it.
+    public function Read(Player who, string picked)
+        integer number = Quests.Numbered(picked);
+
+        if number < 1
+            who.Message("Pick something off the list first.");
+            yield;
+        end if
+
+        who.SetText(Quests.OfferName, World.Record(Quests.Of, number, "name"));
+        who.SetText(Quests.OfferText, World.Record(Quests.Of, number, "description"));
+        who.SetText(Quests.OfferWants, Quests.Wanted(number));
+        who.SetText(Quests.OfferPays, Quests.Paid(number));
+    end function
+
+    # And taking it, which is the one thing the window is for.
+    public function Accept(Player who, string picked)
+        integer number = Quests.Numbered(picked);
+
+        if number < 1
+            who.Message("Pick something off the list first.");
+            yield;
+        end if
+
+        if not Quests.Take(who, number)
+            who.Message("That is not yours to take.");
+            yield;
         end if
 
         Quests.Write(who);
     end function
+
+    # 🔴 Giving one up costs what has been done, and a FIRST run costs the taking as well: it
+    # goes back to never having been taken, so it can be taken again from the start. A run of one that
+    # was finished before goes back to FINISHED rather than to nothing - otherwise giving up a repeat
+    # is how you get a second go at the richer first-time reward.
+    public function Abandon(Player who, string picked)
+        integer number = Quests.Numbered(picked);
+
+        if number < 1
+            who.Message("Pick something out of the journal first.");
+            yield;
+        end if
+
+        integer holding = who.Number(Quests.At(number));
+
+        if holding != Quests.Taken and holding != Quests.Repeating
+            who.Message("You are not doing that one.");
+            yield;
+        end if
+
+        if holding == Quests.Repeating
+            who.SetNumber(Quests.At(number), Quests.Finished);
+        end if
+
+        if holding == Quests.Taken
+            who.SetNumber(Quests.At(number), 0);
+        end if
+
+        Quests.Clear(who, number);
+        who.Message("You give up on " + World.Record(Quests.Of, number, "name") + ".");
+        Quests.Write(who);
+    end function
+
+    # A picked line carries the quest's number as text, because that is what a line carries.
+    integer function Numbered(string picked)
+        loop for number = 1 to Quests.Tracked
+            if picked == "" + number
+                yield number;
+            end if
+        end loop
+
+        yield 0;
+    end function
+
+    # What it wants, in a line: the first goal is the one worth naming, and a quest with several says
+    # so rather than listing them down a window this size.
+    string function Wanted(integer number)
+        integer rows = World.Records(Quests.Goals);
+        integer found = 0;
+        string first = "";
+
+        loop for row = 1 to rows
+            if World.RecordNumber(Quests.Goals, row, "quest") == number
+                found = found + 1;
+
+                if found == 1
+                    first = World.RecordNumber(Quests.Goals, row, "many")
+                            + " " + World.Record(Quests.Goals, row, "quarry");
+                end if
+            end if
+        end loop
+
+        if found < 1
+            yield "a word with somebody";
+        end if
+
+        if found > 1
+            yield first + ", and " + (found - 1) + " more";
+        end if
+
+        yield first;
+    end function
+
+    string function Paid(integer number)
+        integer exp = World.RecordNumber(Quests.Of, number, "rewardExp");
+        integer item = World.RecordNumber(Quests.Of, number, "rewardItem");
+
+        if item > 0
+            yield exp + " experience, and "
+                  + World.RecordNumber(Quests.Of, number, "rewardMany")
+                  + " " + World.RecordName("Items", item);
+        end if
+
+        yield exp + " experience";
+    end function
+
 
     # ⚠ The refusals are silent. A giver offering four quests to somebody who qualifies for one would
     # otherwise say three things nobody asked about — and a quest you cannot take yet is not news, it
@@ -443,19 +695,28 @@ shared model Quests
     public function Write(Player who)
         integer many = World.Records(Quests.Of);
         integer line = 0;
+        integer held = 0;
 
         loop for number = 1 to many
             if number <= Quests.Tracked and Quests.Underway(who, number)
+                held = held + 1;
+
                 if line < Quests.Shown
                     line = line + 1;
                     who.SetText(Quests.LineAt(line), Quests.Says(who, number));
+                    who.SetText(Quests.LineIdAt(line), "" + number);
                 end if
             end if
         end loop
 
+        # Everything underway, not just the eight the journal has room for: what the verb is gated on
+        # is whether there is anything to hand in at all.
+        who.SetNumber(Quests.Carried, held);
+
         # Everything past the last one is blanked, or a quest that was settled goes on being shown.
         loop for blank = line + 1 to Quests.Shown
             who.SetText(Quests.LineAt(blank), "");
+            who.SetText(Quests.LineIdAt(blank), "");
         end loop
     end function
 

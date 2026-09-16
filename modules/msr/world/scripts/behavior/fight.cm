@@ -19,9 +19,11 @@ shared model Fight
     public string Reach = "msr.interact";
 
     public function Declare(Builder game)
+        # ⚠ A KEY and nothing else. The original never put swinging on a menu: right-clicking a
+        # body offered talking to it, trading with it and inviting it, and hitting it was the key under
+        # your finger. An entry for it turns every creature in the world into a two-click fight.
         Verb hit = game.Action(Fight.Attack, "Attack", "Combat");
-        hit.OnNpc();
-        hit.OnPlayer();
+        hit.Nowhere();
         hit.Icon("sword");
 
         # ⚠ E, which is the key the ENGINE reaches for whatever you are facing with. Binding it takes
@@ -30,12 +32,41 @@ shared model Fight
         hit.Key("E");
 
         # The reaching has to go somewhere, or taking E costs the world its shops and its
-        # conversations. This verb does what E used to, on R.
+        # conversations. This verb does what E used to, on R - a KEY and no menu entry, because
+        # the menu already offers talking to a body and shopping with one. A third line saying
+        # the same thing is what a right-click on a shopkeeper does not need.
         Verb reach = game.Action(Fight.Reach, "Interact", "Combat");
-        reach.OnNpc();
+        reach.Nowhere();
         reach.Icon("bubble");
         reach.Key("R");
         reach.Interacts();
+    end function
+
+    # ── Leaving a trail ───────────────────────────────────────────────────────
+    #
+    # A body down to a third of what it can hold drips onto every fresh tile it crosses. The original
+    # did this and it is the only way a fight that has moved is readable afterwards: the ground says
+    # which way the wounded one went.
+    #
+    # ⚠ Weaker than the stain a KILL leaves, and deliberately - a trail that marked the ground as
+    # heavily as a death would make one wounded runner look like a massacre.
+
+    public real BleedingBelow = 0.34;
+    public integer TrailSize = 1;
+    public integer TrailAmount = 25;
+
+    public function Bleed(Player who)
+        integer most = who.Number(Vitals.MaxHealth);
+
+        if most < 1
+            yield;
+        end if
+
+        if who.Number(Vitals.Health) > most * Fight.BleedingBelow
+            yield;
+        end if
+
+        World.Stain(who.Map, who.X, who.Y, Fight.TrailSize, Fight.TrailAmount);
     end function
 
     # ── A player swings at a creature ─────────────────────────────────────────
@@ -260,6 +291,10 @@ shared model Fight
     public integer LooseSeconds = 2;
 
     public function Loose(Npc it, Player who)
+        if who.IsDowned
+            yield;
+        end if
+
         integer int = it.Number(Stats.Int);
 
         # A body authored with none has nothing to throw. It keeps its distance and does nothing, which
@@ -324,6 +359,12 @@ shared model Fight
     # accident.
 
     public function Meet(Npc it, Player who)
+        # A body already out of action is not in the fight. Without this the same corpse is reached,
+        # hit and killed again every beat, and each death costs whatever the last one did over again.
+        if who.IsDowned
+            yield;
+        end if
+
         if it.Behavior == Beasts.KeepsDistance
             Fight.Loose(it, who);
             yield;
@@ -464,7 +505,7 @@ shared model Fight
         # swing or a spell. A second call site would be a second rule, and the forgotten one would
         # not surface until a quest refused to finish.
         Quests.Killed(who, kind);
-        Bounty.Killed(who, kind);
+        GuildQuest.Killed(who, kind);
 
         # And the land it died on pays whoever holds it, which is what makes holding any worth doing.
         Territory.Earned(who, map);

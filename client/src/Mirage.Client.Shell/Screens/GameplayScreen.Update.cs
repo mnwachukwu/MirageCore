@@ -24,6 +24,16 @@ public sealed partial class GameplayScreen : IGameScreen
     public void Update(GameTime gameTime, InputState input)
     {
         _lastInput = input;
+
+        // Whatever the bars read now, they have always read. Taken here rather than at a draw because
+        // a value and its maximum can arrive in different packets of one batch, and a snap between the
+        // two would settle the bar against a maximum that is about to change.
+        if (_ctx.State.SnapVitals)
+        {
+            _ctx.State.SnapVitals = false;
+            UiHelper.SnapMeters();
+        }
+
         float deltaMs = (float)gameTime.ElapsedGameTime.TotalMilliseconds;
         // The client's one clock. Draw, the chat panel, the bubbles and the floating text all stamp
         // from Environment.TickCount64, and a deadline written here is read over there — the action
@@ -179,7 +189,8 @@ public sealed partial class GameplayScreen : IGameScreen
                 // A HUD verb is about nothing in particular, so it carries no target and the square is
                 // the one the player is standing on — the only place a game could reasonably mean.
                 InvokeGameAction(_hud.PickedAction, _hud.PickedOpens,
-                                 _ctx.State.CenterMapNum, _ctx.State.Me.X, _ctx.State.Me.Y);
+                                 _ctx.State.CenterMapNum, _ctx.State.Me.X, _ctx.State.Me.Y,
+                                 toggles: true);
                 break;
         }
 

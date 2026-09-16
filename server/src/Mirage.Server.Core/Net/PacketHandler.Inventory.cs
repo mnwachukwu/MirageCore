@@ -23,7 +23,7 @@ public sealed partial class PacketHandler
     private void HandleUseItem(int index, UseItemPacket p)
     {
         if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Dead) return;  // a corpse can't use items (potions, equip, scrolls)
+        if (_pm[index].Char.Downed) return;  // a corpse can't use items (potions, equip, scrolls)
         if (!SlotValidation.IsValidInvSlot(p.Slot))
         {
             HackingAttempt(index, "Invalid InvNum");
@@ -35,7 +35,7 @@ public sealed partial class PacketHandler
     private void HandleMapGetItem(int index)
     {
         if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Dead) return;  // a corpse can't pick up items
+        if (_pm[index].Char.Downed) return;  // a corpse can't pick up items
         _items.PlayerMapGetItem(index);
     }
 
@@ -45,7 +45,7 @@ public sealed partial class PacketHandler
     private void HandleMapPickUp(int index, MapPickUpPacket p)
     {
         if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Dead) return;
+        if (_pm[index].Char.Downed) return;
         _items.PlayerMapPickUpAt(index, p.MapNum, p.Slot);
     }
 
@@ -53,7 +53,7 @@ public sealed partial class PacketHandler
     private void HandleMapPickUpAll(int index, MapPickUpAllPacket p)
     {
         if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Dead) return;
+        if (_pm[index].Char.Downed) return;
         _items.PlayerMapPickUpAllAt(index, p.MapNum, p.X, p.Y, p.Layer);
     }
 
@@ -66,7 +66,7 @@ public sealed partial class PacketHandler
     private void HandleMapDropItem(int index, MapDropItemPacket p)
     {
         if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Dead) return;  // a corpse can't drop items
+        if (_pm[index].Char.Downed) return;  // a corpse can't drop items
         if (!SlotValidation.IsValidInvSlot(p.Slot))
         {
             HackingAttempt(index, "Invalid InvNum");
@@ -93,7 +93,7 @@ public sealed partial class PacketHandler
     private void HandleMapDropBulk(int index, MapDropBulkPacket p)
     {
         if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Dead) return;  // a corpse can't drop items
+        if (_pm[index].Char.Downed) return;  // a corpse can't drop items
         if (p.ItemNum <= 0 || p.ItemNum > _world.Limits.Items)
         {
             HackingAttempt(index, "Invalid MapDropBulk ItemNum");
@@ -120,7 +120,7 @@ public sealed partial class PacketHandler
     private void HandleBankDeposit(int index, BankDepositPacket p)
     {
         if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Dead) return;  // a corpse can't use the bank
+        if (_pm[index].Char.Downed) return;  // a corpse can't use the bank
         if (!SlotValidation.IsValidInvSlot(p.InvSlot))
         {
             HackingAttempt(index, "Invalid BankDeposit InvSlot");
@@ -137,7 +137,7 @@ public sealed partial class PacketHandler
     private void HandleBankWithdraw(int index, BankWithdrawPacket p)
     {
         if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Dead) return;  // a corpse can't use the bank
+        if (_pm[index].Char.Downed) return;  // a corpse can't use the bank
         if (!SlotValidation.IsValidBankSlot(p.BankSlot))
         {
             HackingAttempt(index, "Invalid BankWithdraw BankSlot");
@@ -154,7 +154,7 @@ public sealed partial class PacketHandler
     private void HandleBankDepositBulk(int index, BankDepositBulkPacket p)
     {
         if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Dead) return;  // a corpse can't use the bank
+        if (_pm[index].Char.Downed) return;  // a corpse can't use the bank
         if (p.ItemNum <= 0 || p.ItemNum > _world.Limits.Items)
         {
             HackingAttempt(index, "Invalid BankDepositBulk ItemNum");
@@ -171,7 +171,7 @@ public sealed partial class PacketHandler
     private void HandleBankWithdrawBulk(int index, BankWithdrawBulkPacket p)
     {
         if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Dead) return;  // a corpse can't use the bank
+        if (_pm[index].Char.Downed) return;  // a corpse can't use the bank
         if (p.ItemNum <= 0 || p.ItemNum > _world.Limits.Items)
         {
             HackingAttempt(index, "Invalid BankWithdrawBulk ItemNum");
@@ -281,7 +281,7 @@ public sealed partial class PacketHandler
     private void HandleShopBarter(int index, ShopBarterPacket p)
     {
         if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Dead) return;  // a corpse can't barter at a shop
+        if (_pm[index].Char.Downed) return;  // a corpse can't barter at a shop
         int shopNum = _pm[index].ActiveShop(_world, index);
         if (shopNum > 0)
             _shop.Barter(index, shopNum, p.BarterSlot, p.Multiples);
@@ -292,7 +292,7 @@ public sealed partial class PacketHandler
     private void HandleShopBuy(int index, ShopBuyPacket p)
     {
         if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Dead) return;  // a corpse can't shop
+        if (_pm[index].Char.Downed) return;  // a corpse can't shop
         // Resolve the shop from the SERVER's active-shop record, never from the packet: the client's
         // shopNum is a display hint, and trusting it would let a modified client buy from any shop in
         // the world. Same rule HandleShopBarter follows.
@@ -306,14 +306,14 @@ public sealed partial class PacketHandler
     private void HandleShopSell(int index, ShopSellPacket p)
     {
         if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Dead) return;  // a corpse can't shop
+        if (_pm[index].Char.Downed) return;  // a corpse can't shop
         _shop.Sell(index, p.InvSlot, p.Quantity);
     }
 
     private void HandleFixItem(int index, FixItemPacket p)
     {
         if (!_pm[index].IsPlaying) return;
-        if (_pm[index].Char.Dead) return;  // a corpse can't repair at a shop
+        if (_pm[index].Char.Downed) return;  // a corpse can't repair at a shop
         _shop.FixItem(index, p.InvSlot);
     }
 
@@ -342,14 +342,58 @@ public sealed partial class PacketHandler
 
         try
         {
-            handler.Invoke(EntityHandle.ForPlayer(index), p.Action, ActionTargetOf(p),
-                           new WorldPlace(p.MapNum, p.X, p.Y));
+            var on = ActionTargetOf(p);
+
+            // What the player has SELECTED, for a verb that asked to be aimed and was used without
+            // pointing at anything - a key press, or a button on one of the game's own screens.
+            if (!on.IsSet && declared.Aimed) on = Selected(index);
+
+            handler.Invoke(EntityHandle.ForPlayer(index), p.Action, on,
+                           new WorldPlace(p.MapNum, p.X, p.Y), p.Picked);
         }
         catch (Exception ex)
         {
             // A game's bug loses its own action, not the player holding it.
             _logger.LogError(ex, "Action handler {Handler} failed on {Action} for index {Index}",
                              handler.Name, p.Action, index);
+        }
+    }
+
+    /// <summary>Whoever this player has picked out - with Tab, with Ctrl+Tab, or by clicking them.
+    ///
+    /// <para>Read from this server's own record of the selection rather than from the packet, so an
+    /// aimed verb lands on the body the player actually chose. Self is an ordinary selection here and
+    /// not a special case, which is what makes casting on yourself need nothing of its own.</para>
+    ///
+    /// <para>A creature is named by where it SPAWNS for the same reason it is everywhere else: a body
+    /// that has wandered onto the next map is still itself.</para></summary>
+    private EntityHandle Selected(int index)
+    {
+        var sp = _pm[index];
+
+        // 0 player, 1 creature, 2 self, 3 a creature that is passing through.
+        switch (sp.TargetType)
+        {
+            case 2:
+                return EntityHandle.ForPlayer(index);
+
+            case 0 when sp.Target > 0 && sp.Target <= _pm.Slots && _pm[sp.Target].IsPlaying:
+                return EntityHandle.ForPlayer(sp.Target);
+
+            case 1 when sp.TargetMap > 0 && sp.TargetMap <= _world.Limits.Maps
+                        && sp.Target >= 1 && sp.Target <= Constants.MaxMapNpcs:
+            {
+                var body = _world.MapNpcs[sp.TargetMap, sp.Target];
+                if (body.Num <= 0) return EntityHandle.None;
+                var (spawnMap, spawnSlot) = body.GetSpawnIdentity(sp.TargetMap, sp.Target);
+                return EntityHandle.ForNpc(spawnMap, spawnSlot);
+            }
+
+            case 3 when sp.TargetSpawnMap > 0:
+                return EntityHandle.ForNpc(sp.TargetSpawnMap, sp.TargetSpawnSlot);
+
+            default:
+                return EntityHandle.None;
         }
     }
 

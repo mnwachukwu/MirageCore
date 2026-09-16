@@ -51,7 +51,7 @@ above both as the engine's door.
 | `scripts/behavior/ledger.cm` | what a guild is charged, and what it is paid |
 | `scripts/behavior/perks.cm` | what a guild is worth to the people in it |
 | `scripts/behavior/valor.cm` | the war currency |
-| `scripts/behavior/bounty.cm` | a standing bounty, and what filling it pays |
+| `scripts/behavior/guildquest.cm` | a guild's standing quest, and what finishing it pays |
 | `scripts/behavior/calendar.cm` | the calendar, worked out from the clock |
 
 `stats.cm` is pure arithmetic with no opinion about a world; `sheet.cm` declares the keys and puts the

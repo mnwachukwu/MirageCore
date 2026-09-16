@@ -49,7 +49,7 @@ public sealed class PlayerRecord
     // ── Death & respawn ──────────────────────────────────────────────────────
     // Persisted: a relogin while dead re-opens the death panel.
     /// <summary>True while in the timed dead state (a corpse awaiting a Respawn click).</summary>
-    public bool Dead { get; set; }
+    public bool Downed { get; set; }
     /// <summary>UTC-seconds the Respawn button unlocks (server-owned countdown). Meaningful only while
     /// <see cref="Dead"/>.</summary>
     public long RespawnReadyUtc { get; set; }

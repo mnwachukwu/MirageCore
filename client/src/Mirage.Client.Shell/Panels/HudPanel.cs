@@ -116,7 +116,11 @@ public sealed class HudPanel
 
     // What the game declared for the HUD, laid out. Rebuilt only when the declaration changes, which is
     // once per session: a stock client is told on join and never again.
-    private readonly List<(Button Btn, string Id, string Opens, ActionCondition When)> _gameBtns = [];
+    private readonly List<(Button Btn, string Id, string Opens, GameAction Verb)> _gameBtns = [];
+
+    // The ones drawn right now, in declaration order. Rebuilt each frame, since what a button is gated
+    // on changes under the player: joining a guild puts one here.
+    private readonly List<(Button Btn, string Id, string Opens, GameAction Verb)> _shownBtns = [];
     private int _gameBtnsFor = -1;
 
     /// <summary>The verb whose button was last clicked. Read when <see cref="Update"/> answers
@@ -188,7 +192,7 @@ public sealed class HudPanel
     // The count is static because the layout helper below it is, and that one is asked by a panel that
     // has no HUD to ask. There is one HUD, drawn on one thread, so the shared value is the same value.
     private static int _declaredButtons;
-    private int LogoutRow => 2 + _gameBtns.Count;
+    private int LogoutRow => 2 + _shownBtns.Count;
     private static int LogoutY => ButtonBaseY + (2 + _declaredButtons) * (BtnH + 4);
 
     /// <summary>Where a panel of <paramref name="width"/> sits when it hangs in the sidebar's free space:
@@ -217,7 +221,6 @@ public sealed class HudPanel
 
         _gameBtnsFor = stamp;
         _gameBtns.Clear();
-        _declaredButtons = declared.Count;
 
         for (int i = 0; i < declared.Count; i++)
         {
@@ -232,9 +235,32 @@ public sealed class HudPanel
                 Label = ClientStrings.GetOrFallback(action.LabelKey, action.LabelKey)
                         + GameKeyMap.Hint(shortcut),
             };
-            _gameBtns.Add((button, action.Id, action.OpensPanel, action.When));
+            _gameBtns.Add((button, action.Id, action.OpensPanel, action));
+        }
+    }
+
+    /// <summary>Works out which of the game's buttons are up, and puts them in rows with no gaps.
+    ///
+    /// <para>A verb that asked to be hidden leaves no row behind while its condition does not hold: the
+    /// buttons below it come up one, and Logout with them, so the block is as long as what the player
+    /// can press. One that did not is kept in place and drawn dim.</para></summary>
+    private void ShowGameButtons(ClientState state)
+    {
+        var mine = state.AttributesOf(EntityHandle.ForPlayer(state.MyIndex));
+
+        _shownBtns.Clear();
+        foreach (var entry in _gameBtns)
+        {
+            bool holds = entry.Verb.When.Holds(mine);
+            if (!holds && entry.Verb.Unmet == ActionUnmet.Hide) continue;
+
+            entry.Btn.Enabled = holds;
+            _shownBtns.Add(entry);
         }
 
+        for (int i = 0; i < _shownBtns.Count; i++) _shownBtns[i].Btn.Bounds = BtnRect(2 + i);
+
+        _declaredButtons = _shownBtns.Count;
         _quitBtn.Bounds = BtnRect(LogoutRow);
     }
 
@@ -245,16 +271,12 @@ public sealed class HudPanel
     public HudAction Update(InputState input, ClientState state)
     {
         SyncGameButtons(state);
+        ShowGameButtons(state);
 
         if (_invBtn.IsClicked(input)) return HudAction.ToggleInventory;
         if (_socialBtn.IsClicked(input)) return HudAction.ToggleSocial;
 
-        // A button whose condition has stopped holding goes gray rather than away: a button that
-        // vanishes takes every button below it up a row, and the player's aim with it.
-        var mine = state.AttributesOf(EntityHandle.ForPlayer(state.MyIndex));
-        foreach (var (button, _, _, when) in _gameBtns) button.Enabled = when.Holds(mine);
-
-        foreach (var (button, id, opens, _) in _gameBtns)
+        foreach (var (button, id, opens, _) in _shownBtns)
         {
             if (!button.IsClicked(input)) continue;
 
@@ -362,13 +384,12 @@ public sealed class HudPanel
         // the rows above it have been laid out.
         _invBtn.Bounds = BtnRect(0);
         _socialBtn.Bounds = BtnRect(1);
-        for (int i = 0; i < _gameBtns.Count; i++) _gameBtns[i].Btn.Bounds = BtnRect(2 + i);
-        _quitBtn.Bounds = BtnRect(LogoutRow);
+        ShowGameButtons(state);
 
         // Panel buttons: row0=Inventory, row1=Social, row2=Logout (centered)
         _invBtn.Draw(sb, font, input);
         _socialBtn.Draw(sb, font, input);
-        foreach (var (button, _, _, _) in _gameBtns) button.Draw(sb, font, input);
+        foreach (var (button, _, _, _) in _shownBtns) button.Draw(sb, font, input);
         _quitBtn.Draw(sb, font, input);
     }
 
@@ -416,7 +437,7 @@ public sealed class HudPanel
                 UiHelper.DrawMeter(sb, font, new Rectangle(x, y, width, DisplayRowH - 2),
                     (float)row.Fill, color, Color.Black,
                     label.Length > 0 ? UiHelper.MeterText(label, (long)row.Value, (long)row.Max) : row.Text,
-                    Color.White);
+                    Color.White, ease: row.Key);
                 break;
 
             case DisplayStyle.Badge:

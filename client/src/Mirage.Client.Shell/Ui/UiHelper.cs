@@ -447,9 +447,10 @@ public static class UiHelper
     /// </summary>
     public static void DrawMeter(SpriteBatch sb, SpriteFont font, Rectangle bounds,
         float fillRatio, Color fill, Color outline, string text, Color textColor,
-        int outlineThickness = 1, Color? bgColor = null)
+        int outlineThickness = 1, Color? bgColor = null, string? ease = null)
     {
         DrawFilledRect(sb, bounds, bgColor ?? BarBg);
+        if (ease is { Length: > 0 }) fillRatio = Eased(ease, fillRatio);
         int fillW = (int)(bounds.Width * Math.Clamp(fillRatio, 0f, 1f));
         if (fillW > 0)
             DrawFilledRect(sb, new Rectangle(bounds.X, bounds.Y, fillW, bounds.Height), fill);
@@ -465,6 +466,57 @@ public static class UiHelper
     /// (e.g. "Fuel 1,250/1,400"). Pure layout — the caller supplies an already-localized label and the
     /// format itself has no translatable text, so a meter reads identically on every surface.</summary>
     public static string MeterText(string label, long current, long max) => $"{label} {current:N0}/{max:N0}";
+
+    // ── Bars that move rather than jump ───────────────────────────────────────
+    //
+    // Sprinting takes a point of stamina a step. Drawn as five snaps a second the bar reads as a
+    // broken redraw; eased, it reads as running out.
+    //
+    // ⚠ Under every meter, rather than something each surface remembers to do. MSR animated the
+    // four bars its HUD drew and nothing else, so the same health in a panel moved differently from
+    // the health in the sidebar.
+    //
+    // Exponential rather than linear: the gap closes by the same share every frame, so a bar chasing a
+    // small change settles at once and one chasing a big change still arrives in about the same time.
+    // Framerate-independent, so a slow frame moves the bar as far as the time it took.
+    private const float EaseSpeed = 5f;
+
+    // Under this the bar is at its value. A slide that never quite lands leaves a hairline of the
+    // old fill showing forever.
+    private const float EaseSettled = 0.001f;
+
+    // ⚠ The time is kept PER BAR, not once for the panel. A single shared stamp is spent by
+    // whichever bar draws first in a frame, and every bar after it sees no time passed and never
+    // moves - so the top bar animates and the three under it sit still.
+    private static readonly Dictionary<string, (float Shown, long At)> Shown = new(StringComparer.Ordinal);
+
+    /// <summary>Where a bar is drawn now, easing toward where it should be. A bar nobody has drawn
+    /// yet starts at its value, so arriving in the world does not animate every bar up from
+    /// empty.</summary>
+    private static float Eased(string key, float target)
+    {
+        target = Math.Clamp(target, 0f, 1f);
+        long now = Environment.TickCount64;
+
+        if (!Shown.TryGetValue(key, out var last))
+        {
+            Shown[key] = (target, now);
+            return target;
+        }
+
+        // Capped, so a bar that was not drawn for a while - a panel just reopened, a window unminimized -
+        // catches up in one step instead of easing through everything it missed.
+        float delta = Math.Clamp((now - last.At) / 1000f, 0f, 0.25f);
+        float moved = last.Shown + (target - last.Shown) * Math.Min(1f, EaseSpeed * delta);
+        if (Math.Abs(target - moved) < EaseSettled) moved = target;
+
+        Shown[key] = (moved, now);
+        return moved;
+    }
+
+    /// <summary>Puts every bar at its value at once, for the moments where a slide would be wrong:
+    /// a different character, or the same one somewhere else.</summary>
+    public static void SnapMeters() => Shown.Clear();
 
     private const float MinFitWidth = 10f;
     private const float CenteredLabelInset = 8f; // total horizontal margin for DrawLabelCentered (4 px each side)

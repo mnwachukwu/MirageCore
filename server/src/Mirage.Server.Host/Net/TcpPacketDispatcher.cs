@@ -194,7 +194,7 @@ public sealed class TcpPacketDispatcher : IPacketDispatcher, IDisposable
         var spc = sp.Char;
         // A dead player's say/yell still posts to the chat log, but shows NO floating bubble — corpses can
         // stack on one tile in a way live players don't, so stacked bubbles would overlap illegibly.
-        if (spc.Dead) return;
+        if (spc.Downed) return;
         string json = PacketSerializer.Serialize(packet);
 
         if (wholeRegion)

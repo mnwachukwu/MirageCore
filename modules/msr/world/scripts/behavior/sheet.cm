@@ -24,6 +24,9 @@ shared model Sheet
     public string Helmet = "helmet";
     public string Shield = "shield";
 
+    public string OpenVerb = "msr.sheet.open";
+    public string TrainVerb = "msr.sheet.train";
+
     public function Declare(Builder game)
         game.EquipSlot(Sheet.Weapon, "Weapon");
         game.EquipSlot(Sheet.Armor, "Armor");
@@ -36,20 +39,166 @@ shared model Sheet
         game.Attribute(Stats.Int, "owner");
         game.Attribute(Stats.Points, "owner");
         game.Attribute(Stats.Exp, "owner");
+        game.Attribute(Stats.NextLevel, "owner");
+
+        game.Attribute(Sheet.SeenDamage, "owner");
+        game.Attribute(Sheet.SeenSpellDamage, "owner");
+        game.Attribute(Sheet.SeenMitigation, "owner");
+        game.Attribute(Sheet.SeenCrit, "owner");
+        game.Attribute(Sheet.SeenSpellCrit, "owner");
+        game.Attribute(Sheet.SeenTurnAside, "owner");
+        game.Attribute(Sheet.SeenHealthRegen, "owner");
+        game.Attribute(Sheet.SeenManaRegen, "owner");
+        game.Attribute(Sheet.SeenStaminaRegen, "owner");
+        game.Attribute(Sheet.SeenSprint, "owner");
 
         # Level is public: it is on the name plate of everybody you meet.
         game.Attribute(Stats.Level, "viewport");
 
-        # The sheet, on the sidebar.
-        game.Heading("Character");
-        game.Field(Classes.Name, "Class", 200, 200, 160);
+        # 🔴 The sidebar carries the LEVEL and nothing else about the sheet, which is what the
+        # original's did: a name, a level, where you are, the sky, and four bars. Everything else it
+        # knew about a character was a keypress away in a window.
+        #
+        # A stat block down the side of the screen looks like more information and is less: it is read
+        # once a level and in the way for the rest of the time, and it pushes the bars - the three
+        # numbers that decide whether you are about to die - down the screen behind it.
         game.Field(Stats.Level, "Level", 200, 200, 160);
-        game.Field(Stats.Exp, "Experience", 200, 200, 160);
-        game.Field(Stats.Str, "Strength", 200, 200, 160);
-        game.Field(Stats.Def, "Defense", 200, 200, 160);
-        game.Field(Stats.Spd, "Speed", 200, 200, 160);
-        game.Field(Stats.Int, "Intelligence", 200, 200, 160);
-        game.Badge(Stats.Points, "Unspent", 240, 200, 80);
+
+        # ⚠ Beside the name on the select screen, which is the one place a character who is not
+        # in the world is drawn. The original put a level and a class there, and a list of three bare
+        # names is how you delete the wrong character.
+        game.Slot(Stats.Level, "level", 200, 200, 160);
+        game.Slot(Classes.Name, "", 200, 200, 160);
+
+        # The fourth bar, under the three the body runs on. The original drew experience beside them
+        # rather than as a number in a list, and it is the one number a player watches without being
+        # in any danger.
+        game.Meter(Stats.Exp, Stats.NextLevel, "Experience", 200, 170, 230);
+
+        # The sheet itself, on C, where the original kept it.
+        Panel card = game.Panel("msr.sheet", "Character", 260, 400);
+        card.Smallest(200, 300);
+        card.Key("C");
+        card.Icon("shield");
+        card.Heading("Character");
+        card.Field(Classes.Name, "Class", 200, 200, 160);
+        card.Field(Stats.Level, "Level", 200, 200, 160);
+        card.Field(Stats.Exp, "Experience", 200, 200, 160);
+        card.Heading("Stats");
+        card.Field(Stats.Str, "Strength", 200, 200, 160);
+        card.Field(Stats.Def, "Defense", 200, 200, 160);
+        card.Field(Stats.Spd, "Speed", 200, 200, 160);
+        card.Field(Stats.Int, "Intelligence", 200, 200, 160);
+        card.Field(Stats.Points, "Unspent", 240, 200, 80);
+
+        # What those four come to, which is the question a player is actually asking when they open
+        # this. Every one of them reads through the same function the fight reads.
+        card.Heading("In a fight");
+        card.Field(Sheet.SeenDamage, "Damage", 230, 170, 120);
+        card.Field(Sheet.SeenSpellDamage, "Spell damage", 230, 170, 120);
+        card.Field(Sheet.SeenMitigation, "Mitigation", 230, 170, 120);
+        card.Field(Sheet.SeenCrit, "Critical", 230, 170, 120);
+        card.Field(Sheet.SeenSpellCrit, "Spell critical", 230, 170, 120);
+        card.Field(Sheet.SeenTurnAside, "Turning it aside", 230, 170, 120);
+        card.Field(Sheet.SeenSprint, "Sprint", 230, 170, 120);
+        card.Heading("At rest");
+        card.Field(Sheet.SeenHealthRegen, "Health a beat", 190, 200, 160);
+        card.Field(Sheet.SeenManaRegen, "Mana a beat", 190, 200, 160);
+        card.Field(Sheet.SeenStaminaRegen, "Stamina a beat", 190, 200, 160);
+
+        # ⚠ The original reached every one of its windows from a button on the sidebar AND from a
+        # key. A window with only a key is a window nobody who has not read the help knows about.
+        Verb sheet = game.Action(Sheet.OpenVerb, "Character", "Character");
+        sheet.OnHud();
+        sheet.Icon("shield");
+        sheet.Opens("msr.sheet");
+
+        Verb train = game.Action(Sheet.TrainVerb, "Train", "Character");
+        train.OnHud();
+        train.Icon("sword");
+        train.Opens("msr.training");
+
+        # Where points are SPENT, which is the one thing the sheet cannot do. The four current values
+        # are repeated here because an allocation is decided by reading them.
+        #
+        # Nothing is sent until Confirm, and closing the window throws the staging away - which is
+        # what the original's Reset did, and the only reset a form has.
+        Panel hall = game.Panel("msr.training", "Training", 210, 250);
+        hall.Smallest(200, 188);
+        hall.Key("T");
+        hall.Icon("sword");
+        hall.Heading("Stats");
+        hall.Field(Stats.Str, "Strength", 200, 200, 160);
+        hall.Field(Stats.Def, "Defense", 200, 200, 160);
+        hall.Field(Stats.Spd, "Speed", 200, 200, 160);
+        hall.Field(Stats.Int, "Intelligence", 200, 200, 160);
+        hall.Field(Stats.Points, "Unspent", 240, 200, 80);
+        hall.Asks("Training", "Confirm");
+    end function
+
+
+    # ── What the four stats come to ───────────────────────────────────────────
+    #
+    # 🔴 A sheet of four numbers tells a player nothing they can act on. Whether to put the next
+    # point into strength or defense is a question about what those numbers BUY - how hard you hit, how
+    # much you turn aside, how fast you mend - and the original answered it beside every stat rather
+    # than leaving the arithmetic to the reader.
+    #
+    # ⚠ Read through the same functions the FIGHT reads, never copied. A sheet with its own copy of
+    # a formula is a sheet that quietly stops describing the game the first time the real one changes,
+    # and nothing anywhere reports it: the numbers still look like numbers.
+
+    public string SeenDamage = "shdmg";
+    public string SeenSpellDamage = "shmdmg";
+    public string SeenMitigation = "shmit";
+    public string SeenCrit = "shcrit";
+    public string SeenSpellCrit = "shmcrit";
+    public string SeenTurnAside = "shevade";
+    public string SeenHealthRegen = "shhpreg";
+    public string SeenManaRegen = "shmpreg";
+    public string SeenStaminaRegen = "shspreg";
+    public string SeenSprint = "shsprint";
+
+    public function Show(Player who)
+        integer level = Stats.LevelOf(who);
+        integer str = who.Number(Stats.Str);
+        integer def = who.Number(Stats.Def);
+        integer spd = who.Number(Stats.Spd);
+        integer int = who.Number(Stats.Int);
+
+        who.SetNumber(Sheet.SeenDamage, Combat.Swing(str));
+        who.SetNumber(Sheet.SeenSpellDamage, Combat.Swing(int));
+        who.SetNumber(Sheet.SeenMitigation, Combat.Protection(level, def));
+
+        who.SetText(Sheet.SeenCrit,
+                    Combat.PlayerChance(str, level, Combat.PlayerCritDivisor, Combat.PlayerCritCap) + "%");
+        who.SetText(Sheet.SeenSpellCrit,
+                    Combat.PlayerChance(int, level, Combat.PlayerCritDivisor, Combat.PlayerCritCap) + "%");
+
+        # One row rather than two, because only one of them is ever live: a shield is what you block
+        # with, and stepping aside takes the hand it would be in. Which of the two it is says more than
+        # the number does, so the row carries both.
+        if World.WornIn(who, Sheet.Shield) > 0
+            who.SetText(Sheet.SeenTurnAside, "block "
+                        + Combat.PlayerChance(def, level, Combat.PlayerBlockDivisor, Combat.PlayerBlockCap) + "%");
+        end if
+
+        if World.WornIn(who, Sheet.Shield) < 1
+            who.SetText(Sheet.SeenTurnAside, "dodge "
+                        + Combat.PlayerChance(def, level, Combat.PlayerDodgeDivisor, Combat.PlayerDodgeCap) + "%");
+        end if
+
+        who.SetNumber(Sheet.SeenHealthRegen, Stats.HealthRegen(def));
+        who.SetNumber(Sheet.SeenManaRegen, Stats.ManaRegen(int));
+        who.SetNumber(Sheet.SeenStaminaRegen, Stats.StaminaRegen(spd));
+
+        # 🔴 Speed is the one stat the ENGINE has to be told about: how far a body gets per second
+        # is the engine's to decide, so a speed stat nobody hands over is a stat that buys nothing. The
+        # original used it directly as the body's pace, and so does this.
+        who.SetPace(spd);
+
+        # What that bought, as the original put it: how much faster a run is than a walk.
+        who.SetText(Sheet.SeenSprint, "+" + (World.WalkMs() * 100 / who.RunMs - 100) + "%");
     end function
 
     # ── A new character ───────────────────────────────────────────────────────
@@ -63,6 +212,7 @@ shared model Sheet
 
         who.SetNumber(Stats.Level, 1);
         who.SetNumber(Stats.Exp, 0);
+        Levels.Mark(who);
 
         # The class is already on them. It was picked before this character existed, so enrolling
         # applies it rather than asking for it: Classes.Take writes the spread, fills the pools,

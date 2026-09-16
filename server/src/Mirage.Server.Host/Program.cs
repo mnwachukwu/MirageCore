@@ -169,6 +169,7 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IWorld, ServerWorld>();
         foreach (var policy in registry.DeathPolicies) services.AddSingleton(policy);
         foreach (var policy in registry.LingerPolicies) services.AddSingleton(policy);
+        foreach (var policy in registry.MovePolicies) services.AddSingleton(policy);
 
         // ⚠ Handed as a LIST rather than resolved one at a time, because ItemSystem asks every policy in
         // order and the empty case has to be an empty list rather than a missing service.

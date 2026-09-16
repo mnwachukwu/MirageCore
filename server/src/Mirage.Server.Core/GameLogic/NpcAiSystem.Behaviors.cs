@@ -110,7 +110,7 @@ public sealed partial class NpcAiSystem : GameSystem
     {
         if (mn.Target > 0)
         {
-            if (!_pm[mn.Target].IsPlaying) DropNativeTarget(mapNum, slot, mn);
+            if (!StillWorthChasing(mn.Target)) DropNativeTarget(mapNum, slot, mn);
             else if (ShouldGiveUpUnreachedTarget(mn, now))
             {
                 DropNativeTarget(mapNum, slot, mn);
@@ -204,7 +204,7 @@ public sealed partial class NpcAiSystem : GameSystem
         // Let go once the gap is bigger than what it can notice — the retreat worked, or the player
         // left.  Measured with the same footprint-aware reach the scan used, so noticing and letting
         // go agree on where the edge is.
-        bool stillClose = _pm[mn.Target].IsPlaying && IsWithinNoticeRange(mapNum, mn, npc, _pm[mn.Target].Char);
+        bool stillClose = StillWorthChasing(mn.Target) && IsWithinNoticeRange(mapNum, mn, npc, _pm[mn.Target].Char);
         if (!stillClose) DropNativeTarget(mapNum, slot, mn);
     }
 

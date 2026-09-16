@@ -129,6 +129,12 @@ public class ModuleStartTests
         public void Stain(WorldPlace at, int size, WorldLayer layer, float amount) { }
         public IReadOnlyList<AttributeBag> RecordsOf(string familyId) => [];
         public AttributeBag? RecordAt(string familyId, int num) => null;
+        public AttributeValue? Kept(string store, string key, string field) => null;
+        public void SetKept(string store, string key, string field, AttributeValue value) { }
+        public bool HasKept(string store, string key) => false;
+        public bool Forget(string store, string key) => false;
+        public int KeptCount(string store) => 0;
+        public string KeptKeyAt(string store, int index) => string.Empty;
         public string RecordName(string familyId, int num) => string.Empty;
 
         public string NameOf(EntityHandle who) => who.IsSet ? who.ToString() : string.Empty;
@@ -176,6 +182,10 @@ public class ModuleStartTests
         public string AccessOf(EntityHandle who) => string.Empty;
         public WorldPlace ExitFrom(int mapNum) => WorldPlace.Nowhere;
         public bool IsRunning(EntityHandle who) => false;
+        public int PaceOf(EntityHandle who) => 0;
+        public void SetPace(EntityHandle who, int pace) { }
+        public int RunMsOf(EntityHandle who) => 0;
+        public int WalkMs => 0;
         public string BehaviorOf(EntityHandle npc) => string.Empty;
         public int GroupOf(EntityHandle npc) => 0;
         public int RangeOf(EntityHandle npc) => 0;

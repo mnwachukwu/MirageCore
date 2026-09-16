@@ -227,10 +227,19 @@ public sealed partial class GameplayScreen : IGameScreen
     /// round trip would buy nothing. An action that also names a handler still sends, which is how a
     /// screen that needs the server to prepare something says so.</para></summary>
     private void InvokeGameAction(string actionId, string opensPanel, int mapNum, int tileX, int tileY,
-                                  string targetName = "", int npcSlot = 0)
+                                  string targetName = "", int npcSlot = 0, bool toggles = false)
     {
         if (opensPanel.Length > 0)
         {
+            // A button on the sidebar toggles, the way Inventory and Social do: clicking the one whose
+            // panel is already showing puts it away rather than asking for the verb a second time. A menu
+            // entry does not, since a menu is opened to ask for something.
+            if (toggles && string.Equals(_gamePanel.OpenId, opensPanel, System.StringComparison.Ordinal))
+            {
+                _gamePanel.Close();
+                return;
+            }
+
             _gamePanel.Open(_ctx.State, opensPanel);
             BringToFront(PanelGame);
         }
@@ -264,6 +273,8 @@ public sealed partial class GameplayScreen : IGameScreen
                 : _ctx.State.Panels.Find(opens)?.Key ?? string.Empty;
 
             var when = action.When;
+            if (!Offered(when) && action.Unmet == ActionUnmet.Hide) continue;
+
             items.Add(new ContextMenu.Item(
                 ClientStrings.GetOrFallback(action.LabelKey, action.LabelKey) + GameKeyMap.Hint(shortcut),
                 () => InvokeGameAction(id, opens, mapNum, tileX, tileY, targetName, npcSlot),
@@ -307,6 +318,8 @@ public sealed partial class GameplayScreen : IGameScreen
                     : _ctx.State.Panels.Find(opens)?.Key ?? string.Empty;
 
                 var when = action.When;
+                if (!Offered(when) && action.Unmet == ActionUnmet.Hide) continue;
+
                 items.Add(new ContextMenu.Item(
                     ClientStrings.GetOrFallback(action.LabelKey, action.LabelKey)
                         + GameKeyMap.Hint(shortcut),

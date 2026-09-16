@@ -8,6 +8,22 @@ public readonly record struct PanelButton(
     [property: JsonPropertyName("action")] string ActionId);
 
 /// <summary>
+/// One line of a panel's list: what it READS as, and what it IS.
+///
+/// <para>Two attribute keys rather than one, because the caption a player picks by and the thing a verb
+/// then acts on are rarely the same. "Ironhelm - at war since Tuesday" is what to show; the guild it
+/// names is what to retract against. A row whose caption reads blank is not drawn, which is how a list
+/// as long as the table behind it shows only the part that is filled.</para>
+///
+/// <para>Both are read off the player's own attributes, live, like everything else a panel shows. A
+/// game with nothing to put in an id key can leave it blank and use the caption as the id, which is what
+/// a list of plain names wants.</para>
+/// </summary>
+public readonly record struct PanelRow(
+    [property: JsonPropertyName("label")] string LabelKey,
+    [property: JsonPropertyName("id")] string IdKey);
+
+/// <summary>
 /// One value a declared panel asks the player FOR, rather than tells them.
 ///
 /// <para><b>Everything a control needs is here, because the client has nothing else to go on.</b> A
@@ -51,10 +67,11 @@ public sealed record PanelInput
 /// what it says and what it does — are things the engine already knows how to carry, and neither is
 /// code.</para>
 ///
-/// <para><b>What it is not is a layout language.</b> Rows stack, buttons sit under them, and the engine
-/// decides the rest. A game wanting columns, a grid, an image or a list of its own is asking for a UI
-/// toolkit on the wire, which is a different and much larger thing than this. What is here covers the
-/// shape most game screens actually are: a titled window of labeled values, with verbs under it.</para>
+/// <para><b>What it is not is a layout language.</b> Values stack, the list sits under them, buttons sit
+/// under that, and the engine decides the rest. A game wanting columns, a grid or an image is asking for
+/// a UI toolkit on the wire, which is a different and much larger thing than this. What is here covers
+/// the shape most game screens actually are: a titled window of labeled values, something to pick from,
+/// and verbs under it.</para>
 /// </summary>
 public sealed record GamePanel
 {
@@ -81,6 +98,20 @@ public sealed record GamePanel
     [JsonPropertyName("buttons")] public IReadOnlyList<PanelButton> Buttons { get; init; } = [];
 
     /// <summary>
+    /// The lines the player picks ONE of, in order. Empty for a panel with nothing to choose between.
+    ///
+    /// <para>🔴 <b>A verb reaching several things needs a way to say which one.</b> Without a list, a
+    /// screen about a set of anything - wars to retract, offers to accept, members to promote - has to
+    /// ask for a NAME in a box, which means a player reading one off the screen above and typing it back
+    /// in. The pick travels with whatever button they press next, so the button says what to do and the
+    /// list says what to.</para>
+    ///
+    /// <para>One list to a panel, for the same reason there is one form: two would need a way to say
+    /// which of them a button meant, and a screen wanting that is two screens.</para>
+    /// </summary>
+    [JsonPropertyName("rows")] public IReadOnlyList<PanelRow> Rows { get; init; } = [];
+
+    /// <summary>
     /// The message this panel composes, or blank for one that only shows things.
     ///
     /// <para>🔴 <b>This is the half a stock client was missing.</b> A client originates a verb — an
@@ -100,6 +131,38 @@ public sealed record GamePanel
     /// <summary>Localization key for the button that sends <see cref="Asks"/>.</summary>
     [JsonPropertyName("sendLabel")] public string SendLabelKey { get; init; } = string.Empty;
 
+    /// <summary>
+    /// While this holds, the panel is up. Blank for a window the player opens and closes themselves,
+    /// which is most of them.
+    ///
+    /// <para>🔴 <b>How a game puts a readout on the screen without drawing on the world.</b> A score
+    /// that has to be visible during a fight, a countdown over a body that cannot act, the state of the
+    /// ground being fought over: none of them is a window somebody chose to open, and none should be
+    /// reachable by a key or sit on the sidebar the rest of the week.</para>
+    ///
+    /// <para>On a panel the player opens, this is a gate rather than a schedule: the key and the verb
+    /// refuse while it does not hold, and a window already up closes when it stops.</para>
+    ///
+    /// <para>Asked of the attributes the client already holds, so it opens and closes with no round
+    /// trip and cannot disagree with the server about whether it should be showing.</para>
+    /// </summary>
+    [JsonPropertyName("while")] public ActionCondition While { get; init; } = ActionCondition.Always;
+
+    /// <summary>
+    /// Whether the player may dismiss it. False for an ordinary window; true for one the GAME takes
+    /// down, by the condition above ceasing to hold.
+    ///
+    /// <para>⚠ <b>Held requires <see cref="While"/>.</b> A window with no close control and no
+    /// condition is a window nothing can ever take away, and the player is left with a rectangle over
+    /// their game forever. A panel declaring one without the other is refused by name.</para>
+    ///
+    /// <para>A held panel still needs a way OUT of whatever it is about, and that is a button on it
+    /// rather than the close control: Respawn on a death panel, Leave on a party panel. Closing the
+    /// window and leaving the thing are different acts, and a corner X that did both is how a player
+    /// leaves a party by tidying their screen.</para>
+    /// </summary>
+    [JsonPropertyName("held")] public bool Held { get; init; }
+
     /// <summary>The key that opens and closes it, or blank for a panel reached only through an action.
     /// Must be one of <see cref="GameKey.Offered"/>.
     ///
@@ -114,6 +177,20 @@ public sealed record GamePanel
 
     /// <inheritdoc cref="Width"/>
     [JsonPropertyName("h")] public int Height { get; init; }
+
+    /// <summary>
+    /// How small the player may drag it, in the client's reference pixels. Zero takes the engine's own
+    /// floor, which is what a panel with no opinion wants.
+    ///
+    /// <para>⚠ A panel is resizable, and a floor is what stops a resize turning it into a title bar
+    /// with nothing under it. The engine's floor is one number for every panel and cannot know that a
+    /// form of four boxes needs more height than a list of names — so a screen that has a shape worth
+    /// keeping says so here, and the player keeps every size above it.</para>
+    /// </summary>
+    [JsonPropertyName("minW")] public int MinWidth { get; init; }
+
+    /// <inheritdoc cref="MinWidth"/>
+    [JsonPropertyName("minH")] public int MinHeight { get; init; }
 }
 
 /// <summary>

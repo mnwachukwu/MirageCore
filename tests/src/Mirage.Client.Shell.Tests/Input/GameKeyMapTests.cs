@@ -41,7 +41,10 @@ public class GameKeyMapTests
     {
         // Movement, running, picking up and the action bar. A game taking one of these would take it
         // away from the player with nothing anywhere reporting the conflict.
-        foreach (string taken in new[] { "W", "A", "S", "D", "F", "I", "C", "M", "1", "2", "3", "4" })
+        //
+        // C is NOT among them. Core's only use of it is Ctrl+C, and a game's key never fires while
+        // Ctrl is held - see ProcessGameKeys - so the letter on its own is free to be bound.
+        foreach (string taken in new[] { "W", "A", "S", "D", "F", "I", "M", "1", "2", "3", "4" })
         {
             Assert.That(GameKey.IsOffered(taken), Is.False, $"'{taken}' is Core's");
         }

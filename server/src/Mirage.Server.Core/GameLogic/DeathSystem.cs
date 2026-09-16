@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Mirage.Server.Core.Net;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
@@ -30,12 +32,15 @@ public sealed class DeathSystem : GameSystem
     private readonly MovementSystem _movement;
     private readonly SpawnSystem _spawns;
     private readonly IReadOnlyList<IDeathPolicy> _policies;
+    private readonly ILogger<DeathSystem> _logger;
 
     public DeathSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher,
                        MovementSystem movement, SpawnSystem spawns,
-                       IEnumerable<IDeathPolicy>? policies = null)
+                       IEnumerable<IDeathPolicy>? policies = null,
+                       ILogger<DeathSystem>? logger = null)
         : base(dispatcher)
     {
+        _logger = logger ?? NullLogger<DeathSystem>.Instance;
         _world = world;
         _pm = pm;
         _movement = movement;
@@ -63,12 +68,71 @@ public sealed class DeathSystem : GameSystem
 
         var death = new Death(who, killer, causeKey);
         foreach (var policy in _policies)
-            if (!policy.MayDie(in death).Allowed) return false;
+        {
+            var said = policy.MayDie(in death);
+            if (said.Allowed) continue;
+
+            // A refused death is a rule working, and it is indistinguishable from a broken one at the
+            // call site: the caller gets false either way. Saying which policy said no, and why, is the
+            // difference between reading a log and guessing.
+            _logger.LogDebug("Death refused for player {Index} by {Policy}: {Reason}",
+                             who.PlayerIndex, policy.GetType().Name, said.ReasonKey);
+            return false;
+        }
+
+        _logger.LogDebug("Player {Index} died ({Cause}); {Policies} policy(s) asked.",
+                         who.PlayerIndex, causeKey, _policies.Count);
 
         foreach (var policy in _policies) policy.OnDied(in death);
 
         var (map, x, y) = HomeFor(death, sp.Char);
+
+        // A game that put the body OUT OF ACTION while the policies ran is keeping it here: the body
+        // lies where it fell and moves when it gets up, which is what a corpse with a timer over it
+        // means. Where it will come back is settled now, while the death is still in hand, and read
+        // again by Rise.
+        if (sp.Char.Downed)
+        {
+            sp.RiseMap = map;
+            sp.RiseX = x;
+            sp.RiseY = y;
+            return true;
+        }
+
         _movement.PlayerWarp(who.PlayerIndex, map, x, y);
+        return true;
+    }
+
+    /// <summary>They asked to get up, and the deadline has passed.
+    ///
+    /// <para>The one way out of the downed state. Refused while the clock is still running, so a client
+    /// asking early is ignored rather than trusted - the deadline is the server’s.</para>
+    ///
+    /// <para>Order matters: the state is cleared, then the body is moved, then the game is told. A rule
+    /// restoring pools in <see cref="IDeathPolicy.OnRose"/> is writing onto a body that is already
+    /// standing where it will be, and is no longer refused for being out of action.</para></summary>
+    public bool Rise(EntityHandle who)
+    {
+        if (!who.IsPlayer) return false;
+
+        var sp = _pm[who.PlayerIndex];
+        if (!sp.IsPlaying || !sp.Char.Downed) return false;
+        if (NowUtc < sp.Char.RespawnReadyUtc) return false;
+
+        sp.Char.Downed = false;
+        sp.Char.RespawnReadyUtc = 0;
+
+        // A rise point that named a tile which is no longer there lands on real ground rather than
+        // nowhere: coming back is the one move that may never be refused.
+        var home = Config.Spawn.HomeFor(sp.Char);
+        var (map, x, y) = sp.RiseMap > 0
+            ? _world.RepairPosition(sp.RiseMap, sp.RiseX, sp.RiseY, home)
+            : _world.RepairPosition(home.Map, home.X, home.Y, home);
+
+        sp.RiseMap = 0;
+        _movement.PlayerWarp(who.PlayerIndex, map, x, y);
+
+        foreach (var policy in _policies) policy.OnRose(who);
         return true;
     }
 

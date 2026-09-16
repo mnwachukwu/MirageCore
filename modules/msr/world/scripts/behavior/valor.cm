@@ -84,18 +84,9 @@ shared model Valor
 
     # ── Giving it to the guild ────────────────────────────────────────────────
 
-    public function Declare(Builder game)
-        # Handed to somebody, the way anything paid in is. A sidebar button would ask for it on
-        # every screen, most of them nowhere near a vault.
-        Verb give = game.Action(Valor.DonateVerb, "Donate valor", "Guild");
-        give.OnNpc();
-        give.Icon("flame");
-    end function
-
-    # The verb on the bar gives everything they carry. The vault panel's form asks for an amount.
-    public function GiveAll(Player who)
-        Valor.Donate(who, who.Carrying(Valor.Item()));
-    end function
+    # Nothing to declare. Valor is paid in at the vault, through the amount the guild panel's own form
+    # asks for - which is how the original took it, and the only way it did. A verb on a creature's
+    # menu would be every shopkeeper in the world offering to empty your pockets into your guild.
 
     public function Donate(Player who, integer amount)
         integer guild = World.GuildOf(who);

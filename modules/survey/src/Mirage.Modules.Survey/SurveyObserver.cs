@@ -111,6 +111,42 @@ public sealed class StayWhileSurveying : ILingerPolicy
 }
 
 /// <summary>
+/// A tired surveyor walks.
+///
+/// <para>The other half of what stamina is for. A step already spends it; this is what running spends
+/// ON TOP, and what an empty bar takes away. A refusal here brings the surveyor down to a walk rather
+/// than rooting them where they stand, so somebody out of breath in the far corner of a map still gets
+/// home.</para>
+///
+/// <para>Core has no stamina and no opinion about pace beyond how often a step may be taken. That a jog
+/// costs anything at all is this game’s to say, and this is where it says it.</para>
+/// </summary>
+public sealed class TooTiredToRun : IMovePolicy
+{
+    private IWorld? _world;
+
+    /// <summary>Handed the world once there is one, like everything else here that acts on it.</summary>
+    public void Begin(IWorld world) => _world = world;
+
+    public Refusal MayRun(EntityHandle who)
+        => Left(who) > 0 ? Refusal.Allow : Refusal.Deny("You are too tired to run.");
+
+    public void OnRan(EntityHandle who)
+    {
+        long left = Left(who);
+        if (left <= 0 || _world is null) return;
+
+        _world.SetAttribute(who, Survey.Stamina, Math.Max(0, left - Survey.RunSurcharge));
+    }
+
+    private long Left(EntityHandle who)
+    {
+        var bag = _world?.AttributesOf(who);
+        return bag is not null && bag.TryGet(Survey.Stamina, out var stamina) ? stamina.AsLong() : 0;
+    }
+}
+
+/// <summary>
 /// What a specimen leaves behind is the finder's.
 ///
 /// <para>Two answers to the same question, and they are the two reasons a game has an opinion about loot

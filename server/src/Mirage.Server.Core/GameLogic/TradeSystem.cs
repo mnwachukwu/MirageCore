@@ -61,7 +61,7 @@ public sealed class TradeSystem : GameSystem
         }
         // Neither side of a trade may be a corpse. The asker's own death is refused by the handler with a
         // message; this is the other direction, which nothing else covers.
-        if (_pm[target].Char.Dead)
+        if (_pm[target].Char.Downed)
         {
             SendMsg(index, ServerStrings.Trade_TargetIsDead, GameColor.BrightRed);
             return;

@@ -1,4 +1,5 @@
 using Mirage.Shared.Records;
+using Mirage.Shared.Extensibility;
 using System.Text.Json.Serialization;
 
 namespace Mirage.Shared.Protocol.Packets;
@@ -209,9 +210,14 @@ public sealed record SendCharsPacket : IPacket
     [JsonPropertyName("chars")] public CharSlot[] Chars { get; init; } = [];
 
     /// <summary>One character slot, as the selection screen shows it.</summary>
+    /// <param name="Says">What the loaded game shows about this character, already projected: the
+    /// rows it declared on <see cref="Mirage.Shared.Extensibility.DisplaySurfaces.CharacterSelect"/>,
+    /// read off the saved record. Empty for a world whose game declared none, and then the screen
+    /// shows a name and a sprite as it always did.</param>
     public sealed record CharSlot(
         [property: JsonPropertyName("name")] string Name,
         [property: JsonPropertyName("sprite")] int Sprite,
-        [property: JsonPropertyName("spriteSheet")] int SpriteSheet = 0
+        [property: JsonPropertyName("spriteSheet")] int SpriteSheet = 0,
+        [property: JsonPropertyName("says")] IReadOnlyList<DisplayRow>? Says = null
     );
 }

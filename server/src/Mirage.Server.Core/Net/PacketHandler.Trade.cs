@@ -25,7 +25,7 @@ public sealed partial class PacketHandler
         if (!_pm[index].IsPlaying) return;
         // /trade is typed, so it says why. The other side is covered too: TradeSystem refuses a dead
         // TARGET, so a living player cannot open a trade with a corpse either.
-        if (_pm[index].Char.Dead)
+        if (_pm[index].Char.Downed)
         {
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.Command_WhileDead,
                 new ChatMetadata(GameColor.BrightRed, ChatChannel.System));

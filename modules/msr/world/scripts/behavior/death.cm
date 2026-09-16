@@ -165,12 +165,6 @@ shared model Death
         # point the player bought for themselves. A war death overrides it again, below.
         Death.SendHome(who);
 
-        # Everything full again, before anything below decides what the death COST. A body comes back
-        # whole in every one of the five kinds of death the original had, so this is unconditional and
-        # sits above every branch that returns early - an arena bout, a war death and a murder all end
-        # with a body that can walk away.
-        Vitals.Fill(who);
-
         # A murderer gets their minute, whatever the death cost them below.
         if Death.IsMurderer(who)
             Death.BeginGrace(who);
@@ -285,6 +279,16 @@ shared model Death
         end if
 
         Death.MarkMurderer(killer);
+    end function
+
+    # ── Getting back up ───────────────────────────────────────────────────────
+    #
+    # The original restored the three pools when the player pressed Respawn, not when they fell - so a
+    # body lying there is lying there empty, and fills as it stands up. Doing it at the moment of death
+    # would put a full bar over a corpse.
+
+    public function Rose(Player who)
+        Vitals.Fill(who);
     end function
 
     # ── Where they wake up ────────────────────────────────────────────────────

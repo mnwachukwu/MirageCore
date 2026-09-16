@@ -316,7 +316,7 @@ compare.NeedsAtLeast("specimens", 1);
 | `Opens(panel)` | it opens one of your panels instead of calling `OnAction` |
 | `NeedsAtLeast(key, n)` | grayed below that, and lit the moment they have it |
 
-Bindable keys are **B, E, J, K, N, P, Q, R, T, U, Y, and Z**. Anything the engine reserves, or a key
+Bindable keys are **B, C, E, J, K, N, P, Q, R, T, U, Y, and Z**. Anything the engine reserves, or a key
 another declaration already took, is refused by name rather than quietly overriding.
 
 ### A screen of your own

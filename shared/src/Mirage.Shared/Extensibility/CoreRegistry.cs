@@ -29,6 +29,7 @@ public sealed class CoreRegistry
                          GamePanels panels,
                          IReadOnlyList<IWorldObserver> observers,
                          IReadOnlyList<IDeathPolicy> deathPolicies, IReadOnlyList<ILingerPolicy> lingerPolicies,
+                         IReadOnlyList<IMovePolicy> movePolicies,
                          IReadOnlyList<IUsePolicy> usePolicies, IReadOnlyList<ILootPolicy> lootPolicies,
                          CreationChoiceSet creationChoices,
                          IReadOnlyList<ICoreModule> modules, IReadOnlyList<string> moduleNames)
@@ -47,6 +48,7 @@ public sealed class CoreRegistry
         Observers = observers;
         DeathPolicies = deathPolicies;
         LingerPolicies = lingerPolicies;
+        MovePolicies = movePolicies;
         UsePolicies = usePolicies;
         LootPolicies = lootPolicies;
         CreationChoices = creationChoices;
@@ -102,6 +104,10 @@ public sealed class CoreRegistry
 
     /// <summary>What a game lets somebody use out of their bag. Empty in an engine with no game
     /// loaded, and then every use Core itself understands is allowed.</summary>
+    /// <summary>What a game says about moving under your own power, asked in the order their modules
+    /// were configured. Empty in an engine with no game loaded, and then a run costs nothing.</summary>
+    public IReadOnlyList<IMovePolicy> MovePolicies { get; }
+
     public IReadOnlyList<IUsePolicy> UsePolicies { get; }
 
     /// <summary>What a game says a slain creature leaves behind. Empty in an engine with no game loaded,
@@ -221,6 +227,7 @@ internal sealed class CoreBuilder : ICoreBuilder
     private readonly List<IActionHandler> _actionHandlers = [];
     private readonly List<IWorldObserver> _observers = [];
     private readonly List<IDeathPolicy> _deathPolicies = [];
+    private readonly List<IMovePolicy> _movePolicies = [];
     private readonly List<IUsePolicy> _usePolicies = [];
     private readonly List<ILootPolicy> _lootPolicies = [];
     private readonly List<CreationChoice> _creationChoices = [];
@@ -415,6 +422,17 @@ internal sealed class CoreBuilder : ICoreBuilder
                 + "has. One key does one thing.", _module);
         }
 
+        // A window the player cannot dismiss, and nothing to take it away, is a rectangle over their
+        // game forever. Refused by name, because the alternative is a world that loads and a player
+        // who has to restart the client.
+        if (panel.Held && panel.While.AsksNothing)
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared panel '{panel.Id}' held, but said nothing about when it "
+                + "is up. A held panel has no close button, so something has to take it away: give it "
+                + "a condition, or let the player close it.", _module);
+        }
+
         _panels.Add(panel);
     }
 
@@ -547,6 +565,13 @@ internal sealed class CoreBuilder : ICoreBuilder
         _deathPolicies.Add(policy);
     }
 
+    public void AddMovePolicy(IMovePolicy policy)
+    {
+        ArgumentNullException.ThrowIfNull(policy);
+        Refuse();
+        _movePolicies.Add(policy);
+    }
+
     public void AddUsePolicy(IUsePolicy policy)
     {
         ArgumentNullException.ThrowIfNull(policy);
@@ -598,7 +623,8 @@ internal sealed class CoreBuilder : ICoreBuilder
                                 new DisplayFieldSet(_displayFields), new PacketRoutes([.. _packetRoutes]),
                                 new GameActions(_actions), [.. _actionHandlers], new GamePanels([.. _panels]),
                                 [.. _observers], [.. _deathPolicies],
-                                [.. _lingerPolicies], [.. _usePolicies], [.. _lootPolicies],
+                                [.. _lingerPolicies], [.. _movePolicies],
+                                [.. _usePolicies], [.. _lootPolicies],
                                 new CreationChoiceSet([.. _creationChoices]), modules, moduleNames);
     }
 

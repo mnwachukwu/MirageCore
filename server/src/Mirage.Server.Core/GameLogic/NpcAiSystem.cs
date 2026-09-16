@@ -231,7 +231,7 @@ public sealed partial class NpcAiSystem : GameSystem
     {
         if (now < mn.NextMoveMs) return;                             // step-clock / magic-push not ready
         int target = mn.Target;
-        if (!_pm[target].IsPlaying) return;                          // target gone — brain drops it next tick
+        if (!StillWorthChasing(target)) return;                      // gone, or out of action — brain drops it next tick
         var vp = _pm[target].Char;
         if (_world.Npcs[mn.Num].Behavior == NpcBehavior.Flee)
         {
@@ -313,7 +313,7 @@ public sealed partial class NpcAiSystem : GameSystem
         bool shadows = _world.Npcs[t.Num].Behavior == NpcBehavior.Shadow;
         if (t.Target > 0)
         {
-            if (!_pm[t.Target].IsPlaying) return;                   // target gone — brain drops it
+            if (!StillWorthChasing(t.Target)) return;               // gone, or out of action — brain drops it
             var vp = _pm[t.Target].Char;
             if (flees)
             {

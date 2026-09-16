@@ -51,9 +51,14 @@ public sealed partial class ClientState
     // ── HUD snap flag ─────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Set by the packet handler when our HP hits 0 (death). Survives within-frame
-    /// packet batches so the HUD can snap a bar on respawn even when its value and its maximum
-    /// both arrive before the next Tick().
+    /// Bars are drawn sliding toward their value rather than jumping to it. This is the flag for the
+    /// moments where sliding would be wrong: a body arriving in the world, and one whose pools were
+    /// replaced wholesale by going out of action or coming back. A bar easing up from empty as
+    /// somebody arrives tells them they were nearly dead a moment ago.
+    ///
+    /// <para>⚠ Read once a frame and cleared, rather than at a draw: the values and their maximums
+    /// can arrive in different packets of the same batch, and a snap taken between the two would settle
+    /// the bar against a maximum that is about to change.</para>
     /// </summary>
     public bool SnapVitals { get; set; }
 

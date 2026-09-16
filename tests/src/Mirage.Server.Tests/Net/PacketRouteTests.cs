@@ -118,7 +118,7 @@ public class PacketRouteTests
     {
         var refused = new Route();
         var (handler, pm) = Serving(CoreRegistry.Build(new Module(refused)));
-        pm[Me].Char.Dead = true;
+        pm[Me].Char.Downed = true;
 
         handler.HandlePacket(Me, Line(1));
 
@@ -130,7 +130,7 @@ public class PacketRouteTests
     {
         var allowed = new Route { Dead = true };
         var (handler, pm) = Serving(CoreRegistry.Build(new Module(allowed)));
-        pm[Me].Char.Dead = true;
+        pm[Me].Char.Downed = true;
 
         handler.HandlePacket(Me, Line(1));
 

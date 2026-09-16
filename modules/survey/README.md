@@ -51,6 +51,7 @@ opposite reason, no change to Core.
 | `AddObserver` | joining enrolls a surveyor; stepping spends stamina and sometimes finds something |
 | `AddDeathPolicy` | refuses every death |
 | `AddLingerPolicy` | the body stays half a minute after a dropped connection |
+| `AddMovePolicy` | a jog costs stamina on top of the step, and an empty bar is a walk |
 | `Packets` + `AddPacketRoute` | `survey.note` — the typed message a client compiled against this game sends |
 | `AddAction` + `AddActionHandler` | "Note this down" in a square's menu, and "Open field book" beside it |
 | `AddPanel` | the Field Book — a window of this game's own, painted by a client that never heard of it |

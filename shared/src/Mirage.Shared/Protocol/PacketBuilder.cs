@@ -34,13 +34,21 @@ public static partial class PacketBuilder
     public static AlertMsgPacket Alert(string message, AlertCode code) =>
         new() { Message = message, Code = code };
 
-    public static SendCharsPacket SendChars(IEnumerable<PlayerRecord?> chars) =>
+    /// <summary>The account's characters, with whatever the loaded game says about each.
+    ///
+    /// <para>⚠ Projected HERE rather than on the client, because the client has not been told this
+    /// world's attribute numbering yet — that arrives with the world, and this screen comes before
+    /// it. Passing no fields gives a name and a sprite, which is Core by itself.</para></summary>
+    public static SendCharsPacket SendChars(IEnumerable<PlayerRecord?> chars,
+                                            DisplayFieldSet? fields = null) =>
         new()
         {
             Chars = chars.Select(p =>
                 p is null || string.IsNullOrWhiteSpace(p.Name)
                     ? new SendCharsPacket.CharSlot("", 0)
-                    : new SendCharsPacket.CharSlot(p.Name, p.Sprite, p.SpriteSheet)).ToArray()
+                    : new SendCharsPacket.CharSlot(
+                        p.Name, p.Sprite, p.SpriteSheet,
+                        fields?.Project(DisplaySurfaces.CharacterSelect, p.Attributes).Rows)).ToArray()
         };
 
     // ── Game state ───────────────────────────────────────────────────────────
@@ -77,7 +85,7 @@ public static partial class PacketBuilder
             GuildOpen = guildOpen,
             GuildColor = guildColor,
             GuildShowRank = guildShowRank,
-            Dead = p.Dead,
+            Downed = p.Downed,
             RespawnReadyUtc = p.RespawnReadyUtc,
         };
 

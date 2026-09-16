@@ -282,14 +282,14 @@ public class WorldActionTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(pm[Idx].Char.Dead, Is.True);
+            Assert.That(pm[Idx].Char.Downed, Is.True);
             Assert.That(pm[Idx].Char.RespawnReadyUtc, Is.GreaterThan(0));
         });
 
         world.SetDowned(Me, 0);
         Assert.Multiple(() =>
         {
-            Assert.That(pm[Idx].Char.Dead, Is.False);
+            Assert.That(pm[Idx].Char.Downed, Is.False);
             Assert.That(pm[Idx].Char.RespawnReadyUtc, Is.Zero);
         });
     }

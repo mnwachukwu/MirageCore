@@ -45,7 +45,14 @@ public sealed partial class ClientPacketHandler : IClientEvents
         if (p.GuildShowRank.HasValue) player.GuildShowRank = p.GuildShowRank.Value;
         // Death state: non-nullable, so every broadcast carries the current value. Drives the
         // corpse render (other players) and the death panel (yourself).
-        player.Dead = p.Dead;
+        //
+        // Going out of action and coming back are the two moments a bar is REPLACED rather than moved:
+        // whatever a game empties on a death and restores on getting up, it happens at once and in one
+        // step. Easing across it would draw a body sliding back to full over half a second it never
+        // spent, so the bars are put where they are instead.
+        if (p.Index == _state.MyIndex && player.Downed != p.Downed) _state.SnapVitals = true;
+
+        player.Downed = p.Downed;
         player.RespawnReadyUtc = p.RespawnReadyUtc;
         // The overhead quest-glyph class filter keys off the LOCAL player's class — relight the glyphs when it
         // (re)loads, in case player data arrives after the quest push.

@@ -12,5 +12,8 @@ namespace Mirage.Server.Core.Persistence;
 /// </summary>
 /// <param name="Values">A game's own world-scoped values. Null in a file written before games could
 /// keep any, and in one written by a server with no game loaded.</param>
+/// <param name="Kept">A game's own stores, each a set of named bags. Null on the same terms as
+/// <paramref name="Values"/>.</param>
 public sealed record EnvironmentState(long TodPositionMs, WeatherType Weather, long WeatherRemainingMs,
-                                      AttributeBag? Values = null);
+                                      AttributeBag? Values = null,
+                                      Dictionary<string, Dictionary<string, AttributeBag>>? Kept = null);

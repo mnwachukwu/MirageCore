@@ -23,7 +23,7 @@ public static class GameKey
     /// the same way declaring anything else replaces what Core would have done. A game that wants both
     /// keeps E and offers its own verb on the square menu.</para></summary>
     public static readonly IReadOnlyList<string> Offered =
-        ["B", "E", "J", "K", "N", "P", "Q", "R", "T", "U", "Y", "Z"];
+        ["B", "C", "E", "J", "K", "N", "P", "Q", "R", "T", "U", "Y", "Z"];
 
     /// <summary>Whether a game may bind this. Blank is true: no key at all is what almost everything a
     /// game declares wants, so it cannot be the answer that fails.</summary>

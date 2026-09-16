@@ -70,6 +70,18 @@ public sealed class DraggablePanel
         _movable = movable;
     }
 
+    /// <summary>Changes how small this may be dragged, and lifts it to fit if it is already smaller.
+    ///
+    /// <para>For a panel whose CONTENTS change - one frame holding somebody else's declaration - where
+    /// the floor is a property of what is in it rather than of the window.</para></summary>
+    public void SetSmallest(int minW, int minH)
+    {
+        _minW = Math.Max(minW, 40);
+        _minH = Math.Max(minH, 40);
+        _bounds = new Rectangle(_bounds.X, _bounds.Y,
+                                Math.Max(_bounds.Width, minW), Math.Max(_bounds.Height, minH));
+    }
+
     public bool ContainsMouse(Point mousePos) => _bounds.Contains(mousePos);
 
     /// <summary>Whether hovering <paramref name="mouse"/> should show the diagonal NW–SE resize cursor:

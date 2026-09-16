@@ -73,15 +73,141 @@ shared model Contest
 
     # ── What the engine is told ───────────────────────────────────────────────
 
-    # On the HUD rather than on a square: laying claim is about a REGION, and a region is not somewhere
-    # anybody is standing. Which region is the one they are standing in.
+    # A thing a GUILD does, so it sits with everything else a guild does - the original put it on the
+    # territory page, beside the vault the challenge is paid out of. Which land is the land they are
+    # standing on, read when the verb arrives.
     public function Declare(Builder game)
-        # On the GROUND, which is what is being claimed. A sidebar button would offer it everywhere,
-        # including on every map that is nobody's to take.
         Verb claim = game.Action(Contest.ClaimVerb, "Lay claim to this land", "Guild");
-        claim.OnTile();
+        claim.Nowhere();
         claim.Icon("flag");
+
+        game.Attribute(Contest.AtWar, "owner");
+        game.Attribute(Contest.Over, "owner");
+        game.Attribute(Contest.Standing, "owner");
+        game.Attribute(Contest.Held, "owner");
+        game.Attribute(Contest.HeldMost, "owner");
+
+        # ⚠ The original drew this IN THE WORLD - a score list top-right and a capture readout
+        # top-centre, over the map, appearing and vanishing with the ground under your feet. Core has
+        # no seam for an overlay a game paints, so a window is the nearest thing it can be given: the
+        # same four values, a keypress away, rather than four rows down the side of every screen in
+        # the game for the sake of one night a week.
+        Panel war = game.Panel("msr.war", "The war", 240, 160);
+        war.Icon("flag");
+
+        # Up while you are AT the war and gone when you leave it, with no close button - which is as
+        # near as this engine comes to what the original drew over the map, and near enough: the same
+        # four values, appearing and vanishing with the ground under your feet.
+        war.HeldWhile(Contest.AtWar, 1);
+        war.Heading("The war");
+        war.Field(Contest.Over, "Over", 230, 170, 120);
+        war.Field(Contest.Standing, "Score", 230, 170, 120);
+        war.Meter(Contest.Held, Contest.HeldMost, "Points held", 230, 170, 120);
+
+        # ⚠ No button and no key. It is not a window to go and open: it is up when it applies,
+        # and a sidebar button for it would be a button that does nothing six days out of seven.
     end function
+    # ── What a fighter sees ───────────────────────────────────────────────────
+    #
+    # 🔴 The original drew a score list and a capture readout IN THE WORLD while you stood at the
+    # war, and nothing at all anywhere else. A contest with no readout is the one event the whole
+    # territory system exists for, run blind: you cannot tell who is ahead, whether the point under
+    # your feet is yours, or whether any of it is working.
+    #
+    # ⚠ A row with no value is not drawn, so writing these only while they are AT the war is what
+    # makes the readout come and go with the place - the same thing the original's "am I in the
+    # territory" check did, said the other way round.
+
+    public string Over = "cwhere";
+
+    # ⚠ Whether there is a war to look at, as a NUMBER. "Carries the key" is true of a key
+    # holding an empty string, so a blank name would leave the button on the sidebar every day of the
+    # week; a count is the only thing a condition can actually test.
+    public string AtWar = "catwar";
+    public string Standing = "cstanding";
+    public string Held = "cheld";
+    public string HeldMost = "cheldmost";
+
+    # How many points are up for grabs, at most. The meter needs a ceiling and a ceiling has to be a
+    # number the client holds, so it rides along beside the count.
+    public function Watch(Player who)
+        integer region = Territory.Under(who.Map);
+
+        if region < 1 or World.Number(Contest.Phase(region)) == Contest.Waiting
+            Contest.Blank(who);
+            yield;
+        end if
+
+        integer guild = World.GuildOf(who);
+
+        if guild < 1 or not Contest.IsSide(region, guild)
+            Contest.Blank(who);
+            yield;
+        end if
+
+        who.SetNumber(Contest.AtWar, 1);
+        who.SetText(Contest.Over, Territory.NameOf(region));
+        who.SetText(Contest.Standing, Contest.Standings(region, guild));
+        who.SetNumber(Contest.Held, Contest.Holding(region, guild));
+        who.SetNumber(Contest.HeldMost, World.Number(Contest.Points(region)));
+    end function
+
+    function Blank(Player who)
+        who.SetNumber(Contest.AtWar, 0);
+        who.SetText(Contest.Over, "");
+        who.SetText(Contest.Standing, "");
+        who.SetNumber(Contest.Held, 0);
+        who.SetNumber(Contest.HeldMost, 0);
+    end function
+
+    # Where this guild stands against the best of the rest, which is the whole of what a score list is
+    # for: a column of numbers answers "who is winning" and this answers it in a line.
+    string function Standings(integer region, integer guild)
+        integer ours = World.Number(Contest.Score(region, guild));
+        integer best = 0;
+
+        integer defender = World.Number(Contest.Defender(region));
+
+        if defender > 0 and defender != guild
+            best = World.Number(Contest.Score(region, defender));
+        end if
+
+        loop for slot = 1 to Contest.MostChallengers
+            integer other = World.Number(Contest.Challenger(region, slot));
+
+            if other > 0 and other != guild
+                integer theirs = World.Number(Contest.Score(region, other));
+
+                if theirs > best
+                    best = theirs;
+                end if
+            end if
+        end loop
+
+        if ours > best
+            yield ours + " to " + best + ", ahead";
+        end if
+
+        if ours < best
+            yield ours + " to " + best + ", behind";
+        end if
+
+        yield ours + " to " + best + ", level";
+    end function
+
+    # How many of the capture points this guild is holding right now.
+    integer function Holding(integer region, integer guild)
+        integer held = 0;
+
+        loop for at = 1 to World.Number(Contest.Points(region))
+            if World.Number(Contest.PointOwner(region, at)) == guild
+                held = held + 1;
+            end if
+        end loop
+
+        yield held;
+    end function
+
 
     # The verb, answered where they stand. A leader speaks for the guild; anybody else is told so.
     public function Claim(Player who)

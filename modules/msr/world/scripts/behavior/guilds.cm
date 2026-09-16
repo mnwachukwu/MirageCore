@@ -68,37 +68,115 @@ shared model Guilds
     public integer WagerWindowSeconds = 3600;
     public integer StakeVaultPercent = 50;
 
-    public string WarVerb = "msr.guild.war";
     public string PeaceVerb = "msr.guild.peace";
+    public string WarVerb = "msr.guild.war";
+    public string VaultVerb = "msr.guild.vault";
+    public string OpenVerb = "msr.guild.open";
+
+    # Membership as a number. A Present condition is true of a key holding an empty string, so the
+    # gate on these screens and on the button that opens them tests a count instead.
+    public string InGuild = "gvin";
+
+    # One row per war slot, so the page holds every war a guild can be in at once. Two keys a row: what
+    # the line READS as, and the guild it names - the caption carries the standing of the war and would
+    # be no use to a verb, and the name alone would tell a reader nothing they did not already know.
+    public string function WarLineAt(integer line)
+        yield "gvwar" + line;
+    end function
+
+    public string function WarNameAt(integer line)
+        yield "gvwarof" + line;
+    end function
 
     # ── What the engine is told ───────────────────────────────────────────────
 
     public function Declare(Builder game)
-        Verb war = game.Action(Guilds.WarVerb, "Declare war", "Guild");
-        war.OnPlayer();
-        war.Icon("flame");
-
+        # Acts on the war picked out of the list, the way the original's did. It needs no box to type a
+        # name into: the name is on the line they clicked.
         Verb peace = game.Action(Guilds.PeaceVerb, "Retract declaration", "Guild");
-        peace.OnPlayer();
+        peace.Nowhere();
         peace.Icon("bubble");
 
-        Valor.Declare(game);
+        # These two only get between the windows. Neither does anything at the far end.
+        Verb war = game.Action(Guilds.WarVerb, "Wars", "Guild");
+        war.Nowhere();
+        war.Icon("flame");
+        war.Opens("msr.wars");
 
-        # The vault, as a member sees it. Everything on it is the GUILD'S, mirrored onto each member
-        # by Guilds.Show so a panel — which reads a body — has something to read.
-        Panel vault = game.Panel("msr.vault", "Guild", 260, 300);
+        Verb back = game.Action(Guilds.VaultVerb, "Back to the details", "Guild");
+        back.Nowhere();
+        back.Icon("shield");
+        back.Opens("msr.vault");
+
+        # Offered only to somebody who has a guild. Core's own social screen is where you find one
+        # or found one; this is what your guild is doing.
+        Verb hall = game.Action(Guilds.OpenVerb, "Guild Details", "Guild");
+        hall.OnHud();
+        hall.Icon("shield");
+        hall.Opens("msr.vault");
+        hall.NeedsAtLeast(Guilds.InGuild, 1);
+        hall.Hidden();
+
+        # ⚠ Declared, or none of it travels. An attribute nothing declared has no place in the
+        # numbering the client is sent: it is written on the server, never shipped, and the panel draws
+        # an empty row beside a full label with no error.
+        game.Attribute(Guilds.InGuild, "owner");
+        game.Attribute(Guilds.SeenName, "owner");
+        game.Attribute(Guilds.SeenLevel, "owner");
+        game.Attribute(Guilds.SeenExp, "owner");
+        game.Attribute(Guilds.SeenValor, "owner");
+        game.Attribute(Guilds.SeenPerks, "owner");
+
+        loop for line = 1 to Guilds.Slots
+            game.Attribute(Guilds.WarLineAt(line), "owner");
+            game.Attribute(Guilds.WarNameAt(line), "owner");
+        end loop
+
+        # The vault, as a member sees it. Everything on it is the guild's, mirrored onto each member
+        # by Guilds.Show so a panel, which reads a body, has something to read. Named apart from Core's
+        # own guild screen, which holds the roster, the gold vault, and who may join.
+        Panel vault = game.Panel("msr.vault", "Guild Details", 300, 340);
+        vault.Smallest(300, 260);
         vault.Key("K");
         vault.Icon("shield");
+        vault.OnlyWhile(Guilds.InGuild, 1);
         vault.Heading("Standing");
         vault.Field(Guilds.SeenName, "Guild", 200, 200, 160);
         vault.Field(Guilds.SeenLevel, "Level", 200, 200, 160);
         vault.Field(Guilds.SeenExp, "Experience", 200, 200, 160);
         vault.Badge(Guilds.SeenPerks, "Privileges", 240, 200, 80);
+        # ⚠ Gold and the weekly bill are not here. Core's own guild screen holds the balance,
+        # where the week's money came from, and the log of who paid in. Below is only what Core does
+        # not track, so no fact sits in two places.
         vault.Heading("Vault");
-        vault.Field(Guilds.SeenGold, "Gold", 240, 210, 120);
         vault.Field(Guilds.SeenValor, "Valor", 240, 210, 120);
-        vault.Field(Guilds.SeenTax, "Weekly tax", 200, 200, 160);
+
+        # Everything a member does with the guild, on the guild's own screen. The form pays valor in;
+        # the buttons are the ones that need no number, and the last opens the page that needs a name.
+        vault.Button("Acquire a guild quest", GuildQuest.AcquireVerb);
+        vault.Button("Abandon the quest", GuildQuest.AbandonVerb);
+        vault.Button("Lay claim to this land", Contest.ClaimVerb);
+        vault.Button("Wars", Guilds.WarVerb);
         vault.Asks("Donation", "Donate valor");
+
+        # A window of its own, because a panel asks for one thing and the vault's is the donation.
+        # The wars the guild is already in, a box for the name of the next, and the way back.
+        Panel wars = game.Panel("msr.wars", "Wars", 300, 280);
+        wars.Smallest(300, 220);
+        wars.Icon("flame");
+        wars.OnlyWhile(Guilds.InGuild, 1);
+        wars.Heading("At war with");
+
+        loop for line = 1 to Guilds.Slots
+            wars.Row(Guilds.WarLineAt(line), Guilds.WarNameAt(line));
+        end loop
+
+        wars.Button("Retract declaration", Guilds.PeaceVerb);
+        wars.Button("Back to the details", Guilds.VaultVerb);
+
+        # Declaring names a guild the player is not yet at war with, so it is the one thing here
+        # that still has to be typed.
+        wars.Asks("Declaration", "Declare war");
     end function
 
     # ── What a member sees ────────────────────────────────────────────────────
@@ -110,27 +188,26 @@ shared model Guilds
     public string SeenName = "gvName";
     public string SeenLevel = "gvLevel";
     public string SeenExp = "gvExp";
-    public string SeenGold = "gvGold";
     public string SeenValor = "gvValor";
     public string SeenPerks = "gvPerks";
-    public string SeenTax = "gvTax";
 
     public function Show(Player who)
         integer guild = World.GuildOf(who);
 
         if guild < 1
+            who.SetNumber(Guilds.InGuild, 0);
             who.SetText(Guilds.SeenName, "none");
             yield;
         end if
+
+        who.SetNumber(Guilds.InGuild, 1);
 
         integer level = Guilds.LevelOf(guild);
 
         who.SetText(Guilds.SeenName, World.GuildName(guild));
         who.SetNumber(Guilds.SeenLevel, level);
         who.SetNumber(Guilds.SeenExp, World.GuildNumber(guild, Guilds.Exp));
-        who.SetNumber(Guilds.SeenGold, World.GuildGold(guild));
         who.SetNumber(Guilds.SeenValor, World.GuildNumber(guild, Ledger.Valor));
-        who.SetNumber(Guilds.SeenTax, Ledger.WeeklyTax(level));
 
         if World.GuildNumber(guild, Ledger.PerksActive) > 0
             who.SetText(Guilds.SeenPerks, "in force");
@@ -138,6 +215,49 @@ shared model Guilds
         end if
 
         who.SetText(Guilds.SeenPerks, "suspended");
+    end function
+
+    # The wars page, drawn from the same copy. A slot holding nobody reads blank, and a blank line is
+    # not drawn - so the list is as long as the guild's wars rather than as long as the table.
+    public function ShowWars(Player who)
+        integer guild = World.GuildOf(who);
+
+        loop for slot = 1 to Guilds.Slots
+            integer against = 0;
+
+            if guild > 0
+                against = World.GuildNumber(guild, Guilds.Opponent(slot));
+            end if
+
+            if against < 1
+                who.SetText(Guilds.WarLineAt(slot), "");
+                who.SetText(Guilds.WarNameAt(slot), "");
+            end if
+
+            if against > 0
+                string name = World.GuildName(against);
+
+                who.SetText(Guilds.WarNameAt(slot), name);
+                who.SetText(Guilds.WarLineAt(slot), name + " - " + Guilds.Standing(guild, slot));
+            end if
+        end loop
+    end function
+
+    # Which way a war runs, in a word. Who declared on whom is what decides whether it can be retracted
+    # at all, so it is the thing worth reading off the line before picking it.
+    string function Standing(integer guild, integer slot)
+        boolean ours = World.GuildNumber(guild, Guilds.WeDeclared(slot)) > 0;
+        boolean theirs = World.GuildNumber(guild, Guilds.TheyDeclared(slot)) > 0;
+
+        if ours and theirs
+            yield "both ways";
+        end if
+
+        if ours
+            yield "ours";
+        end if
+
+        yield "against us";
     end function
 
     # ── Where a war is written ────────────────────────────────────────────────
@@ -349,6 +469,9 @@ shared model Guilds
         yield cost;
     end function
 
+    # ⚠ Named by the GUILD, which is what goes to war. The original asked for a guild's name in a
+    # box and looked it up, so a war can be declared on people who are not standing in front of you -
+    # which is most of them, and all of them if they are avoiding you.
     public function War(Player who, string on)
         integer guild = World.GuildOf(who);
 
@@ -357,17 +480,15 @@ shared model Guilds
             yield;
         end if
 
-        Player? them = who.Find(on);
+        integer against = World.GuildNamed(on);
 
-        if not them.HasValue()
-            who.Message("There is nobody here by that name.");
+        if against < 1
+            who.Message("There is no guild by that name.");
             yield;
         end if
 
-        integer against = World.GuildOf(them.Value());
-
-        if against < 1 or against == guild
-            who.Message("There is nobody there to declare on.");
+        if against == guild
+            who.Message("You cannot declare war on yourselves.");
             yield;
         end if
 
@@ -836,6 +957,7 @@ shared model Guilds
     # Only a one-sided declaration can be taken back, and only after the lock. A mutual war ends by
     # being won or by going cold.
 
+    # Retracting, named the same way declaring is.
     public function Peace(Player who, string on)
         integer guild = World.GuildOf(who);
 
@@ -844,14 +966,14 @@ shared model Guilds
             yield;
         end if
 
-        Player? them = who.Find(on);
+        integer against = World.GuildNamed(on);
 
-        if not them.HasValue()
-            who.Message("There is nobody here by that name.");
+        if against < 1
+            who.Message("There is no guild by that name.");
             yield;
         end if
 
-        Guilds.Withdraw(who, guild, World.GuildOf(them.Value()));
+        Guilds.Withdraw(who, guild, against);
     end function
 
     # Retracting, once the target is known. An officer's attempt is queued for the leader.

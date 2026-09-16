@@ -122,13 +122,14 @@ public sealed class ClientPacketSender
     /// server and goes straight back; this client never knows what it means.</summary>
     /// <summary>Picked one of the game's own verbs. <paramref name="targetName"/> and
     /// <paramref name="npcSlot"/> are what it was used ON, and only one of them is ever set: a verb
-    /// offered on a square or on the HUD carries neither.</summary>
+    /// offered on a square or on the HUD carries neither. <paramref name="picked"/> is the line of a
+    /// panel's list that was selected, for a verb pressed on one of the game's own screens.</summary>
     public void SendInvokeAction(string actionId, int mapNum, int x, int y,
-                                 string targetName = "", int npcSlot = 0)
+                                 string targetName = "", int npcSlot = 0, string picked = "")
         => _transport.Send(new InvokeActionPacket
         {
             Action = actionId, MapNum = mapNum, X = x, Y = y,
-            TargetName = targetName, NpcSlot = npcSlot,
+            TargetName = targetName, NpcSlot = npcSlot, Picked = picked,
         });
 
     /// <summary>One of the loaded game's own messages, from a panel that asked the player to fill it

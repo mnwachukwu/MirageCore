@@ -26,17 +26,18 @@ public class GameActionTests
 
     private sealed class Handler : IActionHandler
     {
-        public List<(EntityHandle From, string Action, EntityHandle On, WorldPlace At)> Invoked { get; } = [];
+        public List<(EntityHandle From, string Action, EntityHandle On, WorldPlace At, string Picked)> Invoked { get; } = [];
         public bool Throws { get; init; }
 
         public string Name => "Test actions";
         public IReadOnlyCollection<string> Owns { get; init; } = ["test.do"];
         public IReadOnlyCollection<string> Actions => Owns;
 
-        public void Invoke(EntityHandle from, string actionId, EntityHandle on, in WorldPlace at)
+        public void Invoke(EntityHandle from, string actionId, EntityHandle on, in WorldPlace at,
+                           string picked)
         {
             if (Throws) throw new InvalidOperationException("a game's bug");
-            Invoked.Add((from, actionId, on, at));
+            Invoked.Add((from, actionId, on, at, picked));
         }
     }
 

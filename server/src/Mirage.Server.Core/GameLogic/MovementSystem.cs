@@ -18,15 +18,18 @@ public sealed class MovementSystem : GameSystem
     private readonly WorldEvents _events;
     private readonly PlayerManager _pm;
     private readonly ILogger<MovementSystem> _logger;
+    private readonly IReadOnlyList<IMovePolicy> _moves;
 
     public MovementSystem(GameWorld world, PlayerManager pm, IPacketDispatcher dispatcher, IClock? clock = null,
-                          ILogger<MovementSystem>? logger = null, WorldEvents? events = null)
+                          ILogger<MovementSystem>? logger = null, WorldEvents? events = null,
+                          IEnumerable<IMovePolicy>? moves = null)
         : base(dispatcher, clock: clock)
     {
         _world = world;
         _events = events ?? WorldEvents.None;
         _pm = pm;
         _logger = logger ?? NullLogger<MovementSystem>.Instance;
+        _moves = moves is null ? [] : [.. moves];
     }
 
     // ── The pace gate ─────────────────────────────────────────────────────────
@@ -57,6 +60,15 @@ public sealed class MovementSystem : GameSystem
         return true;
     }
 
+    /// <summary>Whether a game rule says this body can no longer manage a run. The first refusal is
+    /// the answer, as everywhere else a policy is asked.</summary>
+    private bool Winded(EntityHandle who)
+    {
+        foreach (var move in _moves)
+            if (!move.MayRun(who).Allowed) return true;
+        return false;
+    }
+
     public void PlayerMove(int index, Direction dir, MovementType movement)
     {
         if (!_pm[index].IsPlaying) return;
@@ -65,6 +77,15 @@ public sealed class MovementSystem : GameSystem
         var p = _pm[index].Char;
         p.Dir = dir;
         var from = new WorldPlace(p.Map, p.X, p.Y);
+
+        // Whether this body can still manage a run, which only a game knows. A refusal brings them
+        // down to a walk rather than stopping them, and it is asked BEFORE the pace is charged below,
+        // so a client that keeps claiming a run it cannot afford is billed the pace it moves at.
+        //
+        // God mode is out of a game’s reach here for the same reason it is out of collision’s: it
+        // exists so somebody can cross a broken map, and a rule that slowed it down would defeat it.
+        if (movement == MovementType.Running && !p.GodMode && Winded(EntityHandle.ForPlayer(index)))
+            movement = MovementType.Walking;
 
         // WHEN, not only where. Everything below decides whether the destination is legal; this decides
         // whether it is legal YET.
@@ -80,6 +101,11 @@ public sealed class MovementSystem : GameSystem
         }
 
         bool moved = false;
+
+        // A step onto a tile of THIS map, which is not the same question as `moved`: walking off a map
+        // edge moves the body too, and what a run costs is charged for the legs rather than for having
+        // arrived somewhere.
+        bool stepped = false;
         WorldLayer newLayer;    // the logical layer the in-map step lands on (committed to p.Layer)
 
         // The map's own edges. Every step is either inside them or a crossing, and a neighbor's opposite
@@ -97,6 +123,7 @@ public sealed class MovementSystem : GameSystem
                     p.Layer = newLayer;
                     BroadcastMove(index, movement);
                     moved = true;
+                    stepped = true;
                 }
                 else if (p.Y == 0 && here.Up > 0
                     && CanPlayerWalkOnTile(index, here.Up, p.X, _world.Maps[here.Up].Height - 1, dir, out newLayer))
@@ -112,6 +139,7 @@ public sealed class MovementSystem : GameSystem
                     p.Layer = newLayer;
                     BroadcastMove(index, movement);
                     moved = true;
+                    stepped = true;
                 }
                 else if (p.Y == lastY && here.Down > 0
                     && CanPlayerWalkOnTile(index, here.Down, p.X, 0, dir, out newLayer))
@@ -127,6 +155,7 @@ public sealed class MovementSystem : GameSystem
                     p.Layer = newLayer;
                     BroadcastMove(index, movement);
                     moved = true;
+                    stepped = true;
                 }
                 else if (p.X == 0 && here.Left > 0
                     && CanPlayerWalkOnTile(index, here.Left, _world.Maps[here.Left].Width - 1, p.Y, dir, out newLayer))
@@ -142,6 +171,7 @@ public sealed class MovementSystem : GameSystem
                     p.Layer = newLayer;
                     BroadcastMove(index, movement);
                     moved = true;
+                    stepped = true;
                 }
                 else if (p.X == lastX && here.Right > 0
                     && CanPlayerWalkOnTile(index, here.Right, 0, p.Y, dir, out newLayer))
@@ -160,6 +190,14 @@ public sealed class MovementSystem : GameSystem
 
         // The step landed. Raised before the destination tile is read, so a game hears about the step
         // onto a warp tile before it hears about the warp — which is the order they happened in.
+        // What the run cost, charged only for a step onto a tile of the SAME map: walking off a map
+        // edge is a warp, and a body did not sprint in order to be somewhere else.
+        if (stepped && movement == MovementType.Running && !p.GodMode)
+        {
+            var ran = EntityHandle.ForPlayer(index);
+            foreach (var move in _moves) move.OnRan(ran);
+        }
+
         _events.PlayerMoved(index, from, new WorldPlace(p.Map, p.X, p.Y));
 
         var destTile = _world.Maps[p.Map].Tile[p.X, p.Y];
@@ -613,7 +651,7 @@ public sealed class MovementSystem : GameSystem
             {
                 if (i == index || !_pm[i].IsPlaying) continue;
                 var pc = _pm[i].Char;
-                if (pc.Dead) continue;   // a corpse is scenery: it is walked over, not around
+                if (pc.Downed) continue;   // a corpse is scenery: it is walked over, not around
                 if (pc.Map == destMapNum && pc.X == x && pc.Y == y && pc.Layer == newLayer) return false;
             }
         }

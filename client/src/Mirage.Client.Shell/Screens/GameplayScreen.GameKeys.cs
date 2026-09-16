@@ -43,10 +43,21 @@ public sealed partial class GameplayScreen
     /// when the declaration is made, so there is nothing here to resolve between.</para></summary>
     private void ProcessGameKeys(InputState input)
     {
+        // 🔴 Held with Ctrl it is somebody else's shortcut, not the game's. Ctrl+C copies, and a
+        // game that bound C would otherwise open its window every time the player copied a line - the
+        // two firing together, with nothing anywhere saying they collided. A game binds a KEY, and
+        // that is the key on its own.
+        if (input.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.LeftControl)
+            || input.IsKeyDown(Microsoft.Xna.Framework.Input.Keys.RightControl)) return;
+
         foreach (GamePanel panel in _ctx.State.Panels.All)
         {
             if (!GameKeyMap.TryResolve(panel.Key, out var panelKey)) continue;
             if (!input.IsKeyPressed(panelKey)) continue;
+
+            // A shortcut obeys the panel's condition too, or it is the way around a grayed-out
+            // button. Silently, since there is nothing to gray out on a keyboard.
+            if (!panel.While.Holds(_ctx.State.Me.Attributes)) return;
 
             TogglePanel(panel.Id);
             return;
@@ -69,7 +80,13 @@ public sealed partial class GameplayScreen
             if (!TryFacedSquare(out int mapNum, out int tileX, out int tileY))
                 (mapNum, tileX, tileY) = (_ctx.State.CenterMapNum, _ctx.State.Me.X, _ctx.State.Me.Y);
 
-            InvokeGameAction(action.Id, action.OpensPanel, mapNum, tileX, tileY);
+            // 🔴 The body standing there, named the way the menu would have named it. Without this a
+            // key reaches a SQUARE and the same verb picked off a menu reaches a creature, so the two
+            // are not the same verb after all - and a verb that hands Core's reaching back does it from
+            // the menu and silently not from its own key, which is the half of the pair a player
+            // actually presses.
+            InvokeGameAction(action.Id, action.OpensPanel, mapNum, tileX, tileY,
+                             npcSlot: NpcSlotOn(mapNum, tileX, tileY));
             return;
         }
     }
@@ -86,6 +103,23 @@ public sealed partial class GameplayScreen
 
         _gamePanel.Open(_ctx.State, panelId);
         BringToFront(PanelGame);
+    }
+
+    /// <summary>Which creature is standing on that square, or 0 for an empty one. The map's own slot,
+    /// which is what an invoke carries - the server turns it into an identity before a game sees
+    /// it.</summary>
+    private int NpcSlotOn(int mapNum, int tileX, int tileY)
+    {
+        var npcs = _ctx.State.NpcsForMap(mapNum);
+        if (npcs is null) return 0;
+
+        for (int slot = 1; slot < npcs.Length; slot++)
+        {
+            var body = npcs[slot];
+            if (body.Num > 0 && body.X == tileX && body.Y == tileY) return slot;
+        }
+
+        return 0;
     }
 
     /// <summary>The square in front of the player, as the server names it.

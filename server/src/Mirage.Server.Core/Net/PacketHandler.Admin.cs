@@ -92,7 +92,7 @@ public sealed partial class PacketHandler
 
         // A corpse stays where it fell — including an admin's own. The target-side twin of this lives in
         // HandleWarpToMe.
-        if (_pm[index].Char.Dead)
+        if (_pm[index].Char.Downed)
         {
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_WarpWhileDead,
                 new ChatMetadata(GameColor.BrightRed, ChatChannel.System));
@@ -141,7 +141,7 @@ public sealed partial class PacketHandler
 
         // A corpse stays where it fell, and the admin who asked hears why rather than watching nothing
         // happen.
-        if (_pm[n].Char.Dead)
+        if (_pm[n].Char.Downed)
         {
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_TargetIsDead,
                 new ChatMetadata(GameColor.BrightRed, ChatChannel.Notice), ("Target", _pm[n].Char.Name.Trim()));

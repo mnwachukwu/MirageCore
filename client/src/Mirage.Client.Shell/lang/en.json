@@ -523,7 +523,7 @@
   "DeleteAccountScreen_DeletingAccount": "Deleting account...",
   "CharSelectScreen_Title": "Select Character",
   "CharSelectScreen_Instruction": "Select a character.",
-  "CharSelectScreen_CharFormat": "{Name}",
+  "CharSelectScreen_CharFormat": "{Name}{Says}",
   "CharSelectScreen_PlayButton": "Play",
   "CharSelectScreen_NewCharButton": "New Character",
   "CharSelectScreen_DeleteCharButton": "Delete Character",

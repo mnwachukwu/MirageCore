@@ -125,6 +125,7 @@ public class SurveyModuleTests
             Assert.That(registry.Observers, Is.Not.Empty, "AddObserver");
             Assert.That(registry.DeathPolicies, Is.Not.Empty, "AddDeathPolicy");
             Assert.That(registry.LingerPolicies, Is.Not.Empty, "AddLingerPolicy");
+            Assert.That(registry.MovePolicies, Is.Not.Empty, "AddMovePolicy");
         });
     }
 

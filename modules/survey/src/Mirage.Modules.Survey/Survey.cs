@@ -54,6 +54,10 @@ public static class Survey
     /// <summary>One tile walked, one point spent.</summary>
     public const int StepCost = 1;
 
+    /// <summary>What a tile crossed at a jog costs ON TOP of the walking price. A surveyor in a hurry
+    /// covers ground faster and has less left for the day, which is the whole trade.</summary>
+    public const int RunSurcharge = 2;
+
     /// <summary>One point back every this many ticks. Slower than walking spends it, so a survey has a
     /// shape: range out, find things, come back.</summary>
     public const int RecoveryEveryTicks = 20;

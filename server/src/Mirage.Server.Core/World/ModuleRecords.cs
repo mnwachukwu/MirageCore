@@ -80,4 +80,8 @@ public sealed class ModuleRecords
         if (familyId is null || !_byFamily.TryGetValue(familyId, out var slots)) return [];
         return [.. slots.Skip(1)];
     }
+
+    /// <summary>How many slots this family has, without copying them out to count them.</summary>
+    public int CountOf(string? familyId) =>
+        familyId is not null && _byFamily.TryGetValue(familyId, out var slots) ? slots.Length - 1 : 0;
 }

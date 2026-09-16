@@ -8,6 +8,20 @@ public static class DisplaySurfaces
 {
     /// <summary>The sidebar the player reads while walking around.</summary>
     public const string Hud = "hud";
+
+    /// <summary>
+    /// A saved character on the select screen, before anybody is in the world.
+    ///
+    /// <para>🔴 <b>The one surface that draws a body the engine is not running.</b> Everything else
+    /// a game shows reads a player standing somewhere; this reads a row in a save file. So it is the
+    /// only place a game can say what its characters ARE - a level, a class, a guild, how long since
+    /// they were last seen - and without it the screen where somebody chooses between three of them
+    /// offers three names and a sprite.</para>
+    ///
+    /// <para>Projected on the SERVER, because the client has not been told this world's attribute
+    /// numbering yet: that arrives with the world, and this screen comes before it.</para>
+    /// </summary>
+    public const string CharacterSelect = "select";
 }
 
 /// <summary>
@@ -71,18 +85,22 @@ public sealed record DisplayField
         // would claim the body is at zero, which is a different and wrong statement.
         if (!bag.TryGet(MaxKey, out var max)) return null;
         double ceiling = max.AsDouble();
-        return ceiling > 0 ? DisplayRow.OfMeter(LabelKey, value.AsDouble(), ceiling, Rgb) : null;
+        return ceiling > 0 ? DisplayRow.OfMeter(LabelKey, value.AsDouble(), ceiling, Rgb, ValueKey) : null;
     }
 
     /// <summary>A badge states something that is CURRENTLY true, so a flag that is false and an empty
     /// word are both nothing to say rather than a badge reading "false".</summary>
     private DisplayRow? BadgeRow(AttributeValue value)
     {
+        // A flag's caption IS the badge: "asleep" ticked draws the word Asleep, and unticked draws
+        // nothing, so there is no second label to put beside it.
         if (value.Kind == AttributeKind.Flag)
             return value.AsBool() ? DisplayRow.OfBadge(LabelKey ?? ValueKey, Rgb) : null;
 
+        // A word's is not. The value is the tag, and the caption says what the tag is ABOUT - without
+        // it a row reads "in force" with nothing to say what is.
         string text = value.AsText();
-        return text.Length > 0 ? DisplayRow.OfBadge(text, Rgb) : null;
+        return text.Length > 0 ? DisplayRow.OfBadge(text, Rgb, LabelKey) : null;
     }
 }
 

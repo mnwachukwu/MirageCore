@@ -179,15 +179,16 @@ public class MsrStatsTests
     /// <summary>What the original paid, and how often it paid it.
     ///
     /// <para>The original ran five clocks: health every 2.5 seconds and every 1.25 on protected ground,
-    /// mana and stamina every 2.5 and every 1, and both of those every 5 while fighting. Health does not
-    /// come back in a fight at all.</para>
+    /// mana and stamina every 2.5 and every 1, and mana every 5 while fighting. Neither health nor
+    /// stamina comes back in a fight at all — stamina is the one pool paid out continuously, so a rate
+    /// that kept running would refund a sprint about as fast as it was spent.</para>
     ///
     /// <para>The port pays on a one-second tick instead, so what is checked is THROUGHPUT over time
     /// rather than one tick's worth. A tick pays the share of an interval it is worth and carries the
     /// fraction, so a single tick rounds and ten of them do not.</para>
     /// </summary>
     [TestCase(false, 2.5, 2.5, 2.5, Description = "ordinary ground")]
-    [TestCase(true, 2.5, 2.5, 2.5, Description = "in a fight, health included")]
+    [TestCase(true, 2.5, 2.5, 2.5, Description = "in a fight, where only mana comes back")]
     public void RegenPaysWhatTheOriginalPaid(bool fighting, double _, double __, double ___)
     {
         var (module, world) = Asking("        yield;");
@@ -210,7 +211,7 @@ public class MsrStatsTests
         // Five in each stat, which is what enrollment leaves: regen of 6, 6 and 4 per interval.
         long health = fighting ? 0 : Paid(6, 2.5);
         long mana = Paid(6, fighting ? 5.0 : 2.5);
-        long stamina = Paid(4, fighting ? 5.0 : 2.5);
+        long stamina = fighting ? 0 : Paid(4, 2.5);
 
         Assert.Multiple(() =>
         {
@@ -396,14 +397,13 @@ public class MsrStatsTests
         });
     }
 
-    /// <summary>A point goes where it is asked, and nowhere else.</summary>
+    /// <summary>Points go where they are asked, all at once.</summary>
     [Test]
-    public void APointIsSpentOnAStatThatExists()
+    public void AnAllocationIsAppliedWhereItWasAsked()
     {
         var (module, world) = Asking("""
                     Levels.Earn(who, 600);
-                    Levels.Spend(who, "str");
-                    Levels.Spend(who, "charisma");
+                    Levels.Train(who, 2, 1, 0, 0);
             """);
 
         using ScriptedWorldModule scripts = module;
@@ -416,9 +416,45 @@ public class MsrStatsTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(Held(world, "str"), Is.EqualTo(6L), "five to start, and one spent");
-            Assert.That(Held(world, "points"), Is.EqualTo(2L), "three earned, one spent, one refused");
-            Assert.That(world.Said, Has.Some.Contains("charisma"), "and the refusal says which");
+            Assert.That(Held(world, "str"), Is.EqualTo(7L), "five to start, and two spent");
+            Assert.That(Held(world, "def"), Is.EqualTo(6L), "and one here");
+            Assert.That(Held(world, "spd"), Is.EqualTo(5L), "nothing asked, nothing given");
+            Assert.That(Held(world, "points"), Is.Zero, "three earned, three spent");
+
+            Assert.That(world.Said, Has.Some.Contains("stronger"), "one line per stat raised");
+            Assert.That(world.Said, Has.Some.Contains("tougher"));
+            Assert.That(world.Said, Has.None.Contains("quicker"), "and none for a stat left alone");
+        });
+    }
+
+    /// <summary>🔴 An allocation bigger than the points behind it buys NOTHING.
+    ///
+    /// <para>The original committed the whole staged allocation in one message, so the only two
+    /// outcomes are all of it or none of it. Spending what it can afford and dropping the rest is the
+    /// tempting third answer, and it is the one that quietly puts points somewhere the player did not
+    /// choose: they staged three into speed and one into strength, could afford three, and find out
+    /// afterwards which of the four the engine decided to skip.</para></summary>
+    [Test]
+    public void AnAllocationBeyondThePointsBuysNothingAtAll()
+    {
+        var (module, world) = Asking("""
+                    Levels.Earn(who, 600);
+                    Levels.Train(who, 3, 3, 3, 3);
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        var who = EntityHandle.ForPlayer(1);
+        world.Here.Add(who);
+        ((IWorldObserver)scripts).OnPlayerJoined(who);
+
+        ((ITickWork)scripts).Tick(1);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(Held(world, "str"), Is.EqualTo(5L), "not a point of it landed");
+            Assert.That(Held(world, "points"), Is.EqualTo(3L), "and they still have all three");
+            Assert.That(world.Said, Has.Some.Contains("that many points"), "and are told why");
         });
     }
 
@@ -1366,6 +1402,7 @@ public class MsrStatsTests
     {
         var (module, world) = Asking("""
                     Quests.Ask(who, 1, 4, 4);
+                    Quests.Accept(who, "1");
                     Quests.Killed(who, 7);
                     Quests.Killed(who, 7);
                     Quests.Give(who, 1, 4, 4);
@@ -1407,6 +1444,7 @@ public class MsrStatsTests
         var (module, world) = Asking("""
                     Quests.Killed(who, 7);
                     Quests.Ask(who, 1, 4, 4);
+                    Quests.Accept(who, "1");
             """);
 
         using ScriptedWorldModule scripts = module;
@@ -1434,6 +1472,7 @@ public class MsrStatsTests
     {
         var (module, world) = Asking("""
                     Quests.Ask(who, 1, 4, 4);
+                    Quests.Accept(who, "1");
                     Quests.Killed(who, 7);
                     Quests.Give(who, 1, 4, 4);
             """);
@@ -1465,7 +1504,10 @@ public class MsrStatsTests
     [Test]
     public void AQuestThatComesAfterAnotherWaitsForIt()
     {
-        var (module, world) = Asking("        Quests.Ask(who, 1, 4, 4);");
+        var (module, world) = Asking("""
+                    Quests.Ask(who, 1, 4, 4);
+                    Quests.Accept(who, "1");
+            """);
         using ScriptedWorldModule scripts = module;
 
         var who = EntityHandle.ForPlayer(1);
@@ -1498,6 +1540,7 @@ public class MsrStatsTests
     {
         var (module, world) = Asking("""
                     Quests.Ask(who, 1, 4, 4);
+                    Quests.Accept(who, "1");
                     Quests.Killed(who, 7);
             """);
 
@@ -1603,7 +1646,7 @@ public class MsrStatsTests
     public void AnAnsweredWarIsLiveAtOnceAndAGrievanceWaits()
     {
         var (module, world) = Asking("""
-                    Guilds.War(who, "Rival");
+                    Guilds.War(who, "Theirs");
             """);
 
         using ScriptedWorldModule scripts = module;
@@ -1643,7 +1686,7 @@ public class MsrStatsTests
     [Test]
     public void AnOfficersDeclarationIsQueuedForTheLeader()
     {
-        var (module, world) = Asking("        Guilds.War(who, \"Rival\");");
+        var (module, world) = Asking("        Guilds.War(who, \"Theirs\");");
         using ScriptedWorldModule scripts = module;
 
         var who = EntityHandle.ForPlayer(1);
@@ -1745,7 +1788,7 @@ public class MsrStatsTests
     [Test]
     public void ADeclarationCannotBeTakenBackAtOnce()
     {
-        var (module, world) = Asking("        Guilds.Peace(who, \"Rival\");");
+        var (module, world) = Asking("        Guilds.Peace(who, \"Theirs\");");
         using ScriptedWorldModule scripts = module;
 
         var who = EntityHandle.ForPlayer(1);
@@ -1797,7 +1840,7 @@ public class MsrStatsTests
     [Test]
     public void ReturningADeclarationMakesTheWarMutualAtOnce()
     {
-        var (module, world) = Asking("        Guilds.War(who, \"Rival\");");
+        var (module, world) = Asking("        Guilds.War(who, \"Theirs\");");
         using ScriptedWorldModule scripts = module;
 
         var who = EntityHandle.ForPlayer(1);
@@ -2390,7 +2433,7 @@ public class MsrStatsTests
         world.Here.Add(EntityHandle.ForPlayer(1));
 
         // A season that began on the first Sunday the epoch saw, read three weeks later.
-        world.Kept.Set("seasonbegan", 3L);
+        world.WorldBag.Set("seasonbegan", 3L);
         world.Clock = (3L + 21L) * 86_400L + 12L * 3_600L;
 
         ((ITickWork)scripts).Tick(1);
@@ -3026,16 +3069,16 @@ public class MsrStatsTests
         return (Asking("", world).Module, world);
     }
 
-    // ── Bounties ─────────────────────────────────────────────────────────────
+    // ── Guild quests ─────────────────────────────────────────────────────────────
 
-    /// <summary>What a leader pays to take one out, which is also the floor the reward has to
+    /// <summary>What a leader pays to acquire one, which is also the floor the reward has to
     /// beat.</summary>
     [TestCase(0, ExpectedResult = "0")]
     [TestCase(1, ExpectedResult = "17500")]
     [TestCase(5, ExpectedResult = "87500")]
-    public string ABountyCostsPerGuildLevel(int level) => Answered($"Bounty.Cost({level})");
+    public string AGuildQuestCostsPerGuildLevel(int level) => Answered($"GuildQuest.Cost({level})");
 
-    /// <summary>🔴 <b>The same roll sizes the objective and the reward</b>, so a bounty that asks for
+    /// <summary>🔴 <b>The same roll sizes the objective and the reward</b>, so a quest that asks for
     /// more always pays proportionally more. Fifty is the flat baseline; nought and a hundred are the
     /// quarter either side of it.</summary>
     [TestCase(0, 0, ExpectedResult = "225")]
@@ -3043,16 +3086,16 @@ public class MsrStatsTests
     [TestCase(100, 0, ExpectedResult = "375")]
     [TestCase(50, 200, ExpectedResult = "500")]
     [TestCase(100, 1000, ExpectedResult = "1000")]
-    public string ABountysKillCountScalesWithTheCreature(int roll, int difficulty) =>
-        Answered($"Bounty.KillsFor({difficulty}, {roll}, false)");
+    public string AGuildQuestsKillCountScalesWithTheCreature(int roll, int difficulty) =>
+        Answered($"GuildQuest.KillsFor({difficulty}, {roll}, false)");
 
     /// <summary>⚠ A boss is asked for in TENS on a far shallower slope, so "kill three hundred bosses"
     /// can never come up.</summary>
     [TestCase(50, 0, ExpectedResult = "30")]
     [TestCase(50, 300, ExpectedResult = "60")]
     [TestCase(100, 3000, ExpectedResult = "100")]
-    public string ABountyOnABossIsAskedForInTens(int roll, int difficulty) =>
-        Answered($"Bounty.KillsFor({difficulty}, {roll}, true)");
+    public string AGuildQuestOnABossIsAskedForInTens(int roll, int difficulty) =>
+        Answered($"GuildQuest.KillsFor({difficulty}, {roll}, true)");
 
     /// <summary>Experience scales with the guild's level and the creature — and a guild at the top is
     /// paid none, because it has nothing left to spend it on.</summary>
@@ -3060,18 +3103,18 @@ public class MsrStatsTests
     [TestCase(1, 0, ExpectedResult = "66000")]
     [TestCase(1, 100, ExpectedResult = "96000")]
     [TestCase(5, 100, ExpectedResult = "0")]
-    public string ABountysExperienceScalesWithTheGuild(int level, int difficulty) =>
-        Answered($"Bounty.ExpFor({difficulty}, {level}, 50, false)");
+    public string AGuildQuestsExperienceScalesWithTheGuild(int level, int difficulty) =>
+        Answered($"GuildQuest.ExpFor({difficulty}, {level}, 50, false)");
 
-    /// <summary>🔴 <b>Filling a bounty always leaves the vault better off than taking it out did.</b>
+    /// <summary>🔴 <b>Finishing a quest always leaves the vault better off than acquiring it did.</b>
     /// The reward is floored at the acquire cost plus the base, so a level-five guild can never pay
     /// 87,500 for a target worth less.</summary>
     [TestCase(0, 0, ExpectedResult = "8750")]
     [TestCase(1, 0, ExpectedResult = "26250")]
     [TestCase(5, 0, ExpectedResult = "96250")]
     [TestCase(5, 1000, ExpectedResult = "284375")]
-    public string ABountyPaysMoreThanItCost(int level, int difficulty) =>
-        Answered($"Bounty.GoldFor({difficulty}, {level}, 50, false)");
+    public string AGuildQuestPaysMoreThanItCost(int level, int difficulty) =>
+        Answered($"GuildQuest.GoldFor({difficulty}, {level}, 50, false)");
 
     // ── What a war death costs the loser ─────────────────────────────────────
     //
@@ -3709,19 +3752,22 @@ public class MsrStatsTests
         Assert.That(after - before, Is.GreaterThan(0), "the world tick has to keep it firing");
     }
 
-    /// <summary>A body comes back whole.
+    /// <summary>A body comes back whole, and comes back whole when it GETS UP.
     ///
-    /// <para>The original set all three pools to their ceiling on every respawn, before anything about
-    /// what the death cost. Without it a player who died walked around on nothing: the bar read 0 out
-    /// of 29 and stayed there, which is not a state the game has any other way to be in — every rule
-    /// that reads health treats nought as dead, and nothing sweeps for a body sitting at it.</para>
+    /// <para>The original set all three pools to their ceiling in RespawnPlayer, which runs when the
+    /// player presses the button — not when they fell. Filling them at the moment of death instead puts
+    /// a full bar over a corpse, and it is the ordering rather than the fill that this pins.</para>
     ///
-    /// <para>Checked on the ordinary death and on the one that costs nothing, because the fill sits
-    /// above every branch that returns early.</para>
+    /// <para>Without the fill a player who died walked around on nothing: the bar read 0 out of 29 and
+    /// stayed there, which is not a state the game has any other way to be in — every rule that reads
+    /// health treats nought as dead, and nothing sweeps for a body sitting at it.</para>
+    ///
+    /// <para>Checked on the ordinary death and on the one that costs nothing, because what a death took
+    /// must not decide whether the body is put back together.</para>
     /// </summary>
     [TestCase(1, Description = "too low a level to lose anything")]
     [TestCase(20, Description = "an ordinary death, with a cost")]
-    public void DyingPutsTheBodyBackTogether(int level)
+    public void GettingUpPutsTheBodyBackTogether(int level)
     {
         var world = new ScriptedWorldTests.RecordingWorld();
         var (module, _) = Asking("        yield;", world);
@@ -3736,6 +3782,10 @@ public class MsrStatsTests
             world.SetAttribute(who, key, AttributeValue.From(0L));
 
         ((IDeathPolicy)scripts).OnDied(new Death(who, EntityHandle.None, "slain"));
+
+        Assert.That(Held(world, "hp"), Is.Zero, "a body on the floor was handed a full bar");
+
+        ((IDeathPolicy)scripts).OnRose(who);
 
         Assert.Multiple(() =>
         {

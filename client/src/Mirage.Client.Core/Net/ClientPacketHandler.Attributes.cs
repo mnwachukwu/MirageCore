@@ -58,8 +58,10 @@ public sealed partial class ClientPacketHandler
                 OpensPanel = a.OpensPanel,
                 Icon = a.Icon,
                 Interacts = a.Interacts,
+                Aimed = a.Aimed,
                 Key = a.Key,
                 When = a.When,
+                Unmet = a.Unmet,
             })]);
     }
 

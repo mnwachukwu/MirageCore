@@ -1,16 +1,16 @@
-# Guild quests: a standing bounty on one kind of creature, worked by the whole roster.
+# Guild quests: a standing order on one kind of creature, worked by the whole roster.
 #
-# This is what actually levels a guild. The kill trickle is one point a body; a bounty pays tens of
+# This is what actually levels a guild. The kill trickle is one point a body; a quest pays tens of
 # thousands, and it is the only thing on the ballooning curve that moves it at all.
 #
-# A leader takes one out, pays for it out of their own pocket, and the guild has a day to fill it.
+# A leader acquires one, pays for it out of their own pocket, and the guild has a day to finish it.
 # Three a day at most, and abandoning one does not give the slot back, so a leader cannot re-roll
 # cheaply for an easy target.
 
-shared model Bounty
+shared model GuildQuest
 
-    public string TakeVerb = "msr.guild.bounty";
-    public string DropVerb = "msr.guild.abandon";
+    public string AcquireVerb = "msr.guild.quest";
+    public string AbandonVerb = "msr.guild.abandon";
 
     # ── The numbers, all from the original ────────────────────────────────────
 
@@ -18,17 +18,17 @@ shared model Bounty
     public integer CostPerLevel = 17500;
     public integer DurationHours = 24;
 
-    # A bounty on an ordinary creature is hundreds of kills, scaling with how hard it is.
+    # A quest on an ordinary creature is hundreds of kills, scaling with how hard it is.
     public integer BaseKills = 300;
     public integer KillsPerDifficulty = 1;
     public integer MaxKills = 1000;
 
-    # A bounty on a boss is tens, on a much shallower slope.
+    # A quest on a boss is tens, on a much shallower slope.
     public integer BossBaseKills = 30;
     public integer BossKillsPerHundred = 10;
     public integer BossMaxKills = 100;
 
-    # The roll that sizes a bounty moves the count and the reward together, so asking for more always
+    # The roll that sizes a quest moves the count and the reward together, so asking for more always
     # pays more.
     public integer VariationPercent = 25;
 
@@ -43,7 +43,7 @@ shared model Bounty
     # A guild that cannot level has no use for experience, so a maxed one is paid in gold instead.
     public integer MaxLevelGoldBonusPercent = 25;
 
-    # ── Where a bounty is written ─────────────────────────────────────────────
+    # ── Where a quest is written ─────────────────────────────────────────────
 
     public string Target = "gqtarget";
     public string Needed = "gqneed";
@@ -53,21 +53,21 @@ shared model Bounty
     public string GoldReward = "gqgold";
 
     # Three a day, counted against the day they were taken on.
-    public string TakenToday = "gqtoday";
+    public string AcquiredToday = "gqtoday";
     public string CountedOn = "gqday";
 
     # ── Declaring ─────────────────────────────────────────────────────────────
 
     public function Declare(Builder game)
-        # Taken FROM somebody, the way the original's were: a board, a keeper, whoever a world puts
-        # them behind. On the sidebar it would be a button on every screen, most of them nowhere near
-        # anyone offering work.
-        Verb take = game.Action(Bounty.TakeVerb, "Take a bounty", "Guild");
-        take.OnNpc();
+        # Declared here and PLACED by guilds.cm, on the panel that shows the vault paying for them -
+        # which is where the original took and gave up a guild's work. Hung off a creature instead,
+        # every shopkeeper in the world offers to hand you your guild's next job.
+        Verb take = game.Action(GuildQuest.AcquireVerb, "Acquire a guild quest", "Guild");
+        take.Nowhere();
         take.Icon("scroll");
 
-        Verb drop = game.Action(Bounty.DropVerb, "Abandon the bounty", "Guild");
-        drop.OnNpc();
+        Verb drop = game.Action(GuildQuest.AbandonVerb, "Abandon the quest", "Guild");
+        drop.Nowhere();
         drop.Icon("clock");
     end function
 
@@ -80,7 +80,7 @@ shared model Bounty
             yield 0;
         end if
 
-        yield level * Bounty.CostPerLevel;
+        yield level * GuildQuest.CostPerLevel;
     end function
 
     # How hard a creature is: the three stats a fight actually spends.
@@ -97,21 +97,21 @@ shared model Bounty
     # A roll of nought to a hundred becomes a factor between three quarters and five quarters. Fifty
     # is the flat baseline.
     public real function Variation(integer roll)
-        real spread = Bounty.VariationPercent / 100.0;
+        real spread = GuildQuest.VariationPercent / 100.0;
 
         yield 1.0 - spread + roll / 100.0 * 2.0 * spread;
     end function
 
     public integer function KillsFor(integer difficulty, integer roll, boolean boss)
-        real baseline = Bounty.BaseKills + difficulty * Bounty.KillsPerDifficulty;
-        integer most = Bounty.MaxKills;
+        real baseline = GuildQuest.BaseKills + difficulty * GuildQuest.KillsPerDifficulty;
+        integer most = GuildQuest.MaxKills;
 
         if boss
-            baseline = Bounty.BossBaseKills + difficulty * Bounty.BossKillsPerHundred / 100.0;
-            most = Bounty.BossMaxKills;
+            baseline = GuildQuest.BossBaseKills + difficulty * GuildQuest.BossKillsPerHundred / 100.0;
+            most = GuildQuest.BossMaxKills;
         end if
 
-        integer kills = Math.Round(baseline * Bounty.Variation(roll));
+        integer kills = Math.Round(baseline * GuildQuest.Variation(roll));
 
         if kills < 1
             yield 1;
@@ -130,32 +130,32 @@ shared model Bounty
             yield 0;
         end if
 
-        real reward = (Bounty.BaseExp * (level + 1) + difficulty * Bounty.ExpPerDifficulty)
-                      * Bounty.Variation(roll);
+        real reward = (GuildQuest.BaseExp * (level + 1) + difficulty * GuildQuest.ExpPerDifficulty)
+                      * GuildQuest.Variation(roll);
 
         if boss
-            reward = reward * Bounty.BossRewardPercent / 100.0;
+            reward = reward * GuildQuest.BossRewardPercent / 100.0;
         end if
 
         yield Math.Round(reward);
     end function
 
     public integer function GoldFor(integer difficulty, integer level, integer roll, boolean boss)
-        real reward = (Bounty.BaseGold * (level + 1) + difficulty * Bounty.GoldPerDifficulty)
-                      * Bounty.Variation(roll);
+        real reward = (GuildQuest.BaseGold * (level + 1) + difficulty * GuildQuest.GoldPerDifficulty)
+                      * GuildQuest.Variation(roll);
 
         if boss
-            reward = reward * Bounty.BossRewardPercent / 100.0;
+            reward = reward * GuildQuest.BossRewardPercent / 100.0;
         end if
 
         if level >= Guilds.MaxLevel
-            reward = reward * (100 + Bounty.MaxLevelGoldBonusPercent) / 100.0;
+            reward = reward * (100 + GuildQuest.MaxLevelGoldBonusPercent) / 100.0;
         end if
 
         integer paid = Math.Round(reward);
-        integer floor = Bounty.Cost(level) + Bounty.BaseGold;
+        integer floor = GuildQuest.Cost(level) + GuildQuest.BaseGold;
 
-        # Filling a bounty always leaves the vault better off than taking it out did.
+        # Finishing a quest always leaves the vault better off than acquiring it did.
         if paid < floor
             yield floor;
         end if
@@ -175,7 +175,7 @@ shared model Bounty
 
         loop for beast = 1 to World.Records("NPCs")
             if World.RecordTruth("NPCs", beast, "hostile")
-                integer hard = Bounty.Difficulty(beast);
+                integer hard = GuildQuest.Difficulty(beast);
 
                 if least < 0 or hard < least
                     least = hard;
@@ -196,7 +196,7 @@ shared model Bounty
 
         loop for beast = 1 to World.Records("NPCs")
             if World.RecordTruth("NPCs", beast, "hostile")
-                total = total + Bounty.Weight(beast, aim);
+                total = total + GuildQuest.Weight(beast, aim);
             end if
         end loop
 
@@ -207,7 +207,7 @@ shared model Bounty
         loop for beast = 1 to World.Records("NPCs")
             if World.RecordTruth("NPCs", beast, "hostile")
                 last = beast;
-                seen = seen + Bounty.Weight(beast, aim);
+                seen = seen + GuildQuest.Weight(beast, aim);
 
                 if wanted < seen
                     yield beast;
@@ -219,12 +219,12 @@ shared model Bounty
     end function
 
     real function Weight(integer beast, real aim)
-        yield 1.0 / (1.0 + Math.Abs(Bounty.Difficulty(beast) - aim));
+        yield 1.0 / (1.0 + Math.Abs(GuildQuest.Difficulty(beast) - aim));
     end function
 
     # ── Taking one out ────────────────────────────────────────────────────────
 
-    public function Take(Player who)
+    public function Acquire(Player who)
         integer guild = World.GuildOf(who);
 
         if guild < 1
@@ -233,61 +233,61 @@ shared model Bounty
         end if
 
         if World.GuildRank(who) != "leader"
-            who.Message("Only your guild's leader may take a bounty out.");
+            who.Message("Only your guild's leader may acquire a quest.");
             yield;
         end if
 
-        if World.GuildNumber(guild, Bounty.Target) > 0
-            who.Message("Your guild is already working one.");
+        if World.GuildNumber(guild, GuildQuest.Target) > 0
+            who.Message("Your guild already has a quest.");
             yield;
         end if
 
         integer today = Ledger.Today();
 
-        if World.GuildNumber(guild, Bounty.CountedOn) != today
-            World.SetGuildNumber(guild, Bounty.CountedOn, today);
-            World.SetGuildNumber(guild, Bounty.TakenToday, 0);
+        if World.GuildNumber(guild, GuildQuest.CountedOn) != today
+            World.SetGuildNumber(guild, GuildQuest.CountedOn, today);
+            World.SetGuildNumber(guild, GuildQuest.AcquiredToday, 0);
         end if
 
-        if World.GuildNumber(guild, Bounty.TakenToday) >= Bounty.MaxPerDay
-            who.Message("Your guild has taken out all it may today.");
+        if World.GuildNumber(guild, GuildQuest.AcquiredToday) >= GuildQuest.MaxPerDay
+            who.Message("Your guild has acquired all the quests it may today.");
             yield;
         end if
 
         integer level = Guilds.LevelOf(guild);
-        integer beast = Bounty.Pick(level, Combat.Roll(100));
+        integer beast = GuildQuest.Pick(level, Combat.Roll(100));
 
         if beast < 1
             who.Message("There is nothing worth hunting.");
             yield;
         end if
 
-        if not Bounty.Charge(who, level)
+        if not GuildQuest.Charge(who, level)
             yield;
         end if
 
-        integer difficulty = Bounty.Difficulty(beast);
-        boolean boss = Bounty.IsBoss(beast);
+        integer difficulty = GuildQuest.Difficulty(beast);
+        boolean boss = GuildQuest.IsBoss(beast);
         integer roll = Combat.Roll(100);
 
         # ⚠ Taking one out spends a slot whether or not it is ever filled. Abandoning gives nothing back.
-        World.SetGuildNumber(guild, Bounty.TakenToday, World.GuildNumber(guild, Bounty.TakenToday) + 1);
+        World.SetGuildNumber(guild, GuildQuest.AcquiredToday, World.GuildNumber(guild, GuildQuest.AcquiredToday) + 1);
 
-        World.SetGuildNumber(guild, Bounty.Target, beast);
-        World.SetGuildNumber(guild, Bounty.Needed, Bounty.KillsFor(difficulty, roll, boss));
-        World.SetGuildNumber(guild, Bounty.Slain, 0);
-        World.SetGuildNumber(guild, Bounty.ExpReward, Bounty.ExpFor(difficulty, level, roll, boss));
-        World.SetGuildNumber(guild, Bounty.GoldReward, Bounty.GoldFor(difficulty, level, roll, boss));
-        World.SetGuildNumber(guild, Bounty.Expires, World.Now() + Bounty.DurationHours * 3600);
+        World.SetGuildNumber(guild, GuildQuest.Target, beast);
+        World.SetGuildNumber(guild, GuildQuest.Needed, GuildQuest.KillsFor(difficulty, roll, boss));
+        World.SetGuildNumber(guild, GuildQuest.Slain, 0);
+        World.SetGuildNumber(guild, GuildQuest.ExpReward, GuildQuest.ExpFor(difficulty, level, roll, boss));
+        World.SetGuildNumber(guild, GuildQuest.GoldReward, GuildQuest.GoldFor(difficulty, level, roll, boss));
+        World.SetGuildNumber(guild, GuildQuest.Expires, World.Now() + GuildQuest.DurationHours * 3600);
 
         World.TellThese(World.GuildMembers(guild),
-                        "A bounty: " + World.GuildNumber(guild, Bounty.Needed) + " of "
+                        "A guild quest: slay " + World.GuildNumber(guild, GuildQuest.Needed) + " "
                         + World.RecordName("NPCs", beast) + ".");
     end function
 
     # The leader pays out of their own pocket, in the world's own coin.
     boolean function Charge(Player who, integer level)
-        integer cost = Bounty.Cost(level);
+        integer cost = GuildQuest.Cost(level);
 
         if cost < 1
             yield true;
@@ -301,7 +301,7 @@ shared model Bounty
         end if
 
         if who.Carrying(coin) < cost
-            who.Message("A bounty costs " + cost + " gold.");
+            who.Message("A guild quest costs " + cost + " gold.");
             yield false;
         end if
 
@@ -310,7 +310,7 @@ shared model Bounty
         yield true;
     end function
 
-    public function Drop(Player who)
+    public function Abandon(Player who)
         integer guild = World.GuildOf(who);
 
         if guild < 1
@@ -322,23 +322,23 @@ shared model Bounty
             yield;
         end if
 
-        if World.GuildNumber(guild, Bounty.Target) < 1
-            who.Message("Your guild has no bounty out.");
+        if World.GuildNumber(guild, GuildQuest.Target) < 1
+            who.Message("Your guild has no quest.");
             yield;
         end if
 
-        Bounty.Clear(guild);
+        GuildQuest.Clear(guild);
 
-        World.TellThese(World.GuildMembers(guild), "The bounty has been abandoned.");
+        World.TellThese(World.GuildMembers(guild), "The quest has been abandoned.");
     end function
 
     function Clear(integer guild)
-        World.SetGuildNumber(guild, Bounty.Target, 0);
-        World.SetGuildNumber(guild, Bounty.Needed, 0);
-        World.SetGuildNumber(guild, Bounty.Slain, 0);
-        World.SetGuildNumber(guild, Bounty.Expires, 0);
-        World.SetGuildNumber(guild, Bounty.ExpReward, 0);
-        World.SetGuildNumber(guild, Bounty.GoldReward, 0);
+        World.SetGuildNumber(guild, GuildQuest.Target, 0);
+        World.SetGuildNumber(guild, GuildQuest.Needed, 0);
+        World.SetGuildNumber(guild, GuildQuest.Slain, 0);
+        World.SetGuildNumber(guild, GuildQuest.Expires, 0);
+        World.SetGuildNumber(guild, GuildQuest.ExpReward, 0);
+        World.SetGuildNumber(guild, GuildQuest.GoldReward, 0);
     end function
 
     # ── Working it ────────────────────────────────────────────────────────────
@@ -352,14 +352,14 @@ shared model Bounty
             yield;
         end if
 
-        if World.GuildNumber(guild, Bounty.Target) != kind
+        if World.GuildNumber(guild, GuildQuest.Target) != kind
             yield;
         end if
 
-        integer have = World.GuildNumber(guild, Bounty.Slain) + 1;
-        integer need = World.GuildNumber(guild, Bounty.Needed);
+        integer have = World.GuildNumber(guild, GuildQuest.Slain) + 1;
+        integer need = World.GuildNumber(guild, GuildQuest.Needed);
 
-        World.SetGuildNumber(guild, Bounty.Slain, have);
+        World.SetGuildNumber(guild, GuildQuest.Slain, have);
         World.TellThese(World.GuildMembers(guild),
                         World.RecordName("NPCs", kind) + " - " + have + " of " + need + ".");
 
@@ -367,40 +367,40 @@ shared model Bounty
             yield;
         end if
 
-        Bounty.Fill(guild);
+        GuildQuest.Fill(guild);
     end function
 
     function Fill(integer guild)
-        integer exp = World.GuildNumber(guild, Bounty.ExpReward);
-        integer gold = World.GuildNumber(guild, Bounty.GoldReward);
+        integer exp = World.GuildNumber(guild, GuildQuest.ExpReward);
+        integer gold = World.GuildNumber(guild, GuildQuest.GoldReward);
 
-        Bounty.Clear(guild);
+        GuildQuest.Clear(guild);
 
         World.GiveGuildGold(guild, gold);
         World.SetGuildNumber(guild, Ledger.WeeklyIncome,
                              World.GuildNumber(guild, Ledger.WeeklyIncome) + gold);
 
         World.TellThese(World.GuildMembers(guild),
-                        "The bounty is filled: " + exp + " experience and " + gold + " gold.");
+                        "The quest is complete: " + exp + " experience and " + gold + " gold.");
 
         Guilds.Credit(guild, exp);
     end function
 
-    # A bounty nobody filled inside its day lapses, and pays nothing.
+    # A quest nobody finished inside its day lapses, and pays nothing.
     public function Tick(Player who)
         integer guild = World.GuildOf(who);
 
-        if guild < 1 or World.GuildNumber(guild, Bounty.Target) < 1
+        if guild < 1 or World.GuildNumber(guild, GuildQuest.Target) < 1
             yield;
         end if
 
-        if World.GuildNumber(guild, Bounty.Expires) > World.Now()
+        if World.GuildNumber(guild, GuildQuest.Expires) > World.Now()
             yield;
         end if
 
-        Bounty.Clear(guild);
+        GuildQuest.Clear(guild);
 
-        World.TellThese(World.GuildMembers(guild), "The bounty has run out.");
+        World.TellThese(World.GuildMembers(guild), "The quest has run out.");
     end function
 
 end model

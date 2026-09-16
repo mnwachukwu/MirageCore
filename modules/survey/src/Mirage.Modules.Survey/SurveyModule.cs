@@ -22,6 +22,7 @@ public sealed class SurveyModule : ICoreModule
     private readonly SurveyTick _recovery = new();
     private readonly SurveyRoute _notes = new();
     private readonly TheFindersSpecimen _finds = new();
+    private readonly TooTiredToRun _legs = new();
 
     public string Name => "Survey";
 
@@ -107,6 +108,7 @@ public sealed class SurveyModule : ICoreModule
         builder.AddDeathPolicy(new NothingDiesHere());
         builder.AddLingerPolicy(new StayWhileSurveying());
         builder.AddLootPolicy(_finds);
+        builder.AddMovePolicy(_legs);
     }
 
     /// <summary>The engine is built and the world is loaded. This is where the module stops describing
@@ -126,6 +128,7 @@ public sealed class SurveyModule : ICoreModule
         _recovery.Begin(world);
         _notes.Begin(world);
         _finds.Begin(world);
+        _legs.Begin(world);
     }
 
     // ── What a surveyor carries ───────────────────────────────────────────────

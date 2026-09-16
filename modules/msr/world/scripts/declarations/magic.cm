@@ -80,10 +80,3 @@ model ClassSpell
         these.Caption("spell", "Knows");
     end function
 end model
-
-# What the Prepare button on the spellbook sends. A model rather than a verb per page: twenty verbs
-# would be twenty declarations saying the same thing, and a form is what a number wants.
-
-model Prepared
-    public integer slot;
-end model

@@ -110,8 +110,9 @@ public sealed partial class PacketHandler
         ILogger<PacketHandler> logger,
         CoreRegistry? registry = null,
         IClock? clock = null, IRandomSource? rng = null, ServerConfig? config = null,
-        IWorld? actions = null)
+        IWorld? actions = null, DeathSystem? deaths = null)
     {
+        _deaths = deaths;
         var loaded = registry ?? CoreRegistry.CoreOnly;
         _registry = loaded;
         _actions = actions;
@@ -170,7 +171,7 @@ public sealed partial class PacketHandler
     /// <para>The client closes every panel on death and gates its right-click menu, but it does NOT gate
     /// the chat input, so every slash command remains typable from a corpse and arrives here regardless.
     /// This is the half that counts.</para></summary>
-    private bool IsActing(int index) => _pm[index].IsPlaying && !_pm[index].Char.Dead;
+    private bool IsActing(int index) => _pm[index].IsPlaying && !_pm[index].Char.Downed;
 
     /// <summary>What a corpse may still have DELIVERED to a handler.
     ///
@@ -226,11 +227,15 @@ public sealed partial class PacketHandler
         or HomeRequestPacket or TradeInvitePacket or JoinPartyPacket or LeavePartyPacket
         or WarpToPacket or WarpMeToPacket or WarpToMePacket;
 
+    /// <summary>The one packet a body that is out of action is FOR. Null only in a harness that never
+    /// builds the death system.</summary>
+    private readonly DeathSystem? _deaths;
+
     /// <summary>The same gate for a TYPED command: refuses a corpse and says so, because a slash command
     /// that silently does nothing reads as broken. Returns true when the caller should stop.</summary>
     private bool RefuseWhileDead(int index)
     {
-        if (!_pm[index].Char.Dead) return false;
+        if (!_pm[index].Char.Downed) return false;
         _dispatcher.SendLocalizedChatTo(index, ServerStrings.Command_WhileDead,
             new ChatMetadata(GameColor.BrightRed, ChatChannel.System));
         return true;
@@ -273,7 +278,7 @@ public sealed partial class PacketHandler
         // collide: a command is registered once, and a second registration stops the server at startup.
         if (_routes.For(packet.Cmd) is { } route)
         {
-            if (_pm[index].IsPlaying && _pm[index].Char.Dead && !route.AllowedWhileDead) return;
+            if (_pm[index].IsPlaying && _pm[index].Char.Downed && !route.AllowedWhileDead) return;
 
             try
             {
@@ -292,7 +297,7 @@ public sealed partial class PacketHandler
         // AllowedWhileDead; anything else stops here, so a handler added later is refused by default.
         // The per-handler IsActing checks stay as they are — they are what let a typed command explain
         // itself, and they keep each handler honest on its own terms.
-        if (_pm[index].IsPlaying && _pm[index].Char.Dead && !AllowedWhileDead(packet)) return;
+        if (_pm[index].IsPlaying && _pm[index].Char.Downed && !AllowedWhileDead(packet)) return;
 
         try
         {
@@ -529,6 +534,12 @@ public sealed partial class PacketHandler
                 case SearchPacket p:
                     HandleSearch(index, p);
                     break;
+                // The one thing a body that is out of action is for. Refused by the system itself
+                // while the deadline is still running, so an early ask is ignored rather than trusted.
+                case RespawnRequestPacket:
+                    _deaths?.Rise(EntityHandle.ForPlayer(index));
+                    break;
+
                 case DropTargetPacket:
                     HandleDropTarget(index);
                     break;

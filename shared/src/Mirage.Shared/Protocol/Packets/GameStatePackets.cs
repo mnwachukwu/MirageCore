@@ -69,7 +69,7 @@ public sealed record SendPlayerDataPacket : IPacket
     [JsonPropertyName("gshowrank")] public bool? GuildShowRank { get; init; }
     // Death state: observers render a corpse while Dead; the victim's own copy drives the
     // death-panel countdown from RespawnReadyUtc.
-    [JsonPropertyName("dead")] public bool Dead { get; init; }
+    [JsonPropertyName("downed")] public bool Downed { get; init; }
     [JsonPropertyName("respawnReadyUtc")] public long RespawnReadyUtc { get; init; }
 }
 

@@ -139,6 +139,27 @@ abstract model Player
     public boolean IsRunning;
 
     ##
+        @summary: How quick this body is. Zero is the baseline everybody starts at and higher is
+        faster, with diminishing returns and a ceiling the engine picks - so a game with a speed
+        stat writes the stat here and never has to know the curve. It buys a faster RUN; a walk is a
+        walk.
+    ##
+    public integer Pace;
+
+    ##
+        @summary: Says how quick they are. A game with a speed stat has no other way to make it mean
+        anything: how far a body gets per second is the engine's, and this is what it reads. Write
+        it whenever the stat behind it moves.
+    ##
+    public abstract function SetPace(integer pace);
+
+    ##
+        @summary: How long one tile takes them at a run, in thousandths of a second - what their
+        Pace bought. Divide World.WalkMs by it to say how much faster running is.
+    ##
+    public integer RunMs;
+
+    ##
         @summary: Marks them as in a fight for that many seconds. What being in a fight means is the
         game's; the engine keeps the clock and the client shows it.
     ##
@@ -302,6 +323,15 @@ abstract model Builder
     public abstract function Meter(string key, string outOf, string caption, integer red, integer green, integer blue);
 
     ##
+        @summary: A row on the CHARACTER SELECT screen, beside a saved character's name. The only
+        place you can say anything about a body the engine is not running - a level, a class, a
+        guild - and without one the screen where somebody picks between three characters offers
+        three names and a sprite. Read off the saved character, so anything you want shown here has
+        to be an attribute you keep on them.
+    ##
+    public abstract function Slot(string key, string caption, integer red, integer green, integer blue);
+
+    ##
         @summary: A bar over every body's head, in a color given as red, green, and blue, each 0 to
         255.
     ##
@@ -427,7 +457,24 @@ abstract model Verb
     public abstract function OnHud();
 
     ##
-        @summary: A key that reaches it without the menu: B, E, J, K, N, P, Q, R, T, U, Y, or Z. The
+        @summary: Act on whatever they have TARGETED, when they used it without pointing at
+        anything. Targeting is the engine's: Tab picks the next body, Ctrl+Tab picks themselves, and
+        a click picks whoever was clicked. So a verb that can go either way - a spell that heals or
+        harms - is ONE verb, and aiming it inward needs nothing of yours. Leave it off for a verb
+        about a place.
+    ##
+    public abstract function Aimed();
+
+    ##
+        @summary: Offer it nowhere on its own: YOU say where it appears. A button on one of your own
+        panels, a choice in one of your conversations, or a key you bound. What a verb that belongs
+        to a screen wants - a guild's vault, a training hall - so that right-clicking a passing
+        shopkeeper is not how a player reaches it.
+    ##
+    public abstract function Nowhere();
+
+    ##
+        @summary: A key that reaches it without the menu: B, C, E, J, K, N, P, Q, R, T, U, Y, Z. The
         key acts on the square the player faces.
     ##
     public abstract function Key(string key);
@@ -454,8 +501,23 @@ abstract model Verb
     public abstract function Opens(string panel);
 
     ##
+        @summary: Not drawn at all while its condition does not hold, rather than drawn dim. What a
+        verb about something a player may never have wants - a guild hall, a mount - since a dim
+        entry that never lights up is one they read past every time. On the HUD the buttons below it
+        close the gap.
+    ##
+    public abstract function Hidden();
+
+    ##
+        @summary: Drawn dim and unclickable while its condition does not hold, which is what happens
+        anyway unless Hidden is asked for. Worth saying out loud on a verb whose condition a player
+        can go and satisfy, since the dim entry is how they learn it is there.
+    ##
+    public abstract function Grayed();
+
+    ##
         @summary: Offered only to a body carrying at least that much under that key. Below it the
-        entry is grayed out instead of hidden, so a player can still see the verb exists.
+        verb is drawn dim, or not at all if Hidden was asked for.
     ##
     public abstract function NeedsAtLeast(string key, integer least);
 
@@ -478,7 +540,7 @@ end model
 abstract model Panel
 
     ##
-        @summary: A key that opens it: B, E, J, K, N, P, Q, R, T, U, Y, or Z.
+        @summary: A key that opens it: B, C, E, J, K, N, P, Q, R, T, U, Y, Z.
     ##
     public abstract function Key(string key);
 
@@ -486,6 +548,41 @@ abstract model Panel
         @summary: A button along its bottom: a caption, and the id of a verb it calls.
     ##
     public abstract function Button(string caption, string verb);
+
+    ##
+        @summary: How small the player may drag it. Every panel resizes; this is the floor, and it
+        stops a drag turning yours into a title bar with nothing under it. Say nothing and the
+        engine's own floor applies, which knows nothing about what you put on it.
+    ##
+    public abstract function Smallest(integer wide, integer tall);
+
+    ##
+        @summary: Only lets it open while that key reads at least that much, and closes it if that
+        stops being true while it is up. Its key and any verb that opens it are refused too. What a
+        screen about something a player might not HAVE wants - a guild, a mount, a house - since
+        otherwise it opens onto blank rows.
+    ##
+    public abstract function OnlyWhile(string key, integer least);
+
+    ##
+        @summary: Puts it up while that key reads at least that much, and takes it down when it
+        stops - with no close button, because the player did not open it. What a readout wants: a
+        score during a fight, the wait over a body that cannot act, the state of ground being fought
+        over. It has a slot of its own, so it never pushes aside a window somebody opened. Give it a
+        button for the way OUT of whatever it is about - leaving, getting up - because closing the
+        window and leaving the thing are not the same act.
+    ##
+    public abstract function HeldWhile(string key, integer least);
+
+    ##
+        @summary: One line of a list the player picks ONE of. Both are attribute keys read off the
+        player: the first is what the line reads as, the second what it IS - a line saying
+        'Ironhelm, at war since Tuesday' and carrying the guild number that names. Whatever is
+        picked arrives as 'picked' in OnAction, on whichever button they press next. A line whose
+        caption is blank is not drawn, so declare as many as the thing behind them can hold and fill
+        the ones that are real. Pass an empty id to let the caption be its own. One list to a panel.
+    ##
+    public abstract function Row(string caption, string id);
 
     ##
         @summary: The glyph beside it. One of: grid, quads, pin, flag, bag, gem, coin, sword, flask,
@@ -515,7 +612,9 @@ abstract model Panel
     public abstract function Field(string key, string caption, integer red, integer green, integer blue);
 
     ##
-        @summary: The same, drawn as a small tag with no caption.
+        @summary: The same, drawn as a small colored tag. A key holding a WORD puts the word in the
+        tag and the caption beside it; a key holding a yes or no puts the caption itself in the tag
+        when it is yes, and draws nothing at all when it is no.
     ##
     public abstract function Badge(string key, string caption, integer red, integer green, integer blue);
 
@@ -1300,6 +1399,74 @@ shared abstract model World
         is the check as well as the payment.
     ##
     public abstract boolean function SpendGuildGold(integer guild, integer amount, Player by);
+
+    ##
+        @summary: How long one tile takes at a walk, in thousandths of a second. The same for
+        everybody, because a walk is a walk - it is Player.RunMs that a body's Pace moves. Divide
+        this by theirs to say how much faster running is for them.
+    ##
+    public abstract integer function WalkMs();
+
+    ##
+        @summary: One field out of one key of one of your game's own stores. Zero for a store, a key
+        or a field that is not there. A store is a set of named bags: World.Number holds what there
+        is one of, and this holds what there are many of - a row per player on a ladder, a tally per
+        region, whatever your rules pile up while the world runs.
+    ##
+    public abstract integer function KeptNumber(string store, string key, string field);
+
+    ##
+        @summary: The same, as text. Empty for one that is not there.
+    ##
+    public abstract string function KeptText(string store, string key, string field);
+
+    ##
+        @summary: The same, as a yes or no. False for one that is not there.
+    ##
+    public abstract boolean function KeptTruth(string store, string key, string field);
+
+    ##
+        @summary: Writes one, making the store and the key the first time each is used. Nothing is
+        declared and there is no slot count: a store is as big as what you have put in it. Kept with
+        the world's own values, so it reaches disk on the world's save beat rather than on this call
+        - what has to survive the instant it happens belongs on a character or a guild, which save
+        on write.
+    ##
+    public abstract function SetKeptNumber(string store, string key, string field, integer amount);
+
+    ##
+        @summary: The same, with text.
+    ##
+    public abstract function SetKeptText(string store, string key, string field, string value);
+
+    ##
+        @summary: The same, with a yes or no.
+    ##
+    public abstract function SetKeptTruth(string store, string key, string field, boolean value);
+
+    ##
+        @summary: Whether that store holds anything under that key at all - the question to ask
+        before counting a zero as a score somebody earned rather than a row that was never written.
+    ##
+    public abstract boolean function HasKept(string store, string key);
+
+    ##
+        @summary: Drops that key and every field under it. A store with nothing left in it goes too.
+    ##
+    public abstract function Forget(string store, string key);
+
+    ##
+        @summary: How many keys that store holds. Zero for one nothing was ever put in.
+    ##
+    public abstract integer function KeptCount(string store);
+
+    ##
+        @summary: The index-th key of that store, counting from one, or empty past the end. Walk a
+        store with 'loop for i = 1 to World.KeptCount(store)'. Ordered by the key itself rather than
+        by when it arrived, so a pass reads the same way twice running and the same way after a
+        restart.
+    ##
+    public abstract string function KeptKeyAt(string store, integer index);
 
     ##
         @summary: How many records of that kind this world holds, counting blank slots. Zero for a

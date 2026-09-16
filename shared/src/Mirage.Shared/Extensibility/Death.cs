@@ -58,4 +58,13 @@ public interface IDeathPolicy
     /// <summary>Where the body comes back. <see cref="Respawn.Default"/> leaves the answer to Core,
     /// which is the home this world already knows. The first policy naming a place wins.</summary>
     Respawn RespawnFor(in Death death) => Respawn.Default;
+
+    /// <summary>They got up. Called once the body has been put back in the world and moved to wherever
+    /// <see cref="RespawnFor"/> said, so a rule that restores something is writing onto a body that is
+    /// standing where it will actually be.
+    ///
+    /// <para>Core puts nothing back. What a body has when it rises - full pools, an empty bag, a
+    /// penalty that lingers - is a game's, and a game that restores nothing gets a body that comes back
+    /// exactly as it fell.</para></summary>
+    void OnRose(EntityHandle who) { }
 }

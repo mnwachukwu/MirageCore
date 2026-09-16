@@ -42,7 +42,7 @@ public sealed class DeathPanel
     public bool Update(InputState input, ClientState state, ClientPacketSender sender)
     {
         LayoutChanged = false;
-        if (!state.Me.Dead) return false;
+        if (!state.Me.Downed) return false;
 
         _panel.Update(input);                    // title-bar drag (close + resize disabled)
         LayoutChanged = _panel.LayoutChanged;
@@ -55,7 +55,7 @@ public sealed class DeathPanel
 
     public void Draw(SpriteBatch sb, SpriteFont font, InputState input, ClientState state)
     {
-        if (!state.Me.Dead) return;
+        if (!state.Me.Downed) return;
         long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         long remaining = Math.Max(0, state.Me.RespawnReadyUtc - now);
         bool ready = remaining <= 0;

@@ -7,6 +7,18 @@
 # The fields are public because the ENGINE reads them and no script does. A private field nothing
 # names is one the compiler asks you to delete.
 
+# What the training hall sends: how many points to put into each of the four, all at once.
+#
+# Four numbers rather than one verb per stat, because the original staged the whole allocation and
+# committed it in one go - a player moving three points around before pressing Confirm sends nothing
+# until they do, and what they send is either taken whole or refused whole.
+model Training
+    public integer strength;
+    public integer defense;
+    public integer speed;
+    public integer intelligence;
+end model
+
 model Class
     public string name;
     public string description;

@@ -6,6 +6,8 @@ using Mirage.Client.Shell.Input;
 using Mirage.Client.Shell.Localization;
 using Mirage.Client.Shell.Ui;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
+using Mirage.Shared.Protocol.Packets;
 
 namespace Mirage.Client.Shell.Screens;
 
@@ -55,13 +57,50 @@ public sealed class CharSelectScreen : IGameScreen
             var slot = i < slots.Length ? slots[i] : null;
             if (slot is not null && slot.Name.Length > 0)
             {
-                _charList.Items.Add(ClientStrings.Format(ClientStrings.CharSelectScreen_CharFormat, ("Name", slot.Name)));
+                _charList.Items.Add(ClientStrings.Format(ClientStrings.CharSelectScreen_CharFormat,
+                    ("Name", slot.Name), ("Says", Says(slot))));
             }
             else
             {
                 _charList.Items.Add(ClientStrings.Get(ClientStrings.Common_Empty));
             }
         }
+    }
+
+    /// <summary>What the loaded game says about one saved character, on one line.
+    ///
+    /// <para>⚠ Projected by the SERVER - the client has not been told this world's attribute
+    /// numbering yet, because that arrives with the world and this screen comes before it. So what
+    /// reaches here is already rows, and all that is left is to read them out.</para>
+    ///
+    /// <para>A heading is skipped: it groups rows in a panel and has nothing to group on one line.</para>
+    /// </summary>
+    private static string Says(SendCharsPacket.CharSlot slot)
+    {
+        if (slot.Says is not { Count: > 0 } rows) return string.Empty;
+
+        var said = new System.Text.StringBuilder();
+
+        foreach (var row in rows)
+        {
+            if (row.Style == DisplayStyle.Heading) continue;
+
+            string text = row.Style == DisplayStyle.Meter
+                ? $"{row.Value:0}/{row.Max:0}"
+                : row.Text;
+
+            if (text.Length == 0) continue;
+
+            if (said.Length > 0) said.Append(", ");
+
+            string label = row.LabelKey is { Length: > 0 } key
+                ? ClientStrings.GetOrFallback(key, key)
+                : string.Empty;
+
+            said.Append(label.Length > 0 ? $"{label} {text}" : text);
+        }
+
+        return said.Length > 0 ? " - " + said : string.Empty;
     }
 
     private void RefreshLabels()

@@ -1048,7 +1048,7 @@ public static class RenderCommandBuilder
         // DrawWorld, plus the name, always shown (unaffected by the name toggle). When several corpses share
         // one tile, stack their names DOWNWARD a line each so none overlap. The tile stays passable
         // server-side; offline players already leave the map (so no corpse shows for a logged-off owner).
-        if (p.Dead)
+        if (p.Downed)
         {
             var tileKey = (p.Map, p.X, p.Y);
             int stackIndex = corpseStack.GetValueOrDefault(tileKey);

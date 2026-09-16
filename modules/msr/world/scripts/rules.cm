@@ -35,7 +35,7 @@
 #   behavior/ledger.cm     what a guild is charged, and what it is paid
 #   behavior/perks.cm      what a guild is worth to the people in it
 #   behavior/valor.cm      the war currency
-#   behavior/bounty.cm     a standing bounty, and what filling it pays
+#   behavior/guildquest.cm a guild's standing quest, and what finishing it pays
 #   behavior/calendar.cm   the calendar, worked out from the clock
 #   behavior/season.cm     which season it is, and when the next one starts
 #   behavior/territory.cm  land a guild holds, and what holding it is worth
@@ -56,7 +56,7 @@ shared model Rules
         Book.Declare(game);
         Quests.Declare(game);
         Guilds.Declare(game);
-        Bounty.Declare(game);
+        GuildQuest.Declare(game);
         Contest.Declare(game);
 
         # Once a second. A tick is a tenth of a second, so ten of them is the beat everything below
@@ -68,6 +68,15 @@ shared model Rules
     # character. A first arrival is enrolled.
     public function OnPlayerJoined(Player who)
         Sheet.Enroll(who);
+
+        # ⚠ Enrolling only runs for somebody who has never been here. A character made before
+        # the experience bar existed carries no ceiling for it, and a meter with no ceiling is not
+        # drawn, so the bar would be missing for every character that already existed.
+        Levels.Mark(who);
+
+        # Here as well as on the tick, or the guild flag is unwritten for the first two seconds and
+        # the screen it gates is refused to a member who just logged in.
+        Guilds.Show(who);
     end function
 
     # The world's own beat, once rather than once per body. What belongs to the world and to nobody in
@@ -82,51 +91,77 @@ shared model Rules
     # Once for each body in the world, every twentieth tick.
     public function OnPlayerTick(Player who)
         Vitals.Rest(who);
+        Sheet.Show(who);
         Guilds.Tick(who);
+        Guilds.ShowWars(who);
         Ledger.Tick(who);
-        Bounty.Tick(who);
+        GuildQuest.Tick(who);
+        Contest.Watch(who);
     end function
 
-    # `on` names whoever the verb was used on, and is blank for one offered on a square.
-    public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+    # `on` names whoever the verb was used on, and is blank for one offered on a square. `picked` is
+    # the line of a panel's list they had selected, and is blank for a verb reached any other way.
+    public function OnAction(Player who, string action, string on, integer map, integer x, integer y,
+                             string picked)
         if action == Fight.Attack
             Fight.Strike(who, map, x, y);
         end if
 
+        # The engine aims this one: `on` is whoever they had targeted, themselves included. A spell
+        # turned inward restores rather than lands, which is this game's rule about its own magic and
+        # not the engine's about its aiming.
         if action == Book.Cast
-            Book.Hurl(who, map, x, y);
-        end if
+            if on == who.Name
+                Book.Inward(who);
+            end if
 
-        if action == Book.CastSelf
-            Book.Inward(who);
+            if on != who.Name
+                Book.Hurl(who, map, x, y);
+            end if
         end if
 
         if action == Quests.Offer
             Quests.Ask(who, map, x, y);
         end if
 
+        if action == Quests.ReadVerb
+            Quests.Read(who, picked);
+        end if
+
+        if action == Quests.TakeVerb
+            Quests.Accept(who, picked);
+        end if
+
+        if action == Quests.DropVerb
+            Quests.Abandon(who, picked);
+        end if
+
+        if action == Book.PrepareVerb
+            Book.Prepare(who, Book.Numbered(picked));
+        end if
+
+        if action == Book.ForgetVerb
+            Book.Forget(who, Book.Numbered(picked));
+        end if
+
         if action == Quests.Hand
             Quests.Give(who, map, x, y);
         end if
 
-        if action == Guilds.WarVerb
-            Guilds.War(who, on);
-        end if
-
+        # Named by the line they picked off the wars list, which carries the guild it is against.
         if action == Guilds.PeaceVerb
-            Guilds.Peace(who, on);
+            Guilds.Peace(who, picked);
         end if
 
-        if action == Valor.DonateVerb
-            Valor.GiveAll(who);
+        # The two page verbs open on the client and tell the server nothing worth acting on. They
+        # arrive anyway, because a verb is a verb; there is simply nothing to do about them.
+
+        if action == GuildQuest.AcquireVerb
+            GuildQuest.Acquire(who);
         end if
 
-        if action == Bounty.TakeVerb
-            Bounty.Take(who);
-        end if
-
-        if action == Bounty.DropVerb
-            Bounty.Drop(who);
+        if action == GuildQuest.AbandonVerb
+            GuildQuest.Abandon(who);
         end if
 
         if action == Contest.ClaimVerb
@@ -148,13 +183,19 @@ shared model Rules
     # The Prepare button on the spellbook. A form rather than a verb per page: twenty verbs would be
     # twenty declarations saying the same thing.
     public function OnMessage(Player who, string message, Values values)
-        if message == "Prepared"
-            Book.Prepare(who, values.Number("slot"));
+        if message == "Training"
+            Levels.Train(who, values.Number("strength"), values.Number("defense"),
+                         values.Number("speed"), values.Number("intelligence"));
             yield;
         end if
 
         if message == "Donation"
             Valor.Donate(who, values.Number("amount"));
+            yield;
+        end if
+
+        if message == "Declaration"
+            Guilds.War(who, values.Text("guild"));
         end if
     end function
 
@@ -176,6 +217,20 @@ shared model Rules
         Fight.MeetNpc(it, other);
     end function
 
+    # A point of stamina a step, and an empty bar is a walk rather than a stop.
+    public string function OnMayRun(Player who)
+        yield Vitals.MayRun(who);
+    end function
+
+    public function OnRan(Player who)
+        Vitals.Ran(who);
+    end function
+
+    # They took a step under their own power. A body low enough on blood leaves some of it behind.
+    public function OnPlayerMoved(Player who, integer fromX, integer fromY)
+        Fight.Bleed(who);
+    end function
+
     # Nothing in this game refuses a death. Its refusals are asked earlier and are about who may be
     # fought at all, which is duel.cm - a murderer's minute of grace included.
     public string function OnMayDie(Player who, string cause)
@@ -186,6 +241,12 @@ shared model Rules
     # when the world itself did it; IsHere answers that.
     public function OnDied(Player who, Player killer, string cause)
         Death.Fell(who, killer, cause);
+    end function
+
+    # They got up, and are standing where they came back to. The original filled the three pools here
+    # rather than at the moment of death, so a body on the floor is lying there empty.
+    public function OnRose(Player who)
+        Death.Rose(who);
     end function
 
     # One line of a dead creature's table, before it is rolled. Raised once per line, so a creature

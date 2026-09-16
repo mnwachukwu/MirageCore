@@ -94,6 +94,9 @@ public sealed partial class GameplayScreen : IGameScreen
     private readonly SocialPanel _social = new();
     private readonly ConversationPanel _conversation = new();
     private readonly GamePanelView _gamePanel = new();
+
+    // The game's held readouts. Driven by their own conditions rather than by anything the player does.
+    private readonly GamePanelView _heldPanel = new(held: true);
     private readonly DeathPanel _death = new();   // uncloseable death overlay
     private readonly ModerationPanel _moderation = new();   // Creator only; gated in the panel and again on the server
     private bool _wasDead;                          // alive→dead edge, to close open panels once on death
@@ -116,6 +119,7 @@ public sealed partial class GameplayScreen : IGameScreen
     private const int PanelTrade = PanelSlots.Trade;
     private const int PanelConversation = PanelSlots.Conversation;
     private const int PanelGame = PanelSlots.GamePanel;
+    private const int PanelHeld = PanelSlots.HeldPanel;
     private const int PanelModeration = PanelSlots.Moderation;
 
     // ── Panel registry ────────────────────────────────────────────────────────
@@ -239,6 +243,17 @@ public sealed partial class GameplayScreen : IGameScreen
             (sb, font, _, active, _) => _gamePanel.Draw(sb, font, _ctx.State, active),
             () => _gamePanel.Close());
 
+        // The same view, holding the panels the game puts up rather than the player. It opens and
+        // closes itself inside its own Update, off the conditions their declarations carry.
+        _panels[PanelHeld] = new(PanelHeld, _heldPanel,
+            (input, _) =>
+            {
+                _heldPanel.FollowConditions(_ctx.State);
+                _heldPanel.Update(input, _ctx.State, _ctx.Sender);
+            },
+            (sb, font, _, active, _) => _heldPanel.Draw(sb, font, _ctx.State, active),
+            () => _heldPanel.Close());
+
         // Toggling asks the server for a fresh report as it opens, so the panel is never up with nothing
         // in it — see ModerationPanel.Open.
         _panels[PanelModeration] = new(PanelModeration, _moderation,
@@ -262,7 +277,7 @@ public sealed partial class GameplayScreen : IGameScreen
     {
         PanelInventory, PanelShop,
         PanelOptions, PanelHelp, PanelControls, PanelBank, PanelInn, PanelMail, PanelSocial, PanelMarket, PanelTrade,
-        PanelConversation, PanelGame
+        PanelConversation, PanelGame, PanelHeld
     };
 
     // Keyboard focus tracking. _panelFocused is set when a panel is clicked or opened

@@ -458,6 +458,81 @@ public sealed class ServerWorld : IWorld
         if (!string.IsNullOrWhiteSpace(key)) _world.Values.Set(key, value);
     }
 
+    // ── Stores a game keeps for itself ───────────────────────────────────────
+
+    public AttributeValue? Kept(string store, string key, string field) =>
+        _world.Kept.TryGetValue(store, out var entries)
+        && entries.TryGetValue(key, out AttributeBag? bag)
+        && bag.TryGet(field, out AttributeValue held) ? held : null;
+
+    public void SetKept(string store, string key, string field, AttributeValue value)
+    {
+        if (string.IsNullOrWhiteSpace(store) || string.IsNullOrWhiteSpace(key)
+            || string.IsNullOrWhiteSpace(field))
+        {
+            return;
+        }
+
+        if (!_world.Kept.TryGetValue(store, out var entries))
+        {
+            entries = new Dictionary<string, AttributeBag>(StringComparer.Ordinal);
+            _world.Kept[store] = entries;
+        }
+
+        if (!entries.TryGetValue(key, out AttributeBag? bag))
+        {
+            bag = new AttributeBag();
+            entries[key] = bag;
+            _keptStamp++;
+        }
+
+        bag.Set(field, value);
+    }
+
+    public bool HasKept(string store, string key) =>
+        _world.Kept.TryGetValue(store, out var entries) && entries.ContainsKey(key);
+
+    public bool Forget(string store, string key)
+    {
+        if (!_world.Kept.TryGetValue(store, out var entries) || !entries.Remove(key)) return false;
+
+        _keptStamp++;
+        if (entries.Count == 0) _world.Kept.Remove(store);
+
+        return true;
+    }
+
+    public int KeptCount(string store) => KeptOrder(store).Length;
+
+    public string KeptKeyAt(string store, int index)
+    {
+        string[] keys = KeptOrder(store);
+        return index >= 1 && index <= keys.Length ? keys[index - 1] : string.Empty;
+    }
+
+    // ⚠ Sorted once and held, because the loop that reads a store asks for its count and then for
+    // every key in turn. Sorting inside KeptKeyAt would sort the whole store once per row. The stamp
+    // moves only when a key is added or dropped - writing a field into a key that already exists leaves
+    // the order alone.
+    private int _keptStamp;
+    private (string Store, int Stamp, string[] Keys) _keptOrder = (string.Empty, -1, []);
+
+    private string[] KeptOrder(string store)
+    {
+        if (_keptOrder.Stamp == _keptStamp
+            && string.Equals(_keptOrder.Store, store, StringComparison.Ordinal))
+        {
+            return _keptOrder.Keys;
+        }
+
+        string[] keys = _world.Kept.TryGetValue(store, out var entries)
+            ? [.. entries.Keys.Order(StringComparer.Ordinal)]
+            : [];
+
+        _keptOrder = (store, _keptStamp, keys);
+        return keys;
+    }
+
     public bool SpendGuildGold(int guild, long amount, EntityHandle by)
     {
         if (Guild(guild) is not { } found || amount <= 0 || found.VaultGold < amount) return false;
@@ -550,8 +625,15 @@ public sealed class ServerWorld : IWorld
         if (!who.IsPlayer || !IsInWorld(who)) return;
 
         var p = _pm[who.PlayerIndex].Char;
-        p.Dead = seconds > 0;
+        p.Downed = seconds > 0;
         p.RespawnReadyUtc = seconds > 0 ? _clock.UtcNowUnix + seconds : 0;
+
+        // Told to everyone who can see the body, including its own player - whose client draws the wait
+        // and the way out of it from exactly these two values. Setting them and saying nothing is a
+        // state the server is in and nobody else knows about.
+        _dispatcher.SendToObservers(_world.MapObservers[p.Map], PacketBuilder.PlayerData(
+            who.PlayerIndex, p, p.Map, _pm[who.PlayerIndex].PkGraceUntilUtc,
+            _pm[who.PlayerIndex].AggressorUntilUtcNow, godMode: p.GodMode));
     }
 
     public void SetMarked(EntityHandle who, int seconds)
@@ -584,7 +666,7 @@ public sealed class ServerWorld : IWorld
 
     /// <summary>⚠ A creature has no downed state — see <see cref="SetDowned"/> — so it is never in one.</summary>
     public bool IsDowned(EntityHandle who) =>
-        who.IsPlayer && IsInWorld(who) && _pm[who.PlayerIndex].Char.Dead;
+        who.IsPlayer && IsInWorld(who) && _pm[who.PlayerIndex].Char.Downed;
 
     public bool IsMarked(EntityHandle who)
     {
@@ -903,6 +985,26 @@ public sealed class ServerWorld : IWorld
         CoreRecordFamilies.MapGroups => GroupBags(),
         _ => _world.ModuleRecords.All(familyId),
     };
+
+    public int RecordCount(string familyId) => familyId switch
+    {
+        CoreRecordFamilies.Items => Counted(_world.Items.Length, _world.Limits.Items),
+        CoreRecordFamilies.Npcs => Counted(_world.Npcs.Length, _world.Limits.Npcs),
+        CoreRecordFamilies.Maps => Counted(_world.Maps.Length, _world.Limits.Maps),
+        CoreRecordFamilies.MapGroups => GroupCount(),
+        _ => _world.ModuleRecords.CountOf(familyId),
+    };
+
+    // The window Bags walks: slot 1 up to the limit, and no further than the array actually goes.
+    private static int Counted(int slots, int limit) => Math.Max(0, Math.Min(limit, slots - 1));
+
+    private int GroupCount()
+    {
+        int most = 0;
+        foreach (int id in _world.MapGroups.Keys) most = Math.Max(most, id);
+
+        return most;
+    }
 
     public AttributeBag? RecordAt(string familyId, int num) => familyId switch
     {
@@ -1264,6 +1366,23 @@ public sealed class ServerWorld : IWorld
 
     public bool IsRunning(EntityHandle who) =>
         who.IsPlayer && IsInWorld(who) && _pm[who.PlayerIndex].Char.Moving == MovementType.Running;
+
+    public int PaceOf(EntityHandle who) =>
+        who.IsPlayer && IsInWorld(who) ? _pm[who.PlayerIndex].Char.MoveSpeed : 0;
+
+    public void SetPace(EntityHandle who, int pace)
+    {
+        if (!who.IsPlayer || !IsInWorld(who)) return;
+
+        // Negative would read as slower than a walk, which the pace curve floors at the baseline
+        // anyway - refused here instead so a game reading the value back gets what it wrote.
+        _pm[who.PlayerIndex].Char.MoveSpeed = Math.Max(0, pace);
+    }
+
+    public int RunMsOf(EntityHandle who) =>
+        (int)Math.Round(MovementFormulas.RunMsPerTile(PaceOf(who)));
+
+    public int WalkMs => (int)Math.Round(MovementFormulas.BaseWalkMsPerTile);
 
     // ── Asking what a creature was authored as ────────────────────────────────
 

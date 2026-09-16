@@ -384,7 +384,8 @@ public sealed class MirageServerService : IHostedService
 
         // And whatever the game kept about the world. A file written before it kept anything carries
         // none, which is the same starting point a world that has never run from.
-        if (env.Values is { } kept) _world.Values = kept;
+        if (env.Values is { } values) _world.Values = values;
+        if (env.Kept is { } stores) _world.Kept = stores;
 
         // What the world actually holds, rather than what its ceilings allow. The second line this used
         // to print counted the blank files it had just written, and there are none.

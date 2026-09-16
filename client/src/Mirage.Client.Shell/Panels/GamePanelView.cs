@@ -33,13 +33,32 @@ namespace Mirage.Client.Shell.Panels;
 public sealed class GamePanelView : IGamePanel
 {
     private const int DefaultW = 280, DefaultH = 220;
+
+    /// <summary>The floor a panel that named none is held to.</summary>
+    private const int MinW = 200, MinH = 120;
     private const int Pad = 8;
     private const int RowH = 16;
     private const int BtnH = 20;
     private const int BtnGap = 4;
     private const int InputH = 20;
 
-    private readonly DraggablePanel _panel = new(new Rectangle(60, 60, DefaultW, DefaultH), minH: 120, minW: 200);
+    private readonly DraggablePanel _panel;
+
+    /// <summary>Whether this view holds the game's OWN panels - the ones a player cannot dismiss,
+    /// which open and close themselves as their condition starts and stops holding.</summary>
+    private readonly bool _held;
+
+    /// <summary>An ordinary view, for the windows a player opens.</summary>
+    public GamePanelView() : this(held: false) { }
+
+    /// <param name="held">True for the view that carries a game's held panels. It shows no close
+    /// control, ignores Escape, and picks its own panel every frame.</param>
+    public GamePanelView(bool held)
+    {
+        _held = held;
+        _panel = new DraggablePanel(new Rectangle(held ? 320 : 60, 60, DefaultW, DefaultH),
+                                    minH: MinH, minW: MinW, showClose: !held);
+    }
     private readonly List<Button> _buttons = new();
 
     // One control per declared input, built when the panel opens and thrown away when it closes.
@@ -48,6 +67,16 @@ public sealed class GamePanelView : IGamePanel
     private readonly List<DropDown> _choices = new();
     private readonly Button _send = new();
     private readonly List<Rectangle> _rects = new();
+
+    // The declared list, and the ids behind what it shows. Rebuilt from attributes every frame: a row
+    // is a value the player already holds, so there is nothing to refresh and nothing to keep in step.
+    private readonly ListBox _list = new();
+    private readonly List<string> _ids = new();
+
+    // What is picked, held as the ID rather than the position. A row that goes away shifts every row
+    // under it, and a selection kept by position would silently move to its neighbor - which for a
+    // verb acting on the pick is the wrong thing, done quietly.
+    private string _picked = string.Empty;
 
     private GamePanel? _declared;
     private InputState _input = new();
@@ -74,6 +103,12 @@ public sealed class GamePanelView : IGamePanel
         _declared = panel;
         int w = panel.Width > 0 ? panel.Width : DefaultW;
         int h = panel.Height > 0 ? panel.Height : DefaultH;
+
+        // The floor this panel asked for, before its size is set - a size below its own floor would
+        // otherwise be clamped to the engine's and the panel would open at a shape it never asked for.
+        _panel.SetSmallest(panel.MinWidth > 0 ? panel.MinWidth : MinW,
+                           panel.MinHeight > 0 ? panel.MinHeight : MinH);
+
         _panel.SetBounds(new Rectangle(_panel.Bounds.X, _panel.Bounds.Y, w, h));
         Build(panel);
         IsOpen = true;
@@ -119,20 +154,76 @@ public sealed class GamePanelView : IGamePanel
         else IsOpen = true;
     }
 
-    public void Update(InputState input, ClientState state, ClientPacketSender sender)
+    /// <summary>Which held panel should be up, or blank for none.
+    ///
+    /// <para>🔴 One at a time, and the first declared that applies wins. A game whose conditions
+    /// overlap gets the one it declared first rather than two windows fighting over the same corner,
+    /// and the order it declared them in is a thing it controls.</para></summary>
+    public void FollowConditions(ClientState state)
     {
-        if (!IsOpen || _declared is not { } panel) return;
+        if (!_held) return;
 
-        _input = input;
-        _panel.Update(input);
-        if (_panel.WasClosed)
+        var bag = state.Me.Attributes;
+        string wanted = string.Empty;
+
+        foreach (GamePanel panel in state.Panels.All)
+        {
+            if (!panel.Held || !panel.While.Holds(bag)) continue;
+
+            wanted = panel.Id;
+            break;
+        }
+
+        if (string.Equals(OpenId, wanted, StringComparison.Ordinal)) return;
+
+        if (wanted.Length == 0)
         {
             Close();
             return;
         }
 
-        var content = _panel.ContentBounds;
+        Open(state, wanted);
+    }
+
+    public void Update(InputState input, ClientState state, ClientPacketSender sender)
+    {
+        if (!IsOpen || _declared is not { } panel) return;
+
+        // Whatever it was showing has stopped being true: a guild left, a contest over. Held panels
+        // live and die by this, and a window the player opened is closed by it too.
+        if (!panel.While.Holds(state.Me.Attributes))
+        {
+            Close();
+            return;
+        }
+
+        _input = input;
+        _panel.Update(input);
+        if (!_held && _panel.WasClosed)
+        {
+            Close();
+            return;
+        }
+
+        Working(input, state, sender, panel, _panel.ContentBounds);
+    }
+
+    private void Working(InputState input, ClientState state, ClientPacketSender sender,
+                         GamePanel panel, Rectangle content)
+    {
         LayoutRows(content, panel, state);
+
+        if (panel.Rows.Count > 0)
+        {
+            FillList(panel, state);
+            _list.Update(input, ListBounds(content, panel, _listTop), keyboardActive: false);
+
+            // Read back as an id straight away, so a row that disappears between this frame and the
+            // press cannot hand the verb whatever slid into its place.
+            _picked = _list.SelectedIndex >= 0 && _list.SelectedIndex < _ids.Count
+                ? _ids[_list.SelectedIndex]
+                : string.Empty;
+        }
 
         if (panel.Inputs.Count > 0) Filling(input, panel);
 
@@ -149,10 +240,21 @@ public sealed class GamePanelView : IGamePanel
         {
             if (!_buttons[i].IsClicked(input)) continue;
 
+            string id = panel.Buttons[i].ActionId;
+
+            // A verb that opens a panel opens it from here too, which is how a game gives one screen
+            // more than the single form a panel can hold: a button per page, each opening the next.
+            // One slot holds them all, so this replaces what is showing rather than stacking on it.
+            string opens = state.Actions.All
+                .FirstOrDefault(a => string.Equals(a.Id, id, StringComparison.Ordinal))?.OpensPanel
+                ?? string.Empty;
+
             // The id goes back exactly as it arrived. Whether the verb applies, and what it does, are
             // the server's to say.
-            sender.SendInvokeAction(panel.Buttons[i].ActionId, state.Map is null ? 0 : state.CenterMapNum,
-                                    state.Me.X, state.Me.Y);
+            sender.SendInvokeAction(id, state.Map is null ? 0 : state.CenterMapNum,
+                                    state.Me.X, state.Me.Y, picked: _picked);
+
+            if (opens.Length > 0) Open(state, opens);
             return;   // one click per frame; the bounds are stale if the panel closed itself
         }
     }
@@ -261,7 +363,12 @@ public sealed class GamePanelView : IGamePanel
             : state.GameName;
         _panel.Draw(sb, font, title, active, panel.Icon);
 
-        var content = _panel.ContentBounds;
+        Painting(sb, font, state, panel, _panel.ContentBounds);
+    }
+
+    private void Painting(SpriteBatch sb, SpriteFont font, ClientState state,
+                          GamePanel panel, Rectangle content)
+    {
         int width = content.Width - Pad * 2;
         LayoutRows(content, panel, state);
 
@@ -273,6 +380,12 @@ public sealed class GamePanelView : IGamePanel
             if (at + RowH > floor) break;   // the buttons keep their place; the rows take what is left
             DrawRow(sb, font, row, content.X + Pad, at, width);
             at += RowH;
+        }
+
+        if (panel.Rows.Count > 0)
+        {
+            FillList(panel, state);
+            _list.Draw(sb, font, ListBounds(content, panel, _listTop));
         }
 
         long nowMs = Environment.TickCount64;
@@ -344,6 +457,45 @@ public sealed class GamePanelView : IGamePanel
         return content.Bottom - Pad - count * (BtnH + BtnGap);
     }
 
+    /// <summary>Fills the list from what the player carries, and keeps the pick pointing at the same
+    /// ROW it was pointing at.
+    ///
+    /// <para>A row whose caption reads blank is left out, which is how a game declares a list as long as
+    /// the table behind it and shows only the filled part. An id key left blank makes the caption its own
+    /// id, which is what a list of plain names wants.</para></summary>
+    private void FillList(GamePanel panel, ClientState state)
+    {
+        _list.Items.Clear();
+        _ids.Clear();
+
+        var bag = state.Me.Attributes;
+
+        foreach (PanelRow row in panel.Rows)
+        {
+            if (bag is null || !bag.TryGet(row.LabelKey, out var caption)) continue;
+
+            string text = caption.AsText();
+            if (text.Length == 0) continue;
+
+            string id = text;
+            if (row.IdKey.Length > 0 && bag.TryGet(row.IdKey, out var carried)) id = carried.AsText();
+
+            _list.Items.Add(text);
+            _ids.Add(id);
+        }
+
+        int at = _ids.IndexOf(_picked);
+        if (at < 0) _picked = string.Empty;
+        _list.SelectedIndex = at;
+    }
+
+    /// <summary>Where the list sits: under the values, above the buttons, taking what is left.</summary>
+    private static Rectangle ListBounds(Rectangle content, GamePanel panel, int top)
+    {
+        int floor = Floor(content, panel);
+        return new Rectangle(content.X + Pad, top, content.Width - Pad * 2, Math.Max(0, floor - top - Pad));
+    }
+
     /// <summary>
     /// Places the input rows under the display rows.
     ///
@@ -370,7 +522,14 @@ public sealed class GamePanelView : IGamePanel
             _rects.Add(new Rectangle(content.X + Pad, y, width, InputH - 2));
             y += InputH;
         }
+
+        // The list takes everything between the last control and the buttons. Worked out here with
+        // the rest of the layout, because a list drawn in one place and clicked in another is a list
+        // that ignores every second click.
+        _listTop = y;
     }
+
+    private int _listTop;
 
     private static void DrawRow(SpriteBatch sb, SpriteFont font, DisplayRow row, int x, int y, int width)
     {
@@ -387,11 +546,19 @@ public sealed class GamePanelView : IGamePanel
                 UiHelper.DrawMeter(sb, font, new Rectangle(x, y, width, RowH - 2), (float)row.Fill,
                     color, Color.Black,
                     label.Length > 0 ? UiHelper.MeterText(label, (long)row.Value, (long)row.Max) : row.Text,
-                    Color.White);
+                    Color.White, ease: row.Key);
                 break;
 
             case DisplayStyle.Badge:
-                UiHelper.DrawLabel(sb, font, row.Text, new Vector2(x, y), color, width);
+                if (label.Length == 0)
+                {
+                    UiHelper.DrawLabel(sb, font, row.Text, new Vector2(x, y), color, width);
+                    break;
+                }
+
+                UiHelper.DrawLabel(sb, font, label, new Vector2(x, y), UiHelper.DlgLabelColor, width / 2f);
+                float tagW = font.MeasureString(row.Text).X;
+                UiHelper.DrawLabel(sb, font, row.Text, new Vector2(x + width - tagW, y), color, width / 2f);
                 break;
 
             default:

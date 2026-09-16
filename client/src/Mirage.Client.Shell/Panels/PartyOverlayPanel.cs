@@ -214,8 +214,11 @@ public sealed class PartyOverlayPanel
             float fill = i < party.Bars.Count ? party.Bars[i] : OverheadBar.Absent;
             if (fill < 0f) fill = 0f;
 
+            // Keyed by the partner and the bar, so a partner's health eases the way your own does
+            // rather than stepping every time a snapshot lands.
             UiHelper.DrawMeter(sb, font, new Rectangle(innerX, y, InnerW, BarH), fill,
-                ChatPanel.GetColor(bar.Rgb) * alpha, Color.Black * alpha, "", Color.White * alpha);
+                ChatPanel.GetColor(bar.Rgb) * alpha, Color.Black * alpha, "", Color.White * alpha,
+                ease: $"party/{party.Name}/{bar.ValueKey}");
             y += BarH + BarGap;
         }
     }

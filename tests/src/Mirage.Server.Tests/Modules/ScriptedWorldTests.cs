@@ -122,6 +122,67 @@ public class ScriptedWorldTests
         Assert.That(world.Said, Is.EqualTo(new[] { "ticks: 3" }), "and the state survived between calls");
     }
 
+    /// <summary>🔴 <b>A store is a set of named bags nobody declared.</b> Writing into one makes it,
+    /// so a rule can pile up a row per player without a family, a slot count or an editor form behind
+    /// it. Walked by count and index, which is the loop every other script here already writes.</summary>
+    [Test]
+    public void AScriptKeepsItsOwnStoreAndWalksIt()
+    {
+        var world = new RecordingWorld();
+        using var module = Loaded("""
+            shared model Rules
+                public function OnPlayerJoined(Player who)
+                    World.SetKeptNumber("ladder", "rowan", "kills", 7);
+                    World.SetKeptNumber("ladder", "auden", "kills", 4);
+                    World.SetKeptText("ladder", "rowan", "guild", "Ironhelm");
+
+                    string said = "";
+
+                    loop for i = 1 to World.KeptCount("ladder")
+                        string name = World.KeptKeyAt("ladder", i);
+                        said = said + name + "=" + World.KeptNumber("ladder", name, "kills") + " ";
+                    end loop
+
+                    who.Message(said + "| rowan is in " + World.KeptText("ladder", "rowan", "guild"));
+                end function
+            end model
+            """, world);
+
+        ((IWorldObserver)module).OnPlayerJoined(Someone);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(world.Said, Is.EqualTo(new[] { "auden=4 rowan=7 | rowan is in Ironhelm" }),
+                        "walked in key order, and both fields of a row survive together");
+            Assert.That(world.Stores["ladder"], Has.Count.EqualTo(2));
+        });
+    }
+
+    /// <summary>A key that was never written and one that was dropped read the same as each other, and
+    /// HasKept is what tells a rule which it is looking at.</summary>
+    [Test]
+    public void AForgottenKeyIsGoneAndSaysSo()
+    {
+        var world = new RecordingWorld();
+        using var module = Loaded("""
+            shared model Rules
+                public function OnPlayerJoined(Player who)
+                    World.SetKeptNumber("ladder", "rowan", "kills", 7);
+                    World.Forget("ladder", "rowan");
+
+                    who.Message("held: " + World.HasKept("ladder", "rowan")
+                                + " kills: " + World.KeptNumber("ladder", "rowan", "kills")
+                                + " left: " + World.KeptCount("ladder")
+                                + " never: " + World.HasKept("ladder", "nobody"));
+                end function
+            end model
+            """, world);
+
+        ((IWorldObserver)module).OnPlayerJoined(Someone);
+
+        Assert.That(world.Said, Is.EqualTo(new[] { "held: false kills: 0 left: 0 never: false" }));
+    }
+
     /// <summary>What a game counts lives in the attribute bag, and a script reaches it by name.</summary>
     [Test]
     public void AScriptReadsAndWritesWhatTheGameCounts()
@@ -719,6 +780,156 @@ public class ScriptedWorldTests
         });
     }
 
+
+    /// <summary>🔴 A panel's list, and the pick that travels with the button under it.
+    ///
+    /// <para>A verb that acts on one of several things needs a way to say WHICH. Without a list, a
+    /// screen about a set of anything - wars to retract, offers to accept - has to ask for a name in a
+    /// box, which means reading one off the screen above and typing it back in.</para>
+    ///
+    /// <para>The two halves fail differently and both fail quietly. Rows declared and never carried give
+    /// a screen with nothing to choose from; a pick carried and never read gives a button that always
+    /// acts on whatever the game guesses. So this pins the declaration AND the delivery.</para></summary>
+    [Test]
+    public void APanelDeclaresAList_AndThePickReachesTheHandler()
+    {
+        var world = new RecordingWorld();
+        var (module, registry) = Built("""
+            shared model Rules
+                public function Configure(Builder game)
+                    game.Attribute("war.line1", "owner");
+                    game.Attribute("war.of1", "owner");
+
+                    Panel wars = game.Panel("guild.wars", "Wars", 240, 200);
+                    wars.Row("war.line1", "war.of1");
+                    wars.Button("Retract", "guild.retract");
+
+                    Verb r = game.Action("guild.retract", "Retract", "Guild");
+                    r.Nowhere();
+                end function
+
+                public function OnAction(Player who, string action, string on, integer map,
+                                         integer x, integer y, string picked)
+                    who.Message("retracting against " + picked);
+                end function
+            end model
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+
+        var panel = registry.Panels.All.Single(p => p.Id == "guild.wars");
+
+        ((IActionHandler)scripts).Invoke(Someone, "guild.retract", EntityHandle.None,
+                                         new WorldPlace(1, 2, 3), picked: "Ironhelm");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+
+            Assert.That(panel.Rows.Single().LabelKey, Is.EqualTo("war.line1"));
+            Assert.That(panel.Rows.Single().IdKey, Is.EqualTo("war.of1"),
+                "what the line reads as and what it IS are two keys, or a verb gets the caption");
+
+            Assert.That(world.Said, Is.EqualTo(new[] { "retracting against Ironhelm" }).AsCollection,
+                "the pick reaches the handler exactly as the client sent it");
+        });
+    }
+
+    /// <summary>🔴 A world written before OnAction grew its last argument keeps working.
+    ///
+    /// <para>Compass matches a function by name AND count, so a handler the engine asks for with seven
+    /// arguments and a world that wrote six is a handler that is never called. Nothing errors: the verbs
+    /// are declared, the menu draws them, the player presses one, and the game does nothing. That is the
+    /// worst shape a break can take, and it is what this stops.</para></summary>
+    [Test]
+    public void AHandlerWrittenToTheOlderSignatureIsStillCalled()
+    {
+        var world = new RecordingWorld();
+        var (module, _) = Built("""
+            shared model Rules
+                public function Configure(Builder game)
+                    Verb g = game.Action("old.go", "Go", "Old");
+                    g.OnHud();
+                end function
+
+                public function OnAction(Player who, string action, string on, integer map,
+                                         integer x, integer y)
+                    who.Message("went to " + map + ":" + x + "," + y);
+                end function
+            end model
+            """, world);
+
+        using ScriptedWorldModule scripts = module;
+
+        ((IActionHandler)scripts).Invoke(Someone, "old.go", EntityHandle.None,
+                                         new WorldPlace(4, 5, 6), picked: "");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+            Assert.That(world.Said, Is.EqualTo(new[] { "went to 4:5,6" }).AsCollection);
+        });
+    }
+
+
+    /// <summary>🔴 A panel the game holds up, and the refusal that stops one nothing can take down.
+    ///
+    /// <para>A readout that has to be on screen while something is true is not a window somebody chose
+    /// to open: a score during a fight, the wait over a body that cannot act. It carries no close
+    /// control, so the condition IS the way it goes away — and a declaration with the close control
+    /// gone and no condition is a rectangle over the player's game until they restart the client. That
+    /// is the one shape of this seam that cannot be recovered from in play, so it is refused at load,
+    /// by name.</para></summary>
+    [Test]
+    public void APanelTheGameHoldsUp_NeedsSomethingToTakeItDown()
+    {
+        var (module, registry) = Built("""
+            shared model Rules
+                public function Configure(Builder game)
+                    game.Attribute("war.on", "owner");
+
+                    Panel score = game.Panel("war.score", "The war", 200, 120);
+                    score.HeldWhile("war.on", 1);
+                    score.Field("war.on", "Fighting over", 200, 200, 160);
+                end function
+            end model
+            """);
+
+        using ScriptedWorldModule scripts = module;
+
+        var panel = registry.Panels.All.Single(p => p.Id == "war.score");
+        var carried = new AttributeBag();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
+
+            Assert.That(panel.Held, Is.True, "no close control");
+            Assert.That(panel.Key, Is.Empty, "and no key: it is not a window to go and open");
+
+            Assert.That(panel.While.Holds(carried), Is.False, "down while the key says nothing");
+            carried.Set("war.on", 1L);
+            Assert.That(panel.While.Holds(carried), Is.True, "and up the moment it does");
+        });
+    }
+
+    /// <summary>The other half, refused rather than loaded.</summary>
+    [Test]
+    public void APanelHeldWithNoCondition_IsRefusedByName()
+    {
+        var thrown = Assert.Throws<CoreModuleException>(() => CoreRegistry.Build(new Held()));
+
+        Assert.That(thrown!.Message, Does.Contain("war.score").And.Contain("held"));
+    }
+
+    private sealed class Held : ICoreModule
+    {
+        public string Name => "Held";
+
+        public void Configure(ICoreBuilder builder)
+            => builder.AddPanel(new GamePanel { Id = "war.score", TitleKey = "The war", Held = true });
+    }
+
     /// <summary>🔴 A verb opening a panel nobody declared is refused BY NAME, and still offered.
     ///
     /// <para>The button draws, the player presses it, and nothing happens — which reads as a broken
@@ -1017,7 +1228,7 @@ public class ScriptedWorldTests
         Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
 
         ((IActionHandler)scripts).Invoke(
-            Someone, "wild.bite", EntityHandle.None, new WorldPlace(1, 5, 7));
+            Someone, "wild.bite", EntityHandle.None, new WorldPlace(1, 5, 7), picked: "");
 
         Assert.Multiple(() =>
         {
@@ -1055,8 +1266,8 @@ public class ScriptedWorldTests
         using ScriptedWorldModule scripts = module;
         var verbs = (IActionHandler)scripts;
 
-        verbs.Invoke(Someone, "wild.look", EntityHandle.None, new WorldPlace(1, 9, 9));
-        verbs.Invoke(Someone, "wild.look", EntityHandle.None, new WorldPlace(1, 2, 2));
+        verbs.Invoke(Someone, "wild.look", EntityHandle.None, new WorldPlace(1, 9, 9), picked: "");
+        verbs.Invoke(Someone, "wild.look", EntityHandle.None, new WorldPlace(1, 2, 2), picked: "");
 
         Assert.That(world.Said, Is.EqualTo(new[]
         {
@@ -1195,7 +1406,7 @@ public class ScriptedWorldTests
         Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
 
         ((IActionHandler)scripts).Invoke(
-            Someone, "wild.hit", EntityHandle.None, new WorldPlace(1, 3, 4));
+            Someone, "wild.hit", EntityHandle.None, new WorldPlace(1, 3, 4), picked: "");
 
         Assert.That(world.Floated, Is.EqualTo(new[]
         {
@@ -1270,7 +1481,7 @@ public class ScriptedWorldTests
         Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
 
         ((IActionHandler)scripts).Invoke(
-            Someone, "wild.hit", EntityHandle.None, new WorldPlace(2, 8, 8));
+            Someone, "wild.hit", EntityHandle.None, new WorldPlace(2, 8, 8), picked: "");
 
         Assert.That(world.Timed, Is.EqualTo(new[]
         {
@@ -1328,8 +1539,8 @@ public class ScriptedWorldTests
         Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
 
         var verbs = (IActionHandler)scripts;
-        verbs.Invoke(Someone, "wild.hit", EntityHandle.None, new WorldPlace(1, 6, 6));
-        verbs.Invoke(Someone, "wild.hit", EntityHandle.None, new WorldPlace(1, 9, 9));
+        verbs.Invoke(Someone, "wild.hit", EntityHandle.None, new WorldPlace(1, 6, 6), picked: "");
+        verbs.Invoke(Someone, "wild.hit", EntityHandle.None, new WorldPlace(1, 9, 9), picked: "");
 
         Assert.That(world.Shown, Is.EqualTo(new[]
         {
@@ -1801,7 +2012,7 @@ public class ScriptedWorldTests
             """, world);
 
         ((IActionHandler)module).Invoke(Someone, "harvest.gather", EntityHandle.None,
-                                        new WorldPlace(3, 11, 4));
+                                        new WorldPlace(3, 11, 4), picked: "");
 
         Assert.That(world.Said, Is.EqualTo(new[] { "harvest.gather at 3:11,4" }));
     }
@@ -1834,8 +2045,8 @@ public class ScriptedWorldTests
             """, world);
 
         var handler = (IActionHandler)module;
-        handler.Invoke(Someone, "harvest.greet", Someone, new WorldPlace(1, 1, 1));
-        handler.Invoke(Someone, "harvest.greet", EntityHandle.None, new WorldPlace(1, 1, 1));
+        handler.Invoke(Someone, "harvest.greet", Someone, new WorldPlace(1, 1, 1), picked: "");
+        handler.Invoke(Someone, "harvest.greet", EntityHandle.None, new WorldPlace(1, 1, 1), picked: "");
 
         Assert.That(world.Said, Is.EqualTo(new[] { "greeted " + world.NameOf(Someone), "nobody" }));
     }
@@ -2224,6 +2435,61 @@ public class ScriptedWorldTests
         public AttributeBag? RecordAt(string familyId, int num) =>
             RecordsOf(familyId) is { } rows && num >= 1 && num <= rows.Count ? rows[num - 1] : null;
 
+        /// <summary>The game's own stores, kept for real so a script can be watched using them.</summary>
+        public Dictionary<string, Dictionary<string, AttributeBag>> Stores { get; } =
+            new(StringComparer.Ordinal);
+
+        public AttributeValue? Kept(string store, string key, string field) =>
+            Stores.TryGetValue(store, out var entries)
+            && entries.TryGetValue(key, out AttributeBag? bag)
+            && bag.TryGet(field, out AttributeValue held) ? held : null;
+
+        public void SetKept(string store, string key, string field, AttributeValue value)
+        {
+            if (string.IsNullOrWhiteSpace(store) || string.IsNullOrWhiteSpace(key)
+                || string.IsNullOrWhiteSpace(field))
+            {
+                return;
+            }
+
+            if (!Stores.TryGetValue(store, out var entries))
+            {
+                entries = new Dictionary<string, AttributeBag>(StringComparer.Ordinal);
+                Stores[store] = entries;
+            }
+
+            if (!entries.TryGetValue(key, out AttributeBag? bag))
+            {
+                bag = new AttributeBag();
+                entries[key] = bag;
+            }
+
+            bag.Set(field, value);
+        }
+
+        public bool HasKept(string store, string key) =>
+            Stores.TryGetValue(store, out var entries) && entries.ContainsKey(key);
+
+        public bool Forget(string store, string key)
+        {
+            if (!Stores.TryGetValue(store, out var entries) || !entries.Remove(key)) return false;
+
+            if (entries.Count == 0) Stores.Remove(store);
+            return true;
+        }
+
+        public int KeptCount(string store) => KeptKeys(store).Length;
+
+        public string KeptKeyAt(string store, int index)
+        {
+            string[] keys = KeptKeys(store);
+            return index >= 1 && index <= keys.Length ? keys[index - 1] : string.Empty;
+        }
+
+        private string[] KeptKeys(string store) =>
+            Stores.TryGetValue(store, out var entries)
+                ? [.. entries.Keys.Order(StringComparer.Ordinal)] : [];
+
         /// <summary>What a test called each record, by family and slot.</summary>
         public Dictionary<(string, int), string> RecordNames { get; } = [];
 
@@ -2374,6 +2640,16 @@ public class ScriptedWorldTests
         public HashSet<EntityHandle> Runners { get; } = [];
 
         public bool IsRunning(EntityHandle who) => Runners.Contains(who);
+
+        public Dictionary<EntityHandle, int> Paces { get; } = [];
+
+        public int PaceOf(EntityHandle who) => Paces.TryGetValue(who, out int pace) ? pace : 0;
+
+        public void SetPace(EntityHandle who, int pace) => Paces[who] = pace;
+
+        public int RunMsOf(EntityHandle who) => (int)Math.Round(MovementFormulas.RunMsPerTile(PaceOf(who)));
+
+        public int WalkMs => (int)Math.Round(MovementFormulas.BaseWalkMsPerTile);
 
         /// <summary>What each creature was authored as. A test that cares sets one; a body nobody described
         /// ambles, notices nothing, and keeps to no pack — which is what an unauthored record is.</summary>
@@ -2596,11 +2872,11 @@ public class ScriptedWorldTests
         }
 
         /// <summary>What the game kept about the world itself.</summary>
-        public AttributeBag Kept { get; } = new();
+        public AttributeBag WorldBag { get; } = new();
 
-        public AttributeBag WorldValues() => Kept;
+        public AttributeBag WorldValues() => WorldBag;
 
-        public void SetWorldValue(string key, AttributeValue value) => Kept.Set(key, value);
+        public void SetWorldValue(string key, AttributeValue value) => WorldBag.Set(key, value);
 
         public bool SetRecordValue(string familyId, int num, string key, AttributeValue value)
         {

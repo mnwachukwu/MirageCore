@@ -13,6 +13,9 @@ shared model Book
     public string ReadyName = "preparedname";
 
     public string Cast = "msr.cast";
+    public string OpenVerb = "msr.spell.open";
+    public string PrepareVerb = "msr.spell.prepare";
+    public string ForgetVerb = "msr.spell.forget";
     public string CastSelf = "msr.cast.self";
 
     # ── What the engine carries ───────────────────────────────────────────────
@@ -28,30 +31,48 @@ shared model Book
 
         # Q, as the original cast with. E is the melee key and R reaches, so the three keys a hand
         # rests on are the three things a character does.
+        #
+        # ONE verb, and the engine aims it. Q throws it at whatever is targeted, and Ctrl+Tab targets
+        # YOURSELF - which is how the original aimed a heal inward and the only way it offered. A
+        # second verb for it would be a button reading "Cast on yourself" sitting on the screen at all
+        # times, and the original has no such thing anywhere.
         Verb outward = game.Action(Book.Cast, "Cast", "Magic");
         outward.OnNpc();
         outward.OnPlayer();
+        outward.Aimed();
         outward.Icon("spark");
         outward.Key("Q");
 
-        # A heal aimed at a creature would be a heal aimed at the wrong body, so restoring yourself is
-        # its own verb rather than a target nobody meant to pick.
-        Verb inward = game.Action(Book.CastSelf, "Cast on yourself", "Magic");
-        inward.OnHud();
-        inward.Icon("spark");
+        # Acts on the spell picked out of the book. Preparing by TYPING a slot number was asking the
+        # player to read one off the screen above and type it back in.
+        Verb ready = game.Action(Book.PrepareVerb, "Prepare", "Magic");
+        ready.Nowhere();
+        ready.Icon("spark");
 
-        Panel book = game.Panel("msr.book", "Spellbook", 260, 320);
-        book.Key("J");
+        Verb forget = game.Action(Book.ForgetVerb, "Forget", "Magic");
+        forget.Nowhere();
+        forget.Icon("clock");
+
+        Verb open = game.Action(Book.OpenVerb, "Spells", "Magic");
+        open.OnHud();
+        open.Icon("book");
+        open.Opens("msr.book");
+
+        # P, which is the key the original opened its book with.
+        Panel book = game.Panel("msr.book", "Spellbook", 280, 300);
+        book.Smallest(200, 120);
+        book.Key("P");
         book.Icon("book");
         book.Heading("Prepared");
         book.Field(Book.ReadyName, "Ready", 200, 200, 160);
         book.Heading("Known");
 
         loop for slot = 1 to Book.Slots
-            book.Field(Book.NameAt(slot), "" + slot, 200, 200, 160);
+            book.Row(Book.NameAt(slot), "" + slot);
         end loop
 
-        book.Asks("Prepared", "Prepare");
+        book.Button("Prepare", Book.PrepareVerb);
+        book.Button("Forget", Book.ForgetVerb);
     end function
 
     # The keys a slot's two halves live under. Written here so the shape of them is stated once.
@@ -199,6 +220,57 @@ shared model Book
         end loop
 
         yield 0;
+    end function
+
+    # A picked line carries the page it is on, because that is what a line carries.
+    public integer function Numbered(string picked)
+        loop for slot = 1 to Book.Slots
+            if picked == "" + slot
+                yield slot;
+            end if
+        end loop
+
+        yield 0;
+    end function
+
+    # Unlearning one, which frees the page for something else.
+    #
+    # ⚠ Refused in a FIGHT, as the original refused it: emptying a page is study, and a body
+    # swapping its book mid-swing is a body doing something study is not. Preparing is allowed there,
+    # because choosing which of the spells you already know to throw next is part of the fight.
+    public function Forget(Player who, integer slot)
+        if who.IsDowned
+            yield;
+        end if
+
+        if slot < 1 or slot > Book.Slots
+            who.Message("There is no such page.");
+            yield;
+        end if
+
+        integer number = who.Number(Book.At(slot));
+
+        if number < 1
+            who.Message("That page is empty.");
+            yield;
+        end if
+
+        if who.IsEngaged
+            who.Message("You cannot study in the middle of a fight.");
+            yield;
+        end if
+
+        who.SetNumber(Book.At(slot), 0);
+        who.SetText(Book.NameAt(slot), "");
+
+        # A page torn out from under the prepared spell would leave the ready slot pointing at nothing,
+        # and the panel saying a spell is ready that the book no longer holds.
+        if who.Number(Book.Ready) == number
+            who.SetNumber(Book.Ready, 0);
+            who.SetText(Book.ReadyName, "");
+        end if
+
+        who.Message("You forget " + Spells.NameOf(number) + ".");
     end function
 
     public function Prepare(Player who, integer slot)

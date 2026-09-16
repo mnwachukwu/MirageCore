@@ -21,7 +21,7 @@ model BeastRules
     # Carried by a creature that answers a crime. Every copy of that kind is a guard.
     public boolean guard;
 
-    # Whether it is something a guild would set a bounty on: a creature that fights, rather than a
+    # Whether it is something a guild would be sent after: a creature that fights, rather than a
     # shopkeeper or a sign. Guild quests are drawn from these and nothing else.
     public boolean hostile;
 

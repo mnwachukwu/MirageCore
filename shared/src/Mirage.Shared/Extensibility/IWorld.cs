@@ -321,6 +321,49 @@ public interface IWorld
     /// <summary>One record of one family, or null for a slot that is not there.</summary>
     AttributeBag? RecordAt(string familyId, int num);
 
+    /// <summary>How many records of that kind the world holds, counting blank slots.
+    ///
+    /// <para>⚠ Separate from <see cref="RecordsOf"/> because a count must not build the list it is
+    /// counting. A rule that walks a family writes the count as its loop bound, and a bound is read once
+    /// per pass around the loop - so a count that materializes every record turns one sweep of a family
+    /// into one list per record.</para></summary>
+    int RecordCount(string familyId) => RecordsOf(familyId).Count;
+
+    // ── Stores a game keeps for itself ───────────────────────────────────────
+    //
+    // A bag under a name, inside a store with a name. The flat world bag behind Number and SetNumber
+    // holds what there is exactly one of - which season it is, whether an event is running. This holds
+    // what there are MANY of and no record family fits: a ladder with a row per player, a tally per
+    // region, whatever a game accumulates while it runs.
+    //
+    // Nothing is declared. Writing into a store that does not exist makes it, and a store is as big as
+    // what has been put in it.
+
+    /// <summary>One field out of one key of one store, or null where any of the three is missing.</summary>
+    AttributeValue? Kept(string store, string key, string field);
+
+    /// <summary>Writes one, making the store and the key on first use.
+    ///
+    /// <para>⚠ Kept with the world's own values, so it reaches disk on the world's save beat rather
+    /// than on this call. A crash can lose the last few writes, the same way it can for SetNumber. What
+    /// has to survive the instant it happens belongs on a character or a guild, which save on write.</para></summary>
+    void SetKept(string store, string key, string field, AttributeValue value);
+
+    /// <summary>Whether that store holds anything under that key.</summary>
+    bool HasKept(string store, string key);
+
+    /// <summary>Drops a key and everything under it. True when there was something to drop.</summary>
+    bool Forget(string store, string key);
+
+    /// <summary>How many keys that store holds. Zero for a store nothing was ever put in.</summary>
+    int KeptCount(string store);
+
+    /// <summary>The index-th key of that store, counting from one, or empty past the end.
+    ///
+    /// <para>Ordered by the key itself rather than by when it arrived, so a pass over a store reads the
+    /// same way twice running and the same way after a restart.</para></summary>
+    string KeptKeyAt(string store, int index);
+
     /// <summary>What a record is CALLED — an item's name, a creature's, a map's. Blank for a slot
     /// nobody authored and for a family whose records carry no name.
     ///
@@ -553,6 +596,32 @@ public interface IWorld
     /// <summary>Whether they are running rather than walking right now. What running COSTS is a game's;
     /// the engine moves the body and this is how a rule hears about it.</summary>
     bool IsRunning(EntityHandle who);
+
+    /// <summary>
+    /// How quick this body is, as a number the engine turns into a pace.
+    ///
+    /// <para>🔴 <b>A game with a speed stat has no other way to make it mean anything.</b> How far
+    /// a body gets per second is the engine's - it owns the step clock, the collision and the credit
+    /// that stops a client outrunning them - so a game cannot move somebody faster by itself. What it
+    /// can do is say how quick they ARE, and this is where it says it.</para>
+    ///
+    /// <para>Zero is the baseline everybody starts at. Higher is faster, with diminishing returns and a
+    /// ceiling the engine picks: what the number BUYS is Core's, so a game tuning its own stat does not
+    /// have to know the curve. Walking is not affected — a walk is a walk — so this is the value of
+    /// running, which is also why running is worth what a game charges for it.</para>
+    /// </summary>
+    int PaceOf(EntityHandle who);
+
+    /// <inheritdoc cref="PaceOf"/>
+    void SetPace(EntityHandle who, int pace);
+
+    /// <summary>How long one tile takes this body at a run, in milliseconds. What
+    /// <see cref="PaceOf"/> bought, so a game can show it.</summary>
+    int RunMsOf(EntityHandle who);
+
+    /// <summary>How long one tile takes at a walk, which is the same for everybody. The other half of
+    /// <see cref="RunMsOf"/>: a game wanting to say how much faster running is divides the two.</summary>
+    int WalkMs { get; }
 
     // ── Asking what a creature was authored as ──────────────────────────
     //

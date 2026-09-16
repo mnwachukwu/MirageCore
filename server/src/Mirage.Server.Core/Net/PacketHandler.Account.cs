@@ -310,7 +310,7 @@ public sealed partial class PacketHandler
 
         // Send character list (1-based slots)
         _dispatcher.SendTo(index, PacketBuilder.SendChars(
-            Enumerable.Range(1, Constants.MaxChars).Select(i => (PlayerRecord?)sp.Chars[i])));
+            Enumerable.Range(1, Constants.MaxChars).Select(i => (PlayerRecord?)sp.Chars[i]), _registry.DisplayFields));
     }
 
     private void HandleAddChar(int index, AddCharPacket p)
@@ -401,7 +401,7 @@ public sealed partial class PacketHandler
         await _persistence.AddCharNameAsync(name);
         _logger.LogInformation("Character {Name} added to {Login}'s account.", name, sp.Login);
         _dispatcher.SendTo(index, PacketBuilder.SendChars(
-            Enumerable.Range(1, Constants.MaxChars).Select(i => (PlayerRecord?)sp.Chars[i])));
+            Enumerable.Range(1, Constants.MaxChars).Select(i => (PlayerRecord?)sp.Chars[i]), _registry.DisplayFields));
     }
 
     /// <summary>
@@ -466,7 +466,7 @@ public sealed partial class PacketHandler
         _saver.MutateAccountInBackground(sp.Login, a => a.Chars[slot] = new PlayerRecord());
         _logger.LogInformation("Character deleted on {Login}'s account.", sp.Login);
         _dispatcher.SendTo(index, PacketBuilder.SendChars(
-            Enumerable.Range(1, Constants.MaxChars).Select(i => (PlayerRecord?)sp.Chars[i])));
+            Enumerable.Range(1, Constants.MaxChars).Select(i => (PlayerRecord?)sp.Chars[i]), _registry.DisplayFields));
     }
 
     private void HandleUseChar(int index, UseCharPacket p)
@@ -533,7 +533,7 @@ public sealed partial class PacketHandler
         _joinLeave.LeftGame(index);
         sp.CharNum = 0;
         _dispatcher.SendTo(index, PacketBuilder.SendChars(
-            Enumerable.Range(1, Constants.MaxChars).Select(i => (PlayerRecord?)sp.Chars[i])));
+            Enumerable.Range(1, Constants.MaxChars).Select(i => (PlayerRecord?)sp.Chars[i]), _registry.DisplayFields));
     }
 
     private void DoGhostTakeover(int index, int ghostSlot, int charSlot)

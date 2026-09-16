@@ -39,10 +39,10 @@ and their absence is the product rather than a gap in it.
 
 ---
 
-## The eighteen seams
+## The nineteen seams
 
 A game is an [`ICoreModule`](../shared/src/Mirage.Shared/Extensibility/ICoreModule.cs). It is asked to
-describe itself once, and everything it can say is one of eighteen calls on the builder it is handed.
+describe itself once, and everything it can say is one of nineteen calls on the builder it is handed.
 
 **What the game is made of**
 
@@ -59,7 +59,7 @@ describe itself once, and everything it can say is one of eighteen calls on the 
 | `AddDisplayField` | a value to show, on a named surface, read straight off a body's attributes |
 | `AddOverheadBar` | a row over a body's head, reading two of that body's attributes — and the same rows on the party overlay |
 | `AddEquipSlot` | a place on a character where something can be worn |
-| `AddPanel` | a screen this game paints: a title, a surface, the verbs under it, and the key that opens it |
+| `AddPanel` | a screen this game paints: a title, a surface, a list to pick from, the verbs under it, and the key that opens it |
 
 **What the player does**
 
@@ -81,6 +81,7 @@ describe itself once, and everything it can say is one of eighteen calls on the 
 | `AddLootPolicy` | what a slain creature leaves behind, how often, and whose it is |
 | `AddCreationChoice` | what to ask before a character exists |
 | `AddLingerPolicy` | how long a dropped connection leaves a body standing |
+| `AddMovePolicy` | whether a body can still manage a run, and what a run costs it |
 
 Declare none of them and you have the engine by itself. Every seam's "declare nothing" case is a
 coherent game, not a broken one.

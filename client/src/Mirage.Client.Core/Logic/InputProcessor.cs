@@ -153,7 +153,7 @@ public static class InputProcessor
                 for (int i = 1; i <= state.PlayerSlots; i++)
                 {
                     var p = state.Players[i];
-                    if (p == me || string.IsNullOrEmpty(p.Name) || p.Dead) continue;   // a corpse is walked over
+                    if (p == me || string.IsNullOrEmpty(p.Name) || p.Downed) continue;   // a corpse is walked over
                     // state.Players holds every visible player including those on neighbor maps —
                     // filter by map so a same-coords sprite on a different map can't false-block us.
                     if (p.Map == me.Map && p.X == nx && p.Y == ny && p.Layer == newLayer)
@@ -299,7 +299,7 @@ public static class InputProcessor
             for (int i = 1; i <= state.PlayerSlots; i++)
             {
                 var p = state.Players[i];
-                if (p == me || string.IsNullOrEmpty(p.Name) || p.Dead) continue;   // a corpse is walked over
+                if (p == me || string.IsNullOrEmpty(p.Name) || p.Downed) continue;   // a corpse is walked over
                 if (p.Map == destMapNum && p.X == dx && p.Y == dy && p.Layer == newLayer) return true;
             }
         }

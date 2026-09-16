@@ -3,6 +3,18 @@ using System.Text.Json.Serialization;
 namespace Mirage.Shared.Extensibility;
 
 /// <summary>Where the client offers a declared action.</summary>
+/// <summary>What the client does with a verb whose <see cref="GameAction.When"/> does not hold.</summary>
+public enum ActionUnmet : byte
+{
+    /// <summary>Drawn, dim, and not clickable. The player can see the verb exists and that something
+    /// they do not have would reach it.</summary>
+    Gray = 0,
+
+    /// <summary>Not drawn. What a verb about something a player may never have wants, since a permanent
+    /// dim entry is one they read past every time. On the HUD the buttons below it close the gap.</summary>
+    Hide = 1,
+}
+
 public enum ActionSurface : byte
 {
     /// <summary>The right-click menu on a square, under the game's own heading. What a verb that acts on
@@ -21,6 +33,16 @@ public enum ActionSurface : byte
     /// <summary>A button on the HUD, under Core's own. A verb with no target and no place: opening one of
     /// the game's screens, or telling the server something about nothing in particular.</summary>
     Hud = 3,
+
+    /// <summary>Nowhere on its own. The verb is declared, and the game says where it appears: a button
+    /// on one of its own panels, a choice in one of its conversations, or a key it bound.
+    ///
+    /// <para>🔴 <b>Without this a verb has to be in a menu to exist at all</b>, and a game whose
+    /// screens hold its verbs - a guild hall, a training hall, a vault - would have to hang every one of
+    /// them off whatever the player happens to be pointing at. What follows is a right-click on a
+    /// passing shopkeeper offering to donate to your guild, which is where the verb is reachable rather
+    /// than where it belongs.</para></summary>
+    None = 4,
 }
 
 /// <summary>
@@ -65,8 +87,29 @@ public sealed record GameAction
     /// </summary>
     [JsonPropertyName("interacts")] public bool Interacts { get; init; }
 
-    /// <summary>Where it is offered.</summary>
+    /// <summary>Where it is offered. <see cref="ActionSurface.None"/> for one the game places itself,
+    /// on a panel of its own or on a key.</summary>
     [JsonPropertyName("surface")] public ActionSurface Surface { get; init; }
+
+    /// <summary>
+    /// Whether this verb acts on whatever the player has TARGETED, when they did not point at anything
+    /// while using it.
+    ///
+    /// <para>🔴 <b>Targeting is Core's, and a game should not be rebuilding it.</b> Picking a body
+    /// out of a crowd is cycling with Tab, clicking one, and the line of sight and footprint arithmetic
+    /// that decides which body a pixel belongs to - all of which Core already does, and none of which is
+    /// about any particular game. Aiming at YOURSELF is part of the same thing: Ctrl+Tab is what selects
+    /// the caster, so a spell that heals needs no verb of its own and no button that says
+    /// "on yourself".</para>
+    ///
+    /// <para>The selection is read from the SERVER's copy, which is the one the client told it about
+    /// when the player made it. So an aimed verb cannot be pointed somewhere the player never
+    /// pointed.</para>
+    ///
+    /// <para>Off by default: a verb about a PLACE - digging, planting, laying claim - would otherwise be
+    /// handed a body that has nothing to do with it.</para>
+    /// </summary>
+    [JsonPropertyName("aimed")] public bool Aimed { get; init; }
 
     /// <summary>The heading it sits under, so a game's verbs read as a group rather than scattered
     /// through Core's own menu. Localization key; blank puts them under the game's name.</summary>
@@ -78,10 +121,15 @@ public sealed record GameAction
     /// <summary>When it is offered at all, as a question about what the player already carries. The
     /// default asks nothing, so a verb that says nothing about this is always offered.
     ///
-    /// <para>Read by the client to gray the entry out and by the server to refuse the invoke, through
-    /// the same <see cref="ActionCondition.Holds"/>. A shortcut bound to a verb whose condition does not
-    /// hold does nothing, for the same reason.</para></summary>
+    /// <para>Read by the client to withhold the verb and by the server to refuse the invoke, through
+    /// the same <see cref="ActionCondition.Holds"/>. <see cref="Unmet"/> says which of the two things the
+    /// client does with it. A shortcut bound to a verb whose condition does not hold does nothing either
+    /// way, since there is nothing to draw on a keyboard.</para></summary>
     [JsonPropertyName("when")] public ActionCondition When { get; init; } = ActionCondition.Always;
+
+    /// <summary>Gray or gone, while <see cref="When"/> does not hold. Gray by default, which is what a
+    /// verb the player could reach today wants; hidden is for one they may never be able to.</summary>
+    [JsonPropertyName("unmet")] public ActionUnmet Unmet { get; init; } = ActionUnmet.Gray;
 
     /// <summary>A key that invokes this without opening the menu, or blank for one the player has to go
     /// and find. Must be one of <see cref="GameKey.Offered"/>.
@@ -157,5 +205,8 @@ public interface IActionHandler
     /// <param name="at">The square they picked it on. A client names a place it can see; whether the
     /// player is close enough to act on it is the game's question, because how far a game's own verb
     /// reaches is not something Core could know.</param>
-    void Invoke(EntityHandle from, string actionId, EntityHandle on, in WorldPlace at);
+    /// <param name="picked">The line of the panel's list that was selected, as the id that line carried,
+    /// or blank for a verb reached from anywhere else. Core passes it through without reading it - what a
+    /// row means is entirely the game's.</param>
+    void Invoke(EntityHandle from, string actionId, EntityHandle on, in WorldPlace at, string picked);
 }

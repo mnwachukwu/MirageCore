@@ -23,8 +23,17 @@ public static class PanelSlots
     /// a game that could stack windows on a client it does not control could bury the player's own.</summary>
     public const int GamePanel = 13;
 
+    /// <summary>The game's own HELD panel - a readout that is up while something is true, which the
+    /// player did not open and cannot dismiss.
+    ///
+    /// <para>🔴 A slot of its OWN, beside the window a player opens rather than instead of it. A
+    /// score that has to be on screen during a fight is not a thing to be evicted because somebody
+    /// checked their inventory, and a game whose readout took the one declared slot would have its
+    /// windows and its readout taking turns.</para></summary>
+    public const int HeldPanel = 14;
+
     /// <summary>Number of slots — the registry and the policy table are both this long.</summary>
-    public const int Count = GamePanel + 1;
+    public const int Count = HeldPanel + 1;
 }
 
 /// <summary>
@@ -106,6 +115,10 @@ public static class PanelPolicies
         // contents are this character's own values.
         t[PanelSlots.GamePanel] = new(null, PlayerToggleable: false, BlocksMovement: false, ClosesOnLeave: true, CountsAsOpenForEscape: true);
         t[PanelSlots.Conversation] = new(null, PlayerToggleable: false, BlocksMovement: true, ClosesOnLeave: true, CountsAsOpenForEscape: true);
+        // Held: no toggle, and Escape does not count it as open - it is not the player's to dismiss, so
+        // Escape over it belongs to whatever is underneath. It still goes on leaving, because what it
+        // shows is this character's own values.
+        t[PanelSlots.HeldPanel] = new(null, PlayerToggleable: false, BlocksMovement: false, ClosesOnLeave: true, CountsAsOpenForEscape: false);
 
         // Trade is handled ahead of the generic Escape path (Escape CANCELS the trade rather than
         // closing the window), so it never reaches the open-for-escape check.

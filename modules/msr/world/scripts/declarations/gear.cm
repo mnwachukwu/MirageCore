@@ -24,7 +24,7 @@ model ItemRules
     public boolean valor;
 
     # ⚠ And the coin, also exactly one. Core spends a guild's vault gold on its own and needs no name
-    # for it; anything a RULE charges a person — a bounty, a toll — is charged in this.
+    # for it; anything a RULE charges a person — a quest fee, a toll — is charged in this.
     public boolean coin;
 
     # ⚠ And the casting reagent, also exactly one. A damaging cast spends it, which is what makes a
@@ -59,6 +59,12 @@ end model
 
 model Donation
     public integer amount;
+end model
+
+# What the wars page sends: the name of a guild to declare on. Retracting needs no form - the war is
+# picked off the list, and the line already names it.
+model Declaration
+    public string guild;
 end model
 
 # Which classes may wield which gear.

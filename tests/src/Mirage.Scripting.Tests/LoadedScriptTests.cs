@@ -76,6 +76,53 @@ public class LoadedScriptTests
         Assert.That(rules.Call("Rules", "Greet", "Grace").Output, Does.Not.Contain("Ada"));
     }
 
+    /// <summary>🔴 A handler asks the engine for something, and answering it means asking the same module
+    /// a question of its own.
+    ///
+    /// <para>This is the ordinary shape of a policy, not an exotic one: a script says <c>who.Kill(...)</c>,
+    /// the engine will not end a life without asking whether it may, and the handler that answers is in
+    /// the module the call came from. The second call arrives on the thread the first one is running on.
+    /// Handing it over would be a wait for a signal only that thread can send, with the caller parked
+    /// behind the lock that holds the answer — and a deadlock here takes the whole game thread with it,
+    /// silently: no exception, no log line, no death, and the next login never completes.</para>
+    ///
+    /// <para>The timeout is what makes this a FAILING test rather than a hanging one.</para></summary>
+    [Test]
+    [CancelAfter(10_000)]
+    public void AHandlerCanCallBackIntoItsOwnModule()
+    {
+        LoadedScript? rules = null;
+
+        var catalog = ScriptCatalog.Declare(c => c.Shared("World")
+            .Function("MayItHappen", ScriptType.Truth, [],
+                (_, _) => rules!.Call("Rules", "OnMayHappen").Value as bool? ?? false));
+
+        var (script, problems) = ScriptCompiler.CompileModule("""
+            shared model Rules
+                public boolean function OnMayHappen()
+                    yield true;
+                end function
+
+                public boolean function Go()
+                    yield World.MayItHappen();
+                end function
+            end model
+            """, "rules.cm", catalog);
+
+        Assert.That(script, Is.Not.Null, "it should have checked: " + string.Join("; ", problems));
+
+        using (rules = LoadedScript.Load(script!, ScriptLimits.None))
+        {
+            var outcome = rules.Call("Rules", "Go");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(outcome.Completed, Is.True, outcome.Fault?.ToString());
+                Assert.That(outcome.Value, Is.True);
+            });
+        }
+    }
+
     /// <summary>A module is free not to write a handler, so the engine asks rather than calling and catching.</summary>
     [Test]
     public void AskingWhatIsThereDoesNotThrow()

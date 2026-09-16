@@ -66,7 +66,8 @@ public sealed class SurveyRoute : IPacketRoute, IActionHandler
     /// <summary>A stock client picked the menu item. Same outcome, no species named: a client that was
     /// never compiled against this game cannot know one, and a note saying "something, here" is a real
     /// thing to write on a survey.</summary>
-    public void Invoke(EntityHandle from, string actionId, EntityHandle on, in WorldPlace at)
+    public void Invoke(EntityHandle from, string actionId, EntityHandle on, in WorldPlace at,
+                       string picked)
     {
         if (actionId == NoteAction) Note(from, species: 0);
         else if (actionId == IdentifyAction) Identify(from, on);

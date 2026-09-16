@@ -93,6 +93,8 @@ public sealed partial class ClientPacketHandler : IClientEvents
                 HandleWelcome(p);
                 break;
             case PlayerInGamePacket:
+                // A body just arrived. Whatever its bars read, they have always read that.
+                _state.SnapVitals = true;
                 HandlePlayerInGame();
                 break;
 

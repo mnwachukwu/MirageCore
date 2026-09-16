@@ -24,6 +24,10 @@ shared model Stats
     public string Exp = "exp";
     public string Points = "points";
 
+    # What leaving this level costs. Carried rather than worked out, because the experience bar is
+    # drawn by a client that holds numbers and runs no formulas.
+    public string NextLevel = "expnext";
+
     # ── The dials ─────────────────────────────────────────────────────────────
 
     # Every class opens with this many points across the four stats, and each level grants three

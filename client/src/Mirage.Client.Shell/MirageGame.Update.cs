@@ -140,7 +140,7 @@ public sealed partial class MirageGame : Game
                 Window.AllowUserResizing = false;
                 bool inCombat = _state.Me.LastCombatMs > 0
                     && (Environment.TickCount64 - _state.Me.LastCombatMs) < 10_000
-                    && !_state.Me.Dead;  // a corpse isn't in combat (no ghost risk) — always show Logout while dead
+                    && !_state.Me.Downed;  // a corpse isn't in combat (no ghost risk) — always show Logout while dead
                 _quitConfirm.Show(Exit, inCombat, onLogout: () =>
                 {
                     _ctx!.Sender.SendLogoutToCharSelect();

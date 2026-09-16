@@ -47,7 +47,7 @@ public class CorpsesAreWalkedOverTests
         other.Map = 1;
         other.X = 5;
         other.Y = 6;
-        other.Dead = dead;
+        other.Downed = dead;
     }
 
     /// <summary>The control: a living player on the tile still blocks.</summary>
@@ -100,7 +100,7 @@ public class CorpsesAreWalkedOverTests
         other.Map = 2;
         other.X = 5;
         other.Y = 0;                                     // the landing tile on the far side
-        other.Dead = dead;
+        other.Downed = dead;
         return (s, t, sender);
     }
 

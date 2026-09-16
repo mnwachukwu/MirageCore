@@ -16,6 +16,7 @@ shared model Levels
 
         if level >= Stats.MaxLevel
             who.Message("You gain " + worth + " experience.");
+            Levels.Mark(who);
             yield;
         end if
 
@@ -34,6 +35,23 @@ shared model Levels
 
         who.SetNumber(Stats.Level, level);
         who.SetNumber(Stats.Exp, held);
+        Levels.Mark(who);
+    end function
+
+    # What this level costs to leave, which is the number the experience bar fills toward. Written
+    # rather than derived because the CLIENT draws the bar and has no way to run a formula.
+    #
+    # ⚠ A body at the ceiling has nowhere left to fill to. Its own experience is the ceiling, so
+    # the bar reads full and stays there rather than dividing by a zero.
+    public function Mark(Player who)
+        integer level = Stats.LevelOf(who);
+
+        if level >= Stats.MaxLevel
+            who.SetNumber(Stats.NextLevel, Math.Max(1, who.Number(Stats.Exp)));
+            yield;
+        end if
+
+        who.SetNumber(Stats.NextLevel, Stats.ToNextLevel(level));
     end function
 
     # ── What a level buys ─────────────────────────────────────────────────────
@@ -53,27 +71,60 @@ shared model Levels
 
     # ── Spending it ───────────────────────────────────────────────────────────
     #
-    # ⚠ Named as TEXT because that is what a message carries. A name that is not one of the four is
-    # refused rather than quietly spending the point on nothing.
+    # ⚠ ALL OR NOTHING. The original took the whole allocation in one message and applied it in
+    # one go: an allocation that asks for more than is there buys nothing at all rather than buying
+    # what it can afford and dropping the rest. Somebody who staged four points with three left is
+    # told so and keeps all three, which is not the same as quietly getting three of what they asked.
 
-    public function Spend(Player who, string stat)
-        if who.Number(Stats.Points) < 1
-            who.Message("You have no points to spend.");
+    public function Train(Player who, integer str, integer def, integer spd, integer int)
+        # A body out of action does not train. It is lying on the floor.
+        if who.IsDowned
             yield;
         end if
 
-        if stat != Stats.Str and stat != Stats.Def and stat != Stats.Spd and stat != Stats.Int
-            who.Message("There is no stat called '" + stat + "'.");
+        if str < 0 or def < 0 or spd < 0 or int < 0
+            who.Message("You cannot take a point back out.");
             yield;
         end if
 
-        who.SetNumber(stat, who.Number(stat) + 1);
-        who.SetNumber(Stats.Points, who.Number(Stats.Points) - 1);
+        integer total = str + def + spd + int;
 
-        # Three of the four change a pool, and the fourth is cheap to recompute anyway.
+        # Nothing staged. Pressing Confirm on an empty form is not a mistake worth a message.
+        if total < 1
+            yield;
+        end if
+
+        if total > who.Number(Stats.Points)
+            who.Message("You do not have that many points to spend.");
+            yield;
+        end if
+
+        who.SetNumber(Stats.Str, who.Number(Stats.Str) + str);
+        who.SetNumber(Stats.Def, who.Number(Stats.Def) + def);
+        who.SetNumber(Stats.Spd, who.Number(Stats.Spd) + spd);
+        who.SetNumber(Stats.Int, who.Number(Stats.Int) + int);
+        who.SetNumber(Stats.Points, who.Number(Stats.Points) - total);
+
+        # One line per stat RAISED, not per point: three points into strength is one sentence, and
+        # strength with intelligence is two.
+        if str > 0
+            who.Message("You feel stronger.");
+        end if
+
+        if def > 0
+            who.Message("You feel tougher.");
+        end if
+
+        if spd > 0
+            who.Message("You feel quicker.");
+        end if
+
+        if int > 0
+            who.Message("You feel wiser.");
+        end if
+
+        # Three of the four move a ceiling, and the fourth is cheap to recompute anyway.
         Vitals.Refresh(who);
-
-        who.Message("You put a point into " + stat + ".");
     end function
 
 end model

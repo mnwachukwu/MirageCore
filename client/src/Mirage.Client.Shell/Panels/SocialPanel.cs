@@ -8,6 +8,7 @@ using Mirage.Client.Shell.Localization;
 using Mirage.Client.Shell.Logic;
 using Mirage.Client.Shell.Ui;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
 using System.Linq;

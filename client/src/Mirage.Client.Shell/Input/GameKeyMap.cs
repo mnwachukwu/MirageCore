@@ -18,6 +18,7 @@ internal static class GameKeyMap
     private static readonly Dictionary<string, Keys> Bound = new(System.StringComparer.Ordinal)
     {
         ["B"] = Keys.B,
+        ["C"] = Keys.C,
         ["E"] = Keys.E,
         ["J"] = Keys.J,
         ["K"] = Keys.K,

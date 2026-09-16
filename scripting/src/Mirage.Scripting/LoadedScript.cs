@@ -126,9 +126,15 @@ public sealed class LoadedScript : IDisposable
         ArgumentNullException.ThrowIfNull(function);
         ArgumentNullException.ThrowIfNull(arguments);
 
-        lock (_gate)
+        // A NESTED call keeps the output of the call it is inside: the outer one cleared this when it
+        // started and hands the whole lot over when it returns, so clearing here would swallow
+        // everything printed before the engine called back in.
+        if (!OnTheScriptThread)
         {
-            _printed.Clear();
+            lock (_gate)
+            {
+                _printed.Clear();
+            }
         }
 
         try
@@ -173,8 +179,13 @@ public sealed class LoadedScript : IDisposable
     private LoadedProgram Program =>
         _program ?? throw new InvalidOperationException($"'{Name}' is not loaded.");
 
+    /// <summary>What the call printed. A nested call reports nothing of its own - the outer call owns
+    /// the buffer and hands the whole of it over once, and reporting it at both depths would put every
+    /// line in the log twice.</summary>
     private string Printed()
     {
+        if (OnTheScriptThread) return string.Empty;
+
         lock (_gate)
         {
             return _printed.ToString();
@@ -217,8 +228,23 @@ public sealed class LoadedScript : IDisposable
 
     // One slot, one waiting caller. LoadedProgram is not safe to call re-entrantly or from two threads,
     // so the lock is what makes a second caller wait rather than corrupt the program's state in silence.
+    /// <summary>Whether the caller already IS the thread this module runs on.
+    ///
+    /// <para>🔴 <b>This is what lets a handler call back into the engine.</b> A script asking the
+    /// world for something the engine answers by raising a handler of its own - a death, which a policy
+    /// is asked about - arrives back here on the script thread, inside the call it came from. Handing
+    /// that work over would be a wait for a signal only this thread can send, with the caller parked
+    /// behind the same lock holding the answer: the server stops, and stops silently.</para>
+    ///
+    /// <para>There is nothing to hand over in that case. The work already belongs to this thread, on the
+    /// stack this type sized for exactly this, and the language’s own recursion limit is what bounds how
+    /// deep the nesting goes.</para></summary>
+    private bool OnTheScriptThread => System.Environment.CurrentManagedThreadId == _thread.ManagedThreadId;
+
     private object? Hand(Func<object?> work)
     {
+        if (OnTheScriptThread) return work();
+
         lock (_gate)
         {
             _work = work;

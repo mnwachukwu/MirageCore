@@ -135,7 +135,9 @@ public sealed record GameActionsPacket : IPacket
         [property: JsonPropertyName("key")] string Key,
         [property: JsonPropertyName("when")] ActionCondition When,
         [property: JsonPropertyName("icon")] string Icon,
-        [property: JsonPropertyName("interacts")] bool Interacts = false);
+        [property: JsonPropertyName("interacts")] bool Interacts = false,
+        [property: JsonPropertyName("aimed")] bool Aimed = false,
+        [property: JsonPropertyName("unmet")] ActionUnmet Unmet = ActionUnmet.Gray);
 }
 
 /// <summary>
@@ -169,6 +171,11 @@ public sealed record InvokeActionPacket : IPacket
     /// <summary>The NPC slot on <see cref="MapNum"/> it was used on, or 0. Resolved against the map the
     /// client named, so a guest visiting from elsewhere resolves to the body it actually is.</summary>
     [JsonPropertyName("npc")] public int NpcSlot { get; init; }
+
+    /// <summary>Which line of the panel's list was picked, as the id that line carries, or blank where
+    /// the verb came from anywhere else. Passed through untouched: Core has no idea what a game's rows
+    /// mean, so it neither reads it nor checks it.</summary>
+    [JsonPropertyName("picked")] public string Picked { get; init; } = string.Empty;
 }
 
 /// <summary>

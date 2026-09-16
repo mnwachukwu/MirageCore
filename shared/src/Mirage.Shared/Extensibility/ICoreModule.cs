@@ -109,6 +109,10 @@ public interface ICoreBuilder
     /// comes back. Declare none and <c>DeathSystem.Kill</c> moves the body and takes nothing.</summary>
     void AddDeathPolicy(IDeathPolicy policy);
 
+    /// <summary>What this game says about moving under your own power — whether a body can still
+    /// manage a run, and what a run costs it. Declare none and every body runs for free, forever.</summary>
+    void AddMovePolicy(IMovePolicy policy);
+
     /// <summary>What this game says about using something out of a bag. Every policy must allow it; the
     /// first refusal stops the use and is the answer.</summary>
     void AddUsePolicy(IUsePolicy policy);

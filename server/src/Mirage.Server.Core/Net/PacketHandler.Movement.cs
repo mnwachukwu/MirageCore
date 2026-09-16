@@ -22,7 +22,7 @@ public sealed partial class PacketHandler
     private void HandlePlayerMove(int index, PlayerMovePacket p)
     {
         if (!_pm[index].IsPlaying || _pm[index].GettingMap) return;
-        if (_pm[index].Char.Dead) return;  // a corpse can't move (client freezes this; server enforces)
+        if (_pm[index].Char.Downed) return;  // a corpse can't move (client freezes this; server enforces)
         if (p.Dir > Direction.Right)
         {
             HackingAttempt(index, "Invalid Direction");
@@ -41,7 +41,7 @@ public sealed partial class PacketHandler
     private void HandlePlayerDir(int index, PlayerDirPacket p)
     {
         if (!_pm[index].IsPlaying || _pm[index].GettingMap) return;
-        if (_pm[index].Char.Dead) return;  // a corpse can't turn
+        if (_pm[index].Char.Downed) return;  // a corpse can't turn
         if (p.Dir > Direction.Right)
         {
             HackingAttempt(index, "Invalid Direction");
@@ -67,7 +67,7 @@ public sealed partial class PacketHandler
 
         // A corpse stays where it fell. Refused above the cooldown gate so a dead player is never charged
         // the cooldown for a warp that did not happen.
-        if (vp.Dead)
+        if (vp.Downed)
         {
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.Command_HomeWhileDead,
                 new ChatMetadata(GameColor.BrightRed, ChatChannel.System));

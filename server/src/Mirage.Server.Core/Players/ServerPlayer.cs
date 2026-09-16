@@ -88,6 +88,12 @@ public sealed class ServerPlayer
     public int CharNum { get; set; }
 
     public long AttackTimer { get; set; }
+
+    /// <summary>Where a body that is out of action comes back to, settled when it went down. 0 means
+    /// nothing chose, and the world’s own home answers instead.</summary>
+    public int RiseMap { get; set; }
+    public int RiseX { get; set; }
+    public int RiseY { get; set; }
     /// <summary>How long the current cooldown runs for, in milliseconds, or 0 to use the engine's own
     /// beat. Set from what a game asked for: a rule that says two seconds gets two seconds.</summary>
     public long AttackHoldMs { get; set; }

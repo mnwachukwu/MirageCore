@@ -117,14 +117,15 @@ public sealed class ForageModule : ICoreModule, IWorldObserver, IActionHandler
     }
 
     /// <summary>They picked the menu item, or pressed Q.</summary>
-    public void Invoke(EntityHandle from, string actionId, EntityHandle on, in WorldPlace at)
+    public void Invoke(EntityHandle from, string actionId, EntityHandle on, in WorldPlace at,
+                       string picked)
     {
         if (_world is not { } world || actionId != Pick) return;
         if (world.AttributesOf(from) is not { } bag) return;
 
-        long picked = (bag.TryGet(Baskets, out var had) ? had.AsLong() : 0) + 1;
+        long gathered = (bag.TryGet(Baskets, out var had) ? had.AsLong() : 0) + 1;
 
-        world.SetAttribute(from, Baskets, AttributeValue.From(picked));
-        world.Tell(from, $"You pick what is here. That is {picked} so far.");
+        world.SetAttribute(from, Baskets, AttributeValue.From(gathered));
+        world.Tell(from, $"You pick what is here. That is {gathered} so far.");
     }
 }

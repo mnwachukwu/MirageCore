@@ -33,7 +33,7 @@ public sealed partial class NpcAiSystem : GameSystem
         foreach (int i in _world.MapObservers[mapNum])
         {
             if (!_pm[i].IsPlaying) continue;
-            if (_pm[i].Char.Dead) continue;  // never notice a corpse: it would re-lock every idle beat
+            if (_pm[i].Char.Downed) continue;  // never notice a corpse: it would re-lock every idle beat
             if (_pm[i].Char.GodMode) continue;    // nor an observer, which nothing can see and nothing can reach
             var p = _pm[i].Char;
             var gp = grid.PositionOf(p.Map);
@@ -169,6 +169,21 @@ public sealed partial class NpcAiSystem : GameSystem
         mn.BeginRushEngagement();
         AnnounceTarget(found, hasTarget: true);
         return true;
+    }
+
+    /// <summary>Whether a player a creature is HOLDING is still worth holding.
+    ///
+    /// <para>The same three answers <see cref="FindNoticeablePlayer"/> screens on, asked again every beat
+    /// because all three change while a chase is running. A body that goes out of action mid-chase is the
+    /// one that matters: without this the creature keeps reaching it, and a game whose combat kills on
+    /// contact re-runs its whole death path on a corpse, every beat, escalating whatever that death
+    /// costs.</para></summary>
+    private bool StillWorthChasing(int index)
+    {
+        if (index < 1 || index > _pm.Slots) return false;
+
+        var sp = _pm[index];
+        return sp.IsPlaying && !sp.Char.Downed && !sp.Char.GodMode;
     }
 
     /// <summary>Let go of whatever a creature was chasing, leaving it to its record's own behavior again.

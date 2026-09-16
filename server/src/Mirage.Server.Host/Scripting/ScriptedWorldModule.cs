@@ -45,7 +45,7 @@ namespace Mirage.Server.Host.Scripting;
 /// </summary>
 public sealed class ScriptedWorldModule
     : ICoreModule, IWorldObserver, ITickWork, IActionHandler, IPacketRoute,
-      IDeathPolicy, ILingerPolicy, IUsePolicy, ILootPolicy, IDisposable
+      IDeathPolicy, ILingerPolicy, IMovePolicy, IUsePolicy, ILootPolicy, IDisposable
 {
     /// <summary>The folder inside a world that holds its rules.</summary>
     public const string ScriptsFolder = "scripts";
@@ -82,15 +82,24 @@ public sealed class ScriptedWorldModule
             "they have left, while their record is still readable"),
         new("OnPlayerMoved", 3, "function OnPlayerMoved(Player who, integer fromX, integer fromY)",
             "every accepted step, seam crossings included"),
-        new("OnAction", 6,
-            "function OnAction(Player who, string action, string on, integer map, integer x, integer y)",
-            "the player picked one of this module's own verbs; 'on' names the body it was used on, "
-            + "and is blank for a verb offered on a square or on the HUD"),
+        new("OnAction", 7,
+            "function OnAction(Player who, string action, string on, integer map, integer x, integer y, "
+            + "string picked)",
+            "the player picked one of this module's own verbs; 'on' names the body it was used on, and "
+            + "is blank for a verb offered on a square or on the HUD; 'picked' is the line of a panel's "
+            + "list that was selected, and is blank everywhere else", Was: 6),
         new("OnTick", 0, "function OnTick()",
             "the module's tick came round, however often game.TickEvery asked for"),
         new("OnPlayerTick", 1, "function OnPlayerTick(Player who)",
             "the same tick, once for each player in the world, which a script has no other way "
             + "to walk"),
+        new("OnMayRun", 1, "string function OnMayRun(Player who)",
+            "somebody is about to take a step at a run; yield a reason to bring them down to a walk, "
+            + "or blank to let them run. Asked on every running step, so keep it to reading a number "
+            + "off the body"),
+        new("OnRan", 1, "function OnRan(Player who)",
+            "they took a step at a run, under their own power, onto a tile of the same map. What a run "
+            + "costs is charged here - a walk, a warp and a step across a map edge never reach it"),
         new("OnMayDie", 2, "string function OnMayDie(Player who, string cause)",
             "somebody is about to die; yield a reason to stop it, or blank to let it happen"),
         new("OnDied", 3, "function OnDied(Player who, Player killer, string cause)",
@@ -99,6 +108,11 @@ public sealed class ScriptedWorldModule
             + "where they fell, so anything shed lands on the tile they can go back for. 'killer' is "
             + "nobody when the world itself did it, which Player.IsHere answers. Call "
             + "Player.RespawnAt from in here to say where they come back"),
+        new("OnRose", 1, "function OnRose(Player who)",
+            "they got up, and are standing where they will actually be. The other end of being put out "
+            + "of action: Core puts NOTHING back, so a body comes back exactly as it fell unless this "
+            + "says otherwise - full pools, an empty bag, a penalty that lingers. Called after the move, "
+            + "so a rule writing onto them is writing onto the body in its new place"),
         new("OnLoot", 1, "function OnLoot(Spoils drop)",
             "a creature is about to drop one line of its table, before the roll. Called once per "
             + "line, so a table of three things calls it three times. Write on what you are handed: "
@@ -152,6 +166,8 @@ public sealed class ScriptedWorldModule
     private bool _onJoined, _onLeft, _onMoved, _onTick, _onPlayerTick, _onMayDie, _onDied, _onLinger;
     private bool _onLoot;
     private bool _onAction, _onMessage, _onContact, _onNpcContact, _onNpcSpawned, _onItemUsed, _onWarped;
+    private bool _onRose;
+    private bool _onMayRun, _onRan;
     private bool _onMayUse;
 
     /// <summary>The messages this world's rules declared, which is also what this route owns.</summary>
@@ -235,7 +251,18 @@ public sealed class ScriptedWorldModule
 
         foreach (ScriptHandler handler in Handlers)
         {
-            if (_loaded.Offers(Rules, handler.Name, handler.Arity)) _offered.Add(handler.Name);
+            // The signature as it stands, then the one it used to be. A handler only ever GAINS
+            // arguments here, and Compass matches on name AND count - so a world written before the
+            // gain is offered the shorter call rather than silently never being called at all, which
+            // presents as a game's verbs quietly doing nothing.
+            foreach (int arity in handler.Arities)
+            {
+                if (!_loaded.Offers(Rules, handler.Name, arity)) continue;
+
+                _offered.Add(handler.Name);
+                _takes[handler.Name] = arity;
+                break;
+            }
         }
 
         Remember();
@@ -249,6 +276,7 @@ public sealed class ScriptedWorldModule
         // one a script did not write would put a call into the death path for no answer.
         if (_onMayDie || _onDied) builder.AddDeathPolicy(this);
         if (_onLinger) builder.AddLingerPolicy(this);
+        if (_onMayRun || _onRan) builder.AddMovePolicy(this);
         if (_onMayUse) builder.AddUsePolicy(this);
         if (_onLoot) builder.AddLootPolicy(this);
 
@@ -384,8 +412,11 @@ public sealed class ScriptedWorldModule
         _onTick = _offered.Contains("OnTick");
         _onPlayerTick = _offered.Contains("OnPlayerTick");
         _onMayDie = _offered.Contains("OnMayDie");
+        _onMayRun = _offered.Contains("OnMayRun");
+        _onRan = _offered.Contains("OnRan");
         _onDied = _offered.Contains("OnDied");
         _onLoot = _offered.Contains("OnLoot");
+        _onRose = _offered.Contains("OnRose");
         _onLinger = _offered.Contains("OnLinger");
         _onMessage = _offered.Contains("OnMessage");
         _onContact = _offered.Contains("OnContact");
@@ -479,13 +510,17 @@ public sealed class ScriptedWorldModule
     /// one the player could see; whether they are close enough to do that particular thing is not
     /// something the engine could know.</para>
     /// </summary>
-    public void Invoke(EntityHandle from, string actionId, EntityHandle on, in WorldPlace at)
+    public void Invoke(EntityHandle from, string actionId, EntityHandle on, in WorldPlace at,
+                       string picked)
     {
         // The target reaches a script as its NAME rather than as a Player, because the boundary has no
         // way to carry "somebody, or nobody" — a registered type has no optional form. Blank is the
         // answer for a verb offered on a square or on the HUD, which is most of them.
         if (_onAction)
-            Run("OnAction", from, actionId, World.NameOf(on), (long)at.Map, (long)at.X, (long)at.Y);
+        {
+            Run("OnAction", from, actionId, World.NameOf(on),
+                (long)at.Map, (long)at.X, (long)at.Y, picked);
+        }
     }
 
     // ── What it does on the tick ──────────────────────────────────────────────
@@ -584,6 +619,26 @@ public sealed class ScriptedWorldModule
         if (who.IsSet && who == _risen) _risesAt = new Respawn(map, x, y);
     }
 
+    /// <summary>Whether somebody can still manage a run, asked of the rules.
+    ///
+    /// <para><b>A handler that fails lets them run</b>, for the same reason a failed death handler
+    /// allows the death: a world where nobody can run because a script has a bug in it is worse and
+    /// much harder to notice, since a refusal looks exactly like an empty stamina bar.</para></summary>
+    public Refusal MayRun(EntityHandle who)
+    {
+        if (!_onMayRun) return Refusal.Allow;
+
+        string reason = Ask("OnMayRun", who) as string ?? string.Empty;
+
+        return reason.Length > 0 ? Refusal.Deny(reason) : Refusal.Allow;
+    }
+
+    /// <summary>They ran a step, and the game charges for it.</summary>
+    public void OnRan(EntityHandle who)
+    {
+        if (_onRan) Run("OnRan", who);
+    }
+
     /// <summary>Whether somebody may use a thing, asked of the rules.
     ///
     /// <para><b>A handler that fails ALLOWS the use</b>, for the same reason a failed death handler
@@ -598,6 +653,12 @@ public sealed class ScriptedWorldModule
         string reason = said as string ?? string.Empty;
 
         return reason.Length > 0 ? Refusal.Deny(reason) : Refusal.Allow;
+    }
+
+    /// <summary>They got up, and the game says what they got up with.</summary>
+    public void OnRose(EntityHandle who)
+    {
+        if (_onRose) Run("OnRose", who);
     }
 
     /// <summary>What one line of a dead creature's table is worth, asked of the rules.
@@ -634,7 +695,7 @@ public sealed class ScriptedWorldModule
     /// </summary>
     private void Run(string handler, params object?[] arguments)
     {
-        ScriptOutcome outcome = _loaded!.Call(Rules, handler, arguments);
+        ScriptOutcome outcome = _loaded!.Call(Rules, handler, Fitting(handler, arguments));
 
         if (outcome.Output.Length > 0) Log.Information("Scripts: {Output}", outcome.Output.TrimEnd());
         if (outcome.Fault is null) return;
@@ -650,7 +711,7 @@ public sealed class ScriptedWorldModule
     /// caller reads as "the engine's own default" rather than as a decision.</summary>
     private object? Ask(string handler, params object?[] arguments)
     {
-        ScriptOutcome outcome = _loaded!.Call(Rules, handler, arguments);
+        ScriptOutcome outcome = _loaded!.Call(Rules, handler, Fitting(handler, arguments));
 
         if (outcome.Output.Length > 0) Log.Information("Scripts: {Output}", outcome.Output.TrimEnd());
         if (outcome.Fault is null) return outcome.Value;
@@ -660,6 +721,22 @@ public sealed class ScriptedWorldModule
 
         return null;
     }
+
+    /// <summary>The arguments this world's own version of that handler takes.
+    ///
+    /// <para>Trimmed rather than padded, because a handler grows by GAINING arguments on the end: the
+    /// older signature is a prefix of the newer one, so a world that wrote the older one is handed
+    /// exactly what it asked for and never sees the rest.</para></summary>
+    private object?[] Fitting(string handler, object?[] arguments)
+    {
+        if (!_takes.TryGetValue(handler, out int arity) || arity >= arguments.Length) return arguments;
+
+        return arguments[..arity];
+    }
+
+    /// <summary>How many arguments each offered handler was written to take. One entry per handler this
+    /// world actually wrote.</summary>
+    private readonly Dictionary<string, int> _takes = new(StringComparer.Ordinal);
 
     /// <summary>Whether a fault is the kind that will happen again on the next call with the same
     /// rules — which is all of them except a script raising something for a reason of its own.</summary>
@@ -1382,8 +1459,81 @@ public sealed class ScriptedWorldModule
                 + "than by writing the number: a vault that went down with nothing in the spending log "
                 + "is money a guild cannot account for. False when the vault does not hold that much, "
                 + "so this is the check as well as the payment.")
+            .Function("WalkMs", ScriptType.Integer, [], (_, _) => (long)World.WalkMs,
+                "How long one tile takes at a walk, in thousandths of a second. The same for "
+                + "everybody, because a walk is a walk - it is Player.RunMs that a body's Pace moves. "
+                + "Divide this by theirs to say how much faster running is for them.")
+            .Function("KeptNumber", ScriptType.Integer,
+                [ScriptType.Text.Named("store"), ScriptType.Text.Named("key"), ScriptType.Text.Named("field")],
+                (_, a) => World.Kept(a.AsText(0), a.AsText(1), a.AsText(2)) is { } held ? held.AsLong() : 0L,
+                "One field out of one key of one of your game's own stores. Zero for a store, a key or a "
+                + "field that is not there. A store is a set of named bags: World.Number holds what "
+                + "there is one of, and this holds what there are many of - a row per player on a "
+                + "ladder, a tally per region, whatever your rules pile up while the world runs.")
+            .Function("KeptText", ScriptType.Text,
+                [ScriptType.Text.Named("store"), ScriptType.Text.Named("key"), ScriptType.Text.Named("field")],
+                (_, a) => World.Kept(a.AsText(0), a.AsText(1), a.AsText(2)) is { } held
+                          ? held.AsText() : string.Empty,
+                "The same, as text. Empty for one that is not there.")
+            .Function("KeptTruth", ScriptType.Truth,
+                [ScriptType.Text.Named("store"), ScriptType.Text.Named("key"), ScriptType.Text.Named("field")],
+                (_, a) => World.Kept(a.AsText(0), a.AsText(1), a.AsText(2)) is { } held && held.AsBool(),
+                "The same, as a yes or no. False for one that is not there.")
+            .Action("SetKeptNumber",
+                [ScriptType.Text.Named("store"), ScriptType.Text.Named("key"),
+                 ScriptType.Text.Named("field"), ScriptType.Integer.Named("amount")],
+                (_, a) =>
+                {
+                    World.SetKept(a.AsText(0), a.AsText(1), a.AsText(2), AttributeValue.From(a.AsInteger(3)));
+                    return null;
+                },
+                "Writes one, making the store and the key the first time each is used. Nothing is "
+                + "declared and there is no slot count: a store is as big as what you have put in it. "
+                + "Kept with the world's own values, so it reaches disk on the world's save beat rather "
+                + "than on this call - what has to survive the instant it happens belongs on a character "
+                + "or a guild, which save on write.")
+            .Action("SetKeptText",
+                [ScriptType.Text.Named("store"), ScriptType.Text.Named("key"),
+                 ScriptType.Text.Named("field"), ScriptType.Text.Named("value")],
+                (_, a) =>
+                {
+                    World.SetKept(a.AsText(0), a.AsText(1), a.AsText(2), AttributeValue.From(a.AsText(3)));
+                    return null;
+                },
+                "The same, with text.")
+            .Action("SetKeptTruth",
+                [ScriptType.Text.Named("store"), ScriptType.Text.Named("key"),
+                 ScriptType.Text.Named("field"), ScriptType.Truth.Named("value")],
+                (_, a) =>
+                {
+                    World.SetKept(a.AsText(0), a.AsText(1), a.AsText(2), AttributeValue.From(a.AsTruth(3)));
+                    return null;
+                },
+                "The same, with a yes or no.")
+            .Function("HasKept", ScriptType.Truth,
+                [ScriptType.Text.Named("store"), ScriptType.Text.Named("key")],
+                (_, a) => World.HasKept(a.AsText(0), a.AsText(1)),
+                "Whether that store holds anything under that key at all - the question to ask before "
+                + "counting a zero as a score somebody earned rather than a row that was never written.")
+            .Action("Forget", [ScriptType.Text.Named("store"), ScriptType.Text.Named("key")],
+                (_, a) =>
+                {
+                    World.Forget(a.AsText(0), a.AsText(1));
+                    return null;
+                },
+                "Drops that key and every field under it. A store with nothing left in it goes too.")
+            .Function("KeptCount", ScriptType.Integer, [ScriptType.Text.Named("store")],
+                (_, a) => (long)World.KeptCount(a.AsText(0)),
+                "How many keys that store holds. Zero for one nothing was ever put in.")
+            .Function("KeptKeyAt", ScriptType.Text,
+                [ScriptType.Text.Named("store"), ScriptType.Integer.Named("index")],
+                (_, a) => World.KeptKeyAt(a.AsText(0), (int)a.AsInteger(1)),
+                "The index-th key of that store, counting from one, or empty past the end. Walk a store "
+                + "with 'loop for i = 1 to World.KeptCount(store)'. Ordered by the key itself rather "
+                + "than by when it arrived, so a pass reads the same way twice running and the same way "
+                + "after a restart.")
             .Function("Records", ScriptType.Integer, [ScriptType.Text.Named("records")],
-                (_, a) => (long)World.RecordsOf(a.AsText(0)).Count,
+                (_, a) => (long)World.RecordCount(a.AsText(0)),
                 "How many records of that kind this world holds, counting blank slots. Zero for a kind "
                 + "nobody declared.")
             .Function("Record", ScriptType.Text,
@@ -1605,8 +1755,19 @@ public sealed class ScriptedWorldModule
             .Action("OnHud", [], (v, _) => Verbal(v).OnHud(),
                 "Offer it as a button on the HUD, for a verb about the player rather than about "
                 + "something they are pointing at.")
+            .Action("Aimed", [], (v, _) => Verbal(v).Aimed(),
+                "Act on whatever they have TARGETED, when they used it without pointing at anything. "
+                + "Targeting is the engine's: Tab picks the next body, Ctrl+Tab picks themselves, and a "
+                + "click picks whoever was clicked. So a verb that can go either way - a spell that "
+                + "heals or harms - is ONE verb, and aiming it inward needs nothing of yours. Leave it "
+                + "off for a verb about a place.")
+            .Action("Nowhere", [], (v, _) => Verbal(v).Nowhere(),
+                "Offer it nowhere on its own: YOU say where it appears. A button on one of your own "
+                + "panels, a choice in one of your conversations, or a key you bound. What a verb "
+                + "that belongs to a screen wants - a guild's vault, a training hall - so that "
+                + "right-clicking a passing shopkeeper is not how a player reaches it.")
             .Action("Key", [ScriptType.Text.Named("key")], (v, a) => Verbal(v).Key(a.AsText(0)),
-                "A key that reaches it without the menu: B, E, J, K, N, P, Q, R, T, U, Y, or Z. The key "
+                "A key that reaches it without the menu: " + GameKey.Listed + ". The key "
                 + "acts on the square the player faces.")
             .Action("Icon", [ScriptType.Text.Named("glyph")], (v, a) => Verbal(v).Icon(a.AsText(0)),
                 "The glyph beside it. One of: " + GameIcon.Listed + ". A name that is not one of those is refused, because a glyph nobody drew is a section that looks like every other section.")
@@ -1617,10 +1778,21 @@ public sealed class ScriptedWorldModule
             .Action("Opens", [ScriptType.Text.Named("panel")], (v, a) => Verbal(v).Opens(a.AsText(0)),
                 "The panel it opens, by the id given to game.Panel. A panel that was never declared "
                 + "is refused by name, so you get an error instead of a button that does nothing.")
+            .Action("Hidden", [],
+                (v, a) => Verbal(v).Hidden(),
+                "Not drawn at all while its condition does not hold, rather than drawn dim. What a verb "
+                + "about something a player may never have wants - a guild hall, a mount - since a dim "
+                + "entry that never lights up is one they read past every time. On the HUD the buttons "
+                + "below it close the gap.")
+            .Action("Grayed", [],
+                (v, a) => Verbal(v).Grayed(),
+                "Drawn dim and unclickable while its condition does not hold, which is what happens "
+                + "anyway unless Hidden is asked for. Worth saying out loud on a verb whose condition a "
+                + "player can go and satisfy, since the dim entry is how they learn it is there.")
             .Action("NeedsAtLeast", [ScriptType.Text.Named("key"), ScriptType.Integer.Named("least")],
                 (v, a) => Verbal(v).NeedsAtLeast(a.AsText(0), a.AsInteger(1)),
-                "Offered only to a body carrying at least that much under that key. Below it the entry "
-                + "is grayed out instead of hidden, so a player can still see the verb exists.")
+                "Offered only to a body carrying at least that much under that key. Below it the verb "
+                + "is drawn dim, or not at all if Hidden was asked for.")
             .Action("NeedsCarrying", [ScriptType.Text.Named("key")],
                 (v, a) => Verbal(v).NeedsCarrying(a.AsText(0)),
                 "Offered only to a body that carries that key at all.")
@@ -1630,10 +1802,38 @@ public sealed class ScriptedWorldModule
 
         panel
             .Action("Key", [ScriptType.Text.Named("key")], (p, a) => Screen(p).Key(a.AsText(0)),
-                "A key that opens it: B, E, J, K, N, P, Q, R, T, U, Y, or Z.")
+                "A key that opens it: " + GameKey.Listed + ".")
             .Action("Button", [ScriptType.Text.Named("caption"), ScriptType.Text.Named("verb")],
                 (p, a) => Screen(p).Button(a.AsText(0), a.AsText(1)),
                 "A button along its bottom: a caption, and the id of a verb it calls.")
+            .Action("Smallest", [ScriptType.Integer.Named("wide"), ScriptType.Integer.Named("tall")],
+                (p, a) => Screen(p).Smallest(a.AsInteger(0), a.AsInteger(1)),
+                "How small the player may drag it. Every panel resizes; this is the floor, and it "
+                + "stops a drag turning yours into a title bar with nothing under it. Say nothing and "
+                + "the engine's own floor applies, which knows nothing about what you put on it.")
+            .Action("OnlyWhile", [ScriptType.Text.Named("key"), ScriptType.Integer.Named("least")],
+                (p, a) => Screen(p).OnlyWhile(a.AsText(0), a.AsInteger(1)),
+                "Only lets it open while that key reads at least that much, and closes it if that stops "
+                + "being true while it is up. Its key and any verb that opens it are refused too. What a "
+                + "screen about something a player might not HAVE wants - a guild, a mount, a house - "
+                + "since otherwise it opens onto blank rows.")
+            .Action("HeldWhile", [ScriptType.Text.Named("key"), ScriptType.Integer.Named("least")],
+                (p, a) => Screen(p).HeldWhile(a.AsText(0), a.AsInteger(1)),
+                "Puts it up while that key reads at least that much, and takes it down when it stops - "
+                + "with no close button, because the player did not open it. What a readout wants: a "
+                + "score during a fight, the wait over a body that cannot act, the state of ground "
+                + "being fought over. It has a slot of its own, so it never pushes aside a window "
+                + "somebody opened. Give it a button for the way OUT of whatever it is about - leaving, "
+                + "getting up - because closing the window and leaving the thing are not the same act.")
+            .Action("Row", [ScriptType.Text.Named("caption"), ScriptType.Text.Named("id")],
+                (p, a) => Screen(p).Row(a.AsText(0), a.AsText(1)),
+                "One line of a list the player picks ONE of. Both are attribute keys read off the "
+                + "player: the first is what the line reads as, the second what it IS - a line saying "
+                + "'Ironhelm, at war since Tuesday' and carrying the guild number that names. Whatever "
+                + "is picked arrives as 'picked' in OnAction, on whichever button they press next. A "
+                + "line whose caption is blank is not drawn, so declare as many as the thing behind "
+                + "them can hold and fill the ones that are real. Pass an empty id to let the caption "
+                + "be its own. One list to a panel.")
             .Action("Icon", [ScriptType.Text.Named("glyph")],
                 (p, a) => Screen(p).Icon(a.AsText(0)),
                 "The glyph beside it. One of: " + GameIcon.Listed + ". A name that is not one of those is refused, because a glyph nobody drew is a section that looks like every other section.")
@@ -1654,7 +1854,9 @@ public sealed class ScriptedWorldModule
             .Action("Badge", [ScriptType.Text.Named("key"), ScriptType.Text.Named("caption"), ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
                 (p, a) => Screen(p).Badge(a.AsText(0), a.AsText(1),
                     (int)a.AsInteger(2), (int)a.AsInteger(3), (int)a.AsInteger(4)),
-                "The same, drawn as a small tag with no caption.")
+                "The same, drawn as a small colored tag. A key holding a WORD puts the word in the tag "
+                + "and the caption beside it; a key holding a yes or no puts the caption itself in the "
+                + "tag when it is yes, and draws nothing at all when it is no.")
             .Action("Meter", [ScriptType.Text.Named("key"), ScriptType.Text.Named("outOf"), ScriptType.Text.Named("caption"), ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
                 (p, a) => Screen(p).Meter(a.AsText(0), a.AsText(1), a.AsText(2),
                     (int)a.AsInteger(3), (int)a.AsInteger(4), (int)a.AsInteger(5)),
@@ -1790,6 +1992,19 @@ public sealed class ScriptedWorldModule
             .Value("IsRunning", ScriptType.Truth, (who, _) => World.IsRunning(Who(who)),
                 "Whether they are running or walking right now. What running costs is up to you; the "
                 + "engine moves the body, and this is how a rule finds out.")
+            .Value("Pace", ScriptType.Integer, (who, _) => (long)World.PaceOf(Who(who)),
+                "How quick this body is. Zero is the baseline everybody starts at and higher is "
+                + "faster, with diminishing returns and a ceiling the engine picks - so a game with a "
+                + "speed stat writes the stat here and never has to know the curve. It buys a faster "
+                + "RUN; a walk is a walk.")
+            .Action("SetPace", [ScriptType.Integer.Named("pace")],
+                (who, a) => { World.SetPace(Who(who), (int)a.AsInteger(0)); return null; },
+                "Says how quick they are. A game with a speed stat has no other way to make it mean "
+                + "anything: how far a body gets per second is the engine's, and this is what it "
+                + "reads. Write it whenever the stat behind it moves.")
+            .Value("RunMs", ScriptType.Integer, (who, _) => (long)World.RunMsOf(Who(who)),
+                "How long one tile takes them at a run, in thousandths of a second - what their Pace "
+                + "bought. Divide World.WalkMs by it to say how much faster running is.")
 
             // The five the engine already keeps, and it keeps them for PLAYERS. An NPC's engaged
             // state has nowhere to live yet, so these are here and not on Npc.
@@ -1934,6 +2149,15 @@ public sealed class ScriptedWorldModule
                     a.AsText(0), a.AsText(1), a.AsText(2),
                     (int)a.AsInteger(3), (int)a.AsInteger(4), (int)a.AsInteger(5)),
                 "A sidebar bar, filled by one key against another.")
+            .Action("Slot", [ScriptType.Text.Named("key"), ScriptType.Text.Named("caption"), ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
+                (b, a) => Build(b).Row(DisplaySurfaces.CharacterSelect, DisplayStyle.Text,
+                    a.AsText(0), string.Empty, a.AsText(1),
+                    (int)a.AsInteger(2), (int)a.AsInteger(3), (int)a.AsInteger(4)),
+                "A row on the CHARACTER SELECT screen, beside a saved character's name. The only place "
+                + "you can say anything about a body the engine is not running - a level, a class, a "
+                + "guild - and without one the screen where somebody picks between three characters "
+                + "offers three names and a sprite. Read off the saved character, so anything you want "
+                + "shown here has to be an attribute you keep on them.")
             .Action("Bar",
                 [ScriptType.Text.Named("key"), ScriptType.Text.Named("outOf"), ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
                 (b, a) => Build(b).Bar(a.AsText(0), a.AsText(1),
@@ -2204,6 +2428,14 @@ public sealed class ScriptedWorldModule
 
         public object? OnHud() => Offered(ActionSurface.Hud);
 
+        public object? Nowhere() => Offered(ActionSurface.None);
+
+        public object? Aimed()
+        {
+            verb.Aimed = true;
+            return null;
+        }
+
         public object? Key(string key)
         {
             verb.Key = key;
@@ -2221,6 +2453,18 @@ public sealed class ScriptedWorldModule
         /// <para>Both halves are this one condition: the client grays the entry and the server refuses
         /// the call, and neither is told separately. A verb a player can see but cannot use yet reads as
         /// a game with more in it than a verb that is simply missing.</para></summary>
+        public object? Hidden()
+        {
+            verb.Unmet = ActionUnmet.Hide;
+            return null;
+        }
+
+        public object? Grayed()
+        {
+            verb.Unmet = ActionUnmet.Gray;
+            return null;
+        }
+
         public object? NeedsAtLeast(string key, long howMany)
         {
             verb.When = ActionCondition.AtLeast(key, howMany);
@@ -2269,6 +2513,32 @@ public sealed class ScriptedWorldModule
         public object? Button(string label, string actionId)
         {
             panel.Buttons.Add(new PanelButton(label, actionId));
+            return null;
+        }
+
+        public object? Smallest(long wide, long tall)
+        {
+            panel.MinWidth = (int)Math.Clamp(wide, 0, int.MaxValue);
+            panel.MinHeight = (int)Math.Clamp(tall, 0, int.MaxValue);
+            return null;
+        }
+
+        public object? HeldWhile(string key, long least)
+        {
+            panel.Held = true;
+            panel.While = ActionCondition.AtLeast(key, least);
+            return null;
+        }
+
+        public object? OnlyWhile(string key, long least)
+        {
+            panel.While = ActionCondition.AtLeast(key, least);
+            return null;
+        }
+
+        public object? Row(string labelKey, string idKey)
+        {
+            panel.Rows.Add(new PanelRow(labelKey, idKey));
             return null;
         }
 
@@ -2508,6 +2778,11 @@ public sealed class ScriptedWorldModule
                     Key = panel.Key,
                     Icon = panel.Icon,
                     Buttons = [.. panel.Buttons],
+                    Rows = [.. panel.Rows],
+                    MinWidth = panel.MinWidth,
+                    MinHeight = panel.MinHeight,
+                    Held = panel.Held,
+                    While = panel.While,
                     Asks = panel.Asks,
                     SendLabelKey = panel.SendLabel,
                     Inputs = [.. panel.Inputs],
@@ -2560,8 +2835,10 @@ public sealed class ScriptedWorldModule
                 Key = verb.Key,
                 Icon = verb.Icon,
                 Interacts = verb.Interacts,
+                Aimed = verb.Aimed,
                 OpensPanel = opens,
                 When = verb.When,
+                Unmet = verb.Unmet,
             }));
         }
 
@@ -3173,8 +3450,10 @@ public sealed class ScriptedWorldModule
             public string Key { get; set; } = string.Empty;
             public string Icon { get; set; } = string.Empty;
             public bool Interacts { get; set; }
+            public bool Aimed { get; set; }
             public string Opens { get; set; } = string.Empty;
             public ActionCondition When { get; set; } = ActionCondition.Always;
+            public ActionUnmet Unmet { get; set; } = ActionUnmet.Gray;
         }
 
         internal sealed class PendingPanel
@@ -3186,6 +3465,11 @@ public sealed class ScriptedWorldModule
             public string Key { get; set; } = string.Empty;
             public string Icon { get; set; } = string.Empty;
             public List<PanelButton> Buttons { get; } = [];
+            public List<PanelRow> Rows { get; } = [];
+            public int MinWidth { get; set; }
+            public int MinHeight { get; set; }
+            public bool Held { get; set; }
+            public ActionCondition While { get; set; } = ActionCondition.Always;
             public string Asks { get; set; } = string.Empty;
             public string SendLabel { get; set; } = string.Empty;
             public List<PanelInput> Inputs { get; } = [];
@@ -3199,4 +3483,14 @@ public sealed class ScriptedWorldModule
 /// <param name="Signature">How it is written, without the <c>public</c> in front. A handler that
 /// yields something carries its type there, because that is where Compass writes one.</param>
 /// <param name="When">What has just happened when it is called.</param>
-public sealed record ScriptHandler(string Name, int Arity, string Signature, string When);
+/// <param name="Was">What it used to take, for a handler that has since gained an argument. Compass
+/// matches a function by name AND count, so without this a world written against the older signature
+/// stops being called with no error anywhere — its verbs simply do nothing.
+///
+/// <para>🔴 A handler may only ever GAIN arguments on the END. The older call is the newer one
+/// cut short, so anything else here would hand a world its arguments in the wrong order.</para></param>
+public sealed record ScriptHandler(string Name, int Arity, string Signature, string When, int Was = 0)
+{
+    /// <summary>The counts to try, newest first.</summary>
+    public IEnumerable<int> Arities => Was > 0 ? [Arity, Was] : [Arity];
+}

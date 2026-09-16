@@ -42,13 +42,19 @@ public class PanelPolicyTests
     [Test]
     public void EveryPlayerOpenedPanel_CountsForEscape()
     {
-        // Trade is the sole legitimate exclusion: Escape CANCELS the trade (a server round-trip) rather
-        // than closing the window, and that is handled ahead of the generic escape path.
+        // Two legitimate exclusions, and both are panels the PLAYER did not open.
+        //
+        // Trade: Escape CANCELS the trade (a server round-trip) rather than closing the window, and
+        // that is handled ahead of the generic escape path.
+        //
+        // 🔴 Held: it is not the player’s to dismiss. Counting it would give Escape something to
+        // close that Escape cannot close - the key would be swallowed by a window that stays, and the
+        // panel underneath it would stop answering Escape for as long as the readout was up.
         Assert.Multiple(() =>
         {
             for (int slot = 0; slot < PanelSlots.Count; slot++)
             {
-                if (slot == PanelSlots.Trade) continue;
+                if (slot == PanelSlots.Trade || slot == PanelSlots.HeldPanel) continue;
                 Assert.That(P(slot).CountsAsOpenForEscape, Is.True,
                             $"slot {slot} is open-able but Escape ignores it, so Escape would offer to "
                             + "quit the game instead of closing it");
@@ -244,7 +250,7 @@ public class PanelPolicyTests
             PanelSlots.Bank, PanelSlots.Inn, PanelSlots.Mail, PanelSlots.Social,
             PanelSlots.Market, PanelSlots.Trade,
             PanelSlots.Conversation, PanelSlots.Moderation,
-            PanelSlots.GamePanel,
+            PanelSlots.GamePanel, PanelSlots.HeldPanel,
         ];
 
         Assert.Multiple(() =>

@@ -358,7 +358,7 @@ public sealed class GameLoop : IDisposable
     public void PersistEnvironmentNow()
     {
         var env = new EnvironmentState(_tod.CurrentPosMs, _weather.CurrentWeather, _weather.CurrentRemainingMs,
-                                       _world.Values);
+                                       _world.Values, _world.Kept);
         _bg.Run(_persistence.SaveEnvironmentAsync(env), nameof(IPersistenceService.SaveEnvironmentAsync));
     }
 }

@@ -307,7 +307,7 @@ public sealed partial class NpcAiSystem : GameSystem
             }
 
             int target = t.Target;
-            bool targetValid = target > 0 && _pm[target].IsPlaying && !_pm[target].GettingMap;
+            bool targetValid = target > 0 && StillWorthChasing(target) && !_pm[target].GettingMap;
             if (!targetValid)
             {
                 // Target gone (offline / leaving game).  Drop the lock but do NOT return home — the

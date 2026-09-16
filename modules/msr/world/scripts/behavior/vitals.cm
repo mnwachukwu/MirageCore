@@ -38,6 +38,7 @@ shared model Vitals
         game.Attribute(Vitals.HealthOwed, "owner");
         game.Attribute(Vitals.ManaOwed, "owner");
         game.Attribute(Vitals.StaminaOwed, "owner");
+        game.Attribute(Vitals.LastRun, "owner");
 
         # Three bars over every head, in the colors MSR drew them.
         game.Bar(Vitals.Health, Vitals.MaxHealth, 190, 40, 40);
@@ -49,6 +50,62 @@ shared model Vitals
         game.Meter(Vitals.Health, Vitals.MaxHealth, "Health", 190, 40, 40);
         game.Meter(Vitals.Mana, Vitals.MaxMana, "Mana", 60, 90, 200);
         game.Meter(Vitals.Stamina, Vitals.MaxStamina, "Stamina", 60, 170, 70);
+    end function
+
+
+    # ── Running ────────────────────────────────────────────────────────────────
+    #
+    # A point a step, whatever is worn. The original charged nothing for the armor: a shield already
+    # pays for itself in the fight, where it is the only piece whose defense is rolled for rather than
+    # applied and every block it wins costs stamina the moment it lands. Charging for the walk as well
+    # taxed the same choice twice, and it fell hardest on a low-level body, where crossing a field
+    # between two creatures cost most of a pool before the fight had started.
+    #
+    # ⚠ An empty bar brings them down to a WALK rather than stopping them. Being winded is a pace.
+
+    public integer RunCost = 1;
+
+    # When the last step at a run was taken, in seconds. Read by Rest, which pays nothing back into
+    # stamina while a sprint is still running.
+    public string LastRun = "lastrun";
+
+    # How long after a step a sprint still counts as running. A body fills as soon as it stops, and
+    # without a hold the rest rate refunds a sprint about as fast as it is spent.
+    public integer SprintHold = 3;
+
+    public string function MayRun(Player who)
+        if who.Number(Vitals.Stamina) > 0
+            yield "";
+        end if
+
+        yield "winded";
+    end function
+
+    public function Ran(Player who)
+        integer cost = Vitals.RunCost;
+
+        if World.Weather(who.Map) == Combat.Hot
+            cost = cost * Combat.HeatCostMultiplier;
+        end if
+
+        integer left = who.Number(Vitals.Stamina) - cost;
+
+        if left < 0
+            left = 0;
+        end if
+
+        who.SetNumber(Vitals.Stamina, left);
+        who.SetNumber(Vitals.LastRun, World.Now());
+    end function
+
+    boolean function Sprinting(Player who)
+        integer last = who.Number(Vitals.LastRun);
+
+        if last < 1
+            yield false;
+        end if
+
+        yield World.Now() - last < Vitals.SprintHold;
     end function
 
     # ── Drinking something ────────────────────────────────────────────────────
@@ -215,24 +272,30 @@ shared model Vitals
     public real SnowOther = 0.8;
 
     public function Rest(Player who)
+        # A body out of action neither mends nor tires. It comes back with whatever getting up gives
+        # it, and a pool creeping up under the panel would make the wait mean something it does not.
+        if who.IsDowned
+            yield;
+        end if
+
         integer def = who.Number(Stats.Def);
         integer int = who.Number(Stats.Int);
         integer spd = who.Number(Stats.Spd);
 
-        # Stamina does not come back while you run. A body that fills as fast as it sprints has an
-        # endless sprint, and the pool stops being a decision.
+        # Stamina does not come back while it is being SPENT - not in a fight, and not while a sprint
+        # is still running. It is the one pool whose cost is paid continuously, so any rate generous
+        # enough to feel like recovery would refund a sprint as fast as it was spent. Stopping the
+        # clock rather than shrinking it is what lets a rest stay quick while the pool stays a budget.
         integer legs = Stats.StaminaRegen(spd);
 
-        if who.IsRunning
+        if Vitals.Sprinting(who) or who.IsEngaged
             legs = 0;
         end if
 
-        # Health does not come back in a fight at all, and the other two come back on the slow clock.
+        # Health does not come back in a fight at all, and mana comes back on the slow clock.
         if who.IsEngaged
             Vitals.Owe(who, Vitals.Mana, Vitals.MaxMana, Vitals.ManaOwed,
                        Stats.ManaRegen(int), Vitals.InCombatEvery);
-            Vitals.Owe(who, Vitals.Stamina, Vitals.MaxStamina, Vitals.StaminaOwed,
-                       legs, Vitals.InCombatEvery);
             yield;
         end if
 
