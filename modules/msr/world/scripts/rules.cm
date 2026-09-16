@@ -63,6 +63,9 @@ shared model Rules
         Contest.Declare(game);
         Staff.Declare(game);
 
+        # Four slots, as the original had: three potion keys and one spare. The keys are 1 to 4.
+        game.HotkeyBar(4);
+
         # Once a second. A tick is a tenth of a second, so ten of them is the beat everything below
         # is written against - see Vitals.TickHundredths, which has to agree with this.
         game.TickEvery(10);
@@ -117,6 +120,15 @@ shared model Rules
         # turned inward restores rather than lands, which is this game's rule about its own magic and
         # not the engine's about its aiming.
         if action == Book.Cast
+            # A page named with it - from the book's own list, or from a bar slot bound there - is
+            # prepared first, so casting THAT spell is one press rather than two. Named nothing, it
+            # throws whatever is already prepared, which is the key Q has always done.
+            integer page = Book.Numbered(picked);
+
+            if page > 0
+                Book.Prepare(who, page);
+            end if
+
             if on == who.Name
                 Book.Inward(who);
             end if

@@ -137,7 +137,8 @@ public sealed record GameActionsPacket : IPacket
         [property: JsonPropertyName("icon")] string Icon,
         [property: JsonPropertyName("interacts")] bool Interacts = false,
         [property: JsonPropertyName("aimed")] bool Aimed = false,
-        [property: JsonPropertyName("unmet")] ActionUnmet Unmet = ActionUnmet.Gray);
+        [property: JsonPropertyName("unmet")] ActionUnmet Unmet = ActionUnmet.Gray,
+        [property: JsonPropertyName("hotkeyable")] bool Hotkeyable = false);
 }
 
 /// <summary>

@@ -263,9 +263,16 @@ public sealed class InventoryPanel : IGamePanel
             new(ClientStrings.Get(ClientStrings.ContextMenu_DropAll),
                 () => ConfirmDestroyThen(itemNum, state, () => { if (isCurrency) sender.SendMapDropItem(invSlot, 0); else sender.SendMapDropBulk(itemNum, 0); }),
                 hasRoom),
-            new(ClientStrings.Get(ClientStrings.HotkeyBar_AssignSubmenu),
-                HotkeyAssignMenu.BuildFor(state, sender, HotkeyKind.Item, itemNum)),
         };
+
+        // Only where there is a bar to assign to. A world whose game declared none has nowhere to put
+        // one, and the row would open a submenu with nothing in it.
+        if (HotkeyAssignMenu.IsOffered(state))
+        {
+            items.Add(new ContextMenu.Item(ClientStrings.Get(ClientStrings.HotkeyBar_AssignSubmenu),
+                HotkeyAssignMenu.ForItem(state, sender, itemNum)));
+        }
+
         _contextMenu.Open(mousePos, itemName, items, new Rectangle(0, 0, UiHelper.RefW, UiHelper.RefH), _cachedFont);
     }
 

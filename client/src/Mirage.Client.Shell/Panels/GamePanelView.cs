@@ -223,6 +223,8 @@ public sealed class GamePanelView : IGamePanel
             _picked = _list.SelectedIndex >= 0 && _list.SelectedIndex < _ids.Count
                 ? _ids[_list.SelectedIndex]
                 : string.Empty;
+
+            AskAssign(input, state, panel, ListBounds(content, panel, _listTop));
         }
 
         if (panel.Inputs.Count > 0) Filling(input, panel);
@@ -256,6 +258,45 @@ public sealed class GamePanelView : IGamePanel
 
             if (opens.Length > 0) Open(state, opens);
             return;   // one click per frame; the bounds are stale if the panel closed itself
+        }
+    }
+
+    /// <summary>A row the player right-clicked in this panel’s list and asked to put on the action bar,
+    /// as the verb its declaration named and that row’s number. Read and cleared by the screen, which owns
+    /// the context menu.</summary>
+    public (string Verb, int Num)? AssignAsked { get; private set; }
+
+    public (string Verb, int Num)? TakeAssignAsked()
+    {
+        var asked = AssignAsked;
+        AssignAsked = null;
+        return asked;
+    }
+
+    /// <summary>Right-click a row to put it on the action bar, as the verb this panel named.
+    ///
+    /// <para>🔴 <b>This is how a game’s own things reach the bar at all.</b> Core lists items itself and
+    /// knows nothing of a game’s spellbook, so the panel showing that book is the only place that can say
+    /// what its rows are for — and it says so once, on the declaration.</para>
+    ///
+    /// <para>A row whose carried id is not a number offers nothing: a slot carries a number, and a list
+    /// built for a person to read may carry captions instead.</para></summary>
+    private void AskAssign(InputState input, ClientState state, GamePanel panel, Rectangle bounds)
+    {
+        if (panel.HotkeyAction.Length == 0 || !input.IsRightMouseClicked()) return;
+        if (!bounds.Contains(input.MousePosition)) return;
+        if (!HotkeyAssignMenu.IsOffered(state)) return;
+
+        // The row under the cursor, not the selected one: a right-click does not move the selection, and
+        // assigning whatever happened to be highlighted is not what the player pointed at.
+        int row = _list.HoveredIndex;
+        if (row < 0 || row >= _ids.Count) return;
+
+        input.ConsumeRightMouseClick();
+        if (int.TryParse(_ids[row], System.Globalization.NumberStyles.Integer,
+                         System.Globalization.CultureInfo.InvariantCulture, out int num) && num >= 1)
+        {
+            AssignAsked = (panel.HotkeyAction, num);
         }
     }
 

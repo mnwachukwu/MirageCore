@@ -30,6 +30,7 @@ shared model Fight
         # that over, deliberately: in the original this was the melee key, and Q was the spell key.
         # Declaring it is how a game says the reach belongs to its own rule now.
         hit.Key("E");
+        hit.Hotkeyable();
 
         # The reaching has to go somewhere, or taking E costs the world its shops and its
         # conversations. This verb does what E used to, on R - a KEY and no menu entry, because

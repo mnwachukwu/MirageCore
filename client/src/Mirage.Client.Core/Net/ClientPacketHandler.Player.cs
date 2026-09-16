@@ -45,15 +45,20 @@ public sealed partial class ClientPacketHandler : IClientEvents
         foreach (var entry in p.Worn) player.SetEquipped(entry.Slot, entry.InvSlot);
     }
 
-    // The action bar, wholesale — sent at join and re-sent after every accepted edit, so the client never
-    // has to model "did my change stick". Server sends 0-based (Kinds[0] = slot 1), as with spells.
+    // The action bar, wholesale - its declared width and every slot described - sent at join and re-sent
+    // after every accepted edit, so the client never has to model "did my change stick". The server sends
+    // 0-based (Bound[0] = slot 1), as with spells.
     private void HandlePlayerHotkeys(PlayerHotkeysPacket p)
     {
-        var bar = _state.Me.Hotkeys;
-        for (int i = 1; i < bar.Length; i++) bar[i] = PlayerHotkey.Empty;
-        int n = Math.Min(p.Kinds.Length, p.Nums.Length);
-        for (int i = 0; i < n && i + 1 < bar.Length; i++)
-            bar[i + 1] = new PlayerHotkey((HotkeyKind)p.Kinds[i], p.Nums[i]);
+        _state.HotkeySlots = Math.Max(p.Slots, 0);
+
+        var bar = new PlayerHotkeysPacket.Slot[_state.HotkeySlots + 1];
+        for (int i = 0; i < bar.Length; i++) bar[i] = Empty;
+        for (int i = 0; i < p.Bound.Count && i + 1 < bar.Length; i++) bar[i + 1] = p.Bound[i];
+        _state.Hotkeys = bar;
     }
+
+    private static readonly PlayerHotkeysPacket.Slot Empty =
+        new((byte)HotkeyKind.None, string.Empty, 0, string.Empty, string.Empty, 0);
 
 }

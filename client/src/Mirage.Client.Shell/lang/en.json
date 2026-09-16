@@ -42,6 +42,7 @@
   "HotkeyBar_EmptyHint": "Empty. Right-click an item or spell to bind it here.",
   "HotkeyBar_GamepadModifier": "LT +",
   "HotkeyBar_AssignSubmenu": "Assign to hotkey",
+  "HotkeyBar_AssignVerb": "Assign {Verb} to hotkey",
   "HotkeyBar_AssignSlot": "{Slot}",
   "HotkeyBar_AssignSlotBound": "{Slot} - {Bound}",
   "HotkeyBar_Clear": "Clear",

@@ -266,6 +266,7 @@ public static class CorePackets
         builder.Register(PacketNames.UpdateShop, Read<UpdateShopPacket>);
         builder.Register(PacketNames.UpdateConversation, Read<UpdateConversationPacket>);
         builder.Register(PacketNames.PlayerHotkeys, Read<PlayerHotkeysPacket>);
+        builder.Register(PacketNames.UseHotkey, Read<UseHotkeyPacket>);
         builder.Register(PacketNames.Winded, Read<PlayerWindedPacket>);
         builder.Register(PacketNames.PartyRequest, Read<PartyRequestNotifyPacket>);
         builder.Register(PacketNames.PartyPartner, Read<PartyPartnerPacket>);

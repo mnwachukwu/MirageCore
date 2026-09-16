@@ -205,10 +205,8 @@ public static class Constants
     // over exactly that span — buy once, wear it the whole rung.
     public const int GearTierSpan = 5;
 
-    // Action-bar slots, bound to keys 1..4 (and to the gamepad's four face buttons under a trigger
-    // modifier).  Four is a UI limit as much as a design one: the bar sits in the sidebar strip above the
-    // links, and four icons is what fits there at the strip's width without crowding them.
-    public const int MaxHotkeys = 4;
+    // HOW MANY action-bar slots a world has is the GAME'S, through ICoreBuilder.SetHotkeyBar - see
+    // Extensibility.HotkeyBar for the ceiling and the keys. Nothing here.
     // What an NPC's sight radius is expected to stay within, in tiles. ADVISORY: Range is a free number,
     // and an author who wants a mob that notices the whole map may have one.
     //

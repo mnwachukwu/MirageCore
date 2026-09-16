@@ -342,6 +342,9 @@ public sealed partial class PacketHandler
                 case NeedMapPacket:
                     HandleRequestNewMap(index);
                     break;
+                case UseHotkeyPacket p:
+                    HandleUseHotkey(index, p);
+                    break;
                 case SetHotkeyPacket p:
                     HandleSetHotkey(index, p);
                     break;

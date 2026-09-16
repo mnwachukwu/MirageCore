@@ -82,10 +82,10 @@ public sealed class JoinLeaveSystem : GameSystem
         // here — access is per-account and already stamped by the login path.
         if (p.GodMode && !p.MayUseGodMode) p.GodMode = false;
 
-        // A character saved before the action bar existed has no "hotkeys" key at all, so the property
-        // initializer already gives it a correct-length array; this covers the other case — a save made
-        // when MaxHotkeys was a different width — so every read site can index 1..MaxHotkeys freely.
-        p.Hotkeys = PlayerHotkey.Normalize(p.Hotkeys);
+        // How wide the bar is belongs to the GAME, and a character may have been saved under a world
+        // that sized it differently — or under no bar at all. Squared to this world’s width here, so every
+        // read site can index the declared slots freely.
+        p.Hotkeys = PlayerHotkey.Normalize(p.Hotkeys, _world.HotkeyBarSlots);
 
         // Return any items left escrowed by a trade that a crash/shutdown interrupted before the leave-path
         // could unwind it (normal disconnect already unwinds via OnPlayerGone). Done before the inventory is
@@ -166,7 +166,7 @@ public sealed class JoinLeaveSystem : GameSystem
 
         // Action bar. Sent here rather than in SendJoinData, which also runs on every warp — the bar only
         // changes when the player edits it, and each edit is echoed by its own handler.
-        _dispatcher.SendTo(index, PacketHandler.BuildHotkeysPacket(p));
+        _dispatcher.SendTo(index, HotkeyDescription.Bar(_world, p));
 
         // 🔴 The mailbox and the social lists, on the same terms and for a sharper reason: SendRegionSync
         // runs on every SEAM CROSSING as well as every warp, and neither of these changes because the

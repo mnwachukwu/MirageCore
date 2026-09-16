@@ -42,6 +42,7 @@
   "HotkeyBar_EmptyHint": "Vide. Clic droit sur un objet ou un sort pour l'assigner ici.",
   "HotkeyBar_GamepadModifier": "GG +",
   "HotkeyBar_AssignSubmenu": "Assigner au raccourci",
+  "HotkeyBar_AssignVerb": "Affecter {Verb} \u00e0 un raccourci",
   "HotkeyBar_AssignSlot": "{Slot}",
   "HotkeyBar_AssignSlotBound": "{Slot} - {Bound}",
   "HotkeyBar_Clear": "Vider",

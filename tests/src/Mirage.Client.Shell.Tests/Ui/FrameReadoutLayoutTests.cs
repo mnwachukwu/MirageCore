@@ -20,7 +20,8 @@ namespace Mirage.Client.Shell.Tests.Ui;
 [TestFixture]
 public class FrameReadoutLayoutTests
 {
-    private static readonly float BarLeft = HotkeyBarPanel.Bounds.Left;
+    // A four-slot bar, which is the width the readout was laid out against.
+    private static readonly float BarLeft = HotkeyBarPanel.Bounds(4).Left;
     private const float Screen = UiHelper.RefW;
 
     /// <summary>The room a line has if the block never moves — what every readout line is written to fit.</summary>

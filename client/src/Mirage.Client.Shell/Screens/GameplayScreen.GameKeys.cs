@@ -1,3 +1,4 @@
+using Microsoft.Xna.Framework.Input;
 using Mirage.Client.Shell.Input;
 using Mirage.Shared;
 using Mirage.Shared.Extensibility;
@@ -35,6 +36,29 @@ public sealed partial class GameplayScreen
                 return true;
 
         return false;
+    }
+
+    /// <summary>Which action-bar slot the player just asked for with a digit, or 0.
+    ///
+    /// <para>1 through 9 in order, then 0 for a tenth slot — the row a keyboard has. A game may declare
+    /// more than that; those are reached by clicking them, because there is no eleventh digit to bind
+    /// and taking a letter for one would be Core claiming a key a game might want.</para>
+    ///
+    /// <para>Nothing is read past the declared width, so a world with three slots leaves 4 through 0 to
+    /// whatever else wants them.</para></summary>
+    private static int DigitPressed(InputState input, int slots)
+    {
+        for (int slot = 1; slot <= slots && slot <= HotkeyBar.Keyed; slot++)
+        {
+            // Keys.D1..D9 and NumPad1..NumPad9 run in order; the tenth slot is 0, which sits after 9 on
+            // a keyboard and before 1 in the enum.
+            var (top, pad) = slot == HotkeyBar.Keyed
+                ? (Keys.D0, Keys.NumPad0)
+                : (Keys.D1 + (slot - 1), Keys.NumPad1 + (slot - 1));
+
+            if (input.IsKeyPressed(top) || input.IsKeyPressed(pad)) return slot;
+        }
+        return 0;
     }
 
     /// <summary>Fire whatever a game bound to a key the player just pressed.

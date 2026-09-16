@@ -1,4 +1,5 @@
 using Mirage.Shared.Extensibility;
+using Mirage.Shared.Protocol.Packets;
 
 namespace Mirage.Client.Core.State;
 
@@ -35,6 +36,20 @@ public sealed partial class ClientState
     /// <summary>The chat channels this game declared, beside Core’s own five. Empty until the server
     /// says otherwise, and empty for good in a world whose game declared none.</summary>
     public ChatChannelSet ChatChannels { get; set; } = ChatChannelSet.Empty;
+
+    /// <summary>How many action-bar slots this game gives the player. Zero until the server says
+    /// otherwise, and zero for good in a world whose game declared no bar — which draws nothing at all,
+    /// not a row of empty boxes.</summary>
+    public int HotkeySlots { get; set; }
+
+    /// <summary>The action bar as the server described it, 1-based to match the keys; index 0 unused.
+    ///
+    /// <para>🔴 <b>Described rather than resolved here.</b> A slot may hold a record of a family this
+    /// client has never heard of, and it holds no record schema and no copy of a game’s records — so what
+    /// to draw and what to call it arrive with the binding. Core’s own items are the exception the client
+    /// can still answer for itself: it has the bag, so it counts them and grays a slot the bag cannot
+    /// fill.</para></summary>
+    public PlayerHotkeysPacket.Slot[] Hotkeys { get; set; } = [];
 
     /// <summary>Bumped whenever any body's attributes change, so a panel can redraw on a change rather
     /// than re-reading every frame.</summary>

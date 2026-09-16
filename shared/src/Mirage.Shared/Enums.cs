@@ -59,7 +59,14 @@ public enum WorldLayer : byte
 public enum HotkeyKind : byte
 {
     None = 0,
-    Item = 1,
+
+    /// <summary>One authored record, named by its family and its number: an item, a spell, a recipe,
+    /// whatever that game keeps. Firing it invokes the verb its family named.</summary>
+    Record = 1,
+
+    /// <summary>One declared verb, named by its action id, optionally carrying a subject number that
+    /// reaches the handler as the picked id.</summary>
+    Verb = 2,
 }
 
 public enum ItemType : byte

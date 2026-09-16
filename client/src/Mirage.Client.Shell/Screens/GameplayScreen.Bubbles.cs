@@ -265,12 +265,14 @@ public sealed partial class GameplayScreen : IGameScreen
     /// either way; this only keeps a slot from looking dead while its own clock runs.</summary>
     private bool HotkeySlotReady(int slot, long nowMs)
     {
-        var me = _ctx.State.Me;
-        if (me?.Hotkeys is null || slot < 1 || slot >= me.Hotkeys.Length) return true;
-
-        var hk = me.Hotkeys[slot];
-        return !IsConsumable(hk.Num) || ConsumableReady(nowMs);
+        var hk = HotkeyBarPanel.At(_ctx.State.Hotkeys, slot);
+        return !IsDrinkable(hk) || ConsumableReady(nowMs);
     }
+
+    /// <summary>Whether a slot holds one of Core’s own consumables, which is the only clock this client
+    /// paces. Everything else a game puts on the bar is paced by the game, on the server.</summary>
+    private bool IsDrinkable(PlayerHotkeysPacket.Slot hk) =>
+        HotkeyBarPanel.IsHeldItem(hk) && IsConsumable(hk.Num);
 
     /// <summary>Charges the clock the slot's contents answer to. The beat is stamped by the use
     /// itself, so only drinking is recorded here.
@@ -281,59 +283,83 @@ public sealed partial class GameplayScreen : IGameScreen
     /// never happened, and block the next press while the server was still willing.</para></summary>
     private void StartHotkeyCooldown(int slot, long nowMs)
     {
-        var me = _ctx.State.Me;
-        if (me?.Hotkeys is null || slot < 1 || slot >= me.Hotkeys.Length) return;
-        int itemNum = me.Hotkeys[slot].Num;
-        if (IsConsumable(itemNum)) me.ConsumableTimer = nowMs;
+        if (_ctx.State.Me is not { } me) return;
+        if (IsDrinkable(HotkeyBarPanel.At(_ctx.State.Hotkeys, slot))) me.ConsumableTimer = nowMs;
     }
 
-    /// <summary>How much of the clock a bound slot answers to is still to run, 1→0. A potion reads the
-    /// drinking clock, a spell the action beat, and anything else is never waiting on either.</summary>
-    private float HotkeyCooldownFraction(PlayerHotkey hk, long nowMs)
+    /// <summary>How much of the clock a bound slot answers to is still to run, 1→0.
+    ///
+    /// <para>Only Core’s own drinking clock. A game paces its own verbs on the server, and a client
+    /// sweeping a slot on a clock it invented would be showing a wait that is not there.</para></summary>
+    private float HotkeyCooldownFraction(PlayerHotkeysPacket.Slot hk, long nowMs)
     {
-        if (_ctx.State.Me is not { } me) return 0f;
+        if (_ctx.State.Me is not { } me || !IsDrinkable(hk)) return 0f;
 
-        long stamped, span;
-        if (IsConsumable(hk.Num)) (stamped, span) = (me.ConsumableTimer, ConsumableCooldownMs);
-        else return 0f;
-
-        long elapsed = nowMs - stamped;
-        return stamped > 0 && elapsed < span ? 1f - elapsed / (float)span : 0f;
+        long elapsed = nowMs - me.ConsumableTimer;
+        return me.ConsumableTimer > 0 && elapsed < ConsumableCooldownMs
+            ? 1f - elapsed / (float)ConsumableCooldownMs
+            : 0f;
     }
 
     private bool IsConsumable(int itemNum) =>
         itemNum > 0 && itemNum < _ctx.State.Items.Length
         && _ctx.State.Items[itemNum]?.Type is ItemType.Consumable;
 
+    /// <summary>Fire a slot.
+    ///
+    /// <para>🔴 <b>The slot goes up, not what it holds.</b> The server reads its own copy of the bar, so
+    /// what a slot MEANS stays where a game’s rules are — and a client cannot fire something it never
+    /// bound. The square is the one the player is facing, so a verb on the bar reaches the same place a
+    /// verb on a key does.</para>
+    ///
+    /// <para>The two refusals answered here are the two this client can answer without asking: an empty
+    /// slot, and one holding an item the bag no longer has. Both would otherwise cost a round trip to
+    /// learn nothing.</para></summary>
     private bool TryUseHotkey(int slot)
     {
         var state = _ctx.State;
-        var me = state.Me;
-        if (me?.Hotkeys is null || slot < 1 || slot >= me.Hotkeys.Length) return false;
+        var hk = HotkeyBarPanel.At(state.Hotkeys, slot);
 
-        var hk = me.Hotkeys[slot];
-        if (!hk.IsBound)
+        if (!HotkeyBarPanel.IsBound(hk))
         {
             AddChatLine(ClientStrings.Get(ClientStrings.HotkeyBar_NothingBound), GameColor.BrightRed);
             return false;
         }
 
-        if (hk.Kind == HotkeyKind.Item)
+        if (HotkeyBarPanel.IsHeldItem(hk) && HotkeyBarPanel.FindInvSlot(state, hk.Num) <= 0)
         {
-            int inv = HotkeyBarPanel.FindInvSlot(state, hk.Num);
-            if (inv <= 0)
-            {
-                string name = (hk.Num < state.Items.Length ? state.Items[hk.Num]?.TrimmedName : null) ?? "?";
-                AddChatLine(ClientStrings.Format(ClientStrings.HotkeyBar_ItemGone, ("Item", name)), GameColor.BrightRed);
-                return false;
-            }
-            _ctx.Sender.SendUseItem(inv);
-            return true;
+            string name = (hk.Num < state.Items.Length ? state.Items[hk.Num]?.TrimmedName : null) ?? "?";
+            AddChatLine(ClientStrings.Format(ClientStrings.HotkeyBar_ItemGone, ("Item", name)), GameColor.BrightRed);
+            return false;
         }
 
-        return false;
+        var me = state.Me;
+        _ctx.Sender.SendUseHotkey(slot, state.Map is null ? 0 : state.CenterMapNum, me.X, me.Y);
+        return true;
     }
 
     /// <summary>Bind or clear an action-bar slot, then let the server echo the whole bar back.</summary>
-    public void AssignHotkey(int slot, HotkeyKind kind, int num) => _ctx.Sender.SendSetHotkey(slot, kind, num);
+    public void AssignHotkey(int slot, HotkeyKind kind, string id, int num)
+        => _ctx.Sender.SendSetHotkey(slot, kind, id, num);
+
+    /// <summary>Open the slot submenu for a row one of the game's own panels was right-clicked on. Both
+    /// views that show a game's screens go through this, so a spellbook the game puts up itself offers the
+    /// same thing as one the player opened.</summary>
+    private void TakeAssignRequest(GamePanelView view, InputState input)
+    {
+        if (view.TakeAssignAsked() is not { } asked) return;
+
+        OpenAssignMenu(input.MousePosition,
+            HotkeyAssignMenu.ForVerb(_ctx.State, _ctx.Sender, asked.Verb, asked.Num));
+    }
+
+    /// <summary>Put the "which slot?" submenu on screen. The panels that offer assigning do not own a
+    /// context menu — this screen does — so each of them says what was pointed at and this opens it.</summary>
+    private void OpenAssignMenu(Point at, List<ContextMenu.Item> slots)
+    {
+        if (_gameFont is null || slots.Count == 0) return;
+
+        _contextMenu.Open(at, ClientStrings.Get(ClientStrings.HotkeyBar_AssignSubmenu), slots,
+                          new Rectangle(0, 0, UiHelper.RefW, UiHelper.RefH), _gameFont);
+    }
 }

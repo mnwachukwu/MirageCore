@@ -175,37 +175,50 @@ public sealed partial class ChatPanel
             {
                 Config = new AccountConfig.ChatTabConfig
                 {
-                    Name = ClientStrings.Get(key),
+                    // Whatever the game called it, localized if it happens to name a key this client
+                    // holds. A world's own word is not a key, and it is the player's tab to rename.
+                    Name = ClientStrings.GetOrFallback(key, key),
                     Notify = false,
                     OwnsTabKey = key,
                 },
             });
         }
 
-        foreach (var tab in tabs) SettleDefaults(tab.Config);
+        Settle(tabs);
         return tabs;
     }
 
-    /// <summary>Puts every declared channel where its declaration says it starts, for one tab, and records
-    /// that the tab has now been offered it.
+    /// <summary>Puts every declared channel in the tab its declaration asks for, and records that these
+    /// tabs have now been offered it.
     ///
-    /// <para>🔴 <b>Only channels this tab has never seen.</b> A player who turned something off turned it
-    /// off; running this again must not put it back. The main tab takes every channel that named no tab of
-    /// its own, an own-tab tab takes exactly the channels that named it, and everything else starts
-    /// off.</para></summary>
-    private void SettleDefaults(AccountConfig.ChatTabConfig cfg)
+    /// <para>🔴 <b>Only channels a tab has never seen.</b> A player who turned something off turned it
+    /// off; running this again must not put it back. A channel is switched on in exactly one tab — the one
+    /// made for the tab key it named, or the main tab when it named none — and off in the rest.</para>
+    ///
+    /// <para>⚠ A channel naming a tab key NOTHING owns falls back to the main tab, which is the case for a
+    /// game adding one to a player who already has tabs of their own. The alternative is a channel that
+    /// arrives readable nowhere, and a player looking for a feed they were told about.</para></summary>
+    private void Settle(List<ChatTab> tabs)
     {
         foreach (var ch in _channels.Channels)
         {
-            if (cfg.KnownChannels.Contains(ch.Id, StringComparer.Ordinal)) continue;
-            cfg.KnownChannels.Add(ch.Id);
+            int home = 0;
+            if (ch.OwnTabKey.Length > 0)
+            {
+                int owner = tabs.FindIndex(
+                    t => string.Equals(t.Config.OwnsTabKey, ch.OwnTabKey, StringComparison.Ordinal));
+                if (owner >= 0) home = owner;
+            }
 
-            bool on = cfg.OwnsTabKey.Length > 0
-                ? string.Equals(cfg.OwnsTabKey, ch.OwnTabKey, StringComparison.Ordinal)
-                : ch.OwnTabKey.Length == 0;
+            for (int i = 0; i < tabs.Count; i++)
+            {
+                var cfg = tabs[i].Config;
+                if (cfg.KnownChannels.Contains(ch.Id, StringComparer.Ordinal)) continue;
+                cfg.KnownChannels.Add(ch.Id);
 
-            if (!on && !cfg.DisabledChannels.Contains(ch.Id, StringComparer.Ordinal))
-                cfg.DisabledChannels.Add(ch.Id);
+                if (i != home && !cfg.DisabledChannels.Contains(ch.Id, StringComparer.Ordinal))
+                    cfg.DisabledChannels.Add(ch.Id);
+            }
         }
     }
 
@@ -218,17 +231,23 @@ public sealed partial class ChatPanel
 
         if (_installDefaults)
         {
-            // A fresh account: rebuild from scratch, so the per-channel tabs appear with their channels
-            // already sorted rather than as empty tabs the player has to fill.
-            _tabs.Clear();
-            _tabs.AddRange(MakeInstallDefaultTabs());
+            // A fresh account: lay the tabs out as the declarations ask for, so the per-channel tabs
+            // appear with their channels already sorted rather than as empty tabs the player has to fill.
+            //
+            // ⚠ The main tab's LOG is carried over rather than rebuilt with it. The declarations arrive
+            // behind the welcome batch, which has already landed there, and a fresh tab object would
+            // open the game on an empty chat.
+            var built = MakeInstallDefaultTabs();
+            _tabs[0].Config = built[0].Config;
+            _tabs.RemoveRange(1, _tabs.Count - 1);
+            for (int i = 1; i < built.Count; i++) _tabs.Add(built[i]);
             _activeTab = 0;
         }
         else
         {
-            // Saved tabs: leave the arrangement alone and settle only what it has never been offered.
-            // A channel the game added since they last played arrives where its declaration says.
-            foreach (var tab in _tabs) SettleDefaults(tab.Config);
+            // Saved tabs: leave the arrangement alone and settle only what they have never been
+            // offered. A channel the game added since they last played arrives where it asked for.
+            Settle(_tabs);
         }
 
         SetChatDisplayOptions(_showTimestamps, _use24HourClock, _showChannelLabels);
@@ -259,7 +278,7 @@ public sealed partial class ChatPanel
         if (_tabs.Count == 0)
             _tabs.AddRange(MakeInstallDefaultTabs());
         else
-            foreach (var tab in _tabs) SettleDefaults(tab.Config);
+            Settle(_tabs);
         _installDefaults = false;
         _activeTab = 0;
     }
@@ -395,11 +414,17 @@ public sealed partial class ChatPanel
     /// <summary>Localized display name for a channel’s inline "[label]" prefix (shown when "Show
     /// Channel Labels" is on). Returns null for `Always` — the un-filterable welcome/MOTD bucket has no
     /// meaningful channel to surface — so those lines (and client-local diagnostics, which carry no
-    /// channel at all) show no label, and null for a channel id nothing declared.</summary>
+    /// channel at all) show no label, and null for a channel id nothing declared.
+    ///
+    /// <para>🔴 <b>A game's caption is not a localization key.</b> Core's own are, and looking one up is
+    /// an assertion that it exists; a world names whatever word it likes, so a caption with no entry
+    /// reads as itself rather than taking the client down.</para></summary>
     private string? ChannelLabel(string ch)
     {
-        string? key = CoreChannelLabelKey(ch) ?? _channels.Find(ch)?.LabelKey;
-        return key is null ? null : ClientStrings.Get(key);
+        if (CoreChannelLabelKey(ch) is { } core) return ClientStrings.Get(core);
+
+        string? caption = _channels.Find(ch)?.LabelKey;
+        return caption is null ? null : ClientStrings.GetOrFallback(caption, caption);
     }
 
     /// <summary>The localization key for one of Core’s own channels, or null for a game’s.</summary>

@@ -42,6 +42,7 @@
   "HotkeyBar_EmptyHint": "Vacío. Haz clic derecho en un objeto o hechizo para asignarlo aquí.",
   "HotkeyBar_GamepadModifier": "GI +",
   "HotkeyBar_AssignSubmenu": "Asignar a acceso rápido",
+  "HotkeyBar_AssignVerb": "Asignar {Verb} a un atajo",
   "HotkeyBar_AssignSlot": "{Slot}",
   "HotkeyBar_AssignSlotBound": "{Slot} - {Bound}",
   "HotkeyBar_Clear": "Vaciar",

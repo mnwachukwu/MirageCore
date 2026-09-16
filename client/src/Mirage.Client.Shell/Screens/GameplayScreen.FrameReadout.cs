@@ -69,8 +69,12 @@ public sealed partial class GameplayScreen
                 _readoutWidth = MathF.Max(_readoutWidth, font.MeasureString(text).X);
         }
 
-        float x = ReadoutLeft(HotkeyBarPanel.Bounds.Left, UiHelper.RefW, _readoutWidth);
-        float y = HotkeyBarPanel.Bounds.Top - ReadoutGap;
+        // The readout sits above the action bar, or where the bar would be in a world that declared
+        // none - the sidebar strip is the same place either way.
+        var bar = HotkeyBarPanel.Bounds(state.HotkeySlots);
+        if (bar.IsEmpty) bar = HotkeyBarPanel.Bounds(1);
+        float x = ReadoutLeft(bar.Left, UiHelper.RefW, _readoutWidth);
+        float y = bar.Top - ReadoutGap;
         for (int i = _readoutLines.Count - 1; i >= 0; i--)
         {
             var size = font.MeasureString(_readoutLines[i].Text);

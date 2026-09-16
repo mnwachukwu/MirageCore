@@ -122,10 +122,10 @@ public sealed class PlayerRecord
     // returned to the bag by TradeSystem.RecoverEscrowOnLogin; a live trade never resumes across a restart.
     public List<PlayerInvSlot> TradeOffer { get; set; } = new();
     // The bank is account-shared, not per-character — see AccountRecord.Bank / ServerPlayer.Bank.
-    // Action bar: 1-based, indices 1..MaxHotkeys; index 0 unused. Each slot names an item by
-    // NUMBER, never by bag/book position — see PlayerHotkey. Load through PlayerHotkey.Normalize so a
-    // character saved before the bar existed (or at a different width) comes back the right length.
-    public PlayerHotkey[] Hotkeys { get; set; } = PlayerHotkey.NewBar();
+    // Action bar: 1-based, index 0 unused. Each slot names a declaration and a NUMBER, never a bag or
+    // book position — see PlayerHotkey. Empty until the join path calls PlayerHotkey.Normalize with the
+    // width this GAME declared, since nothing here knows how wide the bar is.
+    public PlayerHotkey[] Hotkeys { get; set; } = PlayerHotkey.NewBar(0);
     // from on login. Empty for a questless character.
     // NPC conversations this character has spoken to (opened at least once) — a per-character visited-set that
     // colors the overhead "..." glyph (yellow = unspoken, gray = spoken). Just conversation numbers, no state.

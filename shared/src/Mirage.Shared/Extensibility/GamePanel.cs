@@ -111,6 +111,21 @@ public sealed record GamePanel
     /// </summary>
     [JsonPropertyName("rows")] public IReadOnlyList<PanelRow> Rows { get; init; } = [];
 
+    /// <summary>The verb a row of this panel’s list goes on the action bar as, carrying that row’s id as
+    /// the subject. Blank for a list whose rows are not worth a slot.
+    ///
+    /// <para>🔴 <b>This is how a game’s own things reach the bar at all.</b> Core lists items itself and
+    /// knows nothing about a game’s spellbook, so the panel showing that book is the only place that can
+    /// say what its rows are for. What a slot then does is exactly what pressing that button with that row
+    /// picked does — the same verb, the same subject — so the bar is a shortcut rather than a second
+    /// feature.</para>
+    ///
+    /// <para>⚠ The verb still needs <see cref="GameAction.Hotkeyable"/>, which is what the server checks
+    /// when the binding arrives. And the rows’ ids have to BE numbers: a slot carries a number, and a list
+    /// built for a person to read may carry captions instead. A row whose id is not a number offers
+    /// nothing.</para></summary>
+    [JsonPropertyName("hotkeyAction")] public string HotkeyAction { get; init; } = string.Empty;
+
     /// <summary>
     /// The message this panel composes, or blank for one that only shows things.
     ///

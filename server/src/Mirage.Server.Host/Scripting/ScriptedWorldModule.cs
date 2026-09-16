@@ -1895,6 +1895,10 @@ public sealed class ScriptedWorldModule
                 + "acts on the square the player faces.")
             .Action("Icon", [ScriptType.Text.Named("glyph")], (v, a) => Verbal(v).Icon(a.AsText(0)),
                 "The glyph beside it. One of: " + GameIcon.Listed + ". A name that is not one of those is refused, because a glyph nobody drew is a section that looks like every other section.")
+            .Action("Hotkeyable", [], (v, _) => Verbal(v).Hotkeyable(),
+                "Lets the player put this verb on the action bar, where the game declared one. Offered "
+                + "by right-clicking it wherever it is drawn. Say this only on the few a player would "
+                + "reach for under pressure: every verb offering to be bound is a menu nobody reads.")
             .Action("Interacts", [], (v, _) => Verbal(v).Interacts(),
                 "Picking it also does what the engine's own reach key would have done - a shop, a "
                 + "conversation, or the body's own line. A game that binds E takes that key "
@@ -1930,6 +1934,15 @@ public sealed class ScriptedWorldModule
             .Action("Button", [ScriptType.Text.Named("caption"), ScriptType.Text.Named("verb")],
                 (p, a) => Screen(p).Button(a.AsText(0), a.AsText(1)),
                 "A button along its bottom: a caption, and the id of a verb it calls.")
+            .Action("Hotkeys", [ScriptType.Text.Named("verb")],
+                (p, a) => Screen(p).Hotkeys(a.AsText(0)),
+                "Lets the player right-click a row of this panel's list and put it on the action bar, as "
+                + "that verb with the row's id as the subject. Firing the slot then does exactly what "
+                + "picking the row and pressing that button does. "
+                + "This is the only way a game's OWN things reach the bar: the engine lists items itself "
+                + "and knows nothing about your spellbook, so the screen showing it is the one place that "
+                + "can say what its rows are for. The verb needs Hotkeyable, and the rows' ids have to be "
+                + "numbers - a slot carries a number, not a caption.")
             .Action("Smallest", [ScriptType.Integer.Named("wide"), ScriptType.Integer.Named("tall")],
                 (p, a) => Screen(p).Smallest(a.AsInteger(0), a.AsInteger(1)),
                 "How small the player may drag it. Every panel resizes; this is the floor, and it "
@@ -2316,6 +2329,14 @@ public sealed class ScriptedWorldModule
                 (b, a) => Build(b).Panel(a.AsText(0), a.AsText(1), a.AsInteger(2), a.AsInteger(3)),
                 "A screen of this game's own: an id, a title, and how wide and tall it is. Handed back, "
                 + "so its rows and its buttons are written underneath it.")
+            .Action("HotkeyBar", [ScriptType.Integer.Named("slots")],
+                (b, a) => { Build(b).HotkeyBar(a.AsInteger(0)); return null; },
+                "Gives the player an action bar of that many slots, up to 12. Declare none and there is "
+                + "no bar at all, which is what a world with nothing worth a shortcut wants - a row of "
+                + "empty boxes in the sidebar is chrome nobody asked for. "
+                + "What may go in a slot is said elsewhere: Hotkeyable on a verb, and Hotkeys on a panel "
+                + "to put one of its rows there. The first ten slots answer to the digit keys; the rest "
+                + "are clicked.")
             .Action("Channel",
                 [ScriptType.Text.Named("id"), ScriptType.Text.Named("caption"),
                  ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"),
@@ -2633,6 +2654,12 @@ public sealed class ScriptedWorldModule
             return null;
         }
 
+        public object? Hotkeyable()
+        {
+            verb.Hotkeyable = true;
+            return null;
+        }
+
         private object? Offered(ActionSurface surface)
         {
             verb.Surface = surface;
@@ -2651,6 +2678,12 @@ public sealed class ScriptedWorldModule
         public object? Key(string key)
         {
             panel.Key = key;
+            return null;
+        }
+
+        public object? Hotkeys(string verb)
+        {
+            panel.HotkeyAction = verb;
             return null;
         }
 
@@ -2922,6 +2955,9 @@ public sealed class ScriptedWorldModule
             foreach (ChatChannelSpec channel in _channels)
                 Guard($"the chat channel '{channel.Id}'", () => builder.AddChatChannel(channel));
 
+            if (_hotkeyBarSlots > 0)
+                Guard($"the action bar of {_hotkeyBarSlots} slots", () => builder.SetHotkeyBar(_hotkeyBarSlots));
+
             // The panels before the verbs that open them, so a verb naming one can be checked against
             // what was actually declared rather than against what is about to be.
             foreach (PendingPanel panel in _panels)
@@ -2943,6 +2979,7 @@ public sealed class ScriptedWorldModule
                     While = panel.While,
                     Asks = panel.Asks,
                     SendLabelKey = panel.SendLabel,
+                    HotkeyAction = panel.HotkeyAction,
                     Inputs = [.. panel.Inputs],
                 }));
             }
@@ -2997,6 +3034,7 @@ public sealed class ScriptedWorldModule
                 OpensPanel = opens,
                 When = verb.When,
                 Unmet = verb.Unmet,
+                Hotkeyable = verb.Hotkeyable,
             }));
         }
 
@@ -3546,6 +3584,14 @@ public sealed class ScriptedWorldModule
 
         internal static string SurfaceOf(string panelId) => $"panel.{panelId}";
 
+        // ── The action bar ────────────────────────────────
+
+        /// <summary>How many slots the player gets. One bar, one number, said once.</summary>
+        public void HotkeyBar(long slots) =>
+            _hotkeyBarSlots = (int)Math.Clamp(slots, 0, Mirage.Shared.Extensibility.HotkeyBar.Max);
+
+        private int _hotkeyBarSlots = Mirage.Shared.Extensibility.HotkeyBar.None;
+
         // ── Chat channels ───────────────────────────────────
 
         /// <summary>A kind of line this game produces, that a player can read apart from everything else.
@@ -3628,6 +3674,7 @@ public sealed class ScriptedWorldModule
             public string Opens { get; set; } = string.Empty;
             public ActionCondition When { get; set; } = ActionCondition.Always;
             public ActionUnmet Unmet { get; set; } = ActionUnmet.Gray;
+            public bool Hotkeyable { get; set; }
         }
 
         internal sealed class PendingPanel
@@ -3646,6 +3693,7 @@ public sealed class ScriptedWorldModule
             public ActionCondition While { get; set; } = ActionCondition.Always;
             public string Asks { get; set; } = string.Empty;
             public string SendLabel { get; set; } = string.Empty;
+            public string HotkeyAction { get; set; } = string.Empty;
             public List<PanelInput> Inputs { get; } = [];
         }
     }

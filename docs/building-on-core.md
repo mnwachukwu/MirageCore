@@ -39,10 +39,10 @@ and their absence is the product rather than a gap in it.
 
 ---
 
-## The twenty-one seams
+## The twenty-two seams
 
 A game is an [`ICoreModule`](../shared/src/Mirage.Shared/Extensibility/ICoreModule.cs). It is asked to
-describe itself once, and everything it can say is one of twenty-one calls on the builder it is handed.
+describe itself once, and everything it can say is one of twenty-two calls on the builder it is handed.
 
 **What the game is made of**
 
@@ -61,6 +61,7 @@ describe itself once, and everything it can say is one of twenty-one calls on th
 | `AddEquipSlot` | a place on a character where something can be worn |
 | `AddPanel` | a screen this game paints: a title, a surface, a list to pick from, the verbs under it, and the key that opens it |
 | `AddChatChannel` | a kind of line this game's own rules produce, that a player can read apart from everything else and hide when they want to |
+| `SetHotkeyBar` | how many action-bar slots the player gets, and whether there is a bar at all |
 
 **What the player does**
 
@@ -192,6 +193,9 @@ one without the other produces no error anywhere — the game simply does nothin
 | `AddFamily` | records authored into it | an editor tab with nothing in it |
 | `AddEquipSlot` | items that fit it | a slot nothing can ever go in |
 | `AddCreationChoice` | records authored into the family it names | a question the screen drops entirely, and any appearance gated on that question offered to nobody |
+| `AddChatChannel` | anything sent on it | a toggle in the chat options that never changes what a player reads |
+| `SetHotkeyBar` | a hotkeyable verb, or a panel that names one | a row of boxes a player can put nothing in |
+| `GameAction.Hotkeyable` | `SetHotkeyBar` | a verb nothing offers to bind |
 
 🔴 **Write the test that asserts both halves.** The compiler checks neither, and a game missing one
 half looks exactly like a game that has not implemented that feature yet. The registry is a plain

@@ -62,6 +62,7 @@ public sealed partial class ClientPacketHandler
                 Key = a.Key,
                 When = a.When,
                 Unmet = a.Unmet,
+                Hotkeyable = a.Hotkeyable,
             })]);
     }
 

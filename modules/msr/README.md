@@ -47,6 +47,7 @@ above both as the engine's door.
 | `scripts/behavior/gear.cm` | who may wield what, and how gear wears out |
 | `scripts/behavior/quests.cm` | taking one, counting toward it, and handing it back |
 | `scripts/behavior/levels.cm` | experience, and what it buys |
+| `scripts/behavior/chat.cm` | the channels this world’s own lines read on, and the tab they start in |
 | `scripts/behavior/guilds.cm` | what a guild is for: a level, a war, and who may fight whom |
 | `scripts/behavior/ledger.cm` | what a guild is charged, and what it is paid |
 | `scripts/behavior/perks.cm` | what a guild is worth to the people in it |
@@ -82,6 +83,21 @@ journal, and **K** the guild vault.
 ⚠ **G is not a key a game may bind.** Core reserves most of the keyboard — WASD, Shift, F, the action
 bar, and a dozen letters that open its own windows — and a game chooses from `GameKey.Offered` and
 nothing else. The guild panel would have been G and is K instead.
+
+### The action bar
+
+Four slots, on **1** through **4**, declared by `game.HotkeyBar(4)` in `rules.cm`. The original had
+three potion keys and this is that with one spare; a world that wanted none would declare none, and
+the row would not be drawn at all.
+
+Two things go in a slot. An **item** is bound by right-clicking it in the bag, and firing the slot
+drinks it the way the bag does — the box shows the item's own art, how many are left, and grays when
+there are none. A **page of the spellbook** is bound by right-clicking its row, which `book.cm` allows
+with `book.Hotkeys(Book.Cast)`; firing it prepares that page and throws it, so casting a particular
+spell is one press rather than two.
+
+⚠ Casting from a slot changes what is prepared, because preparing is what the original made you do
+first. The slot is a shortcut through both steps, not a second way to cast.
 
 ⚠ Binding E takes the engine's reach key outright. That is the engine's own rule and it is
 deliberate: sharing a key between a game's verb and Core's reaching is worse than taking it. But

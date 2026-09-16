@@ -52,8 +52,13 @@ public sealed class SurveyModule : ICoreModule, IConsoleHandler
             GroupKey = "Survey",
             Surface = ActionSurface.Tile,
             Key = "Q",
+            Hotkeyable = true,
         });
         builder.AddActionHandler(_notes);
+
+        // Two slots. A surveyor reaches for noting a specimen and for their satchel, and nothing else
+        // here is worth a shortcut - a wider bar would be boxes they never fill.
+        builder.SetHotkeyBar(2);
 
         // A screen of this game's own, opened from the same menu. It costs a declaration: the body is
         // display fields on its own surface, the button is an action that already exists.

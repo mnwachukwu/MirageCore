@@ -86,6 +86,14 @@ public interface ICoreBuilder
     /// windows.</summary>
     void AddPanel(GamePanel panel);
 
+    /// <summary>How many action-bar slots this game gives the player, at most
+    /// <see cref="HotkeyBar.Max"/>. Declare none and there is no bar at all.
+    ///
+    /// <para>What may go in a slot is said elsewhere: <see cref="GameAction.Hotkeyable"/> on a verb,
+    /// <see cref="RecordFamily.Hotkeyable"/> and <see cref="RecordFamily.HotkeyAction"/> on a family.
+    /// A bar with nothing eligible is a row of boxes nothing can be put in.</para></summary>
+    void SetHotkeyBar(int slots);
+
     /// <summary>A kind of line this game's own rules produce, that a player can read apart from
     /// everything else. Declare none and everything a game says lands on Core's System channel.
     ///

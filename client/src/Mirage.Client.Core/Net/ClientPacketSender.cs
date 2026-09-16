@@ -154,8 +154,17 @@ public sealed class ClientPacketSender
 
     /// <summary>Bind an action-bar slot to an item or spell NUMBER, or clear it with
     /// <see cref="HotkeyKind.None"/>. The server echoes the whole bar back either way.</summary>
-    public void SendSetHotkey(int slot, HotkeyKind kind, int num)
-        => _transport.Send(new SetHotkeyPacket { Slot = slot, Kind = (byte)kind, Num = (short)num });
+    /// <param name="id">The action id for a verb, or the family id for a record.</param>
+    public void SendSetHotkey(int slot, HotkeyKind kind, string id, int num)
+        => _transport.Send(new SetHotkeyPacket
+        {
+            Slot = slot, Kind = (byte)kind, Id = id, Num = (short)num,
+        });
+
+    /// <summary>Fire a slot. The SERVER reads what it holds, so nothing about the binding travels — only
+    /// the slot, and the square the player is facing for a verb that acts on a place.</summary>
+    public void SendUseHotkey(int slot, int mapNum, int x, int y)
+        => _transport.Send(new UseHotkeyPacket { Slot = slot, MapNum = mapNum, X = x, Y = y });
 
     // ── Inventory ─────────────────────────────────────────────────────────────
 

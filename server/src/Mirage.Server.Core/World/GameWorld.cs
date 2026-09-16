@@ -59,6 +59,15 @@ public sealed class GameWorld
     /// is loaded, and then everything a game would say lands on Core's System channel.</summary>
     public ChatChannelSet ChatChannels { get; set; } = ChatChannelSet.Empty;
 
+    /// <summary>Every record family the compiled modules declared, Core’s own included. Read for what a
+    /// family says about itself rather than for its records — whether one may go on the action bar, and
+    /// what firing it does.</summary>
+    public RecordSchema Families { get; set; } = RecordSchema.Empty;
+
+    /// <summary>How many action-bar slots this game gives the player. Zero when no game module is loaded,
+    /// and then there is no bar.</summary>
+    public int HotkeyBarSlots { get; set; }
+
     /// <summary>The records of every family a module declared. Empty when no game module is loaded, which
     /// is a world made of Core's own families and nothing else.</summary>
     public ModuleRecords ModuleRecords { get; } = new();

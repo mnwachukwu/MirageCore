@@ -373,6 +373,15 @@ abstract model Builder
     public abstract Panel function Panel(string id, string title, integer width, integer height);
 
     ##
+        @summary: Gives the player an action bar of that many slots, up to 12. Declare none and
+        there is no bar at all, which is what a world with nothing worth a shortcut wants - a row of
+        empty boxes in the sidebar is chrome nobody asked for. What may go in a slot is said
+        elsewhere: Hotkeyable on a verb, and Hotkeys on a panel to put one of its rows there. The
+        first ten slots answer to the digit keys; the rest are clicked.
+    ##
+    public abstract function HotkeyBar(integer slots);
+
+    ##
         @summary: A kind of line this game produces that a player can read apart from everything
         else, and hide when they do not want it, in a color given as red, green, and blue, each 0 to
         255. Name it when you send: Message(who, text, id). Give a tab caption and a fresh account
@@ -511,6 +520,13 @@ abstract model Verb
     public abstract function Icon(string glyph);
 
     ##
+        @summary: Lets the player put this verb on the action bar, where the game declared one.
+        Offered by right-clicking it wherever it is drawn. Say this only on the few a player would
+        reach for under pressure: every verb offering to be bound is a menu nobody reads.
+    ##
+    public abstract function Hotkeyable();
+
+    ##
         @summary: Picking it also does what the engine's own reach key would have done - a shop, a
         conversation, or the body's own line. A game that binds E takes that key outright, so this
         is how it hands interaction back. Only meaningful on a creature.
@@ -571,6 +587,16 @@ abstract model Panel
         @summary: A button along its bottom: a caption, and the id of a verb it calls.
     ##
     public abstract function Button(string caption, string verb);
+
+    ##
+        @summary: Lets the player right-click a row of this panel's list and put it on the action
+        bar, as that verb with the row's id as the subject. Firing the slot then does exactly what
+        picking the row and pressing that button does. This is the only way a game's OWN things
+        reach the bar: the engine lists items itself and knows nothing about your spellbook, so the
+        screen showing it is the one place that can say what its rows are for. The verb needs
+        Hotkeyable, and the rows' ids have to be numbers - a slot carries a number, not a caption.
+    ##
+    public abstract function Hotkeys(string verb);
 
     ##
         @summary: How small the player may drag it. Every panel resizes; this is the floor, and it

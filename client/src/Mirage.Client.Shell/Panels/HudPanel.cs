@@ -9,7 +9,18 @@ using Mirage.Shared.Extensibility;
 
 namespace Mirage.Client.Shell.Panels;
 
-public enum HudAction { None, ToggleInventory, ToggleSocial, Quit, GameVerb }
+public enum HudAction
+{
+    None,
+    ToggleInventory,
+    ToggleSocial,
+    Quit,
+    GameVerb,
+
+    /// <summary>The player right-clicked a verb this game said may go on the action bar. The caller owns
+    /// the context menu, so it opens the submenu; <see cref="HudPanel.PickedAction"/> names the verb.</summary>
+    AssignVerb,
+}
 
 /// <summary>
 /// Right sidebar drawn while in-game.
@@ -283,6 +294,21 @@ public sealed class HudPanel
             PickedAction = id;
             PickedOpens = opens;
             return HudAction.GameVerb;
+        }
+
+        // Right-click a verb to put it on the action bar — offered only where there IS a bar, and only
+        // on a verb the game said may go there. The click is consumed here so it cannot also reach the
+        // world behind the sidebar.
+        if (HotkeyAssignMenu.IsOffered(state) && input.IsRightMouseClicked())
+        {
+            foreach (var (button, id, _, verb) in _shownBtns)
+            {
+                if (!verb.Hotkeyable || !button.Bounds.Contains(input.MousePosition)) continue;
+
+                input.ConsumeRightMouseClick();
+                PickedAction = id;
+                return HudAction.AssignVerb;
+            }
         }
 
         if (_quitBtn.IsClicked(input)) return HudAction.Quit;

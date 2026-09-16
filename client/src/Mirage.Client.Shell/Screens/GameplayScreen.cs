@@ -239,7 +239,11 @@ public sealed partial class GameplayScreen : IGameScreen
         // Whichever screen the loaded game has open. Registered like any other panel: Core knows it has
         // one, and knows nothing about what is in it.
         _panels[PanelGame] = new(PanelGame, _gamePanel,
-            (input, _) => _gamePanel.Update(input, _ctx.State, _ctx.Sender),
+            (input, _) =>
+            {
+                _gamePanel.Update(input, _ctx.State, _ctx.Sender);
+                TakeAssignRequest(_gamePanel, input);
+            },
             (sb, font, _, active, _) => _gamePanel.Draw(sb, font, _ctx.State, active),
             () => _gamePanel.Close());
 
@@ -250,6 +254,7 @@ public sealed partial class GameplayScreen : IGameScreen
             {
                 _heldPanel.FollowConditions(_ctx.State);
                 _heldPanel.Update(input, _ctx.State, _ctx.Sender);
+                TakeAssignRequest(_heldPanel, input);
             },
             (sb, font, _, active, _) => _heldPanel.Draw(sb, font, _ctx.State, active),
             () => _heldPanel.Close());

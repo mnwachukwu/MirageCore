@@ -77,10 +77,14 @@ facts.push({
 // How many declaration seams ICoreBuilder offers. modules/README.md claims the demo game uses all of
 // them, which is a claim about two files at once: adding a seam and not using it in survey/ makes that
 // sentence false, and nothing else would say so.
+//
+// Add* and Set* both count. A seam that takes a LIST of things is an Add; one that takes a single
+// number a game has exactly one of - the action bar's width - is a Set, and it is no less a
+// declaration. ExtendFamily is neither: it refines a family somebody else declared.
 const coreModule = readFileSync(join(root, 'shared/src/Mirage.Shared/Extensibility/ICoreModule.cs'), 'utf8');
 const builderBody = coreModule.match(/interface ICoreBuilder\s*\{([\s\S]*?)\n\}/);
 const seams = builderBody
-  ? (builderBody[1].match(/^\s*(?:void Add\w+\(|[\w.]+(?:<[\w.]+>)?\s+\w+\s*\{\s*get;)/gm) ?? []).length
+  ? (builderBody[1].match(/^\s*(?:void (?:Add|Set)\w+\(|[\w.]+(?:<[\w.]+>)?\s+\w+\s*\{\s*get;)/gm) ?? []).length
   : null;
 facts.push({
   what: 'declaration seams on ICoreBuilder',

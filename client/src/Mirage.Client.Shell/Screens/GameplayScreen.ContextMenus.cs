@@ -280,9 +280,28 @@ public sealed partial class GameplayScreen : IGameScreen
                 () => InvokeGameAction(id, opens, mapNum, tileX, tileY, targetName, npcSlot),
                 (Func<bool>)(() => Offered(when)),
                 action.Icon));
+
+            AddAssignRow(items, action);
         }
 
         return items;
+    }
+
+    /// <summary>The "assign this to a hotkey" row that follows a verb a game said may go on the bar.
+    ///
+    /// <para>🔴 <b>Named rather than generic.</b> A menu can offer several bindable verbs, and three rows
+    /// all reading "Assign to hotkey" would leave the player guessing which one they are about to bind.
+    /// The inventory's row needs no name: there is one item under the cursor.</para>
+    ///
+    /// <para>Nothing at all where the game declared no bar, or where the verb is not bindable.</para></summary>
+    private void AddAssignRow(List<ContextMenu.Item> items, GameAction action)
+    {
+        if (!action.Hotkeyable || !HotkeyAssignMenu.IsOffered(_ctx.State)) return;
+
+        string named = ClientStrings.GetOrFallback(action.LabelKey, action.LabelKey);
+        items.Add(new ContextMenu.Item(
+            ClientStrings.Format(ClientStrings.HotkeyBar_AssignVerb, ("Verb", named)),
+            HotkeyAssignMenu.ForVerb(_ctx.State, _ctx.Sender, action.Id)));
     }
 
     /// <summary>The game's own verbs for a square, grouped by the heading each declared.
@@ -326,6 +345,8 @@ public sealed partial class GameplayScreen : IGameScreen
                     () => InvokeGameAction(id, opens, mapNum, tileX, tileY),
                     (Func<bool>)(() => Offered(when)),
                     action.Icon));
+
+                AddAssignRow(items, action);
             }
 
             if (items.Count > 0) groups.Add((heading, items));

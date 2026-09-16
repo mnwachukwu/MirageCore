@@ -63,6 +63,9 @@ public static class CoreRecordFamilies
             Directory = "items",
             FilePrefix = "item",
             DefaultLimit = 1000,
+            // Firing one from the action bar does what using it from the bag does, which is the one
+            // meaning Core itself can supply. A game's own family has to name the verb.
+            Hotkeyable = true,
         },
         new()
         {

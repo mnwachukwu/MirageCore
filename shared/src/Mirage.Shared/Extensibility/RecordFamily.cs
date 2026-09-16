@@ -90,6 +90,26 @@ public sealed record RecordFamily
     /// but does not want authored by hand.</summary>
     [JsonPropertyName("authorable")] public bool Authorable { get; init; } = true;
 
+    /// <summary>Whether the player may put one of these records on the action bar.
+    ///
+    /// <para>The happy path: a game says this once and every list of these records gains "assign to
+    /// hotkey", with no scripting per record and nothing bound to a bag position.</para></summary>
+    [JsonPropertyName("hotkeyable")] public bool Hotkeyable { get; init; }
+
+    /// <summary>The verb fired when one of these is used from the action bar, carrying the record’s
+    /// number as the picked id.
+    ///
+    /// <para>🔴 <b>This is the whole of what firing one means.</b> Core does not know what using a
+    /// record IS — drinking it, casting it, reading it — so it hands the game the verb the game
+    /// named and the number the player bound. A game that already has a "cast" verb needs no handler of
+    /// its own: the bar reaches the same one the spellbook does.</para>
+    ///
+    /// <para>⚠ A game declaring <see cref="Hotkeyable"/> without this is refused at load. The two are
+    /// halves of one thing, and a bar slot that fires nothing looks exactly like a feature nobody
+    /// finished. Core’s own item family is the exception: a blank action there means Core uses it the
+    /// way the bag does, which only the engine’s own families can mean.</para></summary>
+    [JsonPropertyName("hotkeyAction")] public string HotkeyAction { get; init; } = string.Empty;
+
     /// <summary>The file <paramref name="number"/> is stored in, without a directory.</summary>
     public string FileNameFor(int number) => $"{EffectiveFilePrefix}{number}.json";
 

@@ -37,7 +37,7 @@ public class TooltipPlacementTests
     [Test]
     public void AnActionBarSlotTooltipClearsTheActionBar()
     {
-        var slot = HotkeyBarPanel.SlotBounds(1);
+        var slot = HotkeyBarPanel.SlotBounds(4, 1);
         var at = Tooltip.Place(slot.Center.X, slot.Center.Y, W, H);
 
         Assert.That(at.Y + H, Is.LessThanOrEqualTo(slot.Top),

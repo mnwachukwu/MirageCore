@@ -26,7 +26,7 @@ public sealed class CoreRegistry
                          TickSchedule tick, EquipSlotSet equipSlots, OverheadBarSet overheadBars,
                          DisplayFieldSet displayFields, PacketRoutes packetRoutes,
                          GameActions actions, IReadOnlyList<IActionHandler> actionHandlers,
-                         GamePanels panels, ChatChannelSet chatChannels,
+                         GamePanels panels, ChatChannelSet chatChannels, int hotkeyBarSlots,
                          IReadOnlyList<IWorldObserver> observers,
                          IReadOnlyList<IConsoleHandler> consoleHandlers,
                          IReadOnlyList<IDeathPolicy> deathPolicies, IReadOnlyList<ILingerPolicy> lingerPolicies,
@@ -47,6 +47,7 @@ public sealed class CoreRegistry
         ActionHandlers = actionHandlers;
         Panels = panels;
         ChatChannels = chatChannels;
+        HotkeyBarSlots = hotkeyBarSlots;
         Observers = observers;
         ConsoleHandlers = consoleHandlers;
         DeathPolicies = deathPolicies;
@@ -101,6 +102,10 @@ public sealed class CoreRegistry
     /// <summary>The chat channels this game declared, beside Core's own five. Empty in an engine with no
     /// game loaded, and then everything a game would say lands on Core's System channel.</summary>
     public ChatChannelSet ChatChannels { get; }
+
+    /// <summary>How many action-bar slots this game gives the player. <see cref="HotkeyBar.None"/> in an
+    /// engine with no game loaded, and then the client draws no bar.</summary>
+    public int HotkeyBarSlots { get; }
 
     /// <summary>What is told when something happens in the world, in the order their modules were
     /// configured. Empty in an engine with no game loaded, which then tells nobody anything.</summary>
@@ -205,7 +210,9 @@ public sealed class CoreModuleException : Exception
 /// <summary>Core's own declarations, made through the same seam a game uses.</summary>
 internal sealed class CoreModule : ICoreModule
 {
-    public string Name => "Core";
+    internal const string ModuleName = "Core";
+
+    public string Name => ModuleName;
 
     public void Configure(ICoreBuilder builder)
     {
@@ -236,6 +243,8 @@ internal sealed class CoreBuilder : ICoreBuilder
     private readonly List<GameAction> _actions = [];
     private readonly List<GamePanel> _panels = [];
     private readonly List<ChatChannelSpec> _chatChannels = [];
+    private int _hotkeyBarSlots = HotkeyBar.None;
+    private string? _hotkeyBarBy;
     private readonly List<IActionHandler> _actionHandlers = [];
     private readonly List<IWorldObserver> _observers = [];
     private readonly List<IDeathPolicy> _deathPolicies = [];
@@ -319,6 +328,20 @@ internal sealed class CoreBuilder : ICoreBuilder
             throw new CoreModuleException(
                 $"Module '{_module}' declared record family '{family.Id}' in directory '{family.EffectiveDirectory}', "
                 + $"which '{clash.Id}' already uses.", _module);
+        }
+
+        // 🔴 Two halves, and the missing one is silent. A family a player may bind to the bar, with no
+        // verb saying what firing one DOES, gives a slot that draws an icon and answers nothing — which
+        // looks exactly like a feature somebody has not finished yet.
+        //
+        // Core's own families are the exception: a blank action on Items means the engine uses it the
+        // way the bag does, and only the engine can mean that.
+        if (family.Hotkeyable && family.HotkeyAction.Length == 0
+            && !string.Equals(_module, CoreModule.ModuleName, StringComparison.Ordinal))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' said records of '{family.Id}' may go on the action bar, but named no "
+                + "verb to fire one with. Set HotkeyAction to one of this game's actions.", _module);
         }
 
         _families.Add(family);
@@ -473,6 +496,30 @@ internal sealed class CoreBuilder : ICoreBuilder
         }
 
         _chatChannels.Add(channel);
+    }
+
+    public void SetHotkeyBar(int slots)
+    {
+        Refuse();
+
+        if (!HotkeyBar.IsOffered(slots))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' asked for {slots} action-bar slots. A bar holds 0 to "
+                + $"{HotkeyBar.Max}, and the client draws it as one row in the sidebar.", _module);
+        }
+
+        // Two games in one world, each sizing the bar, would leave the player with whichever loaded
+        // last and no way to tell which. One bar, one number, said once.
+        if (_hotkeyBarBy is { } already && !string.Equals(already, _module, StringComparison.Ordinal))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' sized the action bar, which module '{already}' already did. "
+                + "There is one bar.", _module);
+        }
+
+        _hotkeyBarSlots = slots;
+        _hotkeyBarBy = _module;
     }
 
     public void AddAction(GameAction action)
@@ -668,7 +715,7 @@ internal sealed class CoreBuilder : ICoreBuilder
                                 new EquipSlotSet(_equipSlots), new OverheadBarSet(_overheadBars),
                                 new DisplayFieldSet(_displayFields), new PacketRoutes([.. _packetRoutes]),
                                 new GameActions(_actions), [.. _actionHandlers], new GamePanels([.. _panels]),
-                                new ChatChannelSet([.. _chatChannels]),
+                                new ChatChannelSet([.. _chatChannels]), _hotkeyBarSlots,
                                 [.. _observers], [.. _consoleHandlers], [.. _deathPolicies],
                                 [.. _lingerPolicies], [.. _movePolicies],
                                 [.. _usePolicies], [.. _lootPolicies],

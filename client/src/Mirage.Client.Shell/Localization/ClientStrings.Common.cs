@@ -63,4 +63,5 @@ public static partial class ClientStrings
     public const string HotkeyBar_Clear = nameof(HotkeyBar_Clear);
     public const string HotkeyBar_NothingBound = nameof(HotkeyBar_NothingBound);
     public const string HotkeyBar_ItemGone = nameof(HotkeyBar_ItemGone);
+    public const string HotkeyBar_AssignVerb = nameof(HotkeyBar_AssignVerb);
 }

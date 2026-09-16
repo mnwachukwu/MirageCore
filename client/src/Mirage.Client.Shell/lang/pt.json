@@ -42,6 +42,7 @@
   "HotkeyBar_EmptyHint": "Vazio. Clique com o botão direito num item ou feitiço para o atribuir aqui.",
   "HotkeyBar_GamepadModifier": "GE +",
   "HotkeyBar_AssignSubmenu": "Atribuir a atalho",
+  "HotkeyBar_AssignVerb": "Atribuir {Verb} a um atalho",
   "HotkeyBar_AssignSlot": "{Slot}",
   "HotkeyBar_AssignSlotBound": "{Slot} - {Bound}",
   "HotkeyBar_Clear": "Limpar",

@@ -118,6 +118,17 @@ public sealed record GameAction
     /// <summary>Where it sits among the game's other actions on that surface. Lower shows first.</summary>
     [JsonPropertyName("ordinal")] public int Ordinal { get; init; }
 
+    /// <summary>Whether the player may put this verb on the action bar.
+    ///
+    /// <para>Off by default, because most verbs are not worth a slot and a menu of a game’s whole
+    /// vocabulary offering "assign to hotkey" on every line is a menu nobody reads. Say it on the few
+    /// a player would reach for under pressure.</para>
+    ///
+    /// <para>⚠ Says nothing unless the game declared a bar. A hotkeyable verb in a world with no
+    /// <see cref="HotkeyBar"/> is a verb nothing offers to bind, which is the quiet half of a feature
+    /// rather than an error — the bar is the thing that has to exist first.</para></summary>
+    [JsonPropertyName("hotkeyable")] public bool Hotkeyable { get; init; }
+
     /// <summary>When it is offered at all, as a question about what the player already carries. The
     /// default asks nothing, so a verb that says nothing about this is always offered.
     ///

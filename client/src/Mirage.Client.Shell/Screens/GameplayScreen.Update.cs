@@ -193,6 +193,10 @@ public sealed partial class GameplayScreen : IGameScreen
                                  _ctx.State.CenterMapNum, _ctx.State.Me.X, _ctx.State.Me.Y,
                                  toggles: true);
                 break;
+            case HudAction.AssignVerb when _gameFont is not null:
+                OpenAssignMenu(input.MousePosition,
+                    HotkeyAssignMenu.ForVerb(_ctx.State, _ctx.Sender, _hud.PickedAction));
+                break;
         }
 
         // Panel toggles (I/P/T/O/H/U/C), Escape, and Enter (chat focus, handled by ChatPanel)
@@ -257,22 +261,20 @@ public sealed partial class GameplayScreen : IGameScreen
             // an empty bag costs nothing.
             {
                 int fired = 0;
-                if (kbActive)
-                {
-                    if (input.IsKeyPressed(Keys.D1) || input.IsKeyPressed(Keys.NumPad1)) fired = 1;
-                    else if (input.IsKeyPressed(Keys.D2) || input.IsKeyPressed(Keys.NumPad2)) fired = 2;
-                    else if (input.IsKeyPressed(Keys.D3) || input.IsKeyPressed(Keys.NumPad3)) fired = 3;
-                    else if (input.IsKeyPressed(Keys.D4) || input.IsKeyPressed(Keys.NumPad4)) fired = 4;
-                }
+                int slots = _ctx.State.HotkeySlots;
+                if (kbActive) fired = DigitPressed(input, slots);
                 if (fired == 0 && hotkeyModifier)
                 {
                     // Trigger + face button. The order preserves the old potion layout — X was the HP
                     // potion, Y mana, B stamina — so existing muscle memory still lands on the same
                     // three, and slot 4 takes A. HotkeyBarPanel.GamepadFace draws these same letters.
+                    // A pad has four faces; a game may declare more slots, and those are reached with
+                    // the digits or the mouse.
                     if (input.IsGamePadButtonPressed(Buttons.X)) fired = 1;
                     else if (input.IsGamePadButtonPressed(Buttons.Y)) fired = 2;
                     else if (input.IsGamePadButtonPressed(Buttons.B)) fired = 3;
                     else if (input.IsGamePadButtonPressed(Buttons.A)) fired = 4;
+                    if (fired > slots) fired = 0;
                 }
                 if (fired > 0 && HotkeySlotReady(fired, nowMs) && TryUseHotkey(fired)) StartHotkeyCooldown(fired, nowMs);
             }
@@ -290,7 +292,7 @@ public sealed partial class GameplayScreen : IGameScreen
         // slot, bound or not, so it never falls through and swings at the world behind the bar.
         if (!mouseOverFloating && !dead && input.IsMouseClicked())
         {
-            int barSlot = HotkeyBarPanel.SlotAt(input.MousePosition);
+            int barSlot = HotkeyBarPanel.SlotAt(_ctx.State.HotkeySlots, input.MousePosition);
             if (barSlot > 0)
             {
                 input.ConsumeMouseClick();
@@ -303,17 +305,16 @@ public sealed partial class GameplayScreen : IGameScreen
         // can't fall through to the world behind the sidebar.
         if (!mouseOverFloating && !dead && input.IsRightMouseClicked() && _gameFont is not null)
         {
-            int barSlot = HotkeyBarPanel.SlotAt(input.MousePosition);
+            int barSlot = HotkeyBarPanel.SlotAt(_ctx.State.HotkeySlots, input.MousePosition);
             if (barSlot > 0)
             {
                 input.ConsumeRightMouseClick();
-                var me = _ctx.State.Me;
-                if (me?.Hotkeys is not null && barSlot < me.Hotkeys.Length && me.Hotkeys[barSlot].IsBound)
+                if (HotkeyBarPanel.IsBound(HotkeyBarPanel.At(_ctx.State.Hotkeys, barSlot)))
                 {
                     int captured = barSlot;
                     _contextMenu.Open(input.MousePosition, "",
                         [new ContextMenu.Item(ClientStrings.Get(ClientStrings.HotkeyBar_Clear),
-                            () => AssignHotkey(captured, HotkeyKind.None, 0))],
+                            () => AssignHotkey(captured, HotkeyKind.None, string.Empty, 0))],
                         new Rectangle(0, 0, UiHelper.RefW, UiHelper.RefH), _gameFont);
                 }
             }

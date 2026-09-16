@@ -42,6 +42,7 @@ shared model Book
         outward.Aimed();
         outward.Icon("spark");
         outward.Key("Q");
+        outward.Hotkeyable();
 
         # Acts on the spell picked out of the book. Preparing by TYPING a slot number was asking the
         # player to read one off the screen above and type it back in.
@@ -63,6 +64,10 @@ shared model Book
         book.Smallest(200, 120);
         book.Key("P");
         book.Icon("book");
+
+        # Right-click a page to put it on the action bar. The slot then casts that spell, which is
+        # what the row does when it is picked and Q is pressed.
+        book.Hotkeys(Book.Cast);
         book.Heading("Prepared");
         book.Field(Book.ReadyName, "Ready", 200, 200, 160);
         book.Heading("Known");

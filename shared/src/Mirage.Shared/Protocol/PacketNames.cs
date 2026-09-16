@@ -48,6 +48,8 @@ public static class PacketNames
     public const string Party = "party";
     public const string JoinParty = "joinparty";
     public const string LeaveParty = "leaveparty";
+    // C→S: fire one action-bar slot. The server reads what it holds.
+    public const string UseHotkey = "usehotkey";
     public const string SetHotkey = "sethotkey";
     public const string RequestLocation = "requestlocation";
     public const string WhoIsOnline = "whosonline";

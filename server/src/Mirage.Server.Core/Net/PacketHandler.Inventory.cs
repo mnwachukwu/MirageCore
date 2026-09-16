@@ -328,7 +328,19 @@ public sealed partial class PacketHandler
     {
         if (!_pm[index].IsPlaying) return;
 
-        var handler = _actionHandlers.FirstOrDefault(h => h.Actions.Contains(p.Action, StringComparer.Ordinal));
+        Invoke(index, p.Action, p.MapNum, p.X, p.Y, p.Picked, ActionTargetOf(p));
+    }
+
+    /// <summary>Run a declared verb for this player, on a place and optionally on a body.
+    ///
+    /// <para>Shared by the menu, a bound key, a button on one of the game’s own panels, and the action
+    /// bar. Every one of those is the same verb reaching the same rule, so every one of them has to ask
+    /// the same questions first — a second copy of this is a second place for the condition check to be
+    /// forgotten.</para></summary>
+    private void Invoke(int index, string actionId, int mapNum, int x, int y,
+                        string picked, EntityHandle on = default)
+    {
+        var handler = _actionHandlers.FirstOrDefault(h => h.Actions.Contains(actionId, StringComparer.Ordinal));
         if (handler is null) return;   // an id nothing declared: a stale client, or a game that changed
 
         // 🔴 The verb's own condition is asked HERE as well as on the client. One the client alone
@@ -337,25 +349,23 @@ public sealed partial class PacketHandler
         // An id a handler owns but nothing DECLARED is refused rather than run: no client could have
         // offered it, so the only way it arrives is a packet somebody wrote by hand.
         var declared = _declaredActions.All
-            .FirstOrDefault(a => string.Equals(a.Id, p.Action, StringComparison.Ordinal));
+            .FirstOrDefault(a => string.Equals(a.Id, actionId, StringComparison.Ordinal));
         if (declared is null || !declared.When.Holds(_pm[index].Char.Attributes)) return;
 
         try
         {
-            var on = ActionTargetOf(p);
-
             // What the player has SELECTED, for a verb that asked to be aimed and was used without
-            // pointing at anything - a key press, or a button on one of the game's own screens.
+            // pointing at anything - a key press, a button on one of the game's own screens, a hotkey.
             if (!on.IsSet && declared.Aimed) on = Selected(index);
 
-            handler.Invoke(EntityHandle.ForPlayer(index), p.Action, on,
-                           new WorldPlace(p.MapNum, p.X, p.Y), p.Picked);
+            handler.Invoke(EntityHandle.ForPlayer(index), actionId, on,
+                           new WorldPlace(mapNum, x, y), picked);
         }
         catch (Exception ex)
         {
             // A game's bug loses its own action, not the player holding it.
             _logger.LogError(ex, "Action handler {Handler} failed on {Action} for index {Index}",
-                             handler.Name, p.Action, index);
+                             handler.Name, actionId, index);
         }
     }
 
