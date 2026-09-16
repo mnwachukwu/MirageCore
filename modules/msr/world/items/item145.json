@@ -1,0 +1,25 @@
+{
+  "name": "Sundered Buckler",
+  "pic": 17,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 891825,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 221,
+  "durability": 1160,
+  "attributes": {
+    "levelReq": 240,
+    "mayWield": [
+      2,
+      3,
+      6,
+      7,
+      10
+    ]
+  }
+}

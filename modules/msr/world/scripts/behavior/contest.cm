@@ -396,6 +396,60 @@ shared model Contest
         Contest.Run();
     end function
 
+    # ── Forcing one, for somebody staging the world ───────────────────────────
+    #
+    # The original's /startwar, /advancewar and /endwar. Each drives the same path the schedule does,
+    # so a staged night is a real one that nobody waited for.
+
+    public integer function OpenNight()
+        Contest.Open();
+
+        yield Contest.Live();
+    end function
+
+    # ⚠ The phase's CLOCK is what is moved, not the phase. The next tick then makes the move it
+    # was always going to make, so what a forced setup runs into is the same code a timed one does.
+    public integer function HurryNight()
+        integer many = 0;
+
+        loop for region = 1 to World.Records(Territory.Of)
+            if World.Number(Contest.Phase(region)) > Contest.Waiting
+                World.SetNumber(Contest.PhaseEnds(region), 0);
+
+                many = many + 1;
+            end if
+        end loop
+
+        yield many;
+    end function
+
+    public integer function EndNight()
+        integer many = 0;
+
+        loop for region = 1 to World.Records(Territory.Of)
+            if World.Number(Contest.Phase(region)) > Contest.Waiting
+                Contest.Close(region);
+
+                many = many + 1;
+            end if
+        end loop
+
+        yield many;
+    end function
+
+    # How many contests are up. Counted rather than kept, because a contest ends in several places.
+    public integer function Live()
+        integer many = 0;
+
+        loop for region = 1 to World.Records(Territory.Of)
+            if World.Number(Contest.Phase(region)) > Contest.Waiting
+                many = many + 1;
+            end if
+        end loop
+
+        yield many;
+    end function
+
     # ── The schedule ──────────────────────────────────────────────────────────
     #
     # Walked day by day like the season, so a server that was off over a war night still holds it when

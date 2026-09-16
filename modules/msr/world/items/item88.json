@@ -1,0 +1,28 @@
+{
+  "name": "Warded Dagger",
+  "pic": 9,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 113449,
+  "type": "Equipment",
+  "equipSlot": "weapon",
+  "power": 104,
+  "durability": 790,
+  "attributes": {
+    "levelReq": 110,
+    "mayWield": [
+      1,
+      2,
+      3,
+      5,
+      6,
+      7,
+      9,
+      10
+    ]
+  }
+}

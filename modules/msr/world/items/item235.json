@@ -1,0 +1,17 @@
+{
+  "name": "Radiant Bloodletting Vial",
+  "pic": 23,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2603,
+  "type": "Consumable",
+  "vitalAmount": 721,
+  "attributes": {
+    "levelReq": 115,
+    "restoresHealth": -721
+  }
+}

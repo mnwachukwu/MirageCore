@@ -1,0 +1,46 @@
+{
+  "name": "Slagwright Yorel (Armorer)",
+  "speakerNpc": 144,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "Heaviest plate you'll ever wear, and you'll want every ounce.\n\nUp here a bad hit isn't a bruise. Up here a bad hit is the whole conversation.",
+      "choices": [
+        {
+          "label": "Show me.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Is heavier always better?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "Later.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "No. There's a point where more plate stops buying you anything, and I'll tell you when you've reached it rather than sell past it.\n\nPast that line you're paying for weight. What you want then is to be hit less, not hit softer - and I don't sell that. Nobody does.",
+      "choices": [
+        {
+          "label": "Show me.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Honest of you.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

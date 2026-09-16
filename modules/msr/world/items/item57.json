@@ -1,0 +1,22 @@
+{
+  "name": "Kilnforged Plate",
+  "pic": 4,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2412,
+  "type": "Equipment",
+  "equipSlot": "armor",
+  "power": 38,
+  "durability": 560,
+  "attributes": {
+    "levelReq": 20,
+    "mayWield": [
+      3,
+      10
+    ]
+  }
+}

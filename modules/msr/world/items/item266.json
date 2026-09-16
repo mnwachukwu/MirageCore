@@ -1,0 +1,17 @@
+{
+  "name": "Ineffable Siphon Vial",
+  "pic": 22,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 20777,
+  "type": "Consumable",
+  "vitalAmount": 3050,
+  "attributes": {
+    "levelReq": 250,
+    "restoresMana": -3050
+  }
+}

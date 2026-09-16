@@ -1,0 +1,29 @@
+{
+  "name": "Ordinal Kesh, Giving Words",
+  "fixesItems": false,
+  "shopType": "Store",
+  "allowBanking": false,
+  "keeper": 146,
+  "barterItem": [],
+  "salesItem": [
+    2,
+    496,
+    497,
+    498,
+    499,
+    500,
+    501,
+    502,
+    503,
+    504,
+    532,
+    533,
+    534,
+    535,
+    536,
+    537,
+    538,
+    539,
+    540
+  ]
+}

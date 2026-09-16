@@ -1,0 +1,18 @@
+{
+  "name": "Obsidian Cap",
+  "pic": 36,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 128106,
+  "type": "Equipment",
+  "equipSlot": "helmet",
+  "power": 109,
+  "durability": 800,
+  "attributes": {
+    "levelReq": 115
+  }
+}

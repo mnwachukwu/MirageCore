@@ -1,0 +1,14 @@
+{
+  "name": "Grand Meditation",
+  "type": "AddMp",
+  "amount": 133,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 105,
+  "mayLearn": [
+    6,
+    9,
+    10
+  ]
+}

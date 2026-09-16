@@ -1,0 +1,44 @@
+{
+  "name": "Pyre Scribe",
+  "says": "I am writing your name in the embers.",
+  "sprite": 9,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 95,
+  "behavior": "Pursue",
+  "group": 3,
+  "range": 12,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 206,
+    "guard": false,
+    "hostile": true,
+    "hp": 559,
+    "int": 334,
+    "spd": 55,
+    "str": 152
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 1021,
+      "chance": 60
+    },
+    {
+      "itemNum": 285,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 3,
+      "chance": 20
+    },
+    {
+      "itemNum": 497,
+      "quantity": 1,
+      "chance": 6
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Absolute Life Siphon",
+  "type": "SubHp",
+  "amount": 313,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 255,
+  "mayLearn": [
+    4,
+    5,
+    8,
+    10
+  ]
+}

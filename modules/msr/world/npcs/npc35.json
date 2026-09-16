@@ -1,0 +1,44 @@
+{
+  "name": "Orc Bloodsinger",
+  "says": "Sing, brothers! Sing!",
+  "sprite": 46,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 55,
+  "behavior": "Pursue",
+  "group": 7,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 17,
+    "guard": false,
+    "hostile": true,
+    "hp": 6,
+    "int": 28,
+    "spd": 5,
+    "str": 13
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 36,
+      "chance": 60
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 3,
+      "chance": 20
+    },
+    {
+      "itemNum": 354,
+      "quantity": 1,
+      "chance": 6
+    }
+  ]
+}

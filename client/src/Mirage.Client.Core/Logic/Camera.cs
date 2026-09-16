@@ -74,9 +74,23 @@ public sealed class Camera
         float minCamY = hasTopRow ? 0f : MapPxH;
         float maxCamY = (hasBotRow ? 3 * MapPxH : 2 * MapPxH) - ViewH;
 
-        CameraX = Math.Clamp(camX, minCamX, maxCamX);
-        CameraY = Math.Clamp(camY, minCamY, maxCamY);
+        CameraX = Settled(camX, minCamX, maxCamX);
+        CameraY = Settled(camY, minCamY, maxCamY);
     }
+
+    /// <summary>Holds the camera inside its scroll range, or puts the map in the middle of the view when
+    /// there is no range to hold it in.
+    ///
+    /// <para>🔴 <b>A map smaller than the viewport has bounds that CROSS.</b> A ten-tile map is 320
+    /// wide against a 512-wide view, so the lowest the camera may sit is higher than the highest - and
+    /// Math.Clamp throws outright when its minimum is above its maximum, which took the client down the
+    /// moment somebody walked into a small room.</para>
+    ///
+    /// <para>⚠ The midpoint of the crossed range is not an approximation. It works out to exactly the
+    /// offset that centers the map in the view, which is the only sensible place for a map with nothing
+    /// to scroll.</para></summary>
+    private static float Settled(float value, float min, float max) =>
+        min <= max ? Math.Clamp(value, min, max) : (min + max) / 2f;
 
     /// <summary>Screen position (FLOAT, sub-pixel) of a world tile's top-left, including sub-tile
     /// movement offset.  Kept sub-pixel so the supersampled world target scrolls smoothly AND the

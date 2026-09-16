@@ -1,0 +1,8 @@
+{
+  "name": "Mender",
+  "description": "Strong healer. Mobile and utilitarian.",
+  "str": 0,
+  "def": 5,
+  "spd": 5,
+  "int": 10
+}

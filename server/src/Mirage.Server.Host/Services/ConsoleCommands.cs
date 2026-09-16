@@ -8,6 +8,7 @@ using Mirage.Server.Core.Persistence;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Updates;
 
@@ -63,6 +64,7 @@ public sealed partial class ConsoleCommands : IHostedService
     private readonly PlayerManager _pm;
     private readonly IPacketDispatcher _dispatcher;
     private readonly GameLoop _gameLoop;
+    private readonly CoreRegistry _registry;
     private readonly IPersistenceService _persistence;
     private readonly IBackgroundPersistence _bg;
     private readonly PlayerSaver _saver;
@@ -113,6 +115,7 @@ public sealed partial class ConsoleCommands : IHostedService
         EditorLockRegistry editorLocks,
         EditorPacketHandler editorHandler,
         ServerConfig config,
+        CoreRegistry registry,
         Func<Management.ManagementListener> management,
         ServerConfigPath configPath,
         ILogger<ConsoleCommands> logger)
@@ -129,6 +132,7 @@ public sealed partial class ConsoleCommands : IHostedService
         _pm = pm;
         _dispatcher = dispatcher;
         _gameLoop = gameLoop;
+        _registry = registry;
         _persistence = persistence;
         _bg = bg;
         _saver = saver;
@@ -315,9 +319,43 @@ public sealed partial class ConsoleCommands : IHostedService
                 break;
 
             default:
-                System.Console.WriteLine(ServerStrings.Format(ServerStrings.Console_UnknownCommand, ("Cmd", cmd)));
+                // Not one of Core's, so the loaded game is offered it before the console gives up. A
+                // world knows about work Core has never heard of - a settlement, a season, a war night -
+                // and the console is the only place that work can be forced without a client.
+                OfferToTheGame(cmd, args);
                 break;
         }
+    }
+
+    /// <summary>Hands an unknown command to the loaded game, and prints whatever it answers.
+    ///
+    /// <para>⚠ Posted to the loop rather than run here. A console command arrives on the console's
+    /// own thread and a game's rules read and write the world, which belongs to the game thread - so
+    /// this runs where every other handler runs, and prints from there.</para>
+    ///
+    /// <para>The first handler with an answer wins; the rest are not asked. Nobody answering leaves the
+    /// console saying the command is unknown, which is what it says with no game loaded at all.</para></summary>
+    private void OfferToTheGame(string cmd, string args)
+    {
+        if (_registry.ConsoleHandlers.Count == 0)
+        {
+            System.Console.WriteLine(ServerStrings.Format(ServerStrings.Console_UnknownCommand, ("Cmd", cmd)));
+            return;
+        }
+
+        _gameLoop.Post(() =>
+        {
+            foreach (IConsoleHandler handler in _registry.ConsoleHandlers)
+            {
+                if (handler.Console(cmd, args.Trim()) is not { } answer) continue;
+
+                System.Console.WriteLine(answer);
+                _logger.LogInformation("Console ran the game's {Cmd}.", cmd);
+                return;
+            }
+
+            System.Console.WriteLine(ServerStrings.Format(ServerStrings.Console_UnknownCommand, ("Cmd", cmd)));
+        });
     }
 
     /// <summary>Runs an async command without letting a fault take the process down. A console command
@@ -410,7 +448,7 @@ public sealed partial class ConsoleCommands : IHostedService
         _dispatcher.SendToAll(PacketBuilder.ChatMsg(
             ServerStrings.Format(ServerStrings.AdminCommand_KickBroadcast,
                 ("Target", charName), ("GameName", _config.GameName), ("Admin", ConsoleOperatorName), ("Minutes", minutes)),
-            12, ChatChannel.Notice));
+            12, ChatChannel.System));
         _dispatcher.SendTo(slot, PacketBuilder.Alert(ServerStrings.Format(
             ServerStrings.AdminCommand_Kicked, ("Admin", ConsoleOperatorName), ("Minutes", minutes))));
         _dispatcher.GracefulDisconnect(slot);
@@ -441,7 +479,7 @@ public sealed partial class ConsoleCommands : IHostedService
         _dispatcher.SendToAll(PacketBuilder.ChatMsg(
             ServerStrings.Format(ServerStrings.AdminCommand_BanBroadcast,
                 ("Target", charName), ("GameName", _config.GameName), ("Admin", ConsoleOperatorName)),
-            12, ChatChannel.Notice));
+            12, ChatChannel.System));
         _dispatcher.SendTo(slot, PacketBuilder.Alert(ServerStrings.Format(
             ServerStrings.Auth_Banned, ("GameName", _config.GameName))));
         _dispatcher.GracefulDisconnect(slot);
@@ -520,7 +558,7 @@ public sealed partial class ConsoleCommands : IHostedService
         _dispatcher.SendToAll(PacketBuilder.ChatMsg(
             ServerStrings.Format(ServerStrings.AdminCommand_MuteBroadcast,
                 ("Target", charName), ("Admin", ConsoleOperatorName), ("Minutes", minutes)),
-            12, ChatChannel.Notice));
+            12, ChatChannel.System));
 
         System.Console.WriteLine(ServerStrings.Format(ServerStrings.Console_Muted,
             ("Name", charName), ("Slot", slot), ("Minutes", minutes)));

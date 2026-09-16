@@ -1,0 +1,13 @@
+{
+  "name": "Master Mana Siphon",
+  "type": "SubMp",
+  "amount": 127,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 100,
+  "mayLearn": [
+    6,
+    10
+  ]
+}

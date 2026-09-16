@@ -1,0 +1,192 @@
+# What somebody staging the world can force, rather than wait for.
+#
+# A war night falls once a week at eight in the evening and a season runs thirteen weeks, so neither
+# is something anybody can sit and watch. The original answered that with Creator-only chat commands
+# and the same four on the server console. A world scripted in Compass has neither, so they are a
+# screen instead: hidden outright for anybody who is not staff, which is what Hidden on a verb does.
+#
+# ⚠ Every one of these drives the SAME path the schedule drives. Nothing here is a second copy of a
+# rule, so a staged war night does what a real one does and a forced settlement charges what midnight
+# would have charged.
+
+shared model Staff
+
+    # Whether the engine says this account runs the world, as a NUMBER — a verb and a panel are gated
+    # on an attribute, and the access level is not one. Written every tick by Show.
+    public string Is = "stf";
+
+    # ⚠ Creator and nothing below it, matching the original's own gate on all four commands. A mapper
+    # can change the world; ending a season pays out of guild vaults.
+    public string Runs = "creator";
+
+    public string OpenVerb = "msr.staff.open";
+    public string NightVerb = "msr.staff.night";
+    public string HurryVerb = "msr.staff.hurry";
+    public string CloseVerb = "msr.staff.close";
+    public string SettleVerb = "msr.staff.settle";
+    public string SeasonVerb = "msr.staff.season";
+
+    # What the last thing they pressed did, so the screen answers rather than only the chat log.
+    public string Did = "stfdid";
+
+    public function Declare(Builder game)
+        Verb open = game.Action(Staff.OpenVerb, "Staging", "Staff");
+        open.OnHud();
+        open.Icon("shield");
+        open.Opens("msr.staff");
+        open.NeedsAtLeast(Staff.Is, 1);
+        open.Hidden();
+
+        Verb night = game.Action(Staff.NightVerb, "Start the war night", "Staff");
+        night.Nowhere();
+        night.Icon("flame");
+        night.NeedsAtLeast(Staff.Is, 1);
+        night.Hidden();
+
+        Verb hurry = game.Action(Staff.HurryVerb, "Advance the phase", "Staff");
+        hurry.Nowhere();
+        hurry.Icon("clock");
+        hurry.NeedsAtLeast(Staff.Is, 1);
+        hurry.Hidden();
+
+        Verb close = game.Action(Staff.CloseVerb, "End the war night", "Staff");
+        close.Nowhere();
+        close.Icon("shield");
+        close.NeedsAtLeast(Staff.Is, 1);
+        close.Hidden();
+
+        Verb settle = game.Action(Staff.SettleVerb, "Settle today", "Staff");
+        settle.Nowhere();
+        settle.Icon("scroll");
+        settle.NeedsAtLeast(Staff.Is, 1);
+        settle.Hidden();
+
+        Verb season = game.Action(Staff.SeasonVerb, "End the season", "Staff");
+        season.Nowhere();
+        season.Icon("spark");
+        season.NeedsAtLeast(Staff.Is, 1);
+        season.Hidden();
+
+        game.Attribute(Staff.Is, "owner");
+        game.Attribute(Staff.Did, "owner");
+
+        Panel staging = game.Panel("msr.staff", "Staging", 300, 300);
+        staging.Smallest(260, 240);
+        staging.Icon("shield");
+        staging.OnlyWhile(Staff.Is, 1);
+
+        staging.Heading("Last done");
+        staging.Field(Staff.Did, "Result", 200, 200, 160);
+
+        staging.Button("Start the war night", Staff.NightVerb);
+        staging.Button("Advance the phase", Staff.HurryVerb);
+        staging.Button("End the war night", Staff.CloseVerb);
+        staging.Button("Settle today", Staff.SettleVerb);
+        staging.Button("End the season", Staff.SeasonVerb);
+    end function
+
+    # The engine's access level, copied onto the body every tick. Read rather than remembered, so an
+    # account promoted or demoted while it is signed in gains and loses the screen with the rank.
+    public function Show(Player who)
+        if World.Access(who) == Staff.Runs
+            who.SetNumber(Staff.Is, 1);
+            yield;
+        end if
+
+        who.SetNumber(Staff.Is, 0);
+    end function
+
+    # ── The five ──────────────────────────────────────────────────────────────
+
+    public function Night(Player who)
+        Staff.Tell(who, "Opened " + Contest.OpenNight() + " contest(s).");
+    end function
+
+    public function Hurry(Player who)
+        integer many = Contest.HurryNight();
+
+        if many < 1
+            Staff.Tell(who, "No contest is running.");
+            yield;
+        end if
+
+        Staff.Tell(who, "Advanced " + many + " contest(s).");
+    end function
+
+    public function Close(Player who)
+        Staff.Tell(who, "Ended " + Contest.EndNight() + " contest(s).");
+    end function
+
+    public function Settle(Player who)
+        Ledger.SettleNow(who);
+
+        Staff.Tell(who, "Settled today.");
+    end function
+
+    public function Season(Player who)
+        integer ended = Season.Which();
+
+        Season.EndNow();
+
+        Staff.Tell(who, "Ended season " + ended + ".");
+    end function
+
+    # ── The same work, typed at the server's own console ──────────────────────
+    #
+    # The original's /startwar, /advancewar, /endwar and /guildreset. Every one calls exactly what the
+    # button above it calls; the only difference is that there is no body here to message, so the
+    # answer goes back as text for the console to print.
+
+    public string function FromConsole(string command, string rest)
+        if command == "/startwar"
+            yield "Opened " + Contest.OpenNight() + " contest(s).";
+        end if
+
+        if command == "/advancewar"
+            integer many = Contest.HurryNight();
+
+            if many < 1
+                yield "No contest is running.";
+            end if
+
+            yield "Advanced " + many + " contest(s).";
+        end if
+
+        if command == "/endwar"
+            yield "Ended " + Contest.EndNight() + " contest(s).";
+        end if
+
+        if command == "/guildreset"
+            yield Staff.Reset(rest);
+        end if
+
+        # ⚠ Blank, and the console goes on to call it unknown. Answering anything here would make
+        # this world the thing that swallowed somebody's typo.
+        yield "";
+    end function
+
+    # The original takes day, week or season. Here a day and a week are the same call: the port's
+    # cadence is driven by the DATE rather than by a scope, so settling a Sunday does the week's work
+    # because it is a Sunday. A season is the one with somewhere else to go.
+    string function Reset(string scope)
+        if scope == "season"
+            integer ended = Season.Which();
+
+            Season.EndNow();
+
+            yield "Ended season " + ended + ".";
+        end if
+
+        if scope == "" or scope == "day" or scope == "week"
+            yield "Settled " + Ledger.SettleFromConsole() + " guild(s).";
+        end if
+
+        yield "Usage: /guildreset [day|week|season]";
+    end function
+
+    function Tell(Player who, string what)
+        who.SetText(Staff.Did, what);
+        who.Message(what);
+    end function
+
+end model

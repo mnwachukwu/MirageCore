@@ -1,0 +1,15 @@
+{
+  "name": "Scroll of Journeyman Life Siphon",
+  "pic": 30,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 795,
+  "type": "Consumable",
+  "attributes": {
+    "teaches": 38
+  }
+}

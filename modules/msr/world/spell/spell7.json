@@ -1,0 +1,19 @@
+{
+  "name": "Novice Weariness",
+  "type": "SubSp",
+  "amount": 6,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 1,
+  "mayLearn": [
+    1,
+    2,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ]
+}

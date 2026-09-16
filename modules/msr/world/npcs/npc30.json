@@ -1,0 +1,39 @@
+{
+  "name": "Orc Shieldbearer",
+  "says": "Come on then!",
+  "sprite": 46,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 45,
+  "behavior": "Pursue",
+  "group": 7,
+  "range": 6,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 19,
+    "guard": false,
+    "hostile": true,
+    "hp": 57,
+    "int": 1,
+    "spd": 3,
+    "str": 24
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 22,
+      "chance": 60
+    },
+    {
+      "itemNum": 276,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 34,
+      "quantity": 1,
+      "chance": 4
+    }
+  ]
+}

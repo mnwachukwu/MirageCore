@@ -1,0 +1,17 @@
+{
+  "name": "Transcendent Vigor Elixir",
+  "pic": 21,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 19684,
+  "type": "Consumable",
+  "vitalAmount": 217,
+  "attributes": {
+    "levelReq": 245,
+    "restoresStamina": 217
+  }
+}

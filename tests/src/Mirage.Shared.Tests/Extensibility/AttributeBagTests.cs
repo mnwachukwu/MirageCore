@@ -146,7 +146,10 @@ public class AttributeBagTests
     }
 
     /// <summary>The startup loaders have no guard around them, so a value this type cannot hold must
-    /// cost that one key rather than the record — and with it, the boot.</summary>
+    /// cost that one key rather than the record — and with it, the boot.
+    ///
+    /// <para>An ARRAY is not one of those: a bag holds a set. What it still cannot hold is a nested
+    /// object or a null.</para></summary>
     [Test]
     public void AValueTheBagCannotHoldIsSkippedAndTheRestOfTheObjectSurvives()
     {
@@ -161,9 +164,9 @@ public class AttributeBagTests
             Assert.That(bag["before"].AsLong(), Is.EqualTo(1));
             Assert.That(bag["after"].AsLong(), Is.EqualTo(2));
             Assert.That(bag.Has("nested"), Is.False);
-            Assert.That(bag.Has("list"), Is.False);
             Assert.That(bag.Has("nothing"), Is.False);
-            Assert.That(bag.Count, Is.EqualTo(2));
+            Assert.That(bag["list"].AsLongs(), Is.EqualTo(new long[] { 1, 2 }), "an array is a set");
+            Assert.That(bag.Count, Is.EqualTo(3));
         });
     }
 

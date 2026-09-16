@@ -1,0 +1,22 @@
+{
+  "name": "Warded Tower Shield",
+  "pic": 32,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 189809,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 174,
+  "durability": 1310,
+  "attributes": {
+    "levelReq": 110,
+    "mayWield": [
+      3,
+      10
+    ]
+  }
+}

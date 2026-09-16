@@ -220,7 +220,7 @@ public class WorldManifestTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(m.DefaultMapSize.Width, Is.EqualTo(1));
+            Assert.That(m.DefaultMapSize.Width, Is.EqualTo(MapSize.Floor.Width));
             Assert.That(m.DefaultMapSize.Height, Is.EqualTo(MapSize.HardMax));
             Assert.That(m.Records.Items, Is.EqualTo(1));
         });

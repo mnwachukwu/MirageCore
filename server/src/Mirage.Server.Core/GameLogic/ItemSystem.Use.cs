@@ -120,8 +120,18 @@ public sealed partial class ItemSystem : GameSystem
                 var temp = _world.TempTiles[mapNum];
                 // An already-open door must not re-trigger or consume the key (matches the KeyOpen trigger guard).
                 if (temp.IsDoorOpen(tx, ty, p.Layer)) break;
-                temp.OpenDoor(tx, ty, p.Layer, Environment.TickCount64);
-                SendToMap(_world, mapNum, new MapKeyPacket { MapNum = mapNum, X = tx, Y = ty, Open = true, Layer = p.Layer });
+                // The whole gate, not the square being faced. A gate is usually wider than a tile,
+                // and unlocking a third of one leaves a barrier nobody can walk through — the same
+                // reason a plate opens the run it points at rather than one square of it.
+                long openedAt = Environment.TickCount64;
+                foreach (var (gx, gy) in DoorSpan.From(map, tx, ty, p.Layer))
+                {
+                    if (temp.IsDoorOpen(gx, gy, p.Layer)) continue;
+
+                    temp.OpenDoor(gx, gy, p.Layer, openedAt);
+                    SendToMap(_world, mapNum, new MapKeyPacket { MapNum = mapNum, X = gx, Y = gy, Open = true, Layer = p.Layer });
+                }
+
                 ViewportMsg(index, ServerStrings.Common_DoorUnlocked, GameColor.White);
                 // Read off `key` — the attribute resolved on the PLAYER'S layer — not off the tile's inline
                 // ground attribute — the flag has to be read on the layer the door being

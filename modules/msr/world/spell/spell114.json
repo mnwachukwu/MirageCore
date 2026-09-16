@@ -1,0 +1,12 @@
+{
+  "name": "Grand Mana Rupture",
+  "type": "SubMp",
+  "amount": 166,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 105,
+  "mayLearn": [
+    10
+  ]
+}

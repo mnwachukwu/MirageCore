@@ -1,0 +1,114 @@
+{
+  "name": "Ash Marshal Vane",
+  "says": "Two will not be enough.",
+  "sprite": 45,
+  "spriteSheet": 0,
+  "size": 2,
+  "spawnSecs": 1500,
+  "behavior": "Wander",
+  "group": 3,
+  "range": 11,
+  "emitsLight": true,
+  "attributes": {
+    "boss": true,
+    "def": 188,
+    "guard": false,
+    "hostile": true,
+    "hp": 52408,
+    "int": 75,
+    "spd": 75,
+    "str": 414
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 8243,
+      "chance": 90
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 155,
+      "quantity": 1,
+      "chance": 4
+    },
+    {
+      "itemNum": 156,
+      "quantity": 1,
+      "chance": 3
+    },
+    {
+      "itemNum": 258,
+      "quantity": 1,
+      "chance": 30
+    },
+    {
+      "itemNum": 506,
+      "quantity": 1,
+      "chance": 20
+    },
+    {
+      "itemNum": 511,
+      "quantity": 1,
+      "chance": 15
+    }
+  ]
+}

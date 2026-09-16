@@ -1,0 +1,39 @@
+{
+  "name": "Poacher",
+  "says": "These woods are mine.",
+  "sprite": 26,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 30,
+  "behavior": "Pursue",
+  "group": 0,
+  "range": 6,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 13,
+    "guard": false,
+    "hostile": true,
+    "hp": 14,
+    "int": 3,
+    "spd": 3,
+    "str": 16
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 12,
+      "chance": 60
+    },
+    {
+      "itemNum": 275,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 22,
+      "quantity": 1,
+      "chance": 4
+    }
+  ]
+}

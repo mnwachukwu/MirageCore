@@ -1,0 +1,44 @@
+{
+  "name": "Brine Cantor",
+  "says": "Sing, or be sung.",
+  "sprite": 39,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 60,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 10,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 92,
+    "guard": false,
+    "hostile": true,
+    "hp": 106,
+    "int": 148,
+    "spd": 24,
+    "str": 67
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 373,
+      "chance": 60
+    },
+    {
+      "itemNum": 280,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 3,
+      "chance": 20
+    },
+    {
+      "itemNum": 414,
+      "quantity": 1,
+      "chance": 6
+    }
+  ]
+}

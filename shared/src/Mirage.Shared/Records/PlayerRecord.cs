@@ -28,8 +28,8 @@ public sealed class PlayerRecord
     [JsonIgnore]
     public string TrimmedName => _trimmedName ??= _name.TrimEnd();
     public int Sprite { get; set; }
-    /// <summary>Which sprite sheet <see cref="Sprite"/> is a row of. Copied from the class at creation
-    /// alongside the row, so re-arting a class never restyles a character already made.
+    /// <summary>Which sprite sheet <see cref="Sprite"/> is a row of. Copied from the APPEARANCE they
+    /// picked, alongside the row, so re-arting a world's roster never restyles a character already made.
     ///
     /// <para>Always written, including when it is 0.</para></summary>
     public int SpriteSheet { get; set; }

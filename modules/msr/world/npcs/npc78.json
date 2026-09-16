@@ -1,0 +1,49 @@
+{
+  "name": "Drowned Herald",
+  "says": "Kneel. He is coming.",
+  "sprite": 31,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 85,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 11,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 103,
+    "guard": false,
+    "hostile": true,
+    "hp": 134,
+    "int": 166,
+    "spd": 27,
+    "str": 75
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 429,
+      "chance": 60
+    },
+    {
+      "itemNum": 282,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 3,
+      "chance": 20
+    },
+    {
+      "itemNum": 106,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 439,
+      "quantity": 1,
+      "chance": 6
+    }
+  ]
+}

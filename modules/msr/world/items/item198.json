@@ -1,0 +1,17 @@
+{
+  "name": "Modest Vigor Elixir",
+  "pic": 21,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 4,
+  "type": "Consumable",
+  "vitalAmount": 11,
+  "attributes": {
+    "levelReq": 10,
+    "restoresStamina": 11
+  }
+}

@@ -29,17 +29,17 @@ public sealed partial class PacketHandler
         {
             case NameLengthResult.TooLong:
                 _dispatcher.SendLocalizedChatTo(index, ServerStrings.Guild_NameLength,
-                    new ChatMetadata(GameColor.BrightRed, ChatChannel.Notice), ("Max", Constants.NameLength));
+                    new ChatMetadata(GameColor.BrightRed, ChatChannel.System), ("Max", Constants.NameLength));
                 return;
             case NameLengthResult.TooShort:
                 _dispatcher.SendLocalizedChatTo(index, ServerStrings.Guild_NameNeedsAlnum,
-                    new ChatMetadata(GameColor.BrightRed, ChatChannel.Notice), ("Min", Constants.MinFieldLength));
+                    new ChatMetadata(GameColor.BrightRed, ChatChannel.System), ("Min", Constants.MinFieldLength));
                 return;
         }
         if (!IsValidName(name))
         {
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.Auth_InvalidName,
-                new ChatMetadata(GameColor.BrightRed, ChatChannel.Notice));
+                new ChatMetadata(GameColor.BrightRed, ChatChannel.System));
             return;
         }
         _guilds.CreateGuild(index, name);

@@ -1,0 +1,73 @@
+{
+  "name": "Quartermaster Ilse (Innkeeper)",
+  "speakerNpc": 133,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "Boots off. The deck's dry and I intend to keep it that way.\n\nThis was a ship. It's a town now, because it's forty feet up and the water isn't. Bunk, strongbox, and the board where people post what they're selling.",
+      "choices": [
+        {
+          "label": "What's on offer?",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "How did a ship end up here?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "Is the water still rising?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "Later.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "It didn't end up. It was put. Tidewatch hauled it onto the shelf when they still had the arms for hauling, and they meant it as a watchtower.\n\nThen the Watch went into the water and didn't come out, and their watchtower became my inn. I don't think they'd mind. I don't think they think.",
+      "choices": [
+        {
+          "label": "What's on offer?",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Is it still rising?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "I see.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "speaker": "",
+      "text": "No. That's the part nobody believes.\n\nIt rose, it took everything worth taking, and it stopped. It's been at that exact mark for longer than I've been alive. Whatever it wanted, it got.",
+      "choices": [
+        {
+          "label": "What's on offer?",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Unsettling.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

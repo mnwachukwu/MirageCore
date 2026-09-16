@@ -32,6 +32,7 @@ public sealed partial class GameplayScreen : IGameScreen
         {
             _ctx.State.SnapVitals = false;
             UiHelper.SnapMeters();
+            _ctx.State.OverheadEase.Snap();
         }
 
         float deltaMs = (float)gameTime.ElapsedGameTime.TotalMilliseconds;

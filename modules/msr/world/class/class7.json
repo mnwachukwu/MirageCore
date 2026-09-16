@@ -1,0 +1,8 @@
+{
+  "name": "Duelist",
+  "description": "Nimble fighter. High power melee with speed.",
+  "str": 15,
+  "def": 0,
+  "spd": 5,
+  "int": 0
+}

@@ -1,0 +1,18 @@
+{
+  "name": "Expert Second Wind",
+  "type": "AddSp",
+  "amount": 23,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 20,
+  "mayLearn": [
+    1,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ]
+}

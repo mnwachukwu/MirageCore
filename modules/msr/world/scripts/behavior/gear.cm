@@ -5,27 +5,17 @@
 shared model Gear
 
     public string Of = "Items";
-    public string Gates = "GearGate";
+    # ⚠ A LIST on the thing itself, not a table beside it. One field naming the classes that may
+    # have it: no second family to author, no limit to raise as a world grows, and the question is one
+    # read rather than a walk of every row. A piece that names none is open to everybody.
+    public string WieldableBy = "mayWield";
 
     # ── The gate ──────────────────────────────────────────────────────────────
 
-    # ⚠ No row for a piece means every class may wield it, which is the common case and so the one
-    # that costs nothing to author. The same shape the spell gate takes, read the same way.
+    # ⚠ NO LIST on a piece means every class may wield it, which is the common case and so the
+    # one that costs nothing to author. The same shape the spell gate takes, read the same way.
     public boolean function OpenTo(integer item, integer forClass)
-        integer rows = World.Records(Gear.Gates);
-        boolean gated = false;
-
-        loop for row = 1 to rows
-            if World.RecordNumber(Gear.Gates, row, "item") == item
-                gated = true;
-
-                if World.RecordNumber(Gear.Gates, row, "forClass") == forClass
-                    yield true;
-                end if
-            end if
-        end loop
-
-        yield not gated;
+        yield World.RecordAllows("Items", item, Gear.WieldableBy, forClass);
     end function
 
     # Everything this game asks before somebody should be holding a piece: the class it is written

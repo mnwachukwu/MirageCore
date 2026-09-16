@@ -32,7 +32,7 @@ model Spell
     # starting book is a third family again, below.
 
     public shared function Describe(Records these)
-        these.Are("Spells", "Spell", 200);
+        these.Are("Spells", "Spell", 500);
         these.Icon("spark");
 
         these.Caption("amount", "Magnitude");
@@ -44,25 +44,6 @@ model Spell
         these.Length("name", 24);
         these.Range("amount", 0, 250);
         these.Range("levelReq", 0, 255);
-    end function
-end model
-
-# Which classes may learn which spells.
-#
-# ⚠ No row for a spell means every class may learn it. That is the common case, so it costs nothing
-# to author. A world where the gate were the default would need a row per class per spell before
-# anybody could cast anything.
-
-model SpellGate
-    public Spell forSpell;
-    public Class forClass;
-
-    public shared function Describe(Records these)
-        these.Are("Spell gates", "Gate", 500);
-        these.Icon("key");
-
-        these.Caption("forSpell", "Spell");
-        these.Caption("forClass", "May be learned by");
     end function
 end model
 

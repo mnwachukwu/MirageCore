@@ -1,0 +1,114 @@
+{
+  "name": "Ferry of Ash",
+  "says": "CREEEAAAK... HSSSSS!",
+  "sprite": 29,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 420,
+  "behavior": "Wander",
+  "group": 3,
+  "range": 6,
+  "emitsLight": true,
+  "attributes": {
+    "boss": true,
+    "def": 32,
+    "guard": false,
+    "hostile": true,
+    "hp": 2599,
+    "int": 5,
+    "spd": 2,
+    "str": 37
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 409,
+      "chance": 90
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 56,
+      "quantity": 1,
+      "chance": 16
+    },
+    {
+      "itemNum": 63,
+      "quantity": 1,
+      "chance": 12
+    },
+    {
+      "itemNum": 210,
+      "quantity": 1,
+      "chance": 30
+    },
+    {
+      "itemNum": 371,
+      "quantity": 1,
+      "chance": 20
+    },
+    {
+      "itemNum": 376,
+      "quantity": 1,
+      "chance": 15
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Celestial Mana Rupture",
+  "type": "SubMp",
+  "amount": 384,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 250,
+  "mayLearn": [
+    10
+  ]
+}

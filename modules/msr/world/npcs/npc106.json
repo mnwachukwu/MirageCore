@@ -1,0 +1,39 @@
+{
+  "name": "Slag Titan",
+  "says": "MMMMOOOLLLTEN",
+  "sprite": 36,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 220,
+  "behavior": "Pursue",
+  "group": 11,
+  "range": 10,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 317,
+    "guard": false,
+    "hostile": true,
+    "hp": 76934,
+    "int": 55,
+    "spd": 25,
+    "str": 373
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 1061,
+      "chance": 60
+    },
+    {
+      "itemNum": 287,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 170,
+      "quantity": 1,
+      "chance": 1
+    }
+  ]
+}

@@ -82,7 +82,7 @@ public sealed class TimeOfDaySystem : GameSystem
             TimePhase.Dawn => ServerStrings.TimeOfDay_DawnBreaks,
             _ => ServerStrings.TimeOfDay_DayReturns,
         };
-        _dispatcher.SendLocalizedChatToAll(key, new ChatMetadata(GameColor.Yellow, ChatChannel.Notice));
+        _dispatcher.SendLocalizedChatToAll(key, new ChatMetadata(GameColor.Yellow, ChatChannel.System));
     }
 
     /// <summary>
@@ -108,9 +108,9 @@ public sealed class TimeOfDaySystem : GameSystem
         // Always announce an admin jump as a split pair: a public "something shifted" line to everyone,
         // then a staff-only attribution naming the admin. Then the proclamation for the new phase.
         _dispatcher.SendLocalizedChatToAll(ServerStrings.TimeOfDay_UnnaturalShift,
-            new ChatMetadata(GameColor.Yellow, ChatChannel.Notice));
+            new ChatMetadata(GameColor.Yellow, ChatChannel.System));
         _dispatcher.SendLocalizedChatToAdmins(ServerStrings.TimeOfDay_UnnaturalShiftBy,
-            new ChatMetadata(GameColor.Yellow, ChatChannel.Notice), ("Admin", adminName));
+            new ChatMetadata(GameColor.Yellow, ChatChannel.System), ("Admin", adminName));
         AnnouncePhase(phase);
     }
 

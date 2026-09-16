@@ -1,0 +1,18 @@
+{
+  "name": "Godmarked Cap",
+  "pic": 35,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 993886,
+  "type": "Equipment",
+  "equipSlot": "helmet",
+  "power": 230,
+  "durability": 1190,
+  "attributes": {
+    "levelReq": 250
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "name": "The First Flame",
+  "says": "I am what the Kiln was for.",
+  "sprite": 15,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 1800,
+  "behavior": "Wander",
+  "group": 3,
+  "range": 13,
+  "emitsLight": true,
+  "attributes": {
+    "boss": true,
+    "def": 196,
+    "guard": false,
+    "hostile": true,
+    "hp": 231729,
+    "int": 429,
+    "spd": 78,
+    "str": 78
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 8652,
+      "chance": 90
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 12,
+      "chance": 45
+    },
+    {
+      "itemNum": 176,
+      "quantity": 1,
+      "chance": 4
+    },
+    {
+      "itemNum": 183,
+      "quantity": 1,
+      "chance": 3
+    },
+    {
+      "itemNum": 270,
+      "quantity": 1,
+      "chance": 30
+    },
+    {
+      "itemNum": 545,
+      "quantity": 1,
+      "chance": 20
+    },
+    {
+      "itemNum": 550,
+      "quantity": 1,
+      "chance": 15
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Void Exsanguination",
+  "type": "SubHp",
+  "amount": 368,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 240,
+  "mayLearn": [
+    4,
+    10
+  ]
+}

@@ -97,21 +97,68 @@ public sealed class NewCharScreen : IGameScreen
         _errorMsg = "";
         _appearanceList.Items.Clear();
 
+        // The questions first, because which looks are on offer can depend on how they are answered.
+        BuildAskedLists();
+        BuildAppearanceList();
+    }
+
+    /// <summary>Lists the looks this world offers somebody who has answered the questions the way they
+    /// stand right now.
+    ///
+    /// <para>🔴 <b>Rebuilt whenever an answer changes</b>, because a world may gate a look behind one
+    /// — a class, a homeland, whatever it decided that question means. The row they had selected is kept
+    /// if it survived the change, so answering a second question does not quietly restyle them.</para>
+    ///
+    /// <para>⚠ The visible rows are a SUBSET, so the row number is not the world's. Rows carries the
+    /// world's own index for each one, and that is what goes on the wire.</para></summary>
+    private void BuildAppearanceList()
+    {
+        int kept = _rows.Count > 0 && _appearanceList.SelectedIndex >= 0
+                   && _appearanceList.SelectedIndex < _rows.Count
+            ? _rows[_appearanceList.SelectedIndex]
+            : -1;
+
+        _appearanceList.Items.Clear();
+        _rows.Clear();
+
+        var answers = Answers();
         var offered = _ctx.State.Appearances;
+
         for (int i = 0; i < offered.Count; i++)
         {
+            if (!offered[i].OfferedWhen(answers)) continue;
+
             // A world may offer looks without naming them. An unnamed one still needs a row to click,
-            // so it is numbered rather than left blank.
+            // so it is numbered rather than left blank. Numbered by the WORLD's position, so the same
+            // look reads the same however the list was filtered.
             string name = offered[i].Name.TrimEnd();
             _appearanceList.Items.Add(name.Length > 0
                 ? name
                 : ClientStrings.Format(ClientStrings.NewCharScreen_UnnamedAppearance, ("Number", i + 1)));
+            _rows.Add(i);
         }
 
-        _appearanceList.SelectedIndex = _appearanceList.Items.Count > 0 ? 0 : -1;
-
-        BuildAskedLists();
+        int again = _rows.IndexOf(kept);
+        _appearanceList.SelectedIndex = again >= 0 ? again : (_rows.Count > 0 ? 0 : -1);
     }
+
+    /// <summary>What they have answered so far, by each question's key — the same shape the server
+    /// builds when it checks the pick.</summary>
+    private Dictionary<string, int> Answers()
+    {
+        var answers = new Dictionary<string, int>(_asked.Count, StringComparer.Ordinal);
+
+        for (int i = 0; i < _asked.Count; i++)
+        {
+            int row = _askedLists[i].SelectedIndex;
+            if (row >= 0 && row < _asked[i].Options.Count) answers[_asked[i].Key] = _asked[i].Options[row].Num;
+        }
+
+        return answers;
+    }
+
+    // Which of the world's appearances each visible row is. See BuildAppearanceList.
+    private readonly List<int> _rows = [];
 
     /// <summary>A list per thing this game asks at creation, filled from what the server resolved.
     ///
@@ -147,6 +194,29 @@ public sealed class NewCharScreen : IGameScreen
 
     private const int AskedListH = 44;
 
+    /// <summary>Where a question sits among the ones this world declared, or -1 for one it did not.
+    /// The screen drops questions with nothing to pick, so its own order is not the world's.</summary>
+    private int Declared(string key)
+    {
+        var asked = _ctx.State.Asked;
+
+        for (int i = 0; i < asked.Count; i++)
+        {
+            if (string.Equals(asked[i].Key, key, StringComparison.Ordinal)) return i;
+        }
+
+        return -1;
+    }
+
+    /// <summary>A fingerprint of every answer as it stands, for noticing that one moved.</summary>
+    private int Chosen()
+    {
+        var code = new HashCode();
+        foreach (ListBox list in _askedLists) code.Add(list.SelectedIndex);
+
+        return code.ToHashCode();
+    }
+
     public void OnExit() { }
 
     /// <summary>Handle typing, list selection, and the submit key.</summary>
@@ -162,7 +232,9 @@ public sealed class NewCharScreen : IGameScreen
         _nameField.Feed(input, Environment.TickCount64);
         _appearanceList.Update(input, AppearanceListRect);
 
+        int answered = Chosen();
         for (int i = 0; i < _askedLists.Count; i++) _askedLists[i].Update(input, AskedRect(i));
+        if (Chosen() != answered) BuildAppearanceList();
 
         if (input.IsKeyPressed(Keys.Enter)) TryCreate();
         if (_createBtn.IsClicked(input)) TryCreate();
@@ -179,6 +251,16 @@ public sealed class NewCharScreen : IGameScreen
             return;
         }
 
+        // ⚠ Empty because their ANSWERS left nothing, not because they failed to click. A world
+        // whose looks are all gated behind a question offers none until that question has something to
+        // pick, and "choose an appearance" over an empty box is a dead end nobody can read their way out
+        // of.
+        if (_rows.Count == 0)
+        {
+            _errorMsg = ClientStrings.Get(ClientStrings.NewCharScreen_NoAppearanceForThat);
+            return;
+        }
+
         if (_appearanceList.SelectedIndex < 0)
         {
             _errorMsg = ClientStrings.Get(ClientStrings.NewCharScreen_SelectAppearance);
@@ -186,15 +268,22 @@ public sealed class NewCharScreen : IGameScreen
         }
 
         _errorMsg = "";
-        // The record's own number, not the row - a list drops the blank slots, so the two differ.
-        var chose = new int[_asked.Count];
+
+        // ⚠ One slot per question this WORLD declared, not per question this screen drew. A question
+        // whose records are all blank is dropped from the screen, and a shorter array would then line
+        // every later answer up against the wrong question when the server reads it back by position.
+        var chose = new int[_ctx.State.Asked.Count];
         for (int i = 0; i < _asked.Count; i++)
         {
+            int at = Declared(_asked[i].Key);
+            if (at < 0) continue;
+
             int row = _askedLists[i].SelectedIndex;
-            chose[i] = row >= 0 && row < _asked[i].Options.Count ? _asked[i].Options[row].Num : 0;
+            // The record's own number, not the row - a list drops the blank slots, so the two differ.
+            chose[at] = row >= 0 && row < _asked[i].Options.Count ? _asked[i].Options[row].Num : 0;
         }
 
-        _ctx.Sender.SendAddChar(_nameField.Text, _appearanceList.SelectedIndex, chose);
+        _ctx.Sender.SendAddChar(_nameField.Text, _rows[_appearanceList.SelectedIndex], chose);
         _ctx.Menu.GoToLoading(ClientStrings.Get(ClientStrings.NewCharScreen_CreatingCharacter));
         _ctx.Screens.Replace(new LoadingScreen(_ctx));
     }
@@ -238,7 +327,8 @@ public sealed class NewCharScreen : IGameScreen
         UiHelper.DrawBorder(sb, SpriteFrame, UiHelper.DlgBorderColor);
 
         var offered = _ctx.State.Appearances;
-        int i = _appearanceList.SelectedIndex;
+        int i = _appearanceList.SelectedIndex >= 0 && _appearanceList.SelectedIndex < _rows.Count
+            ? _rows[_appearanceList.SelectedIndex] : -1;
         if (i < 0 || i >= offered.Count) return;
 
         if (nowMs - _lastAnimToggleMs >= WalkAnimMs)

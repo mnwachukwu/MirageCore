@@ -1,0 +1,17 @@
+{
+  "name": "Transcendent Healing Elixir",
+  "pic": 25,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 19684,
+  "type": "Consumable",
+  "vitalAmount": 2937,
+  "attributes": {
+    "levelReq": 245,
+    "restoresHealth": 2937
+  }
+}

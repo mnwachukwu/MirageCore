@@ -1,0 +1,14 @@
+{
+  "name": "Empyrean Mend",
+  "type": "AddHp",
+  "amount": 217,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 235,
+  "mayLearn": [
+    6,
+    9,
+    10
+  ]
+}

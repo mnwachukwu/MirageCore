@@ -1,0 +1,119 @@
+{
+  "name": "The Drowned King",
+  "says": "AT LAST. ALL OF YOU.",
+  "sprite": 2,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 600,
+  "behavior": "Wander",
+  "group": 2,
+  "range": 11,
+  "emitsLight": true,
+  "attributes": {
+    "boss": true,
+    "def": 19,
+    "guard": false,
+    "hostile": true,
+    "hp": 5719,
+    "int": 42,
+    "spd": 8,
+    "str": 8
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 409,
+      "chance": 90
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 12,
+      "chance": 45
+    },
+    {
+      "itemNum": 60,
+      "quantity": 1,
+      "chance": 16
+    },
+    {
+      "itemNum": 59,
+      "quantity": 1,
+      "chance": 12
+    },
+    {
+      "itemNum": 209,
+      "quantity": 1,
+      "chance": 30
+    },
+    {
+      "itemNum": 363,
+      "quantity": 1,
+      "chance": 20
+    },
+    {
+      "itemNum": 368,
+      "quantity": 1,
+      "chance": 15
+    }
+  ]
+}

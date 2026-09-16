@@ -1,0 +1,23 @@
+{
+  "name": "Sundered Helm",
+  "pic": 38,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1190445,
+  "type": "Equipment",
+  "equipSlot": "helmet",
+  "power": 295,
+  "durability": 1550,
+  "attributes": {
+    "levelReq": 240,
+    "mayWield": [
+      2,
+      3,
+      10
+    ]
+  }
+}

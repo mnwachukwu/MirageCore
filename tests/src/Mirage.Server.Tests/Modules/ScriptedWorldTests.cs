@@ -2267,7 +2267,7 @@ public class ScriptedWorldTests
         public AttributeBag Bag { get; } = new();
         public WorldPlace Place { get; set; } = new(1, 0, 0);
 
-        public void Tell(EntityHandle who, string text, ChatChannel channel, int color) => Said.Add(text);
+        public void Tell(EntityHandle who, string text, string channel, int color) => Said.Add(text);
 
         /// <summary>Which bodies are in the world, or empty for "every handle names one".
         ///
@@ -2298,17 +2298,17 @@ public class ScriptedWorldTests
         /// <summary>What was announced, and to whom — "everyone", "map 3", or "near 1,4,5".</summary>
         public List<(string Audience, string Text)> Announced { get; } = [];
 
-        public void TellEveryone(string text, ChatChannel channel, int color) =>
+        public void TellEveryone(string text, string channel, int color) =>
             Announced.Add(("everyone", text));
 
-        public void TellEveryoneOn(int mapNum, string text, ChatChannel channel, int color) =>
+        public void TellEveryoneOn(int mapNum, string text, string channel, int color) =>
             Announced.Add(($"map {mapNum}", text));
 
-        public void TellEveryoneNear(WorldPlace at, string text, ChatChannel channel, int color) =>
+        public void TellEveryoneNear(WorldPlace at, string text, string channel, int color) =>
             Announced.Add(($"near {at.Map},{at.X},{at.Y}", text));
 
         public void TellThese(IReadOnlyCollection<EntityHandle> them, string text,
-                              ChatChannel channel, int color) =>
+                              string channel, int color) =>
             Announced.Add(($"these {string.Join(' ', them)}", text));
 
         /// <summary>Which guild a test put somebody in, who else is in it with them, and who is in

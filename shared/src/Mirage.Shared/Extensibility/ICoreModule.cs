@@ -86,6 +86,13 @@ public interface ICoreBuilder
     /// windows.</summary>
     void AddPanel(GamePanel panel);
 
+    /// <summary>A kind of line this game's own rules produce, that a player can read apart from
+    /// everything else. Declare none and everything a game says lands on Core's System channel.
+    ///
+    /// <para>⚠ The id may not be one of Core's five — <c>Global</c>, <c>System</c>, <c>Tell</c>,
+    /// <c>Guild</c>, or <c>Admin</c> — nor <c>Always</c>.</para></summary>
+    void AddChatChannel(ChatChannelSpec channel);
+
     /// <summary>Something the player may do that this game invented. A stock client offers it by
     /// caption and sends its id back; <see cref="AddActionHandler"/> then handles it. It may carry a
     /// key from <see cref="GameKey.Offered"/>, which reaches it without opening a menu.</summary>
@@ -104,6 +111,10 @@ public interface ICoreBuilder
     /// <summary>Something to be told what happened in the world. Declare none and the engine runs
     /// exactly as it does now and tells nothing.</summary>
     void AddObserver(IWorldObserver observer);
+
+    /// <summary>Something that answers commands typed at the SERVER'S console. Declare none and an
+    /// unknown command is refused there exactly as it is with no game loaded.</summary>
+    void AddConsoleHandler(IConsoleHandler handler);
 
     /// <summary>What this game says about dying — whether it happens, what it costs, where the body
     /// comes back. Declare none and <c>DeathSystem.Kill</c> moves the body and takes nothing.</summary>

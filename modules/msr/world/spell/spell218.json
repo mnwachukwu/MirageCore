@@ -1,0 +1,15 @@
+{
+  "name": "Eternal Life Siphon",
+  "type": "SubHp",
+  "amount": 301,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 245,
+  "mayLearn": [
+    4,
+    5,
+    8,
+    10
+  ]
+}

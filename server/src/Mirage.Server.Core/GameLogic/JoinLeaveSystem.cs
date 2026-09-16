@@ -127,6 +127,9 @@ public sealed class JoinLeaveSystem : GameSystem
         _dispatcher.SendTo(index, PacketBuilder.GameActions(_world.Actions));
         _dispatcher.SendTo(index, PacketBuilder.GamePanels(_world.Panels));
 
+        // And which channels its own lines read on, before the welcome batch that lands on them.
+        _dispatcher.SendTo(index, PacketBuilder.ChatChannels(_world.ChatChannels));
+
         CheckEquippedItems(index);
 
         // ── Send all game data ────────────────────────────────────────────────
@@ -202,7 +205,7 @@ public sealed class JoinLeaveSystem : GameSystem
         // Then the player-visible broadcasts (everyone, including the joining player).
         _dispatcher.SendLocalizedChatToAll(
             ServerStrings.JoinLeave_JoinBroadcast,
-            new ChatMetadata(joinColor, ChatChannel.JoinLeaveNotice),
+            new ChatMetadata(joinColor, ChatChannel.System),
             ("Name", p.TrimmedName), ("GameName", _config.GameName));
         if (pkExpiredOnLogin)
         {
@@ -533,7 +536,7 @@ public sealed class JoinLeaveSystem : GameSystem
         int leaveColor = p.Access <= AdminLevel.Monitor ? GameColor.JoinLeft : GameColor.White;
         _dispatcher.SendLocalizedChatToAll(
             ServerStrings.JoinLeave_LeaveBroadcast,
-            new ChatMetadata(leaveColor, ChatChannel.JoinLeaveNotice),
+            new ChatMetadata(leaveColor, ChatChannel.System),
             ("Name", p.TrimmedName), ("GameName", _config.GameName));
 
         SendToMapBut(_world, p.Map, index, PacketBuilder.LeaveMap(index));
@@ -613,7 +616,7 @@ public sealed class JoinLeaveSystem : GameSystem
         int leaveColor = p.Access <= AdminLevel.Monitor ? GameColor.JoinLeft : GameColor.White;
         _dispatcher.SendLocalizedChatToAll(
             ServerStrings.JoinLeave_LeaveBroadcast,
-            new ChatMetadata(leaveColor, ChatChannel.JoinLeaveNotice),
+            new ChatMetadata(leaveColor, ChatChannel.System),
             ("Name", p.TrimmedName), ("GameName", _config.GameName));
         // No PlayersOnline update here — the ghost still counts as a player in the world.
 

@@ -1,0 +1,49 @@
+{
+  "name": "Charcoal Burner",
+  "says": "Mind the stack - mind it!",
+  "sprite": 24,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 30,
+  "behavior": "Wander",
+  "group": 0,
+  "range": 5,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 10,
+    "guard": false,
+    "hostile": true,
+    "hp": 10,
+    "int": 2,
+    "spd": 2,
+    "str": 12
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 5,
+      "chance": 60
+    },
+    {
+      "itemNum": 274,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 274,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 274,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 274,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

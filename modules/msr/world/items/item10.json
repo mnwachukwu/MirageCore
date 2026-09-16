@@ -1,0 +1,18 @@
+{
+  "name": "Rusted Cap",
+  "pic": 34,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 11,
+  "type": "Equipment",
+  "equipSlot": "helmet",
+  "power": 6,
+  "durability": 80,
+  "attributes": {
+    "levelReq": 1
+  }
+}

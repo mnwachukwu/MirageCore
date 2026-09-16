@@ -1,0 +1,15 @@
+{
+  "name": "Sovereign Vigor",
+  "type": "AddSp",
+  "amount": 151,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 120,
+  "mayLearn": [
+    7,
+    8,
+    9,
+    10
+  ]
+}

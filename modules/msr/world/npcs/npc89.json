@@ -1,0 +1,39 @@
+{
+  "name": "Kiln Serjeant",
+  "says": "Stoke it. Stoke it higher.",
+  "sprite": 3,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 90,
+  "behavior": "Pursue",
+  "group": 3,
+  "range": 10,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 282,
+    "guard": false,
+    "hostile": true,
+    "hp": 3246,
+    "int": 55,
+    "spd": 66,
+    "str": 331
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 1000,
+      "chance": 60
+    },
+    {
+      "itemNum": 284,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 245,
+      "quantity": 1,
+      "chance": 10
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Arch Bloodletting",
+  "type": "SubHp",
+  "amount": 104,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 110,
+  "mayLearn": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+  ]
+}

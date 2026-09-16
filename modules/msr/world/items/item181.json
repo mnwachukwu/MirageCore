@@ -1,0 +1,25 @@
+{
+  "name": "Mythic Buckler",
+  "pic": 18,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1027989,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 235,
+  "durability": 1200,
+  "attributes": {
+    "levelReq": 255,
+    "mayWield": [
+      2,
+      3,
+      6,
+      7,
+      10
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "Slag Legionary",
+  "says": "We were poured, not born.",
+  "sprite": 0,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 100,
+  "behavior": "Pursue",
+  "group": 3,
+  "range": 10,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 292,
+    "guard": false,
+    "hostile": true,
+    "hp": 3480,
+    "int": 57,
+    "spd": 69,
+    "str": 344
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 1046,
+      "chance": 60
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 154,
+      "quantity": 1,
+      "chance": 1
+    }
+  ]
+}

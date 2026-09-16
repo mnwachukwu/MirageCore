@@ -1,0 +1,25 @@
+{
+  "name": "Deathless",
+  "pic": 12,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1369194,
+  "type": "Equipment",
+  "equipSlot": "weapon",
+  "power": 313,
+  "durability": 1600,
+  "attributes": {
+    "levelReq": 255,
+    "mayWield": [
+      1,
+      2,
+      3,
+      7,
+      10
+    ]
+  }
+}

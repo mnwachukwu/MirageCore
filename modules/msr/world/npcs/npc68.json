@@ -1,0 +1,39 @@
+{
+  "name": "Court Drowned",
+  "says": "The court does not adjourn.",
+  "sprite": 0,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 70,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 10,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 129,
+    "guard": false,
+    "hostile": true,
+    "hp": 3546,
+    "int": 38,
+    "spd": 23,
+    "str": 163
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 403,
+      "chance": 60
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 96,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

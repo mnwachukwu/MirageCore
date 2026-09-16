@@ -1,0 +1,12 @@
+{
+  "name": "Journeyman Mana Rupture",
+  "type": "SubMp",
+  "amount": 24,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 10,
+  "mayLearn": [
+    10
+  ]
+}

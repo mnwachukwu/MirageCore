@@ -1,0 +1,22 @@
+{
+  "name": "Angelmaker",
+  "pic": 12,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1710399,
+  "type": "Equipment",
+  "equipSlot": "weapon",
+  "power": 391,
+  "durability": 2000,
+  "attributes": {
+    "levelReq": 255,
+    "mayWield": [
+      1,
+      10
+    ]
+  }
+}

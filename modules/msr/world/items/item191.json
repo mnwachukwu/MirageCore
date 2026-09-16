@@ -1,0 +1,17 @@
+{
+  "name": "Lesser Mana Elixir",
+  "pic": 27,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1,
+  "type": "Consumable",
+  "vitalAmount": 14,
+  "attributes": {
+    "levelReq": 5,
+    "restoresMana": 14
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "name": "Emberguard Serjeant",
+  "says": "The guard does not rotate. Ever.",
+  "sprite": 41,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 95,
+  "behavior": "Pursue",
+  "group": 3,
+  "range": 10,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 286,
+    "guard": false,
+    "hostile": true,
+    "hp": 3347,
+    "int": 56,
+    "spd": 67,
+    "str": 337
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 1021,
+      "chance": 60
+    },
+    {
+      "itemNum": 285,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

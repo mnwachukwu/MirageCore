@@ -1,0 +1,34 @@
+{
+  "name": "Storm Roc",
+  "says": "",
+  "sprite": 22,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 140,
+  "behavior": "Pursue",
+  "group": 0,
+  "range": 9,
+  "emitsLight": false,
+  "attributes": {
+    "boss": false,
+    "def": 28,
+    "guard": false,
+    "hostile": true,
+    "hp": 793,
+    "int": 5,
+    "spd": 2,
+    "str": 33
+  },
+  "drops": [
+    {
+      "itemNum": 47,
+      "quantity": 1,
+      "chance": 4
+    },
+    {
+      "itemNum": 204,
+      "quantity": 1,
+      "chance": 10
+    }
+  ]
+}

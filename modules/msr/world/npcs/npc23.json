@@ -1,0 +1,22 @@
+{
+  "name": "Ash Strider",
+  "says": "",
+  "sprite": 21,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 25,
+  "behavior": "Wander",
+  "group": 0,
+  "range": 5,
+  "emitsLight": false,
+  "attributes": {
+    "boss": false,
+    "def": 8,
+    "guard": false,
+    "hostile": true,
+    "hp": 0,
+    "int": 1,
+    "spd": 4,
+    "str": 11
+  }
+}

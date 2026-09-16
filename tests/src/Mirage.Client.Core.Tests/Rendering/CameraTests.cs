@@ -174,4 +174,42 @@ public class CameraTests
             Assert.That(cam.CameraY, Is.EqualTo(settledY));
         });
     }
+
+    // ── A map smaller than the view ───────────────────────────────────────────
+
+    /// <summary>🔴 <b>A map narrower than the viewport crashed the client outright.</b> Ten tiles is
+    /// 320 wide against a 512-wide view, so the lowest the camera may sit works out ABOVE the highest -
+    /// and Math.Clamp throws when its minimum is above its maximum. Every client that walked into a small
+    /// room went down with it, which makes a small room a thing no world could contain.</summary>
+    [Test]
+    public void ASmallMapDoesNotThrow()
+    {
+        var cam = new Camera();
+
+        Assert.DoesNotThrow(() => cam.Update(5, 5, 0f, 0f, CenterOnly(), 10, 10));
+    }
+
+    /// <summary>⚠ And it SITS STILL in the middle. A map with nothing to scroll should not slide
+    /// under the player, so the camera lands at the offset that centers it - which is what the midpoint
+    /// of the crossed bounds works out to.</summary>
+    [Test]
+    public void ASmallMapIsCenteredAndDoesNotScroll()
+    {
+        var cam = new Camera();
+        const int tiles = 10;
+
+        float centered = (3 * tiles * Constants.PicX - Camera.ViewW) / 2f;
+
+        cam.Update(1, 1, 0f, 0f, CenterOnly(), tiles, tiles);
+        float atOneCorner = cam.CameraX;
+
+        cam.Update(8, 8, 0f, 0f, CenterOnly(), tiles, tiles);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(atOneCorner, Is.EqualTo(centered).Within(0.01f));
+            Assert.That(cam.CameraX, Is.EqualTo(centered).Within(0.01f),
+                        "the same wherever the player stands, because there is nowhere to scroll to");
+        });
+    }
 }

@@ -1,0 +1,114 @@
+{
+  "name": "Warlord Hesk",
+  "says": "Bring all four. Bring forty.",
+  "sprite": 32,
+  "spriteSheet": 0,
+  "size": 2,
+  "spawnSecs": 600,
+  "behavior": "Wander",
+  "group": 5,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": true,
+    "def": 19,
+    "guard": false,
+    "hostile": true,
+    "hp": 5719,
+    "int": 8,
+    "spd": 8,
+    "str": 42
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 409,
+      "chance": 90
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 53,
+      "quantity": 1,
+      "chance": 16
+    },
+    {
+      "itemNum": 54,
+      "quantity": 1,
+      "chance": 12
+    },
+    {
+      "itemNum": 210,
+      "quantity": 1,
+      "chance": 30
+    },
+    {
+      "itemNum": 374,
+      "quantity": 1,
+      "chance": 20
+    },
+    {
+      "itemNum": 361,
+      "quantity": 1,
+      "chance": 15
+    }
+  ]
+}

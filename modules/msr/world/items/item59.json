@@ -1,0 +1,23 @@
+{
+  "name": "Kilnforged Helm",
+  "pic": 37,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1968,
+  "type": "Equipment",
+  "equipSlot": "helmet",
+  "power": 31,
+  "durability": 450,
+  "attributes": {
+    "levelReq": 20,
+    "mayWield": [
+      2,
+      3,
+      10
+    ]
+  }
+}

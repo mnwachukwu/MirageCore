@@ -1,0 +1,34 @@
+{
+  "name": "Ashen Pikeman",
+  "says": "Hold the line! Hold!",
+  "sprite": 42,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 60,
+  "behavior": "Pursue",
+  "group": 3,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 27,
+    "guard": false,
+    "hostile": true,
+    "hp": 37,
+    "int": 5,
+    "spd": 6,
+    "str": 32
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 45,
+      "chance": 60
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "Runed Tower Shield",
+  "pic": 32,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 167494,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 166,
+  "durability": 1280,
+  "attributes": {
+    "levelReq": 105,
+    "mayWield": [
+      3,
+      10
+    ]
+  }
+}

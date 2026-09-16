@@ -1,0 +1,44 @@
+{
+  "name": "Undertow Acolyte",
+  "says": "Down is a direction you can be taught.",
+  "sprite": 27,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 60,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 10,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 95,
+    "guard": false,
+    "hostile": true,
+    "hp": 115,
+    "int": 154,
+    "spd": 25,
+    "str": 70
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 390,
+      "chance": 60
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 3,
+      "chance": 20
+    },
+    {
+      "itemNum": 413,
+      "quantity": 1,
+      "chance": 6
+    }
+  ]
+}

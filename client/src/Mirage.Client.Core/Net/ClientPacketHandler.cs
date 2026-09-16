@@ -103,6 +103,9 @@ public sealed partial class ClientPacketHandler : IClientEvents
             case SendPlayerMovePacket p:
                 HandleSendPlayerMove(p);
                 break;
+            case PlayerWindedPacket p:
+                _state.Winded = p.Winded;
+                break;
             case SendPlayerDirPacket p:
                 HandleSendPlayerDir(p);
                 break;
@@ -195,6 +198,9 @@ public sealed partial class ClientPacketHandler : IClientEvents
                 break;
             case GamePanelsPacket p:
                 HandleGamePanels(p);
+                break;
+            case ChatChannelsPacket p:
+                HandleChatChannels(p);
                 break;
             case AttributeSyncPacket p:
                 HandleAttributeSync(p);

@@ -7,6 +7,10 @@ public enum AttributeKind : byte
     Real = 1,
     Flag = 2,
     Text = 3,
+
+    /// <summary>Several of one of the four above. <see cref="AttributeValue.Of"/> says which, and every
+    /// member is that kind — a set cannot hold a number beside a word.</summary>
+    Set = 4,
 }
 
 /// <summary>
@@ -33,21 +37,29 @@ public enum AttributeKind : byte
 [System.Text.Json.Serialization.JsonConverter(typeof(AttributeValueConverter))]
 public readonly record struct AttributeValue
 {
-    private AttributeValue(AttributeKind kind, long integer, double real, string? text)
+    private AttributeValue(AttributeKind kind, long integer, double real, string? text,
+                          AttributeKind of = AttributeKind.Integer, AttributeValue[]? set = null)
     {
         Kind = kind;
         _integer = integer;
         _real = real;
         _text = text;
+        Of = of;
+        _set = set;
     }
 
     /// <summary>What was written. The only way to tell an Integer from a Real, since every accessor
     /// reads both.</summary>
     public AttributeKind Kind { get; }
 
+    /// <summary>For a <see cref="AttributeKind.Set"/>, what kind its members are. Integer for
+    /// everything else, where it means nothing and is never read.</summary>
+    public AttributeKind Of { get; }
+
     private readonly long _integer;
     private readonly double _real;
     private readonly string? _text;
+    private readonly AttributeValue[]? _set;
 
     // ── Making one ────────────────────────────────────────────────────────────
 
@@ -62,6 +74,40 @@ public readonly record struct AttributeValue
     public static implicit operator AttributeValue(double value) => From(value);
     public static implicit operator AttributeValue(bool value) => From(value);
     public static implicit operator AttributeValue(string? value) => From(value);
+
+    // ── Making a set ──────────────────────────────────────────────────────────
+    //
+    // 🔴 One factory per member kind, rather than one that takes a kind and a pile of values. A set
+    // cannot be built mixed, because there is no way to hand these a value of the wrong kind - the
+    // invariant is the signature rather than a check that could be skipped.
+
+    public static AttributeValue From(IEnumerable<long> values) =>
+        Gathered(AttributeKind.Integer, values, From);
+
+    public static AttributeValue From(IEnumerable<int> values) =>
+        Gathered(AttributeKind.Integer, values, v => From((long)v));
+
+    public static AttributeValue From(IEnumerable<double> values) =>
+        Gathered(AttributeKind.Real, values, From);
+
+    public static AttributeValue From(IEnumerable<bool> values) =>
+        Gathered(AttributeKind.Flag, values, From);
+
+    public static AttributeValue From(IEnumerable<string> values) =>
+        Gathered(AttributeKind.Text, values, v => From(v));
+
+    private static AttributeValue Gathered<T>(AttributeKind of, IEnumerable<T> values,
+                                              Func<T, AttributeValue> one)
+    {
+        ArgumentNullException.ThrowIfNull(values);
+
+        return new AttributeValue(AttributeKind.Set, 0, 0, null, of, [.. values.Select(one)]);
+    }
+
+    /// <summary>An empty set of that kind. What a game writes to say "none of them" rather than leaving
+    /// the key off, which would read as a question nobody answered.</summary>
+    public static AttributeValue EmptySet(AttributeKind of) =>
+        new(AttributeKind.Set, 0, 0, null, of, []);
 
     // ── Reading one ───────────────────────────────────────────────────────────
 
@@ -106,5 +152,72 @@ public readonly record struct AttributeValue
         _ => _integer.ToString(System.Globalization.CultureInfo.InvariantCulture),
     };
 
-    public override string ToString() => AsText();
+    // ── Reading a set ─────────────────────────────────────────────────────────
+
+    /// <summary>How many members it holds. Zero for anything that is not a set, so a caller can ask
+    /// this of any value without checking the kind first.</summary>
+    public int Count => _set?.Length ?? 0;
+
+    /// <summary>Its members, in the order they were given. Empty for anything that is not a set.</summary>
+    public IReadOnlyList<AttributeValue> Members => _set ?? [];
+
+    /// <summary>Whether it holds that whole number. False for anything that is not a set.
+    ///
+    /// <para>⚠ Compared as a NUMBER rather than by kind, so a set of whole numbers answers the same
+    /// question whether the file wrote them 1 or 1.0. A set of words compares as text.</para></summary>
+    public bool Has(long value) =>
+        Of == AttributeKind.Text
+            ? Has(value.ToString(System.Globalization.CultureInfo.InvariantCulture))
+            : _set is { } set && Array.Exists(set, m => m.AsLong() == value);
+
+    /// <summary>Whether it holds that word, compared exactly. False for anything that is not a set.</summary>
+    public bool Has(string value) =>
+        _set is { } set && Array.Exists(set, m => string.Equals(m.AsText(), value, StringComparison.Ordinal));
+
+    /// <summary>Its members as whole numbers. Empty for anything that is not a set.</summary>
+    public IEnumerable<long> AsLongs() => Members.Select(m => m.AsLong());
+
+    /// <summary>Its members as words. Empty for anything that is not a set.</summary>
+    public IEnumerable<string> AsTexts() => Members.Select(m => m.AsText());
+
+    // ── Comparing ─────────────────────────────────────────────────────────────
+    //
+    // ⚠ Written out because a set holds an ARRAY, and the compiler's own equality for a record
+    // struct compares that by reference - so two bags built from the same file would differ, and the
+    // editor's save comparison decides whether a record is dirty by exactly that test. Every other kind
+    // keeps the field-by-field answer it already had.
+
+    public bool Equals(AttributeValue other)
+    {
+        if (Kind != other.Kind) return false;
+        if (Kind != AttributeKind.Set)
+            return _integer == other._integer && _real.Equals(other._real)
+                   && string.Equals(_text, other._text, StringComparison.Ordinal);
+
+        if (Of != other.Of || Count != other.Count) return false;
+
+        for (int i = 0; i < Count; i++)
+        {
+            if (!Members[i].Equals(other.Members[i])) return false;
+        }
+
+        return true;
+    }
+
+    public override int GetHashCode()
+    {
+        if (Kind != AttributeKind.Set) return HashCode.Combine(Kind, _integer, _real, _text);
+
+        var code = new HashCode();
+        code.Add(Kind);
+        code.Add(Of);
+        foreach (AttributeValue member in Members) code.Add(member);
+
+        return code.ToHashCode();
+    }
+
+    /// <summary>A set reads as its members between brackets, so a value logged or shown in a form says
+    /// what it holds rather than its type name.</summary>
+    public override string ToString() =>
+        Kind == AttributeKind.Set ? "[" + string.Join(", ", AsTexts()) + "]" : AsText();
 }

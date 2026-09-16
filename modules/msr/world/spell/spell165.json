@@ -1,0 +1,13 @@
+{
+  "name": "Sovereign Exsanguination",
+  "type": "SubHp",
+  "amount": 188,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 120,
+  "mayLearn": [
+    4,
+    10
+  ]
+}

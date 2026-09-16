@@ -1,0 +1,46 @@
+{
+  "name": "Grip (Fence)",
+  "speakerNpc": 132,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "You've got that look. Pockets heavy, story thin.\n\nDon't tell me the story. Show me the pockets.",
+      "choices": [
+        {
+          "label": "Let's trade.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Who buys this from you?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "Nothing to show.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "People downriver who don't ask either. A ring is a ring, friend. It doesn't remember whose finger.\n\nBring me the pretty useless things - the ones you can't wear, can't drink and can't swing. Those are the ones I want, and nobody else in the Landing will give you a copper for them.",
+      "choices": [
+        {
+          "label": "Let's trade.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Right.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

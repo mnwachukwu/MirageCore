@@ -1,0 +1,34 @@
+{
+  "name": "Last Legionary",
+  "says": "There is no one left to relieve me.",
+  "sprite": 31,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 110,
+  "behavior": "Pursue",
+  "group": 3,
+  "range": 10,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 300,
+    "guard": false,
+    "hostile": true,
+    "hp": 3669,
+    "int": 58,
+    "spd": 71,
+    "str": 353
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 1082,
+      "chance": 60
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

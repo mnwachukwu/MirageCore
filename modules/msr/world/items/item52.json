@@ -1,0 +1,28 @@
+{
+  "name": "Kilnforged Dagger",
+  "pic": 10,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1460,
+  "type": "Equipment",
+  "equipSlot": "weapon",
+  "power": 23,
+  "durability": 340,
+  "attributes": {
+    "levelReq": 20,
+    "mayWield": [
+      1,
+      2,
+      3,
+      5,
+      6,
+      7,
+      9,
+      10
+    ]
+  }
+}

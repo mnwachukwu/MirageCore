@@ -444,13 +444,13 @@ public class WorldActionTests
     {
         var (world, _, _, sent) = BuildHeard();
 
-        world.Tell(Me, "A storm is coming.", ChatChannel.Notice, GameColor.BrightCyan);
+        world.Tell(Me, "A storm is coming.", ChatChannels.System, GameColor.BrightCyan);
 
         var said = sent.Sent.Select(s => s.Packet).OfType<ChatMsgPacket>().Single();
 
         Assert.Multiple(() =>
         {
-            Assert.That(said.Channel, Is.EqualTo(ChatChannel.Notice));
+            Assert.That(said.Channel, Is.EqualTo(ChatChannels.System));
             Assert.That(said.Color, Is.EqualTo(GameColor.BrightCyan));
         });
     }

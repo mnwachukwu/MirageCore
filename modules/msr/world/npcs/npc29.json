@@ -1,0 +1,49 @@
+{
+  "name": "Bone-Reader",
+  "says": "I have already read your ending.",
+  "sprite": 16,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 45,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 7,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 12,
+    "guard": false,
+    "hostile": true,
+    "hp": 4,
+    "int": 20,
+    "spd": 3,
+    "str": 9
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 20,
+      "chance": 60
+    },
+    {
+      "itemNum": 276,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 3,
+      "chance": 20
+    },
+    {
+      "itemNum": 191,
+      "quantity": 1,
+      "chance": 10
+    },
+    {
+      "itemNum": 312,
+      "quantity": 1,
+      "chance": 6
+    }
+  ]
+}

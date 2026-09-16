@@ -1,0 +1,17 @@
+{
+  "name": "Resplendent Bloodletting Vial",
+  "pic": 23,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2917,
+  "type": "Consumable",
+  "vitalAmount": 778,
+  "attributes": {
+    "levelReq": 120,
+    "restoresHealth": -778
+  }
+}

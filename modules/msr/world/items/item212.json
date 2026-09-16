@@ -1,0 +1,17 @@
+{
+  "name": "Potent Siphon Vial",
+  "pic": 22,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 24,
+  "type": "Consumable",
+  "vitalAmount": 47,
+  "attributes": {
+    "levelReq": 20,
+    "restoresMana": -47
+  }
+}

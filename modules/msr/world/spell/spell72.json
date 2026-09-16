@@ -1,0 +1,13 @@
+{
+  "name": "Adept Endurance",
+  "type": "AddSp",
+  "amount": 31,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 15,
+  "mayLearn": [
+    9,
+    10
+  ]
+}

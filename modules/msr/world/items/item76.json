@@ -1,0 +1,28 @@
+{
+  "name": "Runed Dagger",
+  "pic": 9,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 100900,
+  "type": "Equipment",
+  "equipSlot": "weapon",
+  "power": 100,
+  "durability": 770,
+  "attributes": {
+    "levelReq": 105,
+    "mayWield": [
+      1,
+      2,
+      3,
+      5,
+      6,
+      7,
+      9,
+      10
+    ]
+  }
+}

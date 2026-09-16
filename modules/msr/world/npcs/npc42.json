@@ -1,0 +1,39 @@
+{
+  "name": "Company Outrider",
+  "says": "Riders! To me!",
+  "sprite": 6,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 50,
+  "behavior": "Pursue",
+  "group": 4,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 20,
+    "guard": false,
+    "hostile": true,
+    "hp": 0,
+    "int": 3,
+    "spd": 9,
+    "str": 26
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 33,
+      "chance": 45
+    },
+    {
+      "itemNum": 276,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 34,
+      "quantity": 1,
+      "chance": 4
+    }
+  ]
+}

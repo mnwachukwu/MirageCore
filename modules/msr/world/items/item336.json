@@ -1,0 +1,15 @@
+{
+  "name": "Scroll of Journeyman Restoration",
+  "pic": 29,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 795,
+  "type": "Consumable",
+  "attributes": {
+    "teaches": 48
+  }
+}

@@ -48,10 +48,12 @@ public class MapSizeTests
     {
         Assert.Multiple(() =>
         {
-            Assert.That(new MapSize(0, 0).Clamped(), Is.EqualTo(new MapSize(1, 1)), "one tile is the floor");
-            Assert.That(new MapSize(-5, -5).Clamped(), Is.EqualTo(new MapSize(1, 1)));
-            Assert.That(new MapSize(int.MaxValue, 4).Clamped(), Is.EqualTo(new MapSize(MapSize.HardMax, 4)));
-            Assert.That(new MapSize(4, int.MaxValue).Clamped(), Is.EqualTo(new MapSize(4, MapSize.HardMax)));
+            Assert.That(new MapSize(0, 0).Clamped(), Is.EqualTo(MapSize.Floor), "the screen is the floor");
+            Assert.That(new MapSize(-5, -5).Clamped(), Is.EqualTo(MapSize.Floor));
+            Assert.That(new MapSize(10, 10).Clamped(), Is.EqualTo(MapSize.Floor),
+                        "a map smaller than the view is pulled up to it");
+            Assert.That(new MapSize(int.MaxValue, 40).Clamped(), Is.EqualTo(new MapSize(MapSize.HardMax, 40)));
+            Assert.That(new MapSize(40, int.MaxValue).Clamped(), Is.EqualTo(new MapSize(40, MapSize.HardMax)));
             Assert.That(new MapSize(24, 20).Clamped(), Is.EqualTo(new MapSize(24, 20)), "a legal size is untouched");
         });
     }
@@ -87,8 +89,24 @@ public class MapSizeTests
         Assert.That(MapSize.Default, Is.EqualTo(new MapSize(Constants.ViewportTilesX, Constants.ViewportTilesY)));
     }
 
+    /// <summary>🔴 <b>The floor is the camera's own window.</b> A map smaller than the view has no
+    /// offset that shows it — the camera's bounds cross — so a size under it is pulled up rather than
+    /// being a room no client could enter.</summary>
+    [Test]
+    public void AMapMayNotBeSmallerThanTheScreen()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(MapSize.Floor,
+                        Is.EqualTo(new MapSize(Constants.ViewportTilesX, Constants.ViewportTilesY)));
+            Assert.That(new MapSize(10, 10).IsUnderFloor, Is.True);
+            Assert.That(new MapSize(16, 11).IsUnderFloor, Is.True, "either axis is enough");
+            Assert.That(MapSize.Floor.IsUnderFloor, Is.False);
+            Assert.That(new MapSize(40, 40).IsUnderFloor, Is.False);
+        });
+    }
+
     /// <summary>A map may be built at any size the format allows, and reports the size it was built at.</summary>
-    [TestCase(1, 1)]
     [TestCase(16, 12)]
     [TestCase(MapSize.SoftCap, MapSize.SoftCap)]
     [TestCase(MapSize.SoftCap + 1, 300)]

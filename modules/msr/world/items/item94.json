@@ -1,0 +1,18 @@
+{
+  "name": "Warded Cap",
+  "pic": 36,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 113449,
+  "type": "Equipment",
+  "equipSlot": "helmet",
+  "power": 104,
+  "durability": 790,
+  "attributes": {
+    "levelReq": 110
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "Coral Halberdier",
+  "says": "Stand off the reef.",
+  "sprite": 43,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 70,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 139,
+    "guard": false,
+    "hostile": true,
+    "hp": 762,
+    "int": 27,
+    "spd": 33,
+    "str": 163
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 416,
+      "chance": 60
+    },
+    {
+      "itemNum": 282,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 234,
+      "quantity": 1,
+      "chance": 10
+    }
+  ]
+}

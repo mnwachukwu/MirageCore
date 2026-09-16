@@ -1,0 +1,13 @@
+{
+  "name": "Void Restoration",
+  "type": "AddHp",
+  "amount": 368,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 240,
+  "mayLearn": [
+    9,
+    10
+  ]
+}

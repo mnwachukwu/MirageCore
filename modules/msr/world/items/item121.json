@@ -1,0 +1,25 @@
+{
+  "name": "Dawnforged Buckler",
+  "pic": 20,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 142631,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 113,
+  "durability": 820,
+  "attributes": {
+    "levelReq": 120,
+    "mayWield": [
+      2,
+      3,
+      6,
+      7,
+      10
+    ]
+  }
+}

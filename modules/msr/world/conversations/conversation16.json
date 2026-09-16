@@ -1,0 +1,46 @@
+{
+  "name": "Coin (Fence)",
+  "speakerNpc": 140,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "Grip's cousin. Same trade, wetter stock.\n\nHe told me you'd turn up eventually. Show me the things you can't use.",
+      "choices": [
+        {
+          "label": "Let's trade.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "You two are in contact?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "Not today.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "There's a boat. Sometimes. The old man runs it when he's able and there's no schedule to speak of.\n\nSo yes - what you sell me here can be in the Landing by the next moon, and what you sold him there is probably in my box already. Small world. Smaller than it was.",
+      "choices": [
+        {
+          "label": "Let's trade.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Huh.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

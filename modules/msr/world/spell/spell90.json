@@ -1,0 +1,13 @@
+{
+  "name": "Expert Endurance",
+  "type": "AddSp",
+  "amount": 38,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 20,
+  "mayLearn": [
+    9,
+    10
+  ]
+}

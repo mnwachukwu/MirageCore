@@ -352,6 +352,15 @@ public sealed partial class PacketHandler
             return;
         }
 
+        // ⚠ And that the look is one their ANSWERS allow. The screen filters the list already, so
+        // reaching here means a client that offered a look this world gates away from them - which is
+        // the same class of thing as a look the world never offered at all.
+        if (!offered[appearance].OfferedWhen(Answers(chose)))
+        {
+            HackingAttempt(index, "Gated Appearance");
+            return;
+        }
+
         var sp = _pm[index];
 
         // Find first empty 1-based slot
@@ -416,6 +425,24 @@ public sealed partial class PacketHandler
     /// the screen — and an unanswered question is left unwritten rather than defaulted, because a
     /// default here is a class nobody chose.</para>
     /// </summary>
+    /// <summary>What they answered, by each question's own key, for anything that has to ask.
+    ///
+    /// <para>Positional against the questions this world declared, which is how the answers arrive. A
+    /// question they left unanswered is absent rather than zero, so a gate naming it fails instead of
+    /// matching a record number nobody picked.</para></summary>
+    private Dictionary<string, int> Answers(IReadOnlyList<int> chose)
+    {
+        var asked = _registry.CreationChoices.Choices;
+        var answers = new Dictionary<string, int>(asked.Count, StringComparer.Ordinal);
+
+        for (int i = 0; i < asked.Count && i < chose.Count; i++)
+        {
+            if (chose[i] >= 1) answers[asked[i].Key] = chose[i];
+        }
+
+        return answers;
+    }
+
     private void WriteCreationChoices(PlayerRecord chr, IReadOnlyList<int> chose)
     {
         var asked = _registry.CreationChoices.Choices;

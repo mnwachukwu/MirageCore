@@ -225,6 +225,7 @@ public static class CorePackets
         builder.Register(PacketNames.DisplayFields, Read<DisplayFieldsPacket>);
         builder.Register(PacketNames.GameActions, Read<GameActionsPacket>);
         builder.Register(PacketNames.GamePanels, Read<GamePanelsPacket>);
+        builder.Register(PacketNames.ChatChannels, Read<ChatChannelsPacket>);
         builder.Register(PacketNames.InvokeAction, Read<InvokeActionPacket>);
         builder.Register(PacketNames.EditorRequestRecord, Read<EditorRequestRecordPacket>);
         builder.Register(PacketNames.EditorRequestAllRecords, Read<EditorRequestAllRecordsPacket>);
@@ -265,6 +266,7 @@ public static class CorePackets
         builder.Register(PacketNames.UpdateShop, Read<UpdateShopPacket>);
         builder.Register(PacketNames.UpdateConversation, Read<UpdateConversationPacket>);
         builder.Register(PacketNames.PlayerHotkeys, Read<PlayerHotkeysPacket>);
+        builder.Register(PacketNames.Winded, Read<PlayerWindedPacket>);
         builder.Register(PacketNames.PartyRequest, Read<PartyRequestNotifyPacket>);
         builder.Register(PacketNames.PartyPartner, Read<PartyPartnerPacket>);
 

@@ -1,0 +1,15 @@
+{
+  "name": "Scroll of Sovereign Vigor",
+  "pic": 29,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 381192,
+  "type": "Consumable",
+  "attributes": {
+    "teaches": 179
+  }
+}

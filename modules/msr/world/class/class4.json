@@ -1,0 +1,8 @@
+{
+  "name": "Sorcerer",
+  "description": "Innately talented. High power range.",
+  "str": 0,
+  "def": 5,
+  "spd": 0,
+  "int": 15
+}

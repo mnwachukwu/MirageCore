@@ -1,0 +1,25 @@
+{
+  "name": "Meteoric Buckler",
+  "pic": 15,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 88325,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 95,
+  "durability": 750,
+  "attributes": {
+    "levelReq": 100,
+    "mayWield": [
+      2,
+      3,
+      6,
+      7,
+      10
+    ]
+  }
+}

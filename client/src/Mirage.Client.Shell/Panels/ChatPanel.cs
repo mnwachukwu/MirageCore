@@ -9,6 +9,7 @@ using Mirage.Client.Shell.Localization;
 using Mirage.Client.Shell.Logic;
 using Mirage.Client.Shell.Ui;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using TextCopy;
@@ -26,7 +27,7 @@ public sealed partial class ChatPanel
 
     // Tabbed chat: each tab owns its own TextArea (line buffer, scroll position, selection),
     // so switching tabs preserves where you were. Channel filter is per tab; a packet is appended
-    // to every tab whose filter accepts its `ChatChannel`. Always-channel messages (welcome batch)
+    // to every tab whose filter accepts its channel id. Always-channel messages (welcome batch)
     // bypass all filters.
     private sealed class ChatTab
     {
@@ -39,6 +40,14 @@ public sealed partial class ChatPanel
     private int _activeTab;
     private AccountConfig? _config;
     private string _accountName = "";
+
+    // What this game declared, beside Core’s own five. Empty until the server says otherwise, and
+    // empty for good in a world whose game declared none.
+    private ChatChannelSet _channels = ChatChannelSet.Empty;
+    // Whether the tabs on screen are the ones the constructor made rather than any the player saved.
+    // A fresh account gets its per-channel tabs built once the declarations arrive, which can be
+    // either side of LoadTabs.
+    private bool _installDefaults = true;
     // Chat-log display prefs (see OptionsPanel). Mirrored onto every tab's TextArea so a tab added at
     // runtime inherits the current settings. Off by default until GameplayScreen applies the
     // per-character prefs on login.
@@ -140,40 +149,90 @@ public sealed partial class ChatPanel
             },
         };
 
-    /// <summary>The out-of-the-box tab layout for a fresh account: a "General" tab carrying everything except
-    /// the raw Combat feed (Rewards + both war channels stay here) with notify on, and a "Combat" tab showing
-    /// the combat feed — Combat, Rewards, and both war channels. Disabled lists are built from the enum names
-    /// so they stay in sync with the channel set.</summary>
-    private static List<ChatTab> MakeInstallDefaultTabs()
+    /// <summary>The out-of-the-box tab layout for a fresh account: a main tab carrying everything, plus one
+    /// tab per <c>OwnTabKey</c> this game’s channels named, each holding exactly the channels that named
+    /// it and nothing else.
+    ///
+    /// <para>A game that declared no channels gets the main tab alone, and it shows Core’s five.</para></summary>
+    private List<ChatTab> MakeInstallDefaultTabs()
     {
-        var general = new ChatTab
+        var tabs = new List<ChatTab>
         {
-            Config = new AccountConfig.ChatTabConfig
+            new()
             {
-                Name = ClientStrings.Get(ClientStrings.ChatPanel_DefaultTab_General),
-                Notify = true,
-                // Everything except the raw Combat feed. War (public) + Guild War (private) both surface here.
-                DisabledChannels = new List<string> { nameof(ChatChannel.Combat) },
-            },
-        };
-        var combat = new ChatTab
-        {
-            Config = new AccountConfig.ChatTabConfig
-            {
-                Name = ClientStrings.Get(ClientStrings.ChatPanel_DefaultTab_Combat),
-                Notify = false,
-                // The combat feed: Combat + Rewards + both war channels (public War + private Guild War);
-                // everything else (chat, system, guild chat) is hidden here.
-                DisabledChannels = new List<string>
+                Config = new AccountConfig.ChatTabConfig
                 {
-                    nameof(ChatChannel.Say), nameof(ChatChannel.Yell), nameof(ChatChannel.Broadcast),
-                    nameof(ChatChannel.Tell), nameof(ChatChannel.AdminChat), nameof(ChatChannel.Notice),
-                    nameof(ChatChannel.JoinLeaveNotice), nameof(ChatChannel.System),
-                    nameof(ChatChannel.Guild), nameof(ChatChannel.GuildOfficer),
+                    Name = ClientStrings.Get(ClientStrings.ChatPanel_DefaultTab_General),
+                    Notify = true,
                 },
             },
         };
-        return new List<ChatTab> { general, combat };
+
+        foreach (string key in _channels.OwnTabKeys)
+        {
+            if (tabs.Count >= MaxTabs) break;
+            tabs.Add(new ChatTab
+            {
+                Config = new AccountConfig.ChatTabConfig
+                {
+                    Name = ClientStrings.Get(key),
+                    Notify = false,
+                    OwnsTabKey = key,
+                },
+            });
+        }
+
+        foreach (var tab in tabs) SettleDefaults(tab.Config);
+        return tabs;
+    }
+
+    /// <summary>Puts every declared channel where its declaration says it starts, for one tab, and records
+    /// that the tab has now been offered it.
+    ///
+    /// <para>🔴 <b>Only channels this tab has never seen.</b> A player who turned something off turned it
+    /// off; running this again must not put it back. The main tab takes every channel that named no tab of
+    /// its own, an own-tab tab takes exactly the channels that named it, and everything else starts
+    /// off.</para></summary>
+    private void SettleDefaults(AccountConfig.ChatTabConfig cfg)
+    {
+        foreach (var ch in _channels.Channels)
+        {
+            if (cfg.KnownChannels.Contains(ch.Id, StringComparer.Ordinal)) continue;
+            cfg.KnownChannels.Add(ch.Id);
+
+            bool on = cfg.OwnsTabKey.Length > 0
+                ? string.Equals(cfg.OwnsTabKey, ch.OwnTabKey, StringComparison.Ordinal)
+                : ch.OwnTabKey.Length == 0;
+
+            if (!on && !cfg.DisabledChannels.Contains(ch.Id, StringComparer.Ordinal))
+                cfg.DisabledChannels.Add(ch.Id);
+        }
+    }
+
+    /// <summary>Takes the channels this game declared. Called every frame with whatever the client state
+    /// holds; the work happens only when the set actually changes, which is once per session.</summary>
+    public void SyncChannels(ChatChannelSet channels)
+    {
+        if (ReferenceEquals(channels, _channels)) return;
+        _channels = channels;
+
+        if (_installDefaults)
+        {
+            // A fresh account: rebuild from scratch, so the per-channel tabs appear with their channels
+            // already sorted rather than as empty tabs the player has to fill.
+            _tabs.Clear();
+            _tabs.AddRange(MakeInstallDefaultTabs());
+            _activeTab = 0;
+        }
+        else
+        {
+            // Saved tabs: leave the arrangement alone and settle only what it has never been offered.
+            // A channel the game added since they last played arrives where its declaration says.
+            foreach (var tab in _tabs) SettleDefaults(tab.Config);
+        }
+
+        SetChatDisplayOptions(_showTimestamps, _use24HourClock, _showChannelLabels);
+        SaveTabs();
     }
 
     /// <summary>Replaces the in-memory tab list with whatever's persisted in AccountConfig
@@ -186,7 +245,9 @@ public sealed partial class ChatPanel
         if (config.ChatTabs.Count == 0)
         {
             // Fresh account or migration from a pre-tabs config — persist the install defaults so
-            // the file gains a `chatTabs` key. The in-memory default tabs (from the ctor) stay.
+            // the file gains a `chatTabs` key. The in-memory default tabs (from the ctor) stay, and
+            // SyncChannels rebuilds them once this game says what channels it has.
+            _installDefaults = true;
             SaveTabs();
             return;
         }
@@ -197,6 +258,9 @@ public sealed partial class ChatPanel
         // usable tab. Should never trigger in normal flows.
         if (_tabs.Count == 0)
             _tabs.AddRange(MakeInstallDefaultTabs());
+        else
+            foreach (var tab in _tabs) SettleDefaults(tab.Config);
+        _installDefaults = false;
         _activeTab = 0;
     }
 
@@ -312,8 +376,7 @@ public sealed partial class ChatPanel
                 _lastWhisperPartner = pkt.SpeakerName;
         }
 
-        ChatChannel ch = pkt.Channel;
-        string chName = ch.ToString();
+        string ch = pkt.Channel;
         // Resolved once per packet (frozen at arrival), so revealing labels later stamps past lines
         // and the channel name is the same across every tab this line lands in.
         string? channelLabel = ChannelLabel(ch);
@@ -321,7 +384,7 @@ public sealed partial class ChatPanel
         {
             var tab = _tabs[i];
             // Always channel never filters; otherwise drop if the tab disables this channel.
-            if (ch != ChatChannel.Always && tab.Config.DisabledChannels.Contains(chName))
+            if (ch != ChatChannels.Always && tab.Config.DisabledChannels.Contains(ch))
                 continue;
             tab.Log.AddLine(pkt.Msg, pkt.Color, names, colors: null, channelLabel: channelLabel);
             if (i != _activeTab && tab.Config.Notify)
@@ -329,24 +392,24 @@ public sealed partial class ChatPanel
         }
     }
 
-    /// <summary>Localized display name for a channel's inline "[label]" prefix (shown when "Show
-    /// Channel Labels" is on), reusing the ChatOptionsPanel channel strings. Returns null for
-    /// `Always` — the un-filterable welcome/MOTD bucket has no meaningful channel to surface — so
-    /// those lines (and client-local diagnostics, which carry no channel at all) show no label.</summary>
-    private static string? ChannelLabel(ChatChannel ch) => ch switch
+    /// <summary>Localized display name for a channel’s inline "[label]" prefix (shown when "Show
+    /// Channel Labels" is on). Returns null for `Always` — the un-filterable welcome/MOTD bucket has no
+    /// meaningful channel to surface — so those lines (and client-local diagnostics, which carry no
+    /// channel at all) show no label, and null for a channel id nothing declared.</summary>
+    private string? ChannelLabel(string ch)
     {
-        ChatChannel.Say => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_Say),
-        ChatChannel.Yell => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_Yell),
-        ChatChannel.Broadcast => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_Broadcast),
-        ChatChannel.Tell => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_Tell),
-        ChatChannel.AdminChat => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_AdminChat),
-        ChatChannel.Notice => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_Notice),
-        ChatChannel.JoinLeaveNotice => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_JoinLeaveNotice),
-        ChatChannel.System => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_System),
-        ChatChannel.Combat => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_Combat),
-        ChatChannel.Rewards => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_Rewards),
-        ChatChannel.Guild => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_Guild),
-        ChatChannel.GuildOfficer => ClientStrings.Get(ClientStrings.ChatOptionsPanel_Channel_GuildOfficer),
+        string? key = CoreChannelLabelKey(ch) ?? _channels.Find(ch)?.LabelKey;
+        return key is null ? null : ClientStrings.Get(key);
+    }
+
+    /// <summary>The localization key for one of Core’s own channels, or null for a game’s.</summary>
+    internal static string? CoreChannelLabelKey(string ch) => ch switch
+    {
+        ChatChannels.Global => ClientStrings.ChatOptionsPanel_Channel_Say,
+        ChatChannels.Tell => ClientStrings.ChatOptionsPanel_Channel_Tell,
+        ChatChannels.Admin => ClientStrings.ChatOptionsPanel_Channel_AdminChat,
+        ChatChannels.System => ClientStrings.ChatOptionsPanel_Channel_System,
+        ChatChannels.Guild => ClientStrings.ChatOptionsPanel_Channel_Guild,
         _ => null,
     };
 }

@@ -1,0 +1,44 @@
+{
+  "name": "Warlord's Guard",
+  "says": "None pass to the Warlord.",
+  "sprite": 37,
+  "spriteSheet": 0,
+  "size": 2,
+  "spawnSecs": 100,
+  "behavior": "Pursue",
+  "group": 5,
+  "range": 8,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 27,
+    "guard": false,
+    "hostile": true,
+    "hp": 404,
+    "int": 8,
+    "spd": 5,
+    "str": 34
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 48,
+      "chance": 60
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 43,
+      "quantity": 1,
+      "chance": 4
+    },
+    {
+      "itemNum": 202,
+      "quantity": 1,
+      "chance": 10
+    }
+  ]
+}

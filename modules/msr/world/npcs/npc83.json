@@ -1,0 +1,44 @@
+{
+  "name": "Cinder Saint",
+  "says": "I was canonised in the burning.",
+  "sprite": 7,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 90,
+  "behavior": "Pursue",
+  "group": 3,
+  "range": 11,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 200,
+    "guard": false,
+    "hostile": true,
+    "hp": 522,
+    "int": 323,
+    "spd": 53,
+    "str": 147
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 981,
+      "chance": 60
+    },
+    {
+      "itemNum": 284,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 3,
+      "chance": 20
+    },
+    {
+      "itemNum": 474,
+      "quantity": 1,
+      "chance": 6
+    }
+  ]
+}

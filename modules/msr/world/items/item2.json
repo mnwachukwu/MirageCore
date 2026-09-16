@@ -1,0 +1,15 @@
+{
+  "name": "Magical Reagent",
+  "pic": 28,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": true,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1,
+  "type": "Currency",
+  "attributes": {
+    "coin": true
+  }
+}

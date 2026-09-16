@@ -1,0 +1,22 @@
+{
+  "name": "Nell Saltbraid",
+  "says": "Hold still. No, I'm guessing your size. Force of habit.",
+  "sprite": 40,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 60,
+  "behavior": "Wander",
+  "group": 0,
+  "range": 4,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 143,
+    "guard": false,
+    "hostile": false,
+    "hp": 0,
+    "int": 18,
+    "spd": 18,
+    "str": 18
+  }
+}

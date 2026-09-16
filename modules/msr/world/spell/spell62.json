@@ -1,0 +1,14 @@
+{
+  "name": "Adept Enervation",
+  "type": "SubSp",
+  "amount": 25,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 15,
+  "mayLearn": [
+    6,
+    7,
+    10
+  ]
+}

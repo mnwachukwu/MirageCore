@@ -1,0 +1,39 @@
+{
+  "name": "Ferryman's Boy",
+  "says": "My father will hear of this!",
+  "sprite": 3,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 30,
+  "behavior": "Wander",
+  "group": 0,
+  "range": 5,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 10,
+    "guard": false,
+    "hostile": true,
+    "hp": 0,
+    "int": 2,
+    "spd": 5,
+    "str": 13
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 8,
+      "chance": 45
+    },
+    {
+      "itemNum": 275,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 13,
+      "quantity": 1,
+      "chance": 4
+    }
+  ]
+}

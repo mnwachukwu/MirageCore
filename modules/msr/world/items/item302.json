@@ -1,0 +1,15 @@
+{
+  "name": "Scroll of Novice Meditation",
+  "pic": 29,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 28,
+  "type": "Consumable",
+  "attributes": {
+    "teaches": 14
+  }
+}

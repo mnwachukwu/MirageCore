@@ -65,6 +65,7 @@ public static partial class ClientStrings
     public const string NewCharScreen_Title = nameof(NewCharScreen_Title);
     public const string NewCharScreen_AppearanceLabel = nameof(NewCharScreen_AppearanceLabel);
     public const string NewCharScreen_SelectAppearance = nameof(NewCharScreen_SelectAppearance);
+    public const string NewCharScreen_NoAppearanceForThat = nameof(NewCharScreen_NoAppearanceForThat);
     public const string NewCharScreen_UnnamedAppearance = nameof(NewCharScreen_UnnamedAppearance);
     public const string NewCharScreen_NameTooShort = nameof(NewCharScreen_NameTooShort);
     public const string NewCharScreen_CreatingCharacter = nameof(NewCharScreen_CreatingCharacter);

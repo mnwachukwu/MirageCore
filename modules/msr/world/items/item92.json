@@ -1,0 +1,25 @@
+{
+  "name": "Warded Hauberk",
+  "pic": 3,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 151629,
+  "type": "Equipment",
+  "equipSlot": "armor",
+  "power": 139,
+  "durability": 1050,
+  "attributes": {
+    "levelReq": 110,
+    "mayWield": [
+      1,
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

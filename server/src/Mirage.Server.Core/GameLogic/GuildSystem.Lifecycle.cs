@@ -104,7 +104,7 @@ public sealed partial class GuildSystem : GameSystem
         BroadcastPlayerGuild(index);
 
         _dispatcher.SendLocalizedChatToAll(ServerStrings.Guild_Founded,
-            new ChatMetadata(GameColor.BrightGreen, ChatChannel.Notice),
+            new ChatMetadata(GameColor.BrightGreen, ChatChannel.System),
             ("Name", sp.Char.TrimmedName), ("GuildName", name));
         _logger.LogInformation("{Player} founded guild {Guild} (#{Id}).", sp.Char.TrimmedName, name, id);
     }
@@ -147,7 +147,7 @@ public sealed partial class GuildSystem : GameSystem
         BroadcastPlayerGuild(index);
 
         _dispatcher.SendLocalizedChatToAll(ServerStrings.Guild_Disbanded,
-            new ChatMetadata(GameColor.BrightGreen, ChatChannel.Notice), ("GuildName", guildName));
+            new ChatMetadata(GameColor.BrightGreen, ChatChannel.System), ("GuildName", guildName));
         _logger.LogInformation("{Player} disbanded guild {Guild} (#{Id}).", sp.Char.TrimmedName, guildName, id);
     }
 

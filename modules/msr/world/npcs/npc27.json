@@ -1,0 +1,29 @@
+{
+  "name": "Highland Wolfman",
+  "says": "GRRRRRR...",
+  "sprite": 13,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 40,
+  "behavior": "Pursue",
+  "group": 1,
+  "range": 7,
+  "emitsLight": false,
+  "attributes": {
+    "boss": false,
+    "def": 13,
+    "guard": false,
+    "hostile": true,
+    "hp": 0,
+    "int": 2,
+    "spd": 6,
+    "str": 17
+  },
+  "drops": [
+    {
+      "itemNum": 25,
+      "quantity": 1,
+      "chance": 4
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Void Vigor",
+  "type": "AddSp",
+  "amount": 295,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 240,
+  "mayLearn": [
+    7,
+    8,
+    9,
+    10
+  ]
+}

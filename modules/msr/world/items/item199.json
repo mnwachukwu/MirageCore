@@ -1,0 +1,17 @@
+{
+  "name": "Modest Bloodletting Vial",
+  "pic": 23,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 4,
+  "type": "Consumable",
+  "vitalAmount": 23,
+  "attributes": {
+    "levelReq": 10,
+    "restoresHealth": -23
+  }
+}

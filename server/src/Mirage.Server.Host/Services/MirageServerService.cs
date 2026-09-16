@@ -119,6 +119,7 @@ public sealed class MirageServerService : IHostedService
         // DOES stays here, which is why nothing has to be deployed beside the client.
         _world.Actions = _registry.Actions;
         _world.Panels = _registry.Panels;
+        _world.ChatChannels = _registry.ChatChannels;
 
         await LoadWorldDataAsync(ct);
 

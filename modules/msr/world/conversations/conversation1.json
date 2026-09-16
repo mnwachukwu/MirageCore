@@ -1,0 +1,78 @@
+{
+  "name": "Halder Fenn (Innkeeper)",
+  "speakerNpc": 125,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "You made it. That puts you ahead of most.\n\nThe Clearing's mine - such as it is. Stilts, rope, and a stove that works. Take a bed and the marsh can't have you.",
+      "choices": [
+        {
+          "label": "A bed, and what else?",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Why is it built on stilts?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "Who else is here?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "Later.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "Because the water comes up. Not with the rain - the rain's honest. It comes up on its own, some nights, and goes down by morning like it was never there.\n\nMy grandfather built at ground level. My father built the stilts. I've not had to build anything, which I take as a good sign.",
+      "choices": [
+        {
+          "label": "A bed, then.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Who else is here?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "That's enough.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "speaker": "",
+      "text": "Osric at the anvil, Maud across from him - they'll sell you iron and mend what you've dented. Bittern brews. Wex and the thin one sell words, which I don't pretend to follow.\n\nGrip buys what you'd rather not explain. And Sera has work, if you want work.",
+      "choices": [
+        {
+          "label": "A bed, then.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Why the stilts?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "Thanks.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

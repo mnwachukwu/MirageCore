@@ -1,0 +1,24 @@
+{
+  "name": "Iron Kite Shield",
+  "pic": 31,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 99,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 13,
+  "durability": 220,
+  "attributes": {
+    "levelReq": 5,
+    "mayWield": [
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

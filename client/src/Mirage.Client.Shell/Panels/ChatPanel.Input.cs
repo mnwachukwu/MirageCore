@@ -31,6 +31,7 @@ public sealed partial class ChatPanel
 
         // Channel dropdown (left of the input row). Updated before the log + input box so its clicks
         // (header, and the upward popup that overlaps the log) are consumed before those handlers run.
+        SyncChannels(state.ChatChannels);
         RebuildChannelDropdown(state);
         _channelDropDown.Update(input, ChannelDropRect());
         int dropIdx = _channelDropDown.SelectedIndex;

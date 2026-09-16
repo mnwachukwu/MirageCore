@@ -1,0 +1,44 @@
+{
+  "name": "Drowned Pilgrim",
+  "says": "Kneel, and the water is kind.",
+  "sprite": 44,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 60,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 21,
+    "guard": false,
+    "hostile": true,
+    "hp": 8,
+    "int": 34,
+    "spd": 6,
+    "str": 16
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 51,
+      "chance": 60
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 3,
+      "chance": 20
+    },
+    {
+      "itemNum": 377,
+      "quantity": 1,
+      "chance": 6
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Elder Bloodletting",
+  "type": "SubHp",
+  "amount": 109,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 115,
+  "mayLearn": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+  ]
+}

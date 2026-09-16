@@ -38,12 +38,12 @@ public sealed partial class PacketHandler
 
         string login = _pm[n].Login.Trim();
         _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_PlayerInfo,
-            new ChatMetadata(GameColor.BrightGreen, ChatChannel.Notice),
+            new ChatMetadata(GameColor.BrightGreen, ChatChannel.System),
             ("Account", login), ("Name", _pm[n].Char.Name.Trim()));
         // Playtime line — the target's current character + account total, shown to any requester.
         long nowUtc = NowUtc;
         _dispatcher.SendLocalizedChatTo(index, ServerStrings.Command_Played,
-            new ChatMetadata(GameColor.BrightGreen, ChatChannel.Notice),
+            new ChatMetadata(GameColor.BrightGreen, ChatChannel.System),
             ("Char", PlaytimeFormat.HoursMinutes(_pm[n].CharPlaytimeSeconds(nowUtc))),
             ("Total", PlaytimeFormat.HoursMinutes(_pm[n].AccountPlaytimeSeconds(nowUtc))));
 
@@ -56,7 +56,7 @@ public sealed partial class PacketHandler
         var sp = _pm[index];
         long nowUtc = NowUtc;
         _dispatcher.SendLocalizedChatTo(index, ServerStrings.Command_Played,
-            new ChatMetadata(GameColor.BrightGreen, ChatChannel.Notice),
+            new ChatMetadata(GameColor.BrightGreen, ChatChannel.System),
             ("Char", PlaytimeFormat.HoursMinutes(sp.CharPlaytimeSeconds(nowUtc))),
             ("Total", PlaytimeFormat.HoursMinutes(sp.AccountPlaytimeSeconds(nowUtc))));
     }

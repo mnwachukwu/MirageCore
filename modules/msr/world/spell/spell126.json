@@ -1,0 +1,13 @@
+{
+  "name": "Grand Endurance",
+  "type": "AddSp",
+  "amount": 166,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 105,
+  "mayLearn": [
+    9,
+    10
+  ]
+}

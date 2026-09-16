@@ -1,0 +1,39 @@
+{
+  "name": "Kiln-Forged",
+  "says": "I remember being iron.",
+  "sprite": 42,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 100,
+  "behavior": "Pursue",
+  "group": 3,
+  "range": 11,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 276,
+    "guard": false,
+    "hostile": true,
+    "hp": 16924,
+    "int": 82,
+    "spd": 50,
+    "str": 350
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 1041,
+      "chance": 60
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 152,
+      "quantity": 1,
+      "chance": 1
+    }
+  ]
+}

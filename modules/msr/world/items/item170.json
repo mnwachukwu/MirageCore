@@ -1,0 +1,24 @@
+{
+  "name": "Godmarked Kite Shield",
+  "pic": 31,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1326622,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 307,
+  "durability": 1580,
+  "attributes": {
+    "levelReq": 250,
+    "mayWield": [
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

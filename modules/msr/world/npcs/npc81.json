@@ -1,0 +1,44 @@
+{
+  "name": "Tidewatch Pikeman",
+  "says": "The Crown keeps its own hours.",
+  "sprite": 25,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 80,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 145,
+    "guard": false,
+    "hostile": true,
+    "hp": 828,
+    "int": 28,
+    "spd": 34,
+    "str": 170
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 438,
+      "chance": 60
+    },
+    {
+      "itemNum": 283,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 115,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 238,
+      "quantity": 1,
+      "chance": 10
+    }
+  ]
+}

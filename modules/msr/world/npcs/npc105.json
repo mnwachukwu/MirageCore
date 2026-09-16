@@ -1,0 +1,44 @@
+{
+  "name": "Pyre Vanguard",
+  "says": "First into the fire. Always.",
+  "sprite": 30,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 100,
+  "behavior": "Pursue",
+  "group": 3,
+  "range": 10,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 294,
+    "guard": false,
+    "hostile": true,
+    "hp": 3511,
+    "int": 57,
+    "spd": 69,
+    "str": 346
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 1056,
+      "chance": 60
+    },
+    {
+      "itemNum": 287,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 163,
+      "quantity": 1,
+      "chance": 1
+    },
+    {
+      "itemNum": 262,
+      "quantity": 1,
+      "chance": 10
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "Godmarked Buckler",
+  "pic": 18,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 993886,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 230,
+  "durability": 1190,
+  "attributes": {
+    "levelReq": 250,
+    "mayWield": [
+      2,
+      3,
+      6,
+      7,
+      10
+    ]
+  }
+}

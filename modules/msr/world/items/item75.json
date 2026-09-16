@@ -1,0 +1,22 @@
+{
+  "name": "Meteoric Tower Shield",
+  "pic": 32,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 146898,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 158,
+  "durability": 1250,
+  "attributes": {
+    "levelReq": 100,
+    "mayWield": [
+      3,
+      10
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "Astral Tower Shield",
+  "pic": 32,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1406261,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 361,
+  "durability": 1920,
+  "attributes": {
+    "levelReq": 235,
+    "mayWield": [
+      3,
+      10
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "Kilnforged Sword",
+  "pic": 10,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1968,
+  "type": "Equipment",
+  "equipSlot": "weapon",
+  "power": 31,
+  "durability": 450,
+  "attributes": {
+    "levelReq": 20,
+    "mayWield": [
+      1,
+      2,
+      3,
+      7,
+      10
+    ]
+  }
+}

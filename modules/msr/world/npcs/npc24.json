@@ -1,0 +1,39 @@
+{
+  "name": "Tollman's Thug",
+  "says": "The road is not free.",
+  "sprite": 15,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 30,
+  "behavior": "Wander",
+  "group": 6,
+  "range": 5,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 12,
+    "guard": false,
+    "hostile": true,
+    "hp": 31,
+    "int": 1,
+    "spd": 2,
+    "str": 15
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 8,
+      "chance": 60
+    },
+    {
+      "itemNum": 275,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 4,
+      "quantity": 1,
+      "chance": 4
+    }
+  ]
+}

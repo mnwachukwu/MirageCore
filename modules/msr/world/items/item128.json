@@ -1,0 +1,25 @@
+{
+  "name": "Astral Hauberk",
+  "pic": 5,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1125788,
+  "type": "Equipment",
+  "equipSlot": "armor",
+  "power": 289,
+  "durability": 1530,
+  "attributes": {
+    "levelReq": 235,
+    "mayWield": [
+      1,
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

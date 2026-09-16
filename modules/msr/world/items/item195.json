@@ -1,0 +1,17 @@
+{
+  "name": "Lesser Enervating Vial",
+  "pic": 26,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1,
+  "type": "Consumable",
+  "vitalAmount": 7,
+  "attributes": {
+    "levelReq": 5,
+    "restoresStamina": -7
+  }
+}

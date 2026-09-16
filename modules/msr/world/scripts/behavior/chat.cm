@@ -1,0 +1,23 @@
+# The channels this world's own lines read on.
+#
+# Core speaks on five of its own — somebody talked, the world said something happened, a whisper, a
+# guild, an administrator — and none of those is about a game with fighting in it. These two are.
+#
+# A fresh account gets them on a tab of their own rather than in the main tab, because a fight fills
+# the log faster than anybody can read around it. Both name the same tab, so they share it, and the
+# main tab is left for talk.
+
+shared model Chat
+
+    public string Blows = "combat";
+    public string Spoils = "rewards";
+
+    # What a fresh account calls the tab both of them land on.
+    string tab = "Combat";
+
+    public function Declare(Builder game)
+        game.Channel(Chat.Blows, "Combat", 230, 130, 130, Chat.tab);
+        game.Channel(Chat.Spoils, "Rewards", 230, 200, 120, Chat.tab);
+    end function
+
+end model

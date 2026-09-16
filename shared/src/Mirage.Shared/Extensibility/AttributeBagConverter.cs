@@ -52,9 +52,12 @@ public sealed class AttributeBagConverter : JsonConverter<AttributeBag>
                 case JsonTokenType.String:
                     bag[key] = AttributeValue.From(reader.GetString());
                     break;
+                case JsonTokenType.StartArray:
+                    bag[key] = JsonSerializer.Deserialize<AttributeValue>(ref reader, options);
+                    break;
                 default:
-                    // Null, an array, or a nested object: not a value this bag can hold. Step over
-                    // whatever it is — Skip() walks a container to its end — and keep the rest.
+                    // Null or a nested object: not a value this bag can hold. Step over whatever it is
+                    // — Skip() walks a container to its end — and keep the rest.
                     reader.Skip();
                     break;
             }
@@ -77,6 +80,7 @@ public sealed class AttributeBagConverter : JsonConverter<AttributeBag>
                 case AttributeKind.Integer: writer.WriteNumberValue(entry.AsLong()); break;
                 case AttributeKind.Real: writer.WriteNumberValue(entry.AsDouble()); break;
                 case AttributeKind.Flag: writer.WriteBooleanValue(entry.AsBool()); break;
+                case AttributeKind.Set: AttributeValueConverter.WriteSet(writer, entry); break;
                 default: writer.WriteStringValue(entry.AsText()); break;
             }
         }

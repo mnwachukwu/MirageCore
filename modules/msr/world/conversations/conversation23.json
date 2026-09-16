@@ -1,0 +1,46 @@
+{
+  "name": "The Unburnt (Spell vendor (Sub))",
+  "speakerNpc": 147,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "No name. I gave it up, which is the only reason I'm still standing here.\n\nI sell the taking half. Come close, if you're coming.",
+      "choices": [
+        {
+          "label": "Show me.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Gave it up to whom?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "No.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "To the fire, in place of the rest of me. It took the name and it left the body, and it has never once come back to renegotiate.\n\nSo yes: I know exactly what a taking-word costs, because I paid the largest one there is and I got change. Don't buy them casually.",
+      "choices": [
+        {
+          "label": "Show me.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "...I'll be careful.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

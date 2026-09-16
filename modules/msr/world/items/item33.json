@@ -1,0 +1,22 @@
+{
+  "name": "Steel Plate",
+  "pic": 7,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 502,
+  "type": "Equipment",
+  "equipSlot": "armor",
+  "power": 24,
+  "durability": 400,
+  "attributes": {
+    "levelReq": 10,
+    "mayWield": [
+      3,
+      10
+    ]
+  }
+}

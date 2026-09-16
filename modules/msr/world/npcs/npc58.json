@@ -1,0 +1,34 @@
+{
+  "name": "Drowned Oarsman",
+  "says": "Sit down. We are nearly there.",
+  "sprite": 17,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 55,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 127,
+    "guard": false,
+    "hostile": true,
+    "hp": 638,
+    "int": 25,
+    "spd": 30,
+    "str": 150
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 373,
+      "chance": 60
+    },
+    {
+      "itemNum": 280,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

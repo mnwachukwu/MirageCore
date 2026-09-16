@@ -93,6 +93,7 @@ public static partial class ClientStrings
     public const string ChatOptionsPanel_Close = nameof(ChatOptionsPanel_Close);
     public const string ChatOptionsPanel_SectionGeneral = nameof(ChatOptionsPanel_SectionGeneral);
     public const string ChatOptionsPanel_SectionChat = nameof(ChatOptionsPanel_SectionChat);
+    public const string ChatOptionsPanel_SectionChannels = nameof(ChatOptionsPanel_SectionChannels);
     public const string ChatOptionsPanel_SectionSystem = nameof(ChatOptionsPanel_SectionSystem);
     public const string ChatOptionsPanel_SectionCombat = nameof(ChatOptionsPanel_SectionCombat);
     public const string ChatOptionsPanel_Channel_Say = nameof(ChatOptionsPanel_Channel_Say);

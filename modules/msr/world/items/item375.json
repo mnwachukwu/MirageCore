@@ -1,0 +1,15 @@
+{
+  "name": "Scroll of Expert Attunement",
+  "pic": 29,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 3935,
+  "type": "Consumable",
+  "attributes": {
+    "teaches": 87
+  }
+}

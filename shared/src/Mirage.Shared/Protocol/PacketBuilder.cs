@@ -290,12 +290,15 @@ public static partial class PacketBuilder
 
     // ── Chat ─────────────────────────────────────────────────────────────────
 
-    public static ChatMsgPacket ChatMsg(string msg, int color, ChatChannel channel) =>
+    public static ChatMsgPacket ChatMsg(string msg, int color, string channel) =>
         new() { Msg = msg, Color = color, Channel = channel };
+
+    public static ChatMsgPacket ChatMsg(string msg, int color, ChatChannel channel) =>
+        ChatMsg(msg, color, Mirage.Shared.Protocol.ChatChannels.Name(channel));
 
     /// <summary>Player-originated chat overload. Carries speaker identity so the client can color
     /// the name and attach a right-click span. ShowAsPk is frozen at send time.</summary>
-    public static ChatMsgPacket ChatMsg(string msg, int color, ChatChannel channel, string speakerName, AdminLevel speakerAccess, bool speakerShowAsPk) =>
+    public static ChatMsgPacket ChatMsg(string msg, int color, string channel, string speakerName, AdminLevel speakerAccess, bool speakerShowAsPk) =>
         new()
         {
             Msg = msg,
@@ -305,6 +308,13 @@ public static partial class PacketBuilder
             SpeakerAccess = speakerAccess,
             SpeakerShowAsPk = speakerShowAsPk,
         };
+
+    public static ChatMsgPacket ChatMsg(string msg, int color, ChatChannel channel, string speakerName, AdminLevel speakerAccess, bool speakerShowAsPk) =>
+        ChatMsg(msg, color, Mirage.Shared.Protocol.ChatChannels.Name(channel), speakerName, speakerAccess, speakerShowAsPk);
+
+    /// <summary>S→C, once per session: the chat channels this game declared, beside Core's own.</summary>
+    public static ChatChannelsPacket ChatChannels(ChatChannelSet channels) =>
+        new() { Channels = channels.Channels };
 
     public static ChatBubblePacket ChatBubble(int playerIndex, string msg, byte kind) =>
         new() { PlayerIndex = playerIndex, Msg = msg, Kind = kind };

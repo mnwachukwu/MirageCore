@@ -1,0 +1,13 @@
+{
+  "name": "Sovereign Heal",
+  "type": "AddHp",
+  "amount": 151,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 120,
+  "mayLearn": [
+    9,
+    10
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Greater Siphon Vial",
+  "pic": 22,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1791,
+  "type": "Consumable",
+  "vitalAmount": 561,
+  "attributes": {
+    "levelReq": 100,
+    "restoresMana": -561
+  }
+}

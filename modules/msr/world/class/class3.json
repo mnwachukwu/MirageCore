@@ -1,0 +1,8 @@
+{
+  "name": "Knight",
+  "description": "Fights to defend. High defense melee.",
+  "str": 5,
+  "def": 15,
+  "spd": 0,
+  "int": 0
+}

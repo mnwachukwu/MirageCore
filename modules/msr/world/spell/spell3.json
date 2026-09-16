@@ -1,0 +1,13 @@
+{
+  "name": "Novice Exsanguination",
+  "type": "SubHp",
+  "amount": 10,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 1,
+  "mayLearn": [
+    4,
+    10
+  ]
+}

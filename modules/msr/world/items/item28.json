@@ -1,0 +1,28 @@
+{
+  "name": "Steel Dagger",
+  "pic": 13,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 293,
+  "type": "Equipment",
+  "equipSlot": "weapon",
+  "power": 14,
+  "durability": 240,
+  "attributes": {
+    "levelReq": 10,
+    "mayWield": [
+      1,
+      2,
+      3,
+      5,
+      6,
+      7,
+      9,
+      10
+    ]
+  }
+}

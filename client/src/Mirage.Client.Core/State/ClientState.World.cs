@@ -62,6 +62,17 @@ public sealed partial class ClientState
     /// </summary>
     public bool SnapVitals { get; set; }
 
+    /// <summary>Whether the server has said this body cannot manage a run right now.
+    ///
+    /// <para>⚠ Paces PREDICTION, and nothing else. The intent still goes up as a run while the key is
+    /// held, because that is what keeps the server asking its game whether the answer has changed — a
+    /// client that stopped asking could never be told it may run again.</para></summary>
+    public bool Winded { get; set; }
+
+    /// <summary>Where each body's overhead bars are drawn as they ease toward their values. Belongs to
+    /// the client rather than to the draw code, so two clients in one process keep their own.</summary>
+    public Logic.OverheadBarEase OverheadEase { get; } = new();
+
     /// <summary>Latest party-partner snapshot pushed by the server; empty Name = not in a party.</summary>
     public PartySnapshot Party { get; } = new();
 

@@ -1,0 +1,76 @@
+{
+  "name": "Tide Marshal Corrin (Quest-giver)",
+  "speakerNpc": 134,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "Marshal Corrin. Yes - the same rank as the thing in the trench.\n\nOrun held it before me. He still answers to it, in his way, which is why I'd rather you didn't use it too loudly near the water.",
+      "choices": [
+        {
+          "label": "What needs doing?",
+          "nextNodeId": 0,
+          "action": "None",
+          "actionId": "msr.quest.offer"
+        },
+        {
+          "label": "Orun is still down there?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "What is the Deep Chorus?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "Not now.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "He's still doing the job. That's the horror of it - he patrols his route, he relieves his sentries, he turns back anything that doesn't belong.\n\nWe don't belong any more. So he turns us back. There's no malice in it at all, and I'd sleep better if there were.",
+      "choices": [
+        {
+          "label": "What needs doing?",
+          "nextNodeId": 0,
+          "action": "None",
+          "actionId": "msr.quest.offer"
+        },
+        {
+          "label": "And the Chorus?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "Enough.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "speaker": "",
+      "text": "Singing. Under everything, all the time, if you hold still long enough to notice.\n\nThe cantors and the liturgists are all singing the same thing, and none of them started it. Something down there is keeping time. I send people to count, not to fight.",
+      "choices": [
+        {
+          "label": "Show me the work.",
+          "nextNodeId": 0,
+          "action": "None",
+          "actionId": "msr.quest.offer"
+        },
+        {
+          "label": "I've heard enough.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

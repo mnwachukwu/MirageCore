@@ -331,11 +331,20 @@ public static class RenderCommandBuilder
         if (bars.Count == 0) return (BarRow.None, BarRow.None, BarRow.None);
 
         var bag = state.AttributesOf(who);
-        return (RowOf(bars.At(0), bag), RowOf(bars.At(1), bag), RowOf(bars.At(2), bag));
+        var ease = state.OverheadEase;
+
+        return (RowOf(bars.At(0), bag, who, 0, ease),
+                RowOf(bars.At(1), bag, who, 1, ease),
+                RowOf(bars.At(2), bag, who, 2, ease));
     }
 
-    private static BarRow RowOf(OverheadBar? bar, AttributeBag? bag)
-        => bar is null ? BarRow.None : new BarRow(bar.FractionIn(bag), bar.Rgb);
+    // Eased rather than read straight off, so a bar over a head moves the way the same bar on the
+    // sidebar does. Keyed by the body and the row, because three bars over one body are three values.
+    private static BarRow RowOf(OverheadBar? bar, AttributeBag? bag, EntityHandle who, int row,
+                                OverheadBarEase ease)
+        => bar is null
+            ? BarRow.None
+            : new BarRow(ease.Toward(who, row, bar.FractionIn(bag)), bar.Rgb);
 
     // Stable per-light flicker seeds, in separate id ranges so a light's flicker phase never jumps when the
     // Lights list reorders. Players use their index directly; a seed collision merely shares a phase (harmless).
@@ -833,7 +842,7 @@ public static class RenderCommandBuilder
         long elapsed = tickNow - n.AttackTimer;
         bool showAtk = n.Attacking && elapsed < AttackFrameMs;
         bool lockWalk = n.Attacking && elapsed < AttackLockMs;
-        int animFrame = AnimFrame(showAtk, lockWalk, (int)n.XOffset, (int)n.YOffset, n.Dir);
+        int animFrame = AnimFrame(showAtk, lockWalk, (int)n.XOffset, (int)n.YOffset);
         int spriteRow = def.Sprite;
 
         frame.Npcs.Add(new SpriteDrawCmd(screenX, screenY, spriteRow, animFrame, n.Dir, size,
@@ -1066,7 +1075,7 @@ public static class RenderCommandBuilder
         long elapsed = tickNow - p.AttackTimer;
         bool showAtk = p.Attacking && elapsed < AttackFrameMs;
         bool lockWalk = p.Attacking && elapsed < AttackLockMs;
-        int animFrame = AnimFrame(showAtk, lockWalk, (int)p.XOffset, (int)p.YOffset, p.Dir);
+        int animFrame = AnimFrame(showAtk, lockWalk, (int)p.XOffset, (int)p.YOffset);
         int spriteRow = p.Sprite;
 
         frame.Players.Add(new SpriteDrawCmd(screenX, screenY, spriteRow, animFrame, p.Dir,
@@ -1223,12 +1232,26 @@ public static class RenderCommandBuilder
     /// While attacking: within the first 500ms → frame 2; 500–1000ms → frame 0 (idle, not walk).
     /// Walk stride frame switches at the tile midpoint (offset crosses ±PicY/2).
     /// </summary>
-    private static int AnimFrame(bool attacking, bool lockWalk, int xOffset, int yOffset, Direction dir)
+    /// <summary>Which frame of a body's sprite to draw: 0 standing, 1 mid-stride, 2 swinging.
+    ///
+    /// <para>🔴 <b>The stride is read off the way a body is TRAVELLING, never the way it faces.</b>
+    /// A chasing creature turns to face its target and then steps sideways around an obstacle — and the
+    /// facing's axis is then the one that is NOT moving, whose offset is zero, so the stride never comes
+    /// and the creature slides along in a fixed pose. A player never shows it, because a player always
+    /// faces the step they are taking.</para></summary>
+    private static int AnimFrame(bool attacking, bool lockWalk, int xOffset, int yOffset)
     {
         if (attacking) return 2;
         if (lockWalk) return 0;  // attack in progress, frame expired — show idle not walk
         if (xOffset == 0 && yOffset == 0) return 0;
-        return dir switch
+
+        // A step sets the offset one whole tile OPPOSITE the way it went, and it decays to zero — so the
+        // sign of whichever axis is moving says which way that is.
+        Direction along = xOffset != 0
+            ? (xOffset > 0 ? Direction.Left : Direction.Right)
+            : (yOffset > 0 ? Direction.Up : Direction.Down);
+
+        return along switch
         {
             // Positive offset (starts +PicX/Y, decreases to 0): stride when < half
             Direction.Up => yOffset < (Constants.PicY / 2) ? 1 : 0,

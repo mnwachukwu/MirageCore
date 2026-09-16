@@ -1,0 +1,34 @@
+{
+  "name": "Kiln Ironside",
+  "says": "Ironsides do not break.",
+  "sprite": 23,
+  "spriteSheet": 0,
+  "size": 2,
+  "spawnSecs": 90,
+  "behavior": "Pursue",
+  "group": 3,
+  "range": 8,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 29,
+    "guard": false,
+    "hostile": true,
+    "hp": 240,
+    "int": 2,
+    "spd": 4,
+    "str": 37
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 45,
+      "chance": 60
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

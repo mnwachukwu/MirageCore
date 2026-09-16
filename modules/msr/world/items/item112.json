@@ -1,0 +1,28 @@
+{
+  "name": "Dawnforged Dagger",
+  "pic": 14,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 142631,
+  "type": "Equipment",
+  "equipSlot": "weapon",
+  "power": 113,
+  "durability": 820,
+  "attributes": {
+    "levelReq": 120,
+    "mayWield": [
+      1,
+      2,
+      3,
+      5,
+      6,
+      7,
+      9,
+      10
+    ]
+  }
+}

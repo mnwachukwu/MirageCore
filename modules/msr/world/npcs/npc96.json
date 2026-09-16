@@ -1,0 +1,39 @@
+{
+  "name": "Scorchwing",
+  "says": "SKREEEEEEE!",
+  "sprite": 4,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 90,
+  "behavior": "Pursue",
+  "group": 11,
+  "range": 11,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 253,
+    "guard": false,
+    "hostile": true,
+    "hp": 0,
+    "int": 41,
+    "spd": 119,
+    "str": 335
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 1026,
+      "chance": 45
+    },
+    {
+      "itemNum": 284,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 136,
+      "quantity": 1,
+      "chance": 1
+    }
+  ]
+}

@@ -9,10 +9,10 @@ namespace Mirage.Server.Core.GameLogic;
 /// Base for a game system that talks to players: it owns the packet dispatcher and the
 /// localized-chat vocabulary every system needs.
 ///
-/// <para><b>The default channel is per system.</b> Most speak on <see cref="ChatChannel.System"/>;
-/// combat-facing ones default to <see cref="ChatChannel.Combat"/> so their damage and heal lines land
-/// in the combat tab. It is a constructor argument rather than an override, so the choice is visible at
-/// the point of construction.</para>
+/// <para><b>The default channel is per system.</b> It is a constructor argument rather than an
+/// override, so the choice is visible at the point of construction. Core's own five are all these
+/// systems have: whether a world reads its fighting apart from its talking is that world's decision,
+/// made by declaring a channel and naming it on the line.</para>
 ///
 /// <para>Guild-scoped broadcasts stay on the guild systems that own them: a different audience, not
 /// this per-player vocabulary.</para>
@@ -70,12 +70,12 @@ public abstract class GameSystem
     /// <summary>A refusal or warning to one player — red, on the Notice channel.</summary>
     protected void Notify(int index, string key, params (string Key, object? Value)[] args) =>
         _dispatcher.SendLocalizedChatTo(index, key,
-            new ChatMetadata(GameColor.BrightRed, ChatChannel.Notice), args);
+            new ChatMetadata(GameColor.BrightRed, ChatChannel.System), args);
 
     /// <summary>A positive confirmation to one player — green, on the Notice channel.</summary>
     protected void NotifyOk(int index, string key, params (string Key, object? Value)[] args) =>
         _dispatcher.SendLocalizedChatTo(index, key,
-            new ChatMetadata(GameColor.BrightGreen, ChatChannel.Notice), args);
+            new ChatMetadata(GameColor.BrightGreen, ChatChannel.System), args);
 
     // ── Viewport (earshot) localized chat ─────────────────────────────────────
 

@@ -1,0 +1,39 @@
+{
+  "name": "Ember Darter",
+  "says": "Catch me and you burn.",
+  "sprite": 33,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 85,
+  "behavior": "Pursue",
+  "group": 11,
+  "range": 11,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 245,
+    "guard": false,
+    "hostile": true,
+    "hp": 0,
+    "int": 40,
+    "spd": 115,
+    "str": 325
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 986,
+      "chance": 45
+    },
+    {
+      "itemNum": 284,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 246,
+      "quantity": 1,
+      "chance": 10
+    }
+  ]
+}

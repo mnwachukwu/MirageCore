@@ -1,0 +1,114 @@
+{
+  "name": "Leviathan Prime",
+  "says": "HHHHOOOOOOORRRRNNNN",
+  "sprite": 33,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 1200,
+  "behavior": "Wander",
+  "group": 10,
+  "range": 10,
+  "emitsLight": true,
+  "attributes": {
+    "boss": true,
+    "def": 94,
+    "guard": false,
+    "hostile": true,
+    "hp": 64224,
+    "int": 38,
+    "spd": 38,
+    "str": 207
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 3500,
+      "chance": 90
+    },
+    {
+      "itemNum": 283,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 283,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 117,
+      "quantity": 1,
+      "chance": 8
+    },
+    {
+      "itemNum": 122,
+      "quantity": 1,
+      "chance": 6
+    },
+    {
+      "itemNum": 239,
+      "quantity": 1,
+      "chance": 30
+    },
+    {
+      "itemNum": 456,
+      "quantity": 1,
+      "chance": 20
+    },
+    {
+      "itemNum": 461,
+      "quantity": 1,
+      "chance": 15
+    }
+  ]
+}

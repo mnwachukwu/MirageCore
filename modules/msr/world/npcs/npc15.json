@@ -1,0 +1,39 @@
+{
+  "name": "Orc Warbrute",
+  "says": "RRRAAAGH!",
+  "sprite": 46,
+  "spriteSheet": 0,
+  "size": 2,
+  "spawnSecs": 120,
+  "behavior": "Pursue",
+  "group": 7,
+  "range": 8,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 23,
+    "guard": false,
+    "hostile": true,
+    "hp": 311,
+    "int": 7,
+    "spd": 4,
+    "str": 29
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 36,
+      "chance": 60
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 49,
+      "quantity": 1,
+      "chance": 4
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "Astral Cap",
+  "pic": 38,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 845315,
+  "type": "Equipment",
+  "equipSlot": "helmet",
+  "power": 217,
+  "durability": 1150,
+  "attributes": {
+    "levelReq": 235
+  }
+}

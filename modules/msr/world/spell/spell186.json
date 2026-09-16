@@ -1,0 +1,12 @@
+{
+  "name": "Empyrean Mana Rupture",
+  "type": "SubMp",
+  "amount": 361,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 235,
+  "mayLearn": [
+    10
+  ]
+}

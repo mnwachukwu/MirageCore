@@ -1,0 +1,25 @@
+{
+  "name": "Iron Buckler",
+  "pic": 19,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 77,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 10,
+  "durability": 170,
+  "attributes": {
+    "levelReq": 5,
+    "mayWield": [
+      2,
+      3,
+      6,
+      7,
+      10
+    ]
+  }
+}

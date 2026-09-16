@@ -1,0 +1,12 @@
+{
+  "name": "Absolute Exhaustion",
+  "type": "SubSp",
+  "amount": 391,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 255,
+  "mayLearn": [
+    10
+  ]
+}

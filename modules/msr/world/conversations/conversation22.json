@@ -1,0 +1,46 @@
+{
+  "name": "Ordinal Kesh (Spell vendor (Add))",
+  "speakerNpc": 146,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "An ordinal is a number in a sequence. That's all we ever were - the Throne counted us out and expected us back in order.\n\nI kept the mending half of the litany. Come and be mended.",
+      "choices": [
+        {
+          "label": "Show me the litany.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Where's the other half?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "Another time.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "Out there, still being sung, by Ordinals who came back in order.\n\nPyre Ordinal, Ember Ordinal - they were my sequence. Same training, same words, and they finished the count. I stopped at mine. That is the entire difference between them and me.",
+      "choices": [
+        {
+          "label": "Show me the litany.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "I see.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

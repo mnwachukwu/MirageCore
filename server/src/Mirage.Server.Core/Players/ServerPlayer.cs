@@ -89,6 +89,13 @@ public sealed class ServerPlayer
 
     public long AttackTimer { get; set; }
 
+    /// <summary>Whether this body was last told it cannot manage a run.
+    ///
+    /// <para>⚠ Held so the answer is sent on CHANGE rather than on every step. Runtime only: it is
+    /// whatever the game's rule says next time somebody tries, so saving it would restore an opinion
+    /// about a body that no longer applies.</para></summary>
+    public bool ToldWinded { get; set; }
+
     /// <summary>Where a body that is out of action comes back to, settled when it went down. 0 means
     /// nothing chose, and the world’s own home answers instead.</summary>
     public int RiseMap { get; set; }

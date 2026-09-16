@@ -1,0 +1,34 @@
+{
+  "name": "Silt Crawler",
+  "says": "SKRTCH-SKRTCH-SKRTCH",
+  "sprite": 3,
+  "spriteSheet": 0,
+  "size": 2,
+  "spawnSecs": 55,
+  "behavior": "Pursue",
+  "group": 10,
+  "range": 8,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 109,
+    "guard": false,
+    "hostile": true,
+    "hp": 847,
+    "int": 18,
+    "spd": 51,
+    "str": 145
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 360,
+      "chance": 45
+    },
+    {
+      "itemNum": 279,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

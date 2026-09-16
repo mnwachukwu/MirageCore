@@ -1,0 +1,14 @@
+{
+  "name": "Eternal Meditation",
+  "type": "AddMp",
+  "amount": 301,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 245,
+  "mayLearn": [
+    6,
+    9,
+    10
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "name": "The Drowned Hulk",
+  "says": "GROOOAAANNN...",
+  "sprite": 28,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 420,
+  "behavior": "Wander",
+  "group": 2,
+  "range": 6,
+  "emitsLight": false,
+  "attributes": {
+    "boss": true,
+    "def": 32,
+    "guard": false,
+    "hostile": true,
+    "hp": 2599,
+    "int": 5,
+    "spd": 2,
+    "str": 37
+  },
+  "drops": [
+    {
+      "itemNum": 60,
+      "quantity": 1,
+      "chance": 16
+    },
+    {
+      "itemNum": 59,
+      "quantity": 1,
+      "chance": 12
+    },
+    {
+      "itemNum": 209,
+      "quantity": 1,
+      "chance": 30
+    },
+    {
+      "itemNum": 375,
+      "quantity": 1,
+      "chance": 20
+    },
+    {
+      "itemNum": 362,
+      "quantity": 1,
+      "chance": 15
+    }
+  ]
+}

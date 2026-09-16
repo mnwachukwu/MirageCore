@@ -78,7 +78,7 @@ public sealed partial class GuildSystem : GameSystem
         SaveGuild(guild);   // persists + re-pushes GuildInfo so online officers see the new application
         NotifyOk(index, ServerStrings.Guild_ApplicationSent, ("GuildName", guild.Name));
         _dispatcher.SendLocalizedChatToGuildOfficers(guild.Index, ServerStrings.Guild_ApplicationReceived,
-            new ChatMetadata(GameColor.GuildOfficer, ChatChannel.GuildOfficer), ("Name", sp.Char.TrimmedName));
+            new ChatMetadata(GameColor.GuildOfficer, ChatChannel.Guild), ("Name", sp.Char.TrimmedName));
     }
 
     /// <summary>Leader/Officer approves or rejects a pending application. Approve adds the applicant

@@ -1,0 +1,24 @@
+{
+  "name": "Astral Kite Shield",
+  "pic": 31,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1125788,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 289,
+  "durability": 1530,
+  "attributes": {
+    "levelReq": 235,
+    "mayWield": [
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

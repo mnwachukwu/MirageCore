@@ -1,0 +1,24 @@
+{
+  "name": "Warded Kite Shield",
+  "pic": 31,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 151629,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 139,
+  "durability": 1050,
+  "attributes": {
+    "levelReq": 110,
+    "mayWield": [
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "Meteoric Hauberk",
+  "pic": 3,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 118076,
+  "type": "Equipment",
+  "equipSlot": "armor",
+  "power": 127,
+  "durability": 1000,
+  "attributes": {
+    "levelReq": 100,
+    "mayWield": [
+      1,
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

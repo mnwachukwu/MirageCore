@@ -1,0 +1,17 @@
+{
+  "name": "Resplendent Siphon Vial",
+  "pic": 22,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2917,
+  "type": "Consumable",
+  "vitalAmount": 778,
+  "attributes": {
+    "levelReq": 120,
+    "restoresMana": -778
+  }
+}

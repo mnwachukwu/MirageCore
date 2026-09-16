@@ -1,0 +1,109 @@
+{
+  "name": "Warlord's Champion",
+  "says": "Come and be remembered.",
+  "sprite": 45,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 240,
+  "behavior": "Wander",
+  "group": 5,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": true,
+    "def": 27,
+    "guard": false,
+    "hostile": true,
+    "hp": 734,
+    "int": 8,
+    "spd": 5,
+    "str": 34
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 381,
+      "chance": 90
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 278,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 41,
+      "quantity": 1,
+      "chance": 16
+    },
+    {
+      "itemNum": 42,
+      "quantity": 1,
+      "chance": 12
+    },
+    {
+      "itemNum": 204,
+      "quantity": 1,
+      "chance": 30
+    },
+    {
+      "itemNum": 350,
+      "quantity": 1,
+      "chance": 20
+    },
+    {
+      "itemNum": 355,
+      "quantity": 1,
+      "chance": 15
+    }
+  ]
+}

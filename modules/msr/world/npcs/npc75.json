@@ -1,0 +1,39 @@
+{
+  "name": "Coral Warden",
+  "says": "RRRRUUUMMBLE",
+  "sprite": 1,
+  "spriteSheet": 0,
+  "size": 2,
+  "spawnSecs": 80,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 148,
+    "guard": false,
+    "hostile": true,
+    "hp": 4792,
+    "int": 8,
+    "spd": 20,
+    "str": 189
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 420,
+      "chance": 60
+    },
+    {
+      "itemNum": 282,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 109,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

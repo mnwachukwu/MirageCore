@@ -1,0 +1,25 @@
+{
+  "name": "Eternal Hauberk",
+  "pic": 5,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1257379,
+  "type": "Equipment",
+  "equipSlot": "armor",
+  "power": 301,
+  "durability": 1570,
+  "attributes": {
+    "levelReq": 245,
+    "mayWield": [
+      1,
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

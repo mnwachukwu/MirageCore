@@ -1,0 +1,17 @@
+{
+  "name": "Strong Mana Elixir",
+  "pic": 27,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 11,
+  "type": "Consumable",
+  "vitalAmount": 34,
+  "attributes": {
+    "levelReq": 15,
+    "restoresMana": 34
+  }
+}

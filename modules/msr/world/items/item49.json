@@ -1,0 +1,25 @@
+{
+  "name": "Tempered Buckler",
+  "pic": 16,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 755,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 19,
+  "durability": 290,
+  "attributes": {
+    "levelReq": 15,
+    "mayWield": [
+      2,
+      3,
+      6,
+      7,
+      10
+    ]
+  }
+}

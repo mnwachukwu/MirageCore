@@ -1,0 +1,39 @@
+{
+  "name": "Kelp Stalker",
+  "says": "SHHHK-SHHHK",
+  "sprite": 41,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 55,
+  "behavior": "Pursue",
+  "group": 10,
+  "range": 8,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 114,
+    "guard": false,
+    "hostile": true,
+    "hp": 0,
+    "int": 18,
+    "spd": 54,
+    "str": 151
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 382,
+      "chance": 45
+    },
+    {
+      "itemNum": 279,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 222,
+      "quantity": 1,
+      "chance": 10
+    }
+  ]
+}

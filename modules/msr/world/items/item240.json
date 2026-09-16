@@ -1,0 +1,17 @@
+{
+  "name": "Resplendent Vigor Elixir",
+  "pic": 21,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2917,
+  "type": "Consumable",
+  "vitalAmount": 107,
+  "attributes": {
+    "levelReq": 120,
+    "restoresStamina": 107
+  }
+}

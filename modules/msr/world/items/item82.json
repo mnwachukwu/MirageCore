@@ -1,0 +1,18 @@
+{
+  "name": "Runed Cap",
+  "pic": 36,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 100900,
+  "type": "Equipment",
+  "equipSlot": "helmet",
+  "power": 100,
+  "durability": 770,
+  "attributes": {
+    "levelReq": 105
+  }
+}

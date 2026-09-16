@@ -1,0 +1,17 @@
+{
+  "name": "Eternal Bloodletting",
+  "type": "SubHp",
+  "amount": 226,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 245,
+  "mayLearn": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+  ]
+}

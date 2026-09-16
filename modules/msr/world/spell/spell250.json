@@ -1,0 +1,18 @@
+{
+  "name": "Celestial Second Wind",
+  "type": "AddSp",
+  "amount": 230,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 250,
+  "mayLearn": [
+    1,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ]
+}

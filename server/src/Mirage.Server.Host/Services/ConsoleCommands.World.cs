@@ -58,7 +58,7 @@ public sealed partial class ConsoleCommands
 
         if (!clearing)
             _dispatcher.SendLocalizedChatToAll(ServerStrings.AdminCommand_MotdChanged,
-                new ChatMetadata(GameColor.BrightCyan, ChatChannel.Notice), ("Motd", motd));
+                new ChatMetadata(GameColor.BrightCyan, ChatChannel.System), ("Motd", motd));
 
         Write(clearing ? ServerStrings.Console_MotdCleared : ServerStrings.Console_MotdSet, ("Motd", motd));
         _logger.LogInformation("Console {Action} the Message of the Day.", clearing ? "cleared" : "changed");
@@ -91,7 +91,7 @@ public sealed partial class ConsoleCommands
         if (_pm[slot].Char.Access == AdminLevel.Player && level > AdminLevel.Player)
         {
             _dispatcher.SendLocalizedChatToAll(ServerStrings.AdminCommand_PlayerGrantedAccess,
-                new ChatMetadata(GameColor.BrightBlue, ChatChannel.Notice), ("Target", charName));
+                new ChatMetadata(GameColor.BrightBlue, ChatChannel.System), ("Target", charName));
         }
 
         // Access is per-account, so every online character on it updates too.

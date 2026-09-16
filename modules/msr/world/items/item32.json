@@ -1,0 +1,25 @@
+{
+  "name": "Steel Hauberk",
+  "pic": 7,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 397,
+  "type": "Equipment",
+  "equipSlot": "armor",
+  "power": 19,
+  "durability": 320,
+  "attributes": {
+    "levelReq": 10,
+    "mayWield": [
+      1,
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

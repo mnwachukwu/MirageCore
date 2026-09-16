@@ -1,0 +1,17 @@
+{
+  "name": "Minor Enervating Vial",
+  "pic": 26,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1,
+  "type": "Consumable",
+  "vitalAmount": 3,
+  "attributes": {
+    "levelReq": 1,
+    "restoresStamina": -3
+  }
+}

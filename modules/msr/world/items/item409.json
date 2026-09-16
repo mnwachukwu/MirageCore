@@ -1,0 +1,15 @@
+{
+  "name": "Scroll of Grand Focus",
+  "pic": 29,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 268393,
+  "type": "Consumable",
+  "attributes": {
+    "teaches": 121
+  }
+}

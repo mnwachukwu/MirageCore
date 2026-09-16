@@ -282,7 +282,7 @@ public sealed partial class PacketHandler
     }
 
     private void MailMsg(int index, string key, int color, params (string, object?)[] args)
-        => _dispatcher.SendLocalizedChatTo(index, key, new ChatMetadata(color, ChatChannel.Notice), args);
+        => _dispatcher.SendLocalizedChatTo(index, key, new ChatMetadata(color, ChatChannel.System), args);
 
     private static string ClampText(string s, int max) => s.Length <= max ? s : s[..max];
 }

@@ -1,0 +1,39 @@
+{
+  "name": "Pale Leviathan",
+  "says": "GLLLLRRRRHHH...",
+  "sprite": 16,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 150,
+  "behavior": "Pursue",
+  "group": 10,
+  "range": 8,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 140,
+    "guard": false,
+    "hostile": true,
+    "hp": 14500,
+    "int": 24,
+    "spd": 11,
+    "str": 165
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 386,
+      "chance": 60
+    },
+    {
+      "itemNum": 280,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 85,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

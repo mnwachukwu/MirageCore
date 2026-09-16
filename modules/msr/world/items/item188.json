@@ -1,0 +1,17 @@
+{
+  "name": "Minor Siphon Vial",
+  "pic": 22,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1,
+  "type": "Consumable",
+  "vitalAmount": 8,
+  "attributes": {
+    "levelReq": 1,
+    "restoresMana": -8
+  }
+}

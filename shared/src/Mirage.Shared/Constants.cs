@@ -418,12 +418,11 @@ public static class Constants
     public const long WeatherSnowMaxMs = 60L * 60 * 1_000;   // 60 min
     public const long WeatherHeavyWindMinMs = 5L * 60 * 1_000;   //  5 min
     public const long WeatherHeavyWindMaxMs = 30L * 60 * 1_000;   // 30 min
-    // Effect magnitudes. Set any multiplier to its identity (1 / 1.0) to disable that facet.
-    // What weather does to combat — damage, stamina, durability, EXP — is a GAME's rule, so only the
-    // ones Core can still act on survive here.
-    public const double WeatherReducedRegenMultiplier = 0.5;  // Heat Wave + Snow: vital regen magnitude
+    // What weather does to a fight — damage, stamina, durability, EXP, whether a swing lands, how fast
+    // anybody recovers — is a GAME's rule and lives in its scripts. What survives here is the one facet
+    // Core acts on itself: the cooldown a client draws and the server enforces.
+    // Set it to 1 to disable that facet.
     public const long WeatherHeavyWindCooldownMultiplier = 2;    // Heavy Wind: attack + cast cooldown doubled
-    public const int WeatherHeavyWindMissChancePercent = 10;   // Heavy Wind: attacks and casts torn off course, attacker-side, before any block/dodge
 
     // ── Stains on the ground (server-authoritative, event-sourced) ────────────
     // A deposit puts a colored rectangle on the ground; the server dries every stain on a shared linear

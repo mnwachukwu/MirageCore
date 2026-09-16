@@ -1,0 +1,49 @@
+{
+  "name": "Ash Liturgist",
+  "says": "Kneel in the cinders. It is warmer.",
+  "sprite": 10,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 100,
+  "behavior": "Pursue",
+  "group": 3,
+  "range": 12,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 210,
+    "guard": false,
+    "hostile": true,
+    "hp": 583,
+    "int": 340,
+    "spd": 56,
+    "str": 155
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 1046,
+      "chance": 60
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 3,
+      "chance": 20
+    },
+    {
+      "itemNum": 257,
+      "quantity": 1,
+      "chance": 10
+    },
+    {
+      "itemNum": 510,
+      "quantity": 1,
+      "chance": 6
+    }
+  ]
+}

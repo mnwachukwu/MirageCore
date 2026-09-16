@@ -85,7 +85,7 @@ shared model Fight
         Npc? target = World.NpcAt(map, x, y);
 
         if not target.HasValue()
-            who.Message("There is nothing there to fight.");
+            who.Message("There is nothing there to fight.", "combat");
             yield;
         end if
 
@@ -103,7 +103,7 @@ shared model Fight
         # The wind takes it before anything else is rolled.
         if Combat.WindTakesIt(who.Map)
             who.Sweep(false);
-            who.Message("The wind takes your swing.");
+            who.Message("The wind takes your swing.", "combat");
             yield;
         end if
 
@@ -113,13 +113,13 @@ shared model Fight
         # A creature that turns the swing aside, or steps out of it.
         if Combat.Rolls(Combat.NpcChance(defence, Combat.NpcDodgeDivisor, Combat.NpcDodgeCap))
             who.Sweep(false);
-            who.Message(target.Name + " steps aside.");
+            who.Message(target.Name + " steps aside.", "combat");
             yield;
         end if
 
         if Combat.Rolls(Combat.NpcChance(defence, Combat.NpcBlockDivisor, Combat.NpcBlockCap))
             who.Sweep(false);
-            who.Message(target.Name + " turns it aside.");
+            who.Message(target.Name + " turns it aside.", "combat");
             yield;
         end if
 
@@ -231,7 +231,7 @@ shared model Fight
         # The wind takes it before anybody reacts, so a blow it took costs the body nothing.
         if Combat.WindTakesIt(it.Map)
             it.Sweep(false);
-            who.Message(it.Name + " swings wide in the wind.");
+            who.Message(it.Name + " swings wide in the wind.", "combat");
             yield;
         end if
 
@@ -241,7 +241,7 @@ shared model Fight
         if Combat.CanDodge(who)
             if Combat.Rolls(Combat.PlayerChance(defence, level, Combat.PlayerDodgeDivisor, Combat.PlayerDodgeCap))
                 Combat.Spend(who, Combat.DodgeCostShare);
-                who.Message("You step aside.");
+                who.Message("You step aside.", "combat");
                 yield;
             end if
         end if
@@ -250,7 +250,7 @@ shared model Fight
             if Combat.Rolls(Combat.PlayerChance(defence, level, Combat.PlayerBlockDivisor, Combat.PlayerBlockCap))
                 Combat.Spend(who, Combat.BlockCostShare);
                 Gear.Chip(who, Sheet.Shield);
-                who.Message("You turn it aside.");
+                who.Message("You turn it aside.", "combat");
                 yield;
             end if
         end if
@@ -269,7 +269,7 @@ shared model Fight
 
         it.Sweep(true);
         who.Float("" + damage, 220, 60, 60);
-        who.Message(it.Name + " hits you for " + damage + ".");
+        who.Message(it.Name + " hits you for " + damage + ".", "combat");
 
         Fight.Took(it, who, damage);
     end function
@@ -316,7 +316,7 @@ shared model Fight
 
         # The wind takes a bolt as readily as a blow, and before anybody reacts.
         if Combat.WindTakesIt(it.Map)
-            who.Message(it.Name + " looses wide in the wind.");
+            who.Message(it.Name + " looses wide in the wind.", "combat");
             yield;
         end if
 
@@ -326,7 +326,7 @@ shared model Fight
                            Combat.Protection(level, who.Number(Stats.Def)), Combat.MinDamageFloor)));
 
         who.Float("" + damage, 150, 120, 255);
-        who.Message(it.Name + " hits you for " + damage + ".");
+        who.Message(it.Name + " hits you for " + damage + ".", "combat");
 
         Fight.Took(it, who, damage);
     end function
@@ -461,7 +461,7 @@ shared model Fight
             yield;
         end if
 
-        World.TellNear(map, x, y, it.Name + " kills " + name + ".");
+        World.TellNear(map, x, y, it.Name + " kills " + name + ".", "combat");
     end function
 
     # Every way a player can kill a creature ends here — a swing, and a spell. Two copies would be
@@ -485,7 +485,7 @@ shared model Fight
             yield;
         end if
 
-        World.TellNear(map, x, y, name + " falls.");
+        World.TellNear(map, x, y, name + " falls.", "combat");
 
         # A creature's worth is what it was made of. The original computed this from the length of the
         # fight it would have been; this is the same shape with the stats it had.

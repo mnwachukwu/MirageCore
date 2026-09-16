@@ -1,0 +1,8 @@
+{
+  "name": "Sage",
+  "description": "Wise caster. High defense range.",
+  "str": 0,
+  "def": 15,
+  "spd": 0,
+  "int": 5
+}

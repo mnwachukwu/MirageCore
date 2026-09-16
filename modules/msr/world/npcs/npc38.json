@@ -1,0 +1,129 @@
+{
+  "name": "The Kiln Warden",
+  "says": "The Kiln takes what it is owed.",
+  "sprite": 36,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 300,
+  "behavior": "Wander",
+  "group": 3,
+  "range": 8,
+  "emitsLight": true,
+  "attributes": {
+    "boss": true,
+    "def": 29,
+    "guard": false,
+    "hostile": true,
+    "hp": 465,
+    "int": 2,
+    "spd": 4,
+    "str": 37
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 358,
+      "chance": 90
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 42,
+      "quantity": 1,
+      "chance": 16
+    },
+    {
+      "itemNum": 41,
+      "quantity": 1,
+      "chance": 12
+    },
+    {
+      "itemNum": 203,
+      "quantity": 1,
+      "chance": 30
+    },
+    {
+      "itemNum": 357,
+      "quantity": 1,
+      "chance": 20
+    },
+    {
+      "itemNum": 344,
+      "quantity": 1,
+      "chance": 15
+    }
+  ]
+}

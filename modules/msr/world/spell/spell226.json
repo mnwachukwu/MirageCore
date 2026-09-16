@@ -1,0 +1,14 @@
+{
+  "name": "Eternal Mend",
+  "type": "AddHp",
+  "amount": 226,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 245,
+  "mayLearn": [
+    6,
+    9,
+    10
+  ]
+}

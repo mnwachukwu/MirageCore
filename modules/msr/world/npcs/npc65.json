@@ -1,0 +1,39 @@
+{
+  "name": "Barnacle Serjeant",
+  "says": "Nine hundred years and no relief.",
+  "sprite": 35,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 60,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 132,
+    "guard": false,
+    "hostile": true,
+    "hp": 686,
+    "int": 26,
+    "spd": 31,
+    "str": 155
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 390,
+      "chance": 60
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 221,
+      "quantity": 1,
+      "chance": 10
+    }
+  ]
+}

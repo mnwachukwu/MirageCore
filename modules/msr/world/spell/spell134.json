@@ -1,0 +1,14 @@
+{
+  "name": "Arch Enervation",
+  "type": "SubSp",
+  "amount": 139,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 110,
+  "mayLearn": [
+    6,
+    7,
+    10
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "Tempered Plate",
+  "pic": 4,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1232,
+  "type": "Equipment",
+  "equipSlot": "armor",
+  "power": 31,
+  "durability": 480,
+  "attributes": {
+    "levelReq": 15,
+    "mayWield": [
+      3,
+      10
+    ]
+  }
+}

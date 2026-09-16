@@ -1,0 +1,22 @@
+{
+  "name": "Obsidian Tower Shield",
+  "pic": 32,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 212726,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 181,
+  "durability": 1340,
+  "attributes": {
+    "levelReq": 115,
+    "mayWield": [
+      3,
+      10
+    ]
+  }
+}

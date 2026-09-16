@@ -16,13 +16,17 @@ namespace Mirage.Modules.Survey;
 /// <c>Mirage.Shared</c> and nothing else — not the server it runs inside, not the client that draws it,
 /// not the editor that authors its records.</para>
 /// </summary>
-public sealed class SurveyModule : ICoreModule
+public sealed class SurveyModule : ICoreModule, IConsoleHandler
 {
     private readonly SurveyObserver _observer = new();
     private readonly SurveyTick _recovery = new();
     private readonly SurveyRoute _notes = new();
     private readonly TheFindersSpecimen _finds = new();
     private readonly TooTiredToRun _legs = new();
+
+    // Held from Start, because the console asks about the world rather than about a body and there is
+    // nothing else on the call to ask.
+    private IWorld? _world;
 
     public string Name => "Survey";
 
@@ -109,6 +113,24 @@ public sealed class SurveyModule : ICoreModule
         builder.AddLingerPolicy(new StayWhileSurveying());
         builder.AddLootPolicy(_finds);
         builder.AddMovePolicy(_legs);
+        builder.AddConsoleHandler(this);
+    }
+
+    /// <summary>A census, from the server's own console.
+    ///
+    /// <para>The operator's console and nowhere else — a surveyor counting their own world's species
+    /// from inside it would be a different game. What belongs here is what somebody RUNNING the world
+    /// wants: how much of it has been authored, answered without a client.</para></summary>
+    public string? Console(string command, string rest)
+    {
+        if (!string.Equals(command, "/species", StringComparison.OrdinalIgnoreCase)) return null;
+        if (_world is null) return "The world is not up yet.";
+
+        int authored = _world.RecordCount(Survey.Species);
+        int named = _world.RecordsOf(Survey.Species)
+            .Count(r => r.TryGet("name", out var n) && n.AsText().Length > 0);
+
+        return $"{named} species named, of {authored} slot(s).";
     }
 
     /// <summary>The engine is built and the world is loaded. This is where the module stops describing
@@ -116,6 +138,8 @@ public sealed class SurveyModule : ICoreModule
     public void Start(IWorld world)
     {
         ArgumentNullException.ThrowIfNull(world);
+
+        _world = world;
 
         // The authored species, read once. They are AttributeBags rather than a type this assembly
         // compiled, because the editor that wrote them never referenced this assembly either.
@@ -203,6 +227,16 @@ public sealed class SurveyModule : ICoreModule
             ValueKey = Survey.Stamina,
             MaxKey = Survey.StaminaMax,
             Rgb = GameColor.Pack(120, 190, 90),
+        });
+
+        // What this module finds and notes down, kept off the main tab. A surveyor walking a meadow
+        // fills the log with specimens, and somebody who wanted to talk to them would never see it.
+        builder.AddChatChannel(new ChatChannelSpec
+        {
+            Id = Survey.Findings,
+            LabelKey = "Findings",
+            Rgb = GameColor.Pack(120, 190, 90),
+            OwnTabKey = "Field notes",
         });
 
         // The sidebar, in order. Each row reads an attribute this module declared above, so a number

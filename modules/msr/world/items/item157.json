@@ -1,0 +1,25 @@
+{
+  "name": "Eternal Buckler",
+  "pic": 17,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 944079,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 226,
+  "durability": 1170,
+  "attributes": {
+    "levelReq": 245,
+    "mayWield": [
+      2,
+      3,
+      6,
+      7,
+      10
+    ]
+  }
+}

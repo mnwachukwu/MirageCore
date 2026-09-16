@@ -228,7 +228,7 @@ public sealed partial class NpcAiSystem : GameSystem
         if (mn.LastSpokeTo == target || string.IsNullOrWhiteSpace(npc.Says)) return;
         mn.LastSpokeTo = target;
         _dispatcher.SendLocalizedChatTo(target, ServerStrings.NpcAiSystem_NpcSays,
-            new ChatMetadata(GameColor.Npc, ChatChannel.Say),
+            new ChatMetadata(GameColor.Npc, ChatChannel.Global),
             ("NpcName", npc.TrimmedName), ("Say", npc.Says.TrimEnd()));
         _dispatcher.SendTo(target, PacketBuilder.NpcChatBubble(mapNum, slot, npc.Says.TrimEnd(), kind: 0));
     }

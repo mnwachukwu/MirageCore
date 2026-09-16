@@ -1,0 +1,16 @@
+{
+  "name": "Expert Focus",
+  "type": "AddMp",
+  "amount": 23,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 20,
+  "mayLearn": [
+    4,
+    5,
+    6,
+    9,
+    10
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Gold",
+  "pic": 2,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": true,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": true,
+  "price": 0,
+  "type": "Currency",
+  "attributes": {
+    "coin": true
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "Brac Ironhand, Weaponsmith",
+  "fixesItems": true,
+  "shopType": "Store",
+  "allowBanking": false,
+  "keeper": 135,
+  "barterItem": [],
+  "salesItem": [
+    76,
+    77,
+    78,
+    100,
+    101,
+    102
+  ]
+}

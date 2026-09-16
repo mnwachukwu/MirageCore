@@ -1,0 +1,12 @@
+{
+  "name": "Cinder Ruby",
+  "pic": 2,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": true,
+  "price": 12928,
+  "type": "None"
+}

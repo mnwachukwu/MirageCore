@@ -1,0 +1,14 @@
+{
+  "name": "Journeyman Enervation",
+  "type": "SubSp",
+  "amount": 19,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 10,
+  "mayLearn": [
+    6,
+    7,
+    10
+  ]
+}

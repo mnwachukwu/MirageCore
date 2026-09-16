@@ -16,11 +16,21 @@ namespace Mirage.Server.Core.Net;
 /// </summary>
 public readonly record struct ChatMetadata(
     int Color,
-    ChatChannel Channel,
+    string Channel,
     string? SpeakerName = null,
     AdminLevel? SpeakerAccess = null,
     bool? SpeakerShowAsPk = null,
-    string? SpeakerLogin = null);
+    string? SpeakerLogin = null)
+{
+    /// <summary>A line Core is sending on its own account. The enum is Core's convenience; what travels
+    /// is the id, in the same namespace a game's declared channels live in.</summary>
+    public ChatMetadata(int color, ChatChannel channel, string? speakerName = null,
+                        AdminLevel? speakerAccess = null, bool? speakerShowAsPk = null,
+                        string? speakerLogin = null)
+        : this(color, ChatChannels.Name(channel), speakerName, speakerAccess, speakerShowAsPk, speakerLogin)
+    {
+    }
+}
 
 public interface IPacketDispatcher
 {

@@ -1,0 +1,25 @@
+{
+  "name": "Sundered Hauberk",
+  "pic": 5,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1190445,
+  "type": "Equipment",
+  "equipSlot": "armor",
+  "power": 295,
+  "durability": 1550,
+  "attributes": {
+    "levelReq": 240,
+    "mayWield": [
+      1,
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

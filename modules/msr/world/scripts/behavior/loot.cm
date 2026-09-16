@@ -157,7 +157,7 @@ shared model Loot
         # rather than more of the winner's pile.
         if doubled
             World.DropAt(fallen, drop.Item, many);
-            World.TellNear(map, x, y, it.Name + " drops a second " + World.RecordName(Gear.Of, drop.Item) + ".");
+            World.TellNear(map, x, y, it.Name + " drops a second " + World.RecordName(Gear.Of, drop.Item) + ".", "rewards");
         end if
     end function
 
@@ -256,11 +256,11 @@ shared model Loot
         loop each who in World.PlayersNear(map, x, y, Loot.Reach)
             if it.Number(Loot.DealtBy + who.Name) >= bar
                 if who.Name == won
-                    who.Message(it.Name + " drops " + name + ", and it is yours.");
+                    who.Message(it.Name + " drops " + name + ", and it is yours.", "rewards");
                 end if
 
                 if who.Name != won
-                    who.Message(it.Name + " drops " + name + ". " + won + " won it.");
+                    who.Message(it.Name + " drops " + name + ". " + won + " won it.", "rewards");
                 end if
             end if
         end loop

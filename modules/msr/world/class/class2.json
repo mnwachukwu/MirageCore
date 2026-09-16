@@ -1,0 +1,8 @@
+{
+  "name": "Soldier",
+  "description": "Fights for order. Even melee.",
+  "str": 10,
+  "def": 10,
+  "spd": 0,
+  "int": 0
+}

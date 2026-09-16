@@ -1,0 +1,44 @@
+{
+  "name": "Trench Colossus",
+  "says": "BRRROOOOOM",
+  "sprite": 5,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 170,
+  "behavior": "Pursue",
+  "group": 10,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 147,
+    "guard": false,
+    "hostile": true,
+    "hp": 16091,
+    "int": 25,
+    "spd": 12,
+    "str": 173
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 407,
+      "chance": 60
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 91,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 226,
+      "quantity": 1,
+      "chance": 10
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "Sundered Tunic",
+  "pic": 5,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 891825,
+  "type": "Equipment",
+  "equipSlot": "armor",
+  "power": 221,
+  "durability": 1160,
+  "attributes": {
+    "levelReq": 240
+  }
+}

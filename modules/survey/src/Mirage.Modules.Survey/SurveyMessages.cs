@@ -91,7 +91,7 @@ public sealed class SurveyRoute : IPacketRoute, IActionHandler
             return;
         }
 
-        world.Tell(from, $"You note down: {name}.");
+        world.Tell(from, $"You note down: {name}.", Survey.Findings);
         Note(from, species: 0);
     }
 
@@ -110,8 +110,8 @@ public sealed class SurveyRoute : IPacketRoute, IActionHandler
         long mine = world.AttributesOf(from)?[Survey.Specimens].AsLong() ?? 0;
         long theirs = world.AttributesOf(on)?[Survey.Specimens].AsLong() ?? 0;
 
-        world.Tell(from, $"You compare notes with {them}: {mine} against {theirs}.");
-        world.Tell(on, $"{world.NameOf(from)} compares notes with you: {theirs} against {mine}.");
+        world.Tell(from, $"You compare notes with {them}: {mine} against {theirs}.", Survey.Findings);
+        world.Tell(on, $"{world.NameOf(from)} compares notes with you: {theirs} against {mine}.", Survey.Findings);
     }
 
     private void Note(EntityHandle from, int species)

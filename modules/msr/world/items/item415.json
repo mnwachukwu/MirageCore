@@ -1,0 +1,15 @@
+{
+  "name": "Scroll of Arch Bloodletting",
+  "pic": 30,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 303259,
+  "type": "Consumable",
+  "attributes": {
+    "teaches": 127
+  }
+}

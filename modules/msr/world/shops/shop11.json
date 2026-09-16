@@ -1,0 +1,16 @@
+{
+  "name": "Doctor Pell, Alchemist",
+  "fixesItems": false,
+  "shopType": "Store",
+  "allowBanking": false,
+  "keeper": 137,
+  "barterItem": [],
+  "salesItem": [
+    220,
+    221,
+    222,
+    232,
+    233,
+    234
+  ]
+}

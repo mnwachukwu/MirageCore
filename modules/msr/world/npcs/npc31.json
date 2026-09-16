@@ -1,0 +1,29 @@
+{
+  "name": "Gravebound",
+  "says": "UUURRRGHH...",
+  "sprite": 18,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 110,
+  "behavior": "Pursue",
+  "group": 9,
+  "range": 7,
+  "emitsLight": false,
+  "attributes": {
+    "boss": false,
+    "def": 18,
+    "guard": false,
+    "hostile": true,
+    "hp": 348,
+    "int": 5,
+    "spd": 3,
+    "str": 23
+  },
+  "drops": [
+    {
+      "itemNum": 29,
+      "quantity": 1,
+      "chance": 4
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Eternal Heal",
+  "type": "AddHp",
+  "amount": 301,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 245,
+  "mayLearn": [
+    9,
+    10
+  ]
+}

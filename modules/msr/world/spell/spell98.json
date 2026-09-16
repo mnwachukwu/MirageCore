@@ -1,0 +1,14 @@
+{
+  "name": "Master Enervation",
+  "type": "SubSp",
+  "amount": 127,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 100,
+  "mayLearn": [
+    6,
+    7,
+    10
+  ]
+}

@@ -36,7 +36,7 @@ public sealed partial class PacketHandler
         var group = map.MapGroup > 0 ? _world.MapGroups.GetValueOrDefault(map.MapGroup) : null;
         string mapName = string.IsNullOrWhiteSpace(map.Name) ? "-" : map.Name.Trim();
         string groupName = group is null || string.IsNullOrWhiteSpace(group.Name) ? "-" : group.Name.Trim();
-        _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_Location, new ChatMetadata(GameColor.Pink, ChatChannel.Notice),
+        _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_Location, new ChatMetadata(GameColor.Pink, ChatChannel.System),
             ("Map", p.Map), ("X", p.X), ("Y", p.Y), ("MapName", mapName), ("GroupName", groupName));
     }
 
@@ -76,7 +76,7 @@ public sealed partial class PacketHandler
 
         _dispatcher.SendLocalizedChatTo(index,
             sp.Char.GodMode ? ServerStrings.AdminCommand_GodModeOn : ServerStrings.AdminCommand_GodModeOff,
-            new ChatMetadata(GameColor.BrightCyan, ChatChannel.Notice));
+            new ChatMetadata(GameColor.BrightCyan, ChatChannel.System));
         _logger.LogInformation("{Name} turned god mode {State}.",
             _pm[index].Char.Name.Trim(), sp.Char.GodMode ? "on" : "off");
     }
@@ -102,7 +102,7 @@ public sealed partial class PacketHandler
         int n = _pm.FindPlayerByName(p.Target);
         if (n == index)
         {
-            _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_CannotWarpSelf, new ChatMetadata(GameColor.White, ChatChannel.Notice));
+            _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_CannotWarpSelf, new ChatMetadata(GameColor.White, ChatChannel.System));
             return;
         }
         if (n == 0)
@@ -113,8 +113,8 @@ public sealed partial class PacketHandler
 
         var tp = _pm[n].Char;
         _movement.PlayerWarp(index, tp.Map, tp.X, tp.Y);
-        _dispatcher.SendLocalizedChatTo(n, ServerStrings.AdminCommand_WarpedToPlayer, new ChatMetadata(GameColor.BrightBlue, ChatChannel.Notice), ("Admin", _pm[index].Char.Name.Trim()));
-        _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_WarpedToTarget, new ChatMetadata(GameColor.BrightBlue, ChatChannel.Notice), ("Target", tp.Name.Trim()));
+        _dispatcher.SendLocalizedChatTo(n, ServerStrings.AdminCommand_WarpedToPlayer, new ChatMetadata(GameColor.BrightBlue, ChatChannel.System), ("Admin", _pm[index].Char.Name.Trim()));
+        _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_WarpedToTarget, new ChatMetadata(GameColor.BrightBlue, ChatChannel.System), ("Target", tp.Name.Trim()));
         _logger.LogInformation("{Name} has warped to {Target}, map #{Map}.", _pm[index].Char.Name.Trim(), tp.Name.Trim(), tp.Map);
     }
 
@@ -130,7 +130,7 @@ public sealed partial class PacketHandler
         int n = _pm.FindPlayerByName(p.Target);
         if (n == index)
         {
-            _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_CannotWarpSelfToSelf, new ChatMetadata(GameColor.White, ChatChannel.Notice));
+            _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_CannotWarpSelfToSelf, new ChatMetadata(GameColor.White, ChatChannel.System));
             return;
         }
         if (n == 0)
@@ -144,14 +144,14 @@ public sealed partial class PacketHandler
         if (_pm[n].Char.Downed)
         {
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_TargetIsDead,
-                new ChatMetadata(GameColor.BrightRed, ChatChannel.Notice), ("Target", _pm[n].Char.Name.Trim()));
+                new ChatMetadata(GameColor.BrightRed, ChatChannel.System), ("Target", _pm[n].Char.Name.Trim()));
             return;
         }
 
         var my = _pm[index].Char;
         _movement.PlayerWarp(n, my.Map, my.X, my.Y);
-        _dispatcher.SendLocalizedChatTo(n, ServerStrings.AdminCommand_SummonedYou, new ChatMetadata(GameColor.BrightBlue, ChatChannel.Notice), ("Admin", my.Name.Trim()));
-        _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_PlayerSummoned, new ChatMetadata(GameColor.BrightBlue, ChatChannel.Notice), ("Target", _pm[n].Char.Name.Trim()));
+        _dispatcher.SendLocalizedChatTo(n, ServerStrings.AdminCommand_SummonedYou, new ChatMetadata(GameColor.BrightBlue, ChatChannel.System), ("Admin", my.Name.Trim()));
+        _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_PlayerSummoned, new ChatMetadata(GameColor.BrightBlue, ChatChannel.System), ("Target", _pm[n].Char.Name.Trim()));
         _logger.LogInformation("{Name} warped {Target} to self, map #{Map}.", my.Name.Trim(), _pm[n].Char.Name.Trim(), my.Map);
     }
 
@@ -176,7 +176,7 @@ public sealed partial class PacketHandler
         var ch = _pm[index].Char;
         var (_, x, y) = _world.RepairPosition(p.MapNum, ch.X, ch.Y, (p.MapNum, 0, 0));
         _movement.PlayerWarp(index, p.MapNum, x, y);
-        _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_WarpedToMap, new ChatMetadata(GameColor.BrightBlue, ChatChannel.Notice), ("Map", p.MapNum));
+        _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_WarpedToMap, new ChatMetadata(GameColor.BrightBlue, ChatChannel.System), ("Map", p.MapNum));
         _logger.LogInformation("{Name} warped to map #{Map}.", ch.Name.Trim(), p.MapNum);
     }
 
@@ -211,7 +211,7 @@ public sealed partial class PacketHandler
         for (int i = 1; i <= Constants.MaxMapNpcs; i++)
             _spawn.SpawnNpc(i, mapNum);
 
-        _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_MapRespawned, new ChatMetadata(GameColor.Blue, ChatChannel.Notice));
+        _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_MapRespawned, new ChatMetadata(GameColor.Blue, ChatChannel.System));
         _logger.LogInformation("{Name} has respawned map #{Map}.", _pm[index].Char.Name.Trim(), mapNum);
     }
 
@@ -241,7 +241,7 @@ public sealed partial class PacketHandler
             }
         }
         if (end - start > 0) sb.Append($"{start}-{end - 1}");
-        _dispatcher.SendTo(index, PacketBuilder.ChatMsg(sb.ToString().TrimEnd(',', ' ') + ".", GameColor.Brown, ChatChannel.Notice));
+        _dispatcher.SendTo(index, PacketBuilder.ChatMsg(sb.ToString().TrimEnd(',', ' ') + ".", GameColor.Brown, ChatChannel.System));
     }
 
     private const int DefaultPenaltyMinutes = 60;
@@ -260,7 +260,7 @@ public sealed partial class PacketHandler
         {
             minutes = 0;
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_InvalidMinutes,
-                new ChatMetadata(GameColor.White, ChatChannel.Notice));
+                new ChatMetadata(GameColor.White, ChatChannel.System));
             return false;
         }
         minutes = requested;
@@ -272,7 +272,7 @@ public sealed partial class PacketHandler
     {
         if (_pm[targetIndex].Char.Access == AdminLevel.Player) return false;
         _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_CannotTargetAdmin,
-            new ChatMetadata(GameColor.White, ChatChannel.Notice));
+            new ChatMetadata(GameColor.White, ChatChannel.System));
         return true;
     }
 
@@ -288,7 +288,7 @@ public sealed partial class PacketHandler
         int n = _pm.FindPlayerByName(p.Target);
         if (n == index)
         {
-            _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_CannotKickSelf, new ChatMetadata(GameColor.White, ChatChannel.Notice));
+            _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_CannotKickSelf, new ChatMetadata(GameColor.White, ChatChannel.System));
             return;
         }
         if (n == 0)
@@ -306,7 +306,7 @@ public sealed partial class PacketHandler
         ApplyAccountKickAsync(targetLogin, expiryUtc);
 
         _dispatcher.SendLocalizedChatToAll(ServerStrings.AdminCommand_KickBroadcast,
-            new ChatMetadata(GameColor.White, ChatChannel.Notice),
+            new ChatMetadata(GameColor.White, ChatChannel.System),
             ("Target", targetName), ("GameName", _config.GameName), ("Admin", adminName), ("Minutes", minutes));
         _logger.LogInformation("{Admin} has kicked {Target} for {Minutes} minute(s).", adminName, targetName, minutes);
         AlertAndDisconnect(n, ServerStrings.AdminCommand_Kicked,
@@ -325,7 +325,7 @@ public sealed partial class PacketHandler
         int n = _pm.FindPlayerByName(p.Target);
         if (n == index)
         {
-            _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_CannotBanSelf, new ChatMetadata(GameColor.White, ChatChannel.Notice));
+            _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_CannotBanSelf, new ChatMetadata(GameColor.White, ChatChannel.System));
             return;
         }
         if (n == 0)
@@ -341,7 +341,7 @@ public sealed partial class PacketHandler
         _bg.Run(_persistence.BanAsync(banLogin, $"Banned by {adminName}"), nameof(IPersistenceService.BanAsync));
         _logger.LogInformation("{Admin} has banned {Target}.", adminName, targetName);
         _dispatcher.SendLocalizedChatToAll(ServerStrings.AdminCommand_BanBroadcast,
-            new ChatMetadata(GameColor.White, ChatChannel.Notice),
+            new ChatMetadata(GameColor.White, ChatChannel.System),
             ("Target", targetName), ("GameName", _config.GameName), ("Admin", adminName));
         AlertAndDisconnect(n, ServerStrings.Auth_Banned, ("GameName", _config.GameName));
     }
@@ -367,7 +367,7 @@ public sealed partial class PacketHandler
         int n = _pm.FindPlayerByName(p.Target);
         if (n == index)
         {
-            _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_CannotBanSelf, new ChatMetadata(GameColor.White, ChatChannel.Notice));
+            _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_CannotBanSelf, new ChatMetadata(GameColor.White, ChatChannel.System));
             return;
         }
         if (n == 0)
@@ -389,7 +389,7 @@ public sealed partial class PacketHandler
         {
             _bg.Run(_persistence.BanAsync(banLogin, $"Banned by {adminName}"), nameof(IPersistenceService.BanAsync));
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_HwBanNoKey,
-                new ChatMetadata(GameColor.Yellow, ChatChannel.Notice), ("Target", targetName));
+                new ChatMetadata(GameColor.Yellow, ChatChannel.System), ("Target", targetName));
             _logger.LogWarning("{Admin} hardware-banned {Target}, but the session carried no machine key; the account ban was applied alone.",
                 adminName, targetName);
             AlertAndDisconnect(n, ServerStrings.Auth_Banned, ("GameName", _config.GameName));
@@ -400,7 +400,7 @@ public sealed partial class PacketHandler
                 nameof(ModerationSystem.HardwareBanAsync));
         _logger.LogInformation("{Admin} has hardware-banned {Target}.", adminName, targetName);
         _dispatcher.SendLocalizedChatToAll(ServerStrings.AdminCommand_BanBroadcast,
-            new ChatMetadata(GameColor.White, ChatChannel.Notice),
+            new ChatMetadata(GameColor.White, ChatChannel.System),
             ("Target", targetName), ("GameName", _config.GameName), ("Admin", adminName));
         AlertAndDisconnect(n, ServerStrings.Auth_Banned, ("GameName", _config.GameName));
     }
@@ -417,7 +417,7 @@ public sealed partial class PacketHandler
         int n = _pm.FindPlayerByName(p.Target);
         if (n == index)
         {
-            _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_CannotMuteSelf, new ChatMetadata(GameColor.White, ChatChannel.Notice));
+            _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_CannotMuteSelf, new ChatMetadata(GameColor.White, ChatChannel.System));
             return;
         }
         if (n == 0)
@@ -437,7 +437,7 @@ public sealed partial class PacketHandler
 
         _logger.LogInformation("{Admin} has muted {Target} for {Minutes} minute(s).", adminName, targetName, minutes);
         _dispatcher.SendLocalizedChatToAll(ServerStrings.AdminCommand_MuteBroadcast,
-            new ChatMetadata(GameColor.White, ChatChannel.Notice),
+            new ChatMetadata(GameColor.White, ChatChannel.System),
             ("Target", targetName), ("Admin", adminName), ("Minutes", minutes));
     }
 
@@ -451,7 +451,7 @@ public sealed partial class PacketHandler
         }
         _bg.Run(_persistence.RefreshBanListAsync(), nameof(IPersistenceService.RefreshBanListAsync));
         _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_BanListRefreshed,
-            new ChatMetadata(GameColor.White, ChatChannel.Notice));
+            new ChatMetadata(GameColor.White, ChatChannel.System));
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -579,7 +579,7 @@ public sealed partial class PacketHandler
         _gameLoop.Post(() =>
         {
             if (!_pm[index].IsPlaying || !string.Equals(_pm[index].Login, login, StringComparison.OrdinalIgnoreCase)) return;
-            _dispatcher.SendLocalizedChatTo(index, key, new ChatMetadata(color, ChatChannel.Notice), args);
+            _dispatcher.SendLocalizedChatTo(index, key, new ChatMetadata(color, ChatChannel.System), args);
         });
     }
 
@@ -612,7 +612,7 @@ public sealed partial class PacketHandler
         if (expiry <= nowUtc) return false;
         int minutesLeft = (int)Math.Max(1, (expiry - nowUtc + 59) / 60);
         _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_YouAreMuted,
-            new ChatMetadata(GameColor.BrightRed, ChatChannel.Notice),
+            new ChatMetadata(GameColor.BrightRed, ChatChannel.System),
             ("Minutes", minutesLeft));
         return true;
     }
@@ -664,12 +664,12 @@ public sealed partial class PacketHandler
         }
         if (n == index)
         {
-            _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_CannotModifyAccess, new ChatMetadata(GameColor.White, ChatChannel.Notice));
+            _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_CannotModifyAccess, new ChatMetadata(GameColor.White, ChatChannel.System));
             return;
         }
         if (p.Level > AdminLevel.Creator)
         {
-            _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_InvalidAccessLevel, new ChatMetadata(GameColor.Warning, ChatChannel.Notice));
+            _dispatcher.SendLocalizedChatTo(index, ServerStrings.AdminCommand_InvalidAccessLevel, new ChatMetadata(GameColor.Warning, ChatChannel.System));
             return;
         }
 
@@ -677,7 +677,7 @@ public sealed partial class PacketHandler
         if (_pm[n].Char.Access == AdminLevel.Player && p.Level > AdminLevel.Player)
         {
             _dispatcher.SendLocalizedChatToAll(ServerStrings.AdminCommand_PlayerGrantedAccess,
-                new ChatMetadata(GameColor.BrightBlue, ChatChannel.Notice),
+                new ChatMetadata(GameColor.BrightBlue, ChatChannel.System),
                 ("Target", _pm[n].Char.Name.Trim()));
         }
 
@@ -712,7 +712,7 @@ public sealed partial class PacketHandler
         _world.Motd = motd;
         _bg.Run(_persistence.SaveMotdAsync(motd), nameof(IPersistenceService.SaveMotdAsync));
         if (!clearing)
-            _dispatcher.SendLocalizedChatToAll(ServerStrings.AdminCommand_MotdChanged, new ChatMetadata(GameColor.BrightCyan, ChatChannel.Notice), ("Motd", motd));
+            _dispatcher.SendLocalizedChatToAll(ServerStrings.AdminCommand_MotdChanged, new ChatMetadata(GameColor.BrightCyan, ChatChannel.System), ("Motd", motd));
         _logger.LogInformation("{Name} {Action} the Message of the Day.", _pm[index].Char.Name.Trim(), clearing ? "cleared" : "changed");
     }
 
@@ -781,7 +781,7 @@ public sealed partial class PacketHandler
         if (_pm[index].IsPlaying)
         {
             _dispatcher.SendLocalizedChatToAll(ServerStrings.AdminCommand_BootedFor,
-                new ChatMetadata(GameColor.White, ChatChannel.Notice),
+                new ChatMetadata(GameColor.White, ChatChannel.System),
                 ("Player", $"{_pm[index].Login}/{_pm[index].Char.Name.Trim()}"), ("Reason", reason));
         }
         AlertAndDisconnect(index, ServerStrings.AdminCommand_ConnectionLost, ("GameName", _config.GameName));

@@ -55,6 +55,10 @@ public sealed class GameWorld
     /// loaded, and then the client shows only Core's own windows.</summary>
     public GamePanels Panels { get; set; } = GamePanels.Empty;
 
+    /// <summary>The chat channels this game declared, from the compiled modules. Empty when no game module
+    /// is loaded, and then everything a game would say lands on Core's System channel.</summary>
+    public ChatChannelSet ChatChannels { get; set; } = ChatChannelSet.Empty;
+
     /// <summary>The records of every family a module declared. Empty when no game module is loaded, which
     /// is a world made of Core's own families and nothing else.</summary>
     public ModuleRecords ModuleRecords { get; } = new();

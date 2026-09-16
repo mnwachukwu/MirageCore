@@ -1,0 +1,39 @@
+{
+  "name": "Cinderwatch Pikeman",
+  "says": "Turn back to the cold country.",
+  "sprite": 16,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 95,
+  "behavior": "Pursue",
+  "group": 3,
+  "range": 10,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 287,
+    "guard": false,
+    "hostile": true,
+    "hp": 3373,
+    "int": 56,
+    "spd": 68,
+    "str": 338
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 1026,
+      "chance": 60
+    },
+    {
+      "itemNum": 285,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 252,
+      "quantity": 1,
+      "chance": 10
+    }
+  ]
+}

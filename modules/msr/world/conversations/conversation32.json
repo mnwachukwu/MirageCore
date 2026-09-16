@@ -1,0 +1,65 @@
+{
+  "name": "Sprat (Local)",
+  "speakerNpc": 156,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "Do you want to hear the one about the drowned legionary?\n\nHalyard has heard it. Halyard has heard it a number of times.",
+      "choices": [
+        {
+          "label": "Let's hear it.",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "I'll spare you.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "A drowned legionary walks into the Deck.\n\nThat's it. That's the whole joke - he walks into the Deck. Everyone screams. Two people fall off the rail.",
+      "choices": [
+        {
+          "label": "...That happened, didn't it.",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "That's not a joke.",
+          "nextNodeId": 4,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "speaker": "",
+      "text": "Last spring. We got him back off the boards eventually.\n\nI have found that if you tell a bad thing as a joke often enough it stops being a bad thing and starts being a bad joke. That is the entire method.",
+      "choices": [
+        {
+          "label": "That's one way through it.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "speaker": "",
+      "text": "No. But it is what I have instead of one.\n\nGive it a year down here and you will have one too, and yours will also not be a joke.",
+      "choices": [
+        {
+          "label": "Fair.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

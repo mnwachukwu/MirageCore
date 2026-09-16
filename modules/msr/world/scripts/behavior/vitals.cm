@@ -295,7 +295,7 @@ shared model Vitals
         # Health does not come back in a fight at all, and mana comes back on the slow clock.
         if who.IsEngaged
             Vitals.Owe(who, Vitals.Mana, Vitals.MaxMana, Vitals.ManaOwed,
-                       Stats.ManaRegen(int), Vitals.InCombatEvery);
+                       Stats.ManaRegen(int), Vitals.Weathered(Vitals.InCombatEvery, who.Map));
             yield;
         end if
 
@@ -307,10 +307,31 @@ shared model Vitals
             other = Vitals.OtherSafeEvery;
         end if
 
+        heart = Vitals.Weathered(heart, who.Map);
+        other = Vitals.Weathered(other, who.Map);
+
         Vitals.Owe(who, Vitals.Health, Vitals.MaxHealth, Vitals.HealthOwed,
                    Stats.HealthRegen(def), heart);
         Vitals.Owe(who, Vitals.Mana, Vitals.MaxMana, Vitals.ManaOwed, Stats.ManaRegen(int), other);
         Vitals.Owe(who, Vitals.Stamina, Vitals.MaxStamina, Vitals.StaminaOwed, legs, other);
+    end function
+
+    # Heat and snow halve what comes back.
+    #
+    # ⚠ Applied to the CLOCK, not to the amount. Halving an amount of one leaves nothing, so a body
+    # whose regen rounds to a single point would stop recovering altogether rather than recover slowly.
+    # Doubling the interval halves the rate exactly, remainder and all, because Owe carries what a tick
+    # did not pay.
+    public integer SlowSkyTimes = 2;
+
+    integer function Weathered(integer every, integer map)
+        string sky = World.Weather(map);
+
+        if sky == Combat.Hot or sky == Combat.Snowy
+            yield every * Vitals.SlowSkyTimes;
+        end if
+
+        yield every;
     end function
 
     # One pool, one tick of its own clock. `amount` is what the original paid when that clock came

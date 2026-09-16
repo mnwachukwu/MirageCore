@@ -1,0 +1,15 @@
+{
+  "name": "Scroll of Absolute Second Wind",
+  "pic": 29,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2738388,
+  "type": "Consumable",
+  "attributes": {
+    "teaches": 268
+  }
+}

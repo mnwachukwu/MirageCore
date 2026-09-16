@@ -1,0 +1,54 @@
+{
+  "name": "Tide Chanter",
+  "says": "The water remembers your name.",
+  "sprite": 25,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 60,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 10,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 91,
+    "guard": false,
+    "hostile": true,
+    "hp": 106,
+    "int": 147,
+    "spd": 24,
+    "str": 67
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 369,
+      "chance": 60
+    },
+    {
+      "itemNum": 280,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 3,
+      "chance": 20
+    },
+    {
+      "itemNum": 67,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 214,
+      "quantity": 1,
+      "chance": 10
+    },
+    {
+      "itemNum": 382,
+      "quantity": 1,
+      "chance": 6
+    }
+  ]
+}

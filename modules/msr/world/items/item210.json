@@ -1,0 +1,17 @@
+{
+  "name": "Potent Vigor Elixir",
+  "pic": 21,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 24,
+  "type": "Consumable",
+  "vitalAmount": 20,
+  "attributes": {
+    "levelReq": 20,
+    "restoresStamina": 20
+  }
+}

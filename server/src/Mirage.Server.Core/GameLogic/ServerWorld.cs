@@ -118,21 +118,21 @@ public sealed class ServerWorld : IWorld
 
     /// <summary>The one chat path that carries text rather than a key: a game's words are its own, so
     /// there is nothing to look up per recipient.</summary>
-    public void Tell(EntityHandle who, string text, ChatChannel channel, int color)
+    public void Tell(EntityHandle who, string text, string channel, int color)
     {
         if (!who.IsPlayer || !IsInWorld(who) || string.IsNullOrEmpty(text)) return;
 
         _dispatcher.SendTo(who.PlayerIndex, PacketBuilder.ChatMsg(text, color, channel));
     }
 
-    public void TellEveryone(string text, ChatChannel channel, int color)
+    public void TellEveryone(string text, string channel, int color)
     {
         if (string.IsNullOrEmpty(text)) return;
 
         _dispatcher.SendToAll(PacketBuilder.ChatMsg(text, color, channel));
     }
 
-    public void TellEveryoneOn(int mapNum, string text, ChatChannel channel, int color)
+    public void TellEveryoneOn(int mapNum, string text, string channel, int color)
     {
         if (string.IsNullOrEmpty(text) || mapNum <= 0 || mapNum > _world.Limits.Maps) return;
 
@@ -141,7 +141,7 @@ public sealed class ServerWorld : IWorld
         _dispatcher.SendToObservers(_world.MapObservers[mapNum], PacketBuilder.ChatMsg(text, color, channel));
     }
 
-    public void TellEveryoneNear(WorldPlace at, string text, ChatChannel channel, int color)
+    public void TellEveryoneNear(WorldPlace at, string text, string channel, int color)
     {
         if (string.IsNullOrEmpty(text) || at.Map <= 0) return;
 
@@ -149,7 +149,7 @@ public sealed class ServerWorld : IWorld
     }
 
     public void TellThese(IReadOnlyCollection<EntityHandle> them, string text,
-                          ChatChannel channel, int color)
+                          string channel, int color)
     {
         if (them is null || them.Count == 0 || string.IsNullOrEmpty(text)) return;
 
@@ -709,8 +709,15 @@ public sealed class ServerWorld : IWorld
                 && now - sp.AttackTimer < Holding(sp.AttackHoldMs, Constants.PlayerAttackCooldownMs, PlaceOf(who).Map);
         }
 
+        // ⚠ A creature is asked on the AI beat, so its deadline is rounded to the nearest one.
+        // Without that, a cooldown a whole number of beats long ends exactly ON a beat and is decided by
+        // microseconds: half the time the beat arrives a hair early, the creature is refused, and it
+        // waits another whole beat. Swings land at one second or one and a half at random, which reads
+        // as a creature that hesitates rather than one on a rhythm. Players are read every frame and
+        // have no boundary to round to, which is why the branch above does not.
         return Npc(who) is { } npc && npc.AttackTimer > 0
-            && now - npc.AttackTimer < Holding(npc.AttackHoldMs, Constants.NpcAttackCooldownMs, PlaceOf(who).Map);
+            && !AiCadence.Elapsed(now, npc.AttackTimer,
+                                  Holding(npc.AttackHoldMs, Constants.NpcAttackCooldownMs, PlaceOf(who).Map));
     }
 
     /// <summary>How long a cooldown runs: what the game asked for, or the engine's own beat when it

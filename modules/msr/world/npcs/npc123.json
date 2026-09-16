@@ -1,0 +1,114 @@
+{
+  "name": "The Ashen Throne",
+  "says": "SIT, IF YOU CAN.",
+  "sprite": 3,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 1800,
+  "behavior": "Wander",
+  "group": 3,
+  "range": 11,
+  "emitsLight": true,
+  "attributes": {
+    "boss": true,
+    "def": 196,
+    "guard": false,
+    "hostile": true,
+    "hp": 231729,
+    "int": 78,
+    "spd": 78,
+    "str": 430
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 8652,
+      "chance": 90
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 288,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 181,
+      "quantity": 1,
+      "chance": 4
+    },
+    {
+      "itemNum": 178,
+      "quantity": 1,
+      "chance": 3
+    },
+    {
+      "itemNum": 268,
+      "quantity": 1,
+      "chance": 30
+    },
+    {
+      "itemNum": 556,
+      "quantity": 1,
+      "chance": 20
+    },
+    {
+      "itemNum": 543,
+      "quantity": 1,
+      "chance": 15
+    }
+  ]
+}

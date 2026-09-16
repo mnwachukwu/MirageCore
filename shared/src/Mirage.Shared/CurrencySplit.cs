@@ -21,6 +21,20 @@ namespace Mirage.Shared;
 /// </summary>
 public static class CurrencySplit
 {
+    /// <summary>What the <paramref name="which"/>th recipient gets, counting from one, under the same
+    /// rule <see cref="Divide"/> applies — without building the whole split to read one part of it.
+    ///
+    /// <para>Zero for a position outside the group, for an empty purse, and for a group of nobody. A
+    /// caller walking positions can therefore ask about each in turn and stop when it likes.</para></summary>
+    public static int ShareOf(int total, int recipients, int which)
+    {
+        if (recipients <= 0 || which < 1 || which > recipients || total <= 0) return 0;
+
+        // The leftover goes one apiece to whoever comes first, exactly as Divide hands it out - so the
+        // two agree position for position, and the caller's ORDER is what decides who gets the odd unit.
+        return total / recipients + (which <= total % recipients ? 1 : 0);
+    }
+
     /// <summary>Divides <paramref name="total"/> between <paramref name="recipients"/>.</summary>
     public static int[] Divide(int total, int recipients)
     {

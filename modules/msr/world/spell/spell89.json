@@ -1,0 +1,15 @@
+{
+  "name": "Expert Vigor",
+  "type": "AddSp",
+  "amount": 31,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 20,
+  "mayLearn": [
+    7,
+    8,
+    9,
+    10
+  ]
+}

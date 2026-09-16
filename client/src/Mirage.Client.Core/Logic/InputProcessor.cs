@@ -224,7 +224,7 @@ public static class InputProcessor
             // confirms it, while a self move-correction (rejection) reverts us via a reload.
             int fromMap = state.CenterMapNum;
             int fromRev = state.Map.Revision;
-            var crossMovement = input.Running ? MovementType.Running : MovementType.Walking;
+            var crossMovement = input.Running && !state.Winded ? MovementType.Running : MovementType.Walking;
             me.Dir = dir.Value;
             sender.SendPlayerMove(dir.Value, crossMovement);
 
@@ -248,9 +248,16 @@ public static class InputProcessor
             return;
         }
 
-        var movement = input.Running ? MovementType.Running : MovementType.Walking;
-        sender.SendPlayerMove(dir.Value, movement);
-        me.PredictMove(dir.Value, nx, ny, movement, newLayer);
+        // 🔴 <b>The intent goes up, the PACE comes back.</b> A run is a game's to refuse, so the
+        // server is told what was asked for however winded this body is - that is what keeps it asking
+        // its own rule, and what lets it say the answer has changed. What the prediction runs at is the
+        // pace that was last allowed, or a step lands sooner than the server will accept one and the
+        // correction reads as being snapped backwards.
+        var asked = input.Running ? MovementType.Running : MovementType.Walking;
+        var paced = asked == MovementType.Running && state.Winded ? MovementType.Walking : asked;
+
+        sender.SendPlayerMove(dir.Value, asked);
+        me.PredictMove(dir.Value, nx, ny, paced, newLayer);
     }
 
     // True when the tile we'd cross into on the neighbor map is a wall, a locked door, or

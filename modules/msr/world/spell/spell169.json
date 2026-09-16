@@ -1,0 +1,19 @@
+{
+  "name": "Sovereign Weariness",
+  "type": "SubSp",
+  "amount": 113,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 120,
+  "mayLearn": [
+    1,
+    2,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ]
+}

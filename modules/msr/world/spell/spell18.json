@@ -1,0 +1,13 @@
+{
+  "name": "Novice Endurance",
+  "type": "AddSp",
+  "amount": 10,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 1,
+  "mayLearn": [
+    9,
+    10
+  ]
+}

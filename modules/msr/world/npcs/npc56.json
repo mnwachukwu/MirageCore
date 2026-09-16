@@ -1,0 +1,34 @@
+{
+  "name": "Reef Darter",
+  "says": "SSSHK",
+  "sprite": 15,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 50,
+  "behavior": "Pursue",
+  "group": 10,
+  "range": 8,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 110,
+    "guard": false,
+    "hostile": true,
+    "hp": 0,
+    "int": 18,
+    "spd": 52,
+    "str": 146
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 365,
+      "chance": 45
+    },
+    {
+      "itemNum": 279,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

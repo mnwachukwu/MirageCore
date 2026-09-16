@@ -1,0 +1,264 @@
+{
+  "appearances": [
+    {
+      "name": "Man",
+      "sprite": 34,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Woman",
+      "sprite": 10,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Man",
+      "sprite": 0,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Woman",
+      "sprite": 32,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            2
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Man",
+      "sprite": 3,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Woman",
+      "sprite": 32,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Man",
+      "sprite": 45,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Woman",
+      "sprite": 9,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Man",
+      "sprite": 39,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Woman",
+      "sprite": 40,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Man",
+      "sprite": 33,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            6
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Woman",
+      "sprite": 41,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            6
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Man",
+      "sprite": 4,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            7
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Woman",
+      "sprite": 10,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            7
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Man",
+      "sprite": 25,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            8
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Woman",
+      "sprite": 26,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            8
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Man",
+      "sprite": 2,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Woman",
+      "sprite": 40,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Man",
+      "sprite": 1,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            10
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Woman",
+      "sprite": 1,
+      "spriteSheet": 0,
+      "needs": [
+        {
+          "key": "class",
+          "is": [
+            10
+          ]
+        }
+      ]
+    }
+  ]
+}

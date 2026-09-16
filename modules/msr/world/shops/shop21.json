@@ -1,0 +1,40 @@
+{
+  "name": "Cinder, Fence",
+  "fixesItems": false,
+  "shopType": "Store",
+  "allowBanking": false,
+  "keeper": 148,
+  "barterItem": [
+    {
+      "giveItem": 284,
+      "giveQuantity": 1,
+      "getItem": 1,
+      "getQuantity": 12605
+    },
+    {
+      "giveItem": 285,
+      "giveQuantity": 1,
+      "getItem": 1,
+      "getQuantity": 12928
+    },
+    {
+      "giveItem": 286,
+      "giveQuantity": 1,
+      "getItem": 1,
+      "getQuantity": 13252
+    },
+    {
+      "giveItem": 287,
+      "giveQuantity": 1,
+      "getItem": 1,
+      "getQuantity": 13577
+    },
+    {
+      "giveItem": 288,
+      "giveQuantity": 1,
+      "getItem": 1,
+      "getQuantity": 13903
+    }
+  ],
+  "salesItem": []
+}

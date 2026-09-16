@@ -1,0 +1,102 @@
+{
+  "name": "Wenn the Chronicler (Wanderer)",
+  "speakerNpc": 150,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "Don't move - I'm getting your height. There. You're the first new thing this month.\n\nI write down what's left. It's not much of a trade but it's the only one that gets harder the longer you're good at it.",
+      "choices": [
+        {
+          "label": "What have you written down?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "Why does it get harder?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "What's between the three places?",
+          "nextNodeId": 4,
+          "action": "None"
+        },
+        {
+          "label": "Carry on, then.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "Three settlements, four hundred and some souls, and a great deal about who used to be where.\n\nThe Clearing has stilts and a list. The Deck has a ship on a shelf. The Forge has eight people and one fire that went out. Everything else on my pages is a name with a line through it.",
+      "choices": [
+        {
+          "label": "Why does it get harder?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "What's between them?",
+          "nextNodeId": 4,
+          "action": "None"
+        },
+        {
+          "label": "Thank you.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "speaker": "",
+      "text": "Because there's less of it each year, and because the things I'd most like to write down are the things nobody survived to tell me.\n\nI have a very good account of the Kiln's ledgers and almost nothing about what it was like to live there. The record leans towards the people who kept records. That's a flaw and I can't fix it.",
+      "choices": [
+        {
+          "label": "What's between the three places?",
+          "nextNodeId": 4,
+          "action": "None"
+        },
+        {
+          "label": "A fair admission.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "speaker": "",
+      "text": "Road. In the sense that there is ground, and it goes.\n\nBut nobody has walked it and come back with anything I could write. It isn't that the middle is dangerous - the Ferryman's crossed worse. It's that the middle is *unwritten*. Everything I have is the near country, the deep water and the fire. Between them my pages are blank, and blank isn't the same as empty.",
+      "choices": [
+        {
+          "label": "Someone should map it.",
+          "nextNodeId": 5,
+          "action": "None"
+        },
+        {
+          "label": "Unsettling.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "speaker": "",
+      "text": "Someone should. I'd read it twice.\n\nUntil then: the Landing, the Deck, the Forge. Three places worth knowing, and a great deal of paper waiting for whoever's willing to find out what goes in the middle.",
+      "choices": [
+        {
+          "label": "I'll see what I find.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "name": "Drowned Liturgist",
+  "says": "Every drowning is a sacrament.",
+  "sprite": 2,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 85,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 11,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 104,
+    "guard": false,
+    "hostile": true,
+    "hp": 138,
+    "int": 169,
+    "spd": 28,
+    "str": 77
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 438,
+      "chance": 60
+    },
+    {
+      "itemNum": 283,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 3,
+      "chance": 20
+    },
+    {
+      "itemNum": 467,
+      "quantity": 1,
+      "chance": 6
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Master Heal",
+  "type": "AddHp",
+  "amount": 127,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 100,
+  "mayLearn": [
+    9,
+    10
+  ]
+}

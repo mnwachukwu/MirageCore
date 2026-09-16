@@ -44,7 +44,7 @@ namespace Mirage.Server.Host.Scripting;
 /// without an editor.</para>
 /// </summary>
 public sealed class ScriptedWorldModule
-    : ICoreModule, IWorldObserver, ITickWork, IActionHandler, IPacketRoute,
+    : ICoreModule, IWorldObserver, ITickWork, IActionHandler, IPacketRoute, IConsoleHandler,
       IDeathPolicy, ILingerPolicy, IMovePolicy, IUsePolicy, ILootPolicy, IDisposable
 {
     /// <summary>The folder inside a world that holds its rules.</summary>
@@ -93,6 +93,12 @@ public sealed class ScriptedWorldModule
         new("OnPlayerTick", 1, "function OnPlayerTick(Player who)",
             "the same tick, once for each player in the world, which a script has no other way "
             + "to walk"),
+        new("OnConsole", 2, "string function OnConsole(string command, string rest)",
+            "somebody typed a command at the SERVER'S OWN console that the engine does not know. "
+            + "Yield what it should print, or blank for one this world does not know either. The "
+            + "console is the operator's, so there is no rank to check - and there is no seam like "
+            + "this for a player's chat. What it is for is forcing work that runs on a schedule "
+            + "nobody can sit and watch: a nightly settlement, a season, a war night"),
         new("OnMayRun", 1, "string function OnMayRun(Player who)",
             "somebody is about to take a step at a run; yield a reason to bring them down to a walk, "
             + "or blank to let them run. Asked on every running step, so keep it to reading a number "
@@ -219,9 +225,12 @@ public sealed class ScriptedWorldModule
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        // Registered whether or not a world has scripts. Both are no-ops with nothing loaded.
+        // Registered whether or not a world has scripts. All three are no-ops with nothing loaded,
+        // and the scripts are not compiled until further down - so a registration conditional on what
+        // they offer would be deciding against an empty list.
         builder.AddObserver(this);
         builder.AddTickWork(this);
+        builder.AddConsoleHandler(this);
 
         if (!Directory.Exists(_folder)) return;
 
@@ -355,6 +364,9 @@ public sealed class ScriptedWorldModule
         }
 
         declaring.Close();
+
+        // Held so Feed can tell a channel this world declared from a name somebody mistyped.
+        _declared = new ChatChannelSet([.. declaring.Channels]);
 
         foreach (string refused in declaring.Refused)
         {
@@ -633,6 +645,20 @@ public sealed class ScriptedWorldModule
         return reason.Length > 0 ? Refusal.Deny(reason) : Refusal.Allow;
     }
 
+    /// <summary>A console command Core did not recognize, offered to this world's rules.
+    ///
+    /// <para>Blank from the script means "not mine" and is returned as null, so the console goes on to
+    /// say the command is unknown. A world that wants to answer with nothing has nothing to say and no
+    /// reason to be asked.</para></summary>
+    public string? Console(string command, string rest)
+    {
+        if (!_offered.Contains("OnConsole")) return null;
+
+        string answer = Ask("OnConsole", command, rest) as string ?? string.Empty;
+
+        return answer.Length > 0 ? answer : null;
+    }
+
     /// <summary>They ran a step, and the game charges for it.</summary>
     public void OnRan(EntityHandle who)
     {
@@ -709,6 +735,46 @@ public sealed class ScriptedWorldModule
 
     /// <summary>The same, for a handler whose ANSWER is the point. Null where it failed, which every
     /// caller reads as "the engine's own default" rather than as a decision.</summary>
+    /// <summary>Whether a list-valued field on a record permits a number, reading an ABSENT field as
+    /// permitting everything.
+    ///
+    /// <para>That default is what lets a world author only the exceptions: MSR restricts about a third
+    /// of its gear and none of its potions, and writing "every class" onto the rest would be a field on
+    /// every record to say the thing that is true anyway.</para></summary>
+    private bool Allowed(string records, int number, string field, long value) =>
+        World.RecordAt(records, number) is not { } row
+        || !row.TryGet(field, out AttributeValue held)
+        || held.Has(value);
+
+    /// <summary>The channels a game may put a line in, as the script names them.
+    ///
+    /// <para>🔴 <b>Its own, plus system.</b> Core’s other four are routing for things a game must not be
+    /// able to forge: speech a player typed, a whisper between two people, a guild’s private line, an
+    /// administrators’ line. A game says what its own events are, never who appeared to have said
+    /// something.</para></summary>
+    private const string Feeds =
+        "Either \"system\" - what just happened, said by the world rather than a person - or a channel "
+        + "this game declared with Builder.Channel. A player filters these apart and hides the noisy "
+        + "ones, so a game that puts every line in one channel has taken that choice away from them. A "
+        + "name that is neither lands in system, and says so in the log.";
+
+    /// <summary>The channel id a line travels on, from the word a script wrote.</summary>
+    private string Feed(string named)
+    {
+        string word = named.Trim();
+        if (string.Equals(word, "system", StringComparison.OrdinalIgnoreCase)) return ChatChannels.System;
+        if (_declared.Find(word) is not null) return word;
+
+        // ⚠ Said out loud rather than quietly defaulted. A channel nobody declared is a line the player
+        // cannot find, and a typo here is otherwise invisible for the life of the world.
+        Log.Warning("Scripts: '{Feed}' is not a channel this game declared; the line went to system.", named);
+        return ChatChannels.System;
+    }
+
+    // What Configure declared, kept so Feed can check a name against it. Set when the builder freezes;
+    // empty until then, which is before any line can be sent.
+    private ChatChannelSet _declared = ChatChannelSet.Empty;
+
     private object? Ask(string handler, params object?[] arguments)
     {
         ScriptOutcome outcome = _loaded!.Call(Rules, handler, Fitting(handler, arguments));
@@ -983,11 +1049,18 @@ public sealed class ScriptedWorldModule
                 + "everyone's business - a season turning, somebody finishing what only one person "
                 + "can finish. A game that announces ordinary events this way has an unreadable chat "
                 + "log.")
+            .Action("Tell", [ScriptType.Text.Named("line"), ScriptType.Text.Named("feed")],
+                (_, a) => { World.TellEveryone(a.AsText(0), Feed(a.AsText(1))); return null; },
+                "The same, in the feed you name. " + Feeds)
             .Action("TellOn", [ScriptType.Integer.Named("map"), ScriptType.Text.Named("line")],
                 (_, a) => { World.TellEveryoneOn((int)a.AsInteger(0), a.AsText(1)); return null; },
                 "Says a line to everybody who can see that map - the nearest thing a seamless world "
                 + "has to a room. That is wider than the people standing on it: somebody on the next "
                 + "map along is looking at this one too.")
+            .Action("TellOn",
+                [ScriptType.Integer.Named("map"), ScriptType.Text.Named("line"), ScriptType.Text.Named("feed")],
+                (_, a) => { World.TellEveryoneOn((int)a.AsInteger(0), a.AsText(1), Feed(a.AsText(2))); return null; },
+                "The same, in the feed you name. " + Feeds)
             .Action("TellNear",
                 [ScriptType.Integer.Named("map"), ScriptType.Integer.Named("x"), ScriptType.Integer.Named("y"),
                  ScriptType.Text.Named("line")],
@@ -1000,6 +1073,17 @@ public sealed class ScriptedWorldModule
                 },
                 "Says a line to everybody within earshot of a square. A tighter audience than TellOn: "
                 + "who can hear speech, not who can see the region.")
+            .Action("TellNear",
+                [ScriptType.Integer.Named("map"), ScriptType.Integer.Named("x"), ScriptType.Integer.Named("y"),
+                 ScriptType.Text.Named("line"), ScriptType.Text.Named("feed")],
+                (_, a) =>
+                {
+                    World.TellEveryoneNear(
+                        new WorldPlace((int)a.AsInteger(0), (int)a.AsInteger(1), (int)a.AsInteger(2)),
+                        a.AsText(3), Feed(a.AsText(4)));
+                    return null;
+                },
+                "The same, in the feed you name. " + Feeds)
             .Action("Stain",
                 [ScriptType.Integer.Named("map"), ScriptType.Integer.Named("x"), ScriptType.Integer.Named("y"),
                  ScriptType.Integer.Named("size"), ScriptType.Integer.Named("amount")],
@@ -1025,6 +1109,15 @@ public sealed class ScriptedWorldModule
                 "Says a line to a set of players, wherever they are. Anybody in the set who has since "
                 + "left the world is skipped, not refused, because a set gathered a moment ago may "
                 + "already be out of date.")
+            .Action("TellThese",
+                [ScriptType.SetOf(player.AsType).Named("them"), ScriptType.Text.Named("line"),
+                 ScriptType.Text.Named("feed")],
+                (_, a) =>
+                {
+                    World.TellThese(Bodies(a, 0), a.AsText(1), Feed(a.AsText(2)));
+                    return null;
+                },
+                "The same, in the feed you name. " + Feeds)
             .Function("Guildmates", ScriptType.SetOf(player.AsType), [player.AsType.Named("who")],
                 (_, a) => ScriptValue.Set(World.GuildmatesOf(Who(a.As<object>(0)))
                                                .Select(h => (object?)h)),
@@ -1459,6 +1552,18 @@ public sealed class ScriptedWorldModule
                 + "than by writing the number: a vault that went down with nothing in the spending log "
                 + "is money a guild cannot account for. False when the vault does not hold that much, "
                 + "so this is the check as well as the payment.")
+            .Function("ShareOf", ScriptType.Integer,
+                [ScriptType.Integer.Named("total"), ScriptType.Integer.Named("among"),
+                 ScriptType.Integer.Named("which")],
+                (_, a) => (long)CurrencySplit.ShareOf((int)a.AsInteger(0), (int)a.AsInteger(1),
+                                                      (int)a.AsInteger(2)),
+                "What one recipient gets when a purse is split between that many of them, counting from one. "
+                + "An even share each, then the leftover one apiece to whoever comes "
+                + "first - so the whole purse is handed out and none of it is invented, which a share "
+                + "worked out with division and rounding cannot promise. Walk it with 'loop for i = 1 to "
+                + "many'. Zero for a position outside the group or a purse with nothing in it. Who stands "
+                + "first is YOURS: the odd unit goes to them, so order the party deliberately rather than "
+                + "by whoever happens to be nearest.")
             .Function("WalkMs", ScriptType.Integer, [], (_, _) => (long)World.WalkMs,
                 "How long one tile takes at a walk, in thousandths of a second. The same for "
                 + "everybody, because a walk is a walk - it is Player.RunMs that a body's Pace moves. "
@@ -1556,6 +1661,25 @@ public sealed class ScriptedWorldModule
                 + "property a record can be asked for, so that a rule choosing between records can say "
                 + "which it means. Blank for a slot nobody authored. For your own records this is their "
                 + "name field.")
+            .Function("RecordAllows", ScriptType.Truth,
+                [ScriptType.Text.Named("records"), ScriptType.Integer.Named("number"),
+                 ScriptType.Text.Named("field"), ScriptType.Integer.Named("value")],
+                (_, a) => Allowed(a.AsText(0), (int)a.AsInteger(1), a.AsText(2), a.AsInteger(3)),
+                "Whether a field listing several numbers permits that one - and TRUE when the field is "
+                + "not there at all, which is how a restriction that was never written means 'anybody'. "
+                + "The shape a gate wants: an item naming the classes that may wield it, a spell naming "
+                + "the classes that may learn it. One field on the thing itself rather than a second "
+                + "family of one row per pair, which is a table to author, a limit to raise, and a walk "
+                + "of every row for every question.")
+            .Function("RecordHolds", ScriptType.Truth,
+                [ScriptType.Text.Named("records"), ScriptType.Integer.Named("number"),
+                 ScriptType.Text.Named("field"), ScriptType.Integer.Named("value")],
+                (_, a) => World.RecordAt(a.AsText(0), (int)a.AsInteger(1)) is { } row
+                          && row.TryGet(a.AsText(2), out AttributeValue held)
+                          && held.Has(a.AsInteger(3)),
+                "The same question asked strictly: whether the field is there AND lists that number. A "
+                + "field nobody wrote answers false here, so this is what to use where absent means "
+                + "nothing rather than everything.")
             .Function("RecordTruth", ScriptType.Truth,
                 [ScriptType.Text.Named("records"), ScriptType.Integer.Named("number"), ScriptType.Text.Named("field")],
                 (_, a) => World.RecordAt(a.AsText(0), (int)a.AsInteger(1)) is { } row
@@ -1909,7 +2033,14 @@ public sealed class ScriptedWorldModule
             {
                 World.Tell(Who(who), a.AsText(0));
                 return null;
-            }, "Sends a line of text to this player, and to nobody else.")
+            }, "Sends a line of text to this player, and to nobody else. It lands in the system feed, "
+             + "which is where what just happened to somebody belongs; say a feed by name to put it "
+             + "anywhere else.")
+            .Action("Message", [ScriptType.Text.Named("line"), ScriptType.Text.Named("feed")], (who, a) =>
+            {
+                World.Tell(Who(who), a.AsText(0), Feed(a.AsText(1)));
+                return null;
+            }, "The same, in the feed you name. " + Feeds)
             .Value("Name", ScriptType.Text, (who, _) => World.NameOf(Who(who)),
                 "Their character's name, trimmed. Blank once the body has left - the same answer a "
                 + "creature's name gives, because it is the same question.")
@@ -2184,7 +2315,26 @@ public sealed class ScriptedWorldModule
                 [ScriptType.Text.Named("id"), ScriptType.Text.Named("title"), ScriptType.Integer.Named("width"), ScriptType.Integer.Named("height")],
                 (b, a) => Build(b).Panel(a.AsText(0), a.AsText(1), a.AsInteger(2), a.AsInteger(3)),
                 "A screen of this game's own: an id, a title, and how wide and tall it is. Handed back, "
-                + "so its rows and its buttons are written underneath it.");
+                + "so its rows and its buttons are written underneath it.")
+            .Action("Channel",
+                [ScriptType.Text.Named("id"), ScriptType.Text.Named("caption"),
+                 ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"),
+                 ScriptType.Integer.Named("blue"), ScriptType.Text.Named("tab")],
+                (b, a) =>
+                {
+                    Build(b).Channel(a.AsText(0), a.AsText(1),
+                        (int)a.AsInteger(2), (int)a.AsInteger(3), (int)a.AsInteger(4), a.AsText(5));
+                    return null;
+                },
+                "A kind of line this game produces that a player can read apart from everything else, "
+                + "and hide when they do not want it, in a color given as red, green, and blue, each 0 "
+                + "to 255. Name it when you send: Message(who, text, id). "
+                + "Give a tab caption and a fresh account gets a tab of that name carrying this channel "
+                + "instead of the main one, which is what a noisy feed wants; channels naming the same "
+                + "tab share it. Leave the tab blank and it reads in the main tab. "
+                + "Declare none and everything this game says lands in system, which is the honest "
+                + "answer for a world whose events are all one kind. "
+                + "The id may not be one of Core's own - Global, System, Tell, Guild, Admin, or Always.");
     });
 
     /// <summary>The handle of whoever is answering to that name, or null.
@@ -2697,6 +2847,11 @@ public sealed class ScriptedWorldModule
         private readonly List<PendingRow> _rows = [];
         private readonly List<PendingVerb> _verbs = [];
         private readonly List<PendingPanel> _panels = [];
+        private readonly List<ChatChannelSpec> _channels = [];
+
+        /// <summary>The chat channels this world declared, for the module to check a script’s feed name
+        /// against once loading is done.</summary>
+        internal IReadOnlyList<ChatChannelSpec> Channels => _channels;
 
         public IReadOnlyList<string> Refused => _refused;
 
@@ -2763,6 +2918,9 @@ public sealed class ScriptedWorldModule
                 Guard($"the fields '{records.Id}' adds to '{records.Extends}'",
                       () => builder.ExtendFamily(records.Extends, records.Fields));
             }
+
+            foreach (ChatChannelSpec channel in _channels)
+                Guard($"the chat channel '{channel.Id}'", () => builder.AddChatChannel(channel));
 
             // The panels before the verbs that open them, so a verb naming one can be checked against
             // what was actually declared rather than against what is about to be.
@@ -3387,6 +3545,22 @@ public sealed class ScriptedWorldModule
         }
 
         internal static string SurfaceOf(string panelId) => $"panel.{panelId}";
+
+        // ── Chat channels ───────────────────────────────────
+
+        /// <summary>A kind of line this game produces, that a player can read apart from everything else.
+        /// Nothing is handed back: a channel is a name, a caption, a color and where it starts, and there
+        /// is nothing to write underneath it.</summary>
+        public void Channel(string id, string caption, int red, int green, int blue, string tab)
+        {
+            _channels.Add(new ChatChannelSpec
+            {
+                Id = id.Trim(),
+                LabelKey = caption.Length > 0 ? caption : WordsFor(id),
+                Rgb = GameColor.Pack(red, green, blue),
+                OwnTabKey = tab.Trim(),
+            });
+        }
 
         /// <summary>
         /// A visibility, by the word a script writes. An enum cannot cross the boundary — a script may

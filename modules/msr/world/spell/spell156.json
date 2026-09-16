@@ -1,0 +1,13 @@
+{
+  "name": "Elder Restoration",
+  "type": "AddHp",
+  "amount": 181,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 115,
+  "mayLearn": [
+    9,
+    10
+  ]
+}

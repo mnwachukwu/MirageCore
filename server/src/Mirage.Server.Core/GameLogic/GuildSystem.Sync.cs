@@ -380,7 +380,7 @@ public sealed partial class GuildSystem : GameSystem
             _ => "",
         };
         int color = officer ? GameColor.GuildOfficer : GameColor.Guild;
-        var channel = officer ? ChatChannel.GuildOfficer : ChatChannel.Guild;
+        var channel = officer ? ChatChannel.Guild : ChatChannel.Guild;
         var meta = new ChatMetadata(color, channel, name, sp.Char.Access, showAsPk, sp.Login);
         string key = officer
             ? (ranked ? ServerStrings.GuildOfficer_ChatSayRanked : ServerStrings.GuildOfficer_ChatSay)

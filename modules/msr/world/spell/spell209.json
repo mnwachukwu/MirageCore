@@ -1,0 +1,13 @@
+{
+  "name": "Void Heal",
+  "type": "AddHp",
+  "amount": 295,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 240,
+  "mayLearn": [
+    9,
+    10
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "Master Focus",
+  "type": "AddMp",
+  "amount": 95,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 100,
+  "mayLearn": [
+    4,
+    5,
+    6,
+    9,
+    10
+  ]
+}

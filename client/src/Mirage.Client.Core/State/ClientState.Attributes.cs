@@ -32,6 +32,10 @@ public sealed partial class ClientState
     /// otherwise, and empty for good in a world whose game declared none.</summary>
     public GamePanels Panels { get; set; } = GamePanels.Empty;
 
+    /// <summary>The chat channels this game declared, beside Core’s own five. Empty until the server
+    /// says otherwise, and empty for good in a world whose game declared none.</summary>
+    public ChatChannelSet ChatChannels { get; set; } = ChatChannelSet.Empty;
+
     /// <summary>Bumped whenever any body's attributes change, so a panel can redraw on a change rather
     /// than re-reading every frame.</summary>
     public int AttributeVersion { get; set; }

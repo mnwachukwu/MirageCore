@@ -1,0 +1,22 @@
+{
+  "name": "Carrion Strider",
+  "says": "",
+  "sprite": 21,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 25,
+  "behavior": "Wander",
+  "group": 0,
+  "range": 5,
+  "emitsLight": false,
+  "attributes": {
+    "boss": false,
+    "def": 10,
+    "guard": false,
+    "hostile": true,
+    "hp": 0,
+    "int": 2,
+    "spd": 5,
+    "str": 13
+  }
+}

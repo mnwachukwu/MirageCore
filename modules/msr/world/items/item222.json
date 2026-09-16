@@ -1,0 +1,17 @@
+{
+  "name": "Superior Vigor Elixir",
+  "pic": 21,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2041,
+  "type": "Consumable",
+  "vitalAmount": 94,
+  "attributes": {
+    "levelReq": 105,
+    "restoresStamina": 94
+  }
+}

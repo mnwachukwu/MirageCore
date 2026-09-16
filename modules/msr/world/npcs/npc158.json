@@ -1,0 +1,22 @@
+{
+  "name": "Ember-Girl Nix",
+  "says": "Warm enough today. Don't waste it standing about with me.",
+  "sprite": 26,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 60,
+  "behavior": "Wander",
+  "group": 0,
+  "range": 4,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 143,
+    "guard": false,
+    "hostile": false,
+    "hp": 0,
+    "int": 18,
+    "spd": 18,
+    "str": 18
+  }
+}

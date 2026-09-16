@@ -1,0 +1,24 @@
+{
+  "name": "Tempered Kite Shield",
+  "pic": 31,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 993,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 25,
+  "durability": 390,
+  "attributes": {
+    "levelReq": 15,
+    "mayWield": [
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

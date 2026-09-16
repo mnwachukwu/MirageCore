@@ -1,0 +1,22 @@
+{
+  "name": "Mythic Plate",
+  "pic": 6,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1710399,
+  "type": "Equipment",
+  "equipSlot": "armor",
+  "power": 391,
+  "durability": 2000,
+  "attributes": {
+    "levelReq": 255,
+    "mayWield": [
+      3,
+      10
+    ]
+  }
+}

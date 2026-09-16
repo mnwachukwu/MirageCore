@@ -1,0 +1,34 @@
+{
+  "name": "Riptide Skirmisher",
+  "says": "The current is on my side.",
+  "sprite": 26,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 65,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 8,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 122,
+    "guard": false,
+    "hostile": true,
+    "hp": 0,
+    "int": 20,
+    "spd": 58,
+    "str": 162
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 416,
+      "chance": 45
+    },
+    {
+      "itemNum": 279,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

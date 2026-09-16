@@ -1,0 +1,25 @@
+{
+  "name": "Steel Buckler",
+  "pic": 19,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 293,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 14,
+  "durability": 240,
+  "attributes": {
+    "levelReq": 10,
+    "mayWield": [
+      2,
+      3,
+      6,
+      7,
+      10
+    ]
+  }
+}

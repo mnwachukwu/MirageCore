@@ -1,0 +1,102 @@
+{
+  "name": "The Ferryman (Wanderer)",
+  "speakerNpc": 149,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "I know all three landings. That makes me either very useful or very old, and I'll not be drawn on which.\n\nI don't sell anything. I just go, and come back, and go.",
+      "choices": [
+        {
+          "label": "What happened to your ferry?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "You had a boy with you.",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "How do the three places connect?",
+          "nextNodeId": 4,
+          "action": "None"
+        },
+        {
+          "label": "Safe travels.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "She still runs. That's the trouble.\n\nShe went down off the shelf with a full deck and she came back up empty and burning, and she's been running her route ever since without me aboard. I keep to a smaller boat now. We pass sometimes. She doesn't stop.",
+      "choices": [
+        {
+          "label": "You had a boy with you.",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "How do the three connect?",
+          "nextNodeId": 4,
+          "action": "None"
+        },
+        {
+          "label": "I'm sorry.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "speaker": "",
+      "text": "I did.\n\nHe was better at it than me. Knew the poles by feel, could read the reeds in the dark. He was on the deck when she went down.\n\nHe's still on it. If you meet him - and you might, out on the water - he will not know you, and he will not know me, and the kindest thing anyone could do is what you're already carrying.",
+      "choices": [
+        {
+          "label": "What happened to the ferry?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "...I'll remember that.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "speaker": "",
+      "text": "Marsh, then Reach, then Kiln. Drowned first, burned last, and the Landing is where the ones who ran ended up.\n\nThat's not three countries, understand. It's one, at three different points of having gone wrong. Walk far enough from Fenn's door in any direction and you'll find the water. Walk past the water and you'll find the fire.",
+      "choices": [
+        {
+          "label": "And past the fire?",
+          "nextNodeId": 5,
+          "action": "None"
+        },
+        {
+          "label": "Thank you.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "speaker": "",
+      "text": "Nothing I've rowed to.\n\nThe First Flame is the last thing on my chart, and the chart has an edge, and I've made my peace with the edge. Ask Wenn. Asking Wenn is how you spend an afternoon.",
+      "choices": [
+        {
+          "label": "I'll do that.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

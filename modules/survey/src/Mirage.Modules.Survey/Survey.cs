@@ -39,6 +39,9 @@ public static class Survey
     /// <summary>The one place a surveyor can carry something.</summary>
     public const string Satchel = "satchel";
 
+    /// <summary>The chat channel everything found and noted down reads on.</summary>
+    public const string Findings = "survey.findings";
+
     /// <summary>The field book: the screen a surveyor reads their own record in.</summary>
     public const string FieldBook = "survey.fieldbook";
 

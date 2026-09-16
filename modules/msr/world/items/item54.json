@@ -1,0 +1,22 @@
+{
+  "name": "Kilnforged Greataxe",
+  "pic": 10,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2412,
+  "type": "Equipment",
+  "equipSlot": "weapon",
+  "power": 38,
+  "durability": 560,
+  "attributes": {
+    "levelReq": 20,
+    "mayWield": [
+      1,
+      10
+    ]
+  }
+}

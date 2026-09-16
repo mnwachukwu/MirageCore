@@ -95,6 +95,45 @@ shared model Ledger
         World.SetGuildNumber(guild, Ledger.Settled, today);
     end function
 
+    # The original's /guildreset day: charge and pay every guild for today, now.
+    #
+    # ⚠ The cursor is deliberately NOT moved. Every step inside Settle is guarded by the day it
+    # last ran on, so this is idempotent and tonight's own midnight still runs — forcing a settlement
+    # must not be a way to skip the real one.
+    public function SettleNow(Player who)
+        integer today = Ledger.Today();
+
+        loop each guild in World.Guilds()
+            Ledger.Settle(who, guild, today);
+        end loop
+    end function
+
+    # The same, from the console, where there is nobody standing there to charge it through.
+    public integer function SettleFromConsole()
+        integer many = 0;
+        integer today = Ledger.Today();
+
+        loop each guild in World.Guilds()
+            many = many + Ledger.SettleThrough(guild, today);
+        end loop
+
+        yield many;
+    end function
+
+    # ⚠ Through one of the guild's OWN members, because the engine's vault log records who spent
+    # and a bill with nobody against it is money the guild cannot account for. A guild with nobody
+    # online is skipped rather than forced - which is what happens every other night too, since this
+    # settlement is walked from a member's tick and a guild nobody visits waits for one.
+    integer function SettleThrough(integer guild, integer day)
+        loop each member in World.GuildMembers(guild)
+            Ledger.Settle(member, guild, day);
+
+            yield 1;
+        end loop
+
+        yield 0;
+    end function
+
     # One day, for one guild. Every step is guarded by the day it last ran on, so settling a day
     # twice changes nothing the second time.
     public function Settle(Player who, integer guild, integer day)

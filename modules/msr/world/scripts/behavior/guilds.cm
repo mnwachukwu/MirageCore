@@ -1245,6 +1245,13 @@ shared model Guilds
         # source of valor. A grudge war pays a trickle; a war night pays properly.
         if Contest.Fighting(killer, victim)
             Valor.AwardAt(victim, ours, Valor.TerritoryChancePercent);
+
+            # ⚠ And onto the season's table, which counts a death over LAND and no other. A grudge
+            # war pays valor but weighs nothing on a placing.
+            World.SetGuildNumber(ours, Season.Kills,
+                                 World.GuildNumber(ours, Season.Kills) + 1);
+            World.SetGuildNumber(theirs, Season.Deaths,
+                                 World.GuildNumber(theirs, Season.Deaths) + 1);
         end if
 
         if not Contest.Fighting(killer, victim)

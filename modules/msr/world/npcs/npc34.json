@@ -1,0 +1,44 @@
+{
+  "name": "Plague Herald",
+  "says": "Breathe deep. It is faster that way.",
+  "sprite": 0,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 55,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 16,
+    "guard": false,
+    "hostile": true,
+    "hp": 5,
+    "int": 26,
+    "spd": 4,
+    "str": 12
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 33,
+      "chance": 60
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 3,
+      "chance": 20
+    },
+    {
+      "itemNum": 329,
+      "quantity": 1,
+      "chance": 6
+    }
+  ]
+}

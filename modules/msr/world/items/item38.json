@@ -1,0 +1,24 @@
+{
+  "name": "Steel Kite Shield",
+  "pic": 31,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 397,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 19,
+  "durability": 320,
+  "attributes": {
+    "levelReq": 10,
+    "mayWield": [
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

@@ -29,6 +29,15 @@ public sealed class AccountConfig
         [JsonPropertyName("name")] public string Name { get; set; } = "";
         [JsonPropertyName("notify")] public bool Notify { get; set; }
         [JsonPropertyName("disabledChannels")] public List<string> DisabledChannels { get; set; } = new();
+
+        /// <summary>Channel ids this tab's settings have already accounted for. A declared channel missing
+        /// from here has never been offered to this player, so it arrives at whatever the game said its
+        /// default was; one that is listed stays wherever they put it.</summary>
+        [JsonPropertyName("knownChannels")] public List<string> KnownChannels { get; set; } = new();
+
+        /// <summary>The <c>OwnTabKey</c> this tab was made for, or blank for the main tab. A channel
+        /// declared later that names this key lands here switched on, and stays off everywhere else.</summary>
+        [JsonPropertyName("ownsTabKey")] public string OwnsTabKey { get; set; } = "";
     }
 
     public sealed class CharacterConfig

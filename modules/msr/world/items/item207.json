@@ -1,0 +1,17 @@
+{
+  "name": "Strong Enervating Vial",
+  "pic": 26,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 11,
+  "type": "Consumable",
+  "vitalAmount": 15,
+  "attributes": {
+    "levelReq": 15,
+    "restoresStamina": -15
+  }
+}

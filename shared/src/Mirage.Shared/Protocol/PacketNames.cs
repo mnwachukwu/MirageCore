@@ -236,6 +236,8 @@ public static class PacketNames
     public const string GameActions = "gameactions";
     // The screens a game paints, sent once so a stock client can open one.
     public const string GamePanels = "gamepanels";
+    // The chat channels a game declared, sent once so the options panel can offer them.
+    public const string ChatChannels = "chatchannels";
     // C→S: the player picked one of them.
     public const string InvokeAction = "invokeaction";
     public const string AggressorRefresh = "aggressorrefresh";
@@ -261,6 +263,10 @@ public static class PacketNames
     public const string ShopContents = "shopcontents";             // S→C: an open shop's barter rows AND its sales list
     public const string OpenInn = "openinn";                       // S→C: raise the client-local Inn panel (from an NPC interact)
     public const string PlayerHotkeys = "playerhotkeys";
+
+    /// <summary>S→C: whether this body may still manage a run. Sent only to that player, and only when
+    /// the answer changes.</summary>
+    public const string Winded = "winded";
     public const string Weather = "weather";
     public const string TimeOfDay = "timeofday";
     public const string SetTimeOfDay = "settimeofday";

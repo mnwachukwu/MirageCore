@@ -1,0 +1,22 @@
+{
+  "name": "Iron Greataxe",
+  "pic": 13,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 122,
+  "type": "Equipment",
+  "equipSlot": "weapon",
+  "power": 16,
+  "durability": 280,
+  "attributes": {
+    "levelReq": 5,
+    "mayWield": [
+      1,
+      10
+    ]
+  }
+}

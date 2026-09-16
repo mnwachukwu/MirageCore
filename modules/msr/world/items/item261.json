@@ -1,0 +1,17 @@
+{
+  "name": "Transcendent Enervating Vial",
+  "pic": 26,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 19684,
+  "type": "Consumable",
+  "vitalAmount": 217,
+  "attributes": {
+    "levelReq": 245,
+    "restoresStamina": -217
+  }
+}

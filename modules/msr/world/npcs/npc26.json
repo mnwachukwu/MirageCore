@@ -1,0 +1,44 @@
+{
+  "name": "Kiln Acolyte",
+  "says": "The Kiln remembers every name.",
+  "sprite": 9,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 35,
+  "behavior": "Pursue",
+  "group": 3,
+  "range": 6,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 10,
+    "guard": false,
+    "hostile": true,
+    "hp": 3,
+    "int": 16,
+    "spd": 3,
+    "str": 7
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 12,
+      "chance": 60
+    },
+    {
+      "itemNum": 275,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 3,
+      "chance": 20
+    },
+    {
+      "itemNum": 309,
+      "quantity": 1,
+      "chance": 6
+    }
+  ]
+}

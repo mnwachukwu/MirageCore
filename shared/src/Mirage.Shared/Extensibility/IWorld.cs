@@ -52,11 +52,18 @@ public interface IWorld
     /// </summary>
     /// <param name="who">The player to say it to.</param>
     /// <param name="text">What to say, already in the words the player will read.</param>
-    /// <param name="channel">Which of the client's chat filters it belongs under. The default is the one
-    /// for feedback about your own character, which is what a rule reacting to what you just did is.</param>
+    /// <param name="channel">Which channel it reads on, by id: one this game declared, or
+    /// <see cref="ChatChannels.System"/>. The default is System — what just happened, said by the world
+    /// rather than a person, which is what a rule reacting to what you just did is.
+    ///
+    /// <para>⚠ Core's other four are not offered here. <c>Global</c>, <c>Tell</c>, <c>Guild</c>, and
+    /// <c>Admin</c> carry things a game must not be able to forge: speech somebody typed, a whisper
+    /// between two people, a guild's private line, an administrators' line. Naming one puts the line on
+    /// it — nothing stops you — but a player reading a "tell" nobody sent has been lied to by the
+    /// engine's own chrome.</para></param>
     /// <param name="color">What color to draw it, from <see cref="GameColor"/>.</param>
     void Tell(EntityHandle who, string text,
-              ChatChannel channel = ChatChannel.System, int color = GameColor.White);
+              string channel = ChatChannels.System, int color = GameColor.White);
 
     /// <summary>
     /// Says something to everybody in the world.
@@ -65,7 +72,7 @@ public interface IWorld
     /// server notice, somebody finishing the thing only one person can finish. A game that announces
     /// ordinary events this way is a game whose chat log is unreadable.</para>
     /// </summary>
-    void TellEveryone(string text, ChatChannel channel = ChatChannel.System,
+    void TellEveryone(string text, string channel = ChatChannels.System,
                       int color = GameColor.White);
 
     /// <summary>
@@ -76,14 +83,14 @@ public interface IWorld
     /// the next map along is looking at this one and would watch an event happen in silence. The
     /// audience for an event is who can see it, which is what the observer set is.</para>
     /// </summary>
-    void TellEveryoneOn(int mapNum, string text, ChatChannel channel = ChatChannel.System,
+    void TellEveryoneOn(int mapNum, string text, string channel = ChatChannels.System,
                         int color = GameColor.White);
 
     /// <summary>
     /// Says something to everybody within earshot of a square — the tighter audience, the one that
     /// hears speech rather than the one that can see the region.
     /// </summary>
-    void TellEveryoneNear(WorldPlace at, string text, ChatChannel channel = ChatChannel.System,
+    void TellEveryoneNear(WorldPlace at, string text, string channel = ChatChannels.System,
                           int color = GameColor.White);
 
     /// <summary>
@@ -98,7 +105,7 @@ public interface IWorld
     /// a moment ago is a set somebody may have logged out of.</para>
     /// </summary>
     void TellThese(IReadOnlyCollection<EntityHandle> them, string text,
-                   ChatChannel channel = ChatChannel.System, int color = GameColor.White);
+                   string channel = ChatChannels.System, int color = GameColor.White);
 
     // ── What a body carries ───────────────────────────────────────────────────
 

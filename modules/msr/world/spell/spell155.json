@@ -1,0 +1,13 @@
+{
+  "name": "Elder Heal",
+  "type": "AddHp",
+  "amount": 145,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 115,
+  "mayLearn": [
+    9,
+    10
+  ]
+}

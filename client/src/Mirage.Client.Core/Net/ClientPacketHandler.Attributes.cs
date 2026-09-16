@@ -69,6 +69,11 @@ public sealed partial class ClientPacketHandler
     /// declaration travels whole rather than being projected into a wire shape of its own.</summary>
     private void HandleGamePanels(GamePanelsPacket p) => _state.Panels = new GamePanels([.. p.Panels]);
 
+    /// <summary>The chat channels this game declared. Core’s own five are not among them — a
+    /// client that can draw chat at all knows those.</summary>
+    private void HandleChatChannels(ChatChannelsPacket p) =>
+        _state.ChatChannels = new ChatChannelSet([.. p.Channels]);
+
     private void HandleAttributeSync(AttributeSyncPacket p)
     {
         var bag = _state.BagFor(p.Who);

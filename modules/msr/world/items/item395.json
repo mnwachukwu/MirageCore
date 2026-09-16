@@ -1,0 +1,15 @@
+{
+  "name": "Scroll of Master Vigor",
+  "pic": 29,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 236152,
+  "type": "Consumable",
+  "attributes": {
+    "teaches": 107
+  }
+}

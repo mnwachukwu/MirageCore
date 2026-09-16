@@ -1,0 +1,25 @@
+{
+  "name": "Rusted Sword",
+  "pic": 13,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 14,
+  "type": "Equipment",
+  "equipSlot": "weapon",
+  "power": 8,
+  "durability": 100,
+  "attributes": {
+    "levelReq": 1,
+    "mayWield": [
+      1,
+      2,
+      3,
+      7,
+      10
+    ]
+  }
+}

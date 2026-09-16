@@ -1,0 +1,14 @@
+{
+  "name": "Elder Meditation",
+  "type": "AddMp",
+  "amount": 145,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 115,
+  "mayLearn": [
+    6,
+    9,
+    10
+  ]
+}

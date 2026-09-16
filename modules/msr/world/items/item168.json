@@ -1,0 +1,22 @@
+{
+  "name": "Godmarked Greathelm",
+  "pic": 35,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1659357,
+  "type": "Equipment",
+  "equipSlot": "helmet",
+  "power": 384,
+  "durability": 1980,
+  "attributes": {
+    "levelReq": 250,
+    "mayWield": [
+      3,
+      10
+    ]
+  }
+}

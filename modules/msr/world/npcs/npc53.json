@@ -1,0 +1,39 @@
+{
+  "name": "Reach Drowned",
+  "says": "Come down. It is quiet here.",
+  "sprite": 45,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 50,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 122,
+    "guard": false,
+    "hostile": true,
+    "hp": 583,
+    "int": 24,
+    "spd": 29,
+    "str": 143
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 351,
+      "chance": 60
+    },
+    {
+      "itemNum": 279,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 215,
+      "quantity": 1,
+      "chance": 10
+    }
+  ]
+}

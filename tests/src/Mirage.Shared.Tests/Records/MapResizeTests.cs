@@ -241,7 +241,8 @@ public class MapResizeTests
 
         MapResize.Apply(map, new MapSize(0, 0));
 
-        Assert.That((map.Width, map.Height), Is.EqualTo((1, 1)), "one tile is the floor");
+        Assert.That((map.Width, map.Height), Is.EqualTo((MapSize.Floor.Width, MapSize.Floor.Height)),
+                    "the screen is the floor");
     }
 
     [Test]

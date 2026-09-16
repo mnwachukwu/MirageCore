@@ -1,0 +1,39 @@
+{
+  "name": "Ash Legionary",
+  "says": "The line held. The line is ash.",
+  "sprite": 24,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 90,
+  "behavior": "Pursue",
+  "group": 3,
+  "range": 10,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 277,
+    "guard": false,
+    "hostile": true,
+    "hp": 3142,
+    "int": 54,
+    "spd": 65,
+    "str": 326
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 981,
+      "chance": 60
+    },
+    {
+      "itemNum": 284,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 124,
+      "quantity": 1,
+      "chance": 1
+    }
+  ]
+}

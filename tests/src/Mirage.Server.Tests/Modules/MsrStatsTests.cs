@@ -826,9 +826,9 @@ public class MsrStatsTests
         world.Records["Spell"] =
         [
             Row(("name", "Spark"), ("type", "SubHp"), ("amount", 10L)),
-            Row(("name", "Ward"), ("type", "AddHp"), ("amount", 10L)),
+            Row(("name", "Ward"), ("type", "AddHp"), ("amount", 10L),
+                ("mayLearn", AttributeValue.From(new long[] { 2 }))),
         ];
-        world.Records["SpellGate"] = [Row(("forSpell", 2L), ("forClass", 2L))];
 
         ((ITickWork)scripts).Tick(1);
 
@@ -1204,13 +1204,11 @@ public class MsrStatsTests
         _ = Asking("        who.Message(\"\");");
 
         var kit = _declared!.Schema.Families.Single(f => f.Id == "ClassKit").Fields.Single(f => f.Key == "item");
-        var gate = _declared.Schema.Families.Single(f => f.Id == "GearGate").Fields.Single(f => f.Key == "item");
 
         Assert.Multiple(() =>
         {
             Assert.That(kit.Kind, Is.EqualTo(FieldKind.RecordRef));
             Assert.That(kit.RecordFamilyId, Is.EqualTo("Items"));
-            Assert.That(gate.RecordFamilyId, Is.EqualTo("Items"));
         });
     }
 
@@ -1278,8 +1276,12 @@ public class MsrStatsTests
         var who = EntityHandle.ForPlayer(1);
         world.Here.Add(who);
 
-        world.Records["Items"] = [Row(), Row(), Row(("levelReq", 40L))];
-        world.Records["GearGate"] = [Row(("item", 2L), ("forClass", 7L))];
+        world.Records["Items"] =
+        [
+            Row(),
+            Row(("mayWield", AttributeValue.From(new long[] { 7 }))),
+            Row(("levelReq", 40L)),
+        ];
 
         ((IWorldObserver)scripts).OnPlayerJoined(who);
         ((ITickWork)scripts).Tick(1);
@@ -1307,8 +1309,12 @@ public class MsrStatsTests
         var who = EntityHandle.ForPlayer(1);
         world.Here.Add(who);
 
-        world.Records["Items"] = [Row(), Row(), Row(("levelReq", 40L))];
-        world.Records["GearGate"] = [Row(("item", 2L), ("forClass", 7L))];
+        world.Records["Items"] =
+        [
+            Row(),
+            Row(("mayWield", AttributeValue.From(new long[] { 7 }))),
+            Row(("levelReq", 40L)),
+        ];
 
         ((IWorldObserver)scripts).OnPlayerJoined(who);
         ((ITickWork)scripts).Tick(1);
@@ -3808,6 +3814,8 @@ public class MsrStatsTests
             {
                 long number => AttributeValue.From(number),
                 bool ticked => AttributeValue.From(ticked),
+                // A set is already one of these, so it is passed through rather than made again.
+                AttributeValue made => made,
                 _ => AttributeValue.From((string)value),
             });
         }

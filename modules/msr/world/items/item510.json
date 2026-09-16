@@ -1,0 +1,15 @@
+{
+  "name": "Scroll of Eternal Mana Rupture",
+  "pic": 30,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2514758,
+  "type": "Consumable",
+  "attributes": {
+    "teaches": 222
+  }
+}

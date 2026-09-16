@@ -1,0 +1,22 @@
+{
+  "name": "Sundered Tower Shield",
+  "pic": 32,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1485030,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 368,
+  "durability": 1940,
+  "attributes": {
+    "levelReq": 240,
+    "mayWield": [
+      3,
+      10
+    ]
+  }
+}

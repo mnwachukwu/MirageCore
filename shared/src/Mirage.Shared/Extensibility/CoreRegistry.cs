@@ -26,8 +26,9 @@ public sealed class CoreRegistry
                          TickSchedule tick, EquipSlotSet equipSlots, OverheadBarSet overheadBars,
                          DisplayFieldSet displayFields, PacketRoutes packetRoutes,
                          GameActions actions, IReadOnlyList<IActionHandler> actionHandlers,
-                         GamePanels panels,
+                         GamePanels panels, ChatChannelSet chatChannels,
                          IReadOnlyList<IWorldObserver> observers,
+                         IReadOnlyList<IConsoleHandler> consoleHandlers,
                          IReadOnlyList<IDeathPolicy> deathPolicies, IReadOnlyList<ILingerPolicy> lingerPolicies,
                          IReadOnlyList<IMovePolicy> movePolicies,
                          IReadOnlyList<IUsePolicy> usePolicies, IReadOnlyList<ILootPolicy> lootPolicies,
@@ -45,7 +46,9 @@ public sealed class CoreRegistry
         Actions = actions;
         ActionHandlers = actionHandlers;
         Panels = panels;
+        ChatChannels = chatChannels;
         Observers = observers;
+        ConsoleHandlers = consoleHandlers;
         DeathPolicies = deathPolicies;
         LingerPolicies = lingerPolicies;
         MovePolicies = movePolicies;
@@ -95,9 +98,17 @@ public sealed class CoreRegistry
     /// loaded, and then the client shows only Core's own windows.</summary>
     public GamePanels Panels { get; }
 
+    /// <summary>The chat channels this game declared, beside Core's own five. Empty in an engine with no
+    /// game loaded, and then everything a game would say lands on Core's System channel.</summary>
+    public ChatChannelSet ChatChannels { get; }
+
     /// <summary>What is told when something happens in the world, in the order their modules were
     /// configured. Empty in an engine with no game loaded, which then tells nobody anything.</summary>
     public IReadOnlyList<IWorldObserver> Observers { get; }
+
+    /// <summary>What this game adds to the server console, asked in the order their modules were
+    /// configured until one answers. Empty in an engine with no game loaded.</summary>
+    public IReadOnlyList<IConsoleHandler> ConsoleHandlers { get; }
 
     /// <summary>What this game says about dying, asked in the order their modules were configured.</summary>
     public IReadOnlyList<IDeathPolicy> DeathPolicies { get; }
@@ -224,12 +235,14 @@ internal sealed class CoreBuilder : ICoreBuilder
     private readonly List<IPacketRoute> _packetRoutes = [];
     private readonly List<GameAction> _actions = [];
     private readonly List<GamePanel> _panels = [];
+    private readonly List<ChatChannelSpec> _chatChannels = [];
     private readonly List<IActionHandler> _actionHandlers = [];
     private readonly List<IWorldObserver> _observers = [];
     private readonly List<IDeathPolicy> _deathPolicies = [];
     private readonly List<IMovePolicy> _movePolicies = [];
     private readonly List<IUsePolicy> _usePolicies = [];
     private readonly List<ILootPolicy> _lootPolicies = [];
+    private readonly List<IConsoleHandler> _consoleHandlers = [];
     private readonly List<CreationChoice> _creationChoices = [];
     private readonly List<ILingerPolicy> _lingerPolicies = [];
     private string _module = "(none)";
@@ -436,6 +449,32 @@ internal sealed class CoreBuilder : ICoreBuilder
         _panels.Add(panel);
     }
 
+    public void AddChatChannel(ChatChannelSpec channel)
+    {
+        ArgumentNullException.ThrowIfNull(channel);
+        Refuse();
+
+        if (string.IsNullOrWhiteSpace(channel.Id))
+            throw new CoreModuleException($"Module '{_module}' declared a chat channel with no id.", _module);
+
+        // Core sends on these five itself. A declaration that took one would answer for the engine's own
+        // lines, so a player switching off a game's feed would lose their tells with it.
+        if (Protocol.ChatChannels.IsCore(channel.Id))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared chat channel '{channel.Id}', which is one of Core's own. "
+                + $"Those are: {string.Join(", ", Protocol.ChatChannels.Core)}, and Always.", _module);
+        }
+
+        if (_chatChannels.Any(c => string.Equals(c.Id, channel.Id, StringComparison.Ordinal)))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared chat channel '{channel.Id}', which is already declared.", _module);
+        }
+
+        _chatChannels.Add(channel);
+    }
+
     public void AddAction(GameAction action)
     {
         ArgumentNullException.ThrowIfNull(action);
@@ -558,6 +597,13 @@ internal sealed class CoreBuilder : ICoreBuilder
         _observers.Add(observer);
     }
 
+    public void AddConsoleHandler(IConsoleHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(handler);
+        Refuse();
+        _consoleHandlers.Add(handler);
+    }
+
     public void AddDeathPolicy(IDeathPolicy policy)
     {
         ArgumentNullException.ThrowIfNull(policy);
@@ -622,7 +668,8 @@ internal sealed class CoreBuilder : ICoreBuilder
                                 new EquipSlotSet(_equipSlots), new OverheadBarSet(_overheadBars),
                                 new DisplayFieldSet(_displayFields), new PacketRoutes([.. _packetRoutes]),
                                 new GameActions(_actions), [.. _actionHandlers], new GamePanels([.. _panels]),
-                                [.. _observers], [.. _deathPolicies],
+                                new ChatChannelSet([.. _chatChannels]),
+                                [.. _observers], [.. _consoleHandlers], [.. _deathPolicies],
                                 [.. _lingerPolicies], [.. _movePolicies],
                                 [.. _usePolicies], [.. _lootPolicies],
                                 new CreationChoiceSet([.. _creationChoices]), modules, moduleNames);

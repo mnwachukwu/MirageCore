@@ -1,0 +1,34 @@
+{
+  "name": "Fallen Knight",
+  "says": "I kept my oath. It kept nothing.",
+  "sprite": 24,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 60,
+  "behavior": "Pursue",
+  "group": 0,
+  "range": 8,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 26,
+    "guard": false,
+    "hostile": true,
+    "hp": 91,
+    "int": 1,
+    "spd": 4,
+    "str": 34
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 39,
+      "chance": 60
+    },
+    {
+      "itemNum": 277,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

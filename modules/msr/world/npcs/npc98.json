@@ -1,0 +1,34 @@
+{
+  "name": "Flarewing",
+  "says": "KREEE-AAAK!",
+  "sprite": 27,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 90,
+  "behavior": "Pursue",
+  "group": 11,
+  "range": 11,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 255,
+    "guard": false,
+    "hostile": true,
+    "hp": 0,
+    "int": 41,
+    "spd": 120,
+    "str": 338
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 1036,
+      "chance": 45
+    },
+    {
+      "itemNum": 284,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

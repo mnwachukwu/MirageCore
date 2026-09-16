@@ -1,0 +1,29 @@
+{
+  "name": "Skyclaw",
+  "says": "",
+  "sprite": 22,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 60,
+  "behavior": "Pursue",
+  "group": 0,
+  "range": 9,
+  "emitsLight": false,
+  "attributes": {
+    "boss": false,
+    "def": 23,
+    "guard": false,
+    "hostile": true,
+    "hp": 0,
+    "int": 4,
+    "spd": 11,
+    "str": 30
+  },
+  "drops": [
+    {
+      "itemNum": 203,
+      "quantity": 1,
+      "chance": 10
+    }
+  ]
+}

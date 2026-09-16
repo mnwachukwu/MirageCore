@@ -1,0 +1,39 @@
+{
+  "name": "Tide-Picker",
+  "says": "I was here first!",
+  "sprite": 2,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 20,
+  "behavior": "Wander",
+  "group": 0,
+  "range": 4,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 3,
+    "guard": false,
+    "hostile": true,
+    "hp": 0,
+    "int": 0,
+    "spd": 1,
+    "str": 4
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 1,
+      "chance": 45
+    },
+    {
+      "itemNum": 274,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 4,
+      "quantity": 1,
+      "chance": 4
+    }
+  ]
+}

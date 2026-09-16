@@ -74,6 +74,24 @@ public sealed record NpcTargetPacket : IPacket
 }
 
 /// <summary>Server broadcasts a player's new facing direction (no position change).</summary>
+/// <summary>
+/// S→C: this body can no longer manage a run, or can again.
+///
+/// <para>🔴 <b>A pacing hint, not a refusal.</b> Whether a body may run is a GAME's rule, asked of
+/// its move policy, so a client cannot work it out for itself. Untold, it goes on predicting steps at a
+/// run's cadence while the server accepts them at a walk's — and every surplus step is refused and
+/// corrected, which the player sees as being snapped backwards.</para>
+///
+/// <para>Sent only to the body it is about, and only when the answer changes.</para>
+/// </summary>
+public sealed record PlayerWindedPacket : IPacket
+{
+    [JsonPropertyName("cmd")] public string Cmd => PacketNames.Winded;
+
+    /// <summary>True when a run has been refused and a step should be paced as a walk.</summary>
+    [JsonPropertyName("winded")] public bool Winded { get; init; }
+}
+
 public sealed record SendPlayerDirPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.SendPlayerDir;

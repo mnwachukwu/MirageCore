@@ -1,0 +1,44 @@
+{
+  "name": "Fathom Scribe",
+  "says": "I am still taking the minutes.",
+  "sprite": 17,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 70,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 11,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 98,
+    "guard": false,
+    "hostile": true,
+    "hp": 122,
+    "int": 159,
+    "spd": 26,
+    "str": 72
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 407,
+      "chance": 60
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 3,
+      "chance": 20
+    },
+    {
+      "itemNum": 419,
+      "quantity": 1,
+      "chance": 6
+    }
+  ]
+}

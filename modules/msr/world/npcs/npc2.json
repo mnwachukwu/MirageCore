@@ -1,0 +1,39 @@
+{
+  "name": "Ragged Vagrant",
+  "says": "Stay back! I warned you!",
+  "sprite": 17,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 25,
+  "behavior": "Wander",
+  "group": 0,
+  "range": 4,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 7,
+    "guard": false,
+    "hostile": true,
+    "hp": 8,
+    "int": 1,
+    "spd": 2,
+    "str": 8
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 4,
+      "chance": 60
+    },
+    {
+      "itemNum": 274,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 274,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

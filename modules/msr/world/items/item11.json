@@ -1,0 +1,23 @@
+{
+  "name": "Rusted Helm",
+  "pic": 34,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 14,
+  "type": "Equipment",
+  "equipSlot": "helmet",
+  "power": 8,
+  "durability": 100,
+  "attributes": {
+    "levelReq": 1,
+    "mayWield": [
+      2,
+      3,
+      10
+    ]
+  }
+}

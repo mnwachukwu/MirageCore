@@ -31,8 +31,14 @@ model Class
     public integer int;
 
     public shared function Describe(Records these)
-        these.Are("Classes", "Class", 20);
+        these.Are("Classes", "Class", 50);
         these.Icon("shield");
+
+        # ⚠ Said out loud, because the name ends in an S. Left to itself the engine takes the folder
+        # off the model's name and the file prefix off the folder with a trailing S removed - which is
+        # right for "spells" and wrong here, where it would look for clas1.json and find a folder of
+        # classes it never opens.
+        these.Stored("class", "class");
 
         these.Caption("int", "Intelligence");
         these.Caption("str", "Strength");

@@ -1,0 +1,17 @@
+{
+  "name": "Peerless Healing Elixir",
+  "pic": 25,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 18628,
+  "type": "Consumable",
+  "vitalAmount": 2822,
+  "attributes": {
+    "levelReq": 240,
+    "restoresHealth": 2822
+  }
+}

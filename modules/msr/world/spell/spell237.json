@@ -1,0 +1,13 @@
+{
+  "name": "Celestial Exsanguination",
+  "type": "SubHp",
+  "amount": 384,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 250,
+  "mayLearn": [
+    4,
+    10
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Absolute Healing Elixir",
+  "pic": 25,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 21907,
+  "type": "Consumable",
+  "vitalAmount": 3169,
+  "attributes": {
+    "levelReq": 255,
+    "restoresHealth": 3169
+  }
+}

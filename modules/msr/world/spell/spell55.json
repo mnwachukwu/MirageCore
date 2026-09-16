@@ -1,0 +1,17 @@
+{
+  "name": "Adept Bloodletting",
+  "type": "SubHp",
+  "amount": 19,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 15,
+  "mayLearn": [
+    4,
+    5,
+    6,
+    8,
+    9,
+    10
+  ]
+}

@@ -433,6 +433,7 @@ public sealed partial class GameplayScreen : IGameScreen
         _chat.OnToggleModeration = () => ActivatePanel(PanelModeration);
         _chat.OnPlayerRightClicked = (name, at) => OpenPlayerContextMenu(name, at);
         _chat.OnTabRightClicked = (tabIndex, _) =>
-            _chatOptions.Open(_chat, tabIndex, _ctx.State.Me.Access > AdminLevel.Player, _ctx.State.GuildInfo?.InGuild ?? false);
+            _chatOptions.Open(_chat, tabIndex, _ctx.State.Me.Access > AdminLevel.Player,
+                _ctx.State.GuildInfo?.InGuild ?? false, _ctx.State.ChatChannels);
     }
 }

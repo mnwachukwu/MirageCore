@@ -1,0 +1,22 @@
+{
+  "name": "Reedmarsh Wolfman",
+  "says": "Grrrr...",
+  "sprite": 13,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 35,
+  "behavior": "Wander",
+  "group": 1,
+  "range": 6,
+  "emitsLight": false,
+  "attributes": {
+    "boss": false,
+    "def": 11,
+    "guard": false,
+    "hostile": true,
+    "hp": 0,
+    "int": 2,
+    "spd": 5,
+    "str": 14
+  }
+}

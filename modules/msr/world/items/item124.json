@@ -1,0 +1,28 @@
+{
+  "name": "Astral Dagger",
+  "pic": 11,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 845315,
+  "type": "Equipment",
+  "equipSlot": "weapon",
+  "power": 217,
+  "durability": 1150,
+  "attributes": {
+    "levelReq": 235,
+    "mayWield": [
+      1,
+      2,
+      3,
+      5,
+      6,
+      7,
+      9,
+      10
+    ]
+  }
+}

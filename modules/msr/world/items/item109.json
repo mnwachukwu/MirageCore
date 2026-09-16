@@ -1,0 +1,25 @@
+{
+  "name": "Obsidian Buckler",
+  "pic": 20,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 128106,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 109,
+  "durability": 800,
+  "attributes": {
+    "levelReq": 115,
+    "mayWield": [
+      2,
+      3,
+      6,
+      7,
+      10
+    ]
+  }
+}

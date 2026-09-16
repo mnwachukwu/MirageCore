@@ -1,0 +1,119 @@
+{
+  "name": "The Deep Chorus",
+  "says": "WE SPEAK AS ONE.",
+  "sprite": 24,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 900,
+  "behavior": "Wander",
+  "group": 2,
+  "range": 12,
+  "emitsLight": true,
+  "attributes": {
+    "boss": true,
+    "def": 87,
+    "guard": false,
+    "hostile": true,
+    "hp": 12977,
+    "int": 191,
+    "spd": 35,
+    "str": 35
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 3153,
+      "chance": 90
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 12,
+      "chance": 45
+    },
+    {
+      "itemNum": 98,
+      "quantity": 1,
+      "chance": 8
+    },
+    {
+      "itemNum": 93,
+      "quantity": 1,
+      "chance": 6
+    },
+    {
+      "itemNum": 228,
+      "quantity": 1,
+      "chance": 30
+    },
+    {
+      "itemNum": 431,
+      "quantity": 1,
+      "chance": 20
+    },
+    {
+      "itemNum": 418,
+      "quantity": 1,
+      "chance": 15
+    }
+  ]
+}

@@ -5,6 +5,7 @@ using Mirage.Client.Shell.Config;
 using Mirage.Client.Shell.Input;
 using Mirage.Client.Shell.Localization;
 using Mirage.Client.Shell.Ui;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 
 namespace Mirage.Client.Shell.Panels;
@@ -12,12 +13,16 @@ namespace Mirage.Client.Shell.Panels;
 /// <summary>Per-tab options modal opened by right-clicking a tab in the ChatPanel. Mirrors the
 /// `OptionsPanel` chrome (DraggablePanel + two-column checkbox grid) so the two settings panels
 /// feel like siblings. Lets the player rename the tab, toggle a General flash-on-new-message
-/// option, and toggle channel filters in three groups (Chat / System / Combat). Every mutation
-/// persists immediately via `ChatPanel.OnTabConfigChanged()`.</summary>
+/// option, and toggle channel filters. Every mutation persists immediately via
+/// `ChatPanel.OnTabConfigChanged()`.
+///
+/// <para>🔴 <b>The rows come from what the server declared, not from this file.</b> Core's own five
+/// head the list; under them are the channels this game invented, under their own heading. A client
+/// compiled against no particular game draws whatever that game said it has.</para></summary>
 public sealed class ChatOptionsPanel
 {
-    // Opening height/minH are recomputed in Open() from the visible row count (admin status
-    // changes how many channels show). These are just sane construction defaults.
+    // Opening height/minH are recomputed in Open() from the visible row count (admin status and the
+    // game's own channel count both change how many rows show). These are just construction defaults.
     // Centered on the 800x600 canvas (treated like the main Options panel), so it lands mid-screen in both states.
     private readonly DraggablePanel _panel =
         new(new Rectangle((UiHelper.RefW - 480) / 2, (UiHelper.RefH - 360) / 2, 480, 360), minH: 320);
@@ -37,20 +42,29 @@ public sealed class ChatOptionsPanel
     private bool _nameFocused;
     private long _nowMs;  // last frame's clock for the caret blink — captured in Update
 
-    // One Checkbox per visible channel. Built in display order so we can iterate ranges by
-    // section. AdminChat is hidden when the player isn't an admin — the index is still allocated
-    // (kept null) so the visible-rows count stays stable per session.
-    private readonly Checkbox[] _channelChecks;
-    private readonly ChatChannel[] _channelOrder;
-    private readonly string[] _channelLabelKeys;
+    /// <summary>One togglable channel: the id that travels and is saved, and the caption beside its box.
+    /// A Core row draws from ClientStrings; a game's draws from whatever its declaration named, falling
+    /// back to that name so an unlocalized key still reads as something.</summary>
+    private readonly record struct Row(string Id, string LabelKey, bool IsCore)
+    {
+        public string Caption => IsCore
+            ? ClientStrings.Get(LabelKey)
+            : ClientStrings.GetOrFallback(LabelKey, LabelKey);
+    }
+
+    // Rebuilt in Open() from the declared set, so a channel added between sessions shows up without
+    // anything here knowing its name. Core's five come first, then the game's.
+    private readonly List<Row> _rows = [];
+    private readonly List<Checkbox> _checks = [];
+    private int _coreRows;
 
     // The General head is a plain label (its single Notify option is toggled directly), unlike
-    // the three channel heads below which are clickable group toggles. Captured only for drawing.
+    // the two channel heads below which are clickable group toggles. Captured only for drawing.
     private Rectangle _generalHeaderRect;
     // Section heads are clickable tri-state toggles (all-on → all-off when anything is on,
     // off-state → all-on when everything is off). The rectangle is captured during Layout for
     // hit-testing.
-    private Rectangle _chatHeaderRect, _systemHeaderRect, _combatHeaderRect;
+    private Rectangle _coreHeaderRect, _gameHeaderRect;
 
     private readonly Checkbox _notifyChk = new();
     private readonly Button _closeBtn = new();
@@ -62,52 +76,21 @@ public sealed class ChatOptionsPanel
     private bool _inGuild;
     private int _labelsGeneration = -1;
 
-    public ChatOptionsPanel()
-    {
-        _channelOrder = new[]
-        {
-            // Chat group (the guild channels fold in here)
-            ChatChannel.Say, ChatChannel.Yell, ChatChannel.Broadcast, ChatChannel.Tell,
-            ChatChannel.AdminChat, ChatChannel.Guild, ChatChannel.GuildOfficer,
-            // System group
-            ChatChannel.Notice, ChatChannel.JoinLeaveNotice, ChatChannel.System,
-            // Combat group
-            ChatChannel.Combat, ChatChannel.Rewards,
-        };
-        _channelLabelKeys = new[]
-        {
-            ClientStrings.ChatOptionsPanel_Channel_Say,
-            ClientStrings.ChatOptionsPanel_Channel_Yell,
-            ClientStrings.ChatOptionsPanel_Channel_Broadcast,
-            ClientStrings.ChatOptionsPanel_Channel_Tell,
-            ClientStrings.ChatOptionsPanel_Channel_AdminChat,
-            ClientStrings.ChatOptionsPanel_Channel_Guild,
-            ClientStrings.ChatOptionsPanel_Channel_GuildOfficer,
-            ClientStrings.ChatOptionsPanel_Channel_Notice,
-            ClientStrings.ChatOptionsPanel_Channel_JoinLeaveNotice,
-            ClientStrings.ChatOptionsPanel_Channel_System,
-            ClientStrings.ChatOptionsPanel_Channel_Combat,
-            ClientStrings.ChatOptionsPanel_Channel_Rewards,
-        };
-        _channelChecks = new Checkbox[_channelOrder.Length];
-        for (int i = 0; i < _channelChecks.Length; i++)
-            _channelChecks[i] = new Checkbox();
-    }
-
-    public void Open(ChatPanel panel, int tabIndex, bool isAdmin, bool inGuild)
+    public void Open(ChatPanel panel, int tabIndex, bool isAdmin, bool inGuild, ChatChannelSet channels)
     {
         _chatPanel = panel;
         _tabIndex = tabIndex;
         _config = panel.GetTabConfig(tabIndex);
         _isAdmin = isAdmin;
         _inGuild = inGuild;
+        BuildRows(channels);
         _nameField.SetText(_config.Name);
         _nameFocused = false;
         SyncChecksFromConfig();
 
-        // Size the panel to fit every row (the admin case shows one extra channel). minH stops the
-        // user shrinking it until the Close button or Notify toggle clip; grow the current height
-        // if it's below the requirement.
+        // Size the panel to fit every row (the admin case shows one extra channel, and a game can
+        // declare any number). minH stops the user shrinking it until the Close button or Notify
+        // toggle clip; grow the current height if it's below the requirement.
         int reqH = RequiredContentHeight() + DraggablePanel.TitleH;
         _panel.SetMinH(reqH);
         var b = _panel.Bounds;
@@ -122,32 +105,49 @@ public sealed class ChatOptionsPanel
         IsOpen = false;
     }
 
+    private void BuildRows(ChatChannelSet channels)
+    {
+        _rows.Clear();
+        foreach (string id in ChatChannels.Core)
+        {
+            string? key = ChatPanel.CoreChannelLabelKey(id);
+            if (key is not null) _rows.Add(new Row(id, key, IsCore: true));
+        }
+        _coreRows = _rows.Count;
+        foreach (var ch in channels.Channels)
+            _rows.Add(new Row(ch.Id, ch.LabelKey, IsCore: false));
+
+        while (_checks.Count < _rows.Count) _checks.Add(new Checkbox());
+        // A caption is stale the moment the row list changes, and Draw only refreshes them when the
+        // language does. Force it.
+        _labelsGeneration = -1;
+    }
+
     private void SyncChecksFromConfig()
     {
         if (_config is null) return;
-        for (int i = 0; i < _channelOrder.Length; i++)
-        {
-            string name = _channelOrder[i].ToString();
-            _channelChecks[i].Checked = !_config.DisabledChannels.Contains(name);
-        }
+        for (int i = 0; i < _rows.Count; i++)
+            _checks[i].Checked = !_config.DisabledChannels.Contains(_rows[i].Id);
         _notifyChk.Checked = _config.Notify;
     }
 
-    /// <summary>Whether a channel row is shown to this player: AdminChat only with admin access; the guild
-    /// channels (Guild / Guild Officer / Guild War) only while in a guild. A hidden row is completely absent
-    /// from the panel (not grayed out), and its config state is left untouched.</summary>
-    private bool IsChannelVisible(ChatChannel ch)
+    /// <summary>Whether a channel row is shown to this player: Admin only with admin access; Guild only
+    /// while in a guild. A hidden row is completely absent from the panel (not grayed out), and its config
+    /// state is left untouched. A game's own channels are always shown — Core has no idea who they are for,
+    /// and a declaration that wanted an audience would have to say so on the sending side.</summary>
+    private bool IsRowVisible(int i)
     {
-        if (ch == ChatChannel.AdminChat) return _isAdmin;
-        if (ch is ChatChannel.Guild or ChatChannel.GuildOfficer) return _inGuild;
+        string id = _rows[i].Id;
+        if (id == ChatChannels.Admin) return _isAdmin;
+        if (id == ChatChannels.Guild) return _inGuild;
         return true;
     }
 
-    /// <summary>Indexes of the channel rows visible to this player (see <see cref="IsChannelVisible"/>).</summary>
-    private IEnumerable<int> VisibleChannelIndexes()
+    /// <summary>Indexes of the channel rows visible to this player (see <see cref="IsRowVisible"/>).</summary>
+    private IEnumerable<int> VisibleRowIndexes()
     {
-        for (int i = 0; i < _channelOrder.Length; i++)
-            if (IsChannelVisible(_channelOrder[i])) yield return i;
+        for (int i = 0; i < _rows.Count; i++)
+            if (IsRowVisible(i)) yield return i;
     }
 
     public void Update(InputState input, long nowMs)
@@ -186,11 +186,11 @@ public sealed class ChatOptionsPanel
 
         // Channel checkboxes. Each toggle persists immediately.
         bool anyChanged = false;
-        foreach (int i in VisibleChannelIndexes())
+        foreach (int i in VisibleRowIndexes())
         {
-            if (_channelChecks[i].Update(input))
+            if (_checks[i].Update(input))
             {
-                ApplyCheckChange(_channelOrder[i], _channelChecks[i].Checked);
+                ApplyCheckChange(_rows[i].Id, _checks[i].Checked);
                 anyChanged = true;
             }
         }
@@ -199,21 +199,15 @@ public sealed class ChatOptionsPanel
         // the group is on, otherwise turns it all on.
         if (input.IsMouseClicked())
         {
-            if (input.IsClickIn(_chatHeaderRect))
+            if (input.IsClickIn(_coreHeaderRect))
             {
-                ToggleGroup(ChatGroupRange());
+                ToggleGroup(CoreRange());
                 anyChanged = true;
                 input.ConsumeMouseClick();
             }
-            else if (input.IsClickIn(_systemHeaderRect))
+            else if (HasGameRows && input.IsClickIn(_gameHeaderRect))
             {
-                ToggleGroup(SystemGroupRange());
-                anyChanged = true;
-                input.ConsumeMouseClick();
-            }
-            else if (input.IsClickIn(_combatHeaderRect))
-            {
-                ToggleGroup(CombatGroupRange());
+                ToggleGroup(GameRange());
                 anyChanged = true;
                 input.ConsumeMouseClick();
             }
@@ -246,36 +240,39 @@ public sealed class ChatOptionsPanel
         }
     }
 
-    private void ApplyCheckChange(ChatChannel ch, bool isEnabled)
+    private void ApplyCheckChange(string id, bool isEnabled)
     {
         if (_config is null) return;
-        string name = ch.ToString();
-        if (isEnabled) _config.DisabledChannels.Remove(name);
-        else if (!_config.DisabledChannels.Contains(name)) _config.DisabledChannels.Add(name);
+        if (isEnabled) _config.DisabledChannels.Remove(id);
+        else if (!_config.DisabledChannels.Contains(id)) _config.DisabledChannels.Add(id);
+
+        // Whatever they just decided is now their decision, so the next declaration sweep leaves it
+        // alone. A row they never touched stays unknown and still follows the game's default.
+        if (!_config.KnownChannels.Contains(id)) _config.KnownChannels.Add(id);
     }
 
-    private (int start, int endExclusive) ChatGroupRange() => (0, 7);      // incl. Guild + GuildOfficer
-    private (int start, int endExclusive) SystemGroupRange() => (7, 10);
-    private (int start, int endExclusive) CombatGroupRange() => (10, 14);  // incl. War + GuildWar
+    private bool HasGameRows => _rows.Count > _coreRows;
+    private (int start, int endExclusive) CoreRange() => (0, _coreRows);
+    private (int start, int endExclusive) GameRange() => (_coreRows, _rows.Count);
 
     // Rows a group occupies given its currently-visible channels, laid out two per row.
     private int GroupRows((int start, int endExclusive) range)
     {
         int n = 0;
         for (int i = range.start; i < range.endExclusive; i++)
-            if (IsChannelVisible(_channelOrder[i])) n++;
+            if (IsRowVisible(i)) n++;
         return (n + 1) / 2;
     }
 
     private void ToggleGroup((int start, int endExclusive) range)
     {
         // Decide direction: if anything in the group is currently enabled, turn it ALL off;
-        // otherwise turn it ALL on. Skips channels hidden from this player (AdminChat for non-admins).
+        // otherwise turn it ALL on. Skips channels hidden from this player (Admin for non-admins).
         bool anyEnabled = false;
         for (int i = range.start; i < range.endExclusive; i++)
         {
-            if (!IsChannelVisible(_channelOrder[i])) continue;
-            if (_channelChecks[i].Checked)
+            if (!IsRowVisible(i)) continue;
+            if (_checks[i].Checked)
             {
                 anyEnabled = true;
                 break;
@@ -284,9 +281,9 @@ public sealed class ChatOptionsPanel
         bool newState = !anyEnabled;
         for (int i = range.start; i < range.endExclusive; i++)
         {
-            if (!IsChannelVisible(_channelOrder[i])) continue;
-            _channelChecks[i].Checked = newState;
-            ApplyCheckChange(_channelOrder[i], newState);
+            if (!IsRowVisible(i)) continue;
+            _checks[i].Checked = newState;
+            ApplyCheckChange(_rows[i].Id, newState);
         }
     }
 
@@ -316,17 +313,17 @@ public sealed class ChatOptionsPanel
 
     private Rectangle _nameField_Bounds;
 
-    /// <summary>Content height needed to show every row without clipping, given the current admin
-    /// state (admin shows one extra channel → one extra Chat row). Drives Open()'s minH.</summary>
+    /// <summary>Content height needed to show every row without clipping, given the current admin state
+    /// (admin shows one extra channel → one extra row) and how many channels this game declared. Drives
+    /// Open()'s minH.</summary>
     private int RequiredContentHeight()
     {
         int h = Pad;
         h += RowH;                                  // name label
         h += ChkH + 4 + SectionGap;                 // name field
         h += RowH + RowH + SectionGap;              // general header + notify row
-        h += RowH + GroupRows(ChatGroupRange()) * RowH + SectionGap;     // chat header + rows
-        h += RowH + GroupRows(SystemGroupRange()) * RowH + SectionGap;   // system header + rows
-        h += RowH + GroupRows(CombatGroupRange()) * RowH + SectionGap;   // combat header + rows
+        h += RowH + GroupRows(CoreRange()) * RowH + SectionGap;
+        if (HasGameRows) h += RowH + GroupRows(GameRange()) * RowH + SectionGap;
         h += SectionGap + CloseBtnH + Pad;          // gap, close button, bottom pad
         return h;
     }
@@ -349,20 +346,22 @@ public sealed class ChatOptionsPanel
         _notifyChk.Bounds = new Rectangle(c.X + Pad, y, c.Width - Pad * 2, ChkH);
         y += RowH + SectionGap;
 
-        _chatHeaderRect = new Rectangle(c.X + Pad, y, c.Width - Pad * 2, RowH - 4);
+        _coreHeaderRect = new Rectangle(c.X + Pad, y, c.Width - Pad * 2, RowH - 4);
         y += RowH;
-        y = LayoutGroupChecks(c, y, ChatGroupRange(), RowH, ChkH, Pad);
+        y = LayoutGroupChecks(c, y, CoreRange(), RowH, ChkH, Pad);
         y += SectionGap;
 
-        _systemHeaderRect = new Rectangle(c.X + Pad, y, c.Width - Pad * 2, RowH - 4);
-        y += RowH;
-        y = LayoutGroupChecks(c, y, SystemGroupRange(), RowH, ChkH, Pad);
-        y += SectionGap;
-
-        _combatHeaderRect = new Rectangle(c.X + Pad, y, c.Width - Pad * 2, RowH - 4);
-        y += RowH;
-        y = LayoutGroupChecks(c, y, CombatGroupRange(), RowH, ChkH, Pad);
-        y += SectionGap;
+        if (HasGameRows)
+        {
+            _gameHeaderRect = new Rectangle(c.X + Pad, y, c.Width - Pad * 2, RowH - 4);
+            y += RowH;
+            y = LayoutGroupChecks(c, y, GameRange(), RowH, ChkH, Pad);
+            y += SectionGap;
+        }
+        else
+        {
+            _gameHeaderRect = Rectangle.Empty;
+        }
 
         // Close pinned to the bottom of the content area; Open()'s minH guarantees it stays clear
         // of the last section even at minimum size, and it tracks the bottom edge when enlarged.
@@ -381,15 +380,15 @@ public sealed class ChatOptionsPanel
         bool leftNext = true;
         for (int i = range.start; i < range.endExclusive; i++)
         {
-            if (!IsChannelVisible(_channelOrder[i])) continue;
+            if (!IsRowVisible(i)) continue;
             if (leftNext)
             {
-                _channelChecks[i].Bounds = new Rectangle(lx, yStart + leftRow * rowH, colW, chkH);
+                _checks[i].Bounds = new Rectangle(lx, yStart + leftRow * rowH, colW, chkH);
                 leftRow++;
             }
             else
             {
-                _channelChecks[i].Bounds = new Rectangle(rx, yStart + rightRow * rowH, colW, chkH);
+                _checks[i].Bounds = new Rectangle(rx, yStart + rightRow * rowH, colW, chkH);
                 rightRow++;
             }
             leftNext = !leftNext;
@@ -409,8 +408,8 @@ public sealed class ChatOptionsPanel
         if (_labelsGeneration != ClientStrings.Generation)
         {
             _labelsGeneration = ClientStrings.Generation;
-            for (int i = 0; i < _channelChecks.Length; i++)
-                _channelChecks[i].Label = ClientStrings.Get(_channelLabelKeys[i]);
+            for (int i = 0; i < _rows.Count; i++)
+                _checks[i].Label = _rows[i].Caption;
             _notifyChk.Label = ClientStrings.Get(ClientStrings.ChatOptionsPanel_Notify);
             _closeBtn.Label = ClientStrings.Get(ClientStrings.ChatOptionsPanel_Close);
         }
@@ -426,15 +425,15 @@ public sealed class ChatOptionsPanel
         UiHelper.DrawBorder(sb, _nameField_Bounds, _nameFocused ? Color.CornflowerBlue : Color.Gray);
         _nameField.Draw(sb, font, _nameField_Bounds, _nameFocused, _nowMs);
 
-        // Section headers (drawn as text; the three channel heads double as clickable group
-        // toggles, while General is a plain label for the single Notify option below it).
+        // Section headers (drawn as text; the channel heads double as clickable group toggles, while
+        // General is a plain label for the single Notify option below it).
         DrawSectionHeader(sb, font, ClientStrings.ChatOptionsPanel_SectionGeneral, _generalHeaderRect);
-        DrawSectionHeader(sb, font, ClientStrings.ChatOptionsPanel_SectionChat, _chatHeaderRect);
-        DrawSectionHeader(sb, font, ClientStrings.ChatOptionsPanel_SectionSystem, _systemHeaderRect);
-        DrawSectionHeader(sb, font, ClientStrings.ChatOptionsPanel_SectionCombat, _combatHeaderRect);
+        DrawSectionHeader(sb, font, ClientStrings.ChatOptionsPanel_SectionChat, _coreHeaderRect);
+        if (HasGameRows)
+            DrawSectionHeader(sb, font, ClientStrings.ChatOptionsPanel_SectionChannels, _gameHeaderRect);
 
-        foreach (int i in VisibleChannelIndexes())
-            _channelChecks[i].Draw(sb, font, input);
+        foreach (int i in VisibleRowIndexes())
+            _checks[i].Draw(sb, font, input);
 
         _notifyChk.Draw(sb, font, input);
         _closeBtn.Draw(sb, font, input);

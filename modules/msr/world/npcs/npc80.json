@@ -1,0 +1,39 @@
+{
+  "name": "Reach Behemoth",
+  "says": "HHHOOOOORRRNNN",
+  "sprite": 44,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 180,
+  "behavior": "Pursue",
+  "group": 10,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 154,
+    "guard": false,
+    "hostile": true,
+    "hp": 17771,
+    "int": 27,
+    "spd": 12,
+    "str": 181
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 433,
+      "chance": 60
+    },
+    {
+      "itemNum": 283,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 108,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "Runed Kite Shield",
+  "pic": 31,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 134197,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 133,
+  "durability": 1020,
+  "attributes": {
+    "levelReq": 105,
+    "mayWield": [
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

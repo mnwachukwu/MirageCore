@@ -1,0 +1,15 @@
+{
+  "name": "Apprentice Vigor",
+  "type": "AddSp",
+  "amount": 13,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 5,
+  "mayLearn": [
+    7,
+    8,
+    9,
+    10
+  ]
+}

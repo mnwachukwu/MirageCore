@@ -1,0 +1,13 @@
+{
+  "name": "wold",
+  "displayName": "The Wold",
+  "music": 0,
+  "playersPassThrough": true,
+  "alwaysLit": true,
+  "exitMap": 5,
+  "exitX": 8,
+  "exitY": 6,
+  "greetingSpeaker": "",
+  "joinSay": "",
+  "leaveSay": ""
+}

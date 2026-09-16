@@ -1,0 +1,18 @@
+{
+  "name": "Tempered Cap",
+  "pic": 37,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 755,
+  "type": "Equipment",
+  "equipSlot": "helmet",
+  "power": 19,
+  "durability": 290,
+  "attributes": {
+    "levelReq": 15
+  }
+}

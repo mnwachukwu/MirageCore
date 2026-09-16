@@ -1,0 +1,13 @@
+{
+  "name": "Celestial Heal",
+  "type": "AddHp",
+  "amount": 307,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 250,
+  "mayLearn": [
+    9,
+    10
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Adept Vigor",
+  "type": "AddSp",
+  "amount": 25,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 15,
+  "mayLearn": [
+    7,
+    8,
+    9,
+    10
+  ]
+}

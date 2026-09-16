@@ -1,0 +1,25 @@
+{
+  "name": "Runed Hauberk",
+  "pic": 3,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 134197,
+  "type": "Equipment",
+  "equipSlot": "armor",
+  "power": 133,
+  "durability": 1020,
+  "attributes": {
+    "levelReq": 105,
+    "mayWield": [
+      1,
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

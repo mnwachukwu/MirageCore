@@ -1,0 +1,34 @@
+{
+  "name": "Slagborn Pikeman",
+  "says": "Forward. Always forward.",
+  "sprite": 17,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 90,
+  "behavior": "Pursue",
+  "group": 3,
+  "range": 10,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 279,
+    "guard": false,
+    "hostile": true,
+    "hp": 3192,
+    "int": 54,
+    "spd": 66,
+    "str": 329
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 990,
+      "chance": 60
+    },
+    {
+      "itemNum": 284,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

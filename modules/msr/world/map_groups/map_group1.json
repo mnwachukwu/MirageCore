@@ -1,0 +1,13 @@
+{
+  "name": "demo",
+  "displayName": "Demo",
+  "music": 0,
+  "playersPassThrough": true,
+  "alwaysLit": true,
+  "exitMap": 1,
+  "exitX": 8,
+  "exitY": 6,
+  "greetingSpeaker": "",
+  "joinSay": "",
+  "leaveSay": ""
+}

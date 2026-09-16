@@ -1,0 +1,17 @@
+{
+  "name": "Supreme Bloodletting Vial",
+  "pic": 23,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 17607,
+  "type": "Consumable",
+  "vitalAmount": 2713,
+  "attributes": {
+    "levelReq": 235,
+    "restoresHealth": -2713
+  }
+}

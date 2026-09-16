@@ -86,7 +86,7 @@ public sealed partial class PacketHandler
         if (vp.HomeUsedAtUtc > 0 && now < readyAt)
         {
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.Command_HomeCooldown,
-                new ChatMetadata(GameColor.BrightRed, ChatChannel.Notice),
+                new ChatMetadata(GameColor.BrightRed, ChatChannel.System),
                 ("Remaining", PlaytimeFormat.HoursMinutes(readyAt - now)));
             return;
         }
@@ -97,7 +97,7 @@ public sealed partial class PacketHandler
         if (!_movement.IsWarpDestinationValid(map, x, y))
         {
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.Command_HomeDestinationMissing,
-                new ChatMetadata(GameColor.BrightRed, ChatChannel.Notice));
+                new ChatMetadata(GameColor.BrightRed, ChatChannel.System));
             return;
         }
 
@@ -105,7 +105,7 @@ public sealed partial class PacketHandler
         _movement.PlayerWarp(index, map, x, y);
         _saver.SaveCharInBackground(sp.Login, sp.CharNum, vp.Clone(), sp.CloneBank());
         _dispatcher.SendLocalizedChatTo(index, ServerStrings.Command_HomeWarped,
-            new ChatMetadata(GameColor.BrightCyan, ChatChannel.Notice));
+            new ChatMetadata(GameColor.BrightCyan, ChatChannel.System));
     }
 
     /// <summary>/homecd — how long is left on the cooldown. Reads the stamp and writes nothing, so
@@ -119,10 +119,10 @@ public sealed partial class PacketHandler
         long readyAt = sp.Char.HomeUsedAtUtc + Constants.HomeCooldownSeconds;
         if (sp.Char.HomeUsedAtUtc > 0 && now < readyAt)
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.Command_HomeCooldownLeft,
-                new ChatMetadata(GameColor.Yellow, ChatChannel.Notice),
+                new ChatMetadata(GameColor.Yellow, ChatChannel.System),
                 ("Remaining", PlaytimeFormat.HoursMinutes(readyAt - now)));
         else
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.Command_HomeReady,
-                new ChatMetadata(GameColor.BrightGreen, ChatChannel.Notice));
+                new ChatMetadata(GameColor.BrightGreen, ChatChannel.System));
     }
 }

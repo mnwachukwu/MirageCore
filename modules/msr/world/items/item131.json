@@ -1,0 +1,23 @@
+{
+  "name": "Astral Helm",
+  "pic": 38,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1125788,
+  "type": "Equipment",
+  "equipSlot": "helmet",
+  "power": 289,
+  "durability": 1530,
+  "attributes": {
+    "levelReq": 235,
+    "mayWield": [
+      2,
+      3,
+      10
+    ]
+  }
+}

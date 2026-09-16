@@ -1,0 +1,18 @@
+{
+  "name": "Adept Mana Leech",
+  "type": "SubMp",
+  "amount": 19,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 15,
+  "mayLearn": [
+    1,
+    2,
+    5,
+    6,
+    8,
+    9,
+    10
+  ]
+}

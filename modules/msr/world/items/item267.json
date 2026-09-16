@@ -1,0 +1,17 @@
+{
+  "name": "Ineffable Enervating Vial",
+  "pic": 26,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 20777,
+  "type": "Consumable",
+  "vitalAmount": 221,
+  "attributes": {
+    "levelReq": 250,
+    "restoresStamina": -221
+  }
+}

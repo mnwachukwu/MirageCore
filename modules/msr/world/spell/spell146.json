@@ -1,0 +1,15 @@
+{
+  "name": "Elder Life Siphon",
+  "type": "SubHp",
+  "amount": 145,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 115,
+  "mayLearn": [
+    4,
+    5,
+    8,
+    10
+  ]
+}

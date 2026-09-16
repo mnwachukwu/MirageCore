@@ -1,0 +1,14 @@
+{
+  "name": "Apprentice Mend",
+  "type": "AddHp",
+  "amount": 10,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 5,
+  "mayLearn": [
+    6,
+    9,
+    10
+  ]
+}

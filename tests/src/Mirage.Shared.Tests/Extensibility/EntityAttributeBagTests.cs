@@ -77,7 +77,7 @@ public class EntityAttributeBagTests
     [Test]
     public void AValueTheBagCannotHold_LosesTheKeyRatherThanTheRecord()
     {
-        var back = Read<NpcRecord>("""{"name":"Rat","attributes":{"good":1,"bad":[1,2],"alsoGood":"x"}}""");
+        var back = Read<NpcRecord>("""{"name":"Rat","attributes":{"good":1,"bad":{"x":1},"alsoGood":"x"}}""");
 
         Assert.Multiple(() =>
         {
@@ -86,5 +86,16 @@ public class EntityAttributeBagTests
             Assert.That(back.Attributes["alsoGood"].AsText(), Is.EqualTo("x"));
             Assert.That(back.Attributes.Has("bad"), Is.False);
         });
+    }
+
+    /// <summary>A list on a creature is a set, and survives the round trip that a nested object does
+    /// not. What a game hangs one-to-many facts on: which classes may wield a thing, which may learn a
+    /// spell.</summary>
+    [Test]
+    public void AListOnARecordIsASet()
+    {
+        var back = Read<NpcRecord>("""{"name":"Rat","attributes":{"mayWield":[1,10]}}""");
+
+        Assert.That(back.Attributes["mayWield"].Has(10), Is.True);
     }
 }

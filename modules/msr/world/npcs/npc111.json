@@ -1,0 +1,39 @@
+{
+  "name": "Cinder Darter",
+  "says": "Sparks first. Then me.",
+  "sprite": 23,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 100,
+  "behavior": "Pursue",
+  "group": 11,
+  "range": 11,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 264,
+    "guard": false,
+    "hostile": true,
+    "hp": 0,
+    "int": 43,
+    "spd": 124,
+    "str": 349
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 1077,
+      "chance": 45
+    },
+    {
+      "itemNum": 284,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 169,
+      "quantity": 1,
+      "chance": 1
+    }
+  ]
+}

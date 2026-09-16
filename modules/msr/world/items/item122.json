@@ -1,0 +1,24 @@
+{
+  "name": "Dawnforged Kite Shield",
+  "pic": 31,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 190596,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 151,
+  "durability": 1100,
+  "attributes": {
+    "levelReq": 120,
+    "mayWield": [
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

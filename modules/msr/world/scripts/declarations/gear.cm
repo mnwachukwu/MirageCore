@@ -66,27 +66,3 @@ end model
 model Declaration
     public string guild;
 end model
-
-# Which classes may wield which gear.
-#
-# ⚠ A FAMILY RATHER THAN A FIELD, because the original allowed a LIST of classes per item and a record
-# holds fields and not lists. The same shape SpellGate takes, and for the same reason — and as there,
-# no row for an item means every class may wield it.
-
-model GearGate
-    # Typed as a plain number and pointed at the engine's own Items, so an author picks "Iron Key"
-    # rather than remembering that the Iron Key is 214. Items have no model a field could be typed as,
-    # which is the whole reason Points exists.
-    public integer item;
-    public Class forClass;
-
-    public shared function Describe(Records these)
-        these.Are("Gear gates", "Gear gate", 500);
-        these.Icon("key");
-
-        these.Points("item", "Items");
-
-        these.Caption("item", "Gear");
-        these.Caption("forClass", "Wielded by");
-    end function
-end model

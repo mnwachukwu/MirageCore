@@ -1,0 +1,39 @@
+{
+  "name": "Deepwatch Serjeant",
+  "says": "The watch changed. Nobody came.",
+  "sprite": 36,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 70,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 138,
+    "guard": false,
+    "hostile": true,
+    "hp": 749,
+    "int": 27,
+    "spd": 32,
+    "str": 162
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 412,
+      "chance": 60
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 88,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

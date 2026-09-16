@@ -1,0 +1,14 @@
+{
+  "name": "Novice Mend",
+  "type": "AddHp",
+  "amount": 6,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 1,
+  "mayLearn": [
+    6,
+    9,
+    10
+  ]
+}

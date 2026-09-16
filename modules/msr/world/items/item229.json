@@ -1,0 +1,17 @@
+{
+  "name": "Exalted Bloodletting Vial",
+  "pic": 23,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 2311,
+  "type": "Consumable",
+  "vitalAmount": 665,
+  "attributes": {
+    "levelReq": 110,
+    "restoresHealth": -665
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "Empyrean Mana Siphon",
+  "type": "SubMp",
+  "amount": 289,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 235,
+  "mayLearn": [
+    6,
+    10
+  ]
+}

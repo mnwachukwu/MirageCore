@@ -1,0 +1,29 @@
+{
+  "name": "Hulking Gravebound",
+  "says": "HHHRRRAAAGH!",
+  "sprite": 18,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 160,
+  "behavior": "Pursue",
+  "group": 9,
+  "range": 7,
+  "emitsLight": false,
+  "attributes": {
+    "boss": false,
+    "def": 30,
+    "guard": false,
+    "hostile": true,
+    "hp": 856,
+    "int": 5,
+    "spd": 2,
+    "str": 36
+  },
+  "drops": [
+    {
+      "itemNum": 49,
+      "quantity": 1,
+      "chance": 4
+    }
+  ]
+}

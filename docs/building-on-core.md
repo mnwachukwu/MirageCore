@@ -39,10 +39,10 @@ and their absence is the product rather than a gap in it.
 
 ---
 
-## The nineteen seams
+## The twenty-one seams
 
 A game is an [`ICoreModule`](../shared/src/Mirage.Shared/Extensibility/ICoreModule.cs). It is asked to
-describe itself once, and everything it can say is one of nineteen calls on the builder it is handed.
+describe itself once, and everything it can say is one of twenty-one calls on the builder it is handed.
 
 **What the game is made of**
 
@@ -60,6 +60,7 @@ describe itself once, and everything it can say is one of nineteen calls on the 
 | `AddOverheadBar` | a row over a body's head, reading two of that body's attributes — and the same rows on the party overlay |
 | `AddEquipSlot` | a place on a character where something can be worn |
 | `AddPanel` | a screen this game paints: a title, a surface, a list to pick from, the verbs under it, and the key that opens it |
+| `AddChatChannel` | a kind of line this game's own rules produce, that a player can read apart from everything else and hide when they want to |
 
 **What the player does**
 
@@ -82,6 +83,7 @@ describe itself once, and everything it can say is one of nineteen calls on the 
 | `AddCreationChoice` | what to ask before a character exists |
 | `AddLingerPolicy` | how long a dropped connection leaves a body standing |
 | `AddMovePolicy` | whether a body can still manage a run, and what a run costs it |
+| `AddConsoleHandler` | a command the server's own console can answer, for forcing work that runs on a schedule nobody can sit and watch |
 
 Declare none of them and you have the engine by itself. Every seam's "declare nothing" case is a
 coherent game, not a broken one.
@@ -189,6 +191,7 @@ one without the other produces no error anywhere — the game simply does nothin
 | `AddOverheadBar` | both attributes it reads | a bar that is always full, or always empty |
 | `AddFamily` | records authored into it | an editor tab with nothing in it |
 | `AddEquipSlot` | items that fit it | a slot nothing can ever go in |
+| `AddCreationChoice` | records authored into the family it names | a question the screen drops entirely, and any appearance gated on that question offered to nobody |
 
 🔴 **Write the test that asserts both halves.** The compiler checks neither, and a game missing one
 half looks exactly like a game that has not implemented that feature yet. The registry is a plain
@@ -227,6 +230,7 @@ plugs in, and an engine that called them itself would be an engine with an opini
 | `GuildSystem.CreditVault` | Pays a group. Core never adds to a vault on its own — what a group earns is a game's rule |
 | `GuildSystem.RecordSpending` | Logs what leaves one, so a game's own economy has an audit trail it did not have to build |
 | `MovementSystem`'s `ignoreNpcAvoid` | Threaded through six signatures and always false today. It is the switch that lets some body cross an NpcAvoid tile, and WHICH body is a game's decision |
+| `CurrencySplit` | Divides a purse between recipients and conserves the total exactly. Core divides currency nowhere on its own, because who is owed what is a game's rule. Reached from a script as `World.ShareOf` |
 
 The pattern is the same in all three: the engine supplies the mechanism and declines to supply the
 policy. A grep for callers finds nothing, reads as dead code, and deleting it removes a seam rather

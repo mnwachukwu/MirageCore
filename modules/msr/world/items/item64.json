@@ -1,0 +1,28 @@
+{
+  "name": "Meteoric Dagger",
+  "pic": 9,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 88325,
+  "type": "Equipment",
+  "equipSlot": "weapon",
+  "power": 95,
+  "durability": 750,
+  "attributes": {
+    "levelReq": 100,
+    "mayWield": [
+      1,
+      2,
+      3,
+      5,
+      6,
+      7,
+      9,
+      10
+    ]
+  }
+}

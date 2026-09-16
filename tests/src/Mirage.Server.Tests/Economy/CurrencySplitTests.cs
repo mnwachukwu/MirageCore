@@ -94,4 +94,35 @@ public class CurrencySplitTests
                     $"{total} among {recipients} spread by more than one coin: [{string.Join(", ", shares)}]");
             }
     }
+
+    /// <summary>⚠ <b>The two ways of asking have to agree, position for position.</b> A script walks
+    /// positions one at a time and C# takes the whole array, so a rule written against one and a rule
+    /// written against the other would otherwise pay different money for the same split - and the
+    /// difference would be a single coin, which is the hardest kind of wrong to notice.</summary>
+    [Test]
+    public void OneShareAgreesWithTheWholeSplit()
+    {
+        for (int total = 0; total < 200; total++)
+            for (int recipients = 1; recipients <= 8; recipients++)
+            {
+                int[] shares = CurrencySplit.Divide(total, recipients);
+
+                for (int which = 1; which <= recipients; which++)
+                {
+                    Assert.That(CurrencySplit.ShareOf(total, recipients, which),
+                        Is.EqualTo(shares[which - 1]),
+                        $"share {which} of {total} among {recipients}");
+                }
+            }
+    }
+
+    /// <summary>Outside the group, and an empty purse, are both nothing rather than a throw: a rule
+    /// walking a party that shrank under it asks about a position that is no longer there.</summary>
+    [TestCase(100, 4, 0, ExpectedResult = 0)]
+    [TestCase(100, 4, 5, ExpectedResult = 0)]
+    [TestCase(100, 0, 1, ExpectedResult = 0)]
+    [TestCase(0, 4, 1, ExpectedResult = 0)]
+    [TestCase(-5, 4, 1, ExpectedResult = 0)]
+    public int NobodyGetsAnythingOutsideTheSplit(int total, int recipients, int which) =>
+        CurrencySplit.ShareOf(total, recipients, which);
 }

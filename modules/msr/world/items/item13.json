@@ -1,0 +1,25 @@
+{
+  "name": "Rusted Buckler",
+  "pic": 19,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 11,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 6,
+  "durability": 80,
+  "attributes": {
+    "levelReq": 1,
+    "mayWield": [
+      2,
+      3,
+      6,
+      7,
+      10
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "Quencher Sib, Alchemist",
+  "fixesItems": false,
+  "shopType": "Store",
+  "allowBanking": false,
+  "keeper": 145,
+  "barterItem": [],
+  "salesItem": [
+    250,
+    251,
+    252,
+    262,
+    263,
+    264
+  ]
+}

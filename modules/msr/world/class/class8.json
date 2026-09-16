@@ -1,0 +1,8 @@
+{
+  "name": "Slinger",
+  "description": "Nimble caster. High power range with speed.",
+  "str": 0,
+  "def": 0,
+  "spd": 5,
+  "int": 15
+}

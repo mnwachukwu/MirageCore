@@ -1,0 +1,46 @@
+{
+  "name": "Ashell the Thin (Spell vendor (Sub))",
+  "speakerNpc": 131,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "You want the taking words.\n\nEveryone does, eventually. Wex will tell you I sell something worse than what he sells. Wex has never been alone on the causeway at dusk.",
+      "choices": [
+        {
+          "label": "Show me the taking words.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Is he wrong?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "No thank you.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "No. He's right, and he's useless, which are different failures.\n\nA thing coming at you does not care which of us you studied under. It cares how much of it is left. I sell the arithmetic.",
+      "choices": [
+        {
+          "label": "Show me.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "I'll think on it.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

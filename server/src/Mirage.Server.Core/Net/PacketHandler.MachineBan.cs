@@ -63,7 +63,7 @@ public sealed partial class PacketHandler
             if (!_pm[slot].IsPlaying) continue;
             if (_pm[slot].Char.Access < AdminLevel.Monitor) continue;
             _dispatcher.SendLocalizedChatTo(slot, ServerStrings.AdminCommand_MachineBanHit,
-                new ChatMetadata(GameColor.Yellow, ChatChannel.Notice),
+                new ChatMetadata(GameColor.Yellow, ChatChannel.System),
                 ("Name", accountName), ("Banned", bannedLogin));
         }
     }

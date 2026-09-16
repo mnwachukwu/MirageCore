@@ -1,0 +1,17 @@
+{
+  "name": "Supreme Enervating Vial",
+  "pic": 26,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 17607,
+  "type": "Consumable",
+  "vitalAmount": 208,
+  "attributes": {
+    "levelReq": 235,
+    "restoresStamina": -208
+  }
+}

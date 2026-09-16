@@ -10,7 +10,10 @@
 shared model Spells
 
     public string Of = "Spell";
-    public string Gates = "SpellGate";
+    # ⚠ A LIST on the thing itself, not a table beside it. One field naming the classes that may
+    # learn it: no second family to author, no limit to raise as a world grows, and the question is one
+    # read rather than a walk of every row. A spell that names none is open to everybody.
+    public string LearnableBy = "mayLearn";
     public string Known = "ClassSpell";
 
     # ── The dials ─────────────────────────────────────────────────────────────
@@ -239,20 +242,7 @@ shared model Spells
     # ⚠ No row for a spell means every class may learn it, so the scan answers true twice over: once
     # for a spell nobody gated, and once for a gate naming this class.
     public boolean function OpenTo(integer number, integer forClass)
-        integer rows = World.Records(Spells.Gates);
-        boolean gated = false;
-
-        loop for row = 1 to rows
-            if World.RecordNumber(Spells.Gates, row, "forSpell") == number
-                gated = true;
-
-                if World.RecordNumber(Spells.Gates, row, "forClass") == forClass
-                    yield true;
-                end if
-            end if
-        end loop
-
-        yield not gated;
-    end function
+        yield World.RecordAllows("Spell", number, Spells.LearnableBy, forClass);
+end function
 
 end model

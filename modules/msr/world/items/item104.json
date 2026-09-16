@@ -1,0 +1,25 @@
+{
+  "name": "Obsidian Hauberk",
+  "pic": 8,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 170416,
+  "type": "Equipment",
+  "equipSlot": "armor",
+  "power": 145,
+  "durability": 1070,
+  "attributes": {
+    "levelReq": 115,
+    "mayWield": [
+      1,
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

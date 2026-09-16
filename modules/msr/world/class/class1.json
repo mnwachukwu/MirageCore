@@ -1,0 +1,8 @@
+{
+  "name": "Warrior",
+  "description": "Fights for honor. High power melee.",
+  "str": 15,
+  "def": 5,
+  "spd": 0,
+  "int": 0
+}

@@ -1,0 +1,73 @@
+{
+  "name": "Bellowswoman Ost (Innkeeper)",
+  "speakerNpc": 141,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "Cold in here, isn't it. That's the point - it's the only cold room left and I fought for it.\n\nBed, box, and the board. Sleep while the walls still hold.",
+      "choices": [
+        {
+          "label": "What's on offer?",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "How is it cold?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "How many of you are left?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "Later.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "This forge went out. Just once, just here, and nobody's been able to explain it or repeat it.\n\nEverything else in the Kiln has been burning without fuel for longer than there have been people to notice. This one stopped. We built a town in the gap.",
+      "choices": [
+        {
+          "label": "What's on offer?",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "How many of you are left?",
+          "nextNodeId": 3,
+          "action": "None"
+        },
+        {
+          "label": "Strange.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "speaker": "",
+      "text": "Eight. You've probably met most of us by now.\n\nThere were forty when I was small. I don't say that for pity - I say it because you'll hear the Emberguard called an army and I want you to know what an army costs here.",
+      "choices": [
+        {
+          "label": "What's on offer?",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "I'm sorry.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

@@ -53,6 +53,16 @@ above both as the engine's door.
 | `scripts/behavior/valor.cm` | the war currency |
 | `scripts/behavior/guildquest.cm` | a guild's standing quest, and what finishing it pays |
 | `scripts/behavior/calendar.cm` | the calendar, worked out from the clock |
+| `scripts/behavior/staff.cm` | what somebody staging the world can force rather than wait for |
+| `world.json` | the looks on offer at character creation, two per class |
+
+`world.json` is the world's own manifest rather than a script, because a look is art a world author
+picked and not a rule. Each entry names a sprite and the class it belongs to, so the screen shows a
+man and a woman once a class is chosen - which is the original's own two buttons, reached the way
+this engine reaches everything a world decides.
+
+⚠ Every look in it is gated on a class, so a world holding no authored classes offers none and
+character creation says so. Author the classes first.
 
 `stats.cm` is pure arithmetic with no opinion about a world; `sheet.cm` declares the keys and puts the
 opening numbers on a body. One is a formula and the other is a decision, so they are separate

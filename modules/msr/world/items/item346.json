@@ -1,0 +1,15 @@
+{
+  "name": "Scroll of Adept Mana Leech",
+  "pic": 30,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1987,
+  "type": "Consumable",
+  "attributes": {
+    "teaches": 58
+  }
+}

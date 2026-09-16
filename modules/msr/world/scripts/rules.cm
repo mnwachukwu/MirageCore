@@ -36,11 +36,13 @@
 #   behavior/perks.cm      what a guild is worth to the people in it
 #   behavior/valor.cm      the war currency
 #   behavior/guildquest.cm a guild's standing quest, and what finishing it pays
+#   behavior/staff.cm      what somebody staging the world can force rather than wait for
 #   behavior/calendar.cm   the calendar, worked out from the clock
 #   behavior/season.cm     which season it is, and when the next one starts
 #   behavior/territory.cm  land a guild holds, and what holding it is worth
 #   behavior/contest.cm    war night, and the fight over a territory
 #   behavior/levels.cm     experience, and what it buys
+#   behavior/chat.cm       the channels this world’s own lines read on
 #
 # The original is a .NET solution of some hundreds of files. What is reproduced here is the game —
 # its stats, its pools, its fights, its classes — on an engine that has never heard of any of it.
@@ -49,6 +51,7 @@ shared model Rules
 
     # Declaring runs once, before the world exists, so everything it says is about the game itself.
     public function Configure(Builder game)
+        Chat.Declare(game);
         Sheet.Declare(game);
         Vitals.Declare(game);
         Fight.Declare(game);
@@ -58,6 +61,7 @@ shared model Rules
         Guilds.Declare(game);
         GuildQuest.Declare(game);
         Contest.Declare(game);
+        Staff.Declare(game);
 
         # Once a second. A tick is a tenth of a second, so ten of them is the beat everything below
         # is written against - see Vitals.TickHundredths, which has to agree with this.
@@ -91,6 +95,8 @@ shared model Rules
     # Once for each body in the world, every twentieth tick.
     public function OnPlayerTick(Player who)
         Vitals.Rest(who);
+        Death.Tick(who);
+        Staff.Show(who);
         Sheet.Show(who);
         Guilds.Tick(who);
         Guilds.ShowWars(who);
@@ -167,6 +173,35 @@ shared model Rules
         if action == Contest.ClaimVerb
             Contest.Claim(who);
         end if
+
+        # ⚠ Staging, and the engine has already refused any of these to a body whose Staff.Is is
+        # not set - the same condition the button is hidden by. Nothing here re-checks it, because a
+        # verb's condition is checked on the server as well as drawn on the client.
+        if action == Staff.NightVerb
+            Staff.Night(who);
+        end if
+
+        if action == Staff.HurryVerb
+            Staff.Hurry(who);
+        end if
+
+        if action == Staff.CloseVerb
+            Staff.Close(who);
+        end if
+
+        if action == Staff.SettleVerb
+            Staff.Settle(who);
+        end if
+
+        if action == Staff.SeasonVerb
+            Staff.Season(who);
+        end if
+    end function
+
+    # Typed at the server's own console, and only there. Nothing a player can reach: the engine hands
+    # this handler the words it did not recognize itself, after its own commands have had them.
+    public string function OnConsole(string command, string rest)
+        yield Staff.FromConsole(command, rest);
     end function
 
     # Asked BEFORE anything happens, so a reason here stops the use outright.

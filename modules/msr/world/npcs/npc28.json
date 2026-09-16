@@ -1,0 +1,39 @@
+{
+  "name": "Company Halberdier",
+  "says": "Form up! Form up!",
+  "sprite": 4,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 40,
+  "behavior": "Pursue",
+  "group": 4,
+  "range": 6,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 16,
+    "guard": false,
+    "hostile": true,
+    "hp": 18,
+    "int": 3,
+    "spd": 4,
+    "str": 19
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 17,
+      "chance": 60
+    },
+    {
+      "itemNum": 275,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 275,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

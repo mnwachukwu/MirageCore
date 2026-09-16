@@ -1,0 +1,39 @@
+{
+  "name": "Barnacled Knight",
+  "says": "I have held this gate nine hundred years.",
+  "sprite": 9,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 60,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 136,
+    "guard": false,
+    "hostile": true,
+    "hp": 1755,
+    "int": 7,
+    "spd": 19,
+    "str": 173
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 377,
+      "chance": 60
+    },
+    {
+      "itemNum": 280,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 76,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

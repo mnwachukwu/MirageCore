@@ -1,0 +1,25 @@
+{
+  "name": "Godmarked Sword",
+  "pic": 12,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 1326622,
+  "type": "Equipment",
+  "equipSlot": "weapon",
+  "power": 307,
+  "durability": 1580,
+  "attributes": {
+    "levelReq": 250,
+    "mayWield": [
+      1,
+      2,
+      3,
+      7,
+      10
+    ]
+  }
+}

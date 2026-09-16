@@ -134,6 +134,26 @@ shared model Death
         Beasts.CallGuards(who, who.Map, who.X, who.Y);
     end function
 
+    # ⚠ The flag lapses by comparison - IsMurderer asks whether the hour is up - so nothing
+    # NOTICES the moment it goes. This does. Zeroing the key is what keeps it to one telling, and
+    # clearing the mark is what takes the name back to its ordinary color.
+    public function Tick(Player who)
+        integer lapses = who.Number(Death.MurdererUntil);
+
+        if lapses < 1
+            yield;
+        end if
+
+        if lapses > World.Now()
+            yield;
+        end if
+
+        who.SetNumber(Death.MurdererUntil, 0);
+        who.Mark(0);
+
+        World.Tell(who.Name + "'s crimes as a Player Killer have faded from memory...");
+    end function
+
     # Killing a murderer takes half an hour off their sentence. Two deaths clear a fresh flag.
     function Relieve(Player who)
         integer left = who.Number(Death.MurdererUntil) - Death.MurdererKillRelief;

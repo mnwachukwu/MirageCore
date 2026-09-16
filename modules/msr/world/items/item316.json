@@ -1,0 +1,15 @@
+{
+  "name": "Scroll of Apprentice Mend",
+  "pic": 29,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 199,
+  "type": "Consumable",
+  "attributes": {
+    "teaches": 28
+  }
+}

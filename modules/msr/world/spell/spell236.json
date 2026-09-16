@@ -1,0 +1,15 @@
+{
+  "name": "Celestial Life Siphon",
+  "type": "SubHp",
+  "amount": 307,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 250,
+  "mayLearn": [
+    4,
+    5,
+    8,
+    10
+  ]
+}

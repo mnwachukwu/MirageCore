@@ -1,0 +1,8 @@
+{
+  "name": "Wizard",
+  "description": "Studious caster. Even range.",
+  "str": 0,
+  "def": 10,
+  "spd": 0,
+  "int": 10
+}

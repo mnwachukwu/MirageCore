@@ -1,0 +1,22 @@
+{
+  "name": "Moor Wolfman",
+  "says": "AWOOOOOO!",
+  "sprite": 13,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 40,
+  "behavior": "Pursue",
+  "group": 1,
+  "range": 6,
+  "emitsLight": false,
+  "attributes": {
+    "boss": false,
+    "def": 15,
+    "guard": false,
+    "hostile": true,
+    "hp": 42,
+    "int": 1,
+    "spd": 2,
+    "str": 20
+  }
+}

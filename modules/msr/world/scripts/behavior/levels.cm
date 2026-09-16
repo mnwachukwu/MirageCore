@@ -15,14 +15,14 @@ shared model Levels
         integer level = Stats.LevelOf(who);
 
         if level >= Stats.MaxLevel
-            who.Message("You gain " + worth + " experience.");
+            who.Message("You gain " + worth + " experience.", "rewards");
             Levels.Mark(who);
             yield;
         end if
 
         integer held = who.Number(Stats.Exp) + worth;
 
-        who.Message("You gain " + worth + " experience.");
+        who.Message("You gain " + worth + " experience.", "rewards");
 
         # ⚠ A LOOP, not an if. A kill worth more than a whole level has to carry through every level
         # it pays for - one that granted a single level would silently eat the rest.
@@ -64,9 +64,9 @@ shared model Levels
         Vitals.Refresh(who);
 
         who.Float("Level " + level, 255, 230, 120);
-        who.Message("You are level " + level + ", with " + Stats.PointsPerLevel + " points to spend.");
+        who.Message("You are level " + level + ", with " + Stats.PointsPerLevel + " points to spend.", "system");
 
-        World.TellOn(who.Map, who.Name + " reaches level " + level + ".");
+        World.TellOn(who.Map, who.Name + " reaches level " + level + ".", "system");
     end function
 
     # ── Spending it ───────────────────────────────────────────────────────────
@@ -83,7 +83,7 @@ shared model Levels
         end if
 
         if str < 0 or def < 0 or spd < 0 or int < 0
-            who.Message("You cannot take a point back out.");
+            who.Message("You cannot take a point back out.", "system");
             yield;
         end if
 
@@ -95,7 +95,7 @@ shared model Levels
         end if
 
         if total > who.Number(Stats.Points)
-            who.Message("You do not have that many points to spend.");
+            who.Message("You do not have that many points to spend.", "system");
             yield;
         end if
 
@@ -108,19 +108,19 @@ shared model Levels
         # One line per stat RAISED, not per point: three points into strength is one sentence, and
         # strength with intelligence is two.
         if str > 0
-            who.Message("You feel stronger.");
+            who.Message("You feel stronger.", "system");
         end if
 
         if def > 0
-            who.Message("You feel tougher.");
+            who.Message("You feel tougher.", "system");
         end if
 
         if spd > 0
-            who.Message("You feel quicker.");
+            who.Message("You feel quicker.", "system");
         end if
 
         if int > 0
-            who.Message("You feel wiser.");
+            who.Message("You feel wiser.", "system");
         end if
 
         # Three of the four move a ceiling, and the fourth is cheap to recompute anyway.

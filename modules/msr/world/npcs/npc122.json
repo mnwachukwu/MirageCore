@@ -1,0 +1,119 @@
+{
+  "name": "The Cinder Choir",
+  "says": "SING WITH US OR BURN.",
+  "sprite": 40,
+  "spriteSheet": 0,
+  "size": 3,
+  "spawnSecs": 1500,
+  "behavior": "Wander",
+  "group": 3,
+  "range": 13,
+  "emitsLight": true,
+  "attributes": {
+    "boss": true,
+    "def": 188,
+    "guard": false,
+    "hostile": true,
+    "hp": 52408,
+    "int": 413,
+    "spd": 75,
+    "str": 75
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 8243,
+      "chance": 90
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 286,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 12,
+      "chance": 45
+    },
+    {
+      "itemNum": 150,
+      "quantity": 1,
+      "chance": 4
+    },
+    {
+      "itemNum": 149,
+      "quantity": 1,
+      "chance": 3
+    },
+    {
+      "itemNum": 257,
+      "quantity": 1,
+      "chance": 30
+    },
+    {
+      "itemNum": 513,
+      "quantity": 1,
+      "chance": 20
+    },
+    {
+      "itemNum": 518,
+      "quantity": 1,
+      "chance": 15
+    }
+  ]
+}

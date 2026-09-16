@@ -95,14 +95,14 @@ public class ModuleStartTests
         public bool IsInWorld(EntityHandle who) => false;
         public WorldPlace PlaceOf(EntityHandle who) => WorldPlace.Nowhere;
         public EntityHandle At(WorldPlace place) => EntityHandle.None;
-        public void TellEveryone(string text, ChatChannel channel, int color) { }
-        public void TellEveryoneOn(int mapNum, string text, ChatChannel channel, int color) { }
-        public void TellEveryoneNear(WorldPlace at, string text, ChatChannel channel, int color) { }
+        public void TellEveryone(string text, string channel, int color) { }
+        public void TellEveryoneOn(int mapNum, string text, string channel, int color) { }
+        public void TellEveryoneNear(WorldPlace at, string text, string channel, int color) { }
         public void Float(EntityHandle who, string text, uint rgb, float splatter) { }
         public void Sweep(EntityHandle who, bool connected) { }
         public void Throw(EntityHandle from, EntityHandle to, ProjectileStyle style, uint rgb) { }
         public void Burst(EntityHandle who, uint rgb, float intensity) { }
-        public void TellThese(IReadOnlyCollection<EntityHandle> them, string text, ChatChannel channel, int color) { }
+        public void TellThese(IReadOnlyCollection<EntityHandle> them, string text, string channel, int color) { }
         public string GuildOf(EntityHandle who) => string.Empty;
         public IReadOnlyList<EntityHandle> GuildmatesOf(EntityHandle who) => [];
         public IReadOnlyList<EntityHandle> PartyOf(EntityHandle who) => [];
@@ -111,7 +111,7 @@ public class ModuleStartTests
         public bool IsMarked(EntityHandle who) => false;
         public bool IsAggressor(EntityHandle who) => false;
         public bool IsWaiting(EntityHandle who) => false;
-        public void Tell(EntityHandle who, string text, ChatChannel channel, int color) { }
+        public void Tell(EntityHandle who, string text, string channel, int color) { }
         public AttributeBag? AttributesOf(EntityHandle who) => null;
         public bool SetAttribute(EntityHandle who, string key, AttributeValue value) => false;
         public bool SetAttributes(EntityHandle who, IReadOnlyCollection<KeyValuePair<string, AttributeValue>> values) => false;

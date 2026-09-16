@@ -109,7 +109,7 @@ public sealed class WeatherSystem : GameSystem
         // Admin-forced: announce the unnatural shift BEFORE the "skies clear" line.
         if (adminName != null) AnnounceUnnaturalShift(adminName);
         _dispatcher.SendLocalizedChatToAll(ServerStrings.Weather_Clears,
-            new ChatMetadata(GameColor.Yellow, ChatChannel.Notice));
+            new ChatMetadata(GameColor.Yellow, ChatChannel.System));
     }
 
     // ── Announcements ──────────────────────────────────────────────────────────
@@ -124,7 +124,7 @@ public sealed class WeatherSystem : GameSystem
             WeatherType.HeavyWind => ServerStrings.Weather_HeavyWindBegins,
             _ => ServerStrings.Weather_Clears,
         };
-        _dispatcher.SendLocalizedChatToAll(key, new ChatMetadata(GameColor.Yellow, ChatChannel.Notice));
+        _dispatcher.SendLocalizedChatToAll(key, new ChatMetadata(GameColor.Yellow, ChatChannel.System));
         // Follow-up effect line — mirrors the Night "NPCs grow stronger" warning so players know what changed.
         string? effectKey = type switch
         {
@@ -135,7 +135,7 @@ public sealed class WeatherSystem : GameSystem
             _ => null,
         };
         if (effectKey is not null)
-            _dispatcher.SendLocalizedChatToAll(effectKey, new ChatMetadata(GameColor.Warning, ChatChannel.Notice));
+            _dispatcher.SendLocalizedChatToAll(effectKey, new ChatMetadata(GameColor.Warning, ChatChannel.System));
     }
 
     /// <summary>Returns the welcome-line key for the current weather (for the login batch, mirroring
@@ -154,9 +154,9 @@ public sealed class WeatherSystem : GameSystem
     private void AnnounceUnnaturalShift(string adminName)
     {
         _dispatcher.SendLocalizedChatToAll(ServerStrings.Weather_UnnaturalShift,
-            new ChatMetadata(GameColor.Yellow, ChatChannel.Notice));
+            new ChatMetadata(GameColor.Yellow, ChatChannel.System));
         _dispatcher.SendLocalizedChatToAdmins(ServerStrings.Weather_UnnaturalShiftBy,
-            new ChatMetadata(GameColor.Yellow, ChatChannel.Notice), ("Admin", adminName));
+            new ChatMetadata(GameColor.Yellow, ChatChannel.System), ("Admin", adminName));
     }
 
     // ── Rolls ────────────────────────────────────────────────────────────────────

@@ -1,0 +1,22 @@
+{
+  "name": "Dawnforged Greataxe",
+  "pic": 14,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 237298,
+  "type": "Equipment",
+  "equipSlot": "weapon",
+  "power": 188,
+  "durability": 1370,
+  "attributes": {
+    "levelReq": 120,
+    "mayWield": [
+      1,
+      10
+    ]
+  }
+}

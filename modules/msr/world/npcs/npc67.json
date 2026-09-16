@@ -1,0 +1,34 @@
+{
+  "name": "Drowned Legionary",
+  "says": "The legion never stood down.",
+  "sprite": 10,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 60,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 134,
+    "guard": false,
+    "hostile": true,
+    "hp": 710,
+    "int": 26,
+    "spd": 32,
+    "str": 158
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 398,
+      "chance": 60
+    },
+    {
+      "itemNum": 281,
+      "quantity": 1,
+      "chance": 2
+    }
+  ]
+}

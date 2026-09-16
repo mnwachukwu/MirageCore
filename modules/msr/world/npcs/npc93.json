@@ -1,0 +1,54 @@
+{
+  "name": "Iconoclast",
+  "says": "Your Throne is a picture. I break pictures.",
+  "sprite": 39,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 95,
+  "behavior": "Pursue",
+  "group": 3,
+  "range": 12,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 205,
+    "guard": false,
+    "hostile": true,
+    "hp": 550,
+    "int": 332,
+    "spd": 54,
+    "str": 151
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 1016,
+      "chance": 60
+    },
+    {
+      "itemNum": 285,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 3,
+      "chance": 20
+    },
+    {
+      "itemNum": 139,
+      "quantity": 1,
+      "chance": 1
+    },
+    {
+      "itemNum": 250,
+      "quantity": 1,
+      "chance": 10
+    },
+    {
+      "itemNum": 490,
+      "quantity": 1,
+      "chance": 6
+    }
+  ]
+}

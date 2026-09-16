@@ -1,0 +1,16 @@
+{
+  "name": "Empyrean Focus",
+  "type": "AddMp",
+  "amount": 217,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 235,
+  "mayLearn": [
+    4,
+    5,
+    6,
+    9,
+    10
+  ]
+}

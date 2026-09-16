@@ -84,8 +84,21 @@ public sealed class MovementSystem : GameSystem
         //
         // God mode is out of a game’s reach here for the same reason it is out of collision’s: it
         // exists so somebody can cross a broken map, and a rule that slowed it down would defeat it.
-        if (movement == MovementType.Running && !p.GodMode && Winded(EntityHandle.ForPlayer(index)))
-            movement = MovementType.Walking;
+        if (movement == MovementType.Running && !p.GodMode)
+        {
+            bool winded = Winded(EntityHandle.ForPlayer(index));
+            if (winded) movement = MovementType.Walking;
+
+            // 🔴 <b>And the body is TOLD.</b> A client cannot ask a game's rule itself, so without this
+            // it goes on predicting steps at a run's cadence while this accepts them at a walk's - and
+            // every surplus step fails the budget below and is corrected, which reads as being snapped
+            // backwards. Only on a change, and only to them.
+            if (winded != _pm[index].ToldWinded)
+            {
+                _pm[index].ToldWinded = winded;
+                _dispatcher.SendTo(index, new PlayerWindedPacket { Winded = winded });
+            }
+        }
 
         // WHEN, not only where. Everything below decides whether the destination is legal; this decides
         // whether it is legal YET.
@@ -227,15 +240,39 @@ public sealed class MovementSystem : GameSystem
             // The door's layer is authored on the KeyOpen, so a plate can open a Key door on EITHER plane —
             // a ground plate can open a fringe-deck gate, or a fringe plate the ground door beneath.
             var doorLayer = dest.DoorLayer;
-            if (LayerLogic.AttrFor(_world.Maps[p.Map].Tile[kx, ky], doorLayer).Type == TileType.Door &&
-                !_world.TempTiles[p.Map].IsDoorOpen(kx, ky, doorLayer))
+            // ⚠ The whole gate, not the one square the plate names. A gate is usually wider than a
+            // tile, and opening a third of one leaves a barrier somebody still cannot walk through — with
+            // no way to author around it, since a single plate points at a single square.
+            if (OpenTheGate(p.Map, kx, ky, doorLayer))
             {
-                _world.TempTiles[p.Map].OpenDoor(kx, ky, doorLayer, Environment.TickCount64);
-                // Door state syncs to everyone rendering the area (observers); the notice is local chat (viewport).
-                SendToMap(_world, p.Map, new MapKeyPacket { MapNum = p.Map, X = kx, Y = ky, Open = true, Layer = doorLayer });
                 _dispatcher.SendLocalizedChatToViewport(index, ServerStrings.Common_DoorUnlocked, new ChatMetadata(GameColor.White, ChatChannel.System));
             }
         }
+    }
+
+    /// <summary>Opens every door tile making up the door at that square, and tells everybody rendering
+    /// the area about each one. True when anything opened.
+    ///
+    /// <para>A tile already open is skipped rather than re-opened, so a plate stepped on twice does not
+    /// restart the timer on a gate that is already up — and a gate half-open because one square of it was
+    /// unlocked with a key finishes opening rather than being refused.</para></summary>
+    internal bool OpenTheGate(int mapNum, int x, int y, WorldLayer layer)
+    {
+        var temp = _world.TempTiles[mapNum];
+        long now = Environment.TickCount64;
+        bool any = false;
+
+        foreach (var (dx, dy) in DoorSpan.From(_world.Maps[mapNum], x, y, layer))
+        {
+            if (temp.IsDoorOpen(dx, dy, layer)) continue;
+
+            temp.OpenDoor(dx, dy, layer, now);
+            // Door state syncs to everyone rendering the area (observers); the notice is local chat (viewport).
+            SendToMap(_world, mapNum, new MapKeyPacket { MapNum = mapNum, X = dx, Y = dy, Open = true, Layer = layer });
+            any = true;
+        }
+
+        return any;
     }
 
     public void PlayerDir(int index, Direction dir)

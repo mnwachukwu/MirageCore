@@ -1,0 +1,24 @@
+{
+  "name": "Obsidian Kite Shield",
+  "pic": 31,
+  "itemSheet": 0,
+  "nonTradeable": false,
+  "nonListable": false,
+  "nonMailable": false,
+  "destroyOnDrop": false,
+  "nonJunkable": false,
+  "price": 170416,
+  "type": "Equipment",
+  "equipSlot": "shield",
+  "power": 145,
+  "durability": 1070,
+  "attributes": {
+    "levelReq": 115,
+    "mayWield": [
+      2,
+      3,
+      6,
+      10
+    ]
+  }
+}

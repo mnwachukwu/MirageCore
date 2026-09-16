@@ -1,0 +1,39 @@
+{
+  "name": "Drowned Vanguard",
+  "says": "We were the first down.",
+  "sprite": 23,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 75,
+  "behavior": "Pursue",
+  "group": 2,
+  "range": 9,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 141,
+    "guard": false,
+    "hostile": true,
+    "hp": 777,
+    "int": 27,
+    "spd": 33,
+    "str": 166
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 425,
+      "chance": 60
+    },
+    {
+      "itemNum": 282,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 233,
+      "quantity": 1,
+      "chance": 10
+    }
+  ]
+}

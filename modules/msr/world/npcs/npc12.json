@@ -1,0 +1,39 @@
+{
+  "name": "Sellsword",
+  "says": "Nothing personal.",
+  "sprite": 44,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 45,
+  "behavior": "Pursue",
+  "group": 0,
+  "range": 7,
+  "emitsLight": true,
+  "attributes": {
+    "boss": false,
+    "def": 20,
+    "guard": false,
+    "hostile": true,
+    "hp": 25,
+    "int": 4,
+    "spd": 5,
+    "str": 24
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 27,
+      "chance": 60
+    },
+    {
+      "itemNum": 276,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 28,
+      "quantity": 1,
+      "chance": 4
+    }
+  ]
+}

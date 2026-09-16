@@ -1,3 +1,4 @@
+using Mirage.Shared.Extensibility;
 using System.Text.Json.Serialization;
 
 namespace Mirage.Shared.Protocol.Packets;
@@ -62,9 +63,10 @@ public sealed record ChatMsgPacket : IPacket
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.ChatMsg;
     [JsonPropertyName("msg")] public string Msg { get; init; } = "";
     [JsonPropertyName("color")] public int Color { get; init; }
-    // Classification for client-side tab filtering. Every server send site tags this; there is
-    // no sensible default that wouldn't silently mis-bucket missed sites.
-    [JsonPropertyName("ch")] public ChatChannel Channel { get; init; }
+    // Which channel it reads on, by id: one of Core's five names, or one this game declared. Every
+    // server send site tags this; there is no sensible default that wouldn't silently mis-bucket
+    // missed sites.
+    [JsonPropertyName("ch")] public string Channel { get; init; } = ChatChannels.System;
     // Optional speaker identity for player-originated chat. Null on system messages.
     // SpeakerShowAsPk is frozen at send time so chat history keeps the color the speaker
     // had when speaking, even after their PK timer expires.
@@ -92,6 +94,19 @@ public sealed record ChatBubblePacket : IPacket
 /// traversal guest is identified by (<see cref="SpawnMap"/>, <see cref="SpawnSlot"/>) with
 /// <see cref="NpcSlot"/>=0, since guests don't occupy a slot in any current map.  The client
 /// dispatches on whichever pair is populated.</summary>
+/// <summary>
+/// S→C, once per session: the chat channels this game declared.
+///
+/// <para>Core's own five need no announcing — a client that can draw chat at all knows them. These are
+/// the ones the world added, and the options panel offers them under their own heading.</para>
+/// </summary>
+public sealed record ChatChannelsPacket : IPacket
+{
+    [JsonPropertyName("cmd")] public string Cmd => PacketNames.ChatChannels;
+
+    [JsonPropertyName("channels")] public IReadOnlyList<ChatChannelSpec> Channels { get; init; } = [];
+}
+
 public sealed record NpcChatBubblePacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.NpcChatBubble;

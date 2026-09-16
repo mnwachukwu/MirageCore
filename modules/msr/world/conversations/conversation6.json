@@ -1,0 +1,46 @@
+{
+  "name": "Cantor Wex (Spell vendor (Add))",
+  "speakerNpc": 130,
+  "rootNodeId": 1,
+  "nodes": [
+    {
+      "id": 1,
+      "speaker": "",
+      "text": "Mending words. Knitting words. The kind you say over someone who is still worth saying words over.\n\nI don't teach the other kind. Ashell does, two doors down, and we don't speak.",
+      "choices": [
+        {
+          "label": "Show me what you have.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Why don't you speak?",
+          "nextNodeId": 2,
+          "action": "None"
+        },
+        {
+          "label": "Another time.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "speaker": "",
+      "text": "Because he thinks a word is a word and I think a word is a choice.\n\nThe same breath that closes a wound opens one, if you turn it round. He finds that elegant. I find it a reason to be careful who I sell breath to.",
+      "choices": [
+        {
+          "label": "Show me what you have.",
+          "nextNodeId": 0,
+          "action": "OpenShop"
+        },
+        {
+          "label": "Hm.",
+          "nextNodeId": 0,
+          "action": "None"
+        }
+      ]
+    }
+  ]
+}

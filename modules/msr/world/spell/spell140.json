@@ -1,0 +1,14 @@
+{
+  "name": "Arch Meditation",
+  "type": "AddMp",
+  "amount": 139,
+  "item": 0,
+  "many": 0,
+  "intReq": 0,
+  "levelReq": 110,
+  "mayLearn": [
+    6,
+    9,
+    10
+  ]
+}

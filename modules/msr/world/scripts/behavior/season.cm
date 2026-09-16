@@ -11,8 +11,8 @@
 # the start of season one, and a server brought back after a year away begins a season rather than
 # ending fifty of them.
 #
-# What it is FOR, so far, is the seasonal quest cadence. The leaderboard and the archive that read the
-# same number in the original are territory's, and territory is not ported.
+# What reads the number: the seasonal quest cadence, the leaderboard that ranks guilds on the land
+# they held, and the archive that keeps each finished table.
 
 shared model Season
 
@@ -73,6 +73,20 @@ shared model Season
 
         World.SetNumber(Season.Began, day);
         World.SetNumber(Season.Key, Season.Which() + 1);
+
+        World.Tell("Season " + Season.Which() + " begins.");
+    end function
+
+    # The original's /guildreset season: pay the table out and start the next one without waiting for
+    # the thirteenth Sunday. The same two calls the Sunday itself makes, in the same order.
+    public function EndNow()
+        integer number = Season.Which();
+
+        Season.End(number);
+        Season.Clear();
+
+        World.SetNumber(Season.Began, Calendar.Today());
+        World.SetNumber(Season.Key, number + 1);
 
         World.Tell("Season " + Season.Which() + " begins.");
     end function
@@ -147,6 +161,15 @@ shared model Season
     # ── Where a season's running total is kept ────────────────────────────────
 
     public string Scored = "gseason";
+
+    # What a guild took and lost fighting over land this season. Counted only for a death in a
+    # CONTEST: a grudge war is not on the season's table, so its kills do not weigh on a placing.
+    public string Kills = "gwarkills";
+    public string Deaths = "gwardeaths";
+
+    # The season a guild was last paid out for, so ranking can walk the table by picking the best
+    # guild that has not been paid yet rather than holding a sorted list it has no way to keep.
+    public string PaidIn = "gseasonpaid";
     public string ScoredOn = "gscoredon";
 
     public integer function ScoreOf(integer guild)
@@ -214,45 +237,87 @@ shared model Season
 
     public function End(integer number)
         integer placing = 0;
-        integer previous = 0 - 1;
 
-        # Ranked by walking the guilds once per placing: a script holds no table to sort, and the
-        # number of guilds that scored anything in a season is small.
+        # Ranked by taking the best guild still unpaid, over and over. A script holds no table to
+        # sort, and the number of guilds that scored anything in a season is small.
         loop while true
-            integer best = Season.NextBelow(previous);
+            integer guild = Season.BestUnpaid(number);
 
-            if best < 1
+            if guild < 1
                 yield;
             end if
 
-            previous = best;
+            placing = placing + 1;
 
-            loop each guild in World.Guilds()
-                if Season.ScoreOf(guild) == best
-                    placing = placing + 1;
-
-                    Season.Pay(guild, placing, number);
-                end if
-            end loop
+            World.SetGuildNumber(guild, Season.PaidIn, number);
+            Season.Pay(guild, placing, number);
         end loop
     end function
 
-    # The highest score below the one just paid out, or nothing when there are none left. Anything at
-    # or below zero never places: a guild that held no land all season did not compete.
-    integer function NextBelow(integer ceiling)
+    # The best guild that has not been paid for this season, or nothing when they all have. Anything
+    # at or below zero never places: a guild that held no land all season did not compete.
+    integer function BestUnpaid(integer number)
         integer best = 0;
 
         loop each guild in World.Guilds()
-            integer scored = Season.ScoreOf(guild);
-
-            if scored > 0 and scored > best
-                if ceiling < 0 or scored < ceiling
-                    best = scored;
+            if Season.ScoreOf(guild) > 0
+                if World.GuildNumber(guild, Season.PaidIn) != number
+                    if best < 1 or Season.Outranks(guild, best)
+                        best = guild;
+                    end if
                 end if
             end if
         end loop
 
         yield best;
+    end function
+
+    # ⚠ Every level of this exists to stop two guilds sharing a placing, and a placing is money:
+    # the score, then what the guild did in the field, then how many stand in it.
+    #
+    # ⚠ The original breaks a remaining tie on the NAME. Compass has no ordering on text - Contains
+    # and IndexOf, but nothing that says which of two words comes first - so two guilds level on all
+    # three keep whatever order the engine hands them.
+    boolean function Outranks(integer guild, integer than)
+        integer scored = Season.ScoreOf(guild);
+        integer other = Season.ScoreOf(than);
+
+        if scored != other
+            yield scored > other;
+        end if
+
+        integer net = Season.NetOf(guild);
+        integer theirs = Season.NetOf(than);
+
+        if net != theirs
+            yield net > theirs;
+        end if
+
+        integer many = Season.SizeOf(guild);
+        integer them = Season.SizeOf(than);
+
+        if many != them
+            yield many > them;
+        end if
+
+        yield false;
+    end function
+
+    # What a guild took minus what it lost, over land, this season.
+    public integer function NetOf(integer guild)
+        yield World.GuildNumber(guild, Season.Kills) - World.GuildNumber(guild, Season.Deaths);
+    end function
+
+    # The whole roster rather than who is online: a placing is about the guild, and half of it being
+    # asleep on the night the season ends is not a fact about the guild.
+    integer function SizeOf(integer guild)
+        integer many = 0;
+
+        loop each account in World.AccountsIn(guild)
+            many = many + 1;
+        end loop
+
+        yield many;
     end function
 
     # What a placing is worth, and the line that goes into the record.
@@ -289,22 +354,35 @@ shared model Season
     # Kept on the world, one line per placing, and never overwritten — a season's final table is the
     # only thing left of it once the counters are back at nothing.
 
-    public string function Placed(integer number, integer placing)
-        yield "s" + number + ".place" + placing;
+    # One store per finished season, a key per placing. World.KeptCount answers how many placed, so
+    # nothing has to keep a count beside the table.
+    public string function Archive(integer number)
+        yield "season" + number;
     end function
 
-    public string function PlacedScore(integer number, integer placing)
-        yield "s" + number + ".score" + placing;
-    end function
+    # ⚠ Padded. Keys walk in ORDINAL order, so "10" comes before "2" and a table read back
+    # unpadded would put tenth place second.
+    public string function RowAt(integer placing)
+        if placing < 10
+            yield "00" + placing;
+        end if
 
-    public string function Placings(integer number)
-        yield "s" + number + ".placings";
+        if placing < 100
+            yield "0" + placing;
+        end if
+
+        yield "" + placing;
     end function
 
     function Record(integer number, integer placing, integer guild)
-        World.SetText(Season.Placed(number, placing), World.GuildName(guild));
-        World.SetNumber(Season.PlacedScore(number, placing), Season.ScoreOf(guild));
-        World.SetNumber(Season.Placings(number), placing);
+        string table = Season.Archive(number);
+        string row = Season.RowAt(placing);
+
+        World.SetKeptNumber(table, row, "placing", placing);
+        World.SetKeptText(table, row, "guild", World.GuildName(guild));
+        World.SetKeptNumber(table, row, "score", Season.ScoreOf(guild));
+        World.SetKeptNumber(table, row, "kills", World.GuildNumber(guild, Season.Kills));
+        World.SetKeptNumber(table, row, "deaths", World.GuildNumber(guild, Season.Deaths));
     end function
 
     # And the counters go back to nothing. Land and streaks survive — a season is a scoreboard, not a
@@ -312,6 +390,8 @@ shared model Season
     function Clear()
         loop each guild in World.Guilds()
             World.SetGuildNumber(guild, Season.Scored, 0);
+            World.SetGuildNumber(guild, Season.Kills, 0);
+            World.SetGuildNumber(guild, Season.Deaths, 0);
         end loop
     end function
 

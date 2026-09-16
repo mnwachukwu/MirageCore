@@ -1,0 +1,119 @@
+{
+  "name": "The Bog Oracle",
+  "says": "I saw you both coming.",
+  "sprite": 44,
+  "spriteSheet": 0,
+  "size": 1,
+  "spawnSecs": 300,
+  "behavior": "Wander",
+  "group": 2,
+  "range": 10,
+  "emitsLight": true,
+  "attributes": {
+    "boss": true,
+    "def": 12,
+    "guard": false,
+    "hostile": true,
+    "hp": 853,
+    "int": 26,
+    "spd": 5,
+    "str": 5
+  },
+  "drops": [
+    {
+      "itemNum": 1,
+      "quantity": 179,
+      "chance": 90
+    },
+    {
+      "itemNum": 276,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 276,
+      "quantity": 1,
+      "chance": 2
+    },
+    {
+      "itemNum": 2,
+      "quantity": 12,
+      "chance": 45
+    },
+    {
+      "itemNum": 34,
+      "quantity": 1,
+      "chance": 16
+    },
+    {
+      "itemNum": 37,
+      "quantity": 1,
+      "chance": 12
+    },
+    {
+      "itemNum": 196,
+      "quantity": 1,
+      "chance": 30
+    },
+    {
+      "itemNum": 331,
+      "quantity": 1,
+      "chance": 20
+    },
+    {
+      "itemNum": 336,
+      "quantity": 1,
+      "chance": 15
+    }
+  ]
+}

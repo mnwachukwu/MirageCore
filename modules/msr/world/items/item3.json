@@ -1,0 +1,15 @@
+{
+  "name": "Valor",
+  "pic": 1,
+  "itemSheet": 0,
+  "nonTradeable": true,
+  "nonListable": true,
+  "nonMailable": true,
+  "destroyOnDrop": true,
+  "nonJunkable": true,
+  "price": 0,
+  "type": "Currency",
+  "attributes": {
+    "coin": true
+  }
+}
