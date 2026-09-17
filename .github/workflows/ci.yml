@@ -118,7 +118,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: MirageSourceRemasteredCore
+        working-directory: MirageCore
 
     steps:
       # ⚠ Checked out into a SUBDIRECTORY, with Compass beside it. Mirage.Scripting consumes Compass
@@ -132,7 +132,7 @@ jobs:
       - name: Check out
         uses: actions/checkout@v7
         with:
-          path: MirageSourceRemasteredCore
+          path: MirageCore
 
       - name: Check out Compass
         uses: actions/checkout@v7
@@ -143,13 +143,13 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
-          global-json-file: MirageSourceRemasteredCore/global.json
+          global-json-file: MirageCore/global.json
 
       - name: Cache NuGet packages
         uses: actions/cache@v6
         with:
           path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('MirageSourceRemasteredCore/**/*.csproj', 'MirageSourceRemasteredCore/Directory.Build.props') }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('MirageCore/**/*.csproj', 'MirageCore/Directory.Build.props') }}
           restore-keys: nuget-${{ runner.os }}-
 
       # Named individually rather than through Mirage.Test.csproj, so the content build can be turned
@@ -204,7 +204,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: MirageSourceRemasteredCore
+        working-directory: MirageCore
 
     steps:
       # ⚠ Checked out into a SUBDIRECTORY, with Compass beside it. Mirage.Scripting consumes Compass
@@ -218,7 +218,7 @@ jobs:
       - name: Check out
         uses: actions/checkout@v7
         with:
-          path: MirageSourceRemasteredCore
+          path: MirageCore
 
       - name: Check out Compass
         uses: actions/checkout@v7
@@ -231,13 +231,13 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
-          global-json-file: MirageSourceRemasteredCore/global.json
+          global-json-file: MirageCore/global.json
 
       - name: Cache NuGet packages
         uses: actions/cache@v6
         with:
           path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('MirageSourceRemasteredCore/**/*.csproj', 'MirageSourceRemasteredCore/Directory.Build.props', 'MirageSourceRemasteredCore/**/dotnet-tools.json') }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('MirageCore/**/*.csproj', 'MirageCore/Directory.Build.props', 'MirageCore/**/dotnet-tools.json') }}
           restore-keys: nuget-${{ runner.os }}-
 
       # Two manifests, and the second is not redundant. The root one declares vpk (which does the

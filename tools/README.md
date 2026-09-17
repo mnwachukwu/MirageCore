@@ -2,7 +2,7 @@
 
 **Scripts for people running the game — not for building it.**
 
-Everything here is meant to be run by someone who has downloaded Mirage Source Remastered and wants to
+Everything here is meant to be run by someone who has downloaded Mirage Core and wants to
 do something with it. They are a feature of the project, documented in `docs/`, and they ship with the
 source rather than existing to produce it.
 

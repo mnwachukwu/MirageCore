@@ -36,7 +36,7 @@ public static class UpdateFeed
     /// <c>client-win</c> against that engine's packages and update itself into a different game.</para>
     ///
     /// <para>A game built on Core replaces this with its own.</para></summary>
-    public const string RepositoryUrl = "https://github.com/mnwachukwu/MirageSourceRemasteredCore";
+    public const string RepositoryUrl = "https://github.com/mnwachukwu/MirageCore";
 
     /// <summary>The channel token for an app on the platform this process is running on, or null where
     /// no feed is published. Null is the normal answer on macOS and on any platform we do not ship.</summary>

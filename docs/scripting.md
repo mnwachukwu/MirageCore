@@ -23,7 +23,7 @@ counted `..` to a **sibling checkout**:
 ```
 D:\Repos\
   Compass\
-  MirageSourceRemasteredCore\
+  MirageCore\
 ```
 
 Clone Compass beside this repository and everything builds. Without it, `Mirage.Scripting` and anything

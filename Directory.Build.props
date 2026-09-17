@@ -43,8 +43,8 @@
                  MonoGame's logo — the framework embeds its own and falls back to it.
 
     Simplest fork: leave these alone and replace the files they point at, which is what
-    tools/generate_app_icons.py writes. Point them somewhere else if you would rather keep your
-    art outside the tree — nothing but these five lines needs to know.
+    ArtGenerators/gen-icons.cs in the tools repository writes. Point them somewhere else if you
+    would rather keep your art outside the tree — nothing but these five lines needs to know.
 
     Overridable from the command line too, for a one-off build:
         dotnet build Mirage.slnx -p:ClientIcon=C:\art\mygame.ico

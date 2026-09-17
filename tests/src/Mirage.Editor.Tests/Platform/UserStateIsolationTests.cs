@@ -16,7 +16,7 @@ public class UserStateIsolationTests
     [Test]
     public void TheSuite_ResolvesUserStateSomewhereDisposable()
     {
-        string config = new UserPaths("Mirage Source Remastered Editor").Config();
+        string config = new UserPaths($"{Constants.GameName} Editor").Config();
 
         Assert.Multiple(() =>
         {
@@ -32,7 +32,7 @@ public class UserStateIsolationTests
     public void TheSuite_NeverResolvesTheRealUserConfig()
     {
         string real = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        string config = new UserPaths("Mirage Source Remastered Editor").Config();
+        string config = new UserPaths($"{Constants.GameName} Editor").Config();
 
         Assert.That(config, Does.Not.StartWith(real).IgnoreCase,
             "A test resolved the developer's real editor settings; a world opened or created under it "

@@ -21,8 +21,8 @@ namespace Mirage.Shared.Tests.Platform;
 [TestFixture]
 public class UserPathsTests
 {
-    private const string AppName = "Mirage Source Remastered";
-    private const string XdgName = "mirage-source-remastered";
+    private const string AppName = "Mirage Core";
+    private const string XdgName = "mirage-core";
 
     private static readonly string[] XdgVars = ["XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_CACHE_HOME"];
 
