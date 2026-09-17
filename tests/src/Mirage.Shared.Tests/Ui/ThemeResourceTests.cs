@@ -65,7 +65,7 @@ public class ThemeResourceTests
     /// <summary>Every <c>SolidColorBrush</c> resolves to a key declared as a <c>Color</c>. Pointing one at
     /// a missing key, or at a resource that is not a color, throws only when the control is realized.
     ///
-    /// <para>Not every Color has a brush, and that is intended: a handful are consumed as colors —
+    /// <para>Not every Color has a brush, deliberately: a handful are consumed as colors —
     /// gradient stops, and the FluentAvalonia overrides that are typed <c>Color</c> by the control set.</para></summary>
     [Test]
     public void EveryBrushWrapsADeclaredColor()

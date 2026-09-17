@@ -63,7 +63,7 @@ public sealed class AppearanceGateTests
                     Is.False);
     }
 
-    /// <summary>Two gates are AND, which is what "for these classes, from this homeland" needs.</summary>
+    /// <summary>Two gates are AND, as "for these classes, from this homeland" needs.</summary>
     [Test]
     public void EveryGateHasToHold()
     {

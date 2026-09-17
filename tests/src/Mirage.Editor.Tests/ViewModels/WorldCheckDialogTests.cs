@@ -8,8 +8,8 @@ namespace Mirage.Editor.Tests.ViewModels;
 /// The world check's results window.
 ///
 /// <para>The sweep itself is proven in <c>WorldCheckTests</c>; what matters here is that a finding arrives
-/// worded, carries the record it is about, and gets the author there. A list of faults nobody can navigate
-/// to is a list nobody acts on.</para>
+/// worded, carries the record it is about, and gets the author there, so a fault can be acted on
+/// rather than only read.</para>
 /// </summary>
 [TestFixture]
 public class WorldCheckDialogTests
@@ -75,8 +75,8 @@ public class WorldCheckDialogTests
         Assert.That(vm.Rows[0].Where, Does.Contain("Shop 4 name"));
     }
 
-    /// <summary>Following a row goes to its record and closes the window, since the record behind it is what
-    /// the author needs to see.</summary>
+    /// <summary>Following a row goes to its record and closes the window, since the author needs to
+    /// see the record behind it.</summary>
     [Test]
     public void FollowingARow_NavigatesAndCloses()
     {

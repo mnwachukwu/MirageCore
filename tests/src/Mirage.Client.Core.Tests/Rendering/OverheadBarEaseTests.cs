@@ -80,7 +80,7 @@ public sealed class OverheadBarEaseTests
     }
 
     /// <summary>⚠ Two of them ease separately. The state belongs to a client rather than to the type, so
-    /// a second client in the same process — which is what a test is — cannot move the first one's bars.
+    /// a second client in the same process, as a test is, cannot move the first one's bars.
     /// </summary>
     [Test]
     public void TwoClientsDoNotShareBars()

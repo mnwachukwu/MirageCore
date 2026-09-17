@@ -92,8 +92,8 @@ public class ConsumablePacingTests
             "the second ask fell inside the clock and never reached the game");
     }
 
-    /// <summary>A use the game refused costs nothing, so the next one goes straight through. This is what
-    /// a full health bar looks like from Core's side.</summary>
+    /// <summary>A use the game refused costs nothing, so the next one goes straight through. That is
+    /// how a full health bar reads from Core's side.</summary>
     [Test]
     public void ADraughtTheGameRefused_CostsNothing()
     {

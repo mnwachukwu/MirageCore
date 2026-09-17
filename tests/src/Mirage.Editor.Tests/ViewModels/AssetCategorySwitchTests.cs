@@ -14,8 +14,8 @@ namespace Mirage.Editor.Tests.ViewModels;
 /// selector's list is fixed. Both matter: a ComboBox whose ItemsSource stops containing its SelectedItem
 /// clears that selection and writes the null back through the two-way binding, and the generated setter
 /// stores the null before any hook can refuse it. A selection that never leaves its list cannot be
-/// cleared, and a folder nothing binds to cannot be nulled — which is what makes picking Sprites safe
-/// rather than merely defended.</para>
+/// cleared, and a folder nothing binds to cannot be nulled — so picking Sprites is safe rather
+/// than merely defended.</para>
 ///
 /// <para>No view is built here. What is reproduced is the ComboBox's rule, which is the part the
 /// view-model has to hold up its end of.</para>
@@ -83,7 +83,7 @@ public class AssetCategorySwitchTests
     };
 
     /// <summary>🔴 The size list is FIXED. A ComboBox only clears its selection when its ItemsSource stops
-    /// containing it, so a list that never changes is what makes that impossible — this is the assertion
+    /// containing it, so a list that never changes makes that impossible — this is the assertion
     /// that fails if anyone rebuilds it per category again.</summary>
     [Test]
     public void TheSizeListIsTheSameInstanceInEveryCategory()

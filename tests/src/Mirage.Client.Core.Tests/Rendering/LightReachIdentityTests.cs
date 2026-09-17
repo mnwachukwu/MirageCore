@@ -9,7 +9,7 @@ namespace Mirage.Client.Core.Tests.Rendering;
 /// <summary>
 /// A reach mask array is a stable identity for the reach it holds.
 ///
-/// <para>That is what lets the renderer key a GPU texture on the array itself and upload a mask once rather
+/// <para>So the renderer can key a GPU texture on the array itself and upload a mask once rather
 /// than once per light per light-map pass. The guarantee has two halves. While
 /// <see cref="RenderCommandBuilder.ReachGeneration"/> holds still, the same array is the same reach; when
 /// anything the trace reads moves, that number moves with it, and the renderer lets go of every texture it
@@ -111,7 +111,7 @@ public class LightReachIdentityTests
         var frame = new RenderFrame();
 
         // A fixed camera over a party that scatters to fresh ground every frame. Several emitters therefore
-        // MISS the cache within one build, which is what puts the cap boundary between two of them.
+        // MISS the cache within one build, which puts the cap boundary between two of them.
         const int Company = 5;
         for (int i = 0; i < Company; i++)
         {

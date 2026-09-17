@@ -13,8 +13,8 @@ namespace Mirage.Server.Tests.Ai;
 /// <summary>
 /// Pointing a creature at somebody.
 ///
-/// <para>🔴 <b>A record says how a body MOVES, and nothing about why.</b> That is what keeps the
-/// vocabulary genre-agnostic, and it is also what leaves a game unable to say the most ordinary thing
+/// <para>🔴 <b>A record says how a body MOVES, and nothing about why.</b> That keeps the
+/// vocabulary genre-agnostic, and it also leaves a game unable to say the most ordinary thing
 /// about a creature: that it fights back. A body authored to amble never notices anybody, so without a
 /// way in from outside there is no rule a game can write that makes it turn around.</para>
 ///
@@ -275,8 +275,8 @@ public class NpcRousingTests
         sp.Char.X = 5;
         sp.Char.Y = 6;
 
-        // A map nobody watches is a map the brain skips, so the player standing on it is what makes
-        // these ticks run at all.
+        // The brain skips a map nobody watches, so without the player standing on it these ticks
+        // never run.
         game.MapObservers[Map].Add(Idx);
 
         var world = new ServerWorld(game, pm, attributes, deaths, movement, items,

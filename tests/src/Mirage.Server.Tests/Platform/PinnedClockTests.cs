@@ -125,8 +125,8 @@ public class PinnedClockTests
     }
 
     // A Collect-on-Delivery message the recipient never paid for rides a much shorter clock than
-    // ordinary mail — three days, not thirty. Pinning the clock is what makes the two windows
-    // distinguishable in a test.
+    // ordinary mail — three days, not thirty. Pinning the clock tells the two windows apart in
+    // a test.
     [Test]
     public void UnpaidCodMail_UsesTheShortReturnWindow_NotFullRetention()
     {

@@ -54,8 +54,8 @@ public class ScriptSandboxTests
     }
 
     /// <summary>
-    /// The clock is not a danger the way the filesystem is; it is refused because a world that behaves
-    /// differently on the machine it is audited on is a world nobody can reason about. Time of day is
+    /// The clock is not a danger the way the filesystem is. It is refused so a world cannot behave
+    /// differently on the machine it is audited on. Time of day is
     /// something the engine tells a module, through a member the engine registered.
     /// </summary>
     [Test]

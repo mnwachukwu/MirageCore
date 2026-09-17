@@ -116,8 +116,8 @@ public class NpcStandoffTests
     // ── What the record says ──────────────────────────────────────────────────
 
     /// <summary>A standoff the record names is the standoff, as long as it is a gap it can see across.
-    /// Nothing named falls back to half its reach, which is what a world authored before the field
-    /// existed carries.</summary>
+    /// Nothing named falls back to half its reach, as a world authored before the field existed
+    /// carries.</summary>
     [TestCase(8, 4, ExpectedResult = 4)]
     [TestCase(8, 0, ExpectedResult = 4, Description = "half of what it can see")]
     [TestCase(8, 1, ExpectedResult = Constants.MinStandoffTiles, Description = "one tile is melee reach")]
@@ -170,7 +170,7 @@ public class NpcStandoffTests
     private static int Gap(Harness h) =>
         Math.Abs(h.Body.X - h.Target.X) + Math.Abs(h.Body.Y - h.Target.Y);
 
-    /// <summary>Standing where it meant to stand, it stands there. The neutral band either side is what
+    /// <summary>Standing where it meant to stand, it stands there. The neutral band either side
     /// keeps it from stepping on every beat its target does.</summary>
     [TestCase(4, Description = "dead on")]
     [TestCase(5, Description = "one inside the band")]
@@ -326,7 +326,7 @@ public class NpcStandoffTests
     }
 
     /// <summary>A body backed against a wall by something walking into it holds where it is and faces
-    /// what is coming, which is what a cornered animal does.</summary>
+    /// what is coming, as a cornered animal does.</summary>
     [Test]
     public void Cornered_ItStandsAndFaces()
     {

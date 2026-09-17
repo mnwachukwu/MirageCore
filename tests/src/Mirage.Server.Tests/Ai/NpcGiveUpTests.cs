@@ -13,8 +13,8 @@ namespace Mirage.Server.Tests.Ai;
 ///
 /// <para>One clock answers it: an NPC stamps <see cref="MapNpcRecord.LastReachedTargetMs"/> when it
 /// notices somebody and again on every step that closed the gap, so the stamp only goes stale on one
-/// that genuinely cannot act. This is what keeps a pursuer from being parked somewhere it does not
-/// belong, and it is the ONLY thing that does — nothing in the chase code refuses to cross a border —
+/// that genuinely cannot act. Nothing else stops a pursuer being parked somewhere it does not
+/// belong — nothing in the chase code refuses to cross a border —
 /// so it is pinned on its own.</para>
 ///
 /// <para>Only <see cref="NpcBehavior.Pursue"/> consults it. A fleeing NPC lets go on distance rather

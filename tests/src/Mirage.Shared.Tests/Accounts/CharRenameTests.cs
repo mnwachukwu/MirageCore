@@ -6,7 +6,7 @@ namespace Mirage.Shared.Tests.Accounts;
 /// Whether a character may take a name — the whole decision the editor's rename runs, minus the one lookup
 /// that needs the name registry.
 ///
-/// <para>A rename has a small blast radius, and that is a property of the data rather than luck: guild
+/// <para>A rename has a small blast radius, by a property of the data rather than by luck: guild
 /// membership, friends, ignore lists, mail and market listings all key off the account LOGIN. The character
 /// name is a key in exactly one place, the registry that stops two players sharing one.</para>
 /// </summary>

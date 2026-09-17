@@ -8,7 +8,7 @@ namespace Mirage.Editor.Tests.ViewModels;
 /// <summary>
 /// The recent-worlds menu shows a world's name, and says an unnamed one is unnamed.
 ///
-/// <para>A name is what an operator picked to tell one world from a copy of it, so it identifies an entry
+/// <para>An operator picked the name to tell one world from a copy of it, so it identifies an entry
 /// better than any part of a path can — two checkouts of the same world differ by a directory somewhere in
 /// the middle, which is exactly the part a shortened path drops. An unnamed world is named for the reader
 /// instead, and carries its folder so several of them do not read alike.</para>
@@ -108,8 +108,8 @@ public class RecentWorldNameTests
     /// Linux and macOS, so anything keyed on them is blind to a backslash there and the whole path reads as
     /// the folder name.</para>
     ///
-    /// <para>Both shapes are asserted on every platform rather than only the local one — that is what makes
-    /// this catchable here instead of on a CI leg. Neither folder exists, which is the case the menu has to
+    /// <para>Both shapes are asserted on every platform rather than only the local one, so this is
+    /// catchable here instead of on a CI leg. Neither folder exists, which is the case the menu has to
     /// survive anyway, and is why one fixture covers both.</para>
     /// </summary>
     [TestCase(@"D:\worlds\Brightwater", Description = "written on Windows")]

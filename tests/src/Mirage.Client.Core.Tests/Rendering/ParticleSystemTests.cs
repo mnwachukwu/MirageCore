@@ -109,10 +109,10 @@ public class ParticleSystemTests
     /// <para>Both ends of a projectile are stored relative to the 3x3 grid's origin, and a crossing
     /// re-anchors that grid onto a different center map — sliding the whole space by one map, which is
     /// 16 tiles across at 32px a tile. Carrying the POSITION without the TARGET leaves the bolt correctly
-    /// placed and aimed half a screen from anything, which is what a spell flying off in a random
-    /// direction actually is.</para>
+    /// placed and aimed half a screen from anything, which is how a spell ends up flying off in a
+    /// random direction.</para>
     ///
-    /// <para>Stated as the aim VECTOR rather than as coordinates, because that is the thing that has to
+    /// <para>Stated as the aim VECTOR rather than as coordinates, because the aim has to
     /// survive: wherever the space moves to, the bolt must still be pointing at the same victim.</para>
     /// </summary>
     [Test]

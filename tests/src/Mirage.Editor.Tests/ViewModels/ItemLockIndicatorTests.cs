@@ -93,8 +93,8 @@ public class ItemLockIndicatorTests
         Assert.That(vm.IsSelectedLocked, Is.False);
     }
 
-    /// <summary>The table can arrive while the item is already open, which is what happens when somebody
-    /// else starts typing into it.</summary>
+    /// <summary>The table can arrive while the item is already open, as it does when somebody else
+    /// starts typing into it.</summary>
     [Test]
     public void AClaimArrivingOnTheOpenItem_DeadensItWhereItStands()
     {

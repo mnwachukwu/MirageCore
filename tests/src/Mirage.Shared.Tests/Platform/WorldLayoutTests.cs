@@ -6,7 +6,7 @@ namespace Mirage.Shared.Tests.Platform;
 /// What a world folder is made of, and what is deliberately not part of one.
 ///
 /// <para>The split is one question: does it change while the server runs? Everything the server writes by
-/// itself is on the other side of it, which is what lets a world be handed to another machine without
+/// itself is on the other side of it, so a world can be handed to another machine without
 /// carrying anybody's password hashes.</para>
 /// </summary>
 [TestFixture]

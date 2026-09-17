@@ -6,7 +6,7 @@ namespace Mirage.Shared.Tests.Extensibility;
 /// <summary>
 /// When a declared verb is offered, asked of an attribute bag.
 ///
-/// <para>🔴 <b>This is the one implementation, and that is the point.</b> The client grays the entry out
+/// <para>🔴 <b>There is one implementation, deliberately.</b> The client grays the entry out
 /// and the server refuses the invoke; both call this. Two readings of one predicate would be a verb the
 /// menu offers and the server rejects, or worse, the other way round.</para>
 /// </summary>
@@ -36,7 +36,7 @@ public class ActionConditionTests
         Assert.Multiple(() =>
         {
             Assert.That(when.Holds(Carrying("harvest.satchel", 0)), Is.True,
-                "carrying zero of a thing is still carrying it — the key is what was asked about");
+                "carrying zero of something is still carrying it — the question was about the key");
             Assert.That(when.Holds(new AttributeBag()), Is.False);
             Assert.That(when.Holds(null), Is.False);
         });
@@ -74,7 +74,7 @@ public class ActionConditionTests
     /// <summary>A comparison against a key that is not there is false, never an exception.
     ///
     /// <para>A body that has never been given a key is the ordinary case — a character who has not
-    /// started the game's loop yet — so this is the answer most bodies give most of the time.</para>
+    /// started the game's loop yet — so most bodies give this answer most of the time.</para>
     /// </summary>
     [Test]
     public void AComparisonAgainstNothing_IsFalse()

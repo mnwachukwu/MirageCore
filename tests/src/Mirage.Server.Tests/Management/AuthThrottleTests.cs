@@ -122,7 +122,7 @@ public sealed class AuthThrottleTests
         for (int i = 0; i < AuthThrottle.MaxFailures; i++) throttle.RecordFailure("10.0.0.1");
 
         clock.UtcNowUnix += AuthThrottle.LockoutSeconds + 1;
-        throttle.IsLockedOut("10.0.0.1");   // the read is what prunes the expired record
+        throttle.IsLockedOut("10.0.0.1");   // the read prunes the expired record
 
         Assert.That(throttle.RecordFailure("10.0.0.1"), Is.False, "counting restarts, it does not resume");
     }

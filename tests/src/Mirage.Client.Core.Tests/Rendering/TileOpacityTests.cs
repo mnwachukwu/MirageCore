@@ -116,7 +116,7 @@ public class TileOpacityTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(shadow, Is.EqualTo(TileOpacity.Of(Cell(TopHalf))), "the obstruction is the shape");
+            Assert.That(shadow, Is.EqualTo(TileOpacity.Of(Cell(TopHalf))), "the obstruction carries the shape");
             Assert.That(shadow, Is.Not.EqualTo(TileOpacity.Solid), "the floor beneath it is not");
         });
     }

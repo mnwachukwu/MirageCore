@@ -12,7 +12,7 @@ namespace Mirage.Client.Shell.Tests.Panels;
 
 /// <summary>The action bar's non-drawing behavior: where its boxes are for a bar of any declared width,
 /// and how a bound item NUMBER is resolved to a live inventory slot at the moment of use. That resolution
-/// is the whole reason hotkeys store numbers rather than positions, so it is what these pin down.
+/// is why hotkeys store numbers rather than positions, so these pin it down.
 ///
 /// <para>🔴 <b>How many slots there are is the GAME's.</b> Nothing here may assume four, and a world that
 /// declared none gets no bar at all rather than a row of empty boxes.</para></summary>
@@ -166,7 +166,7 @@ public class HotkeyBarTests
         });
     }
 
-    // Availability is what grays a slot. An out-of-stock binding stays BOUND — it just can't fire — so the
+    // Availability grays a slot. An out-of-stock binding stays BOUND — it just can't fire — so the
     // player can see which potion they have run out of instead of the slot silently emptying itself.
     [Test]
     public void IsAvailable_TracksStockWithoutUnbinding()

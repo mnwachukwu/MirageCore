@@ -162,7 +162,7 @@ public class EditorLiveBroadcastTests
     // The handlers used to check authentication alone. session.AdminLevel was set at login and never
     // read again, so a MAPPER — the lowest tier the editor admits — could save items, NPCs, shops,
     // spells, quests and conversations. The editor client hides those sections below Developer,
-    // but that is presentation, and this engine ships its client's source.
+    // but only as presentation: the client's source ships with this engine regardless.
     //
     // The compiler cannot help here: the old guard and the new one both return bool, so a handler left on
     // the wrong tier looks identical. These assert the boundary from the outside instead.
@@ -190,7 +190,7 @@ public class EditorLiveBroadcastTests
 
         h.Save(new EditorSaveMapGroupPacket { GroupNum = 3, Name = "Catacombs", Music = 9 });
 
-        Assert.That(h.World.MapGroups[3].Music, Is.EqualTo(9), "map work is what a Mapper is for");
+        Assert.That(h.World.MapGroups[3].Music, Is.EqualTo(9), "a Mapper is there to do map work");
     }
 
     [Test]

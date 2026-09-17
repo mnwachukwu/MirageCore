@@ -56,8 +56,8 @@ public class SheetUsageTests
         Assert.That((readable, total), Is.EqualTo((3, 3)));
     }
 
-    /// <summary>A sheet nothing uses is absent from the result, which is what lets the manager offer a
-    /// clean delete rather than warning about every sheet equally.</summary>
+    /// <summary>A sheet nothing uses is absent from the result, so the manager can offer a clean
+    /// delete rather than warning about every sheet equally.</summary>
     [Test]
     public void AnUnusedSheetIsNotReported()
     {

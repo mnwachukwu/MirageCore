@@ -9,8 +9,8 @@ namespace Mirage.Editor.Tests.Services;
 /// Deleting a shipped sheet has to outlive a restart.
 ///
 /// <para>The editor re-seeds its assets folder on every launch, copying each bundled file it finds missing.
-/// That is what fills a fresh install and what carries new defaults in from an update — and it is also what
-/// silently undoes a deletion, because a sheet moved to the recycle bin looks exactly like a sheet that was
+/// That fills a fresh install and carries new defaults in from an update — and it also silently
+/// undoes a deletion, because a sheet moved to the recycle bin looks exactly like a sheet that was
 /// never copied. Nothing in the recycle bin survives that on its own.</para>
 /// </summary>
 [TestFixture]

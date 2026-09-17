@@ -13,7 +13,7 @@ namespace Mirage.Server.Tests.Net;
 /// <summary>
 /// A verb a game invented, offered by a client that was never compiled against it.
 ///
-/// <para>🔴 What crosses the wire is a caption and an id, and that is the whole design. A seam that let a
+/// <para>🔴 A caption and an id cross the wire, and nothing else. A seam that let a
 /// game send BEHAVIOR to a client would ship code to every player and make the client run it; a seam
 /// that sends a name means the rule stays where every other rule is. The cost is that the client cannot
 /// decide anything about the verb — not whether it applies, not whether the player is close enough — and

@@ -49,7 +49,7 @@ public class MovementFormulasTests
         Assert.That(MovementFormulas.RunMsPerTile(1_000), Is.EqualTo(MovementFormulas.RunMsPerTile(150)));
     }
 
-    /// <summary>An NPC's run is flat, whatever its move speed. That is what keeps a chase escapable: a
+    /// <summary>An NPC's run is flat, whatever its move speed, which keeps a chase escapable: a
     /// body that invests in speed pulls away, because its pace drops below the one the NPC is pinned
     /// at.</summary>
     [Test]

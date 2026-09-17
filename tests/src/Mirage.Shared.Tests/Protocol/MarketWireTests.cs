@@ -72,7 +72,7 @@ public class MarketWireTests
         Assert.That(missing, Is.Empty, "these did not survive the trip to a browsing client");
     }
 
-    /// <summary>The viewer's own login rides along, which is what lets a browser tell its own listings
+    /// <summary>The viewer's own login rides along, so a browser can tell its own listings
     /// apart without a second feed — and what stops it offering a Buy button on one of them.</summary>
     [Test]
     public void TheViewerIsToldWhoTheyAre()

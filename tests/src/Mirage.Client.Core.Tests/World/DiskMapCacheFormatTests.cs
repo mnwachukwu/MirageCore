@@ -85,7 +85,7 @@ public class DiskMapCacheFormatTests
     }
 
     // The stamp is worth nothing if nobody bumps it, so this states in one place what a bump is FOR: it
-    // rises when a record's on-disk meaning changes. Renaming Key/KeyOpen to Door/Plate is what took it to 2.
+    // rises when a record's on-disk meaning changes. Renaming Key/KeyOpen to Door/Plate took it to 2.
     [Test]
     public void TheFormatVersion_IsPastTheUnstampedEra()
     {

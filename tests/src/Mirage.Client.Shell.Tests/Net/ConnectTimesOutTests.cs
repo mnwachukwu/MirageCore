@@ -96,7 +96,7 @@ public class ConnectTimesOutTests
         });
     }
 
-    /// <summary>The fault is what the screens read. A cancelled task completes without faulting, and they
+    /// <summary>The screens read the fault. A cancelled task completes without faulting, and they
     /// would take that for a live connection.</summary>
     [Test]
     public async Task ATimeout_FaultsRatherThanCancels()

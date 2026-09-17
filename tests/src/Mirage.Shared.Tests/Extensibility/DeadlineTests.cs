@@ -41,7 +41,7 @@ public class DeadlineTests
     }
 
     /// <summary>A tick count compared against Unix seconds is a number that compares fine and means
-    /// nothing. Carrying the clock is what lets the mismatch be refused.</summary>
+    /// nothing. Carrying the clock lets the mismatch be refused.</summary>
     [Test]
     public void AMismatchedClockNeitherPassesNorPends()
     {

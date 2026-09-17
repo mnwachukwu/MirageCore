@@ -14,8 +14,8 @@ namespace Mirage.Server.Tests.World;
 ///
 /// <para>Left alone, that cost every mob a third of its attacks: two ticks is 1000 ms, a strict comparison
 /// rejects it, and the swing lands on the third tick at 1500 ms. These pin the beat at two ticks and pin it
-/// against a tick arriving slightly early or slightly late, which is what made the NPC-vs-NPC path flip
-/// between the two depending on how much work the tick had already done.</para>
+/// against a tick arriving slightly early or slightly late, which used to make the NPC-vs-NPC
+/// path flip between the two depending on how much work the tick had already done.</para>
 /// </summary>
 [TestFixture]
 public class TickCadenceTests

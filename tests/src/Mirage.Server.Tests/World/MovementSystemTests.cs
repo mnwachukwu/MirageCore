@@ -523,7 +523,7 @@ public class MovementSystemTests
     }
 
     // Two-layer world: PlayerWarp / relog sets the layer to destLayer VERBATIM — no arrival re-fit. Persisting the
-    // layer is what restores a player onto a bridge (destLayer carries the saved Fringe, and a ramp is walkable on
+    // layer restores a player onto a bridge (destLayer carries the saved Fringe, and a ramp is walkable on
     // Fringe, so persistence alone is sufficient). Landing correctness is an AUTHORING concern for playtesting to
     // catch, not something the engine papers over — consistent with a bad persisted (X,Y) against an edited map.
     [Test]

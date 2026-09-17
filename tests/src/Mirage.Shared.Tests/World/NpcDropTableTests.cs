@@ -5,7 +5,7 @@ namespace Mirage.Shared.Tests.World;
 
 /// <summary>An NPC's drop table and the canonical form <c>Normalize</c> puts it in.
 ///
-/// <para>The canonical form is what carries the risk: the roller reads the table directly, so an inert
+/// <para>The canonical form carries the risk: the roller reads the table directly, so an inert
 /// line saved to disk is a line that looks authored and does nothing, and a table trimmed too eagerly is
 /// payout deleted in silence.</para></summary>
 [TestFixture]

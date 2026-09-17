@@ -46,8 +46,8 @@ public class ModuleRecordPersistenceTests
 
     private string FileFor(int num) => Path.Combine(_dir, "species", $"species{num}.json");
 
-    /// <summary>The folder does not exist until a module declares the family, so the first load is what
-    /// creates it — and it creates NOTHING inside it.
+    /// <summary>The folder does not exist until a module declares the family, so the first load
+    /// creates it — and creates NOTHING inside it.
     ///
     /// <para>🔴 A blank slot used to be written out as a file, which meant a world holding twenty
     /// authored records became some five thousand files the first time a server opened it. The array is

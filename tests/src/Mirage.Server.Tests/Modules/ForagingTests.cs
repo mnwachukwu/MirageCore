@@ -9,7 +9,7 @@ namespace Mirage.Server.Tests.Modules;
 /// <summary>
 /// Foraging, both ways, against one set of assertions.
 ///
-/// <para>🔴 <b>This is what keeps the tutorial honest.</b> The First Game page on the site shows both
+/// <para>🔴 <b>This keeps the tutorial honest.</b> The First Game page on the site shows both
 /// of these files, and the site generates those snippets from the files themselves. A page can only
 /// show code that compiles and declares what the prose says it declares, because the code is here and
 /// this test reads it.</para>
@@ -94,7 +94,7 @@ public class ForagingTests
     {
         var module = new ScriptedWorldModule(World());
 
-        // Building the registry is what runs Configure, which is what reads and loads the scripts.
+        // Building the registry runs Configure, which reads and loads the scripts.
         // Constructing the module alone loads nothing.
         CoreRegistry.Build(module);
 

@@ -37,8 +37,8 @@ public class SectionCompositionTests
     }
 
     /// <summary>The ids and their order, written out rather than derived — deriving them would only
-    /// prove the derivation agrees with itself, and these strings are what an author's settings are
-    /// filed under.</summary>
+    /// prove the derivation agrees with itself, and an author's settings are filed under these
+    /// strings.</summary>
     [Test]
     public void TheRailListsTheWorldFamiliesInOrderThenAccounts()
     {
@@ -134,8 +134,8 @@ public class SectionCompositionTests
         });
     }
 
-    /// <summary>Each family's label comes off its own row, which is what lets a game name a section the
-    /// editor has never heard of.</summary>
+    /// <summary>Each family's label comes off its own row, so a game can name a section the editor
+    /// has never heard of.</summary>
     [Test]
     public void AFamilysLabelComesFromItsRow()
     {

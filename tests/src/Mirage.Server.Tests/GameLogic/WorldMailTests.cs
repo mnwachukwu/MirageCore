@@ -150,7 +150,7 @@ public class WorldMailTests
         });
     }
 
-    /// <summary>And the way back, which is the answer that tells a game to post rather than to tell.</summary>
+    /// <summary>And the way back, which tells a game to post rather than to tell.</summary>
     [Test]
     public void AnAccountNamesWhoeverIsSignedInToIt()
     {
@@ -241,8 +241,8 @@ public class WorldMailTests
         });
     }
 
-    /// <summary>⚠ A payout split among a hundred names nobody has used is a payout nobody feels, so a
-    /// game may narrow it to members who have really been playing: online for long enough, recently
+    /// <summary>⚠ A payout split among a hundred names nobody has used reaches nobody who notices,
+    /// so a game may narrow it to members who have really been playing: online for long enough, recently
     /// enough. Both halves are needed — the seconds alone keep somebody who played hard a year ago, and
     /// the last-seen alone keeps somebody who logs in for a minute a day.</summary>
     [Test]

@@ -61,7 +61,7 @@ public class RecordLimitsByFamilyTests
     // ── A family a MODULE declared ───────────────────────────────────────
 
     // The id overload can only look one up in Core's table, where a game's family is not, so it answers
-    // "no room" for content that exists. Holding the family is what makes the question answerable.
+    // "no room" for content that exists. Holding the family leaves the question answerable.
     [Test]
     public void AModulesFamily_AnswersWithItsOwnDefault_ByFamilyButNotById()
     {

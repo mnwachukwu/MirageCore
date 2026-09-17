@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace Mirage.Server.Tests;
 
 /// <summary>
-/// <see cref="PlayerManager.Online"/> is what every broadcast walks, so it has to be exactly right: a slot
+/// Every broadcast walks <see cref="PlayerManager.Online"/>, so it has to be exactly right: a slot
 /// missing from it is a player who stops hearing anything, and a stale one is a write into a dead channel.
 ///
 /// <para>The reason it is maintained by <see cref="ServerPlayer.IsConnected"/>'s setter and nowhere else is
@@ -101,7 +101,7 @@ public sealed class OnlineSetTests
     [Test]
     public void ACombatGhostIsNotOnline()
     {
-        // A ghost keeps playing with no socket. Leaving it out is what the set is FOR — the dispatcher
+        // A ghost keeps playing with no socket. The set exists to leave it out — the dispatcher
         // would only be enqueueing into a channel that was already torn down.
         var pm = Manager();
         pm[1].IsConnected = true;

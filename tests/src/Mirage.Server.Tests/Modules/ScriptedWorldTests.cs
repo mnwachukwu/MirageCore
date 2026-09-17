@@ -36,7 +36,7 @@ public class ScriptedWorldTests
 
     /// <summary>
     /// The module through the path a server takes: configured, which is where a script declares, then
-    /// started, which is where the world arrives. The registry is what the declarations landed in.
+    /// started, which is where the world arrives. The registry holds what the declarations landed in.
     /// </summary>
     private (ScriptedWorldModule Module, CoreRegistry Registry) Built(
         string rules, RecordingWorld? world = null)
@@ -159,7 +159,7 @@ public class ScriptedWorldTests
     }
 
     /// <summary>A key that was never written and one that was dropped read the same as each other, and
-    /// HasKept is what tells a rule which it is looking at.</summary>
+    /// HasKept tells a rule which it is looking at.</summary>
     [Test]
     public void AForgottenKeyIsGoneAndSaysSo()
     {
@@ -447,8 +447,8 @@ public class ScriptedWorldTests
     ///
     /// <para>The MODEL is the declaration. Its fields, in order, in the shapes they hold, are the rows
     /// of the form — a field typed as an enumeration is a drop-down over that enumeration's members,
-    /// and one typed as another model is a picker over that model's records. What is left is what a
-    /// model cannot say, and the model says it in <c>Describe</c>.</para>
+    /// and one typed as another model is a picker over that model's records. What is left over is
+    /// what a model cannot say, and the model says it in <c>Describe</c>.</para>
     /// </summary>
     [Test]
     public void AScriptDeclaresItsOwnRecords()
@@ -646,7 +646,7 @@ public class ScriptedWorldTests
             Assert.That(refused, Does.Contain("shared"), "and the one word that fixes it");
 
             Assert.That(registry.Schema.Families.Any(f => f.Id == "Species"), Is.False,
-                "nothing half-declared: the section is absent, and so is the reason it is absent");
+                "nothing half-declared: neither the section nor the reason for it is there");
         });
     }
 
@@ -840,7 +840,7 @@ public class ScriptedWorldTests
     /// <para>Compass matches a function by name AND count, so a handler the engine asks for with seven
     /// arguments and a world that wrote six is a handler that is never called. Nothing errors: the verbs
     /// are declared, the menu draws them, the player presses one, and the game does nothing. That is the
-    /// worst shape a break can take, and it is what this stops.</para></summary>
+    /// worst shape a break can take, and this stops it.</para></summary>
     [Test]
     public void AHandlerWrittenToTheOlderSignatureIsStillCalled()
     {
@@ -1239,8 +1239,8 @@ public class ScriptedWorldTests
     }
 
     /// <summary>An empty square answers nothing rather than a body that is not there — and so does one
-    /// holding the other kind of body, because "there is no creature here" is what a rule aimed at
-    /// creatures needs to hear.</summary>
+    /// holding the other kind of body, because a rule aimed at creatures needs to hear "there is no
+    /// creature here".</summary>
     [Test]
     public void AnEmptySquare_AndOneHoldingAPlayer_AnswerNoCreature()
     {
@@ -1321,7 +1321,7 @@ public class ScriptedWorldTests
     ///
     /// <para><c>Tell</c> carried literal text to ONE player, and every system worth announcing
     /// announces to a room: somebody died here, the gate opened, the season turned. A rule that can
-    /// only whisper is a rule nobody else sees the result of.</para>
+    /// only whisper leaves everybody else unable to see the result.</para>
     ///
     /// <para>⚠ <b>A room is who can SEE the map, not who is standing on it.</b> The world scrolls
     /// contiguously, so a player on the next map along is looking at this one — scoped to occupants,
@@ -1795,7 +1795,7 @@ public class ScriptedWorldTests
 
             Assert.That(panel.Inputs[0].LabelKey, Is.EqualTo("Comment"), "a caption nobody gave");
 
-            // Asking for it is what puts it on the wire: nothing else had to be written.
+            // Asking for it is all it takes to put it on the wire: nothing else had to be written.
             Assert.That(registry.Packets.Knows("Sighting"), Is.True);
             Assert.That(((IPacketRoute)scripts).Commands,
                 Is.EqualTo(new[] { "Sighting" }).AsCollection);
@@ -2020,7 +2020,7 @@ public class ScriptedWorldTests
     /// <summary>A verb offered ON somebody tells the script who that was.
     ///
     /// <para>The name rather than the body, because the boundary cannot carry "somebody, or nobody" —
-    /// and blank is the answer for the square and HUD surfaces, which is most verbs. A script that got
+    /// and blank answers for the square and HUD surfaces, covering most verbs. A script handed
     /// the argument but never a value would be a seam that looks present and answers nothing.</para>
     /// </summary>
     [Test]
@@ -2237,8 +2237,8 @@ public class ScriptedWorldTests
             Assert.That(written, Is.Not.Empty, "the shipped rules declare no handler at all");
 
             // \U0001F534 The half compiling does not cover. A handler is matched by NAME AND ARITY, so a
-            // signature that drifts from the table is a function nobody calls: it compiles, it loads,
-            // and the verb it served quietly stops working. That is what changing OnAction's arity did.
+            // signature that drifts from the table never gets called: it compiles, it loads, and the
+            // verb it served quietly stops working, as changing OnAction's arity did.
             Assert.That(module.Offered, Is.SupersetOf(written),
                 "the shipped rules declare a handler the engine did not take \u2014 check its arity "
                 + "against ScriptedWorldModule.Handlers");
@@ -2257,8 +2257,8 @@ public class ScriptedWorldTests
     }
 
     /// <summary>
-    /// Stands in for the engine, recording what a script asked it to do. The module is what is under
-    /// test here; what <c>ServerWorld</c> does with a <c>Tell</c> is pinned by its own tests.
+    /// Stands in for the engine, recording what a script asked it to do. The module is under test
+    /// here; what <c>ServerWorld</c> does with a <c>Tell</c> is pinned by its own tests.
     /// </summary>
     /// <summary>Shared with the scripted-Survey fixture, which needs a world to hand a module.</summary>
     internal sealed class RecordingWorld : IWorld
@@ -2280,7 +2280,7 @@ public class ScriptedWorldTests
         public bool IsInWorld(EntityHandle who) =>
             who.IsSet && (Here.Count == 0 || Here.Contains(who));
         /// <summary>Where a test put this body, or <see cref="Place"/> for one it said nothing
-        /// about — which is most of them, and is what every test written before Standing existed
+        /// about — which is most of them, and what every test written before Standing existed
         /// relies on.</summary>
         public WorldPlace PlaceOf(EntityHandle who)
         {
@@ -2351,7 +2351,7 @@ public class ScriptedWorldTests
         public EntityHandle At(WorldPlace place) =>
             Standing.TryGetValue(place, out var who) ? who : EntityHandle.None;
         /// <summary>A bag of its own for each body a test asked to keep apart. Everything else shares
-        /// <see cref="Bag"/>, which is what nearly every test here wants.</summary>
+        /// <see cref="Bag"/>, which suits nearly every test here.</summary>
         public Dictionary<EntityHandle, AttributeBag> Bags { get; } = [];
 
         /// <summary>Gives this body a bag of its own and hands it back. A test about two bodies
@@ -2410,7 +2410,7 @@ public class ScriptedWorldTests
             return true;
         }
 
-        /// <summary>What was put in a bag, in the order it was granted — which is what a kit is.</summary>
+        /// <summary>What was put in a bag, in the order it was granted — a kit, in other words.</summary>
         public List<(int Item, int Many)> Given { get; } = [];
 
         public void Give(EntityHandle who, int itemNum, int quantity = 1) => Given.Add((itemNum, quantity));
@@ -2515,8 +2515,8 @@ public class ScriptedWorldTests
             : who.IsSet ? who.ToString() : string.Empty;
 
         /// <summary>Which creature a handle is a copy of. The double has no creature table, so a test that
-        /// cares sets one; everything else reads the spawn slot, which is distinct per body and is what a
-        /// rule keying on a species would key on.</summary>
+        /// cares sets one; everything else reads the spawn slot, which is distinct per body and is the
+        /// key a rule about a species would use.</summary>
         public Dictionary<EntityHandle, int> Kinds { get; } = [];
 
         public int KindOf(EntityHandle who) =>
@@ -2545,15 +2545,15 @@ public class ScriptedWorldTests
             return true;
         }
 
-        /// <summary>What the ground is, by square. A test that cares sets one; everything else is walkable,
-        /// which is what an open map is.</summary>
+        /// <summary>What the ground is, by square. A test that cares sets one; everything else is
+        /// walkable, as an open map is.</summary>
         public Dictionary<WorldPlace, string> Ground { get; } = [];
 
         public string TileAt(WorldPlace place) =>
             Ground.TryGetValue(place, out string? kind) ? kind : "walkable";
 
-        /// <summary>Squares a test declared sightless. Nothing is in the way otherwise, which is what an
-        /// open map with no walls on it answers.</summary>
+        /// <summary>Squares a test declared sightless. Nothing is in the way otherwise, as an open map
+        /// with no walls on it answers.</summary>
         public HashSet<WorldPlace> Unseen { get; } = [];
 
         public bool CanSee(WorldPlace from, WorldPlace to) => !Unseen.Contains(to);
@@ -2652,7 +2652,7 @@ public class ScriptedWorldTests
         public int WalkMs => (int)Math.Round(MovementFormulas.BaseWalkMsPerTile);
 
         /// <summary>What each creature was authored as. A test that cares sets one; a body nobody described
-        /// ambles, notices nothing, and keeps to no pack — which is what an unauthored record is.</summary>
+        /// ambles, notices nothing, and keeps to no pack, as an unauthored record does.</summary>
         public Dictionary<EntityHandle, (string Behavior, int Group, int Range)> Authored { get; } = [];
 
         /// <summary>How far back each body holds, for the tests that care. Everything else keeps none.</summary>

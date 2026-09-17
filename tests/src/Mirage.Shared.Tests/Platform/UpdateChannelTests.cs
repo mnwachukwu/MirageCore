@@ -101,8 +101,7 @@ public class UpdateChannelTests
         Assert.That(collisions, Is.Empty, string.Join(Environment.NewLine, collisions));
     }
 
-    /// <summary>The feed has to actually ship. Deleting it after packing is what the packaging used to
-    /// do, and an app checking a release with no <c>releases.{channel}.json</c> in it never updates.</summary>
+    /// <summary>The feed has to actually ship. The packaging used to delete it after packing, and an app checking a release with no <c>releases.{channel}.json</c> in it never updates.</summary>
     [Test]
     public void ThePackagingDoesNotDeleteTheUpdateFeed()
     {

@@ -9,7 +9,7 @@ namespace Mirage.Shared.Tests.Protocol;
 /// The registry is the single point at which a command string becomes a packet, for the server's
 /// router, the client's dispatcher, and the editor's connection alike. A command with no row does not
 /// deserialize, and a line that does not deserialize is dropped before any router sees it — so a
-/// missing row is not a degraded feature, it is a message that silently never arrives.
+/// missing row costs a message entirely rather than degrading a feature.
 /// </summary>
 [TestFixture]
 public class CorePacketsTests

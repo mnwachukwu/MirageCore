@@ -15,14 +15,14 @@ namespace Mirage.Client.Core.Tests.Input;
 /// draw path dereferences it unchecked, so the next frame throws out of the draw loop, which on a
 /// released client is a window that vanishes with nothing written down.
 ///
-/// <para><b>A WARP is what makes this reachable, and warps are why it looks unrelated to edges.</b> A
+/// <para><b>A warp is how this becomes reachable, and why it looks unrelated to edges.</b> A
 /// warp empties the whole 3×3 grid and the server refills it a packet at a time, so for a few frames
 /// the center map names neighbors that are not there yet. Land on a tile that is ALSO on an edge — the
 /// ordinary shape of a doorway, where the tile you arrive on is the bottom row of the map outside —
 /// with the movement key still held from walking into the door, and the step out is predicted into a
 /// cell that is still empty.</para>
 ///
-/// <para>Whether it lands is a race between a held key and the map packets, which is why it can be
+/// <para>Whether it lands is a race between a held key and the map packets, so it can be
 /// reliable on one machine and unreproducible on another.</para>
 ///
 /// <para>The server's confirmed cross carries the same rule already (it falls back to a blocking

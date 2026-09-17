@@ -6,8 +6,8 @@ namespace Mirage.Editor.Tests.Controls;
 /// <summary>
 /// The rule that keeps the World Preview looking like map art rather than a thumbnail.
 ///
-/// <para>Each map is cached at a power-of-two scale instead of at native size, which is what makes a reach of
-/// ten maps in every direction affordable. The whole bargain rests on the cached scale never falling below
+/// <para>Each map is cached at a power-of-two scale instead of at native size, which brings a
+/// reach of ten maps in every direction within budget. The whole bargain rests on the cached scale never falling below
 /// the zoom: one step under and every map on screen is drawn from fewer pixels than it occupies, which is
 /// exactly the soft, upscaled look the cache exists to avoid — and it would look like a rendering bug, not
 /// like a memory decision.</para>

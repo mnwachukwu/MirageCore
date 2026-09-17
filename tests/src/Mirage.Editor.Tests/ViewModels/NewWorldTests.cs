@@ -13,7 +13,7 @@ namespace Mirage.Editor.Tests.ViewModels;
 /// into, and a world is never left loose among whatever else was in there.</para>
 ///
 /// <para>Creation is a command rather than a side effect: this is the only thing that writes a manifest
-/// into a folder that had none, which is what keeps a mistaken pick from quietly becoming a world.</para>
+/// into a folder that had none, so a mistaken pick never quietly becomes a world.</para>
 /// </summary>
 [TestFixture]
 public class NewWorldTests
@@ -119,7 +119,7 @@ public class NewWorldTests
         });
     }
 
-    /// <summary>A name has to be usable as a folder name, since that is what it becomes.</summary>
+    /// <summary>A name has to be usable as a folder name, since it becomes one.</summary>
     [TestCase("what/now")]
     [TestCase("a:b")]
     [TestCase("why?")]

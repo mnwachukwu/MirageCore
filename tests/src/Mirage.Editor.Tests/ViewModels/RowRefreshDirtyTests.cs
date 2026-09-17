@@ -10,7 +10,7 @@ namespace Mirage.Editor.Tests.ViewModels;
 ///
 /// <para>Every item-picker row (NPC drop, quest reward, shop trade) normalizes its quantity against the
 /// picked item's currency-ness, and re-runs that normalization whenever the item list changes. The trap is
-/// that the arriving item list is what makes currency-ness KNOWABLE at all: a row built from disk cannot
+/// that the arriving item list is the first thing to make currency-ness KNOWABLE: a row built from disk cannot
 /// answer "is this currency?" until the providers are attached, which happens on SELECTION. So the first
 /// normalization of a legitimately-authored record fires the moment the designer clicks it — and if that
 /// write marks dirty, every such record shows the unsaved-changes dot on sight.</para>

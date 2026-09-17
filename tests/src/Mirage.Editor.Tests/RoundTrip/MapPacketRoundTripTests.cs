@@ -116,7 +116,7 @@ public class MapPacketRoundTripTests
     }
 
     // ── Size ──────────────────────────────────────────────────────────────────
-    // The map's size IS the shape of its tile array, and tiles travel sparsely — an empty map of any size
+    // A map's tile array takes its shape from the size, and tiles travel sparsely — an empty map of any size
     // sends no tiles at all. So the size has to be stated on the packet, and these hold it to that: without
     // it a resized map would arrive back at the default and quietly lose every tile past the old edge.
 

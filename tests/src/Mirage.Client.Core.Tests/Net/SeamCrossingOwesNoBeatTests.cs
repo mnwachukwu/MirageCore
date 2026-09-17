@@ -13,7 +13,7 @@ namespace Mirage.Client.Core.Tests.Net;
 /// new center map's NPC snapshot — the very packet that ends a blocking load. Charging the beat there
 /// stalls the player at every seam.</para>
 ///
-/// <para><b>How long the stall is decides whether anyone sees it</b>, which is why this is worth a test
+/// <para><b>How long the stall is decides whether anyone sees it</b>, so this is worth a test
 /// rather than an eye. A walk is 400 ms a tile, so a 200 ms beat disappears inside the step the player is
 /// already taking. A sprint is nearer 138 ms, so the beat is LONGER than a step and the player visibly
 /// stops at the border. The bug is invisible at the pace most testing happens at.</para>
@@ -21,7 +21,7 @@ namespace Mirage.Client.Core.Tests.Net;
 [TestFixture]
 public class SeamCrossingOwesNoBeatTests
 {
-    /// <summary>Handling a map-NPC snapshot touches neither the sender nor the cache, which is why both
+    /// <summary>Handling a map-NPC snapshot touches neither the sender nor the cache, so both
     /// are null here — the same shape the other packet-handling fixtures use.</summary>
     private static (ClientState State, ClientPacketHandler Handler) Playing()
     {

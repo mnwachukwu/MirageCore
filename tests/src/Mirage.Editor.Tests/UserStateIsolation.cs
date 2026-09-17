@@ -13,7 +13,7 @@ namespace Mirage.Editor.Tests;
 /// folder the last test happened to make — which is exactly what it did, until Matt noticed Open World
 /// dropping him in <c>%LOCALAPPDATA%\Temp</c>.</para>
 ///
-/// <para>Redirecting the per-user roots is what fixes it for the whole assembly, rather than each fixture
+/// <para>Redirecting the per-user roots fixes it for the whole assembly, rather than each fixture
 /// remembering to undo its own damage — the old attempt reset <c>LastWorldBrowsePath</c> in memory during
 /// teardown, long after <c>Save()</c> had already written it to disk.</para>
 ///

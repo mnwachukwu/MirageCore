@@ -12,7 +12,7 @@ namespace Mirage.Editor.Tests.Controls;
 /// of the one already chosen — and if it answers honestly, the list collapses to that single entry and
 /// reads as "there is nothing else to pick".</para>
 ///
-/// <para><see cref="DropdownAutoCompleteBox"/> is what stops that happening, by dropping the filter
+/// <para><see cref="DropdownAutoCompleteBox"/> stops that happening, by dropping the filter
 /// entirely while the list is being browsed. These pin what the filter does once somebody actually types,
 /// including the caption case it cannot solve on its own.</para>
 /// </summary>
@@ -30,7 +30,7 @@ public class NamedEntryFilterTests
     private static int[] Matching(string search) =>
         [.. Sheets.Where(e => NamedEntryFilter.ByNameOrIndex(search, e)).Select(e => e.Id)];
 
-    /// <summary>Nothing typed offers everything, which is what an empty box has to do.</summary>
+    /// <summary>Nothing typed offers everything, as an empty box has to.</summary>
     [Test]
     public void AnEmptySearchOffersEverything()
     {

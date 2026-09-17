@@ -10,7 +10,7 @@ namespace Mirage.Client.Shell.Tests.Platform;
 /// Stops live language switching from rotting as screens are added. Screens are rebuilt on a menu
 /// transition but NOT while the player sits on one, so a screen that resolved its captions once in
 /// its constructor shows the stale language for as long as it stays up. Only the screen being looked
-/// at can show the fault, which is what makes it read as intermittent rather than broken.
+/// at can show the fault, so it reads as intermittent rather than broken.
 /// </summary>
 [TestFixture]
 public class LocalizationConventionTests

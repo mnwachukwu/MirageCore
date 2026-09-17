@@ -12,7 +12,7 @@ namespace Mirage.Editor.Tests.Services;
 /// author picks "Ember" rather than typing 4. Core's families answer from the name index in the login
 /// handshake; a game's family has no such index and answers from the records themselves — the folder's
 /// offline, the server's bulk fetch online. A picker with no names is still settable by slot number, so
-/// the failure is quiet, which is the reason to pin it.</para>
+/// the failure is quiet, so it is pinned here.</para>
 /// </summary>
 [TestFixture]
 public class ModuleRecordEntryTests

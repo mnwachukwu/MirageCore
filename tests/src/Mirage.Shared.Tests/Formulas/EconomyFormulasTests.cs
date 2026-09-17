@@ -148,7 +148,7 @@ public class EconomyFormulasTests
     public void RepairCost_IsTheePowerRate_ExceptWhereTheCapBinds()
     {
         // Gold per point is the Power rate. Checked well up the ladder, where prices are large enough that
-        // the replacement-cost cap never engages and the raw rate is what you pay.
+        // the replacement-cost cap never engages and you pay the raw rate.
         //
         // Quoted against RepairGoldPerPoint rather than a literal: the divisor is a tuning knob, and this
         // test is about the SHAPE — linear in points, floored, clamped at a full repair. Pinning the
@@ -204,7 +204,7 @@ public class EconomyFormulasTests
         // is why RepairCost caps against the price. Swept across durabilities because the cap binds on the
         // RATIO of durability to price, not on tier alone.
         //
-        // The sweep runs to 2,000 because that is what the armory ships: durability is sqrt(level) x bulk,
+        // The sweep runs to 2,000 because the armory ships that much: durability is sqrt(level) x bulk,
         // so a tier-255 Tower Shield carries 2,000. Raising durability raises the RAW cost of a full
         // repair in direct proportion (more points to buy) while the price stays put, so it drives items
         // INTO the cap — this invariant is exactly the one a durability change can break, so the sweep has

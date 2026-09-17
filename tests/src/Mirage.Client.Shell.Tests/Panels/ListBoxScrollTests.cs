@@ -10,7 +10,7 @@ namespace Mirage.Client.Shell.Tests.Panels;
 ///
 /// <para>Consumers refill <see cref="ListBox.Items"/> in place and nothing tells the control that happened. If
 /// the new contents are shorter than the old offset skipped, every remaining row sits above the viewport and
-/// the list draws EMPTY — which is what a second shop looked like after scrolling the first.</para>
+/// the list draws EMPTY, as a second shop did after scrolling the first.</para>
 /// </summary>
 [TestFixture]
 public class ListBoxScrollTests

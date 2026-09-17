@@ -92,7 +92,7 @@ public class ModuleRecordsTests
         Assert.That(store.All("Species").All(r => r.IsEmpty), Is.True);
     }
 
-    // Slot n is at index n-1, which is what a list rendered against slot numbers depends on.
+    // Slot n is at index n-1, which a list rendered against slot numbers depends on.
     [Test]
     public void All_ReturnsTheSlotsInOrderFromOne()
     {

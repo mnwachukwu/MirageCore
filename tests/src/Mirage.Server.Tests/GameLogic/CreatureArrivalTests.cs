@@ -16,7 +16,7 @@ namespace Mirage.Server.Tests.GameLogic;
 /// <para>🔴 <b>Without this seam a creature has no numbers.</b> Core spawns a body carrying a copy of its
 /// template and has never heard of health, of a level, or of what one is worth to kill — so the first
 /// rule that reads a creature's health reads a number nobody put there. It is also the only moment a
-/// fresh body can be told apart from the one before it, which is what anything varying per spawn needs:
+/// fresh body can be told apart from the one before it, which anything varying per spawn needs:
 /// a champion, a night-time boost, a scaled reward.</para>
 ///
 /// <para>And the sweep beside it. <c>NpcsNear</c> answers about a neighborhood, which is the wrong
@@ -67,8 +67,8 @@ public class CreatureArrivalTests
         public required ServerWorld Seam { get; init; }
     }
 
-    /// <summary>Two open maps, one creature kind, and one player watching the first. The spawn posts are
-    /// the caller's to write, because where a body comes from is the thing under test.</summary>
+    /// <summary>Two open maps, one creature kind, and one player watching the first. The spawn posts
+    /// are the caller's to write, because where a body comes from is under test.</summary>
     private static Harness Build(params IWorldObserver[] observers)
     {
         var world = new GameWorld();
@@ -141,8 +141,8 @@ public class CreatureArrivalTests
         Assert.That(seen, Is.EqualTo(new WorldPlace(Map, 7, 3)));
     }
 
-    /// <summary>Writing a creature's numbers from the handler is the point of the seam, so the write has
-    /// to reach the body and still be on it afterwards.</summary>
+    /// <summary>The seam exists so a handler can write a creature's numbers, so the write has to
+    /// reach the body and still be on it afterwards.</summary>
     [Test]
     public void AGameCanWriteACreaturesNumbersFromIt()
     {
@@ -159,7 +159,7 @@ public class CreatureArrivalTests
         Assert.That(held.AsLong(), Is.EqualTo(42L));
     }
 
-    /// <summary>A body respawning is an arrival like any other, which is what a per-spawn rule depends
+    /// <summary>A body respawning is an arrival like any other, which a per-spawn rule depends
     /// on: the second wolf is a fresh roll, not the first one continuing.</summary>
     [Test]
     public void ARespawnIsAnArrivalToo()
@@ -242,7 +242,7 @@ public class CreatureArrivalTests
         });
     }
 
-    /// <summary>Distance is beside the point, which is what separates this from the neighborhood
+    /// <summary>Distance does not come into it, which separates this from the neighborhood
     /// question: a body in the far corner is as much on the map as one standing next to you.</summary>
     [Test]
     public void DistanceIsBesideThePoint()

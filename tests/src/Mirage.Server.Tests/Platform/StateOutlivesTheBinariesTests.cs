@@ -88,8 +88,8 @@ public class StateOutlivesTheBinariesTests
 /// The same invariant from the other end: not which path a property returns, but whether creating the
 /// identity actually puts a byte in the install folder.
 ///
-/// <para>The install folder is READ-ONLY at runtime. Beyond surviving an update, that is what lets the
-/// server run from a Linux AppImage or a macOS .app at all — both mount their payload read-only, so a
+/// <para>The install folder is READ-ONLY at runtime. Beyond surviving an update, that is why
+/// running from a Linux AppImage or a macOS .app is possible at all — both mount their payload read-only, so a
 /// write beside the exe does not land somewhere unlucky, it fails. This runs on all three platforms in
 /// CI, which is the only way the non-Windows branches of <see cref="UserPaths"/> are ever executed.</para>
 /// </summary>

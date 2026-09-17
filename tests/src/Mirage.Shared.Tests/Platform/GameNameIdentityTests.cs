@@ -49,8 +49,8 @@ public class GameNameIdentityTests
             + "the build nor the rest of the suite will say so.");
     }
 
-    /// <summary>The slug is what actually reaches a filename, and it is derived rather than written —
-    /// so the thing worth asserting is that deriving it the way MSBuild does and the way the server
+    /// <summary>The slug is the form that reaches a filename, and it is derived rather than written —
+    /// so what is worth asserting is that deriving it the way MSBuild does and the way the server
     /// shell does produce the same string.</summary>
     [Test]
     public void TheSlugTheShellComposesMatchesTheSlugMsBuildProduces()

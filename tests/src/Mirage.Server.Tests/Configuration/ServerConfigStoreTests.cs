@@ -87,7 +87,7 @@ public class ServerConfigStoreTests
     public void PortAndLanguage_LiveHereNow_NotInAppSettings()
     {
         // Split by what they configure: appsettings.json is the APPLICATION (Serilog), hand-authored and
-        // commented; this is the SERVER and is machine-owned, which is what lets the shell rewrite it.
+        // commented; this is the SERVER and is machine-owned, so the shell may rewrite it.
         string path = Path_("moved.json");
         File.WriteAllText(path, """{ "port": 7777, "language": "fr" }""");
 

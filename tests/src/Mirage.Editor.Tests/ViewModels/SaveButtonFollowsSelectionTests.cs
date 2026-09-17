@@ -18,7 +18,7 @@ namespace Mirage.Editor.Tests.ViewModels;
 /// and then disabled over the dirty one you came back to, with Save All the only way out.</para>
 ///
 /// <para>The command carries the same rule itself: a save with nothing to save would still bump the
-/// revision, and the revision is what tells a connected client its cached copy is stale.</para>
+/// revision, and the revision tells a connected client its copy is stale.</para>
 /// </summary>
 [TestFixture]
 public class SaveButtonFollowsSelectionTests

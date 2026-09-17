@@ -9,7 +9,7 @@ namespace Mirage.Server.Tests.GameLogic;
 ///
 /// <para><b>Two halves, and either one missing is silent.</b> A game asks for the body to stay and the
 /// engine keeps it; the engine has to take it away again on its own, or the game must remember to come
-/// back for it — which is not a primitive, it is a chore with a deadline. Neither half announces its
+/// back for it — a chore with a deadline rather than a primitive. Neither half announces its
 /// absence: a ghost nobody can create looks like a feature nobody uses, and a ghost nobody clears looks
 /// like a player who never logged out.</para>
 /// </summary>

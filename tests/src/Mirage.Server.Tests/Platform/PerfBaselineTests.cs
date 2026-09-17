@@ -85,7 +85,7 @@ public class PerfBaselineTests
         Report("900B packet: header scan (current)", Measure(50_000, () => PacketSerializer.ReadHeader(bulky)));
 
         TestContext.WriteLine("");
-        TestContext.WriteLine("Full decode (header + deserialize), which is what the dispatchers actually do:");
+        TestContext.WriteLine("Full decode (header + deserialize), as the dispatchers actually do it:");
         Report("full: DOM + deserialize (pre-1.3)", Measure(100_000, () =>
         {
             string cmd = OldWayCmd(move);

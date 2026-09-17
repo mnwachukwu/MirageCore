@@ -14,8 +14,8 @@ namespace Mirage.Client.Core.Tests.Rendering;
 ///
 /// <para>The other half of it is that the mask is anchored to the tile the occlusion was TRACED from, not to
 /// the halo. A walking player's halo slides sub-tile between tiles while the trace stays on a tile, and the
-/// shadows have to stay with the trace — that mismatch is what used to make the shadow pattern jump a whole
-/// tile sideways mid-step.</para>
+/// shadows have to stay with the trace — that mismatch used to make the shadow pattern jump a
+/// whole tile sideways mid-step.</para>
 /// </summary>
 [TestFixture]
 public class LightMaskUvTests
@@ -29,7 +29,7 @@ public class LightMaskUvTests
     {
         var (sx, sy, ox, oy) = LightOcclusion.MaskUv(destLeft, destTop, destW, destH,
                                                      tileScreenX, tileScreenY, r);
-        // The quad's own 0..1 coordinates at that screen point, which is what the pixel shader is handed.
+        // The quad's own 0..1 coordinates at that screen point, as the pixel shader is handed them.
         float u = (screenX - destLeft) / destW, v = (screenY - destTop) / destH;
         return (u * sx + ox, v * sy + oy);
     }

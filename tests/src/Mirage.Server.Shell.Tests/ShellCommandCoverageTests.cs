@@ -8,7 +8,7 @@ namespace Mirage.Server.Shell.Tests;
 
 /// <summary>
 /// The Commands tab is a set of forms that compose console command lines and post them down the same
-/// pipe the console box uses. That is what keeps the CLI the single source of truth — and it is also
+/// pipe the console box uses. So the CLI stays the single source of truth — and it is also
 /// the failure: a form naming a verb the console does not accept builds, renders, and silently does
 /// nothing when pressed, because the server simply replies that it does not know the command.
 ///

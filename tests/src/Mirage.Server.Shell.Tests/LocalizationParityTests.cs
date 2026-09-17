@@ -104,7 +104,7 @@ public class LocalizationParityTests
     [Test]
     public void EveryLanguage_NamesItselfInItsOwnLanguage()
     {
-        // LanguageName is what the picker lists, so it is the one value that must NOT be translated into
+        // The picker lists LanguageName, so it is the one value that must NOT be translated into
         // the reader's language — somebody hunting for Spanish is looking for "Espanol", not "Spanish".
         foreach (string file in LangFiles())
         {

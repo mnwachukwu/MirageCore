@@ -68,8 +68,8 @@ public class MapLightingResolveTests
         });
     }
 
-    /// <summary>Unchecking a box is how a map opts out of a flag its group asserts — that is what the third
-    /// tri-state value is for. It must not also cancel the OTHER flag, which the author said nothing about.</summary>
+    /// <summary>Unchecking a box is how a map opts out of a flag its group asserts, and the third
+    /// tri-state value exists for it. It must not also cancel the OTHER flag, which the author said nothing about.</summary>
     [Test]
     public void AnExplicitFalseOnTheMapDeclinesOnlyThatFlag()
     {

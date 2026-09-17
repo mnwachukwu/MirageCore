@@ -4,8 +4,8 @@ using NUnit.Framework;
 namespace Mirage.Server.Tests.Management;
 
 /// <summary>
-/// The tee is what a remote operator actually sees, and it is the only piece of the management path with
-/// no local equivalent — stdout was free. These pin the two things it has to get right: nothing is lost
+/// A remote operator sees the tee and nothing else, and it is the only piece of the management
+/// path with no local equivalent — stdout was free. These pin the two things it has to get right: nothing is lost
 /// from the real console, and what subscribers get is whole lines.
 /// </summary>
 [TestFixture]

@@ -74,7 +74,7 @@ public class MapCopyTests
     }
 
     /// <summary>Everything that is a PROPERTY of the map rather than an edge of the neighbor graph comes
-    /// along — otherwise the copy is not a starting point, it is a blank with a name.</summary>
+    /// along — otherwise the copy is a blank with a name rather than a starting point.</summary>
     [Test]
     public void CopiedMap_KeepsItsExitPointGroupAndContent()
     {

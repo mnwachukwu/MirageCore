@@ -104,7 +104,7 @@ public class ActionCooldownTests
         Assert.That(seam.IsWaiting(TheCreature), Is.False);
     }
 
-    /// <summary>A gale stretches every beat, which is what the client has always drawn.</summary>
+    /// <summary>A gale stretches every beat, as the client has always drawn it.</summary>
     [Test]
     public void AGaleStretchesTheBeat()
     {

@@ -93,7 +93,7 @@ public class EditorSchemaWireTests
     }
 
     /// <summary>A refused login carries no schema, and an editor reading one must not see a world with no
-    /// families — which is why the receiving side treats empty as "said nothing" rather than as an answer.</summary>
+    /// families, so the receiving side treats empty as "said nothing" rather than as an answer.</summary>
     [Test]
     public void ARefusedLogin_CarriesAnEmptySchemaRatherThanNull()
     {

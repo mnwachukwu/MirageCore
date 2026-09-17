@@ -43,7 +43,7 @@ public class SheetFileTests
         Assert.That(SheetFile.UsesColorKey("0_tiles.PNG"), Is.False);
     }
 
-    /// <summary>The leading digits are the index. This is what every painted tile stores, so it is the one
+    /// <summary>The leading digits are the index. Every painted tile stores it, so it is the one
     /// piece of a filename that is data.</summary>
     [Test]
     public void TheLeadingDigitsAreTheIndex()
@@ -69,7 +69,7 @@ public class SheetFileTests
         Assert.That(SheetFile.ParseIndex("99999999999999999999_x"), Is.EqualTo(-1));
     }
 
-    /// <summary>The label is what is left after the index and one separator. It is shown in the tileset
+    /// <summary>The label is whatever is left after the index and one separator. It is shown in the tileset
     /// picker, so the manager and the picker have to agree about it exactly.</summary>
     [Test]
     public void TheLabelIsWhatFollowsTheIndex()
@@ -88,8 +88,8 @@ public class SheetFileTests
         Assert.That(SheetFile.DisplayName("7"), Is.EqualTo("7"));
     }
 
-    /// <summary>Building a filename and reading it back gives the same index and label, which is what makes
-    /// rename and import safe to round-trip.</summary>
+    /// <summary>Building a filename and reading it back gives the same index and label, so rename
+    /// and import round-trip safely.</summary>
     [Test]
     public void AFileNameRoundTripsThroughItsParts()
     {

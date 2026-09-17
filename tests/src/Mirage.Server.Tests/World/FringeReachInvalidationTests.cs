@@ -123,7 +123,7 @@ public class FringeReachInvalidationTests
     [Test]
     public void TheScanWouldActuallyCatchSomething()
     {
-        // A guard that matches nothing is a guard nobody notices has stopped working.
+        // A guard that matches nothing stops working without anybody noticing.
         string root = RepoRoot();
         int mutating = 0;
         foreach (string file in Directory.EnumerateFiles(Path.Combine(root, "server"), "*.cs", SearchOption.AllDirectories))

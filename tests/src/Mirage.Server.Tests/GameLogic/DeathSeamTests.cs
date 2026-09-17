@@ -13,7 +13,7 @@ namespace Mirage.Server.Tests.GameLogic;
 /// Death as Core performs it: a body leaves where it stood and arrives at its home, and everything
 /// about WHY comes from a policy.
 ///
-/// <para>🔴 The seam is what makes Core genre-agnostic here. Core has no rule that ends a life, so with
+/// <para>🔴 The seam keeps Core genre-agnostic here. Core has no rule that ends a life, so with
 /// no policy loaded a kill must still be a well-defined move rather than a half-applied one — and with a
 /// policy that refuses, nothing may have happened at all. Both halves fail silently otherwise: a body
 /// left standing where it died, or one moved after a refusal, looks like an ordinary position either
@@ -181,7 +181,7 @@ public class DeathSeamTests
         public Respawn RespawnFor(in Death death) => Respawn;
 
         /// <summary>Where the body stands at the moment the cost is charged. A closure rather than a
-        /// player reference so the policy reads the live position, which is the thing under test.</summary>
+        /// player reference so the policy reads the live position, which is under test.</summary>
         public Func<(int X, int Y)>? Where { get; set; }
     }
 

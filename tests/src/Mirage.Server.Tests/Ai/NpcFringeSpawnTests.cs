@@ -20,7 +20,7 @@ namespace Mirage.Server.Tests.Ai;
 /// <para>🔴 The fringe plane is walkable BY DEFAULT — <see cref="LayerLogic.AttrFor"/> reads it as Walkable
 /// wherever no fringe attribute says otherwise — so "not blocked up top" is true of open sky over almost
 /// every tile of every map. A search that asked only that would scatter mobs across the whole sky, outside
-/// the railings that bound the deck and with no way down. The deck is the surface, and that is what keeps a
+/// the railings that bound the deck and with no way down. The deck is the surface, which keeps a
 /// spawn inside the barriers without anybody painting NpcAvoid over every empty tile of the map.</para>
 ///
 /// <para>🔴 And the joining cannot be asked one map at a time: the plane runs on through a seam exactly like
@@ -127,7 +127,7 @@ public class NpcFringeSpawnTests
         PaintDeck(world, y: 4, fromX: 6, toX: 9);   // a surface, but nothing joins the planes
 
         Assert.That(SpawnMany(world, 400).Any(p => p.Layer == WorldLayer.Fringe), Is.False,
-            "a mob up on a deck nobody can climb to is a mob nobody can fight");
+            "a mob up on a deck nobody can climb to can never be fought");
     }
 
     [Test]

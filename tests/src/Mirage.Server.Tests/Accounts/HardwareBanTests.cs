@@ -64,8 +64,8 @@ public class HardwareBanTests
         string again = await _svc.HashMachineKeyAsync("client-key");
 
         Assert.That(first, Is.EqualTo(again));
-        // The stored value must not be the value the client sent: the salt is what stops one server's
-        // list identifying a player at another.
+        // The stored value must not be the value the client sent: the salt stops one server's list
+        // identifying a player at another.
         Assert.That(first, Is.Not.EqualTo("client-key"));
         Assert.That(first, Has.Length.EqualTo(64));
     }

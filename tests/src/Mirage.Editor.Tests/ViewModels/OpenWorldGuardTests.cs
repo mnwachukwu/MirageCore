@@ -79,8 +79,8 @@ public class OpenWorldGuardTests
         });
     }
 
-    /// <summary>The manifest is the claim, not the contents: a world nobody has authored yet is still a
-    /// world, and that is exactly what New World leaves behind.</summary>
+    /// <summary>The manifest is the claim, not the contents: a world nobody has authored yet is
+    /// still a world, and New World leaves exactly that behind.</summary>
     [Test]
     public async Task AManifestAlone_IsAWorld()
     {
@@ -96,7 +96,7 @@ public class OpenWorldGuardTests
     }
 
     /// <summary>The case the rule exists for: a folder that happens to contain a directory sharing a name
-    /// with one of ours is not a world, and saying so is the whole point of requiring the manifest.</summary>
+    /// with one of ours is not a world, so the manifest is required.</summary>
     [TestCase("items")]
     [TestCase("maps")]
     [TestCase("npcs")]
@@ -153,8 +153,8 @@ public class OpenWorldGuardTests
         });
     }
 
-    /// <summary>An empty folder is not a world either. Making one is its own command, which is what stops
-    /// a mistaken pick from quietly becoming a world on the first save.</summary>
+    /// <summary>An empty folder is not a world either. Making one is its own command, so a mistaken
+    /// pick never quietly becomes a world on the first save.</summary>
     [Test]
     public async Task AnEmptyFolder_IsRefused()
     {

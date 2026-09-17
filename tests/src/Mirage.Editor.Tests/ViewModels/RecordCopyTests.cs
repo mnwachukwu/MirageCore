@@ -9,7 +9,7 @@ namespace Mirage.Editor.Tests.ViewModels;
 /// <summary>
 /// Copy duplicates the open record into the first unused slot, dirty, ready to edit.
 ///
-/// <para>Most of what these pin is what copy REFUSES to carry. Three record types point at an NPC through
+/// <para>These mostly pin what copy REFUSES to carry. Three record types point at an NPC through
 /// a side-mapping the game resolves by SCANNING — a conversation's speaker, a quest's giver, a shop's
 /// keeper — so a verbatim copy leaves two records claiming one NPC and the loser silently never fires.
 /// A map's neighbor links are the same shape: the map on the other side still points at the original, so
@@ -73,7 +73,7 @@ public class RecordCopyTests
         var copy = vm.Items.First(i => i.Index == 2);
         Assert.Multiple(() =>
         {
-            Assert.That(copy.IsDirty, Is.True, "an unsaved copy is what makes it discardable");
+            Assert.That(copy.IsDirty, Is.True, "an unsaved copy can be discarded");
             Assert.That(vm.HasAnyDirty, Is.True);
         });
     }

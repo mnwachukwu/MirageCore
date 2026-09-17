@@ -13,7 +13,7 @@ namespace Mirage.Editor.Tests.ViewModels;
 /// sees the shape it will take and cannot make one of their own that the editor would collide with.</para>
 ///
 /// <para>Because they are restored on every open, emptying a world is deleting everything but the
-/// manifest: the folders come back and the records are what is gone.</para>
+/// manifest: the folders come back and the records are gone.</para>
 /// </summary>
 [TestFixture]
 public class WorldFoldersTests

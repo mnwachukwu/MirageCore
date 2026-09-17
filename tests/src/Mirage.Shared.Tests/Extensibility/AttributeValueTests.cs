@@ -139,7 +139,7 @@ public class AttributeValueTests
     }
 
     /// <summary>Five and five-point-zero read alike through every accessor, and are still not the same
-    /// value — which is what keeps <see cref="AttributeValue.Kind"/> meaningful.</summary>
+    /// value, which keeps <see cref="AttributeValue.Kind"/> meaningful.</summary>
     [Test]
     public void AnIntegerAndARealOfTheSameMagnitudeAreNotEqual()
     {

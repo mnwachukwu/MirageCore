@@ -111,7 +111,7 @@ public class SeedDeployTests
         });
     }
 
-    /// <summary>Staging is what keeps a failed copy from looking like a finished one. Nothing is left where
+    /// <summary>Staging stops a failed copy looking like a finished one. Nothing is left where
     /// the data dir goes, so the next launch tries again instead of running on half a world.</summary>
     [Test]
     public void TheStagingFolder_IsNeverLeftBehind()

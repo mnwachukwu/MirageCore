@@ -205,7 +205,7 @@ public class NpcSpawnPlacementTests
 
     // ── Which way it faces ───────────────────────────────────────
 
-    /// <summary>An authored facing is what the NPC spawns with. Worth having for anything that stays put:
+    /// <summary>An NPC spawns facing the way it was authored. Worth having for anything that stays put:
     /// a shopkeeper behind a counter faces the counter, and a guard at a gate faces out.</summary>
     [TestCase(Direction.Up)]
     [TestCase(Direction.Down)]

@@ -36,7 +36,7 @@ public class DecalSystemTests
             Assert.That((field.Decals[0].X, field.Decals[0].Y), Is.EqualTo((3, 4)));
             Assert.That(field.Decals[0].Size, Is.EqualTo(2));
             Assert.That(field.Decals[0].Amount, Is.EqualTo(1.0f).Within(1e-4f));
-            Assert.That(field.Decals[0].Peak, Is.EqualTo(1.0f).Within(1e-4f), "a fresh stain's peak is what it holds");
+            Assert.That(field.Decals[0].Peak, Is.EqualTo(1.0f).Within(1e-4f), "a fresh stain peaks at what it holds");
         });
     }
 
@@ -128,8 +128,8 @@ public class DecalSystemTests
 
     // ── The per-map cap ──────────────────────────────────────────────────────────
 
-    // The faintest goes rather than the oldest: what a viewer misses least is what is nearly dry, and an
-    // oldest-first rule would drop the big stain under a body that is still standing there.
+    // The faintest goes rather than the oldest: a viewer misses a nearly dry stain least, and an
+    // oldest-first rule would drop the big one under a body still standing there.
     [Test]
     public void PastTheCap_TheFaintestStainIsEvicted()
     {
@@ -148,8 +148,8 @@ public class DecalSystemTests
         Assert.Multiple(() =>
         {
             Assert.That(field.Decals, Has.Count.EqualTo(Constants.MaxMapDecals), "the cap holds");
-            Assert.That(field.Decals.Any(d => d.Amount < 0.1f), Is.False, "the faintest is what left");
-            Assert.That(field.Decals.Any(d => d.Size == 3), Is.True, "the new stain is what arrived");
+            Assert.That(field.Decals.Any(d => d.Amount < 0.1f), Is.False, "the faintest one left");
+            Assert.That(field.Decals.Any(d => d.Size == 3), Is.True, "the new stain arrived");
         });
     }
 

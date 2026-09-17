@@ -6,7 +6,7 @@ namespace Mirage.Client.Shell.Tests.Panels;
 /// <summary>
 /// The per-panel policy table: five facts about every panel, held as data rather than as switches and
 /// boolean chains inside GameplayScreen. The registry keeps only what needs a live panel and a frame,
-/// so the policy itself is reachable without a graphics device — which is what makes it assertable.
+/// so the policy itself is reachable without a graphics device, which leaves it assertable.
 ///
 /// <para>Two of these tests lock behavior that is arguably WRONG but deliberately preserved. That is
 /// the point: an unlocked quirk gets "fixed" by accident during unrelated work and nobody notices the
@@ -64,7 +64,7 @@ public class PanelPolicyTests
 
     // Named directly as well as covered by the sweep above: Controls and Help are the same kind of
     // read-only reference window, so any divergence between them under Escape is an oversight rather
-    // than a decision, and pairing them in one assertion is what makes that visible.
+    // than a decision, and pairing them in one assertion surfaces it.
     [Test]
     public void Controls_CountsForEscape_LikeItsSiblingHelp()
     {

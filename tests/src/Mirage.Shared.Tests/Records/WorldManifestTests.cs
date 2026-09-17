@@ -58,7 +58,7 @@ public class WorldManifestTests
     /// <para>🔴 The converter is hand-written, so a setting added to the record without a matching arm in
     /// BOTH halves of it is silently dropped on save and silently defaulted on load. Nothing about that
     /// fails, warns, or looks wrong until an author notices their work has gone. This test and the coverage
-    /// check below it are the only things that catch it, which is why the check exists rather than trusting
+    /// check below it are the only things that catch it, so the check exists rather than trusting
     /// this list to be kept current by hand.</para></summary>
     [Test]
     public void EverySetting_SurvivesARoundTrip()
@@ -120,8 +120,8 @@ public class WorldManifestTests
     private static WorldManifest FullyAuthored() => new()
     {
         Name = "Demo Landia",
-        // Deliberately unlike Name: one is what the FOLDER is called for whoever holds it, the other is
-        // what the GAME is called for whoever plays it, and a fixture that gave them the same string
+        // Deliberately unlike Name: one names the FOLDER for whoever holds it, the other names the
+        // GAME for whoever plays it, and a fixture that gave them the same string
         // would pass just as happily with the two of them crossed.
         GameName = "Isles of Demo",
         DefaultMapSize = new MapSize(24, 20),
@@ -263,8 +263,8 @@ public class WorldManifestTests
 
     /// <summary>
     /// 🔴 A server settles the game's name before it has built anything that could load a world, so
-    /// the name is read on its own. That is a SECOND reader of the same key, and the two agreeing is what
-    /// stops a server announcing one name while the editor shows another.
+    /// the name is read on its own. That is a SECOND reader of the same key, and the two agreeing is
+    /// what stops a server announcing one name while the editor shows another.
     /// </summary>
     [Test]
     public void ReadingTheGameNameAlone_AgreesWithLoadingTheWholeManifest()

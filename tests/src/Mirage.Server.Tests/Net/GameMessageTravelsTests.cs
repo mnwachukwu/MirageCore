@@ -31,7 +31,7 @@ public class GameMessageTravelsTests
         new("where", ScriptFieldShape.Choice, "Habitat", ["Shore", "Woodland"]),
     ];
 
-    /// <summary>What the client writes is what the server reads.</summary>
+    /// <summary>The server reads back exactly what the client wrote.</summary>
     [Test]
     public void WhatTheClientComposes_IsWhatTheServerReads()
     {
@@ -87,7 +87,7 @@ public class GameMessageTravelsTests
         });
     }
 
-    /// <summary>🔴 The header scan finds the command, which is what picks the parse delegate. A line
+    /// <summary>🔴 The header scan finds the command, which picks the parse delegate. A line
     /// whose command the scanner cannot read is dropped before any router sees it.</summary>
     [Test]
     public void TheCommandIsReadableByTheHeaderScan()

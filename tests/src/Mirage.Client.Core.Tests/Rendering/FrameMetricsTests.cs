@@ -71,7 +71,7 @@ public class FrameMetricsTests
         Assert.Multiple(() =>
         {
             Assert.That(s.Frame.P99, Is.EqualTo(16.0).Within(0.001));
-            Assert.That(s.Frame.Max, Is.EqualTo(180.0).Within(0.001), "which is what max is for");
+            Assert.That(s.Frame.Max, Is.EqualTo(180.0).Within(0.001), "max exists to report exactly that");
         });
     }
 

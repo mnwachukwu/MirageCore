@@ -14,7 +14,7 @@ namespace Mirage.Client.Core.Tests.Rendering;
 /// 3x3 region: every visible tile on three layers, every NPC and traversal guest, every player, ground stains
 /// decals, lights, and map items. It is the one client function where a per-frame allocation
 /// translates directly into GC pressure at frame rate — 60 allocations a second per byte-source, which
-/// is what produces the periodic hitches players notice rather than a lower average frame time.</para>
+/// produces the periodic hitches players notice rather than a lower average frame time.</para>
 ///
 /// <para>So the number that matters here is <b>bytes per frame</b>, not microseconds. The builder is
 /// deliberately written to reuse its buffers (the <c>RenderFrame</c> is cleared and refilled, the

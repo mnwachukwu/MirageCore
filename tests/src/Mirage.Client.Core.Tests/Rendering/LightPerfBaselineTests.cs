@@ -105,7 +105,7 @@ public class LightPerfBaselineTests
     }
 
     // The BEST of several passes, not the mean. Frequency scaling and stray work only ever make a pass
-    // slower, so the minimum is the closest estimate of what the code costs — and it is what stops a run
+    // slower, so the minimum is the closest estimate of what the code costs — and it stops a run
     // reporting a smaller radius as dearer than a larger one, which is how noise announces itself.
     private static double MicrosPer(int reps, Action body)
     {

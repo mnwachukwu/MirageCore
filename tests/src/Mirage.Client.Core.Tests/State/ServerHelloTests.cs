@@ -11,7 +11,7 @@ namespace Mirage.Client.Core.Tests.State;
 /// <summary>
 /// A client compiles against the PROTOCOL ceiling — the largest slot the wire can carry — but a server
 /// runs on its own, usually much smaller, limit. The pre-login hello is how the client learns it, and
-/// <see cref="ClientState.PlayerSlots"/> is what every per-frame pass over players bounds itself by.
+/// every per-frame pass over players bounds itself by <see cref="ClientState.PlayerSlots"/>.
 ///
 /// <para>Being wrong high is harmless: a few checks on slots that stay empty. Being wrong LOW would skip a
 /// real player mid-step, so these lock the direction as much as the value.</para>

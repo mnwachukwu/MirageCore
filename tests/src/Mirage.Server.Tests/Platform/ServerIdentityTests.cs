@@ -7,7 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 namespace Mirage.Server.Tests.Platform;
 
 /// <summary>
-/// The server's TLS identity, which is the thing certificate pinning stands on.
+/// The server's TLS identity, which certificate pinning stands on.
 ///
 /// <para> The property that matters is that the fingerprint SURVIVES A RESTART. A certificate that
 /// changes per start makes every reconnection look like an interception, which is how a security

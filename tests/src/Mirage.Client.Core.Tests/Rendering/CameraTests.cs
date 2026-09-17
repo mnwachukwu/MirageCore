@@ -132,7 +132,7 @@ public class CameraTests
     /// <summary>
     /// A neighbor that EXISTS but has not finished loading still lets the camera scroll toward it.
     ///
-    /// <para>This is what stops a warp from lurching. The eight neighbor numbers land together the moment
+    /// <para>Without it a warp lurches. The eight neighbor numbers land together the moment
     /// the server describes the new surroundings, while each map's data resolves separately over however
     /// many frames the cache or the wire takes. If the reach were computed from what had finished loading,
     /// it would widen one arrival at a time and snap the view with each — most visibly where the destination
@@ -190,8 +190,8 @@ public class CameraTests
     }
 
     /// <summary>⚠ And it SITS STILL in the middle. A map with nothing to scroll should not slide
-    /// under the player, so the camera lands at the offset that centers it - which is what the midpoint
-    /// of the crossed bounds works out to.</summary>
+    /// under the player, so the camera lands at the offset that centers it - the midpoint of the
+    /// crossed bounds.</summary>
     [Test]
     public void ASmallMapIsCenteredAndDoesNotScroll()
     {

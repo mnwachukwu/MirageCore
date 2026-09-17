@@ -6,7 +6,7 @@ using System.Text.Json;
 namespace Mirage.Shared.Tests.Extensibility;
 
 /// <summary>
-/// The schema is what a server tells an editor about a world the editor was not compiled against, so
+/// The schema is how a server describes a world the editor was not compiled against, so
 /// the property that matters most is that it survives the trip: every descriptor has to round-trip
 /// through the serializer with nothing silently dropped.
 /// </summary>
@@ -65,8 +65,8 @@ public class RecordSchemaTests
         });
     }
 
-    /// <summary>Choosing a kind is what brings its extra rows into the form, so a field that belongs to
-    /// one kind has to be findable through the set that kind lives in.</summary>
+    /// <summary>Choosing a kind brings its extra rows into the form, so a field that belongs to one
+    /// kind has to be findable through the set that kind lives in.</summary>
     [Test]
     public void AFieldBelongingToOneKindIsFoundThroughItsChoiceSet()
     {

@@ -53,7 +53,7 @@ public class RepairPositionTests
     }
 
     /// <summary>The fallback is clamped on the same terms, so a misconfigured spawn point cannot strand
-    /// anyone either — which is the whole point of a path that is not allowed to fail.</summary>
+    /// anyone either, since a path not allowed to fail has to cover that too.</summary>
     [Test]
     public void AFallbackThatIsAlsoOffTheGrid_IsClampedToo()
     {

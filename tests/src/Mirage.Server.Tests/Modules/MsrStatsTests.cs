@@ -132,7 +132,7 @@ public class MsrStatsTests
     [TestCase(200, ExpectedResult = "693")]
     public string HealthRegenMatchesTheOriginal(int def) => Answered($"Stats.HealthRegen({def})");
 
-    /// <summary>⚠ The floor is what a body with nothing in the stat gets, and it is higher for
+    /// <summary>⚠ The floor is the rate a body with nothing in the stat regenerates at, higher for
     /// stamina than for the other two because stamina is the only one anybody ever sits on.</summary>
     [TestCase(0, ExpectedResult = "4")]
     [TestCase(5, ExpectedResult = "4")]
@@ -208,7 +208,7 @@ public class MsrStatsTests
 
         for (int tick = 1; tick <= Seconds; tick++) ((ITickWork)scripts).Tick(tick);
 
-        // Five in each stat, which is what enrollment leaves: regen of 6, 6 and 4 per interval.
+        // Five in each stat, which enrollment leaves: regen of 6, 6 and 4 per interval.
         long health = fighting ? 0 : Paid(6, 2.5);
         long mana = Paid(6, fighting ? 5.0 : 2.5);
         long stamina = fighting ? 0 : Paid(4, 2.5);
@@ -518,8 +518,8 @@ public class MsrStatsTests
         world.Here.Add(wolf);
         world.Here.Add(deer);
 
-        // The double keeps one bag, so both bodies read these — which is what a fight between two
-        // matched creatures is anyway.
+        // The double keeps one bag, so both bodies read these, as two matched creatures would
+        // anyway.
         //
         // ⚠ NO DEFENSE, deliberately. Any defense at all buys a dodge and a block roll, and a test that
         // is about the handler reaching the arithmetic would then fail a few runs in a hundred on a
@@ -693,7 +693,7 @@ public class MsrStatsTests
     /// <summary>The kit arrives in the bag. Every line naming this class, and no line naming another.
     ///
     /// <para>⚠ Carried rather than worn. Equipping is the engine's and nothing reaches it, so the
-    /// original's already-worn opening is the one thing about a kit the port cannot carry.</para></summary>
+    /// original's already-worn opening is the only part of a kit the port cannot carry.</para></summary>
     [Test]
     public void AKitGivesOnlyTheLinesThatNameThisClass()
     {
@@ -845,15 +845,14 @@ public class MsrStatsTests
     /// certainty. Crossing them takes 100 + 50 + 33⅓ + 25 hits, so a hundred points of durability go in
     /// 208⅓ hits, which is 0.48 a hit.</para>
     ///
-    /// <para>⚠ Move a band and this moves. That is the point: a figure copied here would go stale the
-    /// moment one did, and it would fail silently — nothing throws, casters simply stop paying their
+    /// <para>⚠ Move a band and this moves. A figure copied here would go stale the moment one did, and it would fail silently — nothing throws, casters simply stop paying their
     /// share.</para></summary>
     [Test]
     public void AverageWearPerHit_IsReadOffTheWearBands() =>
         Assert.That(Answered("Math.Round(Gear.AverageChip() * 100)"), Is.EqualTo("48"));
 
-    /// <summary>🔴 <b>A cast takes a whole number of reagents or none.</b> That is the shape of the
-    /// thing it mirrors: a swing removes one point of durability or none, never a point and sometimes
+    /// <summary>🔴 <b>A cast takes a whole number of reagents or none.</b> It mirrors the swing it
+    /// is priced off: a swing removes one point of durability or none, never a point and sometimes
     /// two. So the bill rounds UP to what a charge would be, and how often a charge happens carries the
     /// fraction.</summary>
     [TestCase("0.0", ExpectedResult = "0")]
@@ -957,7 +956,7 @@ public class MsrStatsTests
         {
             Assert.That(Held(world, "book1"), Is.EqualTo(1L));
             Assert.That(Held(world, "prepared"), Is.EqualTo(1L),
-                "the first thing anybody learns is the thing they want ready");
+                "anybody learning their first spell wants it ready");
             Assert.That(world.Said, Has.Some.Contains("already know"));
         });
     }
@@ -1115,7 +1114,7 @@ public class MsrStatsTests
     }
 
     /// <summary>⚠ A heal aimed at a creature is a heal aimed at the wrong body, and a drain aimed at
-    /// yourself is a mistake nobody meant. Both are refused rather than cast.</summary>
+    /// yourself is never what anybody meant. Both are refused rather than cast.</summary>
     [Test]
     public void ASpellAimedTheWrongWayIsRefused()
     {
@@ -1197,7 +1196,7 @@ public class MsrStatsTests
 
     /// <summary>🔴 <b>A field may point at the ENGINE'S own records.</b> Items and creatures have no
     /// model a script could type a field as, and authoring a kit line by typing 214 when the answer is
-    /// "Iron Sword" is the thing a picker exists to stop.</summary>
+    /// "Iron Sword" is the mistake a picker exists to stop.</summary>
     [Test]
     public void AFieldPointsAtTheEnginesOwnRecords()
     {
@@ -1322,7 +1321,7 @@ public class MsrStatsTests
         Assert.Multiple(() =>
         {
             Assert.That(world.Said[^3], Is.EqualTo("[]"),
-                "a thing nobody gated is a thing anybody may use");
+                "anybody may use what nobody gated");
             Assert.That(world.Said[^2], Does.Contain("never trained"));
             Assert.That(world.Said[^1], Does.Contain("level 40"));
         });
@@ -1620,8 +1619,8 @@ public class MsrStatsTests
     /// subtracts and declaring downward adds, so a strong guild picking on a weak one pays the most.
     ///
     /// <para>⚠ And declaring on a guild that has earned NOTHING doubles the whole thing — such a war can
-    /// never be answered, so its cost is paid indefinitely for a payout that never comes. That is what
-    /// protects a guild nobody has built yet, and it is applied BEFORE the floor: a floor doubled
+    /// never be answered, so its cost is paid indefinitely for a payout that never comes. That is
+    /// what protects a guild nobody has built yet, and it is applied BEFORE the floor: a floor doubled
     /// afterwards is not the floor.</para>
     ///
     /// <para>The second case is the original's own worked example — a level-5 guild declaring on a
@@ -1646,8 +1645,8 @@ public class MsrStatsTests
     }
 
     /// <summary>🔴 <b>A war the other side answered is live at once; a grievance nobody answered waits
-    /// out the warmup.</b> That is what stops a declaration being an ambush — and the two cases are the
-    /// same call, told apart by whether the opponent had already declared.</summary>
+    /// out the warmup.</b> So a declaration is never an ambush — and the two cases are the same
+    /// call, told apart by whether the opponent had already declared.</summary>
     [Test]
     public void AnAnsweredWarIsLiveAtOnceAndAGrievanceWaits()
     {
@@ -1718,7 +1717,7 @@ public class MsrStatsTests
         });
     }
 
-    /// <summary>🔴 <b>War is what makes player against player legal, and it is one-sided on purpose.</b> A
+    /// <summary>🔴 <b>War legalizes player against player, and it is one-sided on purpose.</b> A
     /// guild that declared may be struck back before its OWN war goes live, because being declared upon
     /// is not something the other side agreed to.</summary>
     [Test]
@@ -1789,8 +1788,8 @@ public class MsrStatsTests
         Assert.That(world.Said[^1], Is.EqualTo("false"));
     }
 
-    /// <summary>⚠ A declaration cannot be taken back for fifteen minutes, which is what makes declaring
-    /// a decision rather than a feint.</summary>
+    /// <summary>⚠ A declaration cannot be taken back for fifteen minutes, so declaring is a decision
+    /// rather than a feint.</summary>
     [Test]
     public void ADeclarationCannotBeTakenBackAtOnce()
     {
@@ -2313,7 +2312,7 @@ public class MsrStatsTests
     // ── How often a quest re-opens ───────────────────────────────────────────
 
     /// <summary>🔴 <b>A repeatable quest is not "take it again whenever".</b> It re-opens on its own
-    /// cadence, and two runs inside one period give the same key — which is what holds it shut.</summary>
+    /// cadence, and two runs inside one period give the same key, which holds it shut.</summary>
     [TestCase(1, 100, 101, ExpectedResult = false)]
     [TestCase(2, 3, 9, ExpectedResult = true)]
     [TestCase(2, 3, 10, ExpectedResult = false)]
@@ -2338,8 +2337,8 @@ public class MsrStatsTests
         Answered($"Territory.HoldMultiplier({weeks})");
 
     /// <summary>A kill on held land pays its holder whoever did the killing, and a member of the holding
-    /// guild is worth double — which is what makes holding land worth more to the people who hold it
-    /// than to anybody passing through.</summary>
+    /// guild is worth double, so held land is worth more to the people holding it than to anybody
+    /// passing through.</summary>
     [TestCase("false", 0, ExpectedResult = "35")]
     [TestCase("true", 0, ExpectedResult = "70")]
     [TestCase("false", 3, ExpectedResult = "140")]
@@ -2349,8 +2348,8 @@ public class MsrStatsTests
 
     // ── War night ────────────────────────────────────────────────────────────
 
-    /// <summary>Saturday evening, and the week resets the Sunday after — so a war night's result is what
-    /// the new week is built on. Day 3 was the epoch's first Sunday, so day 2 was its first Saturday.</summary>
+    /// <summary>Saturday evening, and the week resets the Sunday after, so the new week is built on
+    /// a war night's result. Day 3 was the epoch's first Sunday, so day 2 was its first Saturday.</summary>
     [TestCase(2, ExpectedResult = "true")]
     [TestCase(9, ExpectedResult = "true")]
     [TestCase(3, ExpectedResult = "false")]
@@ -2452,8 +2451,8 @@ public class MsrStatsTests
         });
     }
 
-    /// <summary>⚠ A kill over LAND pays valor five times as often as a grudge war does, which is what
-    /// makes holding territory the richer source of it.</summary>
+    /// <summary>⚠ A kill over LAND pays valor five times as often as a grudge war does, so held
+    /// territory is the richer source of it.</summary>
     [Test]
     public void LandPaysValorFiveTimesAsOftenAsAGrudge()
     {
@@ -2505,8 +2504,8 @@ public class MsrStatsTests
     // ── Seasons ──────────────────────────────────────────────────────────────
     //
     // 🔴 A season is not a slice of the calendar. It starts when the world starts one and runs thirteen
-    // whole weeks from there, so there is nothing about a DATE that could name it — which is why the
-    // seasonal cadence above is left out of that table and asked for here instead.
+    // whole weeks from there, so there is nothing about a DATE that could name it. The seasonal
+    // cadence above is left out of that table and asked for here instead.
 
     /// <summary>Days since 1970 for a day the world's week resets on. Day 3 was the first Sunday the
     /// epoch saw, so every Sunday after it is three more than a multiple of seven.</summary>
@@ -2514,7 +2513,7 @@ public class MsrStatsTests
         (3L + weeksAfterTheFirst * 7L) * 86_400L + 12L * 3_600L;
 
     /// <summary>Runs the world's own beat once for each moment given, and answers with the season
-    /// afterwards. The clock is moved by hand between beats, which is the whole point.</summary>
+    /// afterwards. The helper exists to move the clock by hand between beats.</summary>
     private string SeasonAfter(params long[] moments)
     {
         var world = new ScriptedWorldTests.RecordingWorld();
@@ -2616,8 +2615,8 @@ public class MsrStatsTests
     // stops all three. A port that rolled them free would be a different game at every level.
 
     /// <summary>🔴 <b>A block needs a shield; a dodge needs the hand a shield would be in.</b> They are
-    /// opposites, not alternatives — which is what makes carrying one a decision rather than a
-    /// strictly better choice.</summary>
+    /// opposites, not alternatives, so carrying one is a decision rather than a strictly better
+    /// choice.</summary>
     [Test]
     public void BlockNeedsAShieldAndDodgeNeedsNone()
     {
@@ -2750,11 +2749,11 @@ public class MsrStatsTests
     //
     // The original's gates, from CombatSystem.Pvp: party protection everywhere, guild protection
     // except in an arena, a protected map on either side, and nobody under level ten on either side.
-    // The ORDER is the answer the player reads, so each of these pins which reason comes back.
+    // The player reads the first refusal back, so each of these pins which reason comes back.
 
     /// <summary>🔴 <b>A partymate is protected everywhere, the arena included.</b> An organized team
-    /// match has no friendly fire in it, which is the one thing that separates party protection from
-    /// guild protection.</summary>
+    /// match has no friendly fire in it, which separates party protection from guild
+    /// protection.</summary>
     [Test]
     public void APartymateCannotBeFoughtEvenInAnArena()
     {
@@ -2984,8 +2983,8 @@ public class MsrStatsTests
     }
 
     /// <summary>🔴 <b>A declaration nobody answered costs half its price every day it stands, and a
-    /// vault that cannot keep up loses the war.</b> That is the whole penalty — a one-sided grievance
-    /// is a thing you pay to hold open.</summary>
+    /// vault that cannot keep up loses the war.</b> That is the whole penalty: a one-sided grievance
+    /// costs gold to hold open.</summary>
     [Test]
     public void AnUnansweredDeclarationIsPaidForDaily()
     {
@@ -3188,8 +3187,8 @@ public class MsrStatsTests
     }
 
     /// <summary>⚠ <b>Only the side that DECLARED pays.</b> A guild declared upon that never answered
-    /// loses nothing by dying — which is what stops a one-sided war from being a way to bleed a guild
-    /// that never agreed to fight.</summary>
+    /// loses nothing by dying, so a one-sided war is no way to bleed a guild that never agreed to
+    /// fight.</summary>
     [Test]
     public void AGuildThatNeverDeclaredLosesNothingByDying()
     {
@@ -3227,7 +3226,7 @@ public class MsrStatsTests
     }
 
     /// <summary>Guild 1 at mutual war with guild 2, its member wearing one hundred-point piece, and
-    /// the rival's member killing them on the tick. The vault is what each test varies.</summary>
+    /// the rival's member killing them on the tick. Each test varies the vault.</summary>
     private (ScriptedWorldModule Module, ScriptedWorldTests.RecordingWorld World) AtWarAndKilled(
         long vault, bool weDeclared = true)
     {
@@ -3347,7 +3346,7 @@ public class MsrStatsTests
         return (module, world, line);
     }
 
-    /// <summary>🔴 <b>Coin is the one thing on a table that divides.</b> Everybody who fought for it
+    /// <summary>🔴 <b>Coin alone divides on a table.</b> Everybody who fought for it
     /// takes a share, and every share is held for the person who earned it — otherwise a purse belongs
     /// to whoever is standing nearest when it lands.</summary>
     [Test]
@@ -3510,8 +3509,8 @@ public class MsrStatsTests
 
     /// <summary>🔴 <b>A murderer who has just died is treated as though they were not one.</b> They come
     /// back on open ground wearing a flag anybody may swing at, and without the minute they are killed
-    /// again where they land — a sentence nobody chose the length of. It is the one thing that reads
-    /// the flag differently, so nothing else asks IsMurderer to decide whether the world is hunting
+    /// again where they land, for as long as somebody keeps waiting there. This is the only place
+    /// that reads the flag differently, so nothing else asks IsMurderer whether the world is hunting
     /// somebody.</summary>
     [Test]
     public void AMurderersMinuteHidesTheFlagWithoutClearingIt()
@@ -3623,7 +3622,7 @@ public class MsrStatsTests
     //
     // 🔴 The original's casters backed out of melee and threw from the gap they had made. The engine
     // keeps the gap — a body authored to keep its distance closes to its standoff and holds — and this
-    // is what it does once it is standing where it meant to stand.
+    // covers what it does once it is standing where it meant to stand.
 
     /// <summary>Which of the two a creature does is read off the RECORD, not off the body: every copy
     /// of that creature fights the same way, and one that decided at spawn would be an archer by
@@ -3719,7 +3718,7 @@ public class MsrStatsTests
     public void TheGameKnowsWhatCoreCallsIt() =>
         Assert.That(Answered("Beasts.KeepsDistance"), Is.EqualTo("shadow"));
 
-    /// <summary>The repeat fire, which is what makes a caster a caster.
+    /// <summary>The repeat fire, without which a caster is not a caster.
     ///
     /// <para>Contact is raised once, on the beat it reaches the distance it wanted. Everything after
     /// that comes off the world tick: a sweep of every creature that keeps its distance, each loosing

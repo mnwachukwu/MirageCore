@@ -41,7 +41,7 @@ public class BulkTradeTests
 
         world.Shops[ShopNum].ShopType = ShopType.Store;
         world.Items[Gold].Type = ItemType.Currency;
-        // Treasure-shaped: a slot apiece, which is what makes counting and room interesting.
+        // Treasure-shaped: a slot apiece, which makes counting and room worth testing.
         foreach (int n in new[] { Gem, Hat, Tooth }) world.Items[n].Type = ItemType.None;
 
         var sp = pm[Idx];
@@ -246,7 +246,7 @@ public class BulkTradeTests
 
     /// <summary>The payment is part of the room. Three teeth for nine hats with eight slots free DOES go
     /// through, because handing the teeth over leaves eleven — the player gets all nine they asked for,
-    /// which is the thing the refusal exists to protect.</summary>
+    /// which the refusal exists to protect.</summary>
     [Test]
     public void Barter_PayoutThatFitsOnlyBecauseThePaymentLeft_GoesThrough()
     {
@@ -317,7 +317,7 @@ public class BulkTradeTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(SlotsHolding(p, Hat), Is.EqualTo(3), "three is what 35 gold buys");
+            Assert.That(SlotsHolding(p, Hat), Is.EqualTo(3), "35 gold buys three");
             Assert.That(ItemSystem.CountItem(p, world.Items, Gold), Is.EqualTo(5), "and only three are charged for");
         });
     }
@@ -356,8 +356,8 @@ public class BulkTradeTests
         Assert.That(SlotsHolding(p, Hat), Is.Zero);
     }
 
-    /// <summary>Durability is part of "identical" — it is what ItemSellValue prices on, so a battered copy
-    /// is a different thing from a pristine one and cannot be swept up with it.</summary>
+    /// <summary>Durability is part of "identical" — ItemSellValue prices on it, so a battered copy
+    /// differs from a pristine one and cannot be swept up with it.</summary>
     [Test]
     public void Sell_LeavesCopiesAtADifferentDurability_Alone()
     {
@@ -429,7 +429,7 @@ public class BulkTradeTests
         });
     }
 
-    /// <summary>The payment is what frees the room. Two teeth for three hats with two slots free works,
+    /// <summary>The payment frees the room. Two teeth for three hats with two slots free works,
     /// because handing the teeth over leaves four.</summary>
     [Test]
     public void Barter_WhereHandingOverThePaymentMakesTheRoom_GoesThrough()

@@ -84,7 +84,7 @@ public class SheetPixelsTests
 
     /// <summary>🔴 The one that matters most. Art exported over a colored background keeps that color in
     /// its fully transparent pixels, and a premultiplied blend would add it around every edge as a halo.
-    /// Zeroing it is what makes the transparency actually transparent.</summary>
+    /// Zeroing it leaves the transparency actually transparent.</summary>
     [Test]
     public void AFullyTransparentPixelLosesItsColor()
     {

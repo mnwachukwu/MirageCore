@@ -15,7 +15,7 @@ namespace Mirage.Server.Tests.Economy;
 ///
 /// <para>A session resolves to nothing in two cases: none was opened, or the slot it was opened against
 /// holds something other than that keeper — an empty slot, or a different NPC respawned into it. A session
-/// must never resolve into a stranger's inventory, which is what the identity check is for.</para>
+/// must never resolve into a stranger's inventory, which the identity check prevents.</para>
 ///
 /// <para>This gate fronts every shop, inn, bank, market and set-spawn op, so it is exercised indirectly
 /// everywhere and pinned directly here.</para>

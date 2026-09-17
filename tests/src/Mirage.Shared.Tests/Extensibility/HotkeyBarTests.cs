@@ -86,8 +86,8 @@ public class HotkeyBarDeclarationTests
 
     // ── What may go in a slot ────────────────────────────────────────────────
 
-    /// <summary>Off by default. A menu of a game's whole vocabulary offering "assign to hotkey" on every
-    /// line is a menu nobody reads.</summary>
+    /// <summary>Off by default. Nobody reads a menu that offers "assign to hotkey" on every line of
+    /// a game's whole vocabulary.</summary>
     [Test]
     public void AVerbIsNotBindableUnlessItSaysSo()
     {

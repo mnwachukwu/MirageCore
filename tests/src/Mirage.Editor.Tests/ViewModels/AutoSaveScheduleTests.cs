@@ -171,8 +171,8 @@ public class AutoSaveScheduleTests
     // Only the paths that write NOTHING are exercised here. A real save goes through
     // EditorDataService.SaveOffline*Async, which writes into EditorPaths.Data — the live per-user editor
     // store — so a test that saved for real would drop records into whatever world the developer is
-    // authoring. The quiet paths are the ones worth pinning anyway: they are what keeps auto-save from
-    // announcing work it never did.
+    // authoring. The quiet paths are the ones worth pinning anyway: they stop auto-save announcing
+    // work it never did.
 
     private static ItemEditorViewModel CleanItemEditor()
     {
@@ -193,7 +193,7 @@ public class AutoSaveScheduleTests
 
         int saved = await vm.AutoSaveAsync(AutoSaveReach.AllDirty);
 
-        Assert.That(saved, Is.Zero, "zero is what keeps the status line from announcing a save that never happened");
+        Assert.That(saved, Is.Zero, "zero keeps the status line from announcing a save that never happened");
     }
 
     [Test]

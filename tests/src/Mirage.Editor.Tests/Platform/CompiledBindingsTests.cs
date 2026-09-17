@@ -12,8 +12,8 @@ namespace Mirage.Editor.Tests.Platform;
 /// that screen and looks.</para>
 ///
 /// <para>The compiler checks every path, so nothing here re-checks one. What it cannot see is the setting
-/// being turned back off, or one file exempting itself — which are the three ways the protection is lost,
-/// and are what these pin.</para>
+/// being turned back off, or one file exempting itself — the three ways the protection is lost,
+/// and what these pin.</para>
 /// </summary>
 [TestFixture]
 public class CompiledBindingsTests

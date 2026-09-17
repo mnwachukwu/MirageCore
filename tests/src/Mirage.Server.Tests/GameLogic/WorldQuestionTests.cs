@@ -80,7 +80,7 @@ public class WorldQuestionTests
     {
         var (world, game, _) = Build();
 
-        // A second map hung off the first's right edge, which is what makes the two one world.
+        // A second map hung off the first's right edge, which joins the two into one world.
         game.Maps[2] = OpenMap();
         game.Maps[Map].Right = 2;
         game.Maps[2].Left = Map;
@@ -110,14 +110,14 @@ public class WorldQuestionTests
         {
             Assert.That(world.WeatherOn(Map), Is.EqualTo("snow"));
 
-            // ⚠ One sky over the whole world. A game asks per map because per-map weather is the shape
-            // this question will always have; today every map gets the same answer.
+            // ⚠ One sky over the whole world. A game asks per map because this question will always
+            // have that shape; today every map gets the same answer.
             Assert.That(world.WeatherOn(9), Is.EqualTo("snow"));
             Assert.That(world.WeatherOn(game.Limits.Maps + 1), Is.Empty, "there is no such map");
         });
     }
 
-    /// <summary>Whether a body is running, which is what makes running cost something.</summary>
+    /// <summary>Whether a body is running, and so whether running costs anything.</summary>
     [Test]
     public void ABodySaysWhetherItIsRunning()
     {
@@ -220,7 +220,7 @@ public class WorldQuestionTests
             Assert.That(world.DurabilityOf(who, 3).Left, Is.EqualTo(50));
         });
 
-        // Never past nothing, and what was actually taken is what comes back.
+        // Never past nothing, and the answer is how much was actually taken.
         Assert.That(world.Wear(who, 3, 999), Is.EqualTo(50), "only what was left");
         Assert.That(world.DurabilityOf(who, 3).Left, Is.Zero);
     }
@@ -321,8 +321,8 @@ public class WorldQuestionTests
         });
     }
 
-    /// <summary>⚠ The map's OWN bag is what an editor authors, with nothing inherited in it — or saving
-    /// one map would quietly write its region's answers onto it.</summary>
+    /// <summary>⚠ An editor authors the map's OWN bag, with nothing inherited in it — or saving one
+    /// map would quietly write its region's answers onto it.</summary>
     [Test]
     public void AuthoringAMapSeesItsOwnFieldsAndNotItsRegions()
     {

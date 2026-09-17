@@ -62,11 +62,11 @@ public class ViewConstructionTests
         }
 
         Assert.That(failures, Is.Empty,
-            "these views throw when built, which is what happens the moment one is opened:\n  "
+            "these views throw when built, as they would the moment one is opened:\n  "
             + string.Join("\n  ", failures));
 
-        // The window the editor opens with. Its failure is not a broken panel somewhere, it is an editor
-        // that does not start, so the sweep is checked for having actually reached it.
+        // The window the editor opens with. Its failure costs the whole editor rather than one panel,
+        // so the sweep is checked for having actually reached it.
         Assert.That(built, Does.Contain(typeof(MainWindow)),
             "the sweep no longer covers MainWindow, so nothing here would notice the editor failing to open");
     }

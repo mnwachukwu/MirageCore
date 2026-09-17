@@ -8,8 +8,8 @@ namespace Mirage.Shared.Tests.Extensibility;
 ///
 /// <para>🔴 A bar is a VIEW of an attribute, never a second copy of it. The whole reason there is no bar
 /// state to set is that a game that could set one could set it to something the attribute does not say —
-/// and a bar showing a number nothing else agrees with is a bug nobody can find from the screen. So the
-/// projection is pinned here rather than the storage.</para>
+/// and a bar showing a number nothing else agrees with cannot be diagnosed from the screen. So
+/// the projection is pinned here rather than the storage.</para>
 /// </summary>
 [TestFixture]
 public class OverheadBarTests

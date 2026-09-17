@@ -9,12 +9,12 @@ namespace Mirage.Client.Core.Tests.Rendering;
 /// <summary>
 /// The render path does not allocate per frame, and an emitter walking does not make it start.
 ///
-/// <para>Reach masks are the one thing here big enough to matter — a few kilobytes each, and a wandering
+/// <para>Reach masks are the only allocation here big enough to matter — a few kilobytes each, and a wandering
 /// emitter needs a new one every time it enters a tile. Left to the collector that is a steady drip of
 /// garbage in the one place the client is otherwise allocation-free, which shows up as Gen0 collections
 /// ticking up during ordinary play and nothing to point at.</para>
 ///
-/// <para>So discarded masks are recycled, and this is what says they still are. The number to watch is not
+/// <para>So discarded masks are recycled, and this says they still are. The number to watch is not
 /// zero — the first pass through a stretch of ground has to build its masks — but a SECOND pass over the
 /// same ground, where every mask has already been made once, must cost nothing.</para>
 /// </summary>

@@ -202,8 +202,8 @@ public class NonDefaultMapSizeTests
         Assert.That((p.Map, p.X, p.Y), Is.EqualTo((Down, 5, 0)));
     }
 
-    /// <summary>Coming back the other way lands on the neighbor's own last column — which is what makes a
-    /// seam crossing reversible at any size.</summary>
+    /// <summary>Coming back the other way lands on the neighbor's own last column, so a seam
+    /// crossing is reversible at any size.</summary>
     [Test]
     public void CrossingBackLandsOnTheOtherMapsOwnLastColumn()
     {

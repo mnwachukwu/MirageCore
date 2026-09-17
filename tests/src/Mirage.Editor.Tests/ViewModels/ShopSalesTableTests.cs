@@ -18,7 +18,7 @@ namespace Mirage.Editor.Tests.ViewModels;
 /// and a shopfront quietly lost on save looks exactly like a successful save.</para>
 ///
 /// <para>Order is a real property, not presentation: <c>ShopRecord.Normalize</c> deliberately preserves it
-/// because it is the order the player sees, which is what makes reordering worth authoring at all.</para>
+/// because the player sees that order, so reordering is worth authoring.</para>
 /// </summary>
 [TestFixture]
 public class ShopSalesTableTests
@@ -173,8 +173,8 @@ public class ShopSalesTableTests
     [Test]
     public void ListingTheSameItemTwice_Warns()
     {
-        // Not an error — ShopRecord.Normalize drops the duplicate on load — but silent, and silent is what
-        // makes it worth surfacing: the author sees two rows and the player gets one.
+        // Not an error — ShopRecord.Normalize drops the duplicate on load — but silent, so it is
+        // worth surfacing: the author sees two rows and the player gets one.
         var shop = Shop(Sword, Shield, Sword);
 
         Assert.That(shop.HasSalesWarning, Is.True);

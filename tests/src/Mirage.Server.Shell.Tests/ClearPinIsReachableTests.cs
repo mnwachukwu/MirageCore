@@ -60,7 +60,7 @@ public class ClearPinIsReachableTests
     }
 
     /// <summary>The offer has to reach the operator at the refusal, not only as a button they might find:
-    /// the identity-changed banner is what turns a dead end into a decision.</summary>
+    /// the identity-changed banner turns a dead end into a decision.</summary>
     [Test]
     public void TheRefusalRaisesTheOffer()
     {

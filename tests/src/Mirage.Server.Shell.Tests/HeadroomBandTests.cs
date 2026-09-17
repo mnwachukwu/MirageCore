@@ -48,7 +48,7 @@ public sealed class HeadroomBandTests
     public void TakesTheFirstCrossingWhenTheCurveDipsBackUnder()
     {
         // Load measurements are noisy and a later step can read lower. Reading the limit off the
-        // optimistic side of that noise is what costs an operator a full server.
+        // optimistic side of that noise costs an operator a full server.
         var band = LoadBenchmark.Band(
             [Step(100, 0.40), Step(200, 0.80), Step(300, 0.45), Step(400, 0.90)], headroom: 0.50);
 

@@ -70,7 +70,7 @@ public class LayoutConventionTests
     /// the moment a message grows — a longer warning, a translation, an extra line of detail — and it fails
     /// silently, because a clipped window still builds and still opens.
     ///
-    /// <para>A fixed height is fine where the content can scroll, which is what a <c>ScrollViewer</c>
+    /// <para>A fixed height is fine where the content can scroll, which a <c>ScrollViewer</c>
     /// settles, and fine on a resizable window, where the reader can always drag it open.</para>
     /// </summary>
     [Test]

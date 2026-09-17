@@ -9,7 +9,7 @@ namespace Mirage.Editor.Tests.Models;
 /// The visibility mask itself: which of the fifteen art layers the canvas draws.
 ///
 /// <para>Checked means visible, so the value has to read that way from the outside. Inside it stores the
-/// HIDDEN set, which is what makes the default value mean everything showing — a mask of visible bits
+/// HIDDEN set, so the default value means everything showing — a mask of visible bits
 /// would make a forgotten initializer blank the whole canvas, and nothing would say why.</para>
 /// </summary>
 [TestFixture]

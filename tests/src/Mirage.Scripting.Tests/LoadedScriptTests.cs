@@ -86,7 +86,7 @@ public class LoadedScriptTests
     /// behind the lock that holds the answer — and a deadlock here takes the whole game thread with it,
     /// silently: no exception, no log line, no death, and the next login never completes.</para>
     ///
-    /// <para>The timeout is what makes this a FAILING test rather than a hanging one.</para></summary>
+    /// <para>The timeout keeps this a FAILING test rather than a hanging one.</para></summary>
     [Test]
     [CancelAfter(10_000)]
     public void AHandlerCanCallBackIntoItsOwnModule()
@@ -150,7 +150,7 @@ public class LoadedScriptTests
 
     /// <summary>
     /// 🔴 A handler has to be declared <c>public</c>, and the reason is not obvious: a function only the
-    /// HOST calls is a function nothing in the module calls, which is dead code as far as the compiler
+    /// HOST calls is never called from inside the module, which reads as dead code to the compiler
     /// can see. Left off, every handler in a module is reported, and an author who has never embedded a
     /// language has no way to guess why. It is written into the module template for that reason, and
     /// this is the fact the template rests on.
@@ -257,7 +257,7 @@ public class LoadedScriptTests
         });
     }
 
-    /// <summary>And the module keeps working afterwards, which is what "carry on serving" means.</summary>
+    /// <summary>And the module keeps working afterwards, which is all "carry on serving" means.</summary>
     [Test]
     public void AModuleGoesOnWorkingAfterAHandlerFailed()
     {
@@ -292,7 +292,7 @@ public class LoadedScriptTests
     /// <summary>
     /// 🔴 The depth the language allows costs real stack, and the thread this runs on is sized for it.
     /// On an ordinary thread the same recursion overruns the stack instead, which is not catchable and
-    /// takes the process down with every player on it — so this is the test that says the thread is
+    /// takes the process down with every player on it — so this is where the thread is shown to be
     /// doing its job rather than merely existing.
     /// </summary>
     [Test]

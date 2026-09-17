@@ -100,7 +100,7 @@ public class GameIconTests
 
             Assert.That(CoreRecordFamilies.World.Select(f => f.Icon).Distinct().Count(),
                 Is.EqualTo(CoreRecordFamilies.World.Count),
-                "two of Core's own sections wearing one glyph is the thing this exists to stop");
+                "two of Core's own sections must never wear one glyph");
         });
     }
 }

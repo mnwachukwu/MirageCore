@@ -326,7 +326,7 @@ public class ShopSystemTests
         });
     }
 
-    /// <summary>NonJunkable is what gold, valor and treasure carry. Gold cannot be sold for gold, and
+    /// <summary>Gold, valor and treasure all carry NonJunkable. Gold cannot be sold for gold, and
     /// treasure is meant to reach a specific buyer through the barter table rather than a universal one.</summary>
     [Test]
     public void Sell_NonJunkableItem_Refused()

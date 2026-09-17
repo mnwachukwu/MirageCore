@@ -49,8 +49,8 @@ public class ScriptedSurveyTests
 
     /// <summary>🔴 They compile, and every handler they wrote is one the engine took.
     ///
-    /// <para>A handler is matched by NAME AND ARITY, so a signature that drifts is a function nobody
-    /// calls: it compiles, it loads, and the rule it served quietly stops working.</para></summary>
+    /// <para>A handler is matched by NAME AND ARITY, so a signature that drifts never gets called:
+    /// it compiles, it loads, and the rule it served quietly stops working.</para></summary>
     [Test]
     public void TheScriptsCompile_AndEveryHandlerTheyWroteWasTaken()
     {

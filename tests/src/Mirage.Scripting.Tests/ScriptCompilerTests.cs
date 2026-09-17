@@ -139,7 +139,7 @@ public class ScriptCompilerTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(script, Is.Null, "a program is a thing to run, and this one has no entry point");
+            Assert.That(script, Is.Null, "a program has to be runnable, and this one has no entry point");
             Assert.That(problems, Is.Not.Empty);
         });
     }

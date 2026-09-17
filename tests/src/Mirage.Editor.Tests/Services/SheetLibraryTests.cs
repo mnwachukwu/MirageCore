@@ -93,7 +93,7 @@ public class SheetLibraryTests
     }
 
     /// <summary>A file with no leading digits is not a sheet, and today it is skipped in silence. Reporting
-    /// it is the whole point: the author sees a folder with their art in it and no art in the editor.</summary>
+    /// it is the ask here, since the author otherwise sees a folder of art and none in the editor.</summary>
     [Test]
     public void AFileWithNoIndexIsReportedNotIgnored()
     {
@@ -207,7 +207,7 @@ public class SheetLibraryTests
 
     // ── Editing ───────────────────────────────────────────────────────────────
 
-    /// <summary>Renaming changes the label and keeps the number. Because the number is what maps store,
+    /// <summary>Renaming changes the label and keeps the number. Because maps store the number,
     /// this is the one edit here that cannot break a world — and it must stay that way.</summary>
     [Test]
     public void RenameKeepsTheIndex()
@@ -325,7 +325,7 @@ public class SheetLibraryTests
     }
 
     /// <summary>Two sheets deleted under one label both survive in the bin. Overwriting would destroy the
-    /// first silently, which is the one thing a recycle bin exists not to do.</summary>
+    /// first silently, which is exactly what a recycle bin must not do.</summary>
     [Test]
     public void TwoDeletesWithTheSameNameBothSurvive()
     {

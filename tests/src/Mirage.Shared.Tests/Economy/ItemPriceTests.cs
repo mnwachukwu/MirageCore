@@ -135,7 +135,7 @@ public class ItemPriceTests
     [Test]
     public void SellValue_IsWorseThanThePlayerMarket_ByDesign()
     {
-        // The 25% rate is what keeps a universal buyer a price FLOOR rather than a competitor: any player
+        // The 25% rate keeps a universal buyer a price FLOOR rather than a competitor: any player
         // offering more than a quarter wins the sale. Raising it quietly kills the player economy.
         var item = new ItemRecord
         {

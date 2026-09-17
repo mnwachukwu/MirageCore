@@ -132,7 +132,7 @@ public class PushChangesPacketCoverageTests
     }
 
     // Negative control: a row type the switch does not handle falls straight through and the dialog reports
-    // success. This is the shape of the bug, and it proves the two tests above are not vacuous — if a
+    // success. That is how the bug looks, and it proves the two tests above are not vacuous — if a
     // skipped row also read as "pushed", they would pass no matter what the switch covered.
     [Test]
     public void Push_SkipsUnhandledRowType()

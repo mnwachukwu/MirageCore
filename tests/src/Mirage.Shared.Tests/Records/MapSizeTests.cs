@@ -16,7 +16,7 @@ public class MapSizeTests
 {
     /// <summary>The ceiling is the width of a warp's destination coordinate, wherever that is stored.
     ///
-    /// <para>UNSIGNED, and that is the point: a tile coordinate is never negative, so signing one throws away
+    /// <para>UNSIGNED, deliberately: a tile coordinate is never negative, so signing one throws away
     /// half the range to represent positions that cannot exist. Every type that stores one is held to it
     /// here — a single signed field among them would quietly halve how large a map can be.</para></summary>
     [Test]

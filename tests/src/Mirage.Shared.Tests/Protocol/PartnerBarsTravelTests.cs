@@ -88,7 +88,7 @@ public class PartnerBarsTravelTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(back.Name, Is.Empty, "an empty name is what tears the overlay down");
+            Assert.That(back.Name, Is.Empty, "an empty name tears the overlay down");
             Assert.That(back.Bars, Is.Empty);
         });
     }

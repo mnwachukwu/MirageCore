@@ -164,8 +164,8 @@ public class WorldQueriesTests
         });
     }
 
-    /// <summary>The caller owns the list, so one caller's sweep cannot disturb another's results —
-    /// which is what lets two of them sweep in the same tick.</summary>
+    /// <summary>The caller owns the list, so one caller's sweep cannot disturb another's results,
+    /// and two of them can sweep in the same tick.</summary>
     [Test]
     public void TwoCallersSweepingKeepTheirOwnResults()
     {

@@ -14,8 +14,9 @@ namespace Mirage.Server.Tests.Guilds;
 /// by the loader, because the guild, territory and war code holds a guild detached from any dictionary key
 /// and asks it which one it is — <c>ChainGuildWrite(guild.Index, …)</c>, territory challenges, war credit.
 ///
-/// <para>The loader keying the dictionary by filename is not enough on its own: the record itself is what
-/// the rest of the server reads, so the number has to be stamped onto it, not just used as a key.</para>
+/// <para>The loader keying the dictionary by filename is not enough on its own: the rest of the
+/// server reads the record itself, so the number has to be stamped onto it rather than only used
+/// as a key.</para>
 ///
 /// <para>Fixtures are built in a temp directory. Guilds are runtime state — nothing ships any — so there
 /// is no authored content to read even if reading it were the right idea.</para>
@@ -227,7 +228,7 @@ public class GuildIndexTests
         });
     }
 
-    /// <summary>The flag is what retires the number, so a guild saved normally must never carry it.</summary>
+    /// <summary>The flag retires the number, so a guild saved normally must never carry it.</summary>
     [Test]
     public async Task AnOrdinarySave_IsNotDisbanded()
     {

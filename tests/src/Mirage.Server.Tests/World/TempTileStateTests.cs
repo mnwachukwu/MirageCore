@@ -9,8 +9,8 @@ namespace Mirage.Server.Tests.World;
 /// sweeps read.
 ///
 /// <para>Both are sparse: an entry exists only while something is actually running on that tile, and its
-/// presence IS the active flag. That is what bounds the door and item sweeps by how much is happening on a
-/// map instead of by how many tiles it has — the door sweep runs on every observed map every AI tick, and
+/// presence IS the active flag, so the door and item sweeps are bounded by how much is happening
+/// on a map instead of by how many tiles it has — the door sweep runs on every observed map every AI tick, and
 /// the item sweep runs on every map in the world once a second, so a per-tile scan would grow with map
 /// area in the two hottest places it could.</para>
 /// </summary>
@@ -150,7 +150,7 @@ public class TempTileStateTests
     }
 
     /// <summary>Re-stamping an open door would extend its window, so callers gate on
-    /// <see cref="TempTileState.IsDoorOpen"/> first — this pins that the gate is the thing protecting it,
+    /// <see cref="TempTileState.IsDoorOpen"/> first — this pins the gate as the protection,
     /// because the write itself does overwrite.</summary>
     [Test]
     public void ReOpeningADoor_OverwritesItsClock()

@@ -13,8 +13,8 @@ namespace Mirage.Editor.Tests.Authoring;
 /// <para>A warp cluster, a wall, a row of plates: authored as a group, and almost always edited as one.
 /// The fill grows from the clicked tile across every touching tile carrying the same attribute.</para>
 ///
-/// <para>It is inert while a dialog is laying a NEW attribute, and that is the point of the guard — a run
-/// grown from open ground is every open tile on the map, which is never what anyone meant.</para>
+/// <para>It is inert while a dialog is laying a NEW attribute, which the guard exists to ensure —
+/// a run grown from open ground is every open tile on the map, and nobody ever means that.</para>
 /// </summary>
 [TestFixture]
 public class ConnectedRunFillTests

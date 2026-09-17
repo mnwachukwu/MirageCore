@@ -17,7 +17,7 @@ namespace Mirage.Editor.Tests.Authoring;
 public class ConversationChoiceEditorsTests
 {
     // Every editable property of a choice, and the binding that must appear in both views. A property
-    // added here without a binding in both places fails, which is the point.
+    // added here without a binding in both places fails, which is the whole ask.
     private static readonly string[] ChoiceBindings = ["Label", "SelectedNextNode", "Action", "ActionId"];
 
     private static readonly string[] Views = ["ConversationEditorView.axaml", "ConversationNodeDialog.axaml"];

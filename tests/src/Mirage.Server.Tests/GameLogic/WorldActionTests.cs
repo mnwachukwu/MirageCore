@@ -331,7 +331,7 @@ public class WorldActionTests
             Assert.That(pm[Idx].AttackTimer, Is.GreaterThan(0));
             Assert.That(pm[Idx].AttackTimer, Is.LessThanOrEqualTo(Environment.TickCount64));
             Assert.That(pm[Idx].Char.AttackTimer, Is.EqualTo(pm[Idx].AttackTimer),
-                        "the record's copy is what the client is told");
+                        "the client is told the record's copy");
         });
 
         world.SetActionCooldown(Me, 0);
@@ -420,7 +420,7 @@ public class WorldActionTests
     ///
     /// <para>Every other line the server says is looked up per recipient, so the engine's own words
     /// arrive in each player's language. A game's words are not in that table and cannot be added to it,
-    /// so they travel as written — which is what makes a rule able to say anything at all.</para>
+    /// so they travel as written, and a rule can say anything at all.</para>
     /// </summary>
     [Test]
     public void AGameCanSaySomethingToOnePlayer()

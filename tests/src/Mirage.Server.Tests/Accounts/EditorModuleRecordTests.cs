@@ -14,7 +14,7 @@ namespace Mirage.Server.Tests.Accounts;
 /// <summary>
 /// Authoring a family the server was never compiled against, over the wire.
 ///
-/// <para>This is what makes a module's records real: a game declares a family, and an editor that has
+/// <para>So a module's records become usable: a game declares a family, and an editor that has
 /// never heard of it can list, open and save its records. Everything the handler does with the keys is
 /// move them, so what these pin is the routing, the refusals, and that nothing is dropped in between.</para>
 /// </summary>
@@ -93,8 +93,8 @@ public class EditorModuleRecordTests
         });
     }
 
-    /// <summary>A key no field describes survives a save. That is what lets a world authored against a
-    /// newer build of a game open in an older editor without being quietly stripped.</summary>
+    /// <summary>A key no field describes survives a save, so a world authored against a newer build
+    /// of a game opens in an older editor without being quietly stripped.</summary>
     [Test]
     public void AKeyTheFamilyDoesNotDescribe_IsStoredAnyway()
     {

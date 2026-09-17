@@ -13,8 +13,8 @@ namespace Mirage.Server.Shell.Tests;
 ///
 /// <para>🔴 <c>SendCommand</c> is called straight from a button, on the UI thread. Both destinations block
 /// when they cannot take the bytes: a TLS write waits on a peer that has gone but whose TCP has not
-/// noticed, and a stdin write waits once the pipe buffer fills, which is what a server that has stopped
-/// reading its console does. Either one stops the window answering while it still presents its last frame,
+/// noticed, and a stdin write waits once the pipe buffer fills, as it does against a server that
+/// has stopped reading its console. Either one stops the window answering while it still presents its last frame,
 /// so the operator sees a frozen shell rather than a lost server.</para>
 ///
 /// <para>Read from source. Reproducing the block for real needs a peer that accepts and then stalls, and a
@@ -59,7 +59,7 @@ public class SendingACommandNeverBlocksTests
         Assert.Multiple(() =>
         {
             Assert.That(body, Does.Contain("_outbox"), "the command does not go through the queue");
-            // The two destinations by name, rather than "a write": the queue's own TryWrite is the point.
+            // The two destinations by name, rather than "a write": this is about the queue's own TryWrite.
             Assert.That(body, Does.Not.Contain("_writer"),
                 "SendCommand touches the socket, on whatever thread pressed the button");
             Assert.That(body, Does.Not.Contain("StandardInput"),

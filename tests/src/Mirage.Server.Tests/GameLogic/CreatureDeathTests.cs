@@ -28,8 +28,8 @@ public class CreatureDeathTests
 {
     private const int Map = 1, Slot = 1, Kind = 1, Coin = 2, Sword = 3, Index = 1;
 
-    /// <summary>An open map, one creature standing on it, and two items to drop. The creature's table is
-    /// the caller's to write, because it is the thing under test.</summary>
+    /// <summary>An open map, one creature standing on it, and two items to drop. The creature's
+    /// table is the caller's to write, because it is under test.</summary>
     private static (SpawnSystem Spawns, GameWorld World, ItemSystem Items, PlayerManager Pm) Build(
         IRandomSource? rng = null, params ILootPolicy[] loot)
     {

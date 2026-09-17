@@ -8,7 +8,7 @@ namespace Mirage.Shared.Tests.World;
 ///
 /// <para>🔴 <b>The case this exists for is the exact boundary.</b> A cooldown a whole number of beats
 /// long ends ON a beat, and every other creature cooldown in a world tends to be exactly that — so the
-/// boundary is not a rare case, it is the normal one.</para>
+/// boundary is the normal case rather than a rare one.</para>
 /// </summary>
 [TestFixture]
 public sealed class AiCadenceTests

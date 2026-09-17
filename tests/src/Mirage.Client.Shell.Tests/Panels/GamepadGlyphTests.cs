@@ -3,8 +3,8 @@ using NUnit.Framework;
 
 namespace Mirage.Client.Shell.Tests.Panels;
 
-/// <summary>Controller-brand detection. Deliberately one-sided: an unrecognized pad reads as Xbox, which
-/// is what generic drivers report anyway, so a miss shows the right button in the wrong alphabet rather
+/// <summary>Controller-brand detection. Deliberately one-sided: an unrecognized pad reads as Xbox,
+/// as generic drivers report anyway, so a miss shows the right button in the wrong alphabet rather
 /// than the wrong button.</summary>
 [TestFixture]
 public class GamepadGlyphTests

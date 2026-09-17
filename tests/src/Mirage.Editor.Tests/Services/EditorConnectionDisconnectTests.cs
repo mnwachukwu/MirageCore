@@ -11,7 +11,7 @@ namespace Mirage.Editor.Tests.Services;
 /// <summary>
 /// Whether the end of a session counts as news.
 ///
-/// <para><c>OnDisconnected</c> is what puts the lost-connection dialog on screen. It must fire when the
+/// <para><c>OnDisconnected</c> puts the lost-connection dialog on screen. It must fire when the
 /// server goes away and must NOT fire when the disconnect was asked for — a spurious one opens a modal over
 /// the main window during an ordinary Disconnect, and the editor reads as frozen.</para>
 ///

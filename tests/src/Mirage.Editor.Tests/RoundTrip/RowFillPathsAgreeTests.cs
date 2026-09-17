@@ -132,7 +132,7 @@ public class RowFillPathsAgreeTests
 
     /// <summary>Build the row both ways and hold the two against each other, property by property.
     ///
-    /// <para>Scalars are compared by value; a collection by how many rows it holds, which is what answers
+    /// <para>Scalars are compared by value; a collection by how many rows it holds, which answers
     /// "did the second path build the child rows at all". Anything else — a command, a service — is
     /// skipped, since it is not filled from the record.</para></summary>
     private static void BothPathsAgree<TRecord, TRow>(

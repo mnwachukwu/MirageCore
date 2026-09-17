@@ -240,8 +240,8 @@ public class NpcPathCacheTests
         int built = FieldsBuilt(ai);
         int entries = CacheEntries(ai);
 
-        // Control for the same gang, varying a component that IS keyed (the target cell).  This is what makes
-        // the assert above a MEASUREMENT rather than a reading off a stuck counter: the identical gang shape
+        // Control for the same gang, varying a component that IS keyed (the target cell).  This is
+        // what makes the assert above a MEASUREMENT rather than a reading off a stuck counter: the identical gang shape
         // yields one flood per distinct key value here, so 1-vs-6 is a real difference.  (Footprint would NOT
         // work as the control — EffectiveSize clamps to MaxNpcSize, so six sizes collapse to three keys.)
         var targets = new (int x, int y)[] { (8, 3), (4, 8), (2, 2), (12, 9), (6, 1), (10, 10) };

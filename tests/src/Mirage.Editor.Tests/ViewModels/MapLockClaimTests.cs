@@ -18,7 +18,7 @@ namespace Mirage.Editor.Tests.ViewModels;
 /// its unsaved dot, still saves. It is simply edited with no lock behind it, so the other session is
 /// never told and both people write.</para>
 ///
-/// <para>There is no seam on the connection to watch the packet go, so what is pinned is the shape that
+/// <para>There is no seam on the connection to watch the packet go, so this pins the shape that
 /// made it possible: one subscription, maintained by the collection itself.</para>
 /// </summary>
 [TestFixture]

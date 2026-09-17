@@ -5,8 +5,8 @@ namespace Mirage.Client.Shell.Tests.Panels;
 
 /// <summary>The pure state behind the <see cref="Table{T}"/> control (<see cref="TableModel"/>): column
 /// reorder, resize-with-min-clamp, the asc/desc sort toggle, and the stable row-order permutation. The
-/// view (header input + rendering) rides on these, so locking the math down here is what guarantees the
-/// control's correctness.</summary>
+/// view (header input + rendering) rides on these, so the control's correctness rests on the
+/// math being locked down here.</summary>
 [TestFixture]
 public class TableModelTests
 {

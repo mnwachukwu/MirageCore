@@ -60,7 +60,7 @@ public class LootShareThresholdTests
         {
             Assert.That(Shares(myDamage: 0, topDamage: 1), Is.False, "a one-damage kill let the whole map roll");
             Assert.That(Shares(myDamage: 0, topDamage: 1_000), Is.False);
-            Assert.That(Bar(1), Is.GreaterThan(0), "the clamp is what stops a zero bar");
+            Assert.That(Bar(1), Is.GreaterThan(0), "the clamp stops a zero bar");
         });
     }
 

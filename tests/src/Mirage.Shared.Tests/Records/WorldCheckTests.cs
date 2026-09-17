@@ -379,7 +379,7 @@ public class WorldCheckTests
     }
 
     /// <summary>A map is authored by holding something, not by being named — a place can be fully painted
-    /// and never titled, so naming is the one thing that must not be required.</summary>
+    /// and never titled, so naming must never be required.</summary>
     [Test]
     public void APaintedMapWithNoName_CountsAsThere()
     {

@@ -150,7 +150,7 @@ public class SheetTransparencyTests
     }
 
     /// <summary>A BMP is never reported for this. It has no alpha by definition and does not need any —
-    /// its key is what makes it transparent, and flagging every BMP would bury the list.</summary>
+    /// its key supplies the transparency, and flagging every BMP would bury the list.</summary>
     [Test]
     public void ABmpIsNeverReportedForMissingAlpha()
     {

@@ -8,7 +8,7 @@ namespace Mirage.Client.Shell.Tests.Panels;
 /// <summary>
 /// Where the party overlay is drawn: the sidebar's free space, under the Logout button.
 ///
-/// <para>Layout is the one thing a green build says nothing about. A rectangle placed off-screen, over the
+/// <para>A green build says nothing about layout. A rectangle placed off-screen, over the
 /// world, or on top of the buttons compiles perfectly and is only found by looking at it, so these pin the
 /// four things that make that space usable — the panel is inside the sidebar, centered across it, clear of
 /// the button block above and clear of the link strip below.</para>

@@ -9,8 +9,8 @@ namespace Mirage.Shared.Tests.Records;
 /// What a wall stops.
 ///
 /// <para>A Blocked tile carries two authored fields — whether light stops there and whether sight does —
-/// and both default to stopping. That default is what a map holding neither field means, so it is the one
-/// thing here that cannot be allowed to drift: flip it and every wall in every existing world turns
+/// and both default to stopping. A map holding neither field means exactly that, so the default
+/// cannot be allowed to drift: flip it and every wall in every existing world turns
 /// transparent at once, with nothing to report it.</para>
 /// </summary>
 [TestFixture]

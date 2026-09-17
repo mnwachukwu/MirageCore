@@ -15,7 +15,7 @@ namespace Mirage.Editor.Tests.Services;
 /// size rather than by anything in the sheet. So sheet 1 has to be the same roster in the same order in all
 /// three folders, and nothing at load time checks that: a size that is missing draws nothing at all, and a
 /// size holding a different number of rows quietly makes one number two different creatures. Neither
-/// produces an error anywhere, which is why they are checked here.</para>
+/// produces an error anywhere, so they are checked here.</para>
 /// </summary>
 [TestFixture]
 public class SpriteSizeVariantTests

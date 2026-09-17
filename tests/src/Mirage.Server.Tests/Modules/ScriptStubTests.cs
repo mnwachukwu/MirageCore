@@ -99,7 +99,7 @@ public class ScriptStubTests
     /// <summary>🔴 A parameter carries the name an author reads in the editor.
     ///
     /// <para>The name is the whole of what a completion list has to go on while somebody is typing the
-    /// call. Six positions to count is the thing this replaced.</para></summary>
+    /// call. This replaced counting six positions.</para></summary>
     [Test]
     public void AParameterIsNamedForWhatItIs()
     {

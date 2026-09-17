@@ -144,8 +144,8 @@ public class UserPathsTests
     public void WindowsAndMac_UseTheHumanReadableFolderName()
         => Assert.That(new UserPaths(AppName).Config(), Does.EndWith(AppName));
 
-    /// <summary>Each application constructs its own instance with its own name, which is what keeps
-    /// the client's settings out of the editor's.</summary>
+    /// <summary>Each application constructs its own instance with its own name, which keeps the
+    /// client's settings out of the editor's.</summary>
     [Test]
     public void DifferentAppNames_GetDifferentRoots()
     {

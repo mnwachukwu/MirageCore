@@ -90,7 +90,7 @@ public class HomeCommandTests
     {
         var saved = new PlayerRecord { HomeUsedAtUtc = 1_000_000 };
 
-        // Clone is what the saver writes and what a login reads back.
+        // The saver writes a Clone and a login reads one back.
         var reloaded = saved.Clone();
 
         Assert.That(reloaded.HomeUsedAtUtc, Is.EqualTo(1_000_000));

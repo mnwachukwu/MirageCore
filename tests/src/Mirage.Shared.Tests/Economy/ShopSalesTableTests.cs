@@ -53,7 +53,7 @@ public class ShopSalesTableTests
         Assert.Multiple(() =>
         {
             Assert.That(shop.BarterItem, Has.Count.EqualTo(1), "normalizing sales must not touch trades");
-            Assert.That(shop.BarterItem[0].GiveQuantity, Is.EqualTo(5), "GiveQuantity is the price");
+            Assert.That(shop.BarterItem[0].GiveQuantity, Is.EqualTo(5), "GiveQuantity carries the price");
             Assert.That(shop.SalesItem, Is.EqualTo(new[] { 11, 12 }));
         });
     }

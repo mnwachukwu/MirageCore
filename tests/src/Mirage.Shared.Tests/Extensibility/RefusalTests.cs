@@ -51,8 +51,8 @@ public class RefusalTests
     }
 
     /// <summary>Nothing objected, so nothing is refused. This is the one place the mechanism is
-    /// deliberately fail-open, and it is what makes a game registering no gates behave as though the
-    /// gate were not there.</summary>
+    /// deliberately fail-open, so a game registering no gates behaves as though the gate were not
+    /// there.</summary>
     [Test]
     public void NoGatesAtAllAllows()
     {
@@ -102,8 +102,8 @@ public class RefusalTests
     }
 }
 
-/// <summary>An NPC is named by where it spawns rather than where it stands, which is what makes one
-/// handle good for a native NPC and a visitor from two maps away alike.</summary>
+/// <summary>An NPC is named by where it spawns rather than where it stands, so one handle serves
+/// a native NPC and a visitor from two maps away alike.</summary>
 [TestFixture]
 public class EntityHandleTests
 {

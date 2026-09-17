@@ -9,8 +9,8 @@ namespace Mirage.Client.Shell.Tests.Input;
 ///
 /// <para>🔴 <b>Either half missing is silent.</b> The engine decides which key names a game may declare;
 /// the client decides what pressing one means. A name the engine offers with nothing behind it is a
-/// shortcut that never fires, and a key the client knows that the engine refuses is a binding nobody can
-/// ever ask for. Neither reports anything — a shortcut that does not work looks exactly like a player
+/// shortcut that never fires, and a key the client knows that the engine refuses can never be
+/// bound at all. Neither reports anything — a shortcut that does not work looks exactly like a player
 /// who has not pressed it.</para>
 ///
 /// <para>They live in different assemblies for good reason: the engine cannot name a MonoGame key, and

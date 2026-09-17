@@ -13,8 +13,8 @@ namespace Mirage.Client.Shell.Tests.Panels;
 /// file WITHOUT pushing them into live game state, so an option reads as restored, persists as restored,
 /// and still behaves the old way until the next relog. Both restore paths apply a fresh
 /// <see cref="AccountConfig.CharacterConfig"/> through the same method world entry uses, which leaves the
-/// checkbox defaults as the one copy of "what the default is" still able to drift. That is what these
-/// pin.</para>
+/// checkbox defaults as the one copy of "what the default is" still able to drift. These pin
+/// that copy.</para>
 ///
 /// <para>The wiring itself — GameplayScreen and MirageGame — needs a GraphicsDevice and stays a manual
 /// playtest.</para>
@@ -53,7 +53,7 @@ public class RestoreDefaultsTests
     {
         Assert.That(panelValue, Is.EqualTo(configValue),
             "the OptionsPanel checkbox default disagrees with AccountConfig.CharacterConfig — "
-            + "CharacterConfig is what a new character actually gets, so the checkbox must follow it");
+            + "a new character actually gets CharacterConfig, so the checkbox must follow it");
     }
 
     /// <summary>Restore Defaults applies <c>ApplyCharPrefs(new CharacterConfig())</c>, so every option

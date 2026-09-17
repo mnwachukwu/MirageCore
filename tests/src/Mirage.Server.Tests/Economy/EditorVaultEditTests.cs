@@ -7,8 +7,8 @@ namespace Mirage.Server.Tests.Economy;
 
 /// <summary>
 /// What depositing and withdrawing mean to a vault ARRAY — the half of <see cref="BankSystem"/> with no
-/// player slot behind it, which is what the account browser reaches for when the vault belongs to nobody who
-/// is logged in.
+/// player slot behind it, which the account browser reaches for when the vault belongs to nobody
+/// who is logged in.
 ///
 /// <para>The vault is ACCOUNT-shared rather than per character, so it is edited beside the access and guild
 /// lines rather than on a character card, and what decides which copy is authoritative is whether anybody on

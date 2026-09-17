@@ -88,7 +88,7 @@ public class EditorLockTests
 
         var held = locks.Snapshot().Locks;
         Assert.That(held.Select(h => h.Login).Distinct().ToArray(), Is.EqualTo(new[] { Login }),
-            "Both rows are the same account, which is what makes the login useless as an identity.");
+            "Both rows are the same account, so the login is useless as an identity.");
         Assert.That(held.Single(h => h.Num == 70).Session, Is.EqualTo(a.Session));
         Assert.That(held.Single(h => h.Num == 71).Session, Is.EqualTo(b.Session));
     }

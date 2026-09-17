@@ -91,7 +91,7 @@ public class SessionLifetimeOnWarpTests
     }
 
     /// <summary>The invariant itself: whatever a warp does to one session it does to the other. Open means
-    /// the accessor resolves to something, which is what every caller reads.</summary>
+    /// the accessor resolves to something, which every caller checks.</summary>
     [Test]
     public void BothSessionsAlwaysAgree([Values(Here, Elsewhere)] int destination)
     {

@@ -18,8 +18,8 @@ public class LingerPolicyTests
         public Deadline LingerFor(EntityHandle who) => Deadline.AtUtc(seconds);
     }
 
-    /// <summary>A policy with no opinion. The default implementation is what makes a game able to answer
-    /// one question about a disconnect without answering all of them.</summary>
+    /// <summary>A policy with no opinion. The default implementation lets a game answer one question
+    /// about a disconnect without answering all of them.</summary>
     private sealed class Silent : ILingerPolicy;
 
     private sealed class Module(params ILingerPolicy[] policies) : ICoreModule
@@ -44,8 +44,8 @@ public class LingerPolicyTests
         Assert.That(registry.LingerPolicies.Single(), Is.SameAs(policy));
     }
 
-    /// <summary>Two games disagreeing about how long a body lingers is a question with one answer and no
-    /// way to average it, so the first policy naming a deadline is the answer — the same rule
+    /// <summary>Two games disagreeing about how long a body lingers still has to settle on one
+    /// answer, and there is no averaging it, so the first policy naming a deadline wins — the same rule
     /// <see cref="IDeathPolicy.RespawnFor"/> uses.</summary>
     [Test]
     public void TheFirstPolicyNamingADeadline_IsTheAnswer()

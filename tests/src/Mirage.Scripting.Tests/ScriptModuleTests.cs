@@ -8,8 +8,8 @@ namespace Mirage.Scripting.Tests;
 ///
 /// <para>🔴 <b>A game is not one file, so the unit a game is written in cannot be one either.</b> Compass
 /// has folders, imports, namespaces and qualified names; the demo game is already five files in C#, and
-/// nothing about writing it in Compass would make it one. The sources are checked TOGETHER, which is what
-/// makes any of that work across a module.</para>
+/// nothing about writing it in Compass would make it one. The sources are checked TOGETHER, so
+/// any of that works across a module.</para>
 ///
 /// <para>Which files a module holds is this engine's rule rather than the compiler's — the compiler is
 /// handed a set of sources and has no opinion about where they came from.</para>
@@ -180,9 +180,9 @@ public class ScriptModuleTests
     // ── Where the text comes from ─────────────────────────────────────────────
 
     /// <summary>
-    /// 🔴 Scripts are read through a delegate, and that is the load-bearing part of this design.
+    /// 🔴 Scripts are read through a delegate, which is the load-bearing part of this design.
     ///
-    /// <para>A world folder is the thing somebody zips up and hands to another machine. Wired to
+    /// <para>A world folder gets zipped up and handed to another machine. Wired to
     /// <c>File.ReadAllText</c> directly, a game's rules would be tied to loose files on a disk forever;
     /// behind the delegate, the same module loads out of an archive, a database, or an editor holding
     /// something not yet saved. This test is that claim, made with no disk at all.</para>

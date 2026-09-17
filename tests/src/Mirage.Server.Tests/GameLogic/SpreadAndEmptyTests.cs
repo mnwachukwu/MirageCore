@@ -115,7 +115,7 @@ public class SpreadAndEmptyTests
 
         Assert.That(spots.Select(s => s.Map), Does.Not.Contain(Lonely));
         Assert.That(spots, Has.Count.EqualTo(2), "the joined pair, and not the island");
-        Assert.That(world.Maps[Lonely].Left, Is.Zero, "which is what makes it an island");
+        Assert.That(world.Maps[Lonely].Left, Is.Zero, "nothing joins it, so it is an island");
     }
 
     /// <summary>🔴 <b>A square is four things.</b> A bridge and the water under it are one tile on three

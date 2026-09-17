@@ -101,7 +101,7 @@ public class SeedIntegrityTests
     public void EveryRecord_IsAlreadyNormalized()
     {
         RequireSeed();
-        // Normalize is what the server runs on load and the editor on save, and it CLEARS fields that do
+        // The server runs Normalize on load and the editor on save, and it CLEARS fields that do
         // not apply to a record's type. If running it changes a seed file, the file on disk is carrying
         // values the engine will silently discard — a generator writing Power onto a potion, say. The
         // seed should already be the canonical form of itself.
@@ -281,7 +281,7 @@ public class SeedIntegrityTests
 
     /// <summary>A conversation names its NPC by number, and an unresolvable number is not an error
     /// anywhere in the engine — <c>GameWorld.ConversationForNpc</c> simply finds nothing and the NPC
-    /// says its Says instead. So authored dialogue that can never open is silent, and this is what
+    /// says its Says instead. Authored dialogue that can never open is therefore silent, and this
     /// catches it.
     ///
     /// <para>One thing has to hold: it names an NPC that exists. WHICH one is free — where a world puts

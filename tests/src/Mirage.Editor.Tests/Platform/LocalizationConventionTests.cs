@@ -38,8 +38,8 @@ public class LocalizationConventionTests
     }
 
     /// <summary>The check the reflection one cannot make. Reflection sees a type's base class, but
-    /// not whether it USES localized strings — and that is the condition that actually needs a
-    /// refresh hook. A plain <c>Control</c> that resolves a caption inside <c>Render</c> is the
+    /// not whether it USES localized strings — and only that condition actually needs a refresh
+    /// hook. A plain <c>Control</c> that resolves a caption inside <c>Render</c> is the
     /// case in point: it is not a <c>UserControl</c>, so the rule above skips it, yet Avalonia is
     /// retained-mode and only calls <c>Render</c> on invalidation, so it silently keeps the old
     /// language. (<c>TilePaletteControl</c> is such a control.) Reading the sources is the only

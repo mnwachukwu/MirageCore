@@ -13,8 +13,8 @@ namespace Mirage.Shared.Tests.Records;
 /// record written from here always states its sheet, including when it is 0, so nothing on disk leaves a
 /// reader inferring it.</para>
 ///
-/// <para>The second rule is the one that needs a test. Absent-reads-as-zero is what plain deserialization
-/// does anyway, but "always written" is a property of the record's attributes and would be quietly undone
+/// <para>The second rule is the one that needs a test. Plain deserialization reads an absent
+/// value as zero anyway, but "always written" is a property of the record's attributes and would be quietly undone
 /// by a <c>WhenWritingDefault</c> added for tidiness.</para>
 /// </summary>
 [TestFixture]
@@ -38,7 +38,7 @@ public class SheetFieldTests
         });
     }
 
-    /// <summary>A non-zero sheet survives a write and a read, which is the whole point of the field.</summary>
+    /// <summary>A non-zero sheet survives a write and a read, which the field exists for.</summary>
     [Test]
     public void ANamedSheetRoundTrips()
     {
@@ -54,8 +54,8 @@ public class SheetFieldTests
     }
 
     /// <summary>🔴 A world authored before sheets existed still loads, and reads as sheet 0 — the sheet every
-    /// one of those files meant. This is what makes the field safe to add with no migration step, and it is
-    /// the half that would break silently: art would simply come from the wrong sheet.</summary>
+    /// one of those files meant. So the field is safe to add with no migration step, and this is the
+    /// half that would break silently: art would simply come from the wrong sheet.</summary>
     [Test]
     public void AFileThatNamesNoSheetReadsAsZero()
     {

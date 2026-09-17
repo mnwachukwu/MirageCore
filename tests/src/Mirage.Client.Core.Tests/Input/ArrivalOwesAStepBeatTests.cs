@@ -16,7 +16,7 @@ namespace Mirage.Client.Core.Tests.Input;
 /// that follows would be free, taken on a key the player has not pressed since, and it puts them one tile
 /// past the destination in the direction they were facing.</para>
 ///
-/// <para><b>The beat is what tells a tap from a hold</b>, and it does it without asking how long a press
+/// <para><b>The beat tells a tap from a hold</b>, and it does so without asking how long a press
 /// is: a tap is over before the beat expires and moves nobody, while a key still down when it expires
 /// walks on at the ordinary cadence. Nothing has to be released and pressed again.</para>
 /// </summary>

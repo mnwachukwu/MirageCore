@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace Mirage.Editor.Tests.Authoring;
 
 /// <summary>
-/// Maps joined by an edge are all one size, and the editor is what holds that true.
+/// Maps joined by an edge are all one size, and the editor holds them to it.
 ///
 /// <para>World coordinates run straight across a seam, so a step from a 16x12 map onto a 24x20 one lands
 /// somewhere other than where it looks. The rule is enforced from both sides: the resize dialog refuses to

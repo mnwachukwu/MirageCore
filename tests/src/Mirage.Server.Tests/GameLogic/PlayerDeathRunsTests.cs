@@ -151,7 +151,7 @@ public class PlayerDeathRunsTests
         });
     }
 
-    /// <summary>A body nobody is playing cannot die, which is what stops a stale handle taking a slot
+    /// <summary>A body nobody is playing cannot die, so a stale handle never takes a slot
     /// apart.</summary>
     [Test]
     public void ABodyNobodyIsPlayingDoesNotDie()

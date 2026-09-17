@@ -225,8 +225,8 @@ public class AccountEditsSurviveTests
     }
 
     /// <summary>Save's reply is the server's own re-read of what it just accepted, so it replaces the form
-    /// outright — that is what makes a clamped level visible instead of leaving the screen asserting a
-    /// number that did not land.</summary>
+    /// outright, which shows a clamped level instead of leaving the screen asserting a number that
+    /// did not land.</summary>
     [Test]
     public void AFullApply_StillReplacesEverything()
     {

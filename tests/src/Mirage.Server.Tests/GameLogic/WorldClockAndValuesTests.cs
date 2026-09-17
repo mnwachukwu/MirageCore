@@ -137,8 +137,8 @@ public class WorldClockAndValuesTests
         });
     }
 
-    /// <summary>⚠ A blank key is refused rather than written. Nothing could read it back, and a bag with
-    /// an unnamed entry in it is a bag nothing can be said about.</summary>
+    /// <summary>⚠ A blank key is refused rather than written. Nothing could read it back, and an
+    /// unnamed entry leaves the whole bag undescribable.</summary>
     [Test]
     public void ABlankKey_IsNotWritten()
     {

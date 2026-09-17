@@ -118,7 +118,7 @@ public class LightFillEquivalenceTests
         AssertMatches("doorway", (x, y) => x == cx + 2 && y != cy, r);
     }
 
-    /// <summary>Scattered walls, which is what a real map looks like: every relative direction at once.</summary>
+    /// <summary>Scattered walls, the way a real map runs: every relative direction at once.</summary>
     [TestCase(2)]
     [TestCase(3)]
     [TestCase(4)]

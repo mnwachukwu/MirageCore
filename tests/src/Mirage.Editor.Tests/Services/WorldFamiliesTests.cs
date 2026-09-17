@@ -55,7 +55,7 @@ public class WorldFamiliesTests
     }
 
     // An older server sends nothing here. Believing it would empty the rail, which is a worse guess than
-    // assuming the families this build knows — those are what a stock server's world folder holds.
+    // assuming the families this build knows — a stock server's world folder holds those.
     [Test]
     public void AServerThatReportsNoSchema_LeavesTheFamiliesAlone()
     {

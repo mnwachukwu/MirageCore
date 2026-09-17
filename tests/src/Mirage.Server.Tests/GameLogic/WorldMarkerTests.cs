@@ -15,7 +15,7 @@ namespace Mirage.Server.Tests.GameLogic;
 /// Marks on the ground.
 ///
 /// <para>🔴 <b>Core draws over bodies and had nothing for a place.</b> An overhead bar is a row over
-/// somebody's head; this is its twin for a square, and it is what a game needs to draw a flag on a
+/// somebody's head; this is its twin for a square, and a game needs it to draw a flag on a
 /// capture point, a ring around somewhere dangerous, or a name over a doorway. None of those has a body
 /// to hang on.</para>
 ///
@@ -98,8 +98,8 @@ public class WorldMarkerTests
         });
     }
 
-    /// <summary>🔴 Marking again under a name already used REPLACES. It is what makes a mark that moves,
-    /// or whose meter is counting, one call — and without it a contest that redraws every five seconds
+    /// <summary>🔴 Marking again under a name already used REPLACES, so a mark that moves, or whose
+    /// meter is counting, is one call — and without it a contest that redraws every five seconds
     /// would leave a pile of identical flags behind it.</summary>
     [Test]
     public void MarkingAgainUnderOneName_Replaces()
@@ -211,8 +211,8 @@ public class WorldMarkerTests
         });
     }
 
-    /// <summary>🔴 Two people standing on one square can be owed different lists. That is the whole point
-    /// for anything a side holds privately, and it is why the list is built per client rather than
+    /// <summary>🔴 Two people standing on one square can be owed different lists, as anything a side
+    /// holds privately needs, and it is why the list is built per client rather than
     /// broadcast.</summary>
     [Test]
     public void NamingBodies_MakesItPrivateToThem()

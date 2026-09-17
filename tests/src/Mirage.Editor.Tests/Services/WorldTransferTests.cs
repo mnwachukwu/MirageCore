@@ -242,7 +242,7 @@ public class WorldTransferTests
 
     // ── A game's own families ─────────────────────────────────────────────────
     //
-    // A world is what its folder holds, and a game's families are part of that. A transfer that carried
+    // A world is its folder's contents, and a game's families are part of that. A transfer that carried
     // only Core's would hand somebody half a world and report it as a complete one.
 
     private static readonly RecordFamily Species = new()

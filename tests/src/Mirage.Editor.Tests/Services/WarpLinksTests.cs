@@ -11,7 +11,7 @@ namespace Mirage.Editor.Tests.Services;
 /// The world's second set of connections.
 ///
 /// <para>A warp is authored entirely on the departing map: the receiving map stores nothing at all about it.
-/// That asymmetry is what these cover — reading the graph backwards so a destination can show what opens onto
+/// These cover that asymmetry — reading the graph backwards so a destination can show what opens onto
 /// it, and forwards so a map can say how many places it reaches that its grid neighbors do not.</para>
 /// </summary>
 [TestFixture]
@@ -99,7 +99,7 @@ public class WarpLinksTests
         Assert.That(WarpLinks.WarpOnlyDestinations(7, map), Is.EqualTo(new[] { 51 }));
     }
 
-    /// <summary>A map with no warps reports none, which is what keeps the badge off a clean map.</summary>
+    /// <summary>A map with no warps reports none, which keeps the badge off a clean map.</summary>
     [Test]
     public void AMapWithNoWarpsHasNoDestinations()
     {

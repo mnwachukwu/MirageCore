@@ -29,8 +29,8 @@ public class SurveyModuleTests
     ///
     /// <para>Pinned rather than assumed: this module and the scripted Survey declare the same attribute
     /// keys and the same records, so loading both would stop the server at startup over a collision
-    /// nobody wrote on purpose. A project reference added back in the host is what that would look
-    /// like, and this is what would catch it.</para></summary>
+    /// nobody wrote on purpose. A project reference added back in the host is how that would
+    /// happen, and this would catch it.</para></summary>
     [Test]
     public void TheServerShipsWithTheScriptedRouteAlone()
     {
@@ -105,9 +105,9 @@ public class SurveyModuleTests
         });
     }
 
-    /// <summary>🔴 Every seam Core offers is exercised by this one module, on purpose. A seam no game uses
-    /// is a seam nobody has checked, and the point of shipping a game in the box is that the list below
-    /// cannot quietly stop being true.</summary>
+    /// <summary>🔴 Every seam Core offers is exercised by this one module, on purpose. A seam no game
+    /// uses goes unchecked, and shipping a game in the box stops the list below quietly ceasing
+    /// to be true.</summary>
     [Test]
     public void ItUsesEverySeamTheBuilderOffers()
     {

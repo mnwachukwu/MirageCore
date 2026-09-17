@@ -179,7 +179,7 @@ public class LayerLogicTests
         });
     }
 
-    // Between two ramps the corridor gate never fires — that is what lets you walk along a wide ramp / around a
+    // Between two ramps the corridor gate never fires, so you can walk along a wide ramp / around a
     // multi-mount block (your [O][R][R][R][O] row and the staircase interior).
     [Test]
     public void Corridor_NeverBlocksBetweenTwoRampTiles()

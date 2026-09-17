@@ -8,13 +8,13 @@ namespace Mirage.Server.Tests.Platform;
 /// The log lines the server writes while starting up, rendered with the arguments it actually passes.
 ///
 /// <para>🔴 <c>StringLoader</c> THROWS on a placeholder with no value, and these run before the host is
-/// up — so a template naming a field the call site stopped supplying is not a wrong log line, it is a
-/// server that will not boot. Nothing else covers it: every suite can be green while the thing refuses to
+/// up — so a template naming a field the call site stopped supplying costs a boot rather than a
+/// log line. Nothing else covers it: every suite can be green while the thing refuses to
 /// start, because no test starts it.</para>
 ///
 /// <para>The argument lists below are deliberately a second copy of the call sites in
-/// <c>MirageServerService.LoadWorldDataAsync</c>. Two copies that must agree is the whole point — when
-/// they disagree, this fails instead of the server.</para>
+/// <c>MirageServerService.LoadWorldDataAsync</c>. Two copies that must agree is the arrangement —
+/// when they disagree, this fails instead of the server.</para>
 /// </summary>
 [TestFixture]
 public class StartupLogTemplateTests

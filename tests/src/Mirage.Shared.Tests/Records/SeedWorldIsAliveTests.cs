@@ -255,8 +255,8 @@ public class SeedWorldIsAliveTests
                 yield return (x, y, map.Tile[x, y]);
     }
 
-    /// <summary>One map as the movement rules read the world: a coordinate off the map is nothing, which
-    /// is what stops a walk at the edge.</summary>
+    /// <summary>One map as the movement rules read the world: a coordinate off the map is nothing,
+    /// which stops a walk at the edge.</summary>
     private sealed class MapView(MapRecord map) : LayerLogic.IWorldTileView
     {
         public TileRecord? At(int worldX, int worldY) =>

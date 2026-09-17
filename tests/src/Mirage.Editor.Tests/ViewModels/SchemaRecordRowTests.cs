@@ -89,7 +89,7 @@ public class SchemaRecordRowTests
         Assert.Multiple(() =>
         {
             Assert.That(row.Name, Is.EqualTo("FromTheServer"));
-            Assert.That(row.IsDirty, Is.False, "what arrived is what is saved");
+            Assert.That(row.IsDirty, Is.False, "the row saves what arrived");
             Assert.That(row.Form.Fields.Single(f => f.Key == "name").TextValue, Is.EqualTo("FromTheServer"));
         });
     }

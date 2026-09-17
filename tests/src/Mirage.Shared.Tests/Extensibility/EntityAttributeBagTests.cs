@@ -58,7 +58,7 @@ public class EntityAttributeBagTests
         Assert.That(snapshot.Attributes["gold"].AsLong(), Is.EqualTo(250));
     }
 
-    /// <summary>A template's values are what every copy STARTS with, not what they share. One wolf
+    /// <summary>Every copy STARTS with a template's values rather than sharing them. One wolf
     /// taking damage must not wound the species.</summary>
     [Test]
     public void ARunningCopy_DoesNotShareTheTemplatesBag()

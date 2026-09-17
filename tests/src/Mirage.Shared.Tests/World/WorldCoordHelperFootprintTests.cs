@@ -152,7 +152,7 @@ public class WorldCoordHelperFootprintTests
     }
 
     /// <summary>Two size-3 bodies standing face to face are THREE tiles apart anchor to anchor — the distance an
-    /// anchor-based gate reads as far away, which is why they could never reach each other.</summary>
+    /// anchor-based gate reads as far away, so they could never reach each other.</summary>
     [Test]
     public void AreFootprintsAdjacent_Size3_ReachesOnlyWhereTheEdgesTouch()
     {

@@ -175,7 +175,7 @@ public class MapLinkLayoutTests
         Assert.That((await Flood(Corridor(4), radius: 2)).TruncatedByRadius, Is.True);
     }
 
-    /// <summary>Radius 0 means unbounded, which is what the PNG export passes. Reading it as "a box of zero"
+    /// <summary>Radius 0 means unbounded, which the PNG export passes. Reading it as "a box of zero"
     /// would silently reduce every world export to its origin map.</summary>
     [Test]
     public async Task RadiusZeroFloodsTheWholeGraph()
@@ -186,7 +186,7 @@ public class MapLinkLayoutTests
         Assert.That(r.TruncatedByRadius, Is.False);
     }
 
-    /// <summary>The bounding box spans the placed maps, and is what the export turns into an image size.
+    /// <summary>The bounding box spans the placed maps, and the export turns it into an image size.
     /// A box measured from the origin instead would clip everything reached by walking up or left.</summary>
     [Test]
     public async Task TheBoxSpansEveryPlacedMap()
@@ -257,7 +257,7 @@ public class MapLinkLayoutTests
     ///
     /// <para>The export sizes its surface from the bounding box and blits each map at its cell offset, so a
     /// duplicate cell would overwrite one map with another and a box that did not span every placement would
-    /// clip whatever fell outside it. Both would show up only as a wrong picture, which is why they are
+    /// clip whatever fell outside it. Both would show up only as a wrong picture, so they are
     /// asserted here rather than left to somebody comparing a ten-thousand-pixel PNG by eye.</para>
     /// </summary>
     [Test]
