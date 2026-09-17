@@ -133,7 +133,7 @@ public sealed partial class ShopBarterRowViewModel : ObservableObject
         // An item's currency-ness may have changed under us; refresh the spinner limits and snap the stored
         // quantities back into range, so a currency→normal flip caps a >1 qty at 1 immediately (not on next
         // edit). This is NORMALIZATION, not an author edit — and it is not the no-op it first appears: the
-        // arriving item list is what makes currency-ness knowable at all, so an authored value outside the
+        // arriving item list is the first thing that makes currency-ness knowable, so an authored value outside the
         // rule gets rewritten on the very FIRST selection. Marking dirty for it flags a shop as modified
         // merely by being opened.
         OnPropertyChanged(nameof(GiveQuantityMin));

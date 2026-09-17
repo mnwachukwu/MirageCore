@@ -21,8 +21,8 @@ namespace Mirage.Client.Shell.Screens;
 /// the composite that lays it under the entities.
 ///
 /// <para>The whole pipeline is color-blind. A stain accumulates as an influence field and is tinted ONCE
-/// at composite, in the color the world declared — which is why a world has one stain color rather than
-/// one per stain: a second color means a second field.</para></summary>
+/// at composite, in the color the world declared. So a world has one stain color rather than one
+/// per stain: a second color means a second field.</para></summary>
 public sealed partial class GameplayScreen : IGameScreen
 {
     // ── Ground stains ──────────────────────────────────────────────────────

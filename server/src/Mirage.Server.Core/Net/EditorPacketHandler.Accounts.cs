@@ -147,7 +147,7 @@ public sealed partial class EditorPacketHandler
                     ApplyCharEdit(_pm[slot].Char, e);
                 }
                 // The join handshake WITHOUT the welcome: re-sends their own record and re-syncs the
-                // region around them, which is what makes a moved or re-levelled character land.
+                // region around them, so a moved or re-levelled character lands.
                 _joinLeave.SendJoinData(slot);
             }
             return true;
@@ -172,7 +172,7 @@ public sealed partial class EditorPacketHandler
     /// <summary>
     /// Rename one character, or say why not.
     ///
-    /// <para>The blast radius is small, and that is a property of the data rather than luck: guild
+    /// <para>The blast radius is small, by a property of the data rather than by luck: guild
     /// membership, friends, ignore lists, mail and market listings all key off the account LOGIN. The
     /// character name is a key in exactly one place — the registry that stops two players sharing one — so
     /// this reserves the new name, writes it, and releases the old one.</para>
@@ -281,8 +281,8 @@ public sealed partial class EditorPacketHandler
     ///
     /// <para><b>An ONLINE character is edited in memory, not on disk.</b> The live record is the one being
     /// played out of; writing the file underneath it would be overwritten by the player's own next save, and
-    /// writing both leaves two authors for one bag. Marking the slot dirty is what persists it, and the join
-    /// handshake is what puts the new bag on their screen.</para>
+    /// writing both leaves two authors for one bag. Marking the slot dirty persists it, and the join
+    /// handshake puts the new bag on their screen.</para>
     /// </summary>
     private async Task EditCharAsync(int editorIndex, string login, int slot, string byLogin, string locale,
         Func<PlayerRecord, string> edit, string what)

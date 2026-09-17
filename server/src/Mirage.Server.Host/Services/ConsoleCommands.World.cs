@@ -45,8 +45,8 @@ public sealed partial class ConsoleCommands
     /// in front of everyone, which says nothing and looks broken. Players find out the next time they
     /// would have been shown one.</para>
     ///
-    /// <para>A blank argument is therefore an INSTRUCTION rather than a mistake, which is why there is
-    /// no usage line: an empty box on the Commands tab means "no message", and refusing it would leave
+    /// <para>A blank argument is therefore an INSTRUCTION rather than a mistake, so there is no
+    /// usage line: an empty box on the Commands tab means "no message", and refusing it would leave
     /// no way to take one down.</para></summary>
     private void CmdMotd(string args)
     {

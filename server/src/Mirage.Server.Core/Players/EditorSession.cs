@@ -24,6 +24,6 @@ public sealed class EditorSession
     /// it, the same as the login message: the rules being reported are the game's, and the editor has no
     /// vocabulary for them.</summary>
     public string Locale { get; set; } = "";
-    /// <summary>Whether the slot is in use; this is what <see cref="EditorSessionManager.FindOpenSlot"/> tests.</summary>
+    /// <summary>Whether the slot is in use; <see cref="EditorSessionManager.FindOpenSlot"/> tests this.</summary>
     public bool IsConnected { get; set; }
 }

@@ -115,8 +115,8 @@ public sealed partial class NpcAiSystem : GameSystem
     // spans BOTH source layers (2*N states) and a target on the ground vs the fringe surface roots a different
     // flood; Footprint (npc.EffectiveSize) drives walkability.  That is the complete set of inputs
     // FillPathField reads, so the key is exhaustive by construction: the chaser's own spawn map is not an
-    // input to the flood at all, which is what lets a gang converging from different home maps share one
-    // field (locked by NpcPathCacheTests).
+    // input to the flood at all, so a gang converging from different home maps shares one field
+    // (locked by NpcPathCacheTests).
     // The attack-slot ring is deliberately NOT keyed: it is frozen per _pathNow via _attackSlotMemo
     // and is chaser-independent, so it bakes into the field consistently.  selfSpawnMap/selfSpawnSlot are
     // omitted because they are read only in the stalled planAroundActors branch, which never uses this cache.

@@ -84,7 +84,7 @@ public sealed class SpreadSystem : GameSystem
 
         // The walk: a random start, then repeatedly the tile whose nearest already-chosen spot is
         // furthest away. Random, because a fixed start puts the same spots in the same places forever;
-        // greedy after that, because it is what turns one arbitrary tile into a spread set.
+        // greedy after that, to grow one arbitrary tile into a spread set.
         var chosen = new List<WorldPlace>(count);
         int seed = candidates[Rng.Next(candidates.Count)];
         int[] nearest = Distances(region, seed);
@@ -181,7 +181,7 @@ public sealed class SpreadSystem : GameSystem
                     }
 
                     // A deck is a surface only where it is joined to a ramp: the fringe plane reads as
-                    // open sky over most of every map, and a spot in the air is a spot nobody can walk to.
+                    // open sky over most of every map, and nobody can walk to a spot in the air.
                     if (_world.IsFringeSpawnable(m, x, y))
                     {
                         grid[(int)WorldLayer.Fringe, x, y] = region.Nodes.Count;

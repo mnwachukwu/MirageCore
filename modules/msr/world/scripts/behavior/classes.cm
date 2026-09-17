@@ -1,4 +1,4 @@
-# What a class IS lives in declarations/character.cm. This is what happens when somebody takes one.
+# What a class IS lives in declarations/character.cm. This file covers taking one.
 #
 # A class counts TWICE, which reads as a mistake until you see both halves:
 #

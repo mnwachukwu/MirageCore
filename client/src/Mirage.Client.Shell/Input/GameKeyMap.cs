@@ -7,7 +7,7 @@ namespace Mirage.Client.Shell.Input;
 /// <summary>
 /// The keyboard key behind each name a game may bind.
 ///
-/// <para><b>This is the other half of <see cref="GameKey.Offered"/>, and the pair is the whole point.</b>
+/// <para><b>The other half of <see cref="GameKey.Offered"/>, and neither half works alone.</b>
 /// The engine decides which keys a game may name; this decides what pressing one means. A name offered
 /// with nothing here binds nothing, and a key here that the engine does not offer can never be reached —
 /// and neither would report anything, because a shortcut that silently does not work looks exactly like
@@ -35,7 +35,7 @@ internal static class GameKeyMap
     /// <summary>Every name this knows a key for. What the test compares against the engine's list.</summary>
     internal static IReadOnlyCollection<string> Names => Bound.Keys;
 
-    /// <summary>The key <paramref name="name"/> stands for. False for a blank name, which is what almost
+    /// <summary>The key <paramref name="name"/> stands for. False for a blank name, which almost
     /// everything a game declares carries.</summary>
     public static bool TryResolve(string? name, out Keys key)
     {

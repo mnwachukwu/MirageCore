@@ -170,7 +170,7 @@ public sealed class StatusBroadcaster : IHostedService, IDisposable
 
     /// <summary>Reads the machine cost since the previous snapshot. Both counters are windowed and reset
     /// on read, so a snapshot describes the interval it closes rather than an average over all of history
-    /// — which is what a ramping load test needs, since an average hides the step that broke.</summary>
+    /// — which a ramping load test needs, since an average hides the step that broke.</summary>
     private LoadSummary SampleLoad()
     {
         var loop = _gameLoop.Metrics.Sample();

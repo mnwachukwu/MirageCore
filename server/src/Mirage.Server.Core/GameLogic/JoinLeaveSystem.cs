@@ -694,7 +694,7 @@ public sealed class JoinLeaveSystem : GameSystem
     /// <summary>Drop every worn entry that no longer makes sense — an empty bag slot, an item that is
     /// not equipment, an item that names a different slot, or a slot this world no longer declares.
     ///
-    /// <para>This is what lets a character survive a change of game. Nothing is reassigned and nothing
+    /// <para>So a character survives a change of game. Nothing is reassigned and nothing
     /// throws: what still fits stays worn, and the rest is simply carried.</para></summary>
     private void CheckEquippedItems(int index)
     {

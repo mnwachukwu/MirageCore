@@ -36,8 +36,8 @@ public sealed class ServerProcess : IServerConnection
     /// has to be told where it is. Built from <see cref="Constants.GameName"/> rather than hardcoded,
     /// because that is the same single value the build derives assembly names from.
     ///
-    /// <para><b>"-Server-Console", not "-Server".</b> The plain name belongs to THIS window — it is what
-    /// the installer's shortcut points at. Spawning "-Server" would have the shell launch itself.</para></summary>
+    /// <para><b>"-Server-Console", not "-Server".</b> The plain name belongs to THIS window, and the
+    /// installer's shortcut points at it. Spawning "-Server" would have the shell launch itself.</para></summary>
     public static string DefaultExecutablePath =>
         Path.Combine(AppContext.BaseDirectory,
             Constants.GameName.Replace(' ', '-') + "-Server-Console" + (OperatingSystem.IsWindows() ? ".exe" : ""));
@@ -132,7 +132,7 @@ public sealed class ServerProcess : IServerConnection
         }
         catch (OperationCanceledException)
         {
-            // Out of patience. Anything still queued is lost, which is why the grace above is long.
+            // Out of patience. Anything still queued is lost, so the grace above is long.
             try { process.Kill(entireProcessTree: true); } catch (InvalidOperationException) { }
         }
         SetState(ServerState.Stopped);

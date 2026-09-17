@@ -72,15 +72,15 @@ public sealed partial class MapEditorViewModel : ObservableObject
     [ObservableProperty] private bool _fillRun;
 
     /// <summary>The clicked tile when it already held the attribute being authored. Null while a dialog is
-    /// laying a new one, which is what makes the fill inert there.</summary>
+    /// laying a new one, which leaves the fill inert there.</summary>
     private (int X, int Y)? _runAnchor;
 
     /// <summary>Whether the open dialog has a run to grow into.</summary>
     public bool CanFillRun => _runAnchor is not null;
 
     // ── Per-dialog "retain values" checkboxes ────────────────────────────────
-    // On by default: laying a run of the same attribute is the common job, and Alt+Click is what makes
-    // that quick.
+    // On by default: laying a run of the same attribute is the common job, and Alt+Click makes that
+    // quick.
     [ObservableProperty] private bool _warpRetain = true;
     [ObservableProperty] private bool _itemRetain = true;
     [ObservableProperty] private bool _doorRetain = true;

@@ -122,7 +122,7 @@ public enum NpcBehavior : byte
     /// wants a gap and MEANS TO KEEP IT — an archer, a caster, a heckler, a bodyguard holding a
     /// perimeter, an animal that will not be approached — has neither.</para>
     ///
-    /// <para>⚠ Reaching the distance it wanted is what raises contact for one of these, so a game hears
+    /// <para>⚠ Reaching the distance it wanted raises contact for one of these, so a game hears
     /// about it in the same place and on the same terms as a body that closed all the way in.</para></summary>
     Shadow = 5,
 }

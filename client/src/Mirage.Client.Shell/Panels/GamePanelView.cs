@@ -158,7 +158,7 @@ public sealed class GamePanelView : IGamePanel
     ///
     /// <para>🔴 One at a time, and the first declared that applies wins. A game whose conditions
     /// overlap gets the one it declared first rather than two windows fighting over the same corner,
-    /// and the order it declared them in is a thing it controls.</para></summary>
+    /// and it controls the order it declares them in.</para></summary>
     public void FollowConditions(ClientState state)
     {
         if (!_held) return;
@@ -306,8 +306,8 @@ public sealed class GamePanelView : IGamePanel
     /// <summary>
     /// Typing, ticking and picking.
     ///
-    /// <para>Each control consumes the click it handles, which is what keeps a click on an open
-    /// drop-down's list from also pressing the button its popup is drawn over.</para>
+    /// <para>Each control consumes the click it handles, so a click on an open drop-down’s list
+    /// does not also press the button its popup is drawn over.</para>
     /// </summary>
     private void Filling(InputState input, GamePanel panel)
     {
@@ -491,7 +491,7 @@ public sealed class GamePanelView : IGamePanel
     private static Rectangle Control(Rectangle row) =>
         new(row.X + row.Width / 2, row.Y, row.Width - row.Width / 2, row.Height);
 
-    /// <summary>Where the buttons begin, which is what the rows above them may not cross.</summary>
+    /// <summary>Where the buttons begin, which the rows above them may not cross.</summary>
     private static int Floor(Rectangle content, GamePanel panel)
     {
         int count = Sends(panel) ? panel.Buttons.Count + 1 : panel.Buttons.Count;
@@ -503,7 +503,7 @@ public sealed class GamePanelView : IGamePanel
     ///
     /// <para>A row whose caption reads blank is left out, which is how a game declares a list as long as
     /// the table behind it and shows only the filled part. An id key left blank makes the caption its own
-    /// id, which is what a list of plain names wants.</para></summary>
+    /// id, which suits a list of plain names.</para></summary>
     private void FillList(GamePanel panel, ClientState state)
     {
         _list.Items.Clear();

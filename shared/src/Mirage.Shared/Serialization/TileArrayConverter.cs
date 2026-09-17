@@ -11,8 +11,8 @@ namespace Mirage.Shared.Serialization;
 /// </summary>
 internal sealed class TileArrayConverter : JsonConverter<TileRecord[,]>
 {
-    /// <summary>Reads the grid at whatever size the file wrote it. The map's dimensions ARE the shape of
-    /// this array — nothing else records them — so the columns are buffered before the array is allocated,
+    /// <summary>Reads the grid at whatever size the file wrote it. This array's shape IS the map's
+    /// dimensions — nothing else records them — so the columns are buffered before the array is allocated,
     /// and a short or ragged row is filled out with empty tiles rather than truncating the map to fit.</summary>
     public override TileRecord[,] Read(
         ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

@@ -88,8 +88,8 @@ public sealed class DeathSystem : GameSystem
         var (map, x, y) = HomeFor(death, sp.Char);
 
         // A game that put the body OUT OF ACTION while the policies ran is keeping it here: the body
-        // lies where it fell and moves when it gets up, which is what a corpse with a timer over it
-        // means. Where it will come back is settled now, while the death is still in hand, and read
+        // lies where it fell and moves when it gets up, which is how a corpse with a timer over it
+        // reads. Where it will come back is settled now, while the death is still in hand, and read
         // again by Rise.
         if (sp.Char.Downed)
         {

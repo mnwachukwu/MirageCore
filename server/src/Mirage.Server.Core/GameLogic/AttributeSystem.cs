@@ -19,7 +19,7 @@ namespace Mirage.Server.Core.GameLogic;
 /// stops a game writing to it directly — that is the correct thing to do for a value nobody watches.
 /// But a value that IS watched and is written directly simply stops updating on every client, with no
 /// error and no symptom until somebody notices a stale number. Routing the watched case through one
-/// method is what makes the quiet failure impossible to reach by accident.</para>
+/// method puts the quiet failure out of accidental reach.</para>
 /// </summary>
 public sealed class AttributeSystem : GameSystem
 {
@@ -69,8 +69,8 @@ public sealed class AttributeSystem : GameSystem
     }
 
     /// <summary>Reads a body's bag, or null when it is not in the world. A game holding this may read
-    /// and write it freely; only a WATCHED key written this way stops reaching clients, which is what
-    /// <see cref="Set"/> exists for.</summary>
+    /// and write it freely; only a WATCHED key written this way stops reaching clients, which
+    /// <see cref="Set"/> exists to prevent.</summary>
     public AttributeBag? BagOf(EntityHandle who)
     {
         if (who.IsPlayer)
@@ -84,8 +84,8 @@ public sealed class AttributeSystem : GameSystem
         }
 
         // An NPC is NAMED by where it spawns and may be standing two maps away, its home slot vacated
-        // and reserved. Resolving the identity rather than indexing the slot is what keeps a game's
-        // values readable on a body that is chasing somebody across the world.
+        // and reserved. Resolving the identity rather than indexing the slot keeps a game's values
+        // readable on a body that is chasing somebody across the world.
         return who.IsNpc ? _queries.ResolveNpc(who.SpawnMap, who.SpawnSlot)?.Record.Attributes : null;
     }
 

@@ -72,7 +72,7 @@ public sealed class AttributeSchema
         _byOrdinal = declarations.ToDictionary(d => d.Ordinal);
     }
 
-    /// <summary>Every declaration, in ordinal order. This is what travels on the wire.</summary>
+    /// <summary>Every declaration, in ordinal order. This is the form that travels on the wire.</summary>
     public IReadOnlyList<AttributeDeclaration> Declarations { get; }
 
     public bool TryGet(string key, out AttributeDeclaration declaration)

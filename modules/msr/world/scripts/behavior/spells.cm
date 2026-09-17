@@ -120,7 +120,7 @@ shared model Spells
     # ── What sustained casting costs ──────────────────────────────────────────
     #
     # A warrior's cost of fighting is repair; a caster's is reagents, at one apiece. The two are the
-    # same number on purpose: what a cast burns is what a swing burns off a weapon at the same tier,
+    # same number on purpose: a cast burns what a swing burns off a weapon at the same tier,
     # so neither class is cheaper to play than the other.
     #
     # 🔴 PRICED OFF THE ENGINE'S REPAIR RATE rather than off a figure written here. A figure written
@@ -154,8 +154,8 @@ shared model Spells
         yield exact;
     end function
 
-    # What a cast takes WHEN IT TAKES ANY — whole, and never a range. That is the shape of the thing
-    # being mirrored: a swing removes one point of durability or none, never a point and sometimes two.
+    # What a cast takes WHEN IT TAKES ANY — whole, and never a range, mirroring the swing it is
+    # priced off: a swing removes one point of durability or none, never a point and sometimes two.
     # The smallest count that keeps the odds below certainty, so the whole low band is a single reagent.
     public integer function PerCast(real exact)
         if exact <= 0.0

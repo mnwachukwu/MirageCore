@@ -66,8 +66,8 @@ public sealed partial class ClientPacketHandler
             })]);
     }
 
-    /// <summary>The screens this game paints. Names and numbers all the way down, which is why the
-    /// declaration travels whole rather than being projected into a wire shape of its own.</summary>
+    /// <summary>The screens this game paints. Names and numbers all the way down, so the declaration
+    /// travels whole rather than being projected into a wire shape of its own.</summary>
     private void HandleGamePanels(GamePanelsPacket p) => _state.Panels = new GamePanels([.. p.Panels]);
 
     /// <summary>The chat channels this game declared. Core’s own five are not among them — a

@@ -130,8 +130,8 @@ public sealed partial class MirageGame : Game
     /// when it went off. Leaving a character clears the remembered track, and the menu only claims one
     /// while music is already on — so turning music off in game, logging out, and turning it back on at
     /// the menu left nothing to resume and the toggle looked dead until the next map load handed it a
-    /// track. Outside gameplay the menu track is the answer; inside it, a map with no music is silent
-    /// on purpose.</para></summary>
+    /// track. Outside gameplay the menu track plays; inside it, a map with no music is silent on
+    /// purpose.</para></summary>
     private void ApplyMusicEnabled()
     {
         if (!_playMusic)

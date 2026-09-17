@@ -12,7 +12,7 @@ namespace Mirage.Shared.Extensibility;
 /// <para><b>Not every family is the same shape, and the row says how.</b> Maps and map groups are read
 /// and written one file at a time; the rest are loaded as a whole numbered set at boot. Accounts are
 /// authored in the editor but are not world content and never travel with a world. Reading any single
-/// property across all rows would therefore be wrong for at least one consumer — which is why the
+/// property across all rows would therefore be wrong for at least one consumer, so the
 /// differences are declared here rather than left as omissions from six separate lists.</para>
 /// </summary>
 public static class CoreRecordFamilies
@@ -31,7 +31,7 @@ public static class CoreRecordFamilies
 
     /// <summary>Every family that is part of a world, in the order the editor lists them.
     ///
-    /// <para>A world is what these describe: zip the folders they name and you have handed somebody the
+    /// <para>These describe a world: zip the folders they name and you have handed somebody the
     /// world and nothing else.</para></summary>
     public static IReadOnlyList<RecordFamily> World { get; } =
     [

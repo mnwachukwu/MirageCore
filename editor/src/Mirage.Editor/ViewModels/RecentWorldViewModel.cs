@@ -20,8 +20,8 @@ public sealed class RecentWorldViewModel(string path, Func<string, Task> open)
     /// <summary>The whole path, shown on hover.</summary>
     public string Path { get; } = path;
 
-    /// <summary>What the menu shows: the world's own name where it has one. A name is what an operator
-    /// picked to tell this world from a copy of it, so it identifies the entry better than any part of a
+    /// <summary>What the menu shows: the world's own name where it has one. An operator picked that
+    /// name to tell this world from a copy of it, so it identifies the entry better than any part of a
     /// path can.
     ///
     /// <para>An unnamed world is shown as "Untitled World" WITH its folder, because several of them read
@@ -49,7 +49,7 @@ public sealed class RecentWorldViewModel(string path, Func<string, Task> open)
         }
     }
 
-    /// <summary>The folder a path ends in, which is what tells two unnamed worlds apart. Reads both
+    /// <summary>The folder a path ends in, which tells two unnamed worlds apart. Reads both
     /// separators on every platform: this list is a settings file that travels.</summary>
     private static string Leaf(string path) => PortablePath.Leaf(path);
 }

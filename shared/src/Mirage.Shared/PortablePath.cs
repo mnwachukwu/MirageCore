@@ -20,7 +20,7 @@ public static class PortablePath
     /// <summary>Both separators, whatever this platform calls its own.</summary>
     public static readonly char[] Separators = ['\\', '/'];
 
-    /// <summary>The last segment — the folder a path ends in, which is what tells two unnamed worlds apart.
+    /// <summary>The last segment — the folder a path ends in, which tells two unnamed worlds apart.
     /// A trailing separator is not a segment. A string with no separator at all is its own leaf.</summary>
     public static string Leaf(string path)
     {

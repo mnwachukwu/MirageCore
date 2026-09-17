@@ -86,7 +86,7 @@ public sealed partial class MirageGame : Game
         }
 
         // Counted here rather than in Draw: MonoGame runs EXTRA Updates to catch up after a frame that
-        // overran, and how many is the thing worth knowing. Draw reads and clears it.
+        // overran, and how many of them is worth knowing. Draw reads and clears it.
         _updatesThisFrame++;
         if (gameTime.IsRunningSlowly) _runningSlowly = true;
         long updateStart = Stopwatch.GetTimestamp();

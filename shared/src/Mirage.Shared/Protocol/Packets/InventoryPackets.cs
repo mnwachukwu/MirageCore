@@ -26,8 +26,8 @@ public sealed record MapGetItemPacket : IPacket
 
 /// <summary>C→S: pick up ONE named map item from the tile menu, possibly from a few tiles away.
 ///
-/// <para>Identified by its stable per-map <see cref="Slot"/> rather than by position, so what gets
-/// taken is what was clicked even if the pile shifted while the menu was open.</para>
+/// <para>Identified by its stable per-map <see cref="Slot"/> rather than by position, so the pile
+/// shifting while the menu was open still takes what was clicked.</para>
 ///
 /// <para>The server re-validates reach (r=5, and the two planes must connect) — the menu decides what
 /// to OFFER, never what is allowed.</para></summary>

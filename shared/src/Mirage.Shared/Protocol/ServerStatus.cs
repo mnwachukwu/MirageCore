@@ -88,8 +88,8 @@ public sealed record LoadSummary
 /// <summary>
 /// One connected editor session.
 ///
-/// <para><see cref="Holding"/> is what the session has open with unsaved changes — the thing an operator
-/// actually wants before ending it, because those edits go with the connection.</para>
+/// <para><see cref="Holding"/> lists what the session has open with unsaved changes — what an
+/// operator wants before ending it, because those edits go with the connection.</para>
 /// </summary>
 public sealed record EditorSummary
 {
@@ -102,7 +102,7 @@ public sealed record EditorSummary
 }
 
 /// <summary>One online player, in the terms a dashboard row needs. <see cref="Login"/> is carried
-/// because the account is what /ban and /setaccess act on, while the NAME is what an operator reads.</summary>
+/// because /ban and /setaccess act on the account, while an operator reads the NAME.</summary>
 public sealed record PlayerSummary
 {
     public int Slot { get; init; }

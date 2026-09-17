@@ -85,7 +85,7 @@ public static class HotkeyBarPanel
     }
 
     // ── Resolution: a bound NUMBER to a live slot ────────────────────────────
-    // Both of these are the reason hotkeys store numbers. They run per frame for drawing and again on
+    // Hotkeys store numbers for these two. They run per frame for drawing and again on
     // use; they are linear scans over 24-ish entries, which is nothing next to a draw call.
 
     /// <summary>First inventory slot holding this item number, or 0 when the bag has none.</summary>
@@ -339,8 +339,8 @@ public static class HotkeyBarPanel
             return;
         }
 
-        // Everything else wears the caption the server sent. It is all this client has, and it is what
-        // the player needs: which verb, or which of the game’s records.
+        // Everything else wears the caption the server sent. It is all this client has, and all the
+        // player needs: which verb, or which of the game’s records.
         Tooltip.NotifyHoverText(TooltipScope, (TooltipScope, slot),
             ClientStrings.GetOrFallback(hk.Caption, hk.Caption), input.MousePosition);
     }

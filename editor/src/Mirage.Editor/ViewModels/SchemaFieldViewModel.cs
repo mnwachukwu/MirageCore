@@ -157,7 +157,7 @@ public sealed partial class SchemaFieldViewModel : ObservableObject
     }
 
     /// <summary>What this row currently READS as, whether or not the key is there. Writing this back is
-    /// not an edit, and saying so is what stops a control from creating a key as it initializes.</summary>
+    /// not an edit, and saying so stops a control creating a key as it initializes.</summary>
     private AttributeValue Displayed => Kind switch
     {
         FieldKind.Integer => AttributeValue.From((long)Descriptor.Clamp(Math.Round(NumberValue))),

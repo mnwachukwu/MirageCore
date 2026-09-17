@@ -46,8 +46,8 @@ public static partial class ServerStrings
     public const string AdminCommand_Kicked = nameof(AdminCommand_Kicked);
     public const string AdminCommand_BanBroadcast = nameof(AdminCommand_BanBroadcast);
     public const string AdminCommand_BanListRefreshed = nameof(AdminCommand_BanListRefreshed);
-    // Lifting a punishment in game (Creator only). Each names the ACCOUNT, because that is what the
-    // punishment is on and what the Creator has to be sure they lifted.
+    // Lifting a punishment in game (Creator only). Each names the ACCOUNT, because the punishment
+    // sits on one and the Creator has to be sure which they lifted.
     public const string AdminCommand_AccountNotFound = nameof(AdminCommand_AccountNotFound);
     public const string AdminCommand_Unbanned = nameof(AdminCommand_Unbanned);
     public const string AdminCommand_NotBanned = nameof(AdminCommand_NotBanned);

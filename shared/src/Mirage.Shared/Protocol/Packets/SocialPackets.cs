@@ -37,7 +37,7 @@ public sealed record SocialListPacket : IPacket
 // ── C→S ─────────────────────────────────────────────────────────────────────
 
 /// <summary>C→S: add the account behind an ONLINE character to my friends list. Addressed by character
-/// name (that is what the player can see/right-click); the server resolves it to the account.</summary>
+/// name, the only part a player can see and right-click; the server resolves it to the account.</summary>
 public sealed record SocialAddFriendPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.SocialAddFriend;

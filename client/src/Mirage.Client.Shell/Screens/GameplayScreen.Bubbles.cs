@@ -242,7 +242,7 @@ public sealed partial class GameplayScreen : IGameScreen
     /// <summary>Fire one action-bar slot. The binding names an item or spell by NUMBER, so this resolves
     /// it to a live inventory/spellbook slot at the moment of use — the bar keeps working across a bag
     /// that reorders itself under it.
-    /// <para>Returns whether anything was actually sent, which is what starts the shared cooldown: a press
+    /// <para>Returns whether anything was actually sent, which starts the shared cooldown: a press
     /// on an empty or unusable slot should not eat the beat.</para></summary>
     // ── The two clocks ────────────────────────────────────────────────────────
     // Attacking and casting share one beat; drinking runs on its own, slower one. Heavy Wind doubles

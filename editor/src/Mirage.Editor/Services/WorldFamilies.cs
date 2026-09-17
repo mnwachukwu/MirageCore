@@ -12,7 +12,7 @@ namespace Mirage.Editor.Services;
 ///
 /// <para><b>Offline it falls back to Core's.</b> A world folder on disk carries no schema, so editing
 /// one without a server means editing the families the engine ships with. That is the honest answer
-/// rather than an empty rail: it is what a world folder written by a stock server contains.</para>
+/// rather than an empty rail, and it matches what a world folder written by a stock server holds.</para>
 ///
 /// <para>Static because the editor's other world-scoped facts are — <c>AppSettings.Current</c>,
 /// <c>EditorStrings</c>, <c>ServerBookStore.Book</c> — and because one editor edits one world at a

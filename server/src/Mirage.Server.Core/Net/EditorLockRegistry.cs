@@ -10,7 +10,7 @@ namespace Mirage.Server.Core.Net;
 /// drops takes every one of its locks with it, so a crashed editor cannot wedge a record shut.</para>
 ///
 /// <para>A lock belongs to a SESSION. Two editors signed in as the same account hold two independent sets of
-/// unsaved changes and block each other, which is why nothing here compares logins — the login is carried so
+/// unsaved changes and block each other, so nothing here compares logins — the login is carried so
 /// the holder can be named, never to decide who the holder is.</para>
 ///
 /// <para>In memory only, and deliberately: a lock is a fact about a live connection, and one that outlived

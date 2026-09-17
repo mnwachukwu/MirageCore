@@ -7,7 +7,7 @@ public sealed partial class ClientPacketHandler
 {
     /// <summary>Replaces one map's whole mark list.
     ///
-    /// <para>A replace rather than a merge, because that is what the server sent. A mark can move, change
+    /// <para>A replace rather than a merge, because the server sent a whole list. A mark can move, change
     /// color, change its meter, or stop being this player's business, and saying what is true now covers
     /// every one of those without a removal wire.</para>
     ///

@@ -26,7 +26,7 @@ public sealed class UnixDateConverter : IValueConverter
 /// Whole minutes left on a kick or mute, rounded UP so a penalty with seconds to run never reads as
 /// zero and looks already over.
 ///
-/// <para>Fixed at the moment the report was gathered — a row does not tick down. Refreshing is what
+/// <para>Fixed at the moment the report was gathered — a row does not tick down. Refreshing
 /// re-reads it, and a penalty that ran out drops off the list entirely rather than showing zero.</para>
 /// </summary>
 public sealed class MinutesLeftConverter : IValueConverter

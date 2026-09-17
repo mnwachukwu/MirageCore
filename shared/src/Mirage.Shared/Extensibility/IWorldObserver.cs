@@ -14,7 +14,7 @@ namespace Mirage.Shared.Extensibility;
 /// is only the answer when nothing says otherwise.</param>
 public readonly record struct WorldPlace(int Map, int X, int Y, WorldLayer Layer = WorldLayer.Ground)
 {
-    /// <summary>Nowhere. The zero value, which is what a body that was not anywhere before comes from.</summary>
+    /// <summary>Nowhere. The zero value, where a body that was not anywhere before comes from.</summary>
     public static WorldPlace Nowhere => default;
 
     /// <summary>True when this names a map.</summary>
@@ -51,7 +51,7 @@ public readonly record struct WorldPlace(int Map, int X, int Y, WorldLayer Layer
 /// that wants to act calls back into the engine like any other caller.</para>
 ///
 /// <para><b>They run on the game thread, in the middle of the work that raised them.</b> So an observer
-/// does its thinking and returns; anything slow belongs on the tick, which is what
+/// does its thinking and returns; anything slow belongs on the tick, which
 /// <see cref="ITickWork"/> is for. An observer that throws is logged with its name and the others still
 /// run, the same as a module's tick work — a game's bug does not stop the world.</para>
 /// </summary>
@@ -79,7 +79,7 @@ public interface IWorldObserver
     /// admin command, the arrival at the end of a login.
     ///
     /// <para><paramref name="from"/> is <see cref="WorldPlace.Nowhere"/> when they were not in the world
-    /// before, which is what joining looks like.</para></summary>
+    /// before, as it is when they join.</para></summary>
     void OnPlayerWarped(EntityHandle who, in WorldPlace from, in WorldPlace to) { }
 
     /// <summary>A pursuing NPC reached what it was chasing.

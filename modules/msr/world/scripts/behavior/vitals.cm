@@ -3,7 +3,7 @@
 # A pool is two numbers: what a body has, and what it can hold. Only the current value is really
 # stored. The ceiling is derived from the formula in stats.cm and recomputed whenever anything it
 # reads changes — stored instead, the two drift apart, and a character whose maximum disagrees with
-# their level is a bug nobody sees until they heal.
+# their level stays wrong until they heal.
 #
 # ⚠ Stamina does not come back while you run, and the pools shrink in snow. Both are read off the
 # world rather than off the body: running is the engine's own movement state, and the weather is the
@@ -148,7 +148,7 @@ shared model Vitals
         who.Take(item, 1);
     end function
 
-    # One pool. False when there was nothing to do, which is what decides whether the draught is spent.
+    # One pool. False when there was nothing to do, which decides whether the draught is spent.
     boolean function Pour(Player who, string key, string ceiling, integer amount)
         if amount == 0
             yield false;
@@ -232,8 +232,8 @@ shared model Vitals
 
     # ── Putting it back ───────────────────────────────────────────────────────
     #
-    # Health does not come back in a fight. That is the shape of the original's regen: a fight can be
-    # lost, and retreating is a decision. Mana and stamina do come back mid-fight, at half rate, so a
+    # Health does not come back in a fight, as in the original: a fight can be lost, and retreating
+    # is a decision. Mana and stamina do come back mid-fight, at half rate, so a
     # caster can sustain without casting for free.
 
     # ── How often the original paid, in hundredths of a second ──────────────────────────
@@ -250,7 +250,7 @@ shared model Vitals
     # the safe-ground clock is rounding the one rate a player notices.
     #
     # Being in a fight beats being somewhere protected. Fighting inside a town gets ordinary combat
-    # regen rather than a fast one, which is what stops a safe tile being a place to fight from.
+    # regen rather than a fast one, so a safe tile is not a place to fight from.
 
     public integer HealthEvery = 250;
     public integer HealthSafeEvery = 125;
@@ -285,7 +285,7 @@ shared model Vitals
         # Stamina does not come back while it is being SPENT - not in a fight, and not while a sprint
         # is still running. It is the one pool whose cost is paid continuously, so any rate generous
         # enough to feel like recovery would refund a sprint as fast as it was spent. Stopping the
-        # clock rather than shrinking it is what lets a rest stay quick while the pool stays a budget.
+        # clock rather than shrinking it keeps a rest quick while the pool stays a budget.
         integer legs = Stats.StaminaRegen(spd);
 
         if Vitals.Sprinting(who) or who.IsEngaged
@@ -334,7 +334,7 @@ shared model Vitals
         yield every;
     end function
 
-    # One pool, one tick of its own clock. `amount` is what the original paid when that clock came
+    # One pool, one tick of its own clock. `amount` is the original’s payment when that clock came
     # round and `every` is how long it took to come round, both as the original wrote them. This pays
     # the share one tick is worth and keeps the remainder for the next.
     function Owe(Player who, string key, string ceilingKey, string owedKey,

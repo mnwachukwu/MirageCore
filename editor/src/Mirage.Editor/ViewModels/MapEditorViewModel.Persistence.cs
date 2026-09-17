@@ -75,7 +75,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
     private async Task SaveMapAsync()
     {
         if (SelectedMap is null) return;
-        // A save with nothing to save still bumps the revision, and a revision bump is what tells every
+        // A save with nothing to save still bumps the revision, and a revision bump tells every
         // connected client its cached copy is stale — so it costs a re-download of an unchanged map.
         // Save All already filters on this; the button's IsEnabled was the only thing holding the line here.
         if (!IsSelectedMapDirty) return;

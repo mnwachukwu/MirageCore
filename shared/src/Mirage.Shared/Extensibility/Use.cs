@@ -20,12 +20,11 @@ public readonly record struct Use(EntityHandle Who, int ItemNum, int InvSlot);
 /// all. A sword restricted to one class, a potion a corpse cannot drink, a relic that answers only to
 /// whoever earned it: none of those is a rule Core could have.</para>
 ///
-/// <para>⚠ <b>Asked BEFORE anything happens, which is what makes it different from hearing about
-/// it.</b> <see cref="IWorldObserver.OnItemUsed"/> runs after the gear is already on, so a rule there
+/// <para>⚠ <b>Asked BEFORE anything happens, unlike hearing about it afterwards.</b> <see cref="IWorldObserver.OnItemUsed"/> runs after the gear is already on, so a rule there
 /// can only take it off again — which the player sees as a flicker, and which leaves the moment between
 /// the two with the wrong body wearing the wrong thing. A refusal here means it never went on.</para>
 ///
-/// <para>Every policy must allow it. The first refusal stops the use and is the answer — the same
+/// <para>Every policy must allow it. The first refusal stops the use and stands as the answer — the same
 /// order, and the same reason, as <see cref="IDeathPolicy.MayDie"/>.</para>
 /// </summary>
 public interface IUsePolicy

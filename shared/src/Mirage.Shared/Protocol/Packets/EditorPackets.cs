@@ -80,7 +80,7 @@ public sealed record EditorUnlockPacket : IPacket
 public sealed record EditorLocksPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorLocks;
-    /// <summary><paramref name="Session"/> identifies the connection holding it and is what decides whether
+    /// <summary><paramref name="Session"/> identifies the connection holding it and decides whether
     /// a lock is somebody else's. <paramref name="Login"/> is the account behind that connection, carried
     /// for display only — two sessions can share it.</summary>
     public sealed record Held(
@@ -402,7 +402,7 @@ public sealed record EditorAllConversationsPacket : IPacket
 
 // -- Whole-world map fetch ---------------------------------------------------
 // Every other record type answers a "give me all of them" in one packet, which maps cannot: a thousand of
-// them at a couple of kilobytes each is a frame nothing should be asked to hold. So maps are asked for a
+// them at a couple of kilobytes each would be a frame nothing should be asked to hold. So maps are asked for a
 // slice at a time, which also gives the caller something honest to show a progress bar.
 
 /// <summary>Asks for maps <c>Start</c> through <c>Start + Count - 1</c>. The server clamps

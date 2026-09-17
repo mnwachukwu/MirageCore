@@ -11,7 +11,7 @@ namespace Mirage.Shared;
 /// get.</para>
 ///
 /// <para>Core grants what the world authored and asks nothing else of it. Whether a character has earned
-/// a thing, or is strong enough to hold it, is a question only a game with those concepts can ask — and a
+/// a thing, or is strong enough to hold it, is answerable only by a game with those concepts — and a
 /// brand-new character has by definition earned nothing, so it is a strange moment to start asking.</para>
 /// </summary>
 public static class StartingLoadout

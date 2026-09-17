@@ -28,7 +28,7 @@ model TerritoryRules
     public integer pending;
 
     # What it has paid this week, and what it paid last week. The second is the column an operator and
-    # a guild both read; the first is what becomes it at the weekly reset.
+    # a guild both read; the first becomes it at the weekly reset.
     public integer earnedThisWeek;
     public integer earnedLastWeek;
 
@@ -48,8 +48,8 @@ end model
 
 model TerritoryMapRules
     # ⚠ Tick this and a capture point may stand on this map. A map inside a territory that nobody
-    # ticked is walked THROUGH rather than fought on — which is what a town in the middle of a region
-    # is, and why the two are separate questions from whether the region is contested at all.
+    # ticked is walked THROUGH rather than fought on, as a town in the middle of a region is. That
+    # is why the two are separate questions from whether the region is contested at all.
     public boolean holdsPoint;
 
     public shared function Describe(Records these)

@@ -42,7 +42,7 @@ public sealed class ConsolePanel : IGamePanel
     public ConsolePanel()
     {
         // Subscribed for the life of the client, not just while open, so a line logged with the console
-        // closed is already in place when it opens. Raised from whichever thread logged, which is why the
+        // closed is already in place when it opens. Raised from whichever thread logged, so the
         // append is queued rather than applied here.
         ClientLog.Console.Written += line =>
         {

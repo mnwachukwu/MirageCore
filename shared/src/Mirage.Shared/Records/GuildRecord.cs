@@ -122,7 +122,7 @@ public sealed class GuildMember
     ///
     /// <para>Both halves are needed. The seconds alone would keep somebody who played hard a year ago;
     /// the last-seen alone would keep somebody who logs in for a minute a day. Together they answer
-    /// "is this person actually playing", which is what anything shared out among a guild has to
+    /// "is this person actually playing", which anything shared out among a guild has to
     /// ask.</para></summary>
     public bool IsActive(long nowUtc) =>
         LastSeenUtc > 0

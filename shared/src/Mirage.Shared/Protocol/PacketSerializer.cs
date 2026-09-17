@@ -169,7 +169,7 @@ public static class PacketSerializer
     /// <para><paramref name="hasIndex"/> resolves the two commands used in both directions —
     /// <c>playermove</c> and <c>playerdir</c> — whose shapes are told apart only by whether a
     /// top-level <c>index</c> is present. A caller that does not have it gets the form without one,
-    /// which is what a server receiving from a client always sees.</para>
+    /// which is all a server receiving from a client ever sees.</para>
     /// </summary>
     public static IPacket? TryDeserialize(string line, string cmd, bool hasIndex = false)
         => Registry.Deserialize(cmd, line, hasIndex);

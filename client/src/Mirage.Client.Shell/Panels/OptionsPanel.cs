@@ -37,8 +37,8 @@ public sealed class OptionsPanel : IGamePanel
     public bool ContainsMouse(Point mousePos) => IsOpen && _panel.ContainsMouse(mousePos);
 
     // The per-character checkbox defaults below MUST match AccountConfig.CharacterConfig's property
-    // initializers, which are what a brand-new character actually gets. Two copies of the same answer,
-    // free to disagree in silence — RestoreDefaultsTests is what pins them together.
+    // initializers, which a brand-new character actually gets. Two copies of the same answer,
+    // free to disagree in silence — RestoreDefaultsTests pins them together.
     private readonly Checkbox _aspectChk = new() { Checked = false };
     private readonly Checkbox _alwaysShowBarsChk = new() { Checked = true };
     private readonly Checkbox _showCombatNumbersChk = new() { Checked = true };
@@ -74,7 +74,7 @@ public sealed class OptionsPanel : IGamePanel
             ? _locales[_languageDropDown.SelectedIndex] : null;
 
     /// <summary>Populate the language dropdown and select <paramref name="currentLocale"/>. The parallel
-    /// locale array is what maps the chosen row back to a locale code (the dropdown holds display names).</summary>
+    /// locale array maps the chosen row back to a locale code (the dropdown holds display names).</summary>
     public void SetLanguages(IReadOnlyList<(string Locale, string DisplayName)> languages, string currentLocale)
     {
         _locales = new string[languages.Count];

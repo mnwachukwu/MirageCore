@@ -383,8 +383,8 @@ public interface ILineOfSightPredicate
 /// <see cref="WorldCoordHelper.BuildMapGrid"/>; pass by <c>in</c> when handing it to a reader to avoid
 /// copying it.
 ///
-/// <para>It also carries the neighbourhood's tile size, which is what makes it — rather than any
-/// constant — the thing world coordinates are computed against. See <see cref="TilesX"/>.</para>
+/// <para>It also carries the neighborhood's tile size, so world coordinates are computed against
+/// it rather than against any constant. See <see cref="TilesX"/>.</para>
 /// </summary>
 public readonly struct MapGrid(int c00, int c10, int c20, int c01, int c11, int c21, int c02, int c12, int c22,
                                int tilesX, int tilesY)

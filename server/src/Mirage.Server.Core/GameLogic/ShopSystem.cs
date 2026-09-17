@@ -93,7 +93,7 @@ public sealed class ShopSystem : GameSystem
 
     // ── Buy / sell ────────────────────────────────────────────────────────────
     // The gold storefront, as opposed to Barter's item-for-item table. A sales entry is just an item number:
-    // the price comes from ItemRecord.Price, which is what let a shopfront be authored by picking
+    // the price comes from ItemRecord.Price, so a shopfront can be authored by picking
     // items instead of hand-writing a give→get row each (see ShopRecord.SalesItem).
 
     /// <summary>Buy from a sales-list entry at its <see cref="ItemRecord.Price"/>.
@@ -137,7 +137,7 @@ public sealed class ShopSystem : GameSystem
 
         // Bought by the handful whatever it is — a caster buys reagents in dozens and an outfitter buys
         // arrows by the score, and neither wants to click twenty times. A currency pours into one stack;
-        // everything else takes a slot per copy, which is what the room check below is counting.
+        // everything else takes a slot per copy, which the room check below counts.
         bool stacks = item.Type == ItemType.Currency;
         int want = Math.Max(quantity, 1);
 
@@ -201,8 +201,8 @@ public sealed class ShopSystem : GameSystem
     }
 
     /// <summary>How much more of <paramref name="itemNum"/> the player's existing stack can take. A stack
-    /// counts in a plain int, and reagents cost a single gold each, so a deep purse is the one thing that
-    /// could run one past its end.</summary>
+    /// counts in a plain int, and reagents cost a single gold each, so only a deep purse could run
+    /// one past its end.</summary>
     private static int StackHeadroom(PlayerRecord p, int itemNum)
     {
         for (int i = 1; i <= Constants.MaxInv; i++)

@@ -40,7 +40,7 @@ public sealed partial class GameFieldsViewModel : ObservableObject
 
         // One of these exists per screen and lives as long as the editor does, so it carries its own
         // subscription rather than relying on the screen to remember. The forms UNDER it are per-record
-        // and do not, which is why they expose NotifyLabelsChanged instead.
+        // and do not, so they expose NotifyLabelsChanged instead.
         EditorStrings.LanguageChanged += NotifyLabelsChanged;
     }
 

@@ -9,8 +9,8 @@ namespace Mirage.Client.Shell.Screens;
 /// <summary>
 /// The frame readout, stacked upward from just above the action bar.
 ///
-/// <para><c>/fps</c> shows the RATE, and only the rate. It is a number to glance at while playing, and one
-/// line is what that wants.</para>
+/// <para><c>/fps</c> shows the RATE, and only the rate. It is a number to glance at while
+/// playing, so it gets one line.</para>
 ///
 /// <para>The diagnostics console shows the whole thing — the rate AND the distribution — whatever
 /// <c>/fps</c> is set to. Opening it is the gesture that means "something is wrong here", and having to

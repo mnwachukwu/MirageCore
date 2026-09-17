@@ -58,7 +58,7 @@ public sealed partial class MainWindowViewModel
     /// worlds — so they share an answer and each pick teaches the next.
     ///
     /// <para>Falling back: the folder browsed last, then the one holding the open world, then the shipped
-    /// seed, which is the one thing a first run is guaranteed to have. A remembered folder that has since
+    /// seed, which a first run is guaranteed to have. A remembered folder that has since
     /// gone is skipped rather than handed to a picker that would ignore it anyway.</para></summary>
     private static string WorldPickerStart()
     {
@@ -173,8 +173,8 @@ public sealed partial class MainWindowViewModel
             return;
         }
         // A world is a folder with a world.json in it, and nothing else opens. Creating one is its own
-        // command, so there is no "open somewhere empty and it becomes a world" — which is what would let
-        // a mistaken pick end up with maps/ and items/ written into it.
+        // command, so there is no "open somewhere empty and it becomes a world" that would let a
+        // mistaken pick end up with maps/ and items/ written into it.
         if (!IsWorldFolder(path))
         {
             if (ShowAlertAsync is not null)

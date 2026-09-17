@@ -262,7 +262,7 @@ public sealed partial class PacketHandler
         }
 
         // Bans are keyed by ACCOUNT, so this catches every character on it. It does NOT stop the same
-        // person registering again — that is what an account-key block is, and pretending otherwise is
+        // person registering again — an account-key block never could, and pretending otherwise is
         // how the old "covers both login name and IP" comment survived here without an IP ever being read.
         if (await _persistence.IsBannedAsync(name))
         {
@@ -423,7 +423,7 @@ public sealed partial class PacketHandler
     /// <para>⚠ Checked against what the world OFFERS, not range-checked. A client naming a record that
     /// is blank, or answering a question nobody asked, is asking for something this world never put on
     /// the screen — and an unanswered question is left unwritten rather than defaulted, because a
-    /// default here is a class nobody chose.</para>
+    /// default here would pick a class for them.</para>
     /// </summary>
     /// <summary>What they answered, by each question's own key, for anything that has to ask.
     ///

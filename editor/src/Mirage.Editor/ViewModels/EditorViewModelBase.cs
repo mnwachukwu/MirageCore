@@ -380,8 +380,8 @@ public abstract partial class EditorViewModelBase<TRow> : ObservableObject, IAut
     {
         if (e.PropertyName != "IsDirty") return;
         NotifyDirtyState();
-        // A record is claimed when it goes dirty and given back when it comes clean, which is what makes the
-        // table name only people with changes in hand. Offline there is nobody to tell.
+        // A record is claimed when it goes dirty and given back when it comes clean, so the table
+        // names only people with changes in hand. Offline there is nobody to tell.
         if (sender is TRow row && Locks is not null && _conn.IsConnected)
         {
             int num = GetIndex(row);

@@ -353,7 +353,7 @@ public sealed partial class PacketHandler
     ///
     /// <para> Requires the target to be ONLINE, and says so rather than silently doing half the job. The
     /// machine key lives on the live session and is never written to an account file, so there is nothing
-    /// to record for somebody who is not here — that case is what <c>/ban</c> is for.</para>
+    /// to record for somebody who is not here — <c>/ban</c> covers that case.</para>
     /// </summary>
     private void HandleHwBanPlayer(int index, HwBanPlayerPacket p)
     {

@@ -5,7 +5,7 @@ namespace Mirage.Server.Host.Management;
 /// <summary>
 /// One attached operator. Console lines are queued here and drained to the socket by a background task.
 ///
-/// <para>The queue is what keeps a slow or stalled connection off the game thread: <see cref="Enqueue"/>
+/// <para>The queue keeps a slow or stalled connection off the game thread: <see cref="Enqueue"/>
 /// never blocks and never waits on the network. A session that cannot keep up loses lines and is told
 /// how many, which is the honest outcome — a console that quietly skips lines looks complete.</para>
 /// </summary>
@@ -19,7 +19,7 @@ public sealed class ManagementSession
         new BoundedChannelOptions(QueueCapacity)
         {
             // Drop the incoming line rather than the oldest, because dropping is only detectable on this
-            // side: TryWrite says no, and that is what lets the operator be told it happened.
+            // side: TryWrite says no, so the operator can be told it happened.
             FullMode = BoundedChannelFullMode.DropWrite,
             SingleReader = true,
         });

@@ -81,7 +81,7 @@ public sealed record ServerConfig
     /// <summary>Where the WORLD lives: maps, the record families, <c>world.json</c> and the MOTD. Empty
     /// means the per-user <c>world/</c> resolved by <see cref="ServerPaths"/>.
     ///
-    /// <para>Nothing here changes unless somebody edits it, which is what lets a world be zipped up and
+    /// <para>Nothing here changes unless somebody edits it, which lets a world be zipped up and
     /// handed to another machine — and what stops a copy carrying anybody's password hashes with it. This
     /// is the folder the EDITOR opens.</para></summary>
     public string WorldDir { get; init; } = "";
@@ -192,7 +192,7 @@ public enum HardwareBanMode
 /// The world's front door: where a new character is placed, and where anyone without a purchased spawn
 /// point comes back.
 ///
-/// <para>The defaults are the middle of map 1, which is what these were as computed constants. Nothing on
+/// <para>The defaults are the middle of map 1, as these were when they were computed constants. Nothing on
 /// the client reads them, so they are a plain server setting.</para>
 /// </summary>
 public sealed record SpawnConfig
@@ -214,7 +214,7 @@ public sealed record SpawnConfig
 /// The line at a full server.
 ///
 /// <para>A waiting connection is a socket, a TLS session and a place in a list — it holds NO player slot.
-/// That is what keeps a queue cheap enough to be worth having: nothing about a waiting player reaches the
+/// So a queue stays cheap enough to be worth having: nothing about a waiting player reaches the
 /// game thread until the moment they are let in.</para>
 /// </summary>
 public sealed record QueueConfig
@@ -246,8 +246,8 @@ public sealed record QueueConfig
 /// rather than one derived from UTC.
 ///
 /// <para>The DAILY guild settlement is deliberately not here: it runs at midnight on the host box and
-/// <c>GuildSystem</c> walks whole calendar days, which is what makes a slot missed during downtime
-/// replay correctly on the next boot.</para>
+/// <c>GuildSystem</c> walks whole calendar days, so a slot missed during downtime replays
+/// correctly on the next boot.</para>
 /// </summary>
 public sealed record ScheduleConfig
 {

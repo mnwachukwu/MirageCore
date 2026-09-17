@@ -11,7 +11,7 @@ namespace Mirage.Shared.Extensibility;
 /// Every mechanism the engine keeps for a game to drive is reachable from here and from nowhere
 /// else.</para>
 ///
-/// <para><b>A curated surface, not the engine's internals.</b> What is on it is what a game has a
+/// <para><b>A curated surface, not the engine's internals.</b> It carries what a game has a
 /// legitimate reason to ask for, named in the engine's own terms. A game that needs something absent is
 /// a reason to add a member and say what it means, not a reason to hand out the systems behind it —
 /// those change shape, and a game written against them would break for reasons that are nobody's
@@ -54,7 +54,7 @@ public interface IWorld
     /// <param name="text">What to say, already in the words the player will read.</param>
     /// <param name="channel">Which channel it reads on, by id: one this game declared, or
     /// <see cref="ChatChannels.System"/>. The default is System — what just happened, said by the world
-    /// rather than a person, which is what a rule reacting to what you just did is.
+    /// rather than a person, as a rule reacting to what you just did is.
     ///
     /// <para>⚠ Core's other four are not offered here. <c>Global</c>, <c>Tell</c>, <c>Guild</c>, and
     /// <c>Admin</c> carry things a game must not be able to forge: speech somebody typed, a whisper
@@ -81,7 +81,7 @@ public interface IWorld
     ///
     /// <para>🔴 <b>Not "everybody standing on it".</b> The world scrolls contiguously, so somebody on
     /// the next map along is looking at this one and would watch an event happen in silence. The
-    /// audience for an event is who can see it, which is what the observer set is.</para>
+    /// audience for an event is who can see it, and the observer set is exactly that.</para>
     /// </summary>
     void TellEveryoneOn(int mapNum, string text, string channel = ChatChannels.System,
                         int color = GameColor.White);
@@ -119,8 +119,8 @@ public interface IWorld
     /// not there.</summary>
     bool SetAttribute(EntityHandle who, string key, AttributeValue value);
 
-    /// <summary>Sets several at once and ships them in one packet, which is what a rule that moves three
-    /// numbers together wants.</summary>
+    /// <summary>Sets several at once and ships them in one packet, for a rule that moves three
+    /// numbers together.</summary>
     bool SetAttributes(EntityHandle who, IReadOnlyCollection<KeyValuePair<string, AttributeValue>> values);
 
     /// <summary>Removes an attribute. A key a body does not have is not an error.</summary>
@@ -129,8 +129,8 @@ public interface IWorld
     // ── What a body is doing ──────────────────────────────────────────────────
     //
     // Five timed states the engine already acts on and had no way to enter. Each takes SECONDS FROM NOW
-    // rather than a deadline, because that is the question every one of them answers and it needs no
-    // clock agreed between a game and the engine. Zero or less clears the state.
+    // rather than a deadline, because every one of them answers that question and it needs no clock
+    // agreed between a game and the engine. Zero or less clears the state.
 
     /// <summary>Marks this body as engaged for the next <paramref name="seconds"/>.
     ///
@@ -263,7 +263,7 @@ public interface IWorld
     /// lets the client decide what that looks like — but a damage number is not state, it is an event
     /// that happened once, and there is nothing for a client to derive it from.</para>
     ///
-    /// <para>Addressed to a BODY, not a tile, because that is what makes it follow: the client centers
+    /// <para>Addressed to a BODY, not a tile, so it follows: the client centers
     /// it on an oversize footprint, keeps it anchored across a seam crossing, and holds it until an
     /// in-flight projectile lands so the text and the impact read as one event.</para>
     ///
@@ -278,8 +278,8 @@ public interface IWorld
     /// Sweeps a crescent over a body, oriented by the way it is facing.
     /// </summary>
     /// <param name="who">Who is swinging.</param>
-    /// <param name="connected">True flings sparks with it, which is what makes a sweep read as having
-    /// hit something rather than passing through air.</param>
+    /// <param name="connected">True flings sparks with it, so the sweep reads as having hit
+    /// something rather than passing through air.</param>
     void Sweep(EntityHandle who, bool connected = true);
 
     /// <summary>
@@ -443,7 +443,7 @@ public interface IWorld
     /// nobody.
     ///
     /// <para>🔴 <b>The only way a game can tell one species from another.</b> <see cref="NameOf"/> answers
-    /// with a display string, which is what a player reads rather than what a rule keys on: two records
+    /// with a display string, which a player reads and a rule must not key on: two records
     /// may share a name, a name may be translated, and an editor rename would silently rewrite the
     /// game's arithmetic. A game that pays a different bounty per creature, or drops a different kit,
     /// asks this.</para></summary>
@@ -452,8 +452,8 @@ public interface IWorld
     // ── Pointing a creature at somebody ─────────────────────────────────
     //
     // 🔴 What a body does ON ITS OWN is authored on its record — it holds a tile, ambles, closes on what
-    // it notices, or opens the gap. That vocabulary is about LOCOMOTION and says nothing about why, which
-    // is what keeps it genre-agnostic. Why is a game's, and a game needs two verbs to say it: send this
+    // it notices, or opens the gap. That vocabulary is about LOCOMOTION and says nothing about why,
+    // and so it stays genre-agnostic. Why is a game's, and a game needs two verbs to say it: send this
     // body after that one, and let it go.
     //
     // Between them they are how a game writes the reasons the engine deliberately does not hold — a
@@ -465,8 +465,8 @@ public interface IWorld
     ///
     /// <para>⚠ <b>It overrides the record's own noticing, not its legs.</b> A body that holds its tile
     /// still holds it — being roused does not make a statue walk. Everything that moves closes on what it
-    /// was pointed at, and a body authored to open the gap opens it instead, because retreating is what
-    /// that body does about somebody.</para>
+    /// was pointed at, and a body authored to open the gap opens it instead, because retreating is
+    /// how that body reacts to somebody.</para>
     ///
     /// <para>It also commits to the approach rather than walking it in, since a body that was SENT is not
     /// deciding whether to be interested.</para>
@@ -681,7 +681,7 @@ public interface IWorld
     // ── Guilds, as something a game can act on ──────────────────────────
     //
     // 🔴 The engine already runs a guild: founding, membership, ranks, applications, a vault, and the
-    // ledger of who paid into it. What it has no opinion about is what a guild DOES — a war, a rank
+    // ledger of who paid into it. It has no opinion about what a guild DOES — a war, a rank
     // that means something, a level, a season. Those are a game's, and a guild carries an attribute
     // bag for exactly them.
     //
@@ -710,8 +710,8 @@ public interface IWorld
     /// <summary>What rank this body holds in their guild — <c>leader</c>, <c>officer</c>,
     /// <c>member</c>, or blank for somebody in no guild.
     ///
-    /// <para>The engine keeps the rank and moves it; what a rank may DO is a game's, and this is what
-    /// a rule gating on one reads.</para></summary>
+    /// <para>The engine keeps the rank and moves it; what a rank may DO is a game's, and a rule
+    /// gating on one reads this.</para></summary>
     string GuildRankOf(EntityHandle who);
 
     /// <summary>
@@ -743,9 +743,9 @@ public interface IWorld
     ///
     /// <para>🔴 <b>The one identity here that outlives a session.</b> A handle names a body in the
     /// world and stops meaning anything the moment they log out; a character can be deleted; a name can
-    /// be taken by somebody else. An account is what the engine files mail, guild membership and a
-    /// market listing under, and it is what a game writes down when the thing it is promising will be
-    /// settled later — a sale, a refund, a prize drawn next week.</para>
+    /// be taken by somebody else. The engine files mail, guild membership and a market listing under
+    /// an account, so a game writes one down when the thing it is promising will be settled later —
+    /// a sale, a refund, a prize drawn next week.</para>
     ///
     /// <para>⚠ <b>Not a character name, and not for showing to players.</b> It is how somebody signs in.
     /// Print a character's name in anything a player reads; keep this for looking them up.</para>
@@ -757,8 +757,8 @@ public interface IWorld
     /// <summary>The body signed in to that account right now, or nobody.
     ///
     /// <para>The way back: a game that wrote an account down reaches the person again with this, and
-    /// gets <see cref="EntityHandle.None"/> when they are not here — which is the answer that tells it
-    /// to post rather than tell.</para></summary>
+    /// gets <see cref="EntityHandle.None"/> when they are not here, which tells it to post rather
+    /// than tell.</para></summary>
     EntityHandle WhoIs(string account);
 
     /// <summary>Every account in a guild, whether or not anybody is signed in to them.
@@ -797,7 +797,7 @@ public interface IWorld
     /// handed over needs a bag with room in it. A letter waits — through a logout, a restart, and a
     /// server that was down for a week — and what is attached to it waits with it.</para>
     ///
-    /// <para>So it is what a reward that was earned rather than picked up looks like: a refund, a prize,
+    /// <para>So a reward that was earned rather than picked up arrives this way: a refund, a prize,
     /// a delivery, the rest of a payout that would not fit. An item of nothing sends the letter
     /// alone.</para>
     ///
@@ -818,7 +818,7 @@ public interface IWorld
     /// <para><paramref name="onlyActive"/> narrows it to members who have actually been playing: online
     /// long enough, recently enough, by the engine's own measure of a live roster. What that measure is
     /// belongs to the engine, because it is the same question the roster itself answers — and a payout
-    /// split among a hundred names that have not logged in for a year is a payout nobody feels.</para>
+    /// split among a hundred names that have not logged in for a year reaches nobody who notices.</para>
     ///
     /// <para>Returns how many members it reached. Zero for a guild that is not there, an item that is
     /// not there, or an amount of nothing.</para>
@@ -907,7 +907,7 @@ public interface IWorld
     ///
     /// <para>For a place that has to stop being ordinary ground for a while: a war fought over it, a
     /// ritual nobody should interrupt, an arena cleared for a duel. The bodies go now and nothing comes
-    /// back until <see cref="Refill"/> — which is what separates this from clearing a map and watching it
+    /// back until <see cref="Refill"/>, which separates this from clearing a map and watching it
     /// refill a minute later.</para>
     ///
     /// <para>False for a map that is not there, or one already emptied.</para>
@@ -927,7 +927,7 @@ public interface IWorld
     /// blast, a name over a doorway, a meter on a ritual. See <see cref="WorldMarker"/> for what one
     /// draws.</para>
     ///
-    /// <para>Replacing rather than stacking is what makes a mark that moves, or whose meter is counting,
+    /// <para>Replacing rather than stacking keeps a mark that moves, or whose meter is counting, to
     /// one call. False for a square that is not there.</para></summary>
     bool Mark(WorldMarker marker);
 
@@ -962,8 +962,8 @@ public interface IWorld
     /// before dividing.</para>
     ///
     /// <para>⚠ Read fresh each time, so a place that keeps summer time gives a different answer in July
-    /// than in January. That is what makes a boundary land at midnight all year rather than drifting an
-    /// hour twice.</para></summary>
+    /// than in January, so a boundary lands at midnight all year rather than drifting an hour
+    /// twice.</para></summary>
     int LocalOffset();
 
     /// <summary>
@@ -986,7 +986,7 @@ public interface IWorld
     /// down with nothing in the spending log is money a guild cannot account for, and accounting for it
     /// is most of what a vault is for.</para>
     ///
-    /// <para>False when the vault does not hold that much, which is what makes this the check as well
-    /// as the payment.</para></summary>
+    /// <para>False when the vault does not hold that much, so this is the check as well as the
+    /// payment.</para></summary>
     bool SpendGuildGold(int guild, long amount, EntityHandle by);
 }

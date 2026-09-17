@@ -1,6 +1,6 @@
 # Guild quests: a standing order on one kind of creature, worked by the whole roster.
 #
-# This is what actually levels a guild. The kill trickle is one point a body; a quest pays tens of
+# This is where a guild actually levels. The kill trickle is one point a body; a quest pays tens of
 # thousands, and it is the only thing on the ballooning curve that moves it at all.
 #
 # A leader acquires one, pays for it out of their own pocket, and the guild has a day to finish it.
@@ -73,8 +73,8 @@ shared model GuildQuest
 
     # ── The arithmetic ────────────────────────────────────────────────────────
 
-    # What a leader pays to take one out. Level zero is free, which is the one thing a guild that has
-    # earned nothing can still do.
+    # What a leader pays to take one out. Level zero is free, so a guild that has earned nothing can
+    # still take one.
     public integer function Cost(integer level)
         if level < 1
             yield 0;

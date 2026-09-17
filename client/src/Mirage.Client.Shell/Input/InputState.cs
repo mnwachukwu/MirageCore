@@ -258,7 +258,7 @@ public sealed class InputState
     /// the target, RT+face fires the same slot at the caster. Only the bar and the spell book offer this —
     /// the prepared slot is SubHp and has nothing to gain by pointing inward.</para>
     ///
-    /// <para>RT WINS WHEN BOTH ARE HELD, which is why this asks about the right trigger alone and never
+    /// <para>RT WINS WHEN BOTH ARE HELD, so this asks about the right trigger alone and never
     /// about the left. Switching aim mid-fight is then a matter of pressing the other trigger rather than
     /// releasing one first, and a grip that rolls across both never fires at the wrong thing.</para></summary>
     public bool IsSelfTargetHeld() =>

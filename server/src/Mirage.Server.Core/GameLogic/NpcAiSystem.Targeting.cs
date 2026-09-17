@@ -123,8 +123,8 @@ public sealed partial class NpcAiSystem : GameSystem
     /// <para>🔴 <b>The lock and the rousing are set together, and neither works alone.</b> The legs pass
     /// steps toward any body holding a target, so a bare lock moves it — for one tick, until the brain
     /// reads a record with no noticing rule, finds nothing to mind, and takes a wander stride over the
-    /// top of it. <see cref="MapNpcRecord.Roused"/> is what tells the brain the target is somebody
-    /// else's decision.</para>
+    /// top of it. <see cref="MapNpcRecord.Roused"/> tells the brain the target is somebody else's
+    /// decision.</para>
     ///
     /// <para>Takes the RUSH rather than the cautious walk-in: a body that was sent after somebody is not
     /// deciding whether to be interested.</para>
@@ -274,10 +274,10 @@ public sealed partial class NpcAiSystem : GameSystem
     /// that closed world-distance, so an NPC that is genuinely closing keeps resetting this clock and
     /// only one that cannot act on its target at all times out.
     ///
-    /// <para><b>This is what keeps an open world safe.</b> There is deliberately no cross-map entry
+    /// <para><b>This clock is the only thing keeping an open world safe.</b> There is deliberately no cross-map entry
     /// restriction anywhere in the chase code — a pursuer follows a player across a border or through
-    /// a warp, because seamless pursuit is the point. What stops a mob being parked somewhere it does
-    /// not belong is this clock: it either reaches its target or it goes home.</para></summary>
+    /// a warp, because pursuit is meant to be seamless. What stops a mob being parked somewhere it
+    /// does not belong is this clock: it either reaches its target or it goes home.</para></summary>
     private bool ShouldGiveUpUnreachedTarget(MapNpcRecord mn, long now)
         => (mn.Roused || _world.Npcs[mn.Num].Behavior is NpcBehavior.Pursue or NpcBehavior.Shadow)
            && mn.LastReachedTargetMs > 0

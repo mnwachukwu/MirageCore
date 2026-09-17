@@ -55,7 +55,7 @@ public sealed record FieldDescriptor
     [JsonPropertyName("hintKey")] public string? HintKey { get; init; }
 
     /// <summary>Inclusive bounds for <see cref="FieldKind.Integer"/> and <see cref="FieldKind.Real"/>.
-    /// Equal values mean unbounded, which is what a field that declares neither gets.</summary>
+    /// Equal values mean unbounded, which a field that declares neither gets.</summary>
     [JsonPropertyName("min")] public double Min { get; init; }
 
     /// <inheritdoc cref="Min"/>

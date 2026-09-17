@@ -35,8 +35,8 @@ public sealed record RecordFamily
     /// <summary>True when records are read and written one file at a time rather than loaded as a whole
     /// numbered set at boot.
     ///
-    /// <para>Maps are the reason this exists: a world holds more map data than a server has any reason
-    /// to hold open, so a map is fetched when somebody goes there.</para></summary>
+    /// <para>Maps are why this exists: a world holds more map data than a server has any reason to
+    /// hold open, so a map is fetched when somebody goes there.</para></summary>
     [JsonPropertyName("loadsIndividually")] public bool LoadsIndividually { get; init; }
 
     /// <summary>True when <see cref="DefaultLimit"/> is the only allowed ceiling.
@@ -65,8 +65,8 @@ public sealed record RecordFamily
     public IReadOnlyList<FieldDescriptor> Fields { get; init; } = Array.Empty<FieldDescriptor>();
 
     /// <summary>Which of <see cref="Fields"/> selects the record's kind, or null for a family whose
-    /// records all have the same shape. Naming one is what makes the form swap its lower rows as an
-    /// author changes that field.</summary>
+    /// records all have the same shape. Naming one makes the form swap its lower rows as an author
+    /// changes that field.</summary>
     [JsonPropertyName("kindFieldKey")] public string? KindFieldKey { get; init; }
 
     /// <summary>Which of <see cref="Fields"/> holds the record's display name — what a list shows

@@ -58,7 +58,7 @@ public sealed partial class WarpTargetsDialogViewModel : ObservableObject
     /// <summary>Builds the list for one map, rendering each destination inside its own 3x3.
     ///
     /// <para>Awaits each read rather than blocking on it: online a map may not have been fetched yet, and
-    /// waiting on the wire from the UI thread is what freezes a window. A destination that cannot be read
+    /// waiting on the wire from the UI thread is how a window freezes shut. A destination that cannot be read
     /// still gets a row, without a picture, because "there is a warp to map 40 and I cannot show it" is worth
     /// more than leaving map 40 out. The renders themselves stay on the UI thread, which is where a render
     /// target has to be made.</para></summary>
@@ -96,7 +96,7 @@ public sealed partial class WarpTargetsDialogViewModel : ObservableObject
     /// The destination in the middle of its own 3x3, the way the map editor frames a map.
     ///
     /// <para>A warp destination on its own says almost nothing — one screen of tiles could be anywhere. What
-    /// tells you where you would land is what surrounds it, which is exactly the observable area the editor
+    /// tells you where you would land is its surroundings — exactly the observable area the editor
     /// shows while authoring. The center is outlined so the card cannot be misread as nine maps that happen
     /// to sit together.</para>
     ///

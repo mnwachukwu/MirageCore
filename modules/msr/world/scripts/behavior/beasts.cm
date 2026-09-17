@@ -141,7 +141,7 @@ shared model Beasts
     # 🔴 A body that keeps its distance arrives ONCE and then stands there. Contact is raised on the beat
     # it settles, which is the first bolt — and after that nothing happens to it again, because nothing
     # has: it is holding station exactly as it was authored to. So the volley is driven from the world’s
-    # own beat instead, and the engine’s own cooldown is what paces it.
+    # own beat instead, and the engine’s own cooldown paces it.
     #
     # ⚠ Whatever a body is after is read off the ENGINE rather than remembered here. It is the engine
     # that decided who it noticed and the engine that will drop them; a copy kept in this file would be

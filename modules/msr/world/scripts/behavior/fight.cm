@@ -35,7 +35,7 @@ shared model Fight
         # The reaching has to go somewhere, or taking E costs the world its shops and its
         # conversations. This verb does what E used to, on R - a KEY and no menu entry, because
         # the menu already offers talking to a body and shopping with one. A third line saying
-        # the same thing is what a right-click on a shopkeeper does not need.
+        # the same thing would be one more line than a right-click on a shopkeeper needs.
         Verb reach = game.Action(Fight.Reach, "Interact", "Combat");
         reach.Nowhere();
         reach.Icon("bubble");
@@ -152,7 +152,7 @@ shared model Fight
             target.SetNumber(Vitals.Health, left);
 
             # A creature that never notices anybody still fights back. Without this a body authored
-            # to amble is a punching bag, and that is half the original's bestiary.
+            # to amble is a punching bag, and half the original's bestiary ambles.
             Beasts.Answer(target, who);
             yield;
         end if
@@ -279,9 +279,9 @@ shared model Fight
     #
     # The original’s casters backed out of melee and threw spells from the gap they had made. The engine
     # keeps the gap — a body authored to keep its distance closes to its standoff and holds there — and
-    # this is what it does once it is standing where it meant to stand.
+    # this covers what it does once it is standing where it meant to stand.
     #
-    # ⚠ Intelligence stands in for strength, which is what it does everywhere else in this game: a bolt
+    # ⚠ Intelligence stands in for strength, as it does everywhere else in this game: a bolt
     # is a swing delivered at range, and the range is paid for by the body having to hold a gap open
     # rather than by the bolt landing harder.
     #
@@ -444,7 +444,7 @@ shared model Fight
 
     # ⚠ A creature killed by a creature pays NOBODY. The original credited a kill to whoever landed the
     # blow, and a body that is not a player has no sheet to credit — so a wolf farming deer on an empty
-    # map is an event nobody profits from, which is the point.
+    # map is an event nobody profits from.
 
     function Fell(Npc it, Npc other)
         integer map = other.Map;
@@ -475,7 +475,7 @@ shared model Fight
         string name = target.Name;
 
         # ⚠ Read BEFORE the body goes, because a handle whose body has left answers zero — and a quest
-        # counting kills would then count them all as the same creature, which is no creature.
+        # counting kills would then count them all as one creature that does not exist.
         integer kind = target.Kind;
 
         boolean died = target.Kill("slain");
@@ -488,7 +488,7 @@ shared model Fight
 
         World.TellNear(map, x, y, name + " falls.", "combat");
 
-        # A creature's worth is what it was made of. The original computed this from the length of the
+        # A creature is worth what it was made of. The original computed this from the length of the
         # fight it would have been; this is the same shape with the stats it had.
         integer worth = Combat.Swing(target.Number(Stats.Def)) + Combat.Swing(target.Number(Stats.Str));
 
@@ -508,7 +508,7 @@ shared model Fight
         Quests.Killed(who, kind);
         GuildQuest.Killed(who, kind);
 
-        # And the land it died on pays whoever holds it, which is what makes holding any worth doing.
+        # And the land it died on pays whoever holds it, so holding any is worth doing.
         Territory.Earned(who, map);
     end function
 

@@ -24,7 +24,7 @@ model Class
     public string description;
 
     # ⚠ The four should add up to Stats.BaseStatTotal. Nothing enforces it — a world author may want a
-    # deliberately strong or weak class — but it is what an audit asks.
+    # deliberately strong or weak class — but an audit asks it.
     public integer str;
     public integer def;
     public integer spd;

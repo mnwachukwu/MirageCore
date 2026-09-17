@@ -25,8 +25,8 @@ public static class GameKey
     public static readonly IReadOnlyList<string> Offered =
         ["B", "C", "E", "J", "K", "N", "P", "Q", "R", "T", "U", "Y", "Z"];
 
-    /// <summary>Whether a game may bind this. Blank is true: no key at all is what almost everything a
-    /// game declares wants, so it cannot be the answer that fails.</summary>
+    /// <summary>Whether a game may bind this. Blank is true: almost everything a game declares wants
+    /// no key at all, so it cannot be the answer that fails.</summary>
     public static bool IsOffered(string? key) =>
         string.IsNullOrEmpty(key) || Offered.Contains(key, StringComparer.Ordinal);
 

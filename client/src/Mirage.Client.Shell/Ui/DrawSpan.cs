@@ -22,8 +22,8 @@ public readonly record struct DrawSpan
     /// <summary>One past the last column of the run.</summary>
     public int End { get; init; }
     public SpanKind Kind { get; init; }
-    /// <summary>The URL for a link, the player name for a name, unused for a color run — it is what the
-    /// hit-rect carries so a click knows what it hit.</summary>
+    /// <summary>The URL for a link, the player name for a name, unused for a color run — the
+    /// hit-rect carries it so a click knows what it hit.</summary>
     public string Payload { get; init; }
     /// <summary>Name runs only: drives the name color alongside <see cref="ShowAsPk"/>.</summary>
     public AdminLevel Access { get; init; }

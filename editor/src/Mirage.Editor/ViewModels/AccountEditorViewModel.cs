@@ -234,7 +234,7 @@ public sealed partial class AccountEditorViewModel : ObservableObject
 
     /// <summary>Read an account back from the server.
     ///
-    /// <para><paramref name="keepEdits"/> is what a targeted operation passes. Those land immediately and
+    /// <para>A targeted operation passes <paramref name="keepEdits"/>. Those land immediately and
     /// have to be re-read — the bag on screen must be the bag that exists — but the form may also be holding
     /// typed changes that Save has not sent yet, and replacing it wholesale throws them away. See
     /// <see cref="AdoptServerOwned"/>.</para></summary>
@@ -279,7 +279,7 @@ public sealed partial class AccountEditorViewModel : ObservableObject
 
     /// <summary>Take back only what the SERVER owns — the vault, the online flag, the guild line, and each
     /// character's name, bag, book and log. Access and every character's typed level, EXP, position and
-    /// stats are left where the operator put them, because those are what Save carries and nothing else has
+    /// stats are left where the operator put them, because Save carries those and nothing else has
     /// touched them.
     ///
     /// <para>A different set of characters means the form is describing an account that has changed under
@@ -331,8 +331,8 @@ public sealed partial class AccountEditorViewModel : ObservableObject
                 Chars = [.. Chars.Select(c => c.ToRow())],
             });
 
-            // The reply is the server's own re-read. Applying it is what makes a clamped level or a
-            // refused map visible instead of leaving the form asserting something that did not happen.
+            // The reply is the server's own re-read. Applying it shows a clamped level or a refused
+            // map instead of leaving the form asserting something that did not happen.
             if (reply is not null) Apply(reply);
             StatusMessage = EditorStrings.Get(EditorStrings.AccountEditor_Saved);
         }
@@ -409,8 +409,8 @@ public sealed partial class AccountEditorViewModel : ObservableObject
     private Task TakeItemAsync(EditorInvSlot? slot)
     {
         var row = slot is null ? null : Chars.FirstOrDefault(c => c.Inv.Contains(slot));
-        // Quantity 0 = the whole slot. A partial take is what the quantity is for, and nothing here offers
-        // one yet: emptying a slot is the operation an operator actually reaches for.
+        // Quantity 0 = the whole slot. The quantity is there for a partial take, and nothing here
+        // offers one yet: emptying a slot is the operation an operator actually reaches for.
         return row is null ? Task.CompletedTask
             : RunCharOpAsync(() => _conn.TakeItemAsync(Login, row.Slot, slot!.Slot, 0));
     }
@@ -527,7 +527,7 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
 
     /// <summary>Every state a quest can be put into, including NotStarted — which takes it out of the log.</summary>
 
-    /// <summary>The item to hand over. Null until one is picked, which is what keeps Give grayed out.</summary>
+    /// <summary>The item to hand over. Null until one is picked, which keeps Give grayed out.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanGiveItem))]
     private NamedEntry? _giveItem;

@@ -45,8 +45,8 @@ public sealed class PlayerManager
     ///
     /// <para><b>Safe to walk while it changes.</b> A span captures the length at the call, and a removal
     /// swaps the last entry down; the worst a mid-walk disconnect can do is show a slot that has just left
-    /// — which every call site filters anyway — or skip one that was already leaving. Both are what the
-    /// old array scan did too.</para>
+    /// — which every call site filters anyway — or skip one that was already leaving. The old array
+    /// scan did both too.</para>
     /// </summary>
     public ReadOnlySpan<int> Online => _online.AsSpan(0, _onlineCount);
 
@@ -72,14 +72,14 @@ public sealed class PlayerManager
     /// <summary>Whether <paramref name="slot"/> indexes a real slot ON THIS SERVER.
     ///
     /// <para>Use this, not <c>SlotValidation.IsValidPlayerSlot</c>, anywhere a slot number is about to
-    /// index a player. That one bounds by the PROTOCOL ceiling, which is what a client allocates for and
+    /// index a player. That one bounds by the PROTOCOL ceiling, the size a client allocates for, and
     /// is far larger than a typical server's array — a client-supplied slot of 400 would pass it and then
     /// throw indexing a 20-slot world.</para></summary>
     public bool IsValidSlot(int slot) => slot >= 1 && slot <= Slots;
 
     /// <summary>Someone joined or left. Raised ON THE GAME THREAD by <see cref="GameLogic.JoinLeaveSystem"/>
     /// so an operator's roster does not have to wait for a poll. Nothing in the game subscribes; this
-    /// exists for the host's status broadcaster, which is why it is an event rather than a dependency.</summary>
+    /// exists for the host's status broadcaster, so it is an event rather than a dependency.</summary>
     public event Action? RosterChanged;
 
     internal void NotifyRosterChanged() => RosterChanged?.Invoke();

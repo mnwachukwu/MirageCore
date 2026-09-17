@@ -38,7 +38,7 @@ public sealed class MovementSystem : GameSystem
     /// ms-per-tile and the budget accrues in real time, so the SUSTAINED rate any client can reach is
     /// exactly the pace <see cref="MovementFormulas"/> intends. This window is the slack on top of it: a
     /// network stall that bunches a second's worth of steps into one arrival is paid out of the bank
-    /// rather than refused, which is what keeps an honest player off the rubber band.</summary>
+    /// rather than refused, so an honest player never sees the rubber band.</summary>
     public const long MoveCreditWindowMs = 1500;
 
     /// <summary>Charges one step against <paramref name="sp"/>'s movement budget. False means the step
@@ -46,8 +46,8 @@ public sealed class MovementSystem : GameSystem
     ///
     /// <para>The budget is a single deadline (<see cref="ServerPlayer.MoveAllowedAt"/>) rather than a
     /// counter: it may sit up to <see cref="MoveCreditWindowMs"/> BEHIND <paramref name="now"/>, and that
-    /// gap is the bank. Clamping it forward on every call is what refills it, which is also why an idle
-    /// player is restored to exactly one window and never more.</para></summary>
+    /// gap is the bank. Clamping it forward on every call refills it, and is why an idle player
+    /// is restored to exactly one window and never more.</para></summary>
     public static bool TryConsumeMoveCredit(ServerPlayer sp, MovementType movement, int moveSpeed, long now)
     {
         long floor = now - MoveCreditWindowMs;
@@ -122,8 +122,8 @@ public sealed class MovementSystem : GameSystem
         WorldLayer newLayer;    // the logical layer the in-map step lands on (committed to p.Layer)
 
         // The map's own edges. Every step is either inside them or a crossing, and a neighbor's opposite
-        // edge is read off THAT map — the link rule keeps the two equal, and reading each map's own is what
-        // keeps a hand-edited world from indexing past a tile array.
+        // edge is read off THAT map — the link rule keeps the two equal, and reading each map's own
+        // stops a hand-edited world indexing past a tile array.
         var here = _world.Maps[p.Map];
         int lastX = here.Width - 1, lastY = here.Height - 1;
 

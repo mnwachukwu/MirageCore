@@ -21,8 +21,8 @@ public readonly record struct MapSize(int Width, int Height)
     /// <para>🔴 <b>A map smaller than the view is a map the engine cannot place.</b> The camera scrolls
     /// within the map's bounds, and below this size those bounds CROSS — there is no offset that shows the
     /// map and nothing sensible to draw in the margin around it. The camera settles it by centering rather
-    /// than falling over, but that is a guard against a world that should not exist, not a way to build
-    /// one, so a size is pulled up to here before it ever reaches a client.</para></summary>
+    /// than falling over, but that guards against a world that should not exist rather than offering
+    /// a way to build one, so a size is pulled up to here before it ever reaches a client.</para></summary>
     public static MapSize Floor => new(Constants.ViewportTilesX, Constants.ViewportTilesY);
 
     /// <summary>Past this on either axis the editor warns. Both axes are judged separately: 129x100 and

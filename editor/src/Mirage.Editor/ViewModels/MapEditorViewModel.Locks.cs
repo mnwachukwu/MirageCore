@@ -21,8 +21,8 @@ public sealed partial class MapEditorViewModel
     /// <summary>The shared table, assigned by the shell. Null offline.</summary>
     public EditorLockState? Locks { get; set; }
 
-    /// <summary>Claims a map the moment it goes dirty and gives it back when it comes clean, which is what
-    /// makes the table name only people with changes in hand.
+    /// <summary>Claims a map the moment it goes dirty and gives it back when it comes clean, so the
+    /// table names only people with changes in hand.
     ///
     /// <para>Driven from the one row subscription in <c>HookMaps</c>, which every loader rebuilds along with
     /// the rows themselves — a claim keyed on anything a reload does not rebuild goes quiet after the first

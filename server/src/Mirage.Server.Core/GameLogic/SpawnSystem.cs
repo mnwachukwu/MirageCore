@@ -157,7 +157,7 @@ public sealed class SpawnSystem : GameSystem
 
             // After the packet, so a game writing the body's numbers from here sends them to people who
             // already have a body to hang them on. The identity is the spawn post rather than the slot,
-            // which is what every other seam names a creature by.
+            // the identity every other seam names a creature by.
             var (spawnMap, spawnSlot) = mn.GetSpawnIdentity(mapNum, mapNpcSlot);
             _events.NpcSpawned(EntityHandle.ForNpc(spawnMap, spawnSlot));
         }
@@ -199,7 +199,7 @@ public sealed class SpawnSystem : GameSystem
     /// <summary>Every tile of the footprint is a deck joined to a ramp — see
     /// <see cref="GameWorld.IsFringeSpawnable"/>.
     ///
-    /// <para>🔴 This is what keeps a random spawn INSIDE the railings. A deck is bounded by fringe Blocked
+    /// <para>🔴 Without it a random spawn escapes the railings. A deck is bounded by fringe Blocked
     /// tiles, but only along its own edge; past them the plane reads Walkable again, so a search that asked
     /// only "is this walkable up top" would drop bodies anywhere on the map, outside the barriers entirely
     /// and with no way down. The deck is the surface, so the deck is the rule.</para>
@@ -306,8 +306,8 @@ public sealed class SpawnSystem : GameSystem
 
     /// <summary>And one killed away from home. The husk is left in the visiting list for the AI pass to
     /// drop — it looks for <c>Num</c> at nothing and does exactly this — while the home slot stops being
-    /// reserved and starts counting, which is what brings the creature back where it belongs rather than
-    /// where it died.</summary>
+    /// reserved and starts counting, so the creature comes back where it belongs rather than where
+    /// it died.</summary>
     private void ClearVisitor(TraversalNpcRecord guest)
     {
         SendToMap(_world, guest.CurrentMapNum,
@@ -330,7 +330,7 @@ public sealed class SpawnSystem : GameSystem
     /// What it was carrying, onto the tile it fell on.
     ///
     /// <para>🔴 <b>Every line rolls on its own</b>, so one death yields nothing, one thing, or several —
-    /// which is what lets a table say "almost always a little gold, sometimes a potion, very rarely the
+    /// so a table can say "almost always a little gold, sometimes a potion, very rarely the
     /// sword" in three lines. <see cref="NpcDrop"/> carries the reasoning.</para>
     ///
     /// <para>Each line is shown to every loot policy first, so a game can lift the rate, change the
@@ -339,7 +339,7 @@ public sealed class SpawnSystem : GameSystem
     ///
     /// <para>⚠ Everything lands on ONE tile rather than scattering. Several claimed stacks sharing a
     /// square are told apart by their claim rather than by where they sit, and a pile nobody can stand
-    /// on top of to deny is what pickup at range already buys.</para>
+    /// on top of to deny is already what pickup at range buys.</para>
     /// </summary>
     private void ShedLoot(EntityHandle npc, EntityHandle killer, int kind, NpcRecord template,
                           int mapNum, int x, int y, WorldLayer layer)
@@ -412,8 +412,8 @@ public sealed class SpawnSystem : GameSystem
     /// <para>What a game reaches for when a place has to stop being ordinary ground for a while: a war
     /// fought over it, a ritual nobody should be interrupted during, an arena cleared for a duel. The
     /// bodies go now and the slots stay empty — their clocks keep running, but nothing comes back until
-    /// <see cref="Refill"/>, which is what makes this different from clearing a map and watching it refill
-    /// a minute later.</para>
+    /// <see cref="Refill"/>, which separates this from clearing a map and watching it refill a
+    /// minute later.</para>
     ///
     /// <para>False for a map that is not there, or one already emptied.</para>
     /// </summary>

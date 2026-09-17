@@ -222,7 +222,7 @@ public sealed class GameWorld
     ///
     /// <para>Size 1 rather than a footprint — an item occupies its own tile and nothing more.</para>
     ///
-    /// <para>Note this is a strictly WIDER gate than standing on the item, which is the point: the reason
+    /// <para>Note this is a strictly WIDER gate than standing on the item, deliberately: the reason
     /// loot was scattered across neighboring tiles in other engines is that a player could stand on the
     /// pile and deny it. Reaching from r=5 removes the problem at its source instead.</para></summary>
     public bool IsMapItemInReach(int index, PlayerRecord pc, int mapNum, MapItemRecord mi)
@@ -287,7 +287,7 @@ public sealed class GameWorld
     /// a chain but the one, and accepts a stranded deck on a map that happens to have a ramp elsewhere on
     /// it. So the reachable set is flooded once across the whole world, from every ramp, and cached.</para>
     ///
-    /// <para>Deck ART is what makes a tile a surface: <see cref="LayerLogic.AttrFor"/> reads the fringe
+    /// <para>Deck ART turns a tile into a surface: <see cref="LayerLogic.AttrFor"/> reads the fringe
     /// plane as Walkable wherever nothing says otherwise, so "unblocked up there" is true of open sky over
     /// most of every map.</para></summary>
     public bool IsFringeSpawnable(int mapNum, int x, int y)
@@ -406,7 +406,7 @@ public sealed class GameWorld
     // Dropped/spawned items per map: a dynamic list (no cap on raw size — voluntary-drop cap is
     // enforced in ItemSystem.PlayerMapDropItem against PlayerDropped count only, so death drops and
     // NPC drops can pile on without limit).  Each record carries its own stable Slot id assigned by
-    // AllocateMapItemSlot, which is what packets reference instead of a list index.
+    // AllocateMapItemSlot, which packets reference instead of a list index.
     public List<MapItemRecord>[] MapItems { get; }
 
     // Monotonic per-map slot-id counter.  Reset on ClearMapItems / HandleMapRespawn and also whenever

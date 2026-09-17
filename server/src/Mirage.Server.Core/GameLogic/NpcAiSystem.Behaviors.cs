@@ -99,7 +99,7 @@ public sealed partial class NpcAiSystem : GameSystem
     /// <summary>Brain tick for a body a game roused: mind what it was pointed at, and let go when there is
     /// nothing left to mind.
     ///
-    /// <para>It never goes looking for anybody. Noticing is what a record's own behavior does, and a body
+    /// <para>It never goes looking for anybody. A record's own behavior does the noticing, and a body
     /// that picked a second target for itself would be chasing something the game never sent it after —
     /// so when this lock ends the rousing ends with it, and the record takes the body back.</para>
     ///

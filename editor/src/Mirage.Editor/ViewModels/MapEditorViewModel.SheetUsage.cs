@@ -21,7 +21,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
     /// in the game those tiles also start casting full-square shadows rather than their own silhouette.</para>
     ///
     /// <para>One pass over the world for every sheet at once, rather than a pass per sheet. Offline that is
-    /// an in-memory walk; online it can only see maps already fetched, which is what
+    /// an in-memory walk; online it can only see maps already fetched, which
     /// <paramref name="readableMaps"/> reports back.</para>
     /// </summary>
     /// <param name="readableMaps">Set to how many maps were counted, and <paramref name="totalMaps"/> to

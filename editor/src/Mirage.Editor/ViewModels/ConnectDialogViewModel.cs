@@ -135,7 +135,7 @@ public sealed partial class ConnectDialogViewModel : ObservableObject
 
     /// <summary>Drops the certificate on record for the typed address, so the next connection to it
     /// records whatever is offered. Separate from <see cref="ForgetServerCommand"/>: dropping a server
-    /// from the list leaves its certificate behind, which is what makes re-adding it fail the same way.</summary>
+    /// from the list leaves its certificate behind, so re-adding it fails the same way.</summary>
     [RelayCommand(CanExecute = nameof(CanClearPin))]
     private void ClearPin()
     {

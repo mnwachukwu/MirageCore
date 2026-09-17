@@ -1,6 +1,6 @@
 # Taking a quest, counting toward it, and handing it back.
 #
-# What a quest IS lives in declarations/quests.cm. This is what a character does with one.
+# What a quest IS lives in declarations/quests.cm. This file covers what a character does with one.
 #
 # A character carries one number per quest and one per goal, and nothing else. Where a quest is up to
 # is a fact about the character, so it lives on the character rather than in a table beside them that
@@ -20,12 +20,12 @@ shared model Quests
     public integer Counted = 120;
 
     # How many lines the journal shows. A window, not a limit — a reader wants the handful they are
-    # working on, and eight is what fits.
+    # working on, and eight of them fit.
     public integer Shown = 8;
 
     # What a slot holds. Nothing is not-started; the rest are the whole lifecycle.
     #
-    # ⚠ A run that is NOT the first is its own state, because the difference is what it pays. Taking a
+    # ⚠ A run that is NOT the first is its own state, because it pays differently. Taking a
     # finished quest again is a repeat run, and handing that one in pays the repeat rewards rather than
     # the first-run rewards.
     public integer Taken = 1;
@@ -152,8 +152,8 @@ shared model Quests
         drop.Nowhere();
         drop.Icon("clock");
 
-        # Offered only while there is something to hand in, which is the original's rule: its menu
-        # listed the quests you could actually turn in at that body and nothing else.
+        # Offered only while there is something to hand in, following the original: its menu listed
+        # the quests you could actually turn in at that body and nothing else.
         #
         # ⚠ A condition reads the ASKER and not the body asked, so this is "you are carrying work"
         # rather than "this one wants it back". The narrower half is the handler's, which answers a
@@ -209,7 +209,7 @@ shared model Quests
     end function
 
     # How many are underway. Carried on the body because the verb that hands one in is offered off it:
-    # a condition is a question about an attribute, so the count has to BE one.
+    # a condition asks about an attribute, so the count has to BE one.
     public string Carried = "qheld";
 
     public string DropVerb = "msr.quest.drop";
@@ -238,7 +238,7 @@ shared model Quests
         end if
 
         # ⚠ The board is cleared whoever they asked, so a window left open over yesterday's offers
-        # cannot be accepted from. What is on it is what THIS body has, now.
+        # cannot be accepted from. It shows what THIS body has, now.
         who.SetText(Quests.OfferName, "");
         who.SetText(Quests.OfferText, "");
         who.SetText(Quests.OfferWants, "");
@@ -332,7 +332,7 @@ shared model Quests
         who.SetText(Quests.OfferPays, Quests.Paid(number));
     end function
 
-    # And taking it, which is the one thing the window is for.
+    # And taking it, which is all the window is for.
     public function Accept(Player who, string picked)
         integer number = Quests.Numbered(picked);
 
@@ -381,7 +381,7 @@ shared model Quests
         Quests.Write(who);
     end function
 
-    # A picked line carries the quest's number as text, because that is what a line carries.
+    # A picked line carries the quest's number as text.
     integer function Numbered(string picked)
         loop for number = 1 to Quests.Tracked
             if picked == "" + number
@@ -436,8 +436,8 @@ shared model Quests
 
 
     # ⚠ The refusals are silent. A giver offering four quests to somebody who qualifies for one would
-    # otherwise say three things nobody asked about — and a quest you cannot take yet is not news, it
-    # is the shape of a ladder.
+    # otherwise say three things nobody asked about, and a quest you cannot take yet is a rung on a
+    # ladder rather than news.
     public boolean function Take(Player who, integer number)
         if number < 1 or number > Quests.Tracked
             yield false;
@@ -555,8 +555,8 @@ shared model Quests
         end if
     end function
 
-    # Whether every goal of a quest is met. A quest with no goals is met the moment it is taken, which
-    # is what a delivery is.
+    # Whether every goal of a quest is met. A quest with no goals is met the moment it is taken,
+    # which is how a delivery works.
     public boolean function Done(Player who, integer number)
         integer rows = World.Records(Quests.Goals);
 

@@ -265,8 +265,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
     {
         if (packet is EditorLocksPacket locks) { Locks.Apply(locks); return; }
 
-        // A record somebody else saved. Applying it is what keeps an online session from ever holding the
-        // older copy, which is why there is no staleness check anywhere: there is no staleness.
+        // A record somebody else saved. Applying it stops an online session ever holding the older
+        // copy, so there is no staleness check anywhere: there is no staleness.
         _ = Dispatcher.UIThread.InvokeAsync(() =>
         {
             switch (packet)
@@ -388,7 +388,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(ConnectionStatus));
         OnPropertyChanged(nameof(RailToggleTooltip));
         // Both name an unnamed world, which is a localized word. The rows are rebuilt from the setting
-        // each time this is raised, so re-raising it is what re-words them.
+        // each time this is raised, so re-raising it re-words them.
         OnPropertyChanged(nameof(WorldLabel));
         OnPropertyChanged(nameof(RecentWorlds));
     }
@@ -653,7 +653,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
 
         // Every loader throws its rows away and builds new ones, and the padlock lives on the row. The table
-        // itself has not moved, so re-reading it is what puts the indicators back — otherwise a session that
+        // itself has not moved, so re-reading it puts the indicators back — otherwise a session that
         // connects while somebody else is mid-edit shows nothing held until the next time the table changes.
         foreach (var ed in RecordEditors) ed.RefreshLockState();
         MapEditor.RefreshLockState();

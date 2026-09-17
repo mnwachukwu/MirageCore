@@ -202,7 +202,7 @@ public sealed partial class NpcRowViewModel : ObservableObject, ILockableRow
     }
 
     /// <summary>Add an empty drop row. Unbounded — a hoard is authored as repeated lines, so a length cap
-    /// would be a cap on payout; <see cref="DropYieldText"/> is what keeps the running total honest.</summary>
+    /// would be a cap on payout; <see cref="DropYieldText"/> keeps the running total honest.</summary>
     [RelayCommand]
     private void AddDrop()
     {

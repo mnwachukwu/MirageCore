@@ -46,8 +46,8 @@ public enum ChatChannel : byte
 ///
 /// <para>🔴 <b>The wire carries a string, not this enum.</b> A game declares channels of its own, and a
 /// number would have to be assigned by somebody — so a line says which channel it is by name, and Core's
-/// own five are names in the same namespace as everybody else's. The enum stays as the convenience Core
-/// writes against; these are what it becomes.</para>
+/// own five are names in the same namespace as everybody else's. The enum stays as the convenience
+/// Core writes against, and it turns into these.</para>
 /// </summary>
 public static class ChatChannels
 {

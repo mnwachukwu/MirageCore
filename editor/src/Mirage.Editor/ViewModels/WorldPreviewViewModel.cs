@@ -73,8 +73,8 @@ public sealed partial class WorldPreviewViewModel : ObservableObject, IDisposabl
 
     [ObservableProperty] private string _status = "";
 
-    /// <summary>False while no world is open or the open map has no reachable maps, which is what the
-    /// window shows its empty state on.</summary>
+    /// <summary>False while no world is open or the open map has no reachable maps, which is when
+    /// the window shows its empty state.</summary>
     public bool HasMaps => Layout.Placements.Count > 0;
 
     partial void OnZoomChanged(double value)

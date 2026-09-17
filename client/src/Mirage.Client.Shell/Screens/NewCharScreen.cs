@@ -49,7 +49,7 @@ public sealed class NewCharScreen : IGameScreen
     // The WIDE dialog, which exists for this screen: it is the only one carrying a text field, two
     // lists and a sprite preview at once, and the narrow template has one content column to put them
     // in. Everything below is measured from the content column so nothing is ever drawn over the art
-    // panel, which is what the narrow rectangle did to all of it.
+    // panel, as the narrow rectangle did to all of it.
     private static readonly Rectangle Dlg = UiHelper.WideMenuDialogRect;
 
     // Where the art stops and the screen's own space begins.
@@ -110,7 +110,7 @@ public sealed class NewCharScreen : IGameScreen
     /// if it survived the change, so answering a second question does not quietly restyle them.</para>
     ///
     /// <para>⚠ The visible rows are a SUBSET, so the row number is not the world's. Rows carries the
-    /// world's own index for each one, and that is what goes on the wire.</para></summary>
+    /// world's own index for each one, and that index goes on the wire.</para></summary>
     private void BuildAppearanceList()
     {
         int kept = _rows.Count > 0 && _appearanceList.SelectedIndex >= 0

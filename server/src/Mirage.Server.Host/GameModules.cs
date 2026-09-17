@@ -20,7 +20,7 @@ namespace Mirage.Server.Host;
 /// start a new game from — delete the entry below, drop the project reference beside it, and the server
 /// is Core alone.</para>
 ///
-/// <para><b>Nothing ships in this list, and that is the shipped configuration.</b> The game this
+/// <para><b>Nothing ships in this list, and an empty list is the shipped configuration.</b> The game this
 /// source carries — Survey, a small game about cataloging plants — is a SCRIPT rather than an
 /// assembly: it is content the world folder carries, read by <see cref="ScriptedWorldModule"/>, so it
 /// changes without a rebuild and ships without a toolchain. <c>modules/survey/</c> holds the same game
@@ -29,8 +29,8 @@ namespace Mirage.Server.Host;
 /// attribute key it owns.</para>
 ///
 /// <para><b>Both routes are supported and neither is the poor cousin.</b> A module written here is
-/// checked by the compiler and stepped through in a debugger, which is what somebody building a large
-/// game from this source wants. See <c>modules/README.md</c>.</para>
+/// checked by the compiler and stepped through in a debugger, which suits somebody building a
+/// large game from this source. See <c>modules/README.md</c>.</para>
 /// </summary>
 public static class GameModules
 {

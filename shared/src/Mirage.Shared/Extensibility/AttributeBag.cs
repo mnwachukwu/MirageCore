@@ -74,7 +74,7 @@ public sealed class AttributeBag : IEquatable<AttributeBag>
     public void Clear() => _values.Clear();
 
     /// <summary>An independent copy. Values are immutable, so copying the dictionary is the whole
-    /// job — but the dictionary itself is not shared, which is what a caller about to edit one
+    /// job — but the dictionary itself is not shared, which a caller about to edit one
     /// needs.</summary>
     public AttributeBag Clone() => new(_values);
 

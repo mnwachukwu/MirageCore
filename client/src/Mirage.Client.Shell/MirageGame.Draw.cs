@@ -259,8 +259,8 @@ public sealed partial class MirageGame : Game
         {
             HudPanel.OptionsLink.Draw(_sb!, _font!, _input);
         }
-        // Last, so it sits over every screen and every panel. It is the thing you open to read while
-        // something else is wrong on screen, which only works if nothing can cover it.
+        // Last, so it sits over every screen and every panel. You open it to read while something
+        // else is wrong on screen, which only works if nothing can cover it.
         _consolePanel.Draw(_sb!, _font!, Environment.TickCount64, isActive: true);
         _sb.End();
 

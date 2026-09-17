@@ -131,8 +131,8 @@ public enum NeighborCell { Up, Down, Left, Right, UpLeft, UpRight, DownLeft, Dow
 ///
 /// <para><paramref name="Dragging"/> separates the press from the cells the pointer is then dragged across.
 /// They are otherwise the same event, and an authoring dialog must only ever open on the press: a drag that
-/// crosses a tile already holding the attribute would pop the dialog for it mid-stroke, which is what
-/// laying a run of walls across an existing one does.</para></summary>
+/// crosses a tile already holding the attribute would pop the dialog for it mid-stroke, as laying
+/// a run of walls across an existing one does.</para></summary>
 public readonly record struct TileClick(int X, int Y, bool Alt, bool Retain, bool Dragging = false);
 
 /// <summary>A marquee drag's current rectangle plus which end of the gesture produced it. The four ints are

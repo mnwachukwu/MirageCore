@@ -76,8 +76,8 @@ public sealed record RecordLimits
     /// would answer 0 there — "no room" — rather than its own ceiling.</para>
     ///
     /// <para>Core's eight families are configurable per server and read their own property. Everything
-    /// else answers with what it declared, which is what a module gets until there is a reason to make
-    /// its ceiling an operator setting.</para></summary>
+    /// else answers with what it declared, and a module keeps that until somebody needs its ceiling
+    /// to be an operator setting.</para></summary>
     public int For(Extensibility.RecordFamily family)
     {
         ArgumentNullException.ThrowIfNull(family);

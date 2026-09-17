@@ -17,7 +17,7 @@ namespace Mirage.Server.Core.Net;
 /// they are sent — zeroing the fields a record's type does not use, capping authored lists — and a bag
 /// written straight into the array would skip all of it.</para>
 ///
-/// <para>🔴 <b>Its extension bag is not, and that is the whole distinction.</b> When a module adds fields
+/// <para>🔴 <b>Its extension bag is not, and the whole distinction turns on that.</b> When a module adds fields
 /// to <c>Items</c> or <c>NPCs</c>, those land in the record's attribute bag — which nothing normalizes,
 /// because Core has never heard of a single key in it. So this path serves them exactly as it serves a
 /// module's own family, and the typed path goes on owning the properties Core acts on. Two halves of one

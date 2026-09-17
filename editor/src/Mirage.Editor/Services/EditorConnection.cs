@@ -70,7 +70,7 @@ public sealed class EditorConnection : IDisposable
     public string Login { get; private set; } = "";
 
     /// <summary>What the server calls this connection, minted fresh at every login. Record locks are held per
-    /// session rather than per account, so this — not <see cref="Login"/> — is what tells this editor's locks
+    /// session rather than per account, so this — not <see cref="Login"/> — tells this editor's locks
     /// from those of another window signed in as the same person. Blank while offline.</summary>
     public string SessionId { get; private set; } = "";
 

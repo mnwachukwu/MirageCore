@@ -11,10 +11,10 @@ namespace Mirage.Shared.Extensibility;
 /// <para><b>It is state rather than a declaration.</b> A bar is declared once and read off whoever walks
 /// past; a marker is put somewhere and taken away again, so it is placed through
 /// <see cref="IWorld.Mark"/> and lives until the game removes it or the server stops. Placing one under
-/// an <see cref="Id"/> that is already there replaces it, which is what makes a moving or counting
-/// marker one call rather than a remove and a place.</para>
+/// an <see cref="Id"/> that is already there replaces it, so a moving or counting marker is one
+/// call rather than a remove and a place.</para>
 ///
-/// <para><b>What is drawn is what is set.</b> A marker with no label draws no label, one with no radius
+/// <para><b>Only what is set gets drawn.</b> A marker with no label draws no label, one with no radius
 /// draws no ring, and one with no ceiling draws no meter — so the same shape covers a bare pin and a
 /// contested point with a name, a circle and a bar over it.</para>
 /// </summary>

@@ -1,6 +1,6 @@
 # Who may wield what, and what a scroll does when it is read.
 #
-# What this game hangs on an item lives in declarations/gear.cm. This is what those facts mean.
+# What this game hangs on an item lives in declarations/gear.cm. This file gives those facts meaning.
 
 shared model Gear
 

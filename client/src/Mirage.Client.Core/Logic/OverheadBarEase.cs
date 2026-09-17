@@ -15,8 +15,8 @@ namespace Mirage.Client.Core.Logic;
 /// step when it comes back rather than easing through everything it missed.</para>
 ///
 /// <para>⚠ Held by the client's own state rather than statically. Two clients in one process — which is
-/// what a test is — would otherwise ease each other's bars, and a bar that starts at whatever the last
-/// one left is a bar nobody can write a test about.</para>
+/// what a test is — would otherwise ease each other's bars, and nobody can write a test about a
+/// bar that starts at whatever the last one left.</para>
 /// </summary>
 public sealed class OverheadBarEase
 {
@@ -68,8 +68,8 @@ public sealed class OverheadBarEase
 
     /// <summary>Forgets every bar, so the next draw of each starts at its value.
     ///
-    /// <para>⚠ Also what keeps this from growing without end. A slot a body left is a key nothing asks
-    /// about again, and the world changing under the client is the moment every one of them goes stale
+    /// <para>⚠ Also what stops this growing without end. Nothing asks again about a slot a body
+    /// left, and the world changing under the client is the moment every one of them goes stale
     /// at once — so the same call answers both.</para></summary>
     public void Snap() => _shown.Clear();
 }

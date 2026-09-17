@@ -45,8 +45,8 @@ public sealed partial class GuildSystem : GameSystem
 
     /// <summary>Push the Social panel's Guild-tab data (identity + roster) to one player. Guildless
     /// recipients get <c>InGuild = false</c> so the tab can show its create/browse on-ramp. The client
-    /// also re-requests this when the tab opens, which is what keeps the roster's live online column
-    /// honest without every login/logout having to fan out a broadcast.</summary>
+    /// also re-requests this when the tab opens, which keeps the roster's live online column honest
+    /// without every login/logout having to fan out a broadcast.</summary>
     public void SendGuildInfo(int index)
     {
         var sp = _pm[index];

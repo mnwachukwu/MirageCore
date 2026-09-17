@@ -116,7 +116,7 @@ public sealed class MirageServerService : IHostedService
         _world.DisplayFields = _registry.DisplayFields;
 
         // And the verbs it offers. The client is sent these on join and sends an id back; what the verb
-        // DOES stays here, which is why nothing has to be deployed beside the client.
+        // DOES stays here, so nothing has to be deployed beside the client.
         _world.Actions = _registry.Actions;
         _world.Panels = _registry.Panels;
         _world.ChatChannels = _registry.ChatChannels;

@@ -8,7 +8,7 @@ namespace Mirage.Shared.Extensibility;
 ///
 /// <para>🔴 <b>The taxonomy belongs to the world, not the engine.</b> Core speaks on five channels of its
 /// own — somebody talked, the world said something happened, a whisper, a guild, an administrator — and
-/// every one of those is a thing the engine does itself. Whether a world separates the blow-by-blow of a
+/// the engine does every one of those itself. Whether a world separates the blow-by-blow of a
 /// fight from what it paid out, or its quests from its weather, is that world's decision, and a channel
 /// list compiled into the engine would be that decision made for it.</para>
 ///

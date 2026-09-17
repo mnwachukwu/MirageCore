@@ -121,7 +121,7 @@ public sealed class ClientPacketSender
     /// <summary>The player picked one of the game's own actions, on a square. The id came from the
     /// server and goes straight back; this client never knows what it means.</summary>
     /// <summary>Picked one of the game's own verbs. <paramref name="targetName"/> and
-    /// <paramref name="npcSlot"/> are what it was used ON, and only one of them is ever set: a verb
+    /// <paramref name="npcSlot"/> name what it was used ON, and only one of them is ever set: a verb
     /// offered on a square or on the HUD carries neither. <paramref name="picked"/> is the line of a
     /// panel's list that was selected, for a verb pressed on one of the game's own screens.</summary>
     public void SendInvokeAction(string actionId, int mapNum, int x, int y,
@@ -404,7 +404,7 @@ public sealed class ClientPacketSender
 
     // ── Social (friends / ignore) ─────────────────────────────────────────────
     // Adds take a CHARACTER name (what the player can see/right-click); the server resolves it to that
-    // character's account, which is what the lists actually store. Removes take the row's own login.
+    // character's account, which the lists store. Removes take the row's own login.
 
     public void SendSocialAddFriend(string charName)
         => _transport.Send(new SocialAddFriendPacket { Name = charName });

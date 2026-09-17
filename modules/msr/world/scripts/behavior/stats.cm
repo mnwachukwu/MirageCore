@@ -2,7 +2,7 @@
 #
 # Everything else in this game reads these keys. Vitals refill against the pools here, combat reads
 # the same four stats, and a class is a starting spread of them. Nothing here is about anybody in
-# particular; it is the shape of a character sheet, written once.
+# particular; this is a character sheet described once.
 #
 # ⚠ The numbers are the original's, carried over unchanged, so a character built here has the pools
 # it would have had there. Where one reads oddly the reason is in the original's own comments, and

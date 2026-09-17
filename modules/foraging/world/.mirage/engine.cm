@@ -50,10 +50,10 @@ abstract model Player
 
     ##
         @summary: The account behind them - the one name here that outlives a session. A handle
-        stops meaning anything the moment they log out and a character can be deleted; this is what
-        the engine files mail and guild membership under, so it is what to write down when the thing
-        you are promising will be settled later. not a character name and not for showing to
-        players: it is how they sign in. Print Name in anything anybody reads.
+        stops meaning anything the moment they log out and a character can be deleted. The engine
+        files mail and guild membership under this, so write it down when the thing you are
+        promising will be settled later. not a character name and not for showing to players: it is
+        how they sign in. Print Name in anything anybody reads.
     ##
     public string Account;
 
@@ -159,8 +159,8 @@ abstract model Player
 
     ##
         @summary: Says how quick they are. A game with a speed stat has no other way to make it mean
-        anything: how far a body gets per second is the engine's, and this is what it reads. Write
-        it whenever the stat behind it moves.
+        anything: how far a body gets per second is the engine's, and it reads this. Write it
+        whenever the stat behind it moves.
     ##
     public abstract function SetPace(integer pace);
 
@@ -361,8 +361,8 @@ abstract model Builder
         asks of a body already in the world, and what a character is has to be settled before there
         is one. The player picks from the records you name, listed by their own names, and the
         number they picked is written onto them under your key before OnPlayerJoined runs, so you
-        read it the ordinary way and need no handler. A blank record is not offered, because a list
-        of unnamed slots is a screen nobody can use.
+        read it the ordinary way and need no handler. A blank record is not offered, because nobody
+        can use a list of unnamed slots.
     ##
     public abstract function AskAtCreation(string key, string caption, string records);
 
@@ -374,10 +374,10 @@ abstract model Builder
 
     ##
         @summary: Gives the player an action bar of that many slots, up to 12. Declare none and
-        there is no bar at all, which is what a world with nothing worth a shortcut wants - a row of
-        empty boxes in the sidebar is chrome nobody asked for. What may go in a slot is said
-        elsewhere: Hotkeyable on a verb, and Hotkeys on a panel to put one of its rows there. The
-        first ten slots answer to the digit keys; the rest are clicked.
+        there is no bar at all, which suits a world with nothing worth a shortcut - a row of empty
+        boxes in the sidebar is chrome nobody asked for. What may go in a slot is said elsewhere:
+        Hotkeyable on a verb, and Hotkeys on a panel to put one of its rows there. The first ten
+        slots answer to the digit keys; the rest are clicked.
     ##
     public abstract function HotkeyBar(integer slots);
 
@@ -385,11 +385,11 @@ abstract model Builder
         @summary: A kind of line this game produces that a player can read apart from everything
         else, and hide when they do not want it, in a color given as red, green, and blue, each 0 to
         255. Name it when you send: Message(who, text, id). Give a tab caption and a fresh account
-        gets a tab of that name carrying this channel instead of the main one, which is what a noisy
-        feed wants; channels naming the same tab share it. Leave the tab blank and it reads in the
-        main tab. Declare none and everything this game says lands in system, which is the honest
-        answer for a world whose events are all one kind. The id may not be one of Core's own -
-        Global, System, Tell, Guild, Admin, or Always.
+        gets a tab of that name carrying this channel instead of the main one, which suits a noisy
+        feed; channels naming the same tab share it. Leave the tab blank and it reads in the main
+        tab. Declare none and everything this game says lands in system, which is the honest answer
+        for a world whose events are all one kind. The id may not be one of Core's own - Global,
+        System, Tell, Guild, Admin, or Always.
     ##
     public abstract function Channel(string id, string caption, integer red, integer green, integer blue, string tab);
 end model
@@ -477,7 +477,7 @@ abstract model Verb
     public abstract function OnPlayer();
 
     ##
-        @summary: Offer it in the menu of a creature. Declaring one is what gives a plain creature a
+        @summary: Offer it in the menu of a creature. Without one declared, a plain creature has no
         menu at all.
     ##
     public abstract function OnNpc();
@@ -522,7 +522,7 @@ abstract model Verb
     ##
         @summary: Lets the player put this verb on the action bar, where the game declared one.
         Offered by right-clicking it wherever it is drawn. Say this only on the few a player would
-        reach for under pressure: every verb offering to be bound is a menu nobody reads.
+        reach for under pressure, since nobody reads a menu where every verb offers to be bound.
     ##
     public abstract function Hotkeyable();
 
@@ -548,9 +548,9 @@ abstract model Verb
     public abstract function Hidden();
 
     ##
-        @summary: Drawn dim and unclickable while its condition does not hold, which is what happens
-        anyway unless Hidden is asked for. Worth saying out loud on a verb whose condition a player
-        can go and satisfy, since the dim entry is how they learn it is there.
+        @summary: Drawn dim and unclickable while its condition does not hold, which happens anyway
+        unless Hidden is asked for. Worth saying out loud on a verb whose condition a player can go
+        and satisfy, since the dim entry is how they learn it is there.
     ##
     public abstract function Grayed();
 
@@ -625,7 +625,7 @@ abstract model Panel
 
     ##
         @summary: One line of a list the player picks ONE of. Both are attribute keys read off the
-        player: the first is what the line reads as, the second what it IS - a line saying
+        player: the first is the text the line shows, the second what it IS - a line saying
         'Ironhelm, at war since Tuesday' and carrying the guild number that names. Whatever is
         picked arrives as 'picked' in OnAction, on whichever button they press next. A line whose
         caption is blank is not drawn, so declare as many as the thing behind them can hold and fill
@@ -915,15 +915,15 @@ shared abstract model World
 
     ##
         @summary: The creature standing on that square, or nothing. A verb declared OnNpc arrives at
-        OnAction with the square it was used on, and this is what turns that into the body.
+        OnAction with the square it was used on; this turns that square into the body.
     ##
     public abstract Npc? function NpcAt(integer map, integer x, integer y);
 
     ##
         @summary: Every creature standing within that many tiles of the square, nearest first -
-        which is what a rule about the bodies around something starts from: guards answering a call,
-        a herd that scatters when one of them is startled. On that map only, so a body one tile over
-        a border is close and is not in the answer; ask for each map to reach those.
+        where a rule about the bodies around something starts: guards answering a call, a herd that
+        scatters when one of them is startled. On that map only, so a body one tile over a border is
+        close and is not in the answer; ask for each map to reach those.
     ##
     public abstract Npc[] function NpcsNear(integer map, integer x, integer y, integer tiles);
 
@@ -1021,8 +1021,8 @@ shared abstract model World
 
     ##
         @summary: Everybody in the world who shares their guild, including them. Empty for somebody
-        in no guild - which is not the same as a guild with nobody online, and World.Guild is what
-        tells those apart.
+        in no guild - which is not the same as a guild with nobody online, and World.Guild tells
+        those apart.
     ##
     public abstract Player[] function Guildmates(Player who);
 
@@ -1193,7 +1193,7 @@ shared abstract model World
         a group earned is owed to its members whether or not they happened to be logged in. It
         arrives as mail, so it waits for them. 'onlyActive' narrows it to members who have really
         been playing, by the engine's own measure of a live roster - a payout split among a hundred
-        names nobody has used is a payout nobody feels. Yields how many it reached.
+        names nobody has used reaches nobody who notices. Yields how many it reached.
     ##
     public abstract integer function MailMembers(integer guild, integer item, integer many, string subject, string body, boolean onlyActive);
 
@@ -1216,8 +1216,8 @@ shared abstract model World
 
     ##
         @summary: Which bag slots they have something in, in slot order. Carrying asks about an
-        item; this asks about slots, which is what a rule about the bag itself needs - two copies of
-        one sword are two slots with their own wear.
+        item; this asks about slots, as a rule about the bag itself needs - two copies of one sword
+        are two slots with their own wear.
     ##
     public abstract integer[] function BagOf(Player who);
 
@@ -1394,8 +1394,8 @@ shared abstract model World
     ##
         @summary: Takes every creature off that map and keeps it that way. For ground that has to
         stop being ordinary for a while: a war fought over it, a ritual nobody should interrupt, an
-        arena cleared for a duel. Nothing comes back until World.Wake - which is what separates this
-        from clearing a map and watching it refill a minute later.
+        arena cleared for a duel. Nothing comes back until World.Wake, which separates this from
+        clearing a map and watching it refill a minute later.
     ##
     public abstract boolean function Empty(integer map);
 
@@ -1438,8 +1438,8 @@ shared abstract model World
         positive, west of it negative. anything that turns over at midnight wants this: a daily
         reset, a weekly tax, a season all mean the operator's own midnight, and dividing World.Now
         by a day gives the wrong one everywhere but Greenwich. Add it before dividing. Read fresh,
-        so a place that keeps summer time answers differently in July than in January - which is
-        what keeps a boundary at midnight all year.
+        so a place that keeps summer time answers differently in July than in January, so a boundary
+        stays at midnight all year.
     ##
     public abstract integer function LocalOffset();
 
@@ -1599,15 +1599,15 @@ shared abstract model World
 
     ##
         @summary: The same question asked strictly: whether the field is there AND lists that
-        number. A field nobody wrote answers false here, so this is what to use where absent means
-        nothing rather than everything.
+        number. A field nobody wrote answers false here, so use this where absent means nothing
+        rather than everything.
     ##
     public abstract boolean function RecordHolds(string records, integer number, string field, integer value);
 
     ##
-        @summary: The same, as a yes or no, which is what a checkbox on the editor's form writes.
-        False where the slot or the field is not there, and an unticked box gives the same answer as
-        an absent one.
+        @summary: The same, as a yes or no, the way a checkbox on the editor's form writes it. False
+        where the slot or the field is not there, and an unticked box gives the same answer as an
+        absent one.
     ##
     public abstract boolean function RecordTruth(string records, integer number, string field);
 end model

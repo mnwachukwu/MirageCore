@@ -43,8 +43,8 @@ public sealed class LoadBenchmark
     private int _missedBeats;
     private int _ordinal;
 
-    /// <summary>The headless server to run. Defaults to the one shipped beside this window, which is what
-    /// an operator always wants; settable for the same reason <see cref="Services.ServerProcess"/> exposes
+    /// <summary>The headless server to run. Defaults to the one shipped beside this window, which an
+    /// operator always wants; settable for the same reason <see cref="Services.ServerProcess"/> exposes
     /// its path, so a harness can point at a build tree.</summary>
     public string ServerExecutable { get; set; } = Services.ServerProcess.DefaultExecutablePath;
 

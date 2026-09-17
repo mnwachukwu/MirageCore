@@ -31,8 +31,8 @@ public sealed class MarkerSystem : GameSystem
 
     /// <summary>Puts a marker down, or replaces the one already under that name.
     ///
-    /// <para>Replacing rather than stacking is what makes a marker that MOVES, or whose meter is
-    /// counting, one call rather than a remove and a place — and it is why an id is required. A moved
+    /// <para>Replacing rather than stacking keeps a marker that MOVES, or whose meter is counting,
+    /// to one call rather than a remove and a place — and is why an id is required. A moved
     /// marker leaves its old map, so both maps are told.</para></summary>
     public bool Mark(WorldMarker marker)
     {

@@ -14,8 +14,8 @@ namespace Mirage.Server.Host.Net;
 /// The line at a full server.
 ///
 /// <para><b>A waiting connection holds no player slot.</b> It is a socket, a TLS session and a place in
-/// this list — nothing about it reaches the game thread until the moment it is let in, which is what makes
-/// a queue affordable at all. The single promotion step goes through the same claim path an ordinary
+/// this list — nothing about it reaches the game thread until the moment it is let in, which is
+/// what makes a queue affordable at all. The single promotion step goes through the same claim path an ordinary
 /// connect uses, so it stays serialized against disconnects and the AI tick.</para>
 ///
 /// <para>Runs on accept-loop threads, never the game thread, so the list is guarded by a plain lock.</para>
@@ -232,8 +232,8 @@ public sealed class LoginQueue : IDisposable
             if (_line.Count == 0) return;
             head = _line[0];
             // Their turn, but they are not here. The slot waits for them — for the grace window, which
-            // Sweep is timing — rather than going straight to the next in line. That idle is the price of
-            // not punishing a dropped connection at the worst possible moment.
+            // Sweep is timing — rather than going straight to the next in line. That idle buys not
+            // punishing a dropped connection at the worst possible moment.
             if (head.IsAway) return;
         }
 

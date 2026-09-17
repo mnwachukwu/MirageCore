@@ -7,7 +7,7 @@ namespace Mirage.Client.Core.Logic;
 /// average to 58 — a number nobody would investigate — while being exactly the thing a player feels. So this
 /// keeps the DISTRIBUTION: the median says how it runs, and the 99th and the worst say how it hitches.</para>
 ///
-/// <para>Counters come in two flavours, and the difference is the whole point of having them. A WINDOWED
+/// <para>Counters come in two flavors, and the difference is why there are two. A WINDOWED
 /// count answers "is this happening now"; a TOTAL answers "has this ever happened". Reporting only the
 /// total means a burst at startup leaves the readout lit for the rest of the session and nothing that
 /// happens afterwards changes it.</para>

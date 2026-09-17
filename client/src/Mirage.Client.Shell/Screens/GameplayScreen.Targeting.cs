@@ -313,8 +313,8 @@ public sealed partial class GameplayScreen : IGameScreen
     /// a player index, an NPC slot, or — for a traversal guest, which has no slot — the tile it stands on.
     ///
     /// <para>🔴 An NPC's position is its TOP-LEFT anchor, and its body grows from there toward +x/+y. Text
-    /// placed at the anchor of a 3x3 creature sits over its shoulder, a tile off center, which is what
-    /// makes a readout look like it belongs to something else.</para></summary>
+    /// placed at the anchor of a 3x3 creature sits over its shoulder, a tile off center, so the
+    /// readout looks like it belongs to something else.</para></summary>
     public int PopupFootprint(bool isNpc, int npcSlot, int mapNum, int lx, int ly)
     {
         if (!isNpc) return 1;

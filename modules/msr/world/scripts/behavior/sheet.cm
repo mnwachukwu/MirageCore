@@ -55,8 +55,8 @@ shared model Sheet
         # Level is public: it is on the name plate of everybody you meet.
         game.Attribute(Stats.Level, "viewport");
 
-        # 🔴 The sidebar carries the LEVEL and nothing else about the sheet, which is what the
-        # original's did: a name, a level, where you are, the sky, and four bars. Everything else it
+        # 🔴 The sidebar carries the LEVEL and nothing else about the sheet, following the
+        # original's: a name, a level, where you are, the sky, and four bars. Everything else it
         # knew about a character was a keypress away in a window.
         #
         # A stat block down the side of the screen looks like more information and is less: it is read
@@ -64,8 +64,8 @@ shared model Sheet
         # numbers that decide whether you are about to die - down the screen behind it.
         game.Field(Stats.Level, "Level", 200, 200, 160);
 
-        # ⚠ Beside the name on the select screen, which is the one place a character who is not
-        # in the world is drawn. The original put a level and a class there, and a list of three bare
+        # ⚠ Beside the name on the select screen, the only place a character who is not in the
+        # world is drawn. The original put a level and a class there, and a list of three bare
         # names is how you delete the wrong character.
         game.Slot(Stats.Level, "level", 200, 200, 160);
         game.Slot(Classes.Name, "", 200, 200, 160);
@@ -91,8 +91,7 @@ shared model Sheet
         card.Field(Stats.Int, "Intelligence", 200, 200, 160);
         card.Field(Stats.Points, "Unspent", 240, 200, 80);
 
-        # What those four come to, which is the question a player is actually asking when they open
-        # this. Every one of them reads through the same function the fight reads.
+        # What those four come to — what a player opens this to find out. Every one of them reads through the same function the fight reads.
         card.Heading("In a fight");
         card.Field(Sheet.SeenDamage, "Damage", 230, 170, 120);
         card.Field(Sheet.SeenSpellDamage, "Spell damage", 230, 170, 120);
@@ -107,7 +106,7 @@ shared model Sheet
         card.Field(Sheet.SeenStaminaRegen, "Stamina a beat", 190, 200, 160);
 
         # ⚠ The original reached every one of its windows from a button on the sidebar AND from a
-        # key. A window with only a key is a window nobody who has not read the help knows about.
+        # key. A window reachable only by a key is one nobody finds without reading the help.
         Verb sheet = game.Action(Sheet.OpenVerb, "Character", "Character");
         sheet.OnHud();
         sheet.Icon("shield");
@@ -118,7 +117,7 @@ shared model Sheet
         train.Icon("sword");
         train.Opens("msr.training");
 
-        # Where points are SPENT, which is the one thing the sheet cannot do. The four current values
+        # Where points are SPENT, which the sheet itself cannot do. The four current values
         # are repeated here because an allocation is decided by reading them.
         #
         # Nothing is sent until Confirm, and closing the window throws the staging away - which is
@@ -140,7 +139,7 @@ shared model Sheet
     # ── What the four stats come to ───────────────────────────────────────────
     #
     # 🔴 A sheet of four numbers tells a player nothing they can act on. Whether to put the next
-    # point into strength or defense is a question about what those numbers BUY - how hard you hit, how
+    # point into strength or defense turns on what those numbers BUY - how hard you hit, how
     # much you turn aside, how fast you mend - and the original answered it beside every stat rather
     # than leaving the arithmetic to the reader.
     #
@@ -175,8 +174,8 @@ shared model Sheet
         who.SetText(Sheet.SeenSpellCrit,
                     Combat.PlayerChance(int, level, Combat.PlayerCritDivisor, Combat.PlayerCritCap) + "%");
 
-        # One row rather than two, because only one of them is ever live: a shield is what you block
-        # with, and stepping aside takes the hand it would be in. Which of the two it is says more than
+        # One row rather than two, because only one of them is ever live: you block with a shield,
+        # and stepping aside takes the hand it would be in. Which of the two it is says more than
         # the number does, so the row carries both.
         if World.WornIn(who, Sheet.Shield) > 0
             who.SetText(Sheet.SeenTurnAside, "block "
@@ -224,7 +223,7 @@ shared model Sheet
 
         # The opening allotment, spread evenly.
         #
-        # ⚠ This is what somebody has BEFORE they enlist, not instead of a class. A character has to
+        # ⚠ This is the spread somebody has BEFORE they enlist, not instead of a class. A character has to
         # be playable between joining and finding a trainer, and a sheet of four zeroes is not — so
         # the even spread stands until Classes.Take replaces it.
         integer apiece = Stats.BaseStatTotal / 4;

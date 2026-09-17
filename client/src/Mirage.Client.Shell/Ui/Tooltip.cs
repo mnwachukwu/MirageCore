@@ -77,7 +77,7 @@ public static class Tooltip
     /// <para>The last three are only needed for a SPELL SCROLL, whose tooltip continues into the spell
     /// it teaches — everything that decides whether a scroll is worth buying lives on the spell, not on
     /// the scroll. A caller with no spell table simply omits them and the scroll shows its item half
-    /// alone, which is what it did everywhere before.</para>
+    /// alone, as it did everywhere before.</para>
     /// </summary>
     public static void NotifyHoverItem(string scope, object key, ItemRecord item, PlayerInvSlot? slot,
         PlayerRecord? me, IReadOnlyList<Texture2D?> itemsTex, Point mousePos,

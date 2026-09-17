@@ -70,7 +70,7 @@ public class DropdownAutoCompleteBox : AutoCompleteBox
         FilterMode = AutoCompleteFilterMode.None;
     }
 
-    // Restores the configured filter. Assigning ItemFilter is what puts FilterMode back to Custom.
+    // Restores the configured filter. Assigning ItemFilter puts FilterMode back to Custom.
     private void FilterAsTyped()
     {
         if (_parkedFilter is null) return;

@@ -53,7 +53,7 @@ public enum ActionSurface : byte
 /// runs on the server, where every other rule runs. Nothing about the behavior crosses the wire, so
 /// nothing has to be deployed beside the client.</para>
 ///
-/// <para><b>That is the whole trade, and it is what makes it possible at all.</b> A seam that let a game
+/// <para><b>Without that trade, none of this would be possible.</b> A seam that let a game
 /// send BEHAVIOR to a client would be a seam that shipped code to every player, and the client would
 /// have to run it. What travels here is a name and a caption; what happens is the server's business.</para>
 /// </summary>
@@ -98,7 +98,7 @@ public sealed record GameAction
     /// <para>🔴 <b>Targeting is Core's, and a game should not be rebuilding it.</b> Picking a body
     /// out of a crowd is cycling with Tab, clicking one, and the line of sight and footprint arithmetic
     /// that decides which body a pixel belongs to - all of which Core already does, and none of which is
-    /// about any particular game. Aiming at YOURSELF is part of the same thing: Ctrl+Tab is what selects
+    /// about any particular game. Aiming at YOURSELF is part of the same thing: Ctrl+Tab selects
     /// the caster, so a spell that heals needs no verb of its own and no button that says
     /// "on yourself".</para>
     ///
@@ -120,13 +120,13 @@ public sealed record GameAction
 
     /// <summary>Whether the player may put this verb on the action bar.
     ///
-    /// <para>Off by default, because most verbs are not worth a slot and a menu of a game’s whole
-    /// vocabulary offering "assign to hotkey" on every line is a menu nobody reads. Say it on the few
+    /// <para>Off by default, because most verbs are not worth a slot and nobody reads a menu that
+    /// offers "assign to hotkey" on every line of a game’s whole vocabulary. Say it on the few
     /// a player would reach for under pressure.</para>
     ///
     /// <para>⚠ Says nothing unless the game declared a bar. A hotkeyable verb in a world with no
-    /// <see cref="HotkeyBar"/> is a verb nothing offers to bind, which is the quiet half of a feature
-    /// rather than an error — the bar is the thing that has to exist first.</para></summary>
+    /// <see cref="HotkeyBar"/> never gets offered for binding: the quiet half of a feature rather
+    /// than an error, since the bar has to exist first.</para></summary>
     [JsonPropertyName("hotkeyable")] public bool Hotkeyable { get; init; }
 
     /// <summary>When it is offered at all, as a question about what the player already carries. The
@@ -138,8 +138,8 @@ public sealed record GameAction
     /// way, since there is nothing to draw on a keyboard.</para></summary>
     [JsonPropertyName("when")] public ActionCondition When { get; init; } = ActionCondition.Always;
 
-    /// <summary>Gray or gone, while <see cref="When"/> does not hold. Gray by default, which is what a
-    /// verb the player could reach today wants; hidden is for one they may never be able to.</summary>
+    /// <summary>Gray or gone, while <see cref="When"/> does not hold. Gray by default, which suits
+    /// a verb the player could reach today; hidden is for one they may never be able to.</summary>
     [JsonPropertyName("unmet")] public ActionUnmet Unmet { get; init; } = ActionUnmet.Gray;
 
     /// <summary>A key that invokes this without opening the menu, or blank for one the player has to go
@@ -212,7 +212,7 @@ public interface IActionHandler
     /// <param name="actionId">Which of <see cref="Actions"/>.</param>
     /// <param name="on">The body it was used on, or <see cref="EntityHandle.None"/> for a verb offered
     /// somewhere with no target — a square, or the HUD. Named rather than resolved: whether that body is
-    /// still in the world is a question for <see cref="IWorld"/> at the moment the handler asks.</param>
+    /// still in the world is for <see cref="IWorld"/> to answer at the moment the handler asks.</param>
     /// <param name="at">The square they picked it on. A client names a place it can see; whether the
     /// player is close enough to act on it is the game's question, because how far a game's own verb
     /// reaches is not something Core could know.</param>

@@ -66,8 +66,8 @@ public sealed partial class PacketHandler
 
     /// <summary>The world as a game reads it, for resolving what a new character picked against the
     /// records this world actually holds. Null in a harness that builds a handler without one, and then
-    /// a world that asks nothing at creation is the only one that works — which is what a harness with
-    /// no game loaded is.</summary>
+    /// a world that asks nothing at creation is the only one that works, which describes a harness
+    /// with no game loaded.</summary>
     private readonly IWorld? _actions;
 
     private readonly PacketRoutes _routes;
@@ -97,7 +97,7 @@ public sealed partial class PacketHandler
 
     /// <summary>Per-recipient localized chat to a map's observers. Takes the metadata rather than a
     /// color and channel because the callers here are speaker-attributed (a yell), and the speaker
-    /// login in the metadata is what the ignore-list filter keys on.</summary>
+    /// login in the metadata is the name the ignore-list filter reads.</summary>
     private void ChatToMap(int mapNum, string key, ChatMetadata meta,
         params (string Key, object? Value)[] args) =>
         _dispatcher.SendLocalizedChatToObservers(_world.MapObservers[mapNum], key, meta, args);
@@ -295,8 +295,8 @@ public sealed partial class PacketHandler
 
         // The corpse gate. Everything a dead player may still have delivered is named in
         // AllowedWhileDead; anything else stops here, so a handler added later is refused by default.
-        // The per-handler IsActing checks stay as they are — they are what let a typed command explain
-        // itself, and they keep each handler honest on its own terms.
+        // The per-handler IsActing checks stay as they are — they let a typed command explain itself,
+        // and they keep each handler honest on its own terms.
         if (_pm[index].IsPlaying && _pm[index].Char.Downed && !AllowedWhileDead(packet)) return;
 
         try

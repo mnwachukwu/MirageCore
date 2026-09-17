@@ -6,7 +6,7 @@ namespace Mirage.Client.Core.Net;
 /// <summary>
 /// C→S: one of the loaded game's own messages, composed from a panel the game declared.
 ///
-/// <para>🔴 <b>The command is not known when this is compiled, which is the whole point.</b> Every
+/// <para>🔴 <b>The command is deliberately not known when this is compiled.</b> Every
 /// other packet returns a constant from <see cref="PacketNames"/>; this one carries whichever model a
 /// world's rules named, and the server reads it through the parse delegate that world registered. A
 /// client sends a message for a game it has never heard of.</para>

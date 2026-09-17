@@ -75,7 +75,7 @@ public sealed class SimulatedPlayer : IDisposable
     public bool Dropped => _dropped;
 
     /// <summary>What ended a connection that had already got in. Kept apart from
-    /// <see cref="FailureReason"/>, which is why a player never arrived — a ramp that dies from drops and
+    /// <see cref="FailureReason"/>, which says why a player never arrived — a ramp that dies from drops and
     /// one that dies from refusals are different failures, and the report says which.</summary>
     public string? DropReason { get; private set; }
 
@@ -133,7 +133,7 @@ public sealed class SimulatedPlayer : IDisposable
     /// pick another.
     ///
     /// <para>Movement rather than idling, because a parked connection costs almost nothing and would
-    /// flatter the result — walking is what drives the collision checks, observer resolution and broadcast
+    /// flatter the result — walking drives the collision checks, observer resolution and broadcast
     /// fan-out the game thread spends its time on. Held headings rather than a fresh direction each beat,
     /// because cycling through four directions walks a player back to where it started: the crowd never
     /// leaves the spawn tile, every move is refused by whatever is next to it, and the measurement quietly

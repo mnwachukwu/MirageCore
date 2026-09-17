@@ -351,8 +351,8 @@ public sealed class EditorDataService
     /// hole in it.</summary>
     public static string[] RecordFolders => WorldLayout.WorldFolders;
 
-    /// <summary>Puts back any record folder a world is missing, and is what makes the set of them a
-    /// property of a world rather than a thing that happens to be there.
+    /// <summary>Puts back any record folder a world is missing, so the set of them is a property of
+    /// a world rather than an accident of what was on disk.
     ///
     /// <para>Run on every open, so emptying a world is deleting everything but the manifest: the folders
     /// come back on the next open, and what is gone is the records. Creating a directory that already

@@ -10,7 +10,7 @@ namespace Mirage.Client.Core.Logic;
 /// left column when just an up-left map exists) is still reachable — empty cells in
 /// it simply render black.  Where nothing surrounds the center map at all the camera
 /// locks to it, reproducing the original single-map view exactly
-/// (screenX = localX * PicX) — which is what a one-room interior looks like.
+/// (screenX = localX * PicX) — the way a one-room interior looks.
 /// </summary>
 public sealed class Camera
 {
@@ -39,7 +39,7 @@ public sealed class Camera
     /// a cell holds 0 where the world has no map. Scrolling in a direction is allowed as long as that
     /// side's row/column names any map at all; it clamps only when the whole row/column is empty.
     ///
-    /// <para><b>Map NUMBERS, not loaded map records, and that distinction is the whole point.</b> The
+    /// <para><b>Map NUMBERS, not loaded map records.</b> The
     /// numbers for all eight neighbors arrive together in one batch the moment the server describes the
     /// new surroundings; each map's DATA then resolves separately, from disk cache or over the wire, over
     /// however many frames that takes. Clamping on what has finished loading makes the camera's reach grow

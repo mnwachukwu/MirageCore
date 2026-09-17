@@ -10,7 +10,7 @@ namespace Mirage.Server.Shell.ViewModels;
 /// <summary>
 /// The load benchmark's dialog: a target, a run, and the table it produces.
 ///
-/// <para>The headroom rows are the point of the whole exercise. An operator is not really asking "what
+/// <para>The headroom rows carry the whole exercise. An operator is not really asking "what
 /// is the maximum" — they are asking how much of their machine they are willing to hand over, and each
 /// row answers that question at one price.</para>
 /// </summary>

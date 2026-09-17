@@ -50,7 +50,7 @@ public sealed partial class WorldSettingsDialogViewModel : ObservableObject
     [ObservableProperty] private string _worldName = string.Empty;
 
     /// <summary>What the GAME built on this world is called — the name a player sees. Authored here
-    /// rather than compiled in, which is what lets a game name itself without a build.</summary>
+    /// rather than compiled in, so a game can name itself without a build.</summary>
     [ObservableProperty] private string _gameName = string.Empty;
 
     /// <summary>The size a new map in this world is created at. A map may be resized afterwards; this is
@@ -91,8 +91,8 @@ public sealed partial class WorldSettingsDialogViewModel : ObservableObject
     public string GameNameLabel => EditorStrings.Get(EditorStrings.WorldSettings_GameNameLabel);
     public string GameNameHint => EditorStrings.Get(EditorStrings.WorldSettings_GameNameHint);
 
-    /// <summary>Shown in the empty box: the engine's own name is what a player sees when a world claims
-    /// none, so the placeholder states that answer rather than inventing a label for its absence.</summary>
+    /// <summary>Shown in the empty box: a player sees the engine's own name when a world claims none,
+    /// so the placeholder states that answer rather than inventing a label for its absence.</summary>
     public string GameNamePlaceholder => Mirage.Shared.Constants.GameName;
     public string DefaultMapSizeLabel => EditorStrings.Get(EditorStrings.WorldSettings_DefaultMapSizeLabel);
     public string DefaultMapSizeHint => EditorStrings.Get(EditorStrings.WorldSettings_DefaultMapSizeHint);

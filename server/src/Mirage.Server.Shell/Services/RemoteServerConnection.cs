@@ -88,8 +88,8 @@ public sealed class RemoteServerConnection(string host, int port, string token) 
                 // rather than anything the server said. That silence is deliberate — telling a caller
                 // WHICH refusal it hit is a hint worth giving nobody — but it costs the operator the one
                 // fact they need, because five wrong attempts lock the address out for five minutes and
-                // the CORRECT token is refused for the rest of it. Retrying is what sustains it. So the
-                // message names both possibilities rather than asserting the wrong one.
+                // the CORRECT token is refused for the rest of it, and retrying extends the lockout. So
+                // the message names both possibilities rather than asserting the wrong one.
                 ssl.Dispose();
                 client.Dispose();
                 return RemoteError.Rejected;

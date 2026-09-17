@@ -34,9 +34,9 @@ public sealed class WorldPreviewControl : Control
     private const int BuildsPerPass = 3;
     private const double MinZoom = 0.05;
 
-    // Native resolution is the ceiling: past it the map is upscaled and goes soft, which is the one thing
-    // rendering at the zoom bucket exists to avoid. Not a memory limit — culling to the viewport is what
-    // bounds that, and it bounds it at every zoom.
+    // Native resolution is the ceiling: past it the map is upscaled and goes soft, which rendering
+    // at the zoom bucket exists to avoid. Not a memory limit — culling to the viewport
+    // bounds that, at every zoom.
     private const double MaxZoom = 1.0;
 
     private static readonly IBrush Backdrop = new SolidColorBrush(Color.FromRgb(18, 18, 20));
@@ -244,7 +244,7 @@ public sealed class WorldPreviewControl : Control
     /// the zoom exactly means a pinch through a range of scales re-renders a handful of times instead of
     /// every frame.</para>
     ///
-    /// <para>This is what makes a radius of ten affordable. Holding all 441 maps at native size would be
+    /// <para>Without it a radius of ten would not be affordable. Holding all 441 maps at native size would be
     /// about 330 MB of render targets — and 441 GPU surfaces, which is the part a driver is liable to simply
     /// refuse. At the opening zoom the same grid is nearer 5 MB.</para>
     /// </summary>
@@ -259,7 +259,7 @@ public sealed class WorldPreviewControl : Control
     }
 
     // Maps near enough to the viewport to be worth holding a surface for. At the opening zoom that is the
-    // whole grid; zoomed in it is a handful, which is what keeps the cache bounded at every scale.
+    // whole grid; zoomed in it is a handful, so the cache stays bounded at every scale.
     private bool NearViewport(MapPlacement p, MapLinkLayoutResult layout, double cellW, double cellH, double margin)
     {
         var view = Viewport;
@@ -278,7 +278,7 @@ public sealed class WorldPreviewControl : Control
         double cellW = cw * Zoom, cellH = ch * Zoom;
 
         // A zoom step past a power of two invalidates every surface at once: they were all built at the old
-        // scale, and a bitmap coarser than the screen is the one thing this must never draw.
+        // scale, and this must never draw a bitmap coarser than the screen.
         if (Math.Abs(bucket - _cacheScale) > 0.0001)
         {
             foreach (var stale in _cache.Values) stale.Dispose();

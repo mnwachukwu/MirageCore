@@ -27,7 +27,7 @@ model Spell
     # mid-ladder spell at level one, so the magnitude cannot pace the ladder on its own.
     public integer levelReq;
 
-    # ⚠ How it is learned is not here. A spell is written on a scroll, and that is a fact about the
+    # ⚠ How it is learned is not here. A spell is written on a scroll, which is a fact about the
     # scroll rather than about the spell — see `teaches` in declarations/gear.cm. A class's own
     # starting book is a third family again, below.
 

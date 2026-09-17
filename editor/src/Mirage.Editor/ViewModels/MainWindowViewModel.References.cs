@@ -9,7 +9,7 @@ namespace Mirage.Editor.ViewModels;
 ///
 /// <para>References in this data model only ever run one way — a map names its group, an NPC names the item it
 /// drops, a shop names its keeper. No record carries a list of its dependents, so the answer is always a scan
-/// of the OTHER collections, which is why it lives here: this class is the only one holding every editor.</para>
+/// of the OTHER collections, so it lives here: this class is the only one holding every editor.</para>
 ///
 /// <para>Nothing is cached. The scan reads records already resident (the connect-time eager load pulls every
 /// collection), it runs once per selection rather than per frame, and a cache would have to be invalidated on

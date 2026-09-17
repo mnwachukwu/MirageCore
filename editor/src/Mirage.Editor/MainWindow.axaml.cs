@@ -23,7 +23,7 @@ namespace Mirage.Editor;
 /// Windows it draws its own title bar, so the frame carries the app's palette instead of the system's
 /// gray. It does that ONLY under <c>OperatingSystem.IsWindows()</c> — elsewhere the window keeps native
 /// decorations and every bit of native window behavior with them. The editor was left on a plain
-/// Window when the shell was converted, which is why the two apps disagreed about their own chrome.</para>
+/// Window when the shell was converted, so the two apps disagreed about their own chrome.</para>
 /// </summary>
 public partial class MainWindow : FAAppWindow
 {
@@ -234,8 +234,8 @@ public partial class MainWindow : FAAppWindow
         Close();
     }
 
-    /// <summary>Wire the view-model's dialog and file-picker delegates. Keeping them here is what lets
-    /// the view-model stay free of View references while still driving modal dialogs.</summary>
+    /// <summary>Wire the view-model's dialog and file-picker delegates. Keeping them here lets the
+    /// view-model stay free of View references while still driving modal dialogs.</summary>
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
@@ -360,8 +360,8 @@ public partial class MainWindow : FAAppWindow
                     await connectDlg.ShowDialog(dlg);
                 };
                 dlg.CloseWhen(h => dlgVm.CloseRequested += h);
-                // Closing the window IS a decision: carry on offline, which is what the caller does with any
-                // exit that is not a reconnect. Nothing is preserved by refusing the close — the session is
+                // Closing the window IS a decision: carry on offline, as the caller does with any exit
+                // that is not a reconnect. Nothing is preserved by refusing the close — the session is
                 // already gone — and a modal with no way out turns an unexpected open into a frozen editor.
                 await dlg.ShowDialog(this);
             };

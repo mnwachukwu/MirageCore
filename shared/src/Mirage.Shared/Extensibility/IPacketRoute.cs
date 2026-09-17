@@ -31,7 +31,7 @@ public interface IPacketRoute
 
     /// <summary>Whether a dead player's copy of these packets is still delivered.
     ///
-    /// <para><b>False by default, and that is the point.</b> Core's own list of what survives a death is
+    /// <para><b>False by default, deliberately.</b> Core's own list of what survives a death is
     /// an allow-list precisely so a command added later is refused rather than permitted by whoever
     /// forgot to guard it. A game that means it says so here.</para></summary>
     bool AllowedWhileDead => false;

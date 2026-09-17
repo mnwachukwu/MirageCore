@@ -64,8 +64,8 @@ public sealed partial class ClientPacketHandler : IClientEvents
         if (string.IsNullOrWhiteSpace(line)) return;
 
         // Read the header without building a DOM, and hand it back rather than paying for a second
-        // scan. It carries whether a top-level "index" is present, which is what resolves the two
-        // commands used in both directions — the registry picks the right shape from it.
+        // scan. It carries whether a top-level "index" is present, which resolves the two commands
+        // used in both directions — the registry picks the right shape from it.
         var header = PacketSerializer.ReadHeader(line);
         if (header.Cmd is null) return;
 
@@ -360,7 +360,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
     private void HandleAlertMsg(AlertMsgPacket p) => AlertMessage?.Invoke(p.Message, p.Code);
 
     /// <summary>What this server is, before we have told it anything about ourselves. Currently just the
-    /// player limit, which is what every per-frame pass bounds itself by — see
+    /// player limit, which every per-frame pass bounds itself by — see
     /// <see cref="ClientState.PlayerSlots"/>.</summary>
     private void HandleServerHello(ServerHelloPacket p)
     {

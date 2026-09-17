@@ -19,8 +19,8 @@ public interface ILingerPolicy
     ///
     /// <para><see cref="Deadline.None"/> — the default — takes them out at once. The first policy naming
     /// a deadline wins, the same rule <see cref="IDeathPolicy.RespawnFor"/> uses, because two games
-    /// disagreeing about how long a body lingers is a question with one answer and no way to average
-    /// it.</para>
+    /// disagreeing about how long a body lingers still has to settle on one answer, and there is no
+    /// averaging it.</para>
     ///
     /// <para>Asked while the player is still in the world, so a policy may read anything about them.</para></summary>
     Deadline LingerFor(EntityHandle who) => Deadline.None;

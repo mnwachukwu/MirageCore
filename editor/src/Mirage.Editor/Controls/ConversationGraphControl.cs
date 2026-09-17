@@ -20,7 +20,7 @@ namespace Mirage.Editor.Controls;
 /// the record.
 ///
 /// <para>The wheel zooms about the pointer and a drag on the canvas pans it, so the view is a camera over a
-/// drawing rather than a scrolled page. A click that never moved is what opens a node, which lets the drag
+/// drawing rather than a scrolled page. A click that never moved opens a node, so a drag can
 /// start anywhere, over a box or not.</para>
 ///
 /// <para>Everything drawn is derived from the conversation on every layout pass
@@ -97,7 +97,7 @@ public sealed class ConversationGraphControl : Control
     private static readonly Pen LinkHotPen = new(new SolidColorBrush(Color.FromRgb(0x9A, 0xA8, 0xF5)), 2.0);
     private static readonly IBrush ArrowBrush = new SolidColorBrush(Color.FromArgb(0xBB, 0x7A, 0x73, 0x9F));
     private static readonly IBrush ArrowHotBrush = new SolidColorBrush(Color.FromRgb(0x9A, 0xA8, 0xF5));
-    // A label may land on a box; the edge is what keeps it reading as a label rather than as box text.
+    // A label may land on a box; the edge keeps it reading as a label rather than as box text.
     private static readonly Pen LabelPlatePen = new(new SolidColorBrush(Color.FromArgb(0x77, 0x3B, 0x32, 0x66)), 1);
 
     private static readonly Cursor ArrowCursor = new(StandardCursorType.Arrow);
@@ -148,7 +148,7 @@ public sealed class ConversationGraphControl : Control
     private readonly Dictionary<int, Rect> _boxes = [];
     private int _hoverNodeId;
 
-    // The camera. World coordinates are what the layout produces; these put them on screen.
+    // The camera. The layout produces world coordinates; these put them on screen.
     private double _zoom = 1.0;
     private Point _pan;
     private bool _framed;
@@ -329,8 +329,8 @@ public sealed class ConversationGraphControl : Control
         e.Pointer.Capture(null);
         Cursor = _pressedNodeId == 0 ? ArrowCursor : HandCursor;
 
-        // A press that never moved is a click, wherever it started. That is what lets a drag begin over a
-        // node without opening it.
+        // A press that never moved is a click, wherever it started, so a drag can begin over a node
+        // without opening it.
         if (!_dragMoved && _pressedNodeId != 0 && NodeAt(ToWorld(e.GetPosition(this))) == _pressedNodeId)
             Activate(_pressedNodeId);
 

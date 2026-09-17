@@ -242,7 +242,7 @@ public static class ConversationGraphLayout
         foreach (var branch in node.Branches)
         {
             var kind = branch.End;
-            // A branch pointing at nothing is a goodbye, which is what the runtime does with it.
+            // A branch pointing at nothing is a goodbye, which is how the runtime treats it.
             if (kind == ConversationEndKind.None)
             {
                 if (byId.ContainsKey(branch.TargetNodeId)) continue;

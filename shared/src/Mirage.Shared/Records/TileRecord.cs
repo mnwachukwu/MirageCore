@@ -42,7 +42,7 @@ public record struct TileRecord
     public TileRecord() { }
 
     // Copies `from`, then replaces one stack's art. Private because the only way in is the With* methods:
-    // a readonly field is writable in a constructor and nowhere else, which is what keeps the art immutable
+    // a readonly field is writable in a constructor and nowhere else, which keeps the art immutable
     // without making it awkward to author.
     private TileRecord(in TileRecord from, LayerType type, ReadOnlySpan<int> art)
     {

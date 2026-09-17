@@ -519,7 +519,7 @@ public sealed partial class GameplayScreen : IGameScreen
             // ONE menu for the whole square rather than a branch per entity kind. The old form asked
             // "what did I click", which cannot answer for loot (it has no sprite worth aiming at) and
             // is ambiguous across the two planes anyway. Asking "what is HERE" has a single answer,
-            // and it is what lets an item be taken without standing on it.
+            // and it lets an item be taken without standing on it.
             float rwx = input.MousePosition.X + _camera.CameraX;
             float rwy = input.MousePosition.Y + _camera.CameraY;
             OpenTileContextMenu(FindNpcsAtPixel(rwx, rwy), rwx, rwy, input.MousePosition);

@@ -14,7 +14,7 @@ namespace Mirage.Shared.Extensibility;
 /// <para><b>A LIST of options, and the answer is which one.</b> Not free text, not a number — the
 /// screen is the first thing a new player sees and the only thing it should be able to do wrong is
 /// pick the option they did not mean. Options come from a record family the game authored, so what is
-/// offered is what a world author wrote rather than what a script hard-coded.</para>
+/// offered comes from a world author rather than from a script hard-coding it.</para>
 ///
 /// <para><b>The answer lands on the character's own attributes, under <see cref="Key"/>, before the
 /// game is told they joined.</b> So a game reads it the ordinary way and needs no handler of its own:
@@ -43,7 +43,7 @@ public sealed record CreationChoice
 }
 
 /// <summary>One thing on a creation list: which record it is, and what to call it.</summary>
-/// <param name="Num">The record's own 1-based slot, which is what the answer carries.</param>
+/// <param name="Num">The record's own 1-based slot, which the answer carries.</param>
 /// <param name="Name">What the player reads.</param>
 /// <param name="Description">A line under it, or blank. What the record itself says about being chosen.</param>
 public readonly record struct CreationOption(

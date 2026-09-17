@@ -7,8 +7,8 @@ namespace Mirage.Editor.Views;
 /// <summary>One dialogue node, opened by clicking its box on the conversation graph.
 ///
 /// <para>Edits land on the node straight away, the same as typing into the text view does — Discard on the
-/// conversation is what takes them back, so the dialog needs no Cancel and carries no copy of the node to
-/// merge back in. Nothing refuses the close either: a modal that can be opened but not dismissed is what
+/// conversation takes them back, so the dialog needs no Cancel and carries no copy of the node to
+/// merge back in. Nothing refuses the close either: a modal that can be opened but not dismissed
 /// froze this editor once already.</para></summary>
 public partial class ConversationNodeDialog : Window
 {

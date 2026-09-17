@@ -45,8 +45,8 @@ public static class GameIcon
         "key", "shield", "star", "spark", "flame", "clock", "note", "dice", "shop",
     ];
 
-    /// <summary>Whether a game may name this glyph. Blank is true: no icon at all is what most of what
-    /// a game declares wants, so it cannot be the answer that fails.</summary>
+    /// <summary>Whether a game may name this glyph. Blank is true: most of what a game declares
+    /// wants no icon at all, so it cannot be the answer that fails.</summary>
     public static bool IsOffered(string? icon) =>
         string.IsNullOrEmpty(icon) || Offered.Contains(icon, StringComparer.Ordinal);
 

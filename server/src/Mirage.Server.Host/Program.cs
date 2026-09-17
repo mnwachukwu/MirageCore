@@ -52,13 +52,13 @@ SeedDeploy.SeedFileIfAbsent(ServerConfigStore.ShippedPath, ServerConfigStore.Def
 SeedDeploy.SeedFileIfAbsent(AppSettingsStore.ShippedPath, AppSettingsStore.DefaultPath);
 
 // Serilog's file sinks carry RELATIVE paths ("logs/server-.log") that an operator edits by hand, so the
-// working directory is what decides where the logs land. It is the state dir for the same reason as
+// working directory decides where the logs land. It is the state dir for the same reason as
 // above. Shipped content is read through AppContext.BaseDirectory explicitly and is unaffected.
 Directory.SetCurrentDirectory(stateRoot);
 
 // ── Operator settings ─────────────────────────────────────────────────────────
 // Read before anything else, because the language it carries decides what every line below is written
-// in — including the complaint about the file itself, which is why THAT one is in English.
+// in — including the complaint about the file itself, so THAT one is in English.
 // A bad config never blocks a boot: the server runs on stock settings and says so.
 // --config points at another file, so a second server can run from this install without disturbing the
 // one an operator configured. See StartupArgs.
@@ -181,7 +181,7 @@ var host = Host.CreateDefaultBuilder(args)
         PacketSerializer.Registry = registry.Packets;
 
         // Registered like the two above: systems take it as an optional parameter defaulting to
-        // ServerConfig.Default, so this line is what makes the FILE take effect.
+        // ServerConfig.Default, so this line puts the FILE into effect.
         services.AddSingleton(serverConfig);
 
         // World state (all mutable game arrays)

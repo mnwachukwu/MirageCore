@@ -27,7 +27,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
             ? WarpLinks.InboundTo(row.Index, ReadableMaps())
             : [];
 
-    /// <summary>Arrivals on the plane being authored, which is what the canvas marks.</summary>
+    /// <summary>Arrivals on the plane being authored, which the canvas marks.</summary>
     public IReadOnlyList<InboundWarp> InboundWarpsOnActiveLayer =>
         [.. InboundWarps.Where(w => w.Layer == SelectedAttributeLayer)];
 

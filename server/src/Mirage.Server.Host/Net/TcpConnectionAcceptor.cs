@@ -286,7 +286,7 @@ public sealed class TcpConnectionAcceptor : IDisposable
     /// holds.</para>
     ///
     /// <para>⚠ A blank slot is left out. Record families are padded to their limit, and a list of
-    /// twenty classes where seventeen have no name is a screen nobody can use.</para></summary>
+    /// twenty classes where seventeen have no name is unusable.</para></summary>
     private IReadOnlyList<CreationChoice> Asked()
     {
         var asked = _registry.CreationChoices.Choices;
@@ -349,7 +349,7 @@ public sealed class TcpConnectionAcceptor : IDisposable
             if (slot == 0)
             {
                 // Queued and refused are different events and the log says which. They read the same from
-                // here only because the second is what the first turns into when the line is also full.
+                // here only because the first turns into the second when the line is also full.
                 if (_config.Queue.IsEnabled)
                     LocalizedLog.Info(_logger, ServerStrings.Net_PlayerQueued, ("Ip", remoteIp));
 

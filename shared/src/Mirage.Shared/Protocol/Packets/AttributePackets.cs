@@ -110,8 +110,8 @@ public sealed record DisplayFieldsPacket : IPacket
 /// S→C, once per session: what this game lets the player do.
 ///
 /// <para><b>A caption and an id, and nothing else.</b> The client offers the label where the surface
-/// says and sends the id back when it is picked. No behavior crosses the wire, which is what lets a
-/// stock client offer a verb it has never heard of without anything being deployed beside it.</para>
+/// says and sends the id back when it is picked. No behavior crosses the wire, so a stock client
+/// can offer a verb it has never heard of without anything being deployed beside it.</para>
 ///
 /// <para>A world whose game declares none sends an empty list, and every menu holds only Core's own
 /// items.</para>
@@ -144,7 +144,7 @@ public sealed record GameActionsPacket : IPacket
 /// <summary>
 /// C→S: the player picked one of the game's own actions.
 ///
-/// <para>The square is what the client was pointing at, named the way every other placed thing is. How
+/// <para>The square names where the client was pointing, the way every other placed thing is named. How
 /// far a game's verb reaches is the game's question — Core does not know what the verb is, so it cannot
 /// know what distance would be reasonable for it.</para>
 ///

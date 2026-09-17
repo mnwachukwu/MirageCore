@@ -14,7 +14,7 @@ namespace Mirage.Shared.Extensibility;
 /// </summary>
 public static class HotkeyBar
 {
-    /// <summary>No bar at all, which is what a game that says nothing gets.</summary>
+    /// <summary>No bar at all, which a game that says nothing gets.</summary>
     public const int None = 0;
 
     /// <summary>The most slots a game may ask for.

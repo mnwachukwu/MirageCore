@@ -72,7 +72,7 @@ files.
 A pool is two numbers, and only one of them is really stored. The ceiling is derived — the
 formula in `stats.cm`, recomputed whenever anything it reads changes — and it is carried as an
 attribute only because the CLIENT draws the bars from it and cannot run a formula. A stored maximum is
-how the two drift apart, and a character whose maximum disagrees with their level is a bug nobody sees
+how the two drift apart, and a character whose maximum disagrees with their level stays wrong
 until they heal.
 
 ### The keys
@@ -96,8 +96,7 @@ there are none. A **page of the spellbook** is bound by right-clicking its row, 
 with `book.Hotkeys(Book.Cast)`; firing it prepares that page and throws it, so casting a particular
 spell is one press rather than two.
 
-⚠ Casting from a slot changes what is prepared, because preparing is what the original made you do
-first. The slot is a shortcut through both steps, not a second way to cast.
+⚠ Casting from a slot changes what is prepared, because the original made you prepare first. The slot is a shortcut through both steps, not a second way to cast.
 
 ⚠ Binding E takes the engine's reach key outright. That is the engine's own rule and it is
 deliberate: sharing a key between a game's verb and Core's reaching is worse than taking it. But
@@ -199,12 +198,12 @@ player was shown rather than nearly agreeing.
 
 The NPC roles live on the quest, not on the creature. A quest names who offers it and who takes
 it back, so adding one is a row and touches nothing else — and a creature can give as many quests as an
-author likes without ever being edited. `prereq` points at another quest, and that is all a
-chain is.
+author likes without ever being edited. A chain is nothing more than `prereq` pointing at another
+quest.
 
 Three families again: the quest, a row per **goal**, and a row per **class gate**. Killing is the only
 thing the original ever counted, so it is the only goal kind here — fetching and exploring were
-declared in MSR and never wired, and a goal nothing advances is a quest nobody can finish.
+declared in MSR and never wired, and a goal nothing advances leaves a quest unfinishable.
 
 ⚠ **A kill counts from `Fight.Slain`**, which is the one place a player kills a creature. A swing and a
 spell both end there, so neither can be the one that was forgotten.
@@ -214,8 +213,8 @@ fact about the character belongs on the character — and the panel shows the ei
 whenever they change.
 
 **A conversation can open it.** A choice names a game's verb by its id, and picking one now opens
-whatever panel that verb opens, so a giver's own authored dialogue can end in "tell me more" and the
-journal is what comes up.
+whatever panel that verb opens, so a giver's own authored dialogue can end in "tell me more" and
+the journal comes up.
 
 ### What the port could not carry
 
@@ -229,7 +228,7 @@ Each of these is an engine gap rather than something the port chose to skip:
 | Local midnight | every boundary here — a day, a week, a guild's tax, a quest's cadence — turns over at UTC midnight. The original used the server's own local midnight. |
 | Dropping a bag on death | the original scattered inventory on a death, per slot and per quantity. Core offers no way to read a bag or put something on the ground, so nothing here drops anything. |
 | Monitors and above out of PvP | an account's access level is not something a script can ask about. |
-| Two of the five guild privileges | what a creature drops and how a swing wears a weapon are the engine's. A rule can raise a drop rate or skip a point of wear only if it is the thing doing the dropping and the wearing. The other three — bonus experience, the vault trickle, and the tax gate on all of them — are ported. |
+| Two of the five guild privileges | what a creature drops and how a swing wears a weapon are the engine's. A rule can raise a drop rate or skip a point of wear only if it does the dropping and the wearing itself. The other three — bonus experience, the vault trickle, and the tax gate on all of them — are ported. |
 | Territory and seasons | a contest needs a walkable graph across map seams, capture points standing on tiles, NPC suppression over a set of maps, and a contested-zone overlay the client draws. None of those is reachable from a script, and none is a small seam. |
 
 ## Where it is up to

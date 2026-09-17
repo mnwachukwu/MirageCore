@@ -177,7 +177,7 @@ shared model Combat
     # ── The sky tearing a blow off course ─────────────────────────────────────
     #
     # ⚠ Rolled on the attacker's map and before any reaction, so a blow the wind took never arrived
-    # and cost the defender nothing. The order is what separates this from the three above.
+    # and cost the defender nothing. The order separates this from the three above.
 
     public integer WindMissPercent = 10;
 

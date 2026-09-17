@@ -52,8 +52,8 @@ public sealed partial class ShopRowViewModel : ObservableObject, ILockableRow
     /// <summary>True when the sales table has no rows.</summary>
     public bool HasNoSales => Sales.Count == 0;
 
-    /// <summary>"N items, worth X gold" — the running total, because a storefront's job is a price list and
-    /// the sum is the thing that is hard to eyeball down a column of forty.</summary>
+    /// <summary>"N items, worth X gold" — the running total. A storefront prices a column of forty
+    /// items, and the sum is hard to eyeball down one.</summary>
     public string SalesSummary
     {
         get
@@ -66,7 +66,7 @@ public sealed partial class ShopRowViewModel : ObservableObject, ILockableRow
     }
 
     // Non-blocking authoring guards, mirroring the NPC drop table's. Neither is an error — the record's
-    // Normalize drops both on load — but both are silent, and silent is what makes them worth surfacing.
+    // Normalize drops both on load — but both are silent, so they are worth surfacing here.
     /// <summary>Warning text for a sales table that lists the same item twice, or lists an unpriced one.</summary>
     public string SalesWarning
     {

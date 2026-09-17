@@ -136,7 +136,7 @@ public sealed class ModerationSystem
         return LiftOutcome.Lifted;
     }
 
-    /// <summary>Lifts a mute on the account. <paramref name="clearedLive"/> is what
+    /// <summary>Lifts a mute on the account. <paramref name="clearedLive"/> carries what
     /// <see cref="ClearLiveMute"/> returned — an online session can be muted while the file says
     /// otherwise, so a lift is real if EITHER was set.</summary>
     public async Task<LiftOutcome> UnmuteAsync(string login, bool clearedLive)

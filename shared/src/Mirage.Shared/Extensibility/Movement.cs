@@ -19,7 +19,7 @@ namespace Mirage.Shared.Extensibility;
 public interface IMovePolicy
 {
     /// <summary>Whether they can still manage a run. Yield a reason to bring them down to a walk, or
-    /// nothing to let the run stand. Every policy is asked and the first refusal is the answer.
+    /// nothing to let the run stand. Every policy is asked and the first refusal stands.
     ///
     /// <para>Asked before the step is paid for, so a body brought down to a walk is also charged the
     /// walking pace rather than the running one.</para></summary>

@@ -13,8 +13,8 @@ namespace Mirage.Client.Shell.Config;
 /// assigned positionally at the single call site, where transposing (say) the window X and Y — or the
 /// music volume and the menu track — would have compiled cleanly and been wrong.</para>
 ///
-/// <para>Deliberately mutable: <c>ReadConfig</c> fills it in place as it walks the JSON, which is what
-/// lets a value that fails to parse leave the remaining keys alone rather than discarding the whole file.
+/// <para>Deliberately mutable: <c>ReadConfig</c> fills it in place as it walks the JSON, so a
+/// value that fails to parse leaves the remaining keys alone rather than discarding the whole file.
 /// Nothing writes to it after startup.</para>
 /// </summary>
 public sealed record ClientSettings

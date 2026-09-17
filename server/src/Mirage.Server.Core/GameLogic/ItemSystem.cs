@@ -193,8 +193,8 @@ private readonly WorldEvents _events;
 
     /// <summary>Give <paramref name="count"/> of an item, however that item is held: a currency takes the
     /// whole amount into one stack, everything else takes a slot per copy.
-    /// <para><see cref="GiveItem"/> adds its value to a SINGLE slot, which is what a stack wants and what a
-    /// gem does not — three gems handed over that way become one slot claiming a quantity of three, a shape
+    /// <para><see cref="GiveItem"/> adds its value to a SINGLE slot, which suits a stack and not a
+    /// gem — three gems handed over that way become one slot claiming a quantity of three, a shape
     /// nothing else in the game reads. Returns how many actually landed, which is fewer than asked when the
     /// bag fills.</para></summary>
     public int GiveItems(int index, int itemNum, int count)

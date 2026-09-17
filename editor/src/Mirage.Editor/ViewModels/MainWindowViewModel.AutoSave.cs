@@ -8,8 +8,8 @@ namespace Mirage.Editor.ViewModels;
 /// <summary>
 /// Auto-save: one ticker for the whole app, and a last-saved stamp per editor.
 ///
-/// <para>One ticker rather than a timer per editor, and the stamps are what make that work — an editor
-/// you navigated away from still reaches its interval and still gets written. A per-editor timer that
+/// <para>One ticker rather than a timer per editor, with a stamp per section: an editor you
+/// navigated away from still reaches its interval and still gets written. A per-editor timer that
 /// only ran while its section was showing would never fire for background work at all, and would restart
 /// from zero every time you switched back, which on a five-minute interval means most sessions never
 /// auto-save anything.</para>

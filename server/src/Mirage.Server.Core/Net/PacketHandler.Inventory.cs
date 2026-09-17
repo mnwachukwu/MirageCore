@@ -373,7 +373,7 @@ public sealed partial class PacketHandler
     ///
     /// <para>Read from this server's own record of the selection rather than from the packet, so an
     /// aimed verb lands on the body the player actually chose. Self is an ordinary selection here and
-    /// not a special case, which is what makes casting on yourself need nothing of its own.</para>
+    /// not a special case, so casting on yourself needs nothing of its own.</para>
     ///
     /// <para>A creature is named by where it SPAWNS for the same reason it is everywhere else: a body
     /// that has wandered onto the next map is still itself.</para></summary>

@@ -31,8 +31,8 @@ public enum ConditionTest : byte
 /// crosses: a key, a comparison, and a number.</para>
 ///
 /// <para><b>It reads the ACTOR, never the target.</b> "Only while holding a satchel" is about the person
-/// clicking. Whether the thing they clicked is a valid target is a question about a verb Core has no
-/// name for, and belongs to the game's handler.</para>
+/// clicking. Whether the thing they clicked is a valid target turns on a verb Core has no name
+/// for, and belongs to the game's handler.</para>
 ///
 /// <para>🔴 <b>Both sides ask the same question with the same code.</b> The client grays the entry out
 /// and the server refuses the invoke, and they agree because <see cref="Holds"/> is the only

@@ -159,7 +159,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
 
         var target = RowFor(newId);
         // Online, a neighbor that never loaded has a placeholder record whose size means nothing. The
-        // eager load above is what usually settles this; anything still unloaded is left alone.
+        // eager load above usually settles this; anything still unloaded is left alone.
         if (target is null || (_data.IsOnline && !target.IsLoaded)) return false;
 
         var mine = new MapSize(SelectedMap.Record.Width, SelectedMap.Record.Height);

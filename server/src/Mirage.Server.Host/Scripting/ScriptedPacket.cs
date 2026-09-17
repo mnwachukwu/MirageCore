@@ -11,12 +11,12 @@ namespace Mirage.Server.Host.Scripting;
 ///
 /// <para>🔴 <b>A packet does not need a compiled type.</b> The registry takes a PARSE DELEGATE rather
 /// than a type — <c>Register&lt;T&gt;</c> is only the convenient overload for a shape somebody compiled
-/// — so a command nobody built an assembly for reads perfectly well into the bag below. That is what
-/// lets a script own a message of its own without a rebuild.</para>
+/// — so a command nobody built an assembly for reads perfectly well into the bag below, and a
+/// script can own a message of its own without a rebuild.</para>
 ///
 /// <para>The values arrive in the shapes the MODEL declared, because a line is text either way and
 /// something has to say which field is a number. A field the line leaves out is absent rather than
-/// zero, which <c>Has</c> is what tells apart.</para>
+/// zero, and <c>Has</c> tells the two apart.</para>
 /// </summary>
 public sealed record ScriptedPacket(string Cmd, AttributeBag Values) : IPacket
 {
@@ -44,7 +44,7 @@ public sealed record ScriptedPacket(string Cmd, AttributeBag Values) : IPacket
         catch (JsonException)
         {
             // A malformed line is a line, not a crash: the reader answers null and the caller drops
-            // it, which is what every other parse in the registry does.
+            // it, as every other parse in the registry does.
             return null;
         }
     }

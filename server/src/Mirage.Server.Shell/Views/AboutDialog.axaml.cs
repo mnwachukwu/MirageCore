@@ -29,7 +29,7 @@ public partial class AboutDialog : Window
     /// <summary>Append "update available: X" to the version line when a newer build has been released.
     ///
     /// <para>The check belongs to THIS window, not to the console command. Velopack's mainExe for the
-    /// server package is this executable, so the shell is what an update replaces; and the console's
+    /// server package is this executable, so an update replaces the shell; and the console's
     /// <c>/update</c> needs a running host, and in remote mode answers about the machine it is attached
     /// to rather than the one this window is running on.</para>
     ///

@@ -122,7 +122,7 @@ shared model Ledger
 
     # ⚠ Through one of the guild's OWN members, because the engine's vault log records who spent
     # and a bill with nobody against it is money the guild cannot account for. A guild with nobody
-    # online is skipped rather than forced - which is what happens every other night too, since this
+    # online is skipped rather than forced - as happens every other night too, since this
     # settlement is walked from a member's tick and a guild nobody visits waits for one.
     integer function SettleThrough(integer guild, integer day)
         loop each member in World.GuildMembers(guild)
@@ -207,7 +207,7 @@ shared model Ledger
     end function
 
     # Whole or nothing. A guild that cannot pay loses its perks and owes nothing afterwards — there
-    # are no back taxes, and one week's payment is what brings the perks back.
+    # are no back taxes, and one week's payment brings the perks back.
     public function Tax(Player who, integer guild, integer day)
         integer level = Guilds.LevelOf(guild);
         integer tax = Ledger.WeeklyTax(level);

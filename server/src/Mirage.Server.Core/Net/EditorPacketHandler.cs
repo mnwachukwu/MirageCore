@@ -783,8 +783,8 @@ public sealed partial class EditorPacketHandler
         });
     }
 
-    // Maps answer a slice at a time: a thousand of them in one frame is a frame nothing should be asked to
-    // hold, and a caller reading slices has something honest to count.
+    // Maps answer a slice at a time: a thousand of them in one frame is more than anything should
+    // be asked to hold, and a caller reading slices has something honest to count.
     private const int MapFetchChunk = 50;
 
     private void HandleEditorRequestAllMaps(int editorIndex, EditorRequestAllMapsPacket p)

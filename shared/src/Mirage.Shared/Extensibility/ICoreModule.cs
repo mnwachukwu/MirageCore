@@ -133,7 +133,7 @@ public interface ICoreBuilder
     void AddMovePolicy(IMovePolicy policy);
 
     /// <summary>What this game says about using something out of a bag. Every policy must allow it; the
-    /// first refusal stops the use and is the answer.</summary>
+    /// first refusal stops the use and stands.</summary>
     void AddUsePolicy(IUsePolicy policy);
 
     /// <summary>What this game says about a slain creature's drops — how often a line lands, how much of

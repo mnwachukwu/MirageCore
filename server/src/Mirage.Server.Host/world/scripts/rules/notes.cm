@@ -37,7 +37,7 @@ shared model Notes
             yield;
         end if
 
-        # A field the line left out is ABSENT rather than zero, and Has is what tells the two apart.
+        # A field the line left out is ABSENT rather than zero, and Has tells the two apart.
         # Here the difference does not matter and one is a sensible default, so it is not asked.
         integer many = values.Number("howMany");
 
@@ -78,7 +78,7 @@ shared model Notes
         Notes.Write(who);
     end function
 
-    # Two surveyors comparing counts. Both are told, which is the point of it — and the other body is
+    # Two surveyors comparing counts. Both are told on purpose — and the other body is
     # reached through the name the verb arrived with.
     function Against(Player who, string on)
         Player? them = who.Find(on);

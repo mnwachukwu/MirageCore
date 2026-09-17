@@ -38,8 +38,8 @@ public sealed class JsonPersistenceService : IPersistenceService
     /// market listings, trade journals, seasons, dropped items, the name registry, the ban lists and the
     /// clock. It belongs to one server on one machine and is meaningless beside a different world.</para>
     ///
-    /// <para>Keeping them apart is what makes a world a thing you can zip up and hand over, and what stops
-    /// a copied world from carrying somebody's password hashes with it.</para></summary>
+    /// <para>Keeping them apart lets a world be zipped up and handed over, and stops a
+    /// copied world carrying somebody's password hashes with it.</para></summary>
     /// <param name="limits">How far each family is padded on load — the same object
     /// <see cref="World.GameWorld"/> sizes its arrays from, so the folder and the world always agree on how
     /// many slots exist.</param>
@@ -460,8 +460,8 @@ public sealed class JsonPersistenceService : IPersistenceService
     /// <para><b>A slot with no file is not written.</b> The array arrives here already filled with blank
     /// records, so writing one out buys the server nothing and costs a file per empty slot — a world
     /// holding twenty authored records became some five thousand files the first time a server opened
-    /// it. A world folder is a thing one person hands another, and it should be the handful of files it
-    /// actually is.</para>
+    /// it. A world folder gets handed from one person to another, and it should be the handful of
+    /// files it actually is.</para>
     ///
     /// <para>The editor reads the same folders and has always skipped what is not there, so a world that
     /// was materialized by an older build opens exactly the same way as one that was not.</para></summary>
@@ -512,7 +512,7 @@ public sealed class JsonPersistenceService : IPersistenceService
     //
     // Folder, filename and padding all come off the family the module declared, so these two methods
     // serve every family a game will ever add. The records are bags: the engine stores what it is given
-    // and hands it back, and the module's own code is what makes any of it mean something.
+    // and hands it back; the module's own code gives it meaning.
 
     public async Task<(AttributeBag[] records, int loaded)> LoadAllModuleRecordsAsync(RecordFamily family, int limit)
     {
@@ -814,7 +814,7 @@ public sealed class JsonPersistenceService : IPersistenceService
         return bans.ToList();
     }
 
-    // Callers already hold _banLock. Prefers the cache and falls back to the file, which is the shape
+    // Callers already hold _banLock. Prefers the cache and falls back to the file, the shape
     // BanAsync had inline before UnbanAsync needed the same thing.
     private async Task<List<BanEntry>> ReadBansUnlockedAsync()
     {

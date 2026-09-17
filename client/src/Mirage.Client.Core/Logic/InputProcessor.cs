@@ -15,7 +15,7 @@ public static class InputProcessor
     /// <para><paramref name="onTick"/> gates the ACTION sends only — attack and pick-up — so a rapid tap
     /// cannot fire faster than the tick rate. Movement is deliberately outside it: a step already waits for
     /// the previous slide to finish, which is a finer and more accurate limit than a fixed tick, and the
-    /// server's own move-credit budget is what actually bounds the pace.</para>
+    /// server's own move-credit budget bounds the pace in the end.</para>
     ///
     /// <para>🔴 Gating movement on the tick quantises every step UP to the next tick boundary. At the base
     /// 200 ms tile that is invisible — it lands exactly on one — but any faster run finishes its slide
@@ -65,7 +65,7 @@ public static class InputProcessor
     /// <summary>The beat an arrival owes before the next step may be taken.
     ///
     /// <para>🔴 One figure, not a step at the current pace. What the beat has to outlast is a TAP — about a
-    /// tenth of a second — and that is the same length whether the player is walking or running. Deriving
+    /// tenth of a second — the same length whether the player is walking or running. Deriving
     /// it from pace makes arriving at a walk feel different from arriving at a run for no reason the player
     /// can see, and a walk step (400 ms) is long enough that the pause reads as the game hanging.</para>
     ///
@@ -249,8 +249,8 @@ public static class InputProcessor
         }
 
         // 🔴 <b>The intent goes up, the PACE comes back.</b> A run is a game's to refuse, so the
-        // server is told what was asked for however winded this body is - that is what keeps it asking
-        // its own rule, and what lets it say the answer has changed. What the prediction runs at is the
+        // server is told what was asked for however winded this body is, so it keeps asking its own
+        // rule and can say the answer has changed. What the prediction runs at is the
         // pace that was last allowed, or a step lands sooner than the server will accept one and the
         // correction reads as being snapped backwards.
         var asked = input.Running ? MovementType.Running : MovementType.Walking;

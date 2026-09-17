@@ -158,8 +158,8 @@ public sealed partial class NpcAiSystem : GameSystem
         // No usable planned step (blocked this tick, or the target is unreachable).  Best-effort toward
         // it.  Suppress ONLY the exact reversal of the last step, and ONLY when the target is unreachable
         // (no BFS path) AND we've stalled — the wall-pacing case, where mirroring a sealed moving target
-        // would otherwise pace back and forth.  A REACHABLE target is never held: that is what stops a
-        // chaser freezing on the wrong side of an idle player until it takes a step.
+        // would otherwise pace back and forth.  A REACHABLE target is never held, so a chaser never
+        // freezes on the wrong side of an idle player until it takes a step.
         Direction? avoid = step is null && stalled && mn.ChaseHasLastStep ? OppositeDir(mn.ChaseLastStepDir) : null;
         if (TryBestEffortWalkToward(mapNum, slot, mn, targetMap, targetX, targetY, out Direction facing, avoid))
         {

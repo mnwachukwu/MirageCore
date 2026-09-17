@@ -84,7 +84,7 @@ public readonly record struct LightSourceCmd(
     /// <summary>The same, traced from the tile a mid-step emitter is moving INTO, with
     /// <see cref="ReachBlend"/> saying how far between the two it is. Reach is answered per tile, so without
     /// this the whole shadow pattern changes in one jump each time an emitter crosses a border; blending the
-    /// two makes it continuous. Null whenever the emitter is standing still, which is what keeps the second
+    /// two makes it continuous. Null whenever the emitter is standing still, which keeps the second
     /// trace something only moving things pay for.</summary>
     byte[]? ReachInto = null,
     float IntoScreenX = 0f, float IntoScreenY = 0f,

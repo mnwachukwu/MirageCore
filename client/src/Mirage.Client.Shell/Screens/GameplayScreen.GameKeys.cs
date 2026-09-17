@@ -97,7 +97,7 @@ public sealed partial class GameplayScreen
             if (!action.When.Holds(
                 _ctx.State.AttributesOf(EntityHandle.ForPlayer(_ctx.State.MyIndex)))) return;
 
-            // A verb with nowhere to point still runs: the square is what the server is TOLD, and a game
+            // A verb with nowhere to point still runs: the square is all the server is TOLD, and a game
             // whose rule does not care about the place is an ordinary game. Facing the edge of the world
             // is the only way this fails, and refusing the press there would be a shortcut that stops
             // working in a corner.
@@ -130,7 +130,7 @@ public sealed partial class GameplayScreen
     }
 
     /// <summary>Which creature is standing on that square, or 0 for an empty one. The map's own slot,
-    /// which is what an invoke carries - the server turns it into an identity before a game sees
+    /// which an invoke carries - the server turns it into an identity before a game sees
     /// it.</summary>
     private int NpcSlotOn(int mapNum, int tileX, int tileY)
     {

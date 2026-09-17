@@ -60,8 +60,9 @@ public sealed class GameLoop : IDisposable
     // Mailbox maturity sweep — flips in-transit P2P mail to delivered on both ends. Coarse (10-15 min delays).
     private const int MailSweepIntervalMs = 5_000;
 
-    // The base beat. Module work counts in TICKS rather than milliseconds, so this is what one tick IS,
-    // and it is the shortest interval above so module work can run as often as anything Core does.
+    // The base beat. Module work counts in TICKS rather than milliseconds, so this defines one
+    // tick, and it is the shortest interval above so module work can run as often as anything
+    // Core does.
     private const int ModuleIntervalMs = NpcMoveIntervalMs;
     private const int MaxWaitMs = 250;   // cap the queue wait so shutdown stays responsive
 

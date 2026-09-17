@@ -134,7 +134,7 @@ public sealed partial class GameplayScreen : IGameScreen
     //
     // The panel's POLICY — config key, movement lock, close-on-leave, escape participation — is not
     // here. It needs none of the frame, so it lives in PanelPolicies where a headless test can read
-    // it, and this record exposes it through Policy rather than restating it. That split is what makes
+    // it, and this record exposes it through Policy rather than restating it. That split leaves
     // the quirks in that table assertable (see PanelPolicyTests).
     //
     // Before the registry, these facts were spread across twelve separate switches and boolean chains

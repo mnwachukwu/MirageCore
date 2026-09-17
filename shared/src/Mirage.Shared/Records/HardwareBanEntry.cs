@@ -25,7 +25,7 @@ public sealed record HardwareBanList
 /// Nothing here reveals a hardware fact, and only banned machines are ever written down: an ordinary
 /// player's key exists in memory for the length of their session and nowhere else.</para>
 ///
-/// <para><see cref="Login"/> is who was signed in when the ban landed. It is what an operator lifts by,
+/// <para><see cref="Login"/> is who was signed in when the ban landed. An operator lifts by it,
 /// since the key is 64 hex characters and means nothing to a human.</para>
 /// </summary>
 public sealed record HardwareBanEntry

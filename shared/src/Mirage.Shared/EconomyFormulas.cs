@@ -10,7 +10,7 @@ namespace Mirage.Shared;
 /// whole point of the file.  A price fixed as a constant, or derived from item <c>Power</c>, cannot stay
 /// meaningful across a progression: income over the tier range spans about 137,000x where <c>Power</c>
 /// spans 65x and a constant spans 1x, so anything priced off either is significant at the bottom and free
-/// by the middle.  Quoting every sink as a share of the same curve is what keeps them in step when any one
+/// by the middle.  Quoting every sink as a share of the same curve keeps them in step when any one
 /// of them is retuned.</para>
 ///
 /// <para><b>The curve's shape is a default, not a law.</b>  Its two coefficients were fitted to one set of
@@ -71,7 +71,7 @@ public static class EconomyFormulas
     ///
     /// <para>How many pieces a full kit is depends on how many slots the game declared, so the total is a
     /// game's to check rather than a number in here: at four slots this puts a kit at a tenth of the rung,
-    /// which is the shape this figure was chosen against.</para></summary>
+    /// the shape this figure was chosen against.</para></summary>
     private const double EquipmentTierShare = 0.025;
 
     /// <summary>Share of ONE tier's income that a potion costs.  Consumables are priced per tier rather
@@ -106,8 +106,8 @@ public static class EconomyFormulas
     public static int ItemValue(ItemRecord item)
     {
         // None is in this list for the OPPOSITE reason to the other two. Currency and Key have no worth to
-        // derive; None is what TREASURE is typed as, and its worth is the entire point — it is simply
-        // authored rather than derived, which is exactly the gap Price exists to fill.
+        // derive; TREASURE is typed as None, and its worth is authored rather than derived — exactly the
+        // gap Price exists to fill.
         if (item.Type is ItemType.Currency or ItemType.Key or ItemType.None) return 0;
 
         if (ItemRecord.IsEquipment(item.Type))
@@ -270,8 +270,8 @@ public static class EconomyFormulas
 
     // ── The caster/warrior upkeep anchor ─────────────────────────────────────
     // A warrior's cost of fighting is repair. A caster's is reagents, at 1 gold each. For the two to cost
-    // the same to play, reagents-per-cast has to equal the gold a warrior burns per swing — and that is a
-    // number only this class knows, since it falls out of RepairCost.
+    // the same to play, reagents-per-cast has to equal the gold a warrior burns per swing, a number
+    // only this class knows, since it falls out of RepairCost.
     //
     // Parity has to be DERIVED from the repair rule here, never restated next to it. A restated copy goes
     // stale the moment repair is retuned, and it fails silently — the two sides can drift from 1.3x apart

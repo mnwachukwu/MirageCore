@@ -8,7 +8,7 @@ namespace Mirage.Editor.ViewModels;
 /// <summary>
 /// A record's editing form, built from what the server said the family looks like.
 ///
-/// <para><b>This is the whole point of the schema.</b> One editor build authors any world: it learns a
+/// <para><b>The schema exists for this.</b> One editor build authors any world: it learns a
 /// family's fields from the server holding it rather than from what it was compiled against, so a game
 /// that declares its records gets an authoring page without shipping a view.</para>
 ///

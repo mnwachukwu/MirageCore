@@ -61,7 +61,7 @@ public static partial class PacketBuilder
     /// <param name="who">Whose attributes these are.</param>
     /// <param name="bag">The body's values.</param>
     /// <param name="schema">The loaded game's declarations. <see cref="Extensibility.AttributeSchema.Empty"/>
-    /// yields null for every body, which is what Core alone does.</param>
+    /// yields null for every body, as Core alone does.</param>
     /// <param name="viewer">How close the receiver stands: <see cref="AttributeVisibility.Owner"/> for
     /// the body's own player, <see cref="AttributeVisibility.Viewport"/> for anyone who can see it.</param>
     /// <param name="keys">Which keys changed, or null for all of them. A changed key the viewer may not

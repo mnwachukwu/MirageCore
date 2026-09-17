@@ -17,9 +17,9 @@ namespace Mirage.Client.Core.Diagnostics;
 /// debugger attached.</para>
 ///
 /// <para><b>The trail matters as much as the stack.</b> A stack trace says where the process died, not
-/// what the player was doing when it did. Which map, which warp, which packet went missing is what
-/// identifies a bug — and those lines are there when nothing crashes at all, which is the shape most
-/// bugs take.</para>
+/// what the player was doing when it did. Which map, which warp, which packet went missing is
+/// what identifies a bug — and those lines are there when nothing crashes at all, which is how
+/// most bugs arrive.</para>
 ///
 /// <para>Static, like the editor's, because the seams worth recording are spread through packet handling,
 /// map loading and the game loop, and threading a logger to each would be a larger change than the thing
@@ -45,8 +45,8 @@ public static class ClientLog
 
     /// <summary>Opens the sink in <paramref name="directory"/> and records the session header.
     ///
-    /// <para>A log that cannot open must not stop the game starting: the client then runs unlogged, which
-    /// is what it does on a read-only or missing directory.</para></summary>
+    /// <para>A log that cannot open must not stop the game starting: the client then runs unlogged,
+    /// as it does on a read-only or missing directory.</para></summary>
     public static void Initialize(string directory, LogEventLevel level = LogEventLevel.Information,
                                   int retainedFiles = 10)
     {
@@ -72,8 +72,8 @@ public static class ClientLog
                     retainedFileCountLimit: retainedFiles,
                     shared: true,
                     outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}"))
-                // Not async: it is an in-memory enqueue, and the console showing a line the instant it
-                // happened is the point of having it.
+                // Not async: it is an in-memory enqueue, and the console is there to show a line the
+                // instant it happened.
                 .WriteTo.Sink(Console)
                 .CreateLogger();
         }

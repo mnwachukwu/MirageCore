@@ -40,7 +40,7 @@ public sealed record EditorRequestAllRecordsPacket : IPacket
 ///
 /// <para>The bag REPLACES what the slot held rather than merging into it, so clearing a field in the
 /// editor actually clears it. An editor that means to keep a key it does not show must send it back,
-/// which is what the request/apply pair exists for.</para></summary>
+/// which the request/apply pair exists for.</para></summary>
 public sealed record EditorSaveRecordPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.EditorSaveRecord;

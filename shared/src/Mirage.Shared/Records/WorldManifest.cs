@@ -100,7 +100,7 @@ public sealed record WorldManifest
     ///
     /// <para>A world that names none offers <see cref="CharacterAppearance.DefaultSet"/> — one look —
     /// so a brand-new world is playable before anybody has authored a roster. Naming even one replaces
-    /// that entirely: the list is what the author decided, never a floor the engine adds to.</para></summary>
+    /// that entirely: the list is the author's, never a floor the engine adds to.</para></summary>
     public IReadOnlyList<CharacterAppearance> Appearances
     {
         get;
@@ -128,7 +128,7 @@ public sealed record WorldManifest
     /// <summary>The record families this world holds, beyond the ones the engine ships with.
     ///
     /// <para><b>A record of what the world was authored against, not a declaration.</b> A compiled module
-    /// is what makes a family exist; this is what a world folder carries so it can be opened by an editor
+    /// makes a family exist; a world folder carries this so it can be opened by an editor
     /// that does not have that module — which is the difference between a world you can hand somebody and
     /// one that only opens on the machine that built it.</para>
     ///
@@ -141,8 +141,8 @@ public sealed record WorldManifest
     /// <summary>Where a character may wear something in this world.
     ///
     /// <para>A record of what the world was authored against, like <see cref="Families"/>: a compiled
-    /// module is what makes a slot exist, and this is what lets an editor open the folder without having
-    /// that module. Empty for a world where nothing is worn.</para></summary>
+    /// module makes a slot exist, and this lets an editor open the folder without having that
+    /// module. Empty for a world where nothing is worn.</para></summary>
     public IReadOnlyList<Extensibility.EquipSlot> EquipSlots { get; init; } = [];
 
     /// <summary>This world's families as a schema, Core's first and then its own — the same shape a

@@ -56,7 +56,7 @@ public sealed class ItemRecord
     ///
     /// <para>The engine reads it for exactly one thing: what repairing it costs, through
     /// <see cref="EconomyFormulas.RepairCost"/>. What it means BESIDES that is a game's — damage, a
-    /// requirement to wear it, a tier, or nothing at all — which is why it is one number rather than a
+    /// requirement to wear it, a tier, or nothing at all — so it is one number rather than a
     /// field per purpose.</para></summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public short Power { get; set; }
@@ -64,7 +64,7 @@ public sealed class ItemRecord
     /// <summary>Where this item sits on the progression a game defines. 0 = ungated.
     ///
     /// <para>Core reads it for ONE thing: pricing. <c>EconomyFormulas</c> quotes an item's worth against the
-    /// income expected at its tier, so a tier is what makes a derived price mean anything. A game decides
+    /// income expected at its tier, so without a tier a derived price means nothing. A game decides
     /// what a tier IS — a level, a badge, a chapter, an hour played — and what, if anything, it gates.</para>
     ///
     /// <para>Applies to anything equipped or consumed; currency and keys carry none.</para></summary>
@@ -75,8 +75,8 @@ public sealed class ItemRecord
     ///
     /// <para>Blank on anything that is not <see cref="ItemType.Equipment"/>, and blank is also what an
     /// equippable item looks like before an author has said where it goes — it simply cannot be worn
-    /// until they do. A key the loaded game does not declare behaves the same way, which is what stops a
-    /// world authored against another game's slots from being unopenable.</para></summary>
+    /// until they do. A key the loaded game does not declare behaves the same way, so a world authored
+    /// against another game's slots still opens.</para></summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public string EquipSlot { get; set; } = string.Empty;
 
@@ -87,7 +87,7 @@ public sealed class ItemRecord
     /// ItemSystem's drop paths, and <see cref="NonJunkable"/> on the shop sell path.
     ///
     /// <para><b><see cref="NonJunkable"/> is named for what the generic shop path really is:</b> a junk
-    /// dump. A vendor takes anything and pays a poor rate, which is the point — it is a floor under every
+    /// dump. A vendor takes anything and pays a poor rate on purpose: it is a floor under every
     /// drop, not a market. Blocking an item there says "this is not junk", and it covers two quite
     /// different cases. GOLD and VALOR are barred because dumping currency for a fraction of itself is
     /// nonsense. TREASURE is barred because its full worth sits in <see cref="Price"/>: left junkable it
@@ -111,7 +111,7 @@ public sealed class ItemRecord
     /// <para>SEEDED, NOT AUTHORED. A generator pass writes <see cref="EconomyFormulas.ItemValue"/> into
     /// every item, so 471 prices stay consistent with each other and with measured income without anyone
     /// typing them. The field exists so a price CAN be overridden — which is the only way to express a
-    /// treasure item, whose worth is the point rather than a function of its power and tier.
+    /// treasure item, whose worth is authored rather than derived from its power and tier.
     /// <see cref="Normalize"/> leaves it standing on every type and never recomputes one: an authored price
     /// is data, and re-seeding must not silently overwrite a deliberate override. Gold needs no type rule
     /// to stay unsellable — <see cref="EconomyFormulas.ItemValue"/> derives nothing for it, so a re-seed
@@ -143,7 +143,7 @@ public sealed class ItemRecord
     public static bool UsesVitalAmount(ItemType type) => IsConsumable(type);
 
     /// <summary>What a character wears or consumes carries a tier; currency and keys carry none. Gold is
-    /// not something you qualify for, and a key that refuses its own door is a puzzle nobody asked for.</summary>
+    /// not something you qualify for, and a key should not refuse its own door.</summary>
     public static bool UsesTier(ItemType type) => IsEquipment(type) || IsConsumable(type);
 
     /// <summary>Everything a game hangs on this item that the engine has no name for — a class gate, a

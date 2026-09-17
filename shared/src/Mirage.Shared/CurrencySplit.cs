@@ -5,11 +5,11 @@ namespace Mirage.Shared;
 ///
 /// <para>Returns one amount per recipient, in the order they were given. This decides the SHAPE of the
 /// split and nothing about who stands where — the caller orders the recipients, and keeping the
-/// arithmetic separate from that draw is what makes the arithmetic testable.</para>
+/// arithmetic separate from that draw keeps it testable.</para>
 ///
 /// <para><b>The remainder rule:</b> an even share each, then the leftover one apiece to whoever comes
 /// first. Currency is integral, so three recipients splitting ten must either lose a unit or invent
-/// one; the odd one goes to whoever the caller put first, which is why the caller decides that order
+/// one; the odd one goes to whoever the caller put first, so the caller decides that order
 /// deliberately rather than by arrival.</para>
 ///
 /// <para>It degrades correctly when the purse is smaller than the group: three among four pays three of
@@ -31,7 +31,7 @@ public static class CurrencySplit
         if (recipients <= 0 || which < 1 || which > recipients || total <= 0) return 0;
 
         // The leftover goes one apiece to whoever comes first, exactly as Divide hands it out - so the
-        // two agree position for position, and the caller's ORDER is what decides who gets the odd unit.
+        // two agree position for position, and the caller's ORDER decides who gets the odd unit.
         return total / recipients + (which <= total % recipients ? 1 : 0);
     }
 

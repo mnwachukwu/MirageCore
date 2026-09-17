@@ -81,7 +81,7 @@ public sealed record DisplayField
 
     private DisplayRow? MeterRow(AttributeBag bag, AttributeValue value)
     {
-        // A meter with no ceiling is not an empty bar, it is a bar nobody said the size of. Drawing it
+        // A meter with no ceiling is not an empty bar; nobody said what size it is. Drawing it
         // would claim the body is at zero, which is a different and wrong statement.
         if (!bag.TryGet(MaxKey, out var max)) return null;
         double ceiling = max.AsDouble();

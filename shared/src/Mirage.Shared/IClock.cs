@@ -11,7 +11,7 @@ namespace Mirage.Shared;
 ///
 /// <para><b>This is not the game loop's clock.</b> <c>Environment.TickCount64</c> remains the
 /// monotonic tick source, and is threaded through the tick paths as a <c>long now</c> parameter,
-/// which is what makes AI and combat-timer behavior testable. <see cref="IClock"/> covers only the
+/// which leaves AI and combat-timer behavior testable. <see cref="IClock"/> covers only the
 /// calendar/wall-clock reads, which have no such parameter to ride on.</para>
 /// </summary>
 public interface IClock

@@ -56,8 +56,8 @@ public sealed class DecalSystem : GameSystem
             return;
         }
 
-        // Past the cap the faintest goes, not the oldest: what a viewer would miss least is what is nearly
-        // dry, and an oldest-first rule would drop the big stain under a body that is still standing there.
+        // Past the cap the faintest goes, not the oldest: a viewer misses a nearly dry stain least,
+        // and an oldest-first rule would drop the big one under a body still standing there.
         if (field.Decals.Count >= Constants.MaxMapDecals)
         {
             int faintest = 0;

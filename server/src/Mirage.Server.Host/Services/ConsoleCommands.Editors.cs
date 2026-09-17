@@ -10,7 +10,7 @@ namespace Mirage.Server.Host.Services;
 ///
 /// <para>An editor connection is not a player connection: it holds no character and never appears in
 /// <c>/who</c>. It also outlives a change to the account behind it, so revoking someone's access leaves their
-/// open session running on the access it already has — which is what <c>/kickeditor</c> is for.</para>
+/// open session running on the access it already has, which <c>/kickeditor</c> ends.</para>
 /// </summary>
 public sealed partial class ConsoleCommands
 {

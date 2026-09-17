@@ -22,8 +22,8 @@ shared model Contest
 
     # ── When ──────────────────────────────────────────────────────────────────
     #
-    # Saturday evening, and the week resets the Sunday after — so a war night's result is what the new
-    # week is built on. Day zero was a Thursday, which is what the two remainders below count from.
+    # Saturday evening, and the week resets the Sunday after, so the new week is built on a war
+    # night’s result. Day zero was a Thursday, and the two remainders below count from it.
 
     public integer NightRemainder = 2;
     public integer NightHour = 20;
@@ -51,8 +51,8 @@ shared model Contest
     public integer MostPoints = 5;
 
     # How far a point reaches, in tiles. Nine across, so the whole of one fits the viewport and can be
-    # read at a glance — and it is what makes the trade between a caster and a swordsman on a point
-    # work out: a caster outside reaches the center exactly and nothing past it, and a swordsman
+    # read at a glance. It also settles the trade between a caster and a swordsman on a point: a
+    # caster outside reaches the center exactly and nothing past it, and a swordsman
     # answering that closes to the edge and is still inside.
     public integer Radius = 4;
 
@@ -114,8 +114,8 @@ shared model Contest
     # territory system exists for, run blind: you cannot tell who is ahead, whether the point under
     # your feet is yours, or whether any of it is working.
     #
-    # ⚠ A row with no value is not drawn, so writing these only while they are AT the war is what
-    # makes the readout come and go with the place - the same thing the original's "am I in the
+    # ⚠ A row with no value is not drawn, so writing these only while they are AT the war makes
+    # the readout come and go with the place - the same thing the original's "am I in the
     # territory" check did, said the other way round.
 
     public string Over = "cwhere";
@@ -160,8 +160,8 @@ shared model Contest
         who.SetNumber(Contest.HeldMost, 0);
     end function
 
-    # Where this guild stands against the best of the rest, which is the whole of what a score list is
-    # for: a column of numbers answers "who is winning" and this answers it in a line.
+    # Where this guild stands against the best of the rest. A column of numbers answers "who is
+    # winning"; this answers it in a line.
     string function Standings(integer region, integer guild)
         integer ours = World.Number(Contest.Score(region, guild));
         integer best = 0;
@@ -407,7 +407,7 @@ shared model Contest
         yield Contest.Live();
     end function
 
-    # ⚠ The phase's CLOCK is what is moved, not the phase. The next tick then makes the move it
+    # ⚠ The phase's CLOCK moves, not the phase. The next tick then makes the move it
     # was always going to make, so what a forced setup runs into is the same code a timed one does.
     public integer function HurryNight()
         integer many = 0;
@@ -585,8 +585,8 @@ shared model Contest
             World.SetNumber(Contest.PointY(region, at), spot.Y);
             World.SetTruth(Contest.PointRaised(region, at), spot.IsRaised);
 
-            # ⚠ The holder starts every point SECURELY held, which is what makes defending different
-            # from attacking: a challenger has to swing the meter the whole way, and a holder who does
+            # ⚠ The holder starts every point SECURELY held, so defending differs from attacking:
+            # a challenger has to swing the meter the whole way, and a holder who does
             # nothing keeps what they have.
             World.SetNumber(Contest.PointOwner(region, at), holder);
             World.SetNumber(Contest.PointMeter(region, at), 0 - Contest.Full);
@@ -877,7 +877,7 @@ shared model Contest
     # ── Keeping score ─────────────────────────────────────────────────────────
     #
     # A point pays its holder every beat it is SECURELY held — inside the band around nothing it pays
-    # nobody, which is the ten seconds in the middle of a swing where it is genuinely up for grabs.
+    # nobody for the ten seconds in the middle of a swing where it is genuinely up for grabs.
     # The territory's defender is paid double for a point, so holding is worth more than taking.
 
     function Tally(integer region)

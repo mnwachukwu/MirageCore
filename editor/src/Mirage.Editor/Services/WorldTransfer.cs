@@ -111,8 +111,8 @@ public static class WorldTransfer
         var changes = new List<WorldChange>();
         int overCeiling = 0;
 
-        // Both sides' families, not this build's: a folder may carry a family the server does not have,
-        // and that is a thing to report rather than a section to skip.
+        // Both sides' families, not this build's: a folder may carry a family the server does not
+        // have, and it is worth reporting rather than passing over.
         foreach (var family in FamilyUnion(folder, server))
         {
             string section = family.Id;
@@ -151,7 +151,7 @@ public static class WorldTransfer
     }
 
     /// <summary>Every family either side holds, the folder's order first. A family only the server has is
-    /// still walked: its authored records read as removals, which is what uploading a folder without them
+    /// still walked: its authored records read as removals, as uploading a folder without them
     /// would do.</summary>
     private static IEnumerable<RecordFamily> FamilyUnion(WorldSnapshot folder, WorldSnapshot server) =>
         [.. folder.Families,
@@ -297,7 +297,7 @@ public static class WorldTransfer
     // ── Read a server ────────────────────────────────────────────────────────
 
     /// <summary>Reads the connected server's whole world. Every family but maps answers in one round-trip;
-    /// maps come a slice at a time, which is what the progress is counting.</summary>
+    /// maps come a slice at a time, and the progress counts those slices.</summary>
     public static async Task<WorldSnapshot> FetchAsync(EditorConnection conn, RecordLimits limits,
         IProgress<WorldTransferProgress>? progress = null, CancellationToken ct = default)
     {

@@ -68,7 +68,7 @@ public sealed record RefreshBanListPacket : IPacket
 /// <summary>
 /// C→S: ban the account AND the machine the target is signed in from. Creator only, and only against
 /// somebody ONLINE — the key lives on the live session and nowhere else, so there is nothing to record
-/// for a player who is not here. An offline account is what the ordinary ban is for.
+/// for a player who is not here. The ordinary ban covers an offline account.
 /// </summary>
 public sealed record HwBanPlayerPacket : IPacket
 {
@@ -79,7 +79,7 @@ public sealed record HwBanPlayerPacket : IPacket
 // ── Lifting a punishment ─────────────────────────────────────────────────────
 // Target is an ACCOUNT here, unlike the three above: a kicked or banned person cannot be online to be
 // named by their character. The server accepts an online character's name as a convenience and resolves
-// it, but the account is what is acted on.
+// it, but the ban lands on the account.
 
 public sealed record UnbanPlayerPacket : IPacket
 {

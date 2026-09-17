@@ -6,7 +6,7 @@ namespace Mirage.Shared;
 /// What a world folder is made of.
 ///
 /// <para>A server runs on two folders, split on one question: <b>does it change while the server runs?</b>
-/// A world does not — it is what an author wrote, and it travels whole when a world is copied to another
+/// A world does not — an author wrote it, and it travels whole when a world is copied to another
 /// machine. An installation's state does, and belongs to one server on one machine.</para>
 ///
 /// <para>The list lives here because the server and the editor both read it. A folder one of them wrote

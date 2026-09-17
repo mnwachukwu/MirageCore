@@ -72,7 +72,7 @@ public sealed partial class ClientState
     ///
     /// <para><see cref="MailNowUtc"/> is the server's clock as of the last mailbox push rather than this
     /// machine's, so the count and the list agree on what has arrived. The server re-pushes when a message
-    /// matures, which is what moves one from hidden to counted.</para></summary>
+    /// matures, which moves one from hidden to counted.</para></summary>
     public int UnreadMailCount()
     {
         int n = 0;

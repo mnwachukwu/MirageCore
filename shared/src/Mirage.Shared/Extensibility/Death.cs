@@ -5,7 +5,7 @@ namespace Mirage.Shared.Extensibility;
 ///
 /// <para><b>Core knows that bodies stop and come back; it does not know why.</b> Hit points, hunger,
 /// drowning, a trap, an arrest, being voted off — every one of those is a game's rule, and none of them
-/// is in here. What is in here is the fact and its two parties, which is what the engine needs to move a
+/// is in here. What is in here is the fact and its two parties — all the engine needs to move a
 /// body out of play and put it back.</para>
 ///
 /// <para><b>The cause is a localization key, not a sentence</b> — the same reason <see cref="Refusal"/>
@@ -48,7 +48,7 @@ public interface IDeathPolicy
     /// <summary>Whether it happens. Asked before anything is taken or moved, so a policy can refuse —
     /// a last stand, a revive, a safe zone — and leave the body exactly as it was.
     ///
-    /// <para>Every policy must allow it. The first refusal stops the death and is the answer.</para></summary>
+    /// <para>Every policy must allow it. The first refusal stops the death and stands as the answer.</para></summary>
     Refusal MayDie(in Death death) => Refusal.Allow;
 
     /// <summary>What it costs. Called once the death is settled and before the body is moved, so a

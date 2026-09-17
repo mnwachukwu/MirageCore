@@ -13,7 +13,7 @@ namespace Mirage.Client.Shell.Screens;
 ///
 /// <para>Also where a player waits out a full server. The queue is not a screen of its own because it is
 /// not a different situation from the player's side — they pressed Login and are waiting for the server,
-/// which is what this screen already means. The only difference is that the server can say how much
+/// which this screen already means. The only difference is that the server can say how much
 /// longer.</para>
 /// </summary>
 public sealed class LoadingScreen : IGameScreen

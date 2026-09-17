@@ -67,11 +67,11 @@ shared model Territory
     # ── What it earns ─────────────────────────────────────────────────────────
     #
     # A creature killed on held land pays its owner, whoever did the killing. One kill in four pays,
-    # and a member of the holding guild is worth double — which is what makes holding land worth more
+    # and a member of the holding guild is worth double, so holding land is worth more
     # to the people who hold it than to anybody passing through.
     #
     # ⚠ Capped a day at a time. Without it a guild that holds good hunting ground out-earns every other
-    # source of money in the game put together, and the cap is what keeps the land a supplement rather
+    # source of money in the game put together, and the cap keeps the land a supplement rather
     # than the economy.
 
     public integer PaysPercent = 25;
@@ -189,7 +189,7 @@ shared model Territory
     # What a war night's answer does to the region. Called once per territory when its contest ends,
     # and the only place ownership ever moves.
     #
-    # ⚠ Holding it AGAIN is what advances the streak, so the multiplier counts war nights survived
+    # ⚠ Holding it AGAIN advances the streak, so the multiplier counts war nights survived
     # rather than days owned. Taking it starts at nothing, and losing it leaves nothing behind.
     public function Handover(integer region, integer winner)
         integer held = Territory.OwnerOf(region);

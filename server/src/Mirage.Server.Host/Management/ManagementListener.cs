@@ -131,8 +131,8 @@ public sealed class ManagementListener : IHostedService, IDisposable
         return null;
     }
 
-    /// <summary>Stop listening, without ending the process. Attached operators are dropped — their socket
-    /// is the thing being turned off.</summary>
+    /// <summary>Stop listening, without ending the process. Attached operators are dropped along
+    /// with the socket.</summary>
     private void Unlisten()
     {
         if (_listener is null) return;
@@ -149,10 +149,10 @@ public sealed class ManagementListener : IHostedService, IDisposable
     }
 
     /// <summary>Apply a new management config to the RUNNING server: stop, take the new settings, start
-    /// again. Returns null when the result is what the config asked for, or the reason it is not.
+    /// again. Returns null when the result matches what the config asked for, or the reason it does not.
     ///
-    /// <para>This is what lets a headless operator turn remote access on without a restart, which is the
-    /// deployment that most needs it and the one that cannot edit a file and bounce the process
+    /// <para>So a headless operator can turn remote access on without a restart — the deployment
+    /// that most needs it and the one that cannot edit a file and bounce the process
     /// casually.</para></summary>
     public string? Reconfigure(ManagementConfig next)
     {
@@ -245,7 +245,7 @@ public sealed class ManagementListener : IHostedService, IDisposable
 
         // Two directions at once: queued console lines out, command lines in. Whichever finishes first
         // ends the session, because either one stopping means the connection is over. The linked token
-        // is what stops the OTHER one — a blocked read does not notice that the write side died.
+        // stops the OTHER one — a blocked read does not notice that the write side died.
         using var sessionCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         var pump = session.DrainAsync(writer, DropNotice, sessionCts.Token);
         var intake = ReadCommandsAsync(reader, session, sessionCts.Token);

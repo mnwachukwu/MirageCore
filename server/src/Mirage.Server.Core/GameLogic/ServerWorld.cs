@@ -108,7 +108,7 @@ public sealed class ServerWorld : IWorld
         }
 
         // An NPC is NAMED by where it spawns and may be standing somewhere else; the place is where the
-        // body is, which is what a game asking "where is it" means.
+        // body is, which answers a game asking "where is it".
         return Locate(who) is { } at
             ? new WorldPlace(at.CurrentMap, at.Record.X, at.Record.Y, at.Record.Layer)
             : WorldPlace.Nowhere;
@@ -340,8 +340,8 @@ public sealed class ServerWorld : IWorld
     {
         if (Guild(guild) is not { } found || amount <= 0) return false;
 
-        // Through the engine's own credit, which is what keeps the vault's ceiling and its rounding in
-        // one place rather than in every game that pays a guild.
+        // Through the engine's own credit, keeping the vault's ceiling and its rounding in one
+        // place rather than in every game that pays a guild.
         GuildSystem.CreditVault(found, amount);
         _guilds.SaveGuild(found);
         return true;
@@ -407,8 +407,8 @@ public sealed class ServerWorld : IWorld
 
     public double RepairRateAt(int tier) => EconomyFormulas.RepairGoldPerDurabilityPoint(tier);
 
-    /// <summary>The bag slot holding the copy of that item they are WEARING, or null. Wearing is what
-    /// makes it findable: two copies in the bag are two different amounts of wear, and a rule about what
+    /// <summary>The bag slot holding the copy of that item they are WEARING, or null. Wearing is
+    /// what makes one copy findable at all: two copies in the bag are two different amounts of wear, and a rule about what
     /// a death cost means the one that was on them.</summary>
     private int? WornSlot(EntityHandle who, int itemNum)
     {
@@ -691,7 +691,7 @@ public sealed class ServerWorld : IWorld
     /// Whether a body is still held off acting. The cooldown is a START stamp rather than an expiry,
     /// so this measures FORWARD from it — the same direction the bar drawing it measures.
     ///
-    /// <para>The length is what the game asked for. <see cref="SetActionCooldown"/> takes a number of
+    /// <para>The length is the game’s. <see cref="SetActionCooldown"/> takes a number of
     /// seconds, and until this read it, every cooldown in every world ran for the engine's own beat
     /// instead: a rule asking for two seconds got one, and a rule asking for ten got one.</para>
     ///
@@ -714,7 +714,7 @@ public sealed class ServerWorld : IWorld
         // microseconds: half the time the beat arrives a hair early, the creature is refused, and it
         // waits another whole beat. Swings land at one second or one and a half at random, which reads
         // as a creature that hesitates rather than one on a rhythm. Players are read every frame and
-        // have no boundary to round to, which is why the branch above does not.
+        // have no boundary to round to, so the branch above does not.
         return Npc(who) is { } npc && npc.AttackTimer > 0
             && !AiCadence.Elapsed(now, npc.AttackTimer,
                                   Holding(npc.AttackHoldMs, Constants.NpcAttackCooldownMs, PlaceOf(who).Map));
@@ -859,8 +859,8 @@ public sealed class ServerWorld : IWorld
     ///
     /// <para>NPCs come from the viewport sweep around the square rather than from the map's own slots,
     /// because a body near a border stands on a map it has no slot on. The sweep already handles guests
-    /// and the 3x3 grid, so asking it and filtering to the exact tile is the answer that stays right
-    /// when somebody walks across a seam.</para>
+    /// and the 3x3 grid, so asking it and filtering to the exact tile stays right when somebody
+    /// walks across a seam.</para>
     /// </summary>
     public EntityHandle At(WorldPlace place)
     {
@@ -882,7 +882,7 @@ public sealed class ServerWorld : IWorld
             if (found.CurrentMap == place.Map && found.Record.X == place.X && found.Record.Y == place.Y)
             {
                 // Named by where it SPAWNS, not by where it is standing: a handle has to outlive the
-                // body walking onto another map, and the current slot is the thing that changes.
+                // body walking onto another map, and the current slot changes under it.
                 return EntityHandle.ForNpc(found.CurrentMap, found.CurrentSlot);
             }
         }
@@ -894,7 +894,7 @@ public sealed class ServerWorld : IWorld
     /// Floats a line off a body, to everybody who can see it happen.
     ///
     /// <para>Addressed by SLOT rather than by tile, so the client can follow the body: an NPC travels
-    /// as its CURRENT slot and map, which is what the client's own roster is keyed by — the spawn
+    /// as its CURRENT slot and map, the key the client's own roster uses — the spawn
     /// identity a handle carries means nothing to a client that has never seen it.</para>
     /// </summary>
     public void Float(EntityHandle who, string text, uint rgb, float splatter)
@@ -938,8 +938,8 @@ public sealed class ServerWorld : IWorld
     /// <summary>
     /// One effect, to everybody who can see where it happens.
     ///
-    /// <para>The viewport rather than the observers of a map: this is a thing you watch happen to
-    /// somebody, at the range you would see them.</para>
+    /// <para>The viewport rather than the observers of a map: you watch this happen to somebody,
+    /// at the range you would see them.</para>
     ///
     /// <para>Sent from where the ACTOR is, even when it is aimed somewhere else — a throw is seen by
     /// whoever can see it leave, and the client already follows the target itself.</para>
@@ -1043,7 +1043,7 @@ public sealed class ServerWorld : IWorld
 
     /// <summary>A map's game fields WITH its group's behind them — the map's own value when it carries the
     /// key, else the group's, else nothing. The read every rule wants; <see cref="RecordAt"/> answers with
-    /// the map's own bag alone, which is what an editor authoring that one map needs.</summary>
+    /// the map's own bag alone, which an editor authoring that one map needs.</summary>
     public WorldPlace ExitFrom(int mapNum)
     {
         if (mapNum < 1 || mapNum > _world.Limits.Maps || mapNum >= _world.Maps.Length) return WorldPlace.Nowhere;

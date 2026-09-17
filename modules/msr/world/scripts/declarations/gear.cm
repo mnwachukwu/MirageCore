@@ -11,7 +11,7 @@
 
 model ItemRules
     # The level MSR needed to wield a piece. Core spends an item's power and durability and has no
-    # opinion about who may hold it, which is exactly the kind of fact this is for.
+    # opinion about who may hold it, so a game that wants one records it here.
     public integer levelReq;
 
     # ⚠ The spell a scroll carries, on the scroll rather than on the spell. One value about one item,
@@ -19,16 +19,16 @@ model ItemRules
     # the spells by name.
     public Spell teaches;
 
-    # ⚠ The war currency, and exactly ONE item in a world should carry it. It is what a guild's
-    # weekly tax is offset with, and it is earned by killing for your guild in a declared war.
+    # ⚠ The war currency, and exactly ONE item in a world should carry it. A guild offsets its
+    # weekly tax with it, and it is earned by killing for your guild in a declared war.
     public boolean valor;
 
     # ⚠ And the coin, also exactly one. Core spends a guild's vault gold on its own and needs no name
     # for it; anything a RULE charges a person — a quest fee, a toll — is charged in this.
     public boolean coin;
 
-    # ⚠ And the casting reagent, also exactly one. A damaging cast spends it, which is what makes a
-    # caster's upkeep cost what a warrior's repair bill costs. A world with none authored has casters
+    # ⚠ And the casting reagent, also exactly one. A damaging cast spends it, so a caster's upkeep
+    # costs what a warrior's repair bill costs. A world with none authored has casters
     # who fight for free.
     public boolean reagent;
 

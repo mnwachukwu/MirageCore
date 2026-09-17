@@ -3,10 +3,10 @@ namespace Mirage.Shared.Extensibility;
 /// <summary>
 /// The answer to "may this happen", carrying the reason when the answer is no.
 ///
-/// <para><b>It is fail-closed, and that is what the zero value is for.</b> <c>default(Refusal)</c>
+/// <para><b>It is fail-closed, and the zero value denies.</b> <c>default(Refusal)</c>
 /// denies. A gate that forgot to assign an answer, a collection of gates that was never populated, and
-/// a struct that was never written all refuse — so the failure mode of unfinished wiring is a thing
-/// that does not happen, rather than a thing that happens to everyone. A <c>bool</c> defaulting to
+/// a struct that was never written all refuse — so unfinished wiring fails by doing nothing rather
+/// than by happening to everyone. A <c>bool</c> defaulting to
 /// <c>true</c> is the same mechanism with the opposite failure.</para>
 ///
 /// <para><b>The reason is a localization key, not a sentence.</b> The side that knows why is rarely the
@@ -50,7 +50,7 @@ public readonly record struct Refusal
     ///
     /// <para>Short-circuits, so a gate that is expensive to evaluate can be ordered after a cheap one.
     /// An empty set allows: nothing objected. That is the one place this mechanism is deliberately
-    /// fail-OPEN, and it is what makes a game that registers no gates behave as though the gate did not
+    /// fail-OPEN, so a game that registers no gates behaves as though the gate did not
     /// exist.</para></summary>
     public static Refusal FirstRefusal(IEnumerable<Func<Refusal>> gates)
     {

@@ -59,8 +59,8 @@ shared model Book
         open.OnHud();
         open.Opens(Book.Screen);
 
-        # And a verb about a BODY, which is what a survey is mostly for. Offered on any creature,
-        # including one with nothing else to say — declaring this is what gives a plain creature a menu.
+        # And a verb about a BODY, which is mostly what a survey is for. Offered on any creature,
+        # including one with nothing else to say — without one declared a plain creature has no menu.
         Verb name = game.Action(Book.Identify, "Identify", "Survey");
         name.Icon("paw");
         name.OnNpc();

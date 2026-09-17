@@ -47,8 +47,8 @@ internal static class HotkeyDescription
 
         bool isItem = string.Equals(hk.Id, CoreRecordFamilies.Items, StringComparison.Ordinal);
 
-        // Core's own items carry art the client already has loaded, and a picture is what a player
-        // recognizes at a glance. A game's records have none, so they wear their family's glyph.
+        // Core's own items carry art the client already has loaded, and a player recognizes a
+        // picture at a glance. A game's records have none, so they wear their family's glyph.
         int sprite = isItem && hk.Num >= 1 && hk.Num <= world.Limits.Items ? world.Items[hk.Num].Pic : 0;
 
         return new PlayerHotkeysPacket.Slot(

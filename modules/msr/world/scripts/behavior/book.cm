@@ -1,12 +1,12 @@
 # The spellbook: what a character knows, what they have ready, and what happens when they cast it.
 #
-# behavior/spells.cm is arithmetic and declarations/magic.cm is a shape; this is where both land on
-# somebody. The split is the same one combat.cm and fight.cm make, and for the same reason.
+# behavior/spells.cm is arithmetic and declarations/magic.cm is a shape; both land on somebody
+# here. The split is the same one combat.cm and fight.cm make, and for the same reason.
 
 shared model Book
 
-    # Twenty, as the original had. A book of empty slots is what a spellbook looks like, so they are
-    # all declared and all shown.
+    # Twenty, as the original had. A spellbook looks like a book of empty slots, so they are all
+    # declared and all shown.
     public integer Slots = 20;
 
     public string Ready = "prepared";
@@ -167,7 +167,7 @@ shared model Book
         Book.Write(who, free, number);
         who.Message("You learn " + name + ".");
 
-        # The first thing anybody learns is the thing they want ready.
+        # Anybody learning their first spell wants it ready.
         if who.Number(Book.Ready) < 1
             Book.Prepare(who, free);
         end if
@@ -227,7 +227,7 @@ shared model Book
         yield 0;
     end function
 
-    # A picked line carries the page it is on, because that is what a line carries.
+    # A picked line carries the page it is on.
     public integer function Numbered(string picked)
         loop for slot = 1 to Book.Slots
             if picked == "" + slot
@@ -367,11 +367,11 @@ shared model Book
 
     # ── The pouch ─────────────────────────────────────────────────────────────
     #
-    # A damaging cast burns a reagent, which is what a caster pays instead of a repair bill. The
-    # arithmetic is spells.cm; this is where it meets a bag.
+    # A damaging cast burns a reagent, the caster's equivalent of a repair bill. The arithmetic
+    # is spells.cm; here it meets a bag.
     #
-    # ⚠ Asked for BEFORE the cast and taken AFTER it, like mana. What a cast CAN take is what gates it,
-    # not what this one rolled: a roll of nothing must not let an empty pouch cast, any more than a
+    # ⚠ Asked for BEFORE the cast and taken AFTER it, like mana. A cast is gated by what it CAN
+    # take, not by what this one rolled: a roll of nothing must not let an empty pouch cast, any more than a
     # weapon at no durability can swing.
 
     # What this cast is billed, before anything is rolled. Zero for a spell that is not damage, and
@@ -573,8 +573,8 @@ shared model Book
         if health > 0
             target.SetNumber(Vitals.Health, health);
 
-            # A spell is a hit, so it answers like one. Without this a caster is the one thing in the
-            # world an ambling creature never fights back against.
+            # A spell is a hit, so it answers like one. Without this an ambling creature never
+            # fights back against a caster.
             Beasts.Answer(target, who);
             yield;
         end if
@@ -702,7 +702,7 @@ shared model Book
 
     # And taking something out of them. The reactions are melee's exactly: a shield turns a spell
     # aside and wears for it, and a free hand steps out of one. Neither is a roll a caster can beat by
-    # casting harder, which is what keeps a defensive kit worth wearing against a caster.
+    # casting harder, so a defensive kit stays worth wearing against a caster.
     function Sap(Player who, Player them, string type, integer number)
         integer theirLevel = Stats.LevelOf(them);
         integer theirDef = them.Number(Stats.Def);

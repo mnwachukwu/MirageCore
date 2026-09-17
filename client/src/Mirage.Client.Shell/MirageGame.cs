@@ -26,7 +26,7 @@ namespace Mirage.Client.Shell;
 /// the screen stack, the network transport, and the shared <see cref="ClientState"/>.
 /// <para><b>Rendering.</b> Gameplay does not draw straight to the backbuffer. The scrolling world
 /// renders into a supersampled target (<c>_worldRT</c>) that is linear-downscaled on composite, which
-/// is what keeps sub-pixel scrolling smooth instead of shimmering. At night a second pass builds a
+/// keeps sub-pixel scrolling smooth instead of shimmering. At night a second pass builds a
 /// light map that MULTIPLIES the world, and on a two-layer map (a bridge) ground and fringe get their
 /// own world and light targets so the deck can occlude what is beneath it. Everything else — HUD,
 /// panels, dialogs — draws to the letterboxed reference frame at whole pixels.</para>
@@ -193,8 +193,8 @@ public sealed partial class MirageGame : Game
     private int _fpsFrameCount;
     private float _fpsAccMs;
 
-    // Frame-time accounting, gathered across Update and closed off in Draw. Present-to-present is what a
-    // player perceives, so the frame is measured between Draws rather than inside one; Update's share is
+    // Frame-time accounting, gathered across Update and closed off in Draw. A player perceives
+    // present-to-present, so the frame is measured between Draws rather than inside one; Update's share is
     // accumulated because a catch-up frame runs it more than once.
     private int _updatesThisFrame;
     private bool _runningSlowly;

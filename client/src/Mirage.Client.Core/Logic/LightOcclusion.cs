@@ -32,8 +32,8 @@ public static class LightOcclusion
     /// </summary>
     public const int SubSamples = TileOpacity.SubCells;
 
-    /// <summary>The side of the square a light of this radius reaches over, in tiles. This is what the mask
-    /// COVERS, and so what <see cref="MaskUv"/> maps onto — independent of how finely it is sampled.</summary>
+    /// <summary>The side of the square a light of this radius reaches over, in tiles. The mask COVERS
+    /// this, and <see cref="MaskUv"/> maps onto it — independent of how finely it is sampled.</summary>
     public static int MaskSide(int radiusTiles) => Math.Max(0, radiusTiles) * 2 + 1;
 
     /// <summary>The mask texture's side, in texels.</summary>
@@ -52,8 +52,8 @@ public static class LightOcclusion
     /// put.</para>
     ///
     /// <para>Texel <c>i</c> of the mask covers the whole of tile <c>i - r</c>, so mapping the mask's rectangle
-    /// onto 0..1 puts each texel's CENTER on its tile's center — which is what makes a linear sample between
-    /// two texels a ramp across the boundary between their tiles.</para>
+    /// onto 0..1 puts each texel's CENTER on its tile's center, so a linear sample between two
+    /// texels ramps across the boundary between their tiles.</para>
     /// </summary>
     public static (float ScaleX, float ScaleY, float OffsetX, float OffsetY) MaskUv(
         float destLeft, float destTop, float destW, float destH,
@@ -135,7 +135,7 @@ public static class LightOcclusion
     ///
     /// <para>Every texel is traced separately, from the light's own center, against the coverage the tiles
     /// around it colored in. A texel standing on art is dark, and so is any texel whose line to the light
-    /// crosses art — which is what puts a shadow's edge on the silhouette rather than on the tile border.</para>
+    /// crosses art, so a shadow's edge lands on the silhouette rather than on the tile border.</para>
     ///
     /// <para>Open ground costs nothing: with no shadow anywhere in the light's square there is nothing to
     /// trace against, and the mask is filled in one pass.</para>
@@ -238,7 +238,7 @@ public static class LightOcclusion
     /// One texel's signed distance to the shadow's edge, in texels, packed into a byte: 128 is exactly on
     /// the edge, above it is lit, below it is dark.
     ///
-    /// <para>🔴 This is what makes a sharp shadow possible at all. A mask of 0s and 1s sampled with LINEAR
+    /// <para>🔴 Without it a sharp shadow is not possible at all. A mask of 0s and 1s sampled with LINEAR
     /// filtering ramps from lit to dark across the space between two texel CENTERS — four world pixels wide
     /// and centered on the boundary, so half of it falls on the art itself and every silhouette wears a
     /// hairline of light. Interpolating a DISTANCE is different: the blend of two distances is still very
@@ -394,7 +394,7 @@ public static class LightOcclusion
     /// <summary>Whether one texel of the light's square stands on art.
     ///
     /// <para>Every coordinate here comes off a line between two texels of the square, and a Bresenham line
-    /// stays inside the box its endpoints span, so the index is in range by construction — which is why this
+    /// stays inside the box its endpoints span, so the index is in range by construction — and this
     /// does not check, in the one loop that runs tens of thousands of times a mask.</para></summary>
     private static bool Covered(ReadOnlySpan<ulong> shadow, int side, int tx, int ty)
     {

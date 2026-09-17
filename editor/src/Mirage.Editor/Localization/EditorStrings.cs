@@ -171,8 +171,8 @@ public static partial class EditorStrings
     ///
     /// <para>🔴 A module cannot ship a translation — there is nowhere to put one — so a label it
     /// declares will never be in this table, and looking it up always misses. Falling back to the
-    /// field's id turns "Common name" into "name" and "Field notes" into "notes", which is what the
-    /// editor drew for the first module ever connected to it.</para>
+    /// field's id turns "Common name" into "name" and "Field notes" into "notes", as the editor
+    /// drew for the first module ever connected to it.</para>
     ///
     /// <para>So a miss shows the label itself, and only a blank label falls back to the id. A game with
     /// its players' language shipped alongside still gets the translation, because the lookup is tried

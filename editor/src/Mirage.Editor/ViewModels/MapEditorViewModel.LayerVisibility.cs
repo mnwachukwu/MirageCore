@@ -48,7 +48,7 @@ public sealed partial class MapEditorViewModel : ObservableObject
 
     // The gate itself. A tile that would land on a hidden layer is not placed — it would land correctly and
     // be invisible, which reads as the editor ignoring the click. The first such cell in a stroke raises the
-    // prompt and the rest are dropped; answering it is what decides whether anything is painted.
+    // prompt and the rest are dropped; the answer decides whether anything is painted.
     private bool BlockedByHiddenLayer(int x, int y)
     {
         if (!IsSelectedLayerHidden) return false;

@@ -123,8 +123,8 @@ public sealed partial class GameplayScreen : IGameScreen
     /// other, and a pile of loot has no sprite of its own worth aiming at. Asking "what is HERE" has
     /// one answer where "what did I click" has several.</para>
     ///
-    /// <para>It also makes loot reachable without standing on it, which is the whole point of the
-    /// exercise: an item you can take from five tiles away cannot be denied by somebody parking on
+    /// <para>It also makes loot reachable without standing on it: an item you can take from five
+    /// tiles away cannot be denied by somebody parking on
     /// top of it. Range is drawn as an enabled/disabled state that updates per frame, so an entry
     /// lights up as you walk toward it rather than failing when you click.</para>
     ///
@@ -151,8 +151,8 @@ public sealed partial class GameplayScreen : IGameScreen
 
         // Players first: the thing on a square most likely to be the reason for right-clicking it.
         //
-        // Two ways in, and both are needed. The tile sweep is what makes a player on a pile of loot
-        // appear beside it. The pixel hit-test is what preserves the old precision: a sprite is drawn
+        // Two ways in, and both are needed. The tile sweep puts a player standing on a pile of loot
+        // beside it in the menu. The pixel hit-test preserves the old precision: a sprite is drawn
         // taller than its tile and slides between tiles while walking, so clicking someone's head can
         // land on the SQUARE ABOVE them — which the sweep alone would answer with "nobody there".
         var named = new HashSet<string>(StringComparer.Ordinal);
@@ -216,7 +216,7 @@ public sealed partial class GameplayScreen : IGameScreen
     /// as the player picks the thing up, instead of failing when they click it.</para>
     ///
     /// <para>The answer is the client's opinion and the server asks again — same code, same attributes,
-    /// so the two agree unless somebody has edited their client, and then the server is what counts.</para>
+    /// so the two agree unless somebody has edited their client, and then the server wins.</para>
     /// </summary>
     private bool Offered(ActionCondition when)
         => when.Holds(_ctx.State.AttributesOf(EntityHandle.ForPlayer(_ctx.State.MyIndex)));
@@ -308,7 +308,7 @@ public sealed partial class GameplayScreen : IGameScreen
     ///
     /// <para><b>The client does not know what any of them mean.</b> It draws the caption it was given and
     /// sends the id back with the square; the rule that follows runs on the server, where the game is.
-    /// That is what lets a stock client offer a verb it was never compiled against.</para></summary>
+    /// So a stock client can offer a verb it was never compiled against.</para></summary>
     private List<(string Heading, List<ContextMenu.Item> Items)> BuildGameActionGroups(int mapNum, int tileX, int tileY)
     {
         var groups = new List<(string, List<ContextMenu.Item>)>();
@@ -329,7 +329,7 @@ public sealed partial class GameplayScreen : IGameScreen
                 string id = action.Id;
                 string opens = action.OpensPanel;
 
-                // The shortcut is shown where the verb is offered, or it is a shortcut nobody finds. An
+                // The shortcut is shown where the verb is offered, so nobody has to be told it exists. An
                 // action that only opens a panel borrows the PANEL's key, since that is the key that
                 // does this menu item's job.
                 string shortcut = action.Key.Length > 0
@@ -537,7 +537,7 @@ public sealed partial class GameplayScreen : IGameScreen
         // An NPC needs something to offer: a shop or a conversation. A plain mob has neither and is
         // handled by the melee key rather than this menu.
         //
-        // The conversation clause is what makes the Talk item below reachable. Gating on the shop alone
+        // Without the conversation clause the Talk item below is unreachable. Gating on the shop alone
         // means the only NPCs that can show Talk are the ones that also sell, and the ones whose entire
         // purpose is being talked to — the ferryman, the chronicler, the locals, the road signs — have
         // no menu at all.

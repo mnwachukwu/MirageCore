@@ -31,8 +31,8 @@ public sealed class WorldQueries(GameWorld world, PlayerManager players)
     /// <summary>True when a body on <paramref name="actorMap"/> facing <paramref name="dir"/> from
     /// (ax, ay) is one tile — in world space — from (tx, ty) on <paramref name="targetMap"/>.
     ///
-    /// <para>False when the target's map is not part of the grid around the actor's, which is what
-    /// stops a query reaching somewhere unreachable rather than answering about the wrong tile.</para></summary>
+    /// <para>False when the target's map is not part of the grid around the actor's, so a query
+    /// stops rather than answering about the wrong tile.</para></summary>
     public bool IsFacingAcrossMaps(int actorMap, Direction dir, int ax, int ay, int targetMap, int tx, int ty)
     {
         var grid = WorldCoordHelper.BuildMapGrid(_world.Maps, actorMap);
@@ -80,8 +80,8 @@ public sealed class WorldQueries(GameWorld world, PlayerManager players)
     /// along that edge would cover — a body never reaches a corner it would then miss.</para>
     ///
     /// <para><b>Geometry and nothing else.</b> Whether either body is in a condition worth interacting
-    /// with is the caller's question. Folding a liveness test in here is what makes a chase stop
-    /// silently: the legs ask "am I close enough", get back "no" for a reason that has nothing to do
+    /// with is the caller's question. Folding a liveness test in here stops a chase silently,
+    /// without a reason: the legs ask "am I close enough", get back "no" for a reason that has nothing to do
     /// with distance, and keep walking.</para></summary>
     public bool IsWithinReach(int actorMap, int ax, int ay, int size, WorldLayer actorLayer,
                               int targetMap, int tx, int ty, WorldLayer targetLayer)
@@ -123,7 +123,7 @@ public sealed class WorldQueries(GameWorld world, PlayerManager players)
     /// <para><b>Asked tile by tile, never by walking rosters.</b> A sweep that iterates native NPC
     /// slots, then the guest list, then the player set has to be taught about every kind of body that
     /// can stand on a map, and silently misses the ones it was never taught. Every tile is asked
-    /// "who is here", which is the question that cannot go out of date.</para>
+    /// "who is here", a question that cannot go out of date.</para>
     ///
     /// <para>Bodies are DEDUPED: a body covering two tiles of the run is returned once. A gap in the
     /// run costs the tiles past it nothing — each tile is asked independently.</para>

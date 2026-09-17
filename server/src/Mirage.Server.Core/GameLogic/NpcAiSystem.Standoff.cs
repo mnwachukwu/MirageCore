@@ -40,8 +40,8 @@ public sealed partial class NpcAiSystem : GameSystem
     /// backward would open far more than the tile it wanted.</para>
     ///
     /// <para>⚠ Cornered is a legitimate outcome and not an error. A body backed against a wall by
-    /// something walking into it holds where it is and faces what is coming — which is what a cornered
-    /// animal does, and what the retreat stepper already answers for a fleeing one.</para>
+    /// something walking into it holds where it is and faces what is coming, as a cornered animal
+    /// does, and as the retreat stepper already answers for a fleeing one.</para>
     ///
     /// <para>True once it is standing where it meant to stand, so the caller raises contact on the beat it
     /// arrives at the distance it wanted rather than on every beat it holds there.</para></summary>

@@ -5,7 +5,7 @@ namespace Mirage.Shared.Extensibility;
 /// <summary>
 /// Everything the loaded modules declared, built once and never changed after.
 ///
-/// <para><b>This is the answer to "what game is this?".</b> Record families, attribute keys, packet
+/// <para><b>This answers "what game is this?".</b> Record families, attribute keys, packet
 /// commands and tick work each have a registry that some subsystem reads, and until they are built
 /// those subsystems have nothing to read. Building them all in one pass, before the world loads, is
 /// what lets every reader treat its registry as complete and immutable — no part of Core copes with a

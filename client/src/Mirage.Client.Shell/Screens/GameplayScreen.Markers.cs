@@ -11,7 +11,7 @@ namespace Mirage.Client.Shell.Screens;
 ///
 /// <para>Four parts, each drawn only when the mark carries it: the ring around the marked ground, a
 /// pennant on the tile itself, a label over the pennant, and a meter under the label. A mark with only a
-/// tile and a color is a bare pin, and that is a supported mark.</para>
+/// tile and a color is a bare pin, which is a supported mark.</para>
 /// </summary>
 public sealed partial class GameplayScreen
 {

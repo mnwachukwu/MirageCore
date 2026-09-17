@@ -65,10 +65,10 @@ public sealed class PlayerRecord
     public AttributeBag Attributes { get; set; } = new();
 
     /// <summary>How fast this body moves, as a pure additive bonus over the speed everything starts
-    /// with. 0 is the baseline, which is what a world that never sets it gets.
+    /// with. 0 is the baseline, and a world that never sets it gets that.
     ///
-    /// <para><b>Core's only speed number, and it is not a stat.</b> Movement is the one thing the engine
-    /// itself performs on every body, so the pace has to live somewhere Core can read without knowing
+    /// <para><b>Core's only speed number, and it is not a stat.</b> Movement is the only thing the
+    /// engine itself performs on every body, so the pace has to live somewhere Core can read without knowing
     /// what a game calls its attributes. A game that derives speed from agility, a mount, a road, or a
     /// status effect writes the result here; Core never asks where the number came from.</para>
     ///

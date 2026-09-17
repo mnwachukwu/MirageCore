@@ -56,9 +56,9 @@ public sealed class WorldIssueRowViewModel(WorldIssue issue, string ownerName, A
 /// <summary>
 /// The world check's results.
 ///
-/// <para>Every row clicks through to the record it is about, which is the whole point: a list of faults
-/// nobody can navigate to is a list nobody acts on. Following one closes the window, since the record behind
-/// it is what the author needs to see.</para>
+/// <para>Every row clicks through to the record it is about, so a fault can be acted on rather
+/// than only read. Following one closes the window, since the author needs to see the record
+/// behind it.</para>
 ///
 /// <para>The sweep itself is <see cref="WorldCheck"/> and knows nothing about the editor. This wraps it in
 /// wording and in a way to get there.</para>

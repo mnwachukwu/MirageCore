@@ -1,11 +1,11 @@
 # Guild wars.
 #
 # Core founds guilds, admits members, keeps ranks and a vault, and records who paid into it. None of
-# that is here. What is here is what a guild does with another guild.
+# that is here. This file covers what a guild does with another guild.
 #
 # A guild may have up to five declarations OUT at once and any number coming in. Each war is held
-# from both sides: our entry says whether we declared and whether they did, and the pair of those two
-# flags is what a war's status is.
+# from both sides: our entry says whether we declared and whether they did, and a war's status
+# is the pair of those two flags.
 #
 # Storage is the guild's own values, one set of keys per war slot. A guild has five slots; an
 # opponent of zero means the slot is free.
@@ -109,7 +109,7 @@ shared model Guilds
         back.Opens("msr.vault");
 
         # Offered only to somebody who has a guild. Core's own social screen is where you find one
-        # or found one; this is what your guild is doing.
+        # or found one; this screen shows what your guild is doing.
         Verb hall = game.Action(Guilds.OpenVerb, "Guild Details", "Guild");
         hall.OnHud();
         hall.Icon("shield");
@@ -174,8 +174,7 @@ shared model Guilds
         wars.Button("Retract declaration", Guilds.PeaceVerb);
         wars.Button("Back to the details", Guilds.VaultVerb);
 
-        # Declaring names a guild the player is not yet at war with, so it is the one thing here
-        # that still has to be typed.
+        # Declaring names a guild the player is not yet at war with, so it still has to be typed.
         wars.Asks("Declaration", "Declare war");
     end function
 
@@ -243,8 +242,8 @@ shared model Guilds
         end loop
     end function
 
-    # Which way a war runs, in a word. Who declared on whom is what decides whether it can be retracted
-    # at all, so it is the thing worth reading off the line before picking it.
+    # Which way a war runs, in a word. Who declared on whom decides whether it can be retracted
+    # at all, so read that off the line before picking one.
     string function Standing(integer guild, integer slot)
         boolean ours = World.GuildNumber(guild, Guilds.WeDeclared(slot)) > 0;
         boolean theirs = World.GuildNumber(guild, Guilds.TheyDeclared(slot)) > 0;
@@ -379,7 +378,7 @@ shared model Guilds
     # rather than having earned 341 million across five rungs.
 
     # One point per creature a member kills. The trickle, and it is deliberately tiny: guild quests
-    # are what actually levels a guild, and a roster grinding mobs is meant to take a long time.
+    # level a guild, and a roster grinding mobs is meant to take a long time.
     public integer ExpPerKill = 1;
 
     public function Earn(Player who, integer amount)
@@ -469,7 +468,8 @@ shared model Guilds
         yield cost;
     end function
 
-    # ⚠ Named by the GUILD, which is what goes to war. The original asked for a guild's name in a
+    # ⚠ Named by the GUILD, because guilds go to war rather than players. The original asked
+    # for a guild's name in a
     # box and looked it up, so a war can be declared on people who are not standing in front of you -
     # which is most of them, and all of them if they are avoiding you.
     public function War(Player who, string on)
@@ -630,7 +630,7 @@ shared model Guilds
     # ── Suing for peace ───────────────────────────────────────────────────────
     #
     # Only on a mutual war, and only from the side conceding. With no ante locked the plea has to
-    # carry gold, and that offering is what the other side wins by accepting. Accepting ends the war
+    # carry gold, and the other side wins that offering by accepting. Accepting ends the war
     # with the accepter as the winner.
 
     public integer function MostStakeable(integer guild)
@@ -1238,11 +1238,11 @@ shared model Guilds
 
         victim.Message("You fell in your guild's war.");
 
-        # Everybody on the winning side who put damage in rolls for a point of valor. That is what a
-        # war pays the people fighting it.
+        # Everybody on the winning side who put damage in rolls for a point of valor. That is the
+        # war's pay to the people fighting it.
         #
-        # ⚠ A kill over LAND pays five times as often, which is what makes holding territory the richer
-        # source of valor. A grudge war pays a trickle; a war night pays properly.
+        # ⚠ A kill over LAND pays five times as often, so holding territory is the richer source
+        # of valor. A grudge war pays a trickle; a war night pays properly.
         if Contest.Fighting(killer, victim)
             Valor.AwardAt(victim, ours, Valor.TerritoryChancePercent);
 
@@ -1278,8 +1278,8 @@ shared model Guilds
             end if
         end loop
 
-        # ⚠ A caster's pouch is folded into the SAME bill, at a reagent to the gold. Reagents are what
-        # a caster wears out instead of a weapon, so a war that pays to re-kit its fighters and not to
+        # ⚠ A caster's pouch is folded into the SAME bill, at a reagent to the gold. A caster wears
+        # out reagents instead of a weapon, so a war that pays to re-kit its fighters and not to
         # restock its casters is a war only one half of the guild can afford to fight.
         integer reagents = Death.ReagentLoss(victim, Guilds.WarWearPercent);
 
@@ -1470,8 +1470,8 @@ shared model Guilds
     # ── The clocks ────────────────────────────────────────────────────────────
     #
     # Walked from the player tick, because nothing ticks a guild. A war between guilds nobody is
-    # logged into does not advance, which is the same thing the original's own tick interval means at
-    # a coarser grain.
+    # logged into does not advance. The original's own tick interval meant the same thing at a
+    # coarser grain.
 
     public function Tick(Player who)
         Guilds.Show(who);

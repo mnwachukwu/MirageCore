@@ -10,8 +10,8 @@ namespace Mirage.Shared.Extensibility;
 ///
 /// <para><b>Machinery with no opinion about what caused it.</b> A crescent sweeping over a tile is a
 /// sword, a claw, a thrown net, or a shop door opening; a burst is blood, sparks off an anvil, water, or
-/// dust off a rockfall. Which one it is belongs to the game making the call, which is what lets Core
-/// carry a genre it has never heard of.</para>
+/// dust off a rockfall. Which one it is belongs to the game making the call, so Core carries a
+/// genre it has never heard of.</para>
 ///
 /// <para>⚠ <b>Weather is not here and is not a game's.</b> It runs on the world's own clock and every
 /// client renders it from state it already holds, so there is nothing to ask for.</para>

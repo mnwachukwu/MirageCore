@@ -14,7 +14,7 @@ shared model Valor
     # A member of the killing guild who dealt damage has this chance of a point for the kill.
     public integer GrudgeChancePercent = 10;
 
-    # ⚠ And half the time on a kill over LAND, which is what makes holding territory the richer source
+    # ⚠ And half the time on a kill over LAND, so holding territory is the richer source
     # of it. A grudge war pays a trickle; a war night pays properly.
     public integer TerritoryChancePercent = 50;
 

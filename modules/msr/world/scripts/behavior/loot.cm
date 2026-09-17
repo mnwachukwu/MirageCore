@@ -140,7 +140,7 @@ shared model Loot
         integer many = Math.Max(1, drop.Many);
         boolean doubled = Perks.DoublesDrop(guild);
 
-        # Coin is the one thing on a table that divides, so a doubled purse is doubled BEFORE it is
+        # Coin alone divides on a table, so a doubled purse is doubled BEFORE it is
         # split and everybody who fought shares the privilege.
         if drop.Item == Gear.Coin()
             if doubled

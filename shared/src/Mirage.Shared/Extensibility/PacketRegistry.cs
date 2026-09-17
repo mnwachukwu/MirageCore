@@ -10,8 +10,8 @@ namespace Mirage.Shared.Extensibility;
 /// <para><b>One table, read by every side.</b> The server's router, the client's dispatcher, and the
 /// editor's connection all parse with the same registry, so a packet a game adds is a packet all three
 /// can read. A command with no row here does not deserialize, and a line that does not deserialize is
-/// dropped before any router sees it — which is why registration has to be the single place a packet
-/// becomes known, rather than one of several.</para>
+/// dropped before any router sees it, so registration has to be the single place a packet becomes
+/// known rather than one of several.</para>
 ///
 /// <para><b>Keyed by the command string, never by a number.</b> There is no ordinal to keep in step, so
 /// a game adding packets cannot collide with a later Core one by arithmetic, and two builds that
@@ -88,7 +88,7 @@ public sealed class PacketRegistry
                 catch (JsonException)
                 {
                     // A malformed line is a line, not a crash: the reader answers null and the caller
-                    // drops it, which is what every other parse here does.
+                    // drops it, as every other parse here does.
                     return default;
                 }
             });

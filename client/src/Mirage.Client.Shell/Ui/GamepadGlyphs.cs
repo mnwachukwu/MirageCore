@@ -83,7 +83,7 @@ public static class GamepadGlyphs
     internal static bool LooksLikeSony(string? name)
     {
         if (string.IsNullOrWhiteSpace(name)) return false;
-        // "Wireless Controller" is what a DualShock 4 reports through several drivers, and nothing Xbox
+        // A DualShock 4 reports "Wireless Controller" through several drivers, and nothing Xbox
         // reports itself that way — it is a weak signal but a one-sided one.
         foreach (string marker in new[] { "sony", "playstation", "dualshock", "dualsense", "ps3", "ps4", "ps5", "wireless controller" })
             if (name.Contains(marker, StringComparison.OrdinalIgnoreCase)) return true;

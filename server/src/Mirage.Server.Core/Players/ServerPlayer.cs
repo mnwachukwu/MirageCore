@@ -36,9 +36,9 @@ public sealed class ServerPlayer
 
     /// <summary>Whether a socket is attached to this slot.
     ///
-    /// <para>Writing it also maintains <see cref="PlayerManager.Online"/>, which is what every broadcast
-    /// walks instead of the whole slot array. Doing it HERE rather than at the two or three places that
-    /// connect and disconnect is the whole point: occupancy is expressed by assigning this property —
+    /// <para>Writing it also maintains <see cref="PlayerManager.Online"/>, which every broadcast
+    /// walks instead of the whole slot array. It happens HERE rather than at the two or three places
+    /// that connect and disconnect because occupancy is expressed by assigning this property —
     /// including at thirty-odd test setup sites — and an index maintained anywhere else would be a second
     /// copy of the truth, drifting the moment something set the flag without going through it.</para></summary>
     public bool IsConnected
@@ -53,7 +53,7 @@ public sealed class ServerPlayer
     }
 
     /// <summary>This player's 1-based slot, stamped by <see cref="PlayerManager"/>. 0 on an instance
-    /// built outside one, which is what makes <see cref="ConnectionChanged"/> safe to leave unwired.</summary>
+    /// built outside one, so <see cref="ConnectionChanged"/> is safe to leave unwired.</summary>
     internal int Slot { get; init; }
 
     /// <summary>Wired by <see cref="PlayerManager"/> so the online set follows the flag above. Null on a
@@ -125,8 +125,8 @@ public sealed class ServerPlayer
     public long CombatExpiresAt { get; set; }
     public bool WasInCombat { get; set; }
 
-    /// <summary>Tick of the last run step, which is what stamina regen watches to know the player is
-    /// still spending. A sprint costs a point a tile — five to seven a second — so a rest rate that
+    /// <summary>Tick of the last run step, which stamina regen watches to know the player is still
+    /// spending. A sprint costs a point a tile — five to seven a second — so a rest rate that
     /// felt like recovery would refund a sprint as fast as it was paid for.</summary>
     public long LastRunAt { get; set; }
     public long PvpAttackerUntil { get; set; }
@@ -136,7 +136,7 @@ public sealed class ServerPlayer
     // total lives on PlayerRecord.PlayTimeSeconds.
     public long PlayTimeAnchorUtc { get; set; }
     // UTC-seconds this session began (set once at JoinGame, never re-anchored). The session length it
-    // yields is what accrues into the guild member's rolling active total at logout.
+    // yields accrues into the guild member's rolling active total at logout.
     public long SessionStartUtc { get; set; }
 
     // UTC-seconds mirror of AccountRecord.MutedUntilUtc — copied on login so chat handlers do an O(1)
@@ -226,7 +226,7 @@ public sealed class ServerPlayer
     ///
     /// <para>Reach is decided when the menu opens and never again. What has to hold afterwards is that the
     /// slot still holds an NPC at all — the caller then checks that NPC gives or takes the quest in hand,
-    /// which is what stops a session resolving into a stranger's quest.</para></summary>
+    /// which stops a session resolving into a stranger's quest.</para></summary>
     public int ActiveQuestNpc(GameWorld world) =>
         ActiveQuestNpcSlot <= 0 ? 0 : world.NpcTemplateAt(ActiveQuestNpcMap, ActiveQuestNpcSlot);
 

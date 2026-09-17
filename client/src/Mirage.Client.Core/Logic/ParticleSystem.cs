@@ -330,8 +330,8 @@ public sealed class ParticleSystem
     // one it is belongs to whoever made the call.
 
     /// <summary>A crescent sweeping over a tile, oriented by a facing direction (dirX,dirY = unit tile
-    /// step). With <paramref name="sparks"/> it also flings a crescent of motes, which is what makes a
-    /// sweep read as having CONNECTED with something rather than passing through air.</summary>
+    /// step). With <paramref name="sparks"/> it also flings a crescent of motes, so the sweep reads
+    /// as having CONNECTED with something rather than passing through air.</summary>
     public void EmitArc(float x, float y, int dirX, int dirY, bool sparks, WorldLayer layer = WorldLayer.Ground)
     {
         // The blade-arc itself: an oriented crescent that sweeps + fades over the target tile. Vx/Vy hold the

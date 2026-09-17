@@ -11,8 +11,8 @@ namespace Mirage.Shared;
 /// <para><b>Baseline-preserving.</b> The base run is a hard FLOOR — a body with no
 /// <see cref="Records.PlayerRecord.MoveSpeed"/> at all runs at exactly the base pace, never slower —
 /// and move speed is a pure additive bonus on top of it, rising linearly to a cap. A world that sets no
-/// speed anywhere is therefore a world where everything moves at the same honest pace, which is what a
-/// game with no notion of speed should get.</para>
+/// speed anywhere is therefore a world where everything moves at the same honest pace, which is
+/// what a game with no notion of speed should get.</para>
 /// </summary>
 public static class MovementFormulas
 {
@@ -49,7 +49,7 @@ public static class MovementFormulas
     }
 
     // NPCs run at a FLAT baseline — the zero-speed run — with NO scaling. A body that invests in speed
-    // therefore outruns any chasing NPC, which is what keeps a chase escapable: the player's pace drops
+    // therefore outruns any chasing NPC, so a chase stays escapable: the player's pace drops
     // below this while the NPC stays pinned at it. Because the cadence is a flat 200 ms it divides any
     // movement tick cleanly, so the client slide matches server delivery with no snap. Kept as a
     // speed-taking method so scaled NPC run can be restored in one line by mirroring RunMsPerTile.

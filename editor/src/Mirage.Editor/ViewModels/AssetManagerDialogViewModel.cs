@@ -154,7 +154,7 @@ public sealed partial class AssetManagerDialogViewModel : ObservableObject
     /// stores the null before any hook can refuse it — leaving the backing field empty underneath code
     /// that is still running. Neither ordering the notifications nor guarding the hook can prevent that,
     /// because by then the null is already in the field. A list that never changes cannot clear a
-    /// selection, which is what keeps the failure impossible rather than merely handled.</para>
+    /// selection, so the failure is impossible rather than merely handled.</para>
     /// </summary>
     public IReadOnlyList<AssetFolder> SpriteSizes { get; } = AssetFolder.For(AssetCategoryKind.Sprites);
 

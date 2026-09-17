@@ -67,7 +67,7 @@ public static class LayerLogic
     /// <para>Interior ramp→ramp steps and plain steps keep the source layer, so once ascended you ride the
     /// surface on Fringe until you step off the ground side, and a mover that entered from the high side
     /// on Ground stays UNDER it. A contiguous block therefore resolves to one surface connected to the
-    /// ground only at its ground-side edges, which is what makes humps, corners and multi-mount staircases
+    /// ground only at its ground-side edges, which keeps humps, corners and multi-mount staircases
     /// coherent. Corridor and fit gates live in <see cref="CanEnter"/>.</para></summary>
     public static WorldLayer ResolveLayer(IWorldTileView view, int aWX, int aWY, int size, WorldLayer srcLayer, Direction dir)
     {

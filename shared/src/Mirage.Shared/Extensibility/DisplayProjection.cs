@@ -25,8 +25,8 @@ public enum DisplayStyle : byte
 ///
 /// <para><b>The engine decides the place; the game decides the content.</b> The same row is a line in
 /// a heads-up display, a line in a tooltip, a line in an authoring preview, a line in an operator's
-/// grid, or a line of text over a head. None of those is named here, which is what lets a game add a
-/// value to all of them at once.</para>
+/// grid, or a line of text over a head. None of those is named here, so a game adds a value to
+/// all of them at once.</para>
 /// </summary>
 public readonly record struct DisplayRow
 {
@@ -53,8 +53,8 @@ public readonly record struct DisplayRow
     /// <para>⚠ Not for reading the value back - the value is here. It is an IDENTITY: the thing
     /// that lets a surface recognise the same bar between frames, so it can be drawn moving toward a
     /// new value rather than snapping to it. Two surfaces showing one attribute therefore show it
-    /// moving the same way, which is what stops health in a panel disagreeing with health in the
-    /// sidebar about how fast it fell.</para></summary>
+    /// moving the same way, so health in a panel does not disagree with health in the sidebar
+    /// about how fast it fell.</para></summary>
     [JsonPropertyName("key")] public string? Key { get; init; }
 
     /// <summary>How full, from 0 to 1. Zero when <see cref="Max"/> is not positive.</summary>

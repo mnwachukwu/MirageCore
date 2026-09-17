@@ -52,7 +52,7 @@ public static class WarpLinks
     /// <summary>
     /// The maps this one reaches by warp and by warp only, ascending.
     ///
-    /// <para>Its own four grid links are excluded, and so is itself: the point of the number is what a reader
+    /// <para>Its own four grid links are excluded, and so is itself: the number counts what a reader
     /// cannot already see. A neighbor is drawn in the cell next door, and a warp home goes nowhere new.
     /// Counted per destination MAP rather than per warp tile, so a doorway with three tiles of threshold is
     /// one connection.</para>
@@ -73,8 +73,8 @@ public static class WarpLinks
 
     /// <summary>Warps arriving on <paramref name="destMap"/>, one entry per destination tile.
     ///
-    /// <para>Several warps landing on one tile compound into a single arrival, because that is what the tile
-    /// is: one doorway, however many doors open onto it. <paramref name="world"/> supplies whatever maps are
+    /// <para>Several warps landing on one tile compound into a single arrival, because the tile is
+    /// one doorway however many doors open onto it. <paramref name="world"/> supplies whatever maps are
     /// readable, so a caller that cannot see the whole world gets the part it can.</para></summary>
     public static IReadOnlyList<InboundWarp> InboundTo(
         int destMap, IEnumerable<(int Num, MapRecord Map)> world)

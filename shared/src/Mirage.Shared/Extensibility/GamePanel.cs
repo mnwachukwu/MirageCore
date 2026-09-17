@@ -11,13 +11,13 @@ public readonly record struct PanelButton(
 /// One line of a panel's list: what it READS as, and what it IS.
 ///
 /// <para>Two attribute keys rather than one, because the caption a player picks by and the thing a verb
-/// then acts on are rarely the same. "Ironhelm - at war since Tuesday" is what to show; the guild it
-/// names is what to retract against. A row whose caption reads blank is not drawn, which is how a list
+/// then acts on are rarely the same. Show "Ironhelm - at war since Tuesday"; retract against the
+/// guild it names. A row whose caption reads blank is not drawn, which is how a list
 /// as long as the table behind it shows only the part that is filled.</para>
 ///
 /// <para>Both are read off the player's own attributes, live, like everything else a panel shows. A
-/// game with nothing to put in an id key can leave it blank and use the caption as the id, which is what
-/// a list of plain names wants.</para>
+/// game with nothing to put in an id key can leave it blank and use the caption as the id, which
+/// suits a list of plain names.</para>
 /// </summary>
 public readonly record struct PanelRow(
     [property: JsonPropertyName("label")] string LabelKey,
@@ -116,11 +116,11 @@ public sealed record GamePanel
     ///
     /// <para>🔴 <b>This is how a game’s own things reach the bar at all.</b> Core lists items itself and
     /// knows nothing about a game’s spellbook, so the panel showing that book is the only place that can
-    /// say what its rows are for. What a slot then does is exactly what pressing that button with that row
+    /// say what its rows are for. A slot then does exactly what pressing that button with that row
     /// picked does — the same verb, the same subject — so the bar is a shortcut rather than a second
     /// feature.</para>
     ///
-    /// <para>⚠ The verb still needs <see cref="GameAction.Hotkeyable"/>, which is what the server checks
+    /// <para>⚠ The verb still needs <see cref="GameAction.Hotkeyable"/>, which the server checks
     /// when the binding arrives. And the rows’ ids have to BE numbers: a slot carries a number, and a list
     /// built for a person to read may carry captions instead. A row whose id is not a number offers
     /// nothing.</para></summary>
@@ -168,11 +168,11 @@ public sealed record GamePanel
     /// down, by the condition above ceasing to hold.
     ///
     /// <para>⚠ <b>Held requires <see cref="While"/>.</b> A window with no close control and no
-    /// condition is a window nothing can ever take away, and the player is left with a rectangle over
-    /// their game forever. A panel declaring one without the other is refused by name.</para>
+    /// condition can never be taken away, leaving the player a rectangle over their game
+    /// forever. A panel declaring one without the other is refused by name.</para>
     ///
-    /// <para>A held panel still needs a way OUT of whatever it is about, and that is a button on it
-    /// rather than the close control: Respawn on a death panel, Leave on a party panel. Closing the
+    /// <para>A held panel still needs a way OUT of whatever it is about, by a button on it rather
+    /// than the close control: Respawn on a death panel, Leave on a party panel. Closing the
     /// window and leaving the thing are different acts, and a corner X that did both is how a player
     /// leaves a party by tidying their screen.</para>
     /// </summary>
@@ -183,11 +183,11 @@ public sealed record GamePanel
     ///
     /// <para>Opening is entirely the client's: a panel shows attributes it already holds, so a key press
     /// costs no round trip. Wherever the panel is offered to the player, the key is shown beside its
-    /// name — a shortcut nothing displays is a shortcut nobody finds.</para></summary>
+    /// name, so nobody has to be told it exists.</para></summary>
     [JsonPropertyName("key")] public string Key { get; init; } = string.Empty;
 
     /// <summary>How big it opens, in the client's reference pixels. Zero takes the engine's default,
-    /// which is what a game with no opinion about its own window wants.</summary>
+    /// which suits a game with no opinion about its own window.</summary>
     [JsonPropertyName("w")] public int Width { get; init; }
 
     /// <inheritdoc cref="Width"/>
@@ -195,10 +195,10 @@ public sealed record GamePanel
 
     /// <summary>
     /// How small the player may drag it, in the client's reference pixels. Zero takes the engine's own
-    /// floor, which is what a panel with no opinion wants.
+    /// floor, which suits a panel with no opinion.
     ///
-    /// <para>⚠ A panel is resizable, and a floor is what stops a resize turning it into a title bar
-    /// with nothing under it. The engine's floor is one number for every panel and cannot know that a
+    /// <para>⚠ A panel is resizable, and a floor stops a resize turning it into a title bar with
+    /// nothing under it. The engine's floor is one number for every panel and cannot know that a
     /// form of four boxes needs more height than a list of names — so a screen that has a shape worth
     /// keeping says so here, and the player keeps every size above it.</para>
     /// </summary>

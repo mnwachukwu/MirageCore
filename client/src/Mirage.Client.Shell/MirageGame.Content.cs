@@ -324,8 +324,8 @@ public sealed partial class MirageGame : Game
         catch { return null; }
     }
 
-    /// <summary>Premultiplies a decoded sheet, which is what a PNG needs before a premultiplied blend can
-    /// draw it. See <see cref="SheetPixels.Premultiply"/>.</summary>
+    /// <summary>Premultiplies a decoded sheet, as a PNG needs before a premultiplied blend can draw
+    /// it. See <see cref="SheetPixels.Premultiply"/>.</summary>
     private static void Premultiply(Texture2D tex)
     {
         var pixels = new Color[tex.Width * tex.Height];
@@ -368,7 +368,7 @@ public sealed partial class MirageGame : Game
 
     /// <summary>Hands one loaded sheet's alpha to <see cref="TileOpacity"/>, which keeps eight bytes a tile
     /// and nothing else. Read AFTER the color key, so the art's transparent color counts as transparent —
-    /// the shadow a tile casts is the shape the player sees.</summary>
+    /// so the shadow a tile casts takes the shape the player sees.</summary>
     private static void ReadTileCoverage(int sheet, Texture2D tex)
     {
         var pixels = new Color[tex.Width * tex.Height];
@@ -387,7 +387,7 @@ public sealed partial class MirageGame : Game
     /// </summary>
     /// <remarks>
     /// Gaps stay null, so a missing sheet draws nothing rather than shifting every later sheet's index —
-    /// the number is what records store, and it has to mean the same thing whatever else is on disk.
+    /// records store the number, and it has to mean the same thing whatever else is on disk.
     /// </remarks>
     private Texture2D?[] LoadSheetSet(string subfolder)
     {

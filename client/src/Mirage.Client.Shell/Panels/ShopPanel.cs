@@ -622,7 +622,7 @@ public sealed class ShopPanel : IGamePanel
         if (max <= 1) return false;          // one at a time is the plain confirm, not a prompt
 
         int slot = _pendingBuySlot;
-        // Refused rather than reduced: asking for fifty with room for thirty-three is a question about
+        // Refused rather than reduced: asking for fifty with room for thirty-three asks about
         // fifty, and quietly buying thirty-three answers a question nobody asked.
         _prompt.Open(
             ClientStrings.Get(ClientStrings.ShopPanel_BuyHowMany),
@@ -677,8 +677,8 @@ public sealed class ShopPanel : IGamePanel
 
         // A stack sells by amount; everything else sells by the slot, and only alongside copies that are
         // INDISTINGUISHABLE from this one — same item, same durability. That is the rule the shop applies,
-        // and it is what lets worn gear be sold in bulk at all without a pristine piece going with the
-        // battered ones. Every copy in the group prices the same, so one "each" line describes them all.
+        // and it lets worn gear be sold in bulk without a pristine piece going with the battered
+        // ones. Every copy in the group prices the same, so one "each" line describes them all.
         int held = item.Type == ItemType.Currency
             ? Math.Max(inv!.Quantity, 1)
             : InventoryQuery.IdenticalSaleableCount(state, _pendingSellSlot);
@@ -815,7 +815,7 @@ public sealed class ShopPanel : IGamePanel
     /// <summary>The acquisition confirm, shared by barter and by buying.
     ///
     /// <para>A PURCHASE IS A TRADE ROW: give N gold, get one item. Expressing it that way rather than
-    /// writing a second confirm screen is what keeps the two in step — the spell-taught line, the potion
+    /// writing a second confirm screen keeps the two in step — the spell-taught line, the potion
     /// effect, the durability readout, the stat and INT requirements and the "you already know this
     /// spell" warning are all things a buyer needs exactly as much as a barterer, and there is now one
     /// copy of them.</para></summary>
@@ -874,8 +874,8 @@ public sealed class ShopPanel : IGamePanel
     }
 
     /// <summary>Selling gets its own compact confirm rather than the acquisition one: the player already
-    /// owns the thing, so requirements and effect previews are noise. What matters is what is being given
-    /// up, its condition — which is what sets the offer — and what the shop pays.</summary>
+    /// owns the thing, so requirements and effect previews are noise. What matters is the item being
+    /// given up, its condition — which sets the offer — and what the shop pays.</summary>
     private void DrawSellConfirm(SpriteBatch sb, SpriteFont font, ClientState state, Rectangle c, IReadOnlyList<Texture2D?> itemsTex)
     {
         var inv = state.Me?.Inv?[_pendingSellSlot];

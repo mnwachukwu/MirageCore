@@ -10,7 +10,7 @@ namespace Mirage.Client.Core.Logic;
 ///
 /// Fed the current held-state once per movement tick (from GameplayScreen.BuildInputSnapshot):
 /// it reconciles its stack against that state and returns the dominant direction. The stack is
-/// retained across ticks, which is why this is an instance rather than a static helper.
+/// retained across ticks, so this is an instance rather than a static helper.
 /// </summary>
 public sealed class MovementInputStack
 {

@@ -1,8 +1,8 @@
 # Two players fighting, and who is allowed to.
 #
 # Separate from fight.cm because the gates are the whole of it. A swing at a creature asks whether
-# anything is standing there; a swing at a person asks six questions first, and the order they are
-# asked in is what the player reads back as the reason.
+# anything is standing there; a swing at a person asks six questions first, and the player reads
+# the first refusal back as the reason.
 
 shared model Duel
 
@@ -66,9 +66,9 @@ shared model Duel
 
     # ── Who may be fought ─────────────────────────────────────────────────────
     #
-    # The order is the answer the player gets, so it is fixed. Being in the same party or guild is
-    # asked first: a swing at a guildmate on a protected map should say they are a guildmate rather
-    # than that the map is protected.
+    # The player reads the first refusal back as the reason, so the order is fixed. Being in the same
+    # party or guild is asked first: a swing at a guildmate on a protected map should say they are a
+    # guildmate rather than that the map is protected.
 
     public string function Judge(Player who, Player them)
         # ⚠ Staff are outside this entirely, on both sides of it. Somebody who can edit the world is
@@ -95,8 +95,8 @@ shared model Duel
         end if
 
         # ⚠ A contest suspends both of the rules below it, in both directions. Asked BEFORE the
-        # protected-ground refusal, because the land being fought over is the whole point and a town in
-        # the middle of it would otherwise be a place nobody could be pushed out of.
+        # protected-ground refusal, because the land is what they are fighting over and a town in the
+        # middle of it would otherwise be somewhere nobody could be pushed out of.
         string truce = Contest.Truce(who, them);
 
         if truce != ""

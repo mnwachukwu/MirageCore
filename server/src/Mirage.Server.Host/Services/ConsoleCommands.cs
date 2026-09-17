@@ -334,7 +334,7 @@ public sealed partial class ConsoleCommands : IHostedService
     /// this runs where every other handler runs, and prints from there.</para>
     ///
     /// <para>The first handler with an answer wins; the rest are not asked. Nobody answering leaves the
-    /// console saying the command is unknown, which is what it says with no game loaded at all.</para></summary>
+    /// console saying the command is unknown, as it does with no game loaded at all.</para></summary>
     private void OfferToTheGame(string cmd, string args)
     {
         if (_registry.ConsoleHandlers.Count == 0)
@@ -493,7 +493,7 @@ public sealed partial class ConsoleCommands : IHostedService
 
     /// <summary>Bans the account AND the machine behind it. ONLINE targets only: the machine key is held
     /// on the live session and never written to an account file, so an offline account has nothing to ban
-    /// — that case is what <c>/ban</c> covers, and saying so beats applying half of what was asked.</summary>
+    /// — <c>/ban</c> covers that case, and saying so beats applying half of what was asked.</summary>
     private async Task CmdHwBanAsync(string args)
     {
         string arg = args.Trim();

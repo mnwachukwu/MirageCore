@@ -54,8 +54,8 @@ public sealed partial class MapEditorViewModel : ObservableObject
         UpdateNavCommands();
 
         // Follow the selection with the Record subscription. A lazy fetch swaps the record in
-        // place and announces it via PropertyChanged(Record); OnMapRowPropertyChanged is what
-        // turns that into a NotifyMapProperties, so without this the panel never catches up.
+        // place and announces it via PropertyChanged(Record); OnMapRowPropertyChanged turns that
+        // into a NotifyMapProperties, so without this the panel never catches up.
         if (!ReferenceEquals(_subscribedMap, newValue))
         {
             if (_subscribedMap is not null) _subscribedMap.PropertyChanged -= OnMapRowPropertyChanged;

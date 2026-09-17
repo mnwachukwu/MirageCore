@@ -27,7 +27,7 @@ public static class MapResize
     ///
     /// <para>A linked map cannot be resized. World coordinates run continuously across a seam, so every map
     /// in a neighbourhood has to be the same size for a step across one to land where it looks like it
-    /// should; resizing one alone would make the seam lie. Unlinking first is what makes it possible, and
+    /// should; resizing one alone would make the seam lie. Unlinking first is the way through, and
     /// the size to settle on is a decision to take before a zone is joined up rather than after.</para></summary>
     public static IReadOnlyList<int> LinkedMaps(IReadOnlyList<MapRecord?> allMaps, int mapNum)
     {

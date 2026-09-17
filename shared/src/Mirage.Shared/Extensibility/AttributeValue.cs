@@ -19,8 +19,8 @@ public enum AttributeKind : byte
 ///
 /// <para><b>Four kinds, not one.</b> A game reaching for a bag entry is as likely to want a species
 /// name or an is-shiny flag as a hit-point count, and a single numeric kind would encode the other two
-/// as magic numbers. The four are closed and compare by value, which is what the editor's
-/// save-packet comparison needs of anything a record holds.</para>
+/// as magic numbers. The four are closed and compare by value, which the editor's save-packet
+/// comparison needs of anything a record holds.</para>
 ///
 /// <para><b>The accessors coerce rather than throw.</b> A bag is authored data, and authored data is
 /// edited by hand; a field written <c>45</c> where the game expected <c>45.0</c> is a typo the game

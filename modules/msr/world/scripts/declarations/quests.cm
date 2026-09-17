@@ -9,7 +9,7 @@ model Quest
     public string description;
 
     # Who offers it, and who takes it back. A picker over the engine's own creatures, which have no
-    # model a field could be typed as — that is what Points exists for.
+    # model a field could be typed as — Points exists for that.
     public integer giver;
     public integer turnIn;
 
@@ -91,7 +91,7 @@ model QuestGoal
     # Which creature has to be killed, and how many.
     #
     # ⚠ Killing is the only thing the original ever counted. Fetching and exploring were declared and
-    # never wired, so they are not here: a goal kind nothing advances is a quest nobody can finish.
+    # never wired, so they are not here: a goal kind nothing advances leaves a quest unfinishable.
     public integer quarry;
     public integer many;
 

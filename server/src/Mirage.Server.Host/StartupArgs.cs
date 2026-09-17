@@ -20,7 +20,7 @@ internal static class StartupArgs
     /// <summary>Whether status snapshots go to stdout, and how often the backstop fires.
     ///
     /// <para><c>--status-events</c> on its own takes the default cadence. <c>--status-events=1</c> asks
-    /// for one reading a second, which is what a ramping benchmark needs: its steps are far shorter than
+    /// for one reading a second, as a ramping benchmark needs: its steps are far shorter than
     /// <see cref="Management.StatusBroadcaster.Backstop"/>, so at the default it would sample once every
     /// several steps and miss the one that broke.</para></summary>
     public static bool StatusEvents(string[] args, out TimeSpan cadence)
@@ -37,8 +37,8 @@ internal static class StartupArgs
         return present;
     }
 
-    /// <summary>Reads <c>--name=value</c> and <c>--name value</c>. Both, because the first is what a
-    /// process launcher writes and the second is what a person types.</summary>
+    /// <summary>Reads <c>--name=value</c> and <c>--name value</c>. Both, because a process launcher
+    /// writes the first and a person types the second.</summary>
     private static string? Value(string[] args, string name)
     {
         for (int i = 0; i < args.Length; i++)

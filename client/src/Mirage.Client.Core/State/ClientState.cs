@@ -24,7 +24,7 @@ public sealed partial class ClientState
     /// <c>InputProcessor.ProcessMovement</c> otherwise opens the instant the player lands: it opens as
     /// soon as the slide offsets are zero, and arriving sets them to zero outright rather than sliding
     /// them there. A warp is asked for by walking onto a tile, so the key that asked for it is still down
-    /// on landing — and that is the whole distinction this draws. A tap ends inside the beat and moves
+    /// on landing, which is the distinction this draws. A tap ends inside the beat and moves
     /// nobody; a key still held when it expires walks on at the ordinary cadence.</para>
     ///
     /// <para>The beat runs from the ARRIVAL, so the wait is the load plus the beat. It starts when the
@@ -94,7 +94,7 @@ public sealed partial class ClientState
     /// <summary>How long a body stays engaged after whatever engaged it.
     ///
     /// <para>The server is the authority — a game enters the state through <c>IWorld.SetEngaged</c>, which
-    /// takes its own number of seconds. This copy is what the client grays out with, so it is a guess at
+    /// takes its own number of seconds. The client grays out from this copy, so it is a guess at
     /// what the server would refuse rather than the rule itself.</para></summary>
     public const long CombatWindowMs = 10_000;
 
@@ -115,12 +115,12 @@ public sealed partial class ClientState
     /// which is the PROTOCOL ceiling — the largest slot the wire can carry, and far more than a typical
     /// server runs. A world configured for twenty costs twenty checks a pass, not five hundred.</para>
     ///
-    /// <para>Starts at the ceiling, and that is the only safe direction to be wrong in: too high wastes a
+    /// <para>Starts at the ceiling, the only safe direction to be wrong in: too high wastes a
     /// few checks on empty slots, too low would skip a real player mid-step. The hello arrives on every
     /// connection before login, so no world pass ever runs on a value from an earlier server.</para>
     ///
-    /// <para><see cref="Players"/> itself stays ceiling-sized. It is one array of references, it is what
-    /// the protocol permits, and sizing it from the wire would mean allocating it after construction for
+    /// <para><see cref="Players"/> itself stays ceiling-sized. It is one array of references, it is
+    /// the size the protocol permits, and sizing it from the wire would mean allocating it after construction for
     /// nothing.</para>
     /// </summary>
     public int PlayerSlots
@@ -141,7 +141,7 @@ public sealed partial class ClientState
     ///
     /// <para>🔴 A client has never seen a game's classes and cannot look one up, so the SERVER resolves
     /// the lists and sends what to show. Empty in a world that asks nothing, and then the creation
-    /// screen draws a name box and an appearance list, which is what it has always drawn.</para></summary>
+    /// screen draws a name box and an appearance list, as it always has.</para></summary>
     public IReadOnlyList<Mirage.Shared.Extensibility.CreationChoice> Asked { get; set; } = [];
 
     /// <summary>
@@ -389,7 +389,7 @@ public sealed partial class ClientState
 
     /// <summary>Marks keyed by MAP NUMBER, replaced whole whenever the server sends that map's list.
     ///
-    /// <para>⚠ The list is what THIS client may see: a mark can name who it is for, so two people
+    /// <para>⚠ The list holds what THIS client may see: a mark can name who it is for, so two people
     /// standing on one square are told different things. Nothing here filters, because the filtering
     /// already happened.</para></summary>
     public Dictionary<int, List<Marker>> MarkersByMap { get; } = new();

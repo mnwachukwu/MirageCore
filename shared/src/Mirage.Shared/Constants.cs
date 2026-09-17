@@ -10,9 +10,9 @@ public static class Constants
     /// <summary>What this engine calls itself.
     ///
     /// <para><b>Must match <c>GameName</c> in <c>Directory.Build.props</c>, and
-    /// <c>GameNameIdentityTests</c> is what holds the two together.</b> MSBuild names every executable
-    /// from its copy; this copy names the per-user settings folders and is what the server shell
-    /// composes its server's filename from. The two disagreeing is not a build error and not a test
+    /// <c>GameNameIdentityTests</c> holds the two together.</b> MSBuild names every executable from
+    /// its copy; this copy names the per-user settings folders, and the server shell composes its
+    /// server's filename from it. The two disagreeing is not a build error and not a test
     /// failure on its own — it is a shell that cannot find the server sitting beside it.</para></summary>
     public const string GameName = "Mirage Core";
     public const int GamePort = 4000;
@@ -102,7 +102,7 @@ public static class Constants
     public const int MailAttachmentSendCost = 50;
     // Keyed on the SHIPMENT rather than the sender, so the mule that defeats a level-scaled fee is
     // irrelevant. Deliberately under the 5% MarketSaleTaxPercent the marketplace and CoD charge: those
-    // buy escrow, plain mail does not, and the gap is the price of trust.
+    // buy escrow, plain mail does not, and the difference covers the escrow.
     public const int MailAttachedValuePercent = 2;
 
     // Player marketplace: sale tax (a gold sink, shown to the seller up front), per-seller listing cap, and
@@ -141,8 +141,8 @@ public static class Constants
     public const int MaxMapY = DefaultMapHeight - 1;
 
     /// <summary>The camera's window in tiles — a property of the RENDER TARGET (512x384 at
-    /// <see cref="PicX"/>), not of any map. It is what the client draws and what gameplay reach is
-    /// measured against, and it does not move when a map's size does.</summary>
+    /// <see cref="PicX"/>), not of any map. The client draws it and gameplay reach is measured
+    /// against it, and it does not move when a map's size does.</summary>
     public const int ViewportTilesX = 16;
 
     /// <inheritdoc cref="ViewportTilesX"/>
@@ -230,7 +230,7 @@ public static class Constants
     public const int NpcStandoffSlackTiles = 1;
 
     // The spawn point is a server SETTING, not a constant — see ServerConfig.Spawn. It defaults to the
-    // middle of map 1, which is what it was when it lived here.
+    // middle of map 1, as it was when it lived here.
 
     // ── Action timing ────────────────────────────────────────────────────────
     // TWO cooldowns, not one. Both ACTION values share a 1-second beat — a player's and an NPC's —
@@ -246,7 +246,7 @@ public static class Constants
     // There is deliberately NO post-cast MOVE lockout: casting does not restrict movement at all, for
     // players or NPCs. At equal run speed a caster can't open a gap anyway, so a lockout would only
     // forbid walking during a second in which no recast was possible. The 1-second cast cadence above
-    // is what paces spell damage.
+    // paces spell damage.
 
     // ── Loot rolling ─────────────────────────────────────────────────────────
     // Players whose damage credit reaches this fraction of the top-damage contributor are eligible to roll

@@ -2,8 +2,8 @@ namespace Mirage.Editor.ViewModels;
 
 /// <summary>
 /// When each editor is next due to auto-save. One of these for the whole app, holding a last-saved
-/// stamp per section — which is what lets a single ticker serve every editor, including the ones whose
-/// section is not currently showing.
+/// stamp per section, so a single ticker serves every editor, including the ones whose section
+/// is not currently showing.
 /// </summary>
 public sealed class AutoSaveSchedule
 {

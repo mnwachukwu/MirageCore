@@ -41,7 +41,7 @@ public static class PanelSlots
 ///
 /// <para>GameplayScreen's registry pairs each panel with delegates that need the live panel instance,
 /// the graphics device and the frame — none of which exist in a headless test. These five facts need
-/// none of that, so keeping them separate is what makes the panel POLICY assertable while the wiring
+/// none of that, so keeping them separate leaves the panel POLICY assertable while the wiring
 /// stays where it has to be.</para>
 /// </summary>
 /// <param name="ConfigKey">Stable key its position persists under, or null when the panel's position
@@ -89,8 +89,8 @@ public static class PanelPolicies
         // Controls counts for Escape like every other player-opened panel. It did not until this table
         // existed: it was the one panel missing from a fourteen-term boolean chain, so Escape with only
         // the Controls panel open raised the QUIT dialog instead of closing it — even though
-        // CloseTopPanel already knew how to close it. Its sibling Help was present, which is what
-        // marked the omission as an oversight rather than a decision.
+        // CloseTopPanel already knew how to close it. Its sibling Help was present, which marked
+        // the omission as an oversight rather than a decision.
         t[PanelSlots.Controls] = new("Controls", PlayerToggleable: true, BlocksMovement: false, ClosesOnLeave: true, CountsAsOpenForEscape: true);
 
         // Moderation is Creator-only, but its POLICY is ordinary: an admin reading a list should still be

@@ -186,7 +186,7 @@ internal sealed class TileRecordConverter : JsonConverter<TileRecord>
 
     // One writer for both planes, since their field sets are identical.
     //
-    // Gated on TYPE rather than on "is it non-zero", which is what makes a tile file readable: a Warp
+    // Gated on TYPE rather than on "is it non-zero", which keeps a tile file readable: a Warp
     // writes its destination even when that destination is (0,0) — a real coordinate — while a Blocked
     // tile writes nothing at all no matter what happens to be sitting in its unused fields. The old
     // format could not tell those apart, because a zero and an absent slot looked the same.

@@ -64,7 +64,7 @@ public sealed partial class ItemSystem : GameSystem
     ///
     /// <para>A second packet rather than a parameter on <c>SpawnItem</c>, because the tag is decided
     /// AFTER the item exists — the roll that picks an owner needs the drop to have landed first. The
-    /// re-broadcast is what stops the claim being invisible: it is set between the spawn packet and
+    /// re-broadcast stops the claim being invisible: it is set between the spawn packet and
     /// anything else, so without this every client would have been told the item is unowned and never
     /// corrected.</para></summary>
     public void TagMapItem(int mapNum, int slot, int owner, long durationMs)
@@ -377,8 +377,8 @@ public sealed partial class ItemSystem : GameSystem
 
     /// <summary>Pick up ONE named map item from a distance — the tile menu's Pick Up.
     ///
-    /// <para>Identified by its stable per-map slot rather than by position, so the thing that gets taken
-    /// is the thing that was clicked even if the pile shifted between the menu opening and the click.
+    /// <para>Identified by its stable per-map slot rather than by position, so the pile shifting
+    /// between the menu opening and the click still takes what was clicked.
     /// A slot that no longer resolves means somebody else got there first, which is a race and not an
     /// error: it says so quietly rather than reporting a fault.</para></summary>
     public void PlayerMapPickUpAt(int index, int mapNum, int slot)

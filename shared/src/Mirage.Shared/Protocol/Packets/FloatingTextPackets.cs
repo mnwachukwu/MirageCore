@@ -11,11 +11,11 @@ namespace Mirage.Shared.Protocol.Packets;
 /// seam crossing, and holding it until an in-flight projectile lands so the text and the impact read as
 /// one event.</para>
 ///
-/// <para><b>Addressed to a BODY rather than to a tile</b>, because that is what makes it follow. A tile
+/// <para><b>Addressed to a BODY rather than to a tile</b>, so it follows. A tile
 /// is where the body was when the packet was built, and a damage number that stays behind while its
 /// target walks away reads as a bug.</para>
 ///
-/// <para>Sent to the viewport rather than to the observers of a map: this is a thing you see happen to
+/// <para>Sent to the viewport rather than to the observers of a map: you see this happen to
 /// somebody, at the range you would see them.</para>
 /// </summary>
 public sealed record FloatingTextPacket : IPacket

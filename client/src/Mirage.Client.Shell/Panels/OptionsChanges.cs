@@ -5,12 +5,12 @@ namespace Mirage.Client.Shell.Panels;
 /// only on the frame the control was operated, not the control's value. The shell reads the value
 /// from the panel property and decides what to do; see <see cref="OptionsPanel.Update"/>.
 ///
-/// <para>This was an eighteen-element tuple, which is why the pre-login handler in
+/// <para>This was an eighteen-element tuple, and so the pre-login handler in
 /// <c>MirageGame.UpdateOptionsPanel</c> could drop ten of the per-character options behind a row of
 /// <c>_</c> discards without anyone noticing: positional destructuring makes an omission look like
 /// punctuation. Named members make the same omission read as a missing <c>if</c>.</para>
 ///
-/// <para><c>default</c> means "nothing changed", which is what the panel returns while closed.</para>
+/// <para><c>default</c> means "nothing changed", which the panel returns while closed.</para>
 /// </summary>
 public readonly record struct OptionsChanges
 {

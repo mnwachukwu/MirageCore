@@ -15,7 +15,7 @@ namespace Mirage.Editor.Views;
 /// that is not in its visual tree.</para>
 ///
 /// <para>Not <c>Topmost</c>, unlike those two. They are tools you act through while looking at the map;
-/// this is a thing you read, and pinning a wall of log text over the editor is the opposite of helpful.</para>
+/// this one you read, and pinning a wall of log text over the editor helps nobody.</para>
 ///
 /// <para>It follows the tail only while the view is already at the bottom. Scrolling up is how somebody
 /// reads what just went wrong, and a window that yanked them back down on the next line would make that

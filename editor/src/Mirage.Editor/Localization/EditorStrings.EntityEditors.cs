@@ -116,7 +116,7 @@ public static partial class EditorStrings
     // ── Starting loadout ─────────────────────────────────────────────────────
     // Character creation SKIPS a starting line the class cannot use, so an unusable row produces a
     // MISSING item and no explanation in-game. The outcome column below is the only place that mistake
-    // is ever visible, which is why it is spelled out per row rather than summarized.
+    // is ever visible, so it is spelled out per row rather than summarized.
     public const string ShopEditor_TypeName = nameof(ShopEditor_TypeName);         // "Shop"
     public const string ShopEditor_TypeNamePlural = nameof(ShopEditor_TypeNamePlural);   // "Shops"
 
@@ -180,7 +180,7 @@ public static partial class EditorStrings
     public const string NpcEditor_DropChanceHeader = nameof(NpcEditor_DropChanceHeader);
     public const string NpcEditor_AddDrop = nameof(NpcEditor_AddDrop);
     // Expected drops per kill = the SUM of the live chances, because drop lines roll independently
-    // rather than competing for one slot. Surfaced because that sum is what a long table gets wrong.
+    // rather than competing for one slot. Surfaced because a long table gets that sum wrong.
     public const string NpcEditor_DropYieldNone = nameof(NpcEditor_DropYieldNone);
     public const string NpcEditor_DropYield = nameof(NpcEditor_DropYield);
     public const string NpcEditor_DropWarnChanceNoItem = nameof(NpcEditor_DropWarnChanceNoItem);  // chance set, no item

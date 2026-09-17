@@ -22,7 +22,7 @@ public enum DeadlineClock : byte
 ///
 /// <para><b>The clock travels with the value.</b> A deadline read against the wrong clock is a number
 /// that compares fine and means nothing — a tick count tested against Unix seconds is simply always in
-/// the past. Carrying the clock is what lets <see cref="HasPassed"/> refuse the mismatch instead of
+/// the past. Carrying the clock lets <see cref="HasPassed"/> refuse the mismatch instead of
 /// answering it.</para>
 /// </summary>
 /// <param name="At">When it lands, on <paramref name="Clock"/>. Zero means unset.</param>
@@ -71,7 +71,7 @@ public readonly record struct Deadline(long At, DeadlineClock Clock)
 /// <summary>
 /// A deadline plus the one bit of memory needed to notice the moment it passes.
 ///
-/// <para><b>The falling edge is the point.</b> Code that only asks "is it still running" cannot tell
+/// <para><b>This catches the falling edge.</b> Code that only asks "is it still running" cannot tell
 /// the first tick after expiry from the thousandth, so cleanup that belongs to expiry either never
 /// happens or happens every tick forever. <see cref="Poll"/> answers both questions at once and
 /// reports the edge exactly once.</para>

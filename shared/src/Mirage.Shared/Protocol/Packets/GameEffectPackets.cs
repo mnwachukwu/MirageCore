@@ -7,20 +7,20 @@ namespace Mirage.Shared.Protocol.Packets;
 /// S→C: the loaded game asked for something to be shown, once.
 ///
 /// <para>🔴 <b>One packet for the three effects a game may call</b>, because they are the same kind of
-/// thing said three ways: something happened at a body, or between two bodies, and here is what it
-/// looked like. Three commands would be three registrations, three events and three handlers for one
+/// thing said three ways: something happened at a body, or between two bodies, and this says
+/// what it looked like. Three commands would be three registrations, three events and three handlers for one
 /// idea.</para>
 ///
 /// <para><b>Addressed to BODIES rather than to tiles.</b> A tile is where somebody was when the packet
 /// was built; the client centers on a footprint, follows a target that is still moving, and holds any
 /// number owed to that target until a thrown thing lands. None of that is possible from coordinates.</para>
 ///
-/// <para>⚠ <b>Two fields are read only for one effect each.</b> <see cref="Style"/> is what a
+/// <para>⚠ <b>Two fields are read only for one effect each.</b> <see cref="Style"/> says what a
 /// <see cref="GameEffect.Throw"/> looks like on its way, and <see cref="To"/> is where it is going;
 /// neither means anything for the other two. <see cref="Intensity"/> is how big a
 /// <see cref="GameEffect.Burst"/> is, and for a <see cref="GameEffect.Sweep"/> it is whether the sweep
-/// connected — above zero flings sparks, which is what makes it read as having hit something rather
-/// than passing through air.</para>
+/// connected — above zero flings sparks, so it reads as having hit something rather than passing
+/// through air.</para>
 /// </summary>
 public sealed record GameEffectPacket : IPacket
 {
@@ -59,7 +59,7 @@ public sealed record GameEffectPacket : IPacket
         [property: JsonPropertyName("y")] int Y,
         [property: JsonPropertyName("dir")] Direction Facing = Direction.Down)
     {
-        /// <summary>Nobody, which is what a sweep and a burst carry for <c>To</c>.</summary>
+        /// <summary>Nobody, which a sweep and a burst carry for <c>To</c>.</summary>
         public static Body None => default;
 
         /// <summary>Whether this names anybody at all.</summary>

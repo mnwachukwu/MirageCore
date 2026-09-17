@@ -30,8 +30,8 @@ public sealed class PartySystem : GameSystem
     /// <summary>
     /// Pushes a fresh <see cref="PartyPartnerPacket"/> snapshot of <paramref name="playerIndex"/>
     /// to that player's partner so their party overlay stays current.  No-op when the player has
-    /// no partner.  Called every tick for every partnered player, which is what lets the bars follow a
-    /// partner the recipient cannot see.
+    /// no partner.  Called every tick for every partnered player, so the bars follow a partner the
+    /// recipient cannot see.
     /// </summary>
     public void NotifyPartner(int playerIndex)
     {

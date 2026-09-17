@@ -93,7 +93,7 @@ public sealed partial class GuildSystem : GameSystem
     /// chokepoint — no new mutation can forget to refresh an open Social panel. The one gap it can't
     /// close is a member going offline (their slot still reads as playing while the leave is being
     /// processed, so that broadcast still shows them online); the client re-requests the roster when the
-    /// tab opens, which is what keeps the live online column honest.</summary>
+    /// tab opens, which keeps the live online column honest.</summary>
     public void SaveGuild(GuildRecord guild)
     {
         var snapshot = guild.Clone();   // stable snapshot for the off-thread write

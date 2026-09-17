@@ -23,7 +23,7 @@ public sealed class NpcRecord
 
     /// <summary>This body's one line, or blank for one that says nothing.
     ///
-    /// <para>Said on two occasions, which is why it is named for neither: the first time it notices a
+    /// <para>Said on two occasions, so it is named for neither: the first time it notices a
     /// player, and again when a player reaches for a body that has no conversation and no shop to
     /// offer. Once per player rather than once per encounter.</para>
     ///
@@ -50,7 +50,7 @@ public sealed class NpcRecord
     public NpcBehavior Behavior { get; set; }
     /// <summary>Which pack this creature keeps to. A <see cref="NpcBehavior.Pursue"/> or
     /// <see cref="NpcBehavior.Flee"/> body never notices another body sharing its non-zero group, on top
-    /// of never noticing its own kind. 0 = ungrouped, which is what an unset record means.
+    /// of never noticing its own kind. 0 = ungrouped, as an unset record reads.
     ///
     /// <para>The rule is symmetric by construction — see <c>GameWorld.AreNpcsKin</c> — so a group set on
     /// one side of a pair and not the other protects neither, and shows up in testing as the pack
@@ -64,7 +64,7 @@ public sealed class NpcRecord
     /// noticed. Read by nothing else — every other behavior either closes all the way in, runs, or never
     /// notices anybody.
     ///
-    /// <para>0 means "work it out from <see cref="Range"/>", which is what an unset record says and what a
+    /// <para>0 means "work it out from <see cref="Range"/>" — what an unset record says, and what a
     /// world authored before this field existed carries. See <see cref="EffectiveStandoff"/>.</para></summary>
     public int Standoff { get; set; }
 
@@ -86,17 +86,17 @@ public sealed class NpcRecord
     public List<NpcDrop>? Drops { get; set; }
 
     /// <summary>Everything a game hangs on this NPC TEMPLATE — what every copy of it starts with.
-    /// Authored, so it is what the editor edits and what a world file carries.
+    /// Authored: the editor edits it and a world file carries it.
     ///
     /// <para>A running copy's own values live on <see cref="MapNpcRecord.Attributes"/> instead: one
     /// wolf taking damage must not wound the species.</para></summary>
     public AttributeBag Attributes { get; set; } = new();
 
     /// <summary>How fast this body moves, as a pure additive bonus over the speed everything starts
-    /// with. 0 is the baseline, which is what a world that never sets it gets.
+    /// with. 0 is the baseline, and a world that never sets it gets that.
     ///
-    /// <para><b>Core's only speed number, and it is not a stat.</b> Movement is the one thing the engine
-    /// itself performs on every body, so the pace has to live somewhere Core can read without knowing
+    /// <para><b>Core's only speed number, and it is not a stat.</b> Movement is the only thing the
+    /// engine itself performs on every body, so the pace has to live somewhere Core can read without knowing
     /// what a game calls its attributes. A game that derives speed from agility, a mount, a road, or a
     /// status effect writes the result here; Core never asks where the number came from.</para>
     ///

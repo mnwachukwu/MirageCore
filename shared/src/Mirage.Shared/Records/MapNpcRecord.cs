@@ -91,14 +91,14 @@ public class MapNpcRecord
     /// <summary>This body is chasing something a GAME pointed it at, rather than something it noticed
     /// on its own terms (runtime; not persisted).
     ///
-    /// <para>🔴 It is what lets a body chase at all when its authored <see cref="NpcBehavior"/> has no
+    /// <para>🔴 Without it a body cannot chase at all when its authored <see cref="NpcBehavior"/> has no
     /// noticing rule. A Wander body never acquires anybody, so without this the target a game wrote
     /// would be ignored by the brain and overwritten by the next wander stride — set, and silently
     /// inert. The legs pass already steps toward whatever target a body holds, so this only tells the
     /// brain to leave that target alone and mind it instead.</para>
     ///
-    /// <para>Cleared the moment the body has no target left, which is what keeps a roused body from
-    /// outliving what roused it.</para></summary>
+    /// <para>Cleared the moment the body has no target left, so a roused body does not outlive what
+    /// roused it.</para></summary>
     public bool Roused { get; set; }
 
     /// <summary>Sized by the CREATOR, not by <see cref="Constants.MaxPlayers"/>.

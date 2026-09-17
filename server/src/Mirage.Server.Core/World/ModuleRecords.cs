@@ -23,7 +23,7 @@ public sealed class ModuleRecords
     public IReadOnlyList<string> Families => [.. _byFamily.Keys];
 
     /// <summary>Makes room for <paramref name="limit"/> records of this family, all blank. Declaring the
-    /// same family twice replaces what was there, which is what a reload wants.</summary>
+    /// same family twice replaces what was there, as a reload needs.</summary>
     public void Declare(RecordFamily family, int limit)
     {
         ArgumentNullException.ThrowIfNull(family);

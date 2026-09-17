@@ -71,7 +71,7 @@ public partial class WorldPreviewWindow : Window
         _vm.LayoutChanged += ApplyLayout;
         _vm.MapInvalidated += _canvas.Invalidate;
         _vm.TilesetsChanged += ApplyTilesets;
-        // Modal against this window rather than the main one: the preview is what raised it, and it is the
+        // Modal against this window rather than the main one: the preview raised it, and it is the
         // window the reader is looking at.
         _vm.ShowWarpTargetsAsync = async targets =>
         {

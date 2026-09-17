@@ -17,7 +17,7 @@ namespace Mirage.Server.Shell.ViewModels;
 /// Supervise the server, relay its console, run its commands, and edit the rules it runs on.
 ///
 /// <para>The rules get an explicit Save/Revert rather than writing on every toggle: they change what a
-/// death costs every player, and a restart is what applies them.</para>
+/// death costs every player, and a restart applies them.</para>
 /// </summary>
 public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 {
@@ -25,7 +25,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private const int MaxConsoleLines = 5_000;
 
     // One string, not a list of lines: it is bound to a read-only TextBox so a selection can sweep
-    // ACROSS lines, which is what copying a stack trace needs.
+    // ACROSS lines, as copying a stack trace needs.
     private readonly System.Text.StringBuilder _log = new();
     private int _logLines;
 
@@ -136,8 +136,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial string StateLabel { get; private set; } = ShellStrings.Get(ShellStrings.State_Stopped);
 
-    // Color is on top of the label, never instead of it — the word is what works for a colourblind
-    // reader and in a screenshot.
+    // Color is on top of the label, never instead of it — the word reaches a color-blind reader,
+    // and survives a screenshot.
     private static readonly IImmutableSolidColorBrush RunningBrush = new ImmutableSolidColorBrush(Color.FromRgb(0x4A, 0xDE, 0x80));
     private static readonly IImmutableSolidColorBrush StoppingBrush = new ImmutableSolidColorBrush(Color.FromRgb(0xFB, 0xBF, 0x24));
     private static readonly IImmutableSolidColorBrush StoppedBrush = new ImmutableSolidColorBrush(Color.FromRgb(0xF8, 0x71, 0x71));
@@ -393,8 +393,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     // ── Editors ───────────────────────────────────────────────────────────────
     // Reported apart from players: an editor session holds no character, so a row of it has nothing to say
-    // in a player's columns. What it DOES have is a list of records it is holding open, which is the thing
-    // an operator wants to see before ending it.
+    // in a player's columns. It does have a list of records it is holding open, which an operator
+    // wants to see before ending it.
     public ObservableCollection<EditorSummary> Editors { get; } = [];
     public bool HasEditors => Editors.Count > 0;
     public string EditorsHeading => ShellStrings.Get(ShellStrings.Server_Editors);
@@ -554,7 +554,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     //
     // The report is gathered ON REQUEST — the server has to read its ban file and sweep every account —
     // so nothing here is pushed on a timer. It arrives when this asks, and again after every change the
-    // server makes, which is what keeps a lifted row from lingering.
+    // server makes, so a lifted row does not linger.
 
     public System.Collections.ObjectModel.ObservableCollection<BanSummary> Bans { get; } = [];
     public System.Collections.ObjectModel.ObservableCollection<PenaltySummary> Penalties { get; } = [];
@@ -600,8 +600,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private void RefreshModeration() => Send("/moderation");
 
-    /// <summary>Lifting a ban targets the LOGIN, never a character name — the account is what the ban is
-    /// stored against, and nobody banned is online to be named.</summary>
+    /// <summary>Lifting a ban targets the LOGIN, never a character name — the ban is stored against
+    /// the account, and nobody banned is online to be named.</summary>
     [RelayCommand]
     private void Unban(BanSummary? b)
     {
@@ -934,7 +934,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     /// <summary>Drops the certificate on record for the typed address, so the next attach records
     /// whatever is offered. Separate from <see cref="ForgetServerCommand"/>: dropping the entry from the
-    /// list leaves the pin behind, which is what makes re-adding the same address fail the same way.</summary>
+    /// list leaves the pin behind, so re-adding the same address fails the same way.</summary>
     [RelayCommand(CanExecute = nameof(CanClearPin))]
     private void ClearPin() => DropPin(_remoteHost, _remotePort);
 
@@ -1070,7 +1070,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     public bool CanEditServerRetention => _logKnobs.HasFlag(LogKnobs.ServerRetention);
     public bool CanEditNetworkRetention => _logKnobs.HasFlag(LogKnobs.NetworkRetention);
 
-    /// <summary>True when anything at all failed to resolve, which is what shows the explanation.</summary>
+    /// <summary>True when anything at all failed to resolve, which shows the explanation.</summary>
     public bool LoggingIncomplete => _logKnobs != LogKnobs.All;
 
     private void LoadLogSettings()
@@ -1191,7 +1191,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial decimal GamePort { get; set; } = Constants.GamePort;
 
-    /// <summary>Empty means <c>data/</c> beside the server, which is what the placeholder says. Stored as
+    /// <summary>Empty means <c>data/</c> beside the server, as the placeholder says. Stored as
     /// typed rather than resolved to an absolute path, so a relative world folder stays relative.</summary>
     [ObservableProperty]
     public partial string DataDir { get; set; } = "";
@@ -1452,8 +1452,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         ManagementPort = config.Management.Port > 0 ? config.Management.Port : DefaultManagementPort;
         ManagementToken = config.Management.Token;
         LoadLogSettings();
-        // On a malformed file the switches show stock rules, which is what the server would run — the
-        // message is what separates that from "these are your settings".
+        // On a malformed file the switches show stock rules, matching what the server would run. Only
+        // the message separates that state from "these are your settings".
         ConfigStatus = error is null ? "" : ShellStrings.Format(ShellStrings.Config_LoadFailed, ("Error", error));
     }
 

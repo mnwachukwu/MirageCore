@@ -6,11 +6,11 @@ namespace Mirage.Shared.Extensibility;
 /// One member of a closed set an author picks from, and the fields that become meaningful once they
 /// have picked it.
 ///
-/// <para><b>The extra fields are the point.</b> A set whose members are only labels is a list of
-/// strings. What makes this a descriptor is <see cref="Fields"/>: choosing a member changes which rows
+/// <para><b>The extra fields are why this exists.</b> A set whose members are only labels is a
+/// list of strings. <see cref="Fields"/> turns it into a descriptor: choosing a member changes which rows
 /// the form shows, so an author picking one kind of thing is not looking at four boxes belonging to
 /// another kind of thing. That relationship — member to the fields it activates — is the applicability
-/// table, and holding it here is what keeps it from being restated in every form that reads the
+/// table, and holding it here keeps it from being restated in every form that reads the
 /// set.</para>
 ///
 /// <para>A member with no extra fields is perfectly ordinary and is just a labeled choice.</para>

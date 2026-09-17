@@ -51,8 +51,8 @@ public sealed class ConsoleLineViewModel
 /// </summary>
 public sealed partial class ConsoleViewModel : ObservableObject, IDisposable
 {
-    /// <summary>Lines held in the view. The sink keeps more; this is what a scrollback can render without
-    /// the list virtualizer having to work for it.</summary>
+    /// <summary>Lines held in the view. The sink keeps more; this is as much as a scrollback can
+    /// render without the list virtualizer having to work for it.</summary>
     private const int MaxRows = 1000;
 
     public ConsoleViewModel()
@@ -108,7 +108,7 @@ public sealed partial class ConsoleViewModel : ObservableObject, IDisposable
 
     /// <summary>The sink raises this from whichever thread logged — the server connection runs off the UI
     /// thread — so the hop to the UI thread happens here. Posting rather than invoking keeps a logging
-    /// call from ever waiting on the UI, which is what would turn a stalled editor into a deadlocked one.</summary>
+    /// call from ever waiting on the UI, which would turn a stalled editor into a deadlocked one.</summary>
     private void OnWritten(ConsoleSink.Line line)
     {
         Dispatcher.UIThread.Post(() =>

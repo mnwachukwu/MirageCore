@@ -6,8 +6,8 @@ namespace Mirage.Editor.Models;
 /// Typeahead entries for an art-sheet picker: Id is the sheet number, Name is the sheet's display
 /// name (its filename minus the numeric prefix).
 ///
-/// <para>A gap in the numbering still gets an entry. The number is what tiles, NPCs, classes and items
-/// store, so closing a gap here would silently repoint every record past it.</para>
+/// <para>A gap in the numbering still gets an entry. Tiles, NPCs, classes and items store the
+/// number, so closing a gap here would silently repoint every record past it.</para>
 /// </summary>
 public static class SheetEntries
 {

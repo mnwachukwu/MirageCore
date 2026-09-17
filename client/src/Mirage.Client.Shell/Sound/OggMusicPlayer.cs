@@ -110,7 +110,7 @@ public sealed class OggMusicPlayer : IMusicPlayer, IDisposable
 
     /// <summary>Tops the audio device back up to <see cref="TargetPending"/> buffers. Runs on the game
     /// thread, so it only moves bytes; an empty queue means the decoder fell behind and is left to catch
-    /// up. Submitting to the target rather than one-per-event is what sets the stall the stream can
+    /// up. Submitting to the target rather than one-per-event sets how long a stall the stream can
     /// survive — the device plays from what it HOLDS, and it is only refilled while the loop is running,
     /// so decoded-but-unsubmitted audio buys nothing during a freeze.</summary>
     private void OnBufferNeeded(object? sender, EventArgs e)
@@ -162,7 +162,7 @@ public sealed class OggMusicPlayer : IMusicPlayer, IDisposable
 
     /// <summary>
     /// Fills <paramref name="buffer"/> completely, rewinding to <see cref="_loopStart"/> whenever the
-    /// decoder reaches the loop end. Wrapping within a single buffer is what makes the loop seamless.
+    /// decoder reaches the loop end. Wrapping within a single buffer keeps the loop seamless.
     /// </summary>
     private int FillLooping(float[] buffer)
     {
@@ -200,7 +200,7 @@ public sealed class OggMusicPlayer : IMusicPlayer, IDisposable
             _sfx = null;
         }
         // Cancel first, then join: the decoder may be parked in Add on a full queue, and the token is
-        // what releases it. Joining before disposing the reader is what makes the reader single-owner.
+        // what releases it. Joining before disposing the reader keeps the reader single-owner.
         _cts?.Cancel();
         _decoder?.Join(TimeSpan.FromSeconds(2));
         _decoder = null;

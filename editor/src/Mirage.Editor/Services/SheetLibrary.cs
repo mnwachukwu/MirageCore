@@ -87,8 +87,8 @@ public sealed record SheetScan(IReadOnlyList<SheetEntry> Sheets, IReadOnlyList<S
 /// Reads and edits a folder of numbered graphics sheets.
 ///
 /// <para>Every operation is a file operation, and the whole type is deliberately free of Avalonia and of
-/// view-models: what makes a sheet folder correct is a question about filenames and image headers, and it
-/// should be answerable without a UI toolkit loaded.</para>
+/// view-models: whether a sheet folder is correct comes down to filenames and image headers, and
+/// that should be answerable without a UI toolkit loaded.</para>
 ///
 /// <para>It reports the failures the loaders swallow. A file with no index, two files claiming one index,
 /// an index past the ceiling — each of those means a sheet is simply absent, with no error anywhere, and

@@ -87,7 +87,7 @@ public sealed partial class ItemSystem : GameSystem
         long useNow = Environment.TickCount64;
         if (isConsumable && useNow < sp.ConsumableTimer + Constants.ConsumableCooldownMs * useWindMult) return;
 
-        // How much of it they were carrying before the game had its say. Whether a use SPENT one is what
+        // How much of it they were carrying before the game had its say. Whether a use SPENT one
         // paces the clock, and Core cannot decide that for itself: what using a consumable does is a game's
         // rule, and a use it refused — a full bar, a vital with nothing left to give — costs neither the
         // item nor the beat. Counted only for a consumable, because nothing else here is paced.
@@ -136,7 +136,7 @@ public sealed partial class ItemSystem : GameSystem
                 // Read off `key` — the attribute resolved on the PLAYER'S layer — not off the tile's inline
                 // ground attribute — the flag has to be read on the layer the door being
                 // opened was the fringe one, so a fringe door consumed the key only if the unrelated ground
-                // attribute happened to say so. Naming the field is what made the mismatch visible.
+                // attribute happened to say so. Naming the field exposed the mismatch.
                 if (key.KeyIsConsumed)
                 {
                     TakeItem(index, itemNum, 0);
@@ -175,7 +175,7 @@ public sealed partial class ItemSystem : GameSystem
 
     /// <summary>Put on the first copy of an item a bag holds, and take off whatever was in its slot.
     ///
-    /// <para>🔴 <b>Named by ITEM rather than by bag slot, because that is what a rule knows.</b> A game
+    /// <para>🔴 <b>Named by ITEM rather than by bag slot, because a rule knows the item.</b> A game
     /// handing somebody a sword knows which sword; where it landed in the bag is the engine's own
     /// bookkeeping, and asking a script to track it would be asking it to keep a copy of something it
     /// cannot see.</para>

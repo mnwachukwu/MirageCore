@@ -58,9 +58,9 @@ shared model Death
     #
     # A murderer who has just died is treated as though they were not one for a minute. They come back
     # on open ground wearing a flag everybody may swing at, and without this they are killed again
-    # where they land — which is a sentence nobody chose the length of.
+    # where they land, for as long as somebody keeps waiting there.
     #
-    # ⚠ It is the ONE thing that reads the flag differently, so nothing asks IsMurderer to decide
+    # ⚠ This is the only place that reads the flag differently, so nothing asks IsMurderer to decide
     # whether the world is hunting somebody. IsHunted is that question, and it is the one a protected
     # map and a guard both ask.
 
@@ -135,8 +135,8 @@ shared model Death
     end function
 
     # ⚠ The flag lapses by comparison - IsMurderer asks whether the hour is up - so nothing
-    # NOTICES the moment it goes. This does. Zeroing the key is what keeps it to one telling, and
-    # clearing the mark is what takes the name back to its ordinary color.
+    # NOTICES the moment it goes. This does. Zeroing the key keeps it to one telling, and
+    # clearing the mark takes the name back to its ordinary color.
     public function Tick(Player who)
         integer lapses = who.Number(Death.MurdererUntil);
 

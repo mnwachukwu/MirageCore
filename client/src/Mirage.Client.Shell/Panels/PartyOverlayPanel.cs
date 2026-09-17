@@ -46,7 +46,7 @@ public sealed class PartyOverlayPanel
     }
 
     /// <summary>The panel's height for what is currently declared. Zero bars is a header and a close
-    /// glyph, which is what Core on its own is: a name, and a way out of the party.</summary>
+    /// glyph, which is all Core declares on its own: a name, and a way out of the party.</summary>
     private static int PanelH => HeightFor(_declaredBars);
 
     private const int InnerW = 152;

@@ -135,7 +135,7 @@ public sealed record AlertMsgPacket : IPacket
 ///
 /// <para><b>This is the pre-login handshake.</b> A client compiles against the PROTOCOL ceilings — the
 /// largest numbers the wire can carry — but a given server runs on its own, usually much smaller, limits.
-/// Being told them up front is what lets a client work to the server's shape instead of the protocol's.
+/// Being told them up front lets a client work to the server's shape instead of the protocol's.
 /// It arrives before credentials are sent, so nothing about it depends on who is connecting.</para>
 ///
 /// <para>Carries the player limit and the game's name. The remaining record ceilings join it, and at that
@@ -169,8 +169,8 @@ public sealed record ServerHelloPacket : IPacket
     ///
     /// <para>🔴 <b>Resolved HERE, by the server, because only the server has the records.</b> A client
     /// is handed the options and their names rather than a family id it would have to look up — it has
-    /// never seen the world's classes and cannot be asked to. Empty in a world that asks nothing, which
-    /// is what the screen already draws.</para></summary>
+    /// never seen the world's classes and cannot be asked to. Empty in a world that asks nothing,
+    /// which is already what the screen draws.</para></summary>
     [JsonPropertyName("asked")]
     public IReadOnlyList<Extensibility.CreationChoice> Asked { get; init; } = [];
 

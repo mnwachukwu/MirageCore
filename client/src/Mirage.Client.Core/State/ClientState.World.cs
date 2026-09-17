@@ -65,7 +65,7 @@ public sealed partial class ClientState
     /// <summary>Whether the server has said this body cannot manage a run right now.
     ///
     /// <para>⚠ Paces PREDICTION, and nothing else. The intent still goes up as a run while the key is
-    /// held, because that is what keeps the server asking its game whether the answer has changed — a
+    /// held, so the server keeps asking its game whether the answer has changed — a
     /// client that stopped asking could never be told it may run again.</para></summary>
     public bool Winded { get; set; }
 
@@ -232,8 +232,8 @@ public sealed partial class ClientState
     // MapGroup defs, cached like the other shared defs: filled in bulk at join (SendMapGroups) and
     // refreshed per-group on a live editor save (UpdateMapGroup). The client resolves a map's EFFECTIVE
     // inheritable values against these on demand via the *Of helpers below — the client-side mirror of the
-    // server's GameWorld.*Of(mapNum) — instead of the server baking resolved values into each map packet. That
-    // is what lets a group edit land live with no map reload or revision bump. Index 0 unused; a null slot means
+    // server's GameWorld.*Of(mapNum) — instead of the server baking resolved values into each map packet. So
+    // a group edit lands live with no map reload or revision bump. Index 0 unused; a null slot means
     // "no such group" and resolves to the map's own raw values / hard defaults.
     public MapGroupRecord?[] MapGroups { get; private set; } = new MapGroupRecord?[RecordLimits.Default.MapGroups + 1];
 

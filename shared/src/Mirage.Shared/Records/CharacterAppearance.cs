@@ -36,8 +36,8 @@ public sealed record AppearanceGate
 
 public sealed record CharacterAppearance
 {
-    /// <summary>What the picker shows. Blank is allowed and reads as an unnamed option, which is what a
-    /// world that offers looks without naming them wants.</summary>
+    /// <summary>What the picker shows. Blank is allowed and reads as an unnamed option, for a world
+    /// that offers looks without naming them.</summary>
     [JsonPropertyName("name")] public string Name { get; init; } = string.Empty;
 
     /// <summary>Which row of <see cref="SpriteSheet"/> this appearance is drawn from.</summary>
@@ -47,7 +47,7 @@ public sealed record CharacterAppearance
     [JsonPropertyName("spriteSheet")] public int SpriteSheet { get; init; }
 
     /// <summary>Which answers in the creation flow this look is offered for. Empty is offered to
-    /// everybody, which is what most looks in most worlds want.
+    /// everybody, as most looks in most worlds are.
     ///
     /// <para>Every gate has to hold, and a gate holds when the answer under its key is one of its
     /// numbers. Two gates on one look is "for these classes AND from this homeland".</para></summary>

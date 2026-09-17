@@ -11,7 +11,7 @@ namespace Mirage.Shared.Protocol.Packets;
 /// Saying what is true now covers all of them and needs no removal wire.</para>
 ///
 /// <para><b>Per client, not per map.</b> A marker may name who can see it, so two people standing on one
-/// square can be owed different lists — which is the whole point for anything a side holds privately.
+/// square can be owed different lists, as anything a side holds privately needs.
 /// A map nobody has marked sends an empty list, which is how a client clears one.</para>
 /// </summary>
 public sealed record MarkerUpdatePacket : IPacket
