@@ -422,7 +422,7 @@ public sealed class ChatOptionsPanel
             new Vector2(_nameField_Bounds.X, sb_NameLabelY),
             UiHelper.DlgLabelColor);
         UiHelper.DrawFilledRect(sb, _nameField_Bounds, UiHelper.TextInputBg);
-        UiHelper.DrawBorder(sb, _nameField_Bounds, _nameFocused ? Color.CornflowerBlue : Color.Gray);
+        UiHelper.DrawBorder(sb, _nameField_Bounds, _nameFocused ? UiHelper.FocusBorderColor : Color.Gray);
         _nameField.Draw(sb, font, _nameField_Bounds, _nameFocused, _nowMs);
 
         // Section headers (drawn as text; the channel heads double as clickable group toggles, while

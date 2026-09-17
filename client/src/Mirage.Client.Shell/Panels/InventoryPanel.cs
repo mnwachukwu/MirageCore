@@ -458,8 +458,8 @@ public sealed class InventoryPanel : IGamePanel
     private const int EqColGap = 16;         // horizontal gap between icons in a row
     private const int EqSlotLabelLines = 2;  // per icon: the slot's own name, then the durability line
 
-    private static readonly Color EqSlotBg = new(20, 20, 40, 235);
-    private static readonly Color EqEmptyTextColor = new(110, 110, 130);
+    private static readonly Color EqSlotBg = new(12, 26, 22, 235);
+    private static readonly Color EqEmptyTextColor = new(104, 124, 116);
 
     // One declared slot and the icon rect it occupies. Computed identically for DrawEquipment and
     // EquipmentHitTest so the hover/click targets line up with what's drawn.

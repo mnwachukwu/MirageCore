@@ -219,7 +219,7 @@ public sealed class TextInputField
         _cachedBounds = bounds;
 
         UiHelper.DrawFilledRect(sb, bounds, UiHelper.TextInputBg);
-        UiHelper.DrawBorder(sb, bounds, focused ? Color.CornflowerBlue : Color.Gray);
+        UiHelper.DrawBorder(sb, bounds, focused ? UiHelper.FocusBorderColor : Color.Gray);
 
         string display = DisplayText();
         const int pad = 4;

@@ -7,7 +7,7 @@ using Mirage.Shared;
 
 namespace Mirage.Client.Shell.Screens;
 
-/// <summary>Scrolling credits, reachable from the main menu.</summary>
+/// <summary>The credits, reachable from the main menu.</summary>
 public sealed class CreditsScreen : IGameScreen
 {
     private readonly ShellContext _ctx;
@@ -43,13 +43,13 @@ public sealed class CreditsScreen : IGameScreen
         _cancelBtn = new Button { Bounds = new Rectangle(399, 412, 200, 34), Label = ClientStrings.Get(ClientStrings.CreditsScreen_CloseButton) };
     }
 
-    /// <summary>No setup needed; the scroll position resets with the instance.</summary>
+    /// <summary>No setup needed; the screen holds no state beyond its fields.</summary>
     public void OnEnter() { }
     /// <summary>Nothing to release — the screen holds no resources beyond its fields.</summary>
     public void OnExit() { }
 
-    /// <summary>Handle typing, field focus, link clicks, and the submit key; also completes any
-    /// in-flight connection attempt started by the submit handler.</summary>
+    /// <summary>Refresh the close button after a language switch, then handle clicks on the studio
+    /// link and the close button.</summary>
     public void Update(GameTime gameTime, InputState input)
     {
         _input = input;
@@ -62,44 +62,24 @@ public sealed class CreditsScreen : IGameScreen
         if (_cancelBtn.IsClicked(input)) _ctx.Screens.Replace(new MainMenuScreen(_ctx));
     }
 
-    /// <summary>Paint the menu dialog, its fields, any error text, and the footer links.</summary>
+    /// <summary>Paint the menu dialog, the credit lines, the copyright with its studio link, and the
+    /// close button.</summary>
     public void Draw(SpriteBatch sb, SpriteFont font)
     {
-        UiHelper.DrawMenuDialog(sb, _ctx.Graphics.Viewport.Bounds, out _, out var content, _ctx.MenuArt);
+        UiHelper.DrawMenuDialog(sb, _ctx.Graphics.Viewport.Bounds, out _, out _, _ctx.MenuArt);
         UiHelper.DrawMenuTitle(sb, _ctx.TitleFont ?? font, ClientStrings.Get(ClientStrings.CreditsScreen_Title));
 
         float lx = Dlg.X + 216f;
 
-        // ── Original VB6 Implementation ──────────────────────────────────────
-        sb.DrawString(font, ClientStrings.Get(ClientStrings.Credits_SectionVB6), new Vector2(lx, Dlg.Y + 16), Color.Gold);
-
-        sb.DrawString(font, ClientStrings.Get(ClientStrings.Credits_Programming), new Vector2(lx, Dlg.Y + 36), UiHelper.DlgLabelColor);
-        sb.DrawString(font, "Chris Kremer", new Vector2(lx, Dlg.Y + 52), Color.LightPink);
-        sb.DrawString(font, "(Torquel / Valient / Consty)", new Vector2(lx, Dlg.Y + 64), Color.LightPink);
-
-        sb.DrawString(font, ClientStrings.Get(ClientStrings.Credits_ArtMusic), new Vector2(lx, Dlg.Y + 84), UiHelper.DlgLabelColor);
-        sb.DrawString(font, "Copyright (c) Square Soft", new Vector2(lx, Dlg.Y + 100), Color.LightPink);
-
-        sb.DrawString(font, ClientStrings.Get(ClientStrings.Credits_GuiArt), new Vector2(lx, Dlg.Y + 120), UiHelper.DlgLabelColor);
-        sb.DrawString(font, "Jess Triska (Loken)", new Vector2(lx, Dlg.Y + 136), Color.LightPink);
-        sb.DrawString(font, ClientStrings.Get(ClientStrings.Credits_GuiArtNote), new Vector2(lx, Dlg.Y + 150), Color.Gray);
-
-        // Divider between the two teams
-        UiHelper.DrawFilledRect(sb,
-            new Rectangle(content.X + 8, Dlg.Y + 170, content.Width - 16, 1),
-            UiHelper.DlgBorderColor);
-
-        // ── C# Implementation ─────────────────────────────────────────────────
-        sb.DrawString(font, ClientStrings.Get(ClientStrings.Credits_SectionCSharp), new Vector2(lx, Dlg.Y + 180), Color.Gold);
-        sb.DrawString(font, ClientStrings.Get(ClientStrings.Credits_CreatorDeveloper), new Vector2(lx, Dlg.Y + 196), UiHelper.DlgLabelColor);
-        sb.DrawString(font, Credits.Author, new Vector2(lx, Dlg.Y + 212), Color.LightPink);
-        sb.DrawString(font, Credits.AuthorHandles, new Vector2(lx, Dlg.Y + 224), Color.LightPink);
+        sb.DrawString(font, ClientStrings.Get(ClientStrings.Credits_CreatorDeveloper), new Vector2(lx, Dlg.Y + 16), UiHelper.DlgLabelColor);
+        sb.DrawString(font, Credits.Author, new Vector2(lx, Dlg.Y + 32), Color.LightPink);
+        sb.DrawString(font, Credits.AuthorHandles, new Vector2(lx, Dlg.Y + 44), Color.LightPink);
 
         // ── Copyright ─────────────────────────────────────────────────────────
         // Drawn in two pieces so the studio half can be a link: the prefix, then the link box placed at
         // exactly the prefix's rendered width.
         string prefix = $"Copyright (c) {Credits.CopyrightYears(DateTime.Now.Year)} ";
-        float copyrightY = Dlg.Y + 244;
+        float copyrightY = Dlg.Y + 64;
         sb.DrawString(font, prefix, new Vector2(lx, copyrightY), Color.LightPink);
 
         // Measured off DisplayText, so the brackets are inside the clickable box rather than beside it.

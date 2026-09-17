@@ -23,9 +23,9 @@ public sealed class DropDown
     private const int MaxVisible = 8;
     private const int SbWidth = 8;
     private readonly string _tooltipScope = UiHelper.NextTooltipScope("dropdown");
-    private static readonly Color ListBg = new(25, 20, 55);
-    private static readonly Color SelectedRowBg = new(60, 80, 160);
-    private static readonly Color HoveredRowBg = new(45, 50, 100);
+    private static readonly Color ListBg = new(14, 30, 25);
+    private static readonly Color SelectedRowBg = new(34, 92, 84);
+    private static readonly Color HoveredRowBg = new(26, 58, 52);
 
     public string? SelectedItem =>
         SelectedIndex >= 0 && SelectedIndex < Items.Count ? Items[SelectedIndex] : null;

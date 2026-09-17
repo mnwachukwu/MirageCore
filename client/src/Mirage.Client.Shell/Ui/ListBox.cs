@@ -46,8 +46,8 @@ public sealed class ListBox
     /// <summary>Width the vertical scrollbar reserves on the right — exposed so a consumer (e.g.
     /// <see cref="Table{T}"/>) can compute the column area that excludes it.</summary>
     public const int ScrollbarWidth = SbWidth;
-    private static readonly Color ListBg = new(20, 20, 40);
-    private static readonly Color SelectedRowBg = new(60, 60, 120);
+    private static readonly Color ListBg = new(12, 26, 22);
+    private static readonly Color SelectedRowBg = new(28, 72, 66);
 
     /// <summary>Return to the top with nothing selected. For a list whose CONTENTS are being replaced with an
     /// unrelated set — a different shop's stock, not the same stock re-filtered — where carrying the old

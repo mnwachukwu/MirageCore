@@ -66,8 +66,8 @@ public sealed class PartyOverlayPanel
         => HeaderH + Pad * 2 + (bars > 0 ? HeaderBarGap + bars * (BarH + BarGap) - BarGap : 0);
 
     // Panel chrome — subtle dark backing with a thin border, both alpha-tinted by proximity.
-    private static readonly Color PanelBg = new(15, 15, 25, 200);
-    private static readonly Color PanelBorder = new(80, 80, 120);
+    private static readonly Color PanelBg = new(10, 19, 16, 200);
+    private static readonly Color PanelBorder = new(58, 90, 82);
 
     // ── Animated bar ratios (mirror HudPanel.Tick) ────────────────────────────
     private const float LerpSpeed = 5f;

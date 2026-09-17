@@ -73,9 +73,9 @@ public sealed partial class ChatPanel
     // flash color for an inactive tab with a pending message. TabStripBg is the empty "track"
     // behind the tabs — deliberately distinct from the chat log below so the unused space reads
     // as room for more tabs.
-    private static readonly Color TabStripBg = new(34, 34, 58);
+    private static readonly Color TabStripBg = new(20, 38, 32);
     private static readonly Color AddTabBg = new(40, 60, 40);
-    private static readonly Color TabBorder = new(110, 110, 140);
+    private static readonly Color TabBorder = new(78, 116, 106);
 
     // Right-click handler for tab options — wired by GameplayScreen.
     public Action<int, Point>? OnTabRightClicked { get; set; }

@@ -10,9 +10,9 @@ namespace Mirage.Client.Shell.Ui;
 /// its own tab LAYOUT (rect computation) — only the palette + this one draw style are shared.</summary>
 public static class TabStrip
 {
-    public static readonly Color ActiveBg = new(60, 60, 100);  // brighter than the strip, picks the eye
-    public static readonly Color InactiveBg = new(20, 20, 40);   // recedes into the strip
-    public static readonly Color HoverBg = new(40, 40, 70);   // mid-tone — clearly responding to the mouse
+    public static readonly Color ActiveBg = new(34, 80, 72);  // brighter than the strip, picks the eye
+    public static readonly Color InactiveBg = new(12, 26, 22);   // recedes into the strip
+    public static readonly Color HoverBg = new(24, 54, 48);   // mid-tone — clearly responding to the mouse
 
     /// <summary>Draws one tab: fill by state, gold (active) / dim (else) border, and a centered label colored
     /// gold (active) / white (hovered) / gray.</summary>

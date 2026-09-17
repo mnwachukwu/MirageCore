@@ -58,8 +58,8 @@ public static class HotkeyBarPanel
     // genuine pie wedge would need geometry. 48 spokes over a 32px box leaves no visible gaps.
     private const int SweepSpokes = 48;
 
-    private static readonly Color EmptyFill = new(18, 22, 24, 200);
-    private static readonly Color BoundFill = new(28, 34, 36, 210);
+    private static readonly Color EmptyFill = new(14, 26, 22, 200);
+    private static readonly Color BoundFill = new(22, 40, 34, 210);
     private static readonly Color UnavailableTint = new(70, 70, 70);
     private static readonly Color CooldownVeil = new(6, 8, 10, 165);
     private static readonly Color BadgePlate = new(0, 0, 0, 190);

@@ -113,11 +113,11 @@ public sealed class Table<T> : IColumnLayoutTable
     private const int CellPadX = 4;
     private const int RowTextPadY = 2;
 
-    private static readonly Color HeaderBg = new(30, 30, 60);
+    private static readonly Color HeaderBg = new(16, 40, 34);
     private static readonly Color HeaderBorder = Color.Gray;
     private static readonly Color HeaderText = Color.White;
-    private static readonly Color SortArrowColor = new(120, 140, 255);
-    private static readonly Color ReorderGhostBg = new(60, 60, 120, 200);
+    private static readonly Color SortArrowColor = new(79, 201, 183);
+    private static readonly Color ReorderGhostBg = new(28, 72, 66, 200);
     private const int ReorderGhostHalfW = 30;
 
     public Table() => _body.RowRenderer = DrawRow;

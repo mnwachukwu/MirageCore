@@ -106,10 +106,23 @@ public static class UiHelper
     /// and every other menu screen would have to answer for it.</para></summary>
     public const int MenuDlgWideW = 700;
 
-    // Primary UI accent: blue-dominant (more blue than purple).
-    public static readonly Color DlgArtColor = new(15, 10, 80);  // deep indigo panel
-    public static readonly Color DlgBorderColor = new(60, 80, 200); // medium blue border
-    public static readonly Color DlgLabelColor = new(120, 140, 255); // cornflower label
+    // ── The brand ramp ────────────────────────────────────────────────────────
+    //
+    // Teal on forest green, the same ramp the icon family and the site are built from: #0a1310 at the
+    // dark end through #21382e in the middle to the #4fc9b7 accent. Every piece of CHROME below sits on
+    // it — dialogs, buttons, fields, lists, tabs, scrollbars, tooltips, the chat frame.
+    //
+    // ⚠ What is NOT on it: anything carrying MEANING rather than decoration. Danger red, the amber
+    // combat outline, the durability white/yellow/red, the floating combat text, the disabled grays,
+    // and the PlayStation face-button colors all stay where they are, because recoloring them to match
+    // the brand would cost the reader the thing they actually encode. A game's own declared colors
+    // never reach this file at all.
+    public static readonly Color DlgArtColor = new(10, 34, 28);  // deep forest panel
+    public static readonly Color DlgBorderColor = new(46, 134, 122); // teal border
+    public static readonly Color DlgLabelColor = new(79, 201, 183); // the accent itself
+    // Border of the one field that has keyboard focus — the brightest thing on a form, so it wins
+    // against every other border in view.
+    public static readonly Color FocusBorderColor = new(79, 201, 183);
 
     // The action-cooldown bar, drawn below a body. A light neutral gray, so it reads as a state rather
     // than as one of the values a game declared — those carry colors of the game's own choosing.
@@ -117,42 +130,42 @@ public static class UiHelper
     // Unfilled bar background — HudPanel
     public static readonly Color BarBg = new(20, 20, 20);
     // Confirmation overlay — InventoryPanel + ShopPanel
-    public static readonly Color ConfirmOverlayBg = new(20, 20, 40, 220);
-    public static readonly Color ConfirmOverlayBorder = new(100, 100, 160);
+    public static readonly Color ConfirmOverlayBg = new(12, 26, 22, 220);
+    public static readonly Color ConfirmOverlayBorder = new(74, 120, 110);
     // Panel title bar — DraggablePanel + ChatPanel
-    public static readonly Color PanelTitleBg = new(30, 30, 60);
-    public static readonly Color PanelTitleActiveBg = new(55, 55, 110);
+    public static readonly Color PanelTitleBg = new(16, 40, 34);
+    public static readonly Color PanelTitleActiveBg = new(30, 74, 66);
     // Active Button-tab tint — Market + Mail tab strips
-    public static readonly Color ActiveTabColor = new(70, 90, 140);
+    public static readonly Color ActiveTabColor = new(44, 104, 94);
     // Danger confirmation button — QuitConfirmDialog + CharSelectScreen
     public static readonly Color DangerButtonNormal = new(80, 30, 30);
     public static readonly Color DangerButtonHover = new(120, 50, 50);
     // Primary "enter game" button — MainMenuScreen (Login/Connect) + NewCharScreen (Create) + CharSelectScreen (Play)
     public static readonly Color PrimaryButtonNormal = new(30, 80, 30);
     public static readonly Color PrimaryButtonHover = new(50, 120, 50);
-    // Accent "create / sign up" button — MainMenuScreen (New Account)
-    public static readonly Color AccentButtonNormal = new(30, 60, 130);
-    public static readonly Color AccentButtonHover = new(50, 90, 180);
+    // Accent "create / sign up" button — MainMenuScreen (New Account) + ConfigPanel (Test)
+    public static readonly Color AccentButtonNormal = new(22, 74, 68);
+    public static readonly Color AccentButtonHover = new(36, 112, 102);
     // Modal popup background — AlertDialog + DeleteConfirmScreen + QuitConfirmDialog
-    public static readonly Color PopupBg = new(30, 30, 50);
+    public static readonly Color PopupBg = new(16, 36, 30);
     // Standard button colors — Button + DropDown
-    public static readonly Color ButtonNormalBg = new(50, 50, 80);
-    public static readonly Color ButtonHoverBg = new(80, 80, 120);
+    public static readonly Color ButtonNormalBg = new(38, 58, 53);
+    public static readonly Color ButtonHoverBg = new(58, 90, 82);
     public static readonly Color ButtonDisabledBg = new(30, 30, 30);
     // Toggle-button OFF state — a neutral mid-gray, deliberately lighter than ButtonDisabledBg so an OFF
     // toggle never reads as a disabled/unclickable button. The ON state reuses PrimaryButton* (green).
     public static readonly Color ToggleOffBg = new(70, 70, 70);
     public static readonly Color ToggleOffHover = new(100, 100, 100);
     // List/dropdown scrollbar — ListBox + DropDown
-    public static readonly Color ListScrollTrackBg = new(30, 30, 50);
-    public static readonly Color ListScrollThumbBg = new(80, 80, 120);
-    public static readonly Color ListScrollThumbBorder = new(100, 100, 160);
-    // Generic UI control border — DropDown + DeleteConfirmScreen
-    public static readonly Color UiControlBorder = new(100, 120, 200);
+    public static readonly Color ListScrollTrackBg = new(20, 38, 32);
+    public static readonly Color ListScrollThumbBg = new(58, 90, 82);
+    public static readonly Color ListScrollThumbBorder = new(74, 120, 110);
+    // Generic UI control border — DropDown, ContextMenu, the item boxes, and the modal confirms
+    public static readonly Color UiControlBorder = new(70, 150, 138);
     // Disabled control foreground — Slider + Checkbox
     public static readonly Color DisabledColor = new(80, 80, 80);
     // Text input field background — TextInputField + ChatPanel input box
-    public static readonly Color TextInputBg = new(20, 20, 40);
+    public static readonly Color TextInputBg = new(12, 26, 22);
     // Overhead/party-overlay combat outline — amber border when an entity is in combat.
     public static readonly Color WorldBarCombatColor = new(200, 180, 0);
     // Floating combat text — MirageGame
@@ -195,27 +208,28 @@ public static class UiHelper
 
     // ── Chat / text-area palette ─────────────────────────────────────────────
     // ChatPanel backgrounds: log area + input row.
-    public static readonly Color ChatBg = new(10, 10, 20, 200);
-    public static readonly Color ChatInputRowBg = new(15, 15, 30);
+    public static readonly Color ChatBg = new(8, 17, 14, 200);
+    public static readonly Color ChatInputRowBg = new(12, 26, 22);
     // Selection highlight shades — ChatPanel input vs TextArea body vs TextInputField.
-    // Distinct alpha/blue tones kept on purpose: chat input is brightest (over dark bg),
-    // TextArea is softer (long bodies of text), text input field is a flat opaque tone.
-    public static readonly Color ChatInputSelectionHighlight = new(60, 100, 200, 160);
-    public static readonly Color TextAreaSelectionHighlight = new(60, 100, 200, 120);
-    public static readonly Color TextInputSelectionHighlight = new(70, 130, 200);
-    // TextArea scrollbar palette — slightly cooler than ListBox/DropDown's ListScroll* set
-    // by design (text bodies sit against darker frames, the cooler bar reads less busy).
-    public static readonly Color TextAreaSbTrackBg = new(28, 28, 48);
-    public static readonly Color TextAreaSbTrackBorder = new(60, 60, 92);
-    public static readonly Color TextAreaSbThumbBg = new(100, 100, 158);
-    public static readonly Color TextAreaSbThumbBorder = new(150, 150, 210);
-    // Hyperlink colors — used by TextArea when EnableHyperlinks is on. Light blue stands out
+    // Distinct alpha kept on purpose: chat input is brightest (over dark bg), TextArea is softer
+    // (long bodies of text), text input field is a flat opaque tone.
+    public static readonly Color ChatInputSelectionHighlight = new(40, 110, 100, 160);
+    public static readonly Color TextAreaSelectionHighlight = new(40, 110, 100, 120);
+    public static readonly Color TextInputSelectionHighlight = new(44, 120, 110);
+    // TextArea scrollbar palette — slightly dimmer than ListBox/DropDown's ListScroll* set by design
+    // (text bodies sit against darker frames, the quieter bar reads less busy).
+    public static readonly Color TextAreaSbTrackBg = new(18, 36, 30);
+    public static readonly Color TextAreaSbTrackBorder = new(40, 66, 58);
+    public static readonly Color TextAreaSbThumbBg = new(70, 116, 106);
+    public static readonly Color TextAreaSbThumbBorder = new(108, 168, 156);
+    // Hyperlink colors — used by TextArea when EnableHyperlinks is on. Bright teal stands out
     // against the dark log background and reads as a link without colliding with the QBColor
     // chat palette; the hover tone brightens to confirm the hand cursor is over a live link.
-    public static readonly Color HyperlinkColor = new(120, 180, 255);
-    public static readonly Color HyperlinkHoverColor = new(180, 220, 255);
-    // Time-of-Day / Weather status-line color (HudPanel).
-    public static readonly Color WeatherStatusColor = new(0, 120, 255);
+    public static readonly Color HyperlinkColor = new(110, 215, 200);
+    public static readonly Color HyperlinkHoverColor = new(160, 240, 228);
+    // Time-of-Day / Weather status-line color (HudPanel). Cooler and dimmer than DlgLabelColor, which
+    // sits two rows above it in the same sidebar.
+    public static readonly Color WeatherStatusColor = new(58, 166, 176);
 
     /// <summary>Player-facing map name: the map's authored DisplayName, else its MapGroup's
     /// DisplayName, else the internal Name, else a generic "Map N". The first three steps are the shared
@@ -314,8 +328,8 @@ public static class UiHelper
     }
 
     // Per-viewer territory-contest colors, shared by the in-world flags/circles and the HUD:
-    // the viewer's own guild = blue, an enemy guild = red, neutral/contested = gray.
-    public static readonly Color ContestOwnColor = new(90, 140, 255);
+    // the viewer's own guild = teal, an enemy guild = red, neutral/contested = gray.
+    public static readonly Color ContestOwnColor = new(90, 205, 190);
     public static readonly Color ContestEnemyColor = new(235, 70, 70);
     public static readonly Color ContestNeutralColor = new(175, 175, 175);
 

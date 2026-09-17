@@ -22,8 +22,8 @@ public sealed class QuitConfirmDialog
     private readonly Button _logoutBtn = new();
     private readonly Button _cancelBtn = new();
 
-    private static readonly Color LogoutButtonNormal = new(30, 50, 80);
-    private static readonly Color LogoutButtonHover = new(50, 80, 120);
+    private static readonly Color LogoutButtonNormal = new(26, 62, 58);
+    private static readonly Color LogoutButtonHover = new(42, 96, 88);
 
     public void Show(Action onConfirm, bool inCombat = false, Action? onLogout = null)
     {

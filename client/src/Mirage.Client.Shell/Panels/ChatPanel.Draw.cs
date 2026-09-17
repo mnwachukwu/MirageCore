@@ -46,7 +46,7 @@ public sealed partial class ChatPanel
             var inputRect = InputRect();
             UiHelper.DrawFilledRect(sb, inputRect, UiHelper.TextInputBg);
             if (_focused)
-                UiHelper.DrawBorder(sb, inputRect, Color.CornflowerBlue);
+                UiHelper.DrawBorder(sb, inputRect, UiHelper.FocusBorderColor);
 
             const string Prefix = "> ";
             float prefixW = font.MeasureString(Prefix).X;

@@ -116,12 +116,6 @@ public static partial class ClientStrings
     public const string QuitConfirm_CombatWarnLine1 = nameof(QuitConfirm_CombatWarnLine1);
     public const string QuitConfirm_CombatWarnLine2 = nameof(QuitConfirm_CombatWarnLine2);
 
-    // ── CreditsScreen (section headers — proper names + copyright lines stay verbatim) ──
-    public const string Credits_SectionVB6 = nameof(Credits_SectionVB6);
-    public const string Credits_Programming = nameof(Credits_Programming);
-    public const string Credits_ArtMusic = nameof(Credits_ArtMusic);
-    public const string Credits_GuiArt = nameof(Credits_GuiArt);
-    public const string Credits_GuiArtNote = nameof(Credits_GuiArtNote);
-    public const string Credits_SectionCSharp = nameof(Credits_SectionCSharp);
+    // ── CreditsScreen (the role label — proper names + copyright lines stay verbatim) ──
     public const string Credits_CreatorDeveloper = nameof(Credits_CreatorDeveloper);
 }

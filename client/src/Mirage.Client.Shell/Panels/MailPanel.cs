@@ -446,7 +446,7 @@ public sealed class MailPanel : IGamePanel
         float counterW = font.MeasureString(counter).X;
         UiHelper.DrawLabel(sb, font, counter, new Vector2(_bodyRect.Right - counterW, _bodyRect.Y - 14), counterColor, counterW + 2);
         UiHelper.DrawFilledRect(sb, _bodyRect, UiHelper.TextInputBg);
-        UiHelper.DrawBorder(sb, _bodyRect, _bodyField.IsFocused ? Color.CornflowerBlue : Color.Gray);
+        UiHelper.DrawBorder(sb, _bodyRect, _bodyField.IsFocused ? UiHelper.FocusBorderColor : Color.Gray);
         _bodyField.SetBounds(_bodyRect);
         _bodyField.Draw(sb, font, nowMs);
 

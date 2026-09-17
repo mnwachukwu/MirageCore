@@ -86,7 +86,7 @@ public sealed partial class GameplayScreen : IGameScreen
     private void DrawChatBubbles(SpriteBatch sb, SpriteFont font, List<ChatBubbleDrawCmd> bubbles)
     {
         float lineH = font.LineSpacing;
-        Color bgBase = new(20, 20, 40, 220);
+        Color bgBase = new(12, 26, 22, 220);
         Color shadowBase = new(0, 0, 0, 120);
 
         foreach (var b in bubbles)

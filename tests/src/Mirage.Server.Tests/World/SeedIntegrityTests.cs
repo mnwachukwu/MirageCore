@@ -473,8 +473,7 @@ public class SeedIntegrityTests
         Assert.That(_shops, Is.Not.Empty, "the seed authors no shops");
     }
 
-    /// <summary>The companion to <see cref="EveryQuestGiver_CanActuallyBeAskedForIt"/>, and the reason
-    /// #50 came before #52. Interaction is TALK-FIRST (<c>PacketHandler.HandleNpcInteract</c>):
+    /// <summary>Interaction is TALK-FIRST (<c>PacketHandler.HandleNpcInteract</c>):
     /// conversation, then a visible quest, then the keeper shop. So a keeper who HAS a conversation is
     /// only ever reached through it, and a shop whose keeper's tree carries no <c>OpenShop</c> choice can
     /// never be opened by any player — the NPC just talks. Nothing in the engine reports this.</summary>

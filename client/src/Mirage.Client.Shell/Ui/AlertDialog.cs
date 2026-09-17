@@ -16,7 +16,7 @@ public sealed class AlertDialog
     private Action? _onOk;
     private Button _okBtn = new();
 
-    private static readonly Color OkButtonBg = new(50, 50, 90);
+    private static readonly Color OkButtonBg = new(30, 64, 58);
 
     public void Show(string message, Action? onOk = null)
     {

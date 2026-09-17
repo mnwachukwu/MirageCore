@@ -201,7 +201,7 @@ public sealed class ModerationPanel : IGamePanel
             float loginW = Math.Min(140, rect.Width * 0.45f);
             UiHelper.DrawLabel(batch, f, e.Login, new Vector2(rect.X + 4, rect.Y + 2), Color.White, loginW);
             UiHelper.DrawLabel(batch, f, e.Detail, new Vector2(rect.X + 8 + loginW, rect.Y + 2),
-                new Color(180, 180, 200), rect.Width - loginW - 14);
+                new Color(176, 196, 188), rect.Width - loginW - 14);
         };
         _list.Draw(sb, font, list);
 
@@ -220,7 +220,7 @@ public sealed class ModerationPanel : IGamePanel
                     _ => throw new ArgumentOutOfRangeException(nameof(state)),
                 });
             UiHelper.DrawLabel(sb, font, msg, new Vector2(list.X + 6, list.Y + 6),
-                new Color(160, 160, 180), list.Width - 12);
+                new Color(156, 180, 170), list.Width - 12);
         }
 
         // The mode replaces the swept-accounts count on the machine tab. It is the one fact a Creator
@@ -234,7 +234,7 @@ public sealed class ModerationPanel : IGamePanel
                     : ClientStrings.ModerationPanel_MachineModeSignal)));
             UiHelper.DrawLabel(sb, font, mode,
                 new Vector2(c.X + Pad * 2 + BtnW * 2, c.Bottom - FooterH + Pad + 5),
-                new Color(150, 150, 170), c.Right - Pad - BtnW - (c.X + Pad * 2 + BtnW * 2) - 6);
+                new Color(146, 172, 162), c.Right - Pad - BtnW - (c.X + Pad * 2 + BtnW * 2) - 6);
         }
 
         _refreshBtn.Draw(sb, font, _input);
@@ -244,7 +244,7 @@ public sealed class ModerationPanel : IGamePanel
         {
             string swept = ClientStrings.Format(ClientStrings.ModerationPanel_Scanned, ("Count", state.ModerationScanned));
             var footer = new Vector2(c.X + Pad * 2 + BtnW * 2, c.Bottom - FooterH + Pad + 5);
-            UiHelper.DrawLabel(sb, font, swept, footer, new Color(150, 150, 170),
+            UiHelper.DrawLabel(sb, font, swept, footer, new Color(146, 172, 162),
                 c.Right - Pad - BtnW - footer.X - 6);
         }
 

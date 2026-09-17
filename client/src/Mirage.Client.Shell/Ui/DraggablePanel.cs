@@ -31,9 +31,9 @@ public sealed class DraggablePanel
     private readonly bool _resizable;
     private readonly bool _movable;
 
-    private static readonly Color PanelBg = new(10, 10, 20, 220);
+    private static readonly Color PanelBg = new(8, 17, 14, 220);
     private static readonly Color CloseBg = new(120, 30, 30);
-    private static readonly Color ResizeHandleColor = new(80, 80, 100);
+    private static readonly Color ResizeHandleColor = new(60, 88, 80);
 
     public Rectangle Bounds => _bounds;
 

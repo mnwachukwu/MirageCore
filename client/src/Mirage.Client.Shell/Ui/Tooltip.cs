@@ -36,10 +36,10 @@ public static class Tooltip
     private const int IconSize = 32;
     private const int IconRightGap = 8;
 
-    private static readonly Color BgColor = new(20, 20, 40, 240);
-    private static readonly Color BorderColor = new(100, 120, 200);
+    private static readonly Color BgColor = new(12, 26, 22, 240);
+    private static readonly Color BorderColor = new(70, 150, 138);
     private static readonly Color HeaderColor = Color.White;
-    private static readonly Color LabelColor = new(170, 190, 230);
+    private static readonly Color LabelColor = new(142, 190, 178);
     private static readonly Color ValueColor = Color.White;
     private static readonly Color WarnColor = Color.OrangeRed;
     private static readonly Color GoodColor = Color.LightGreen;
