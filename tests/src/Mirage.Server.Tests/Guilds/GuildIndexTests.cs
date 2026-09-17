@@ -12,7 +12,7 @@ namespace Mirage.Server.Tests.Guilds;
 /// <summary>
 /// A guild's number lives in its filename. <c>GuildRecord.Index</c> is <c>[JsonIgnore]</c>d and filled in
 /// by the loader, because the guild, territory and war code holds a guild detached from any dictionary key
-/// and asks it which one it is — <c>DirtyGuilds.Add(guild.Index)</c>, territory challenges, war credit.
+/// and asks it which one it is — <c>ChainGuildWrite(guild.Index, …)</c>, territory challenges, war credit.
 ///
 /// <para>The loader keying the dictionary by filename is not enough on its own: the record itself is what
 /// the rest of the server reads, so the number has to be stamped onto it, not just used as a key.</para>

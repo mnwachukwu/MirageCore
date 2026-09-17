@@ -69,7 +69,7 @@ public sealed partial class ChatPanel
     private const int MinW = 220;
     private const int MinH = 100;
 
-    // Tab-strip palette — matches ControlsPanel's tab feel. HoverTabBg doubles as the notify
+    // Tab-strip palette — matches ControlsPanel's tab feel. TabStrip.HoverBg doubles as the notify
     // flash color for an inactive tab with a pending message. TabStripBg is the empty "track"
     // behind the tabs — deliberately distinct from the chat log below so the unused space reads
     // as room for more tabs.

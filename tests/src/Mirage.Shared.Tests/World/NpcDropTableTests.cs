@@ -83,8 +83,8 @@ public class NpcDropTableTests
     [Test]
     public void Normalize_CollapsesAnEmptyTableToNull()
     {
-        // "Drops nothing" should carry no key on disk at all, matching how an unrestricted AllowedClasses
-        // collapses. An empty [] and a missing key must not be two spellings of the same thing.
+        // "Drops nothing" should carry no key on disk at all. An empty [] and a missing key must not be
+        // two spellings of the same thing.
         var npc = new NpcRecord { Name = "Rat", Drops = [] };
 
         npc.Normalize();

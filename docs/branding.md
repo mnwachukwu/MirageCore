@@ -19,7 +19,7 @@ place the distinction actually earns its keep.
 
 All three are **drawn** rather than rasterized from an SVG — the mark is nine rounded rectangles and
 the badges are a few polygons, so the geometry is a page of numbers in a generator. That generator is
-published, under `ArtGenerators/` in the [tools repository](https://github.com/mnwachukwu/MirageSourceRemastered.Tools.Public);
+published, under `ArtGenerators/` in the [tools repository](https://github.com/mnwachukwu/MirageCore.Tools.Public);
 the icons it produces are committed here, in every format and size, so nothing about building or
 rebranding this repository depends on it.
 

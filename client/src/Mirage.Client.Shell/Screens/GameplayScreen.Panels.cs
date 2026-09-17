@@ -119,8 +119,6 @@ public sealed partial class GameplayScreen : IGameScreen
             // speech channel back to Say is not something restoring display options should do.
             _chat.SetActiveChannel(prefs.ActiveChatChannel);
         }
-
-        // PlayerSpellsPacket arrives before this screen is created, so sync from state now.
     }
 
     public void OnExit() => CloseAllPanels();

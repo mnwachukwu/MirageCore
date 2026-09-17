@@ -25,8 +25,8 @@ public sealed partial class ShopBarterRowViewModel : ObservableObject
 
     // Per-side quantity limits, bound to the NumericUpDown Min/Max so the spinner can't leave the valid
     // range: an empty side (no item) pins to 0; a non-currency item pins to exactly 1 (it never stacks);
-    // a currency item allows 1..9999. CoerceGive/GetQuantity is the authoritative backstop for typed input
-    // and item swaps; the server also re-normalizes on save.
+    // a currency item allows 1..9999. CoerceGiveQuantity and CoerceGetQuantity are the authoritative
+    // backstop for typed input and item swaps; the server also re-normalizes on save.
     public int GiveQuantityMin => GiveItem > 0 ? 1 : 0;
     public int GiveQuantityMax => GiveItem <= 0 ? 0 : (_isCurrency(GiveItem) ? 9999 : 1);
     public int GetQuantityMin => GetItem > 0 ? 1 : 0;

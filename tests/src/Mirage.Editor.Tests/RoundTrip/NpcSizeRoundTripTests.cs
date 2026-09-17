@@ -8,7 +8,7 @@ namespace Mirage.Editor.Tests.RoundTrip;
 
 /// <summary>
 /// Locks the ONLINE round-trip of <see cref="NpcRowViewModel.Size"/> - the NPC footprint size class
-/// (1 = 32x32, 2 = 64x64, 3 = 96x96).  Same failure mode the ExtraHp test guards: if
+/// (1 = 32x32, 2 = 64x64, 3 = 96x96).  If
 /// <see cref="UpdateNpcPacket"/> didn't carry Size (or ApplyPacket didn't seed it), an NPC opened online
 /// would seed Size = 0 and a later save (EditorSaveNpcPacket.Size = vm.Size) would write that back,
 /// silently shrinking a big NPC to 1x1.  ApplyPacket must seed Size from the packet, just as the offline
@@ -21,7 +21,7 @@ public class NpcSizeRoundTripTests
     private static NpcRecord Npc(string name = "Giant") => new() { Name = name };
 
     // Mirrors the wire packet the editor receives for an online NPC load, now carrying Size.  Light must
-    // be set or ApplyPacket throws reading pkt.Light.Rgb (matches NpcExtraHpRoundTripTests.Packet).
+    // be set or ApplyPacket throws reading pkt.Light.Rgb.
     private static UpdateNpcPacket Packet(int size, string name = "Giant") =>
         new() { NpcNum = 1, Name = name, Size = size, Light = LightSpec.Torch };
 

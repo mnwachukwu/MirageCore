@@ -38,7 +38,7 @@ public sealed class OptionsPanel : IGamePanel
 
     // The per-character checkbox defaults below MUST match AccountConfig.CharacterConfig's property
     // initializers, which are what a brand-new character actually gets. Two copies of the same answer,
-    // free to disagree in silence — OptionsPanelDefaultsTests is what pins them together.
+    // free to disagree in silence — RestoreDefaultsTests is what pins them together.
     private readonly Checkbox _aspectChk = new() { Checked = false };
     private readonly Checkbox _alwaysShowBarsChk = new() { Checked = true };
     private readonly Checkbox _showCombatNumbersChk = new() { Checked = true };

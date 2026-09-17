@@ -473,8 +473,8 @@ public sealed class EditorConnection : IDisposable
     ///
     /// <para>The other half of <c>RequestBulkAsync</c>, which parks a waiter under the same name. A reply
     /// missing from here has no route home: it is taken for a server-pushed broadcast, the waiter is never
-    /// completed, and the caller awaits a task nothing will finish. `BulkRepliesAllRouteHome` is the
-    /// guard.</para></summary>
+    /// completed, and the caller awaits a task nothing will finish. <c>EveryBulkReplyRoutesHome</c> is
+    /// the guard.</para></summary>
     internal static string BulkCommandOf(IPacket packet) => packet switch
     {
         // Login reads its copy straight off the stream before the read loop runs, so routing it here only
