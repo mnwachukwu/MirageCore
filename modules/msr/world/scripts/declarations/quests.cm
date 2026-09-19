@@ -73,7 +73,11 @@ model Quest
         these.Caption("repeatMany", "How many again");
 
         these.Length("name", 40);
-        these.Length("description", 240);
+
+        # ⚠ The ceiling is what an EDITOR cuts a field to, and the server loads whatever is on disk.
+        # So a description longer than this survives until somebody opens that quest and saves, and
+        # then loses its ending with nothing said. The longest of the 54 runs to 293 characters.
+        these.Length("description", 320);
         these.Range("reqLevel", 0, 255);
         these.Range("cadence", 0, 4);
     end function

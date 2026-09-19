@@ -59,7 +59,7 @@ public sealed record BanSummary
 {
     public string Login { get; init; } = "";
     public string Reason { get; init; } = "";
-    /// <summary>Unix seconds, or 0 when the entry predates the field.</summary>
+    /// <summary>Unix seconds when the ban was applied.</summary>
     public long BannedAtUtc { get; init; }
 }
 

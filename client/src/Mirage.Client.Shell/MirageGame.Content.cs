@@ -379,9 +379,6 @@ public sealed partial class MirageGame : Game
     }
 
 
-    // Single-sheet load for sprites/items: the first image file in assets/graphics/<subfolder>
-    // (alphabetical), else the legacy flat path. Multi-file handling is intentionally deferred.
-    /// <summary>Loads the single sheet an asset folder is expected to hold (sprites, items), falling back
     /// <summary>
     /// Every numbered sheet in one asset folder, indexed by the number in its filename.
     /// </summary>

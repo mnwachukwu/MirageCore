@@ -1,11 +1,11 @@
 {
   "name": "Sounder Vaile",
-  "says": "Warm enough today. Don't waste it standing about with me.",
+  "says": "Warm enough today. Don\u0027t waste it standing about with me.",
   "sprite": 26,
   "spriteSheet": 0,
   "size": 1,
   "spawnSecs": 60,
-  "behavior": "Wander",
+  "behavior": "Stationary",
   "group": 0,
   "range": 4,
   "emitsLight": true,

@@ -13,8 +13,8 @@ namespace Mirage.Server.Tests.World;
 /// group detached from any dictionary key and asks it which one it is.
 ///
 /// <para>Every other record keys off its filename the same way and stores no id of its own, so there is
-/// no second copy to disagree with. A file that carries one anyway — written before the field was ignored,
-/// or copied from another group — is not believed.</para>
+/// no second copy to disagree with. A file that carries one anyway — hand-written, or copied from another
+/// group — is not believed.</para>
 ///
 /// <para>These build their own map groups in a temp directory. The guarantee under test belongs to the
 /// loader; pointing it at the shipped seed would test whichever files happen to be committed today.</para>
@@ -61,8 +61,8 @@ public class MapGroupIndexTests
         });
     }
 
-    /// <summary>A world written before the field was ignored still has <c>"index"</c> in its files, and a
-    /// group copied to a new slot carries the old one. Neither is believed over the filename.</summary>
+    /// <summary>A file that names an <c>"index"</c> of its own, and a group copied to a new slot carrying
+    /// the old one. Neither is believed over the filename.</summary>
     [Test]
     public async Task AStaleIndexInTheFile_IsIgnored()
     {

@@ -1,0 +1,19 @@
+{
+  "name": "Halberdiers in the Cut",
+  "description": "3. Close, hot, and over quickly if you know what you are doing.",
+  "giver": 142,
+  "turnIn": 0,
+  "reqLevel": 241,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 6002,
+  "rewardItem": 1,
+  "rewardMany": 1947,
+  "cadence": 1,
+  "repeatExp": 3201,
+  "repeatItem": 1,
+  "repeatMany": 1038
+}

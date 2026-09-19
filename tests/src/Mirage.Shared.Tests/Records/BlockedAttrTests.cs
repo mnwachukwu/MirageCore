@@ -32,8 +32,8 @@ public class BlockedAttrTests
         });
     }
 
-    /// <summary>The guard that matters: a map authored before these fields existed holds neither key, and
-    /// has to read back as a solid wall.</summary>
+    /// <summary>The guard that matters: a map holding neither key has to read back as a solid wall, since
+    /// a wall stops everything and only what it lets through is written.</summary>
     [Test]
     public void AWallWithNeitherFieldOnDisk_ReadsBackSolid()
     {

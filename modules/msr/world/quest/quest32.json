@@ -1,0 +1,19 @@
+{
+  "name": "Break the Skirmish Line",
+  "description": "Riptide skirmishers, 5 of them, weekly. They will try to pull you off the shelf. Do not let them.",
+  "giver": 134,
+  "turnIn": 0,
+  "reqLevel": 115,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 6347,
+  "rewardItem": 1,
+  "rewardMany": 1249,
+  "cadence": 2,
+  "repeatExp": 6347,
+  "repeatItem": 1,
+  "repeatMany": 1249
+}

@@ -29,10 +29,8 @@ public sealed class ShopRecord
     public int Keeper { get; set; }
 
     // Barters this shop offers — a dense, 0-based list of real trades, as many as the author writes and with
-    // no ceiling (the same rule as SalesItem). The purchase/display slot number on the wire stays 1-based (slot N =
-    // BarterItem[N-1]) so the client and trade-request protocol are unchanged. Legacy shop JSON stored a
-    // fixed 1-based array (a leading null at index 0 + slots 1..8); it deserializes into this list and is
-    // compacted on load (drop null/empty) — see JsonPersistenceService and ShopRowViewModel.
+    // no ceiling (the same rule as SalesItem). The purchase/display slot number on the wire is 1-based
+    // (slot N = BarterItem[N-1]), which is the one place the two numberings differ.
     public List<BarterItemRecord> BarterItem { get; set; } = new();
 
     /// <summary>Item numbers this shop SELLS for gold, priced from <see cref="ItemRecord.Price"/>.

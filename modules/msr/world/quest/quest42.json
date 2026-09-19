@@ -1,0 +1,19 @@
+{
+  "name": "Cinder Darters",
+  "description": "5 a week. Ost asks for this one personally, and I have stopped asking why.",
+  "giver": 142,
+  "turnIn": 0,
+  "reqLevel": 254,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 142972,
+  "rewardItem": 1,
+  "rewardMany": 48040,
+  "cadence": 2,
+  "repeatExp": 142972,
+  "repeatItem": 1,
+  "repeatMany": 48040
+}

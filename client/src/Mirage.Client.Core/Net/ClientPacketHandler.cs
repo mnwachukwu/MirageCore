@@ -190,6 +190,9 @@ public sealed partial class ClientPacketHandler : IClientEvents
             case OverheadBarsPacket p:
                 HandleOverheadBars(p);
                 break;
+            case NameTintsPacket p:
+                HandleNameTints(p);
+                break;
             case DisplayFieldsPacket p:
                 HandleDisplayFields(p);
                 break;

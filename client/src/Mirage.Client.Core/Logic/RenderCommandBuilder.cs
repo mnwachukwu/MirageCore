@@ -891,8 +891,12 @@ public static class RenderCommandBuilder
 
         if (showNames && !string.IsNullOrEmpty(def.Name))
         {
-            int npcNameColor = reacts ? GameColor.White : GameColor.BrightGreen;
-            frame.Names.Add(new TextDrawCmd(centerX, npcNameY, def.Name, npcNameColor, nameAlignBottom, Layer: n.Layer));
+            // What a creature IS, not how it moves. An archer holding its distance and a deer holding
+            // its distance are the same Behavior, so the color comes off the body's own attributes and
+            // the loaded game says which of them mean what.
+            int npcNameRgb = state.NameTints.RgbFor(state.AttributesOf(who));
+            frame.Names.Add(new TextDrawCmd(centerX, npcNameY, def.Name, GameColor.White, nameAlignBottom,
+                                            RgbOverride: npcNameRgb, Layer: n.Layer));
         }
 
         // Vendor marker: a gold '$' one line above the NPC name for a keeper NPC. Shown

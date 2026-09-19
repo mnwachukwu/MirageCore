@@ -1,11 +1,11 @@
 {
   "name": "The Unburnt",
-  "says": "Everything here costs you something to cast. That's the honest part.",
+  "says": "Everything here costs you something to cast. That\u0027s the honest part.",
   "sprite": 37,
   "spriteSheet": 0,
   "size": 1,
   "spawnSecs": 60,
-  "behavior": "Wander",
+  "behavior": "Stationary",
   "group": 0,
   "range": 4,
   "emitsLight": true,

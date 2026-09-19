@@ -18,8 +18,8 @@ now is what the script is *for*, and there are two other homes:
 - **Repository self-checks** live in [`.github/checks/`](../.github/checks) — `check-doc-links.mjs`,
   `check-seed-counts.mjs`, and `check-readme-facts.mjs`. They validate this repo's own docs and seed data
   and are run by CI. They are nobody's feature; a player has no reason to run them.
-- **Content and asset generators** live in the sibling **`MirageSourceRemastered.Tools`** repository —
-  the seed-data pipeline, the icon and control-image scripts, and the balance simulations. Their output
-  is committed here; the code that produces it is not part of the game.
+- **Content and asset generators** live in the sibling **`MirageCore.Tools`** repository — the
+  seed-data pipeline, the MSR world builder, the icon and control-image scripts, and the balance
+  simulations. Their output is committed here; the code that produces it is not part of the game.
 
 The test: *would a person who downloaded the game ever run this?* If no, it goes to one of the other two.

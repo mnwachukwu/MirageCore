@@ -106,7 +106,7 @@ is ever called from outside.
 | `public function OnPlayerJoined(Player who)` | they are in and have everything they need |
 | `public function OnPlayerLeft(Player who)` | they have gone, while their record is still readable |
 | `public function OnPlayerMoved(Player who, integer fromX, integer fromY)` | every accepted step |
-| `public function OnAction(Player who, string action, string on, integer map, integer x, integer y)` | they picked one of your verbs |
+| `public function OnAction(Player who, string action, string on, integer map, integer x, integer y, string picked)` | they picked one of your verbs |
 | `public function OnTick()` | your tick came round |
 | `public function OnPlayerTick(Player who)` | the same tick, once per player in the world |
 | `public string function OnMayDie(Player who, string cause)` | somebody is about to die |
@@ -493,7 +493,8 @@ when something other than a panel also sends it. Writing both is fine, in either
 running right now**, and is reached by its own name from any handler:
 
 ```
-public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+public function OnAction(Player who, string action, string on, integer map, integer x, integer y,
+                         string picked)
     Npc? it = World.NpcAt(map, x, y);
 
     if not it.HasValue()
@@ -565,7 +566,8 @@ was pointed at, because retreating is what that body does about somebody.
 chase whoever lands a hit:
 
 ```
-public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+public function OnAction(Player who, string action, string on, integer map, integer x, integer y,
+                         string picked)
     Npc? it = World.NpcAt(map, x, y);
 
     if it.HasValue()

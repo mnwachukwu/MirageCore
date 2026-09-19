@@ -1,0 +1,19 @@
+{
+  "name": "Kelp on the Stair",
+  "description": "3 kelp stalkers. Tedious and necessary - the stair silts up without it.",
+  "giver": 134,
+  "turnIn": 0,
+  "reqLevel": 106,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 5634,
+  "rewardItem": 1,
+  "rewardMany": 1049,
+  "cadence": 1,
+  "repeatExp": 3005,
+  "repeatItem": 1,
+  "repeatMany": 560
+}

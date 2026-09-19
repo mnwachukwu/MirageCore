@@ -53,6 +53,7 @@ shared model Rules
     public function Configure(Builder game)
         Chat.Declare(game);
         Sheet.Declare(game);
+        Beasts.Declare(game);
         Vitals.Declare(game);
         Fight.Declare(game);
         Classes.Declare(game);
@@ -75,11 +76,6 @@ shared model Rules
     # character. A first arrival is enrolled.
     public function OnPlayerJoined(Player who)
         Sheet.Enroll(who);
-
-        # ⚠ Enrolling only runs for somebody who has never been here. A character made before
-        # the experience bar existed carries no ceiling for it, and a meter with no ceiling is not
-        # drawn, so the bar would be missing for every character that already existed.
-        Levels.Mark(who);
 
         # Here as well as on the tick, or the guild flag is unwritten for the first two seconds and
         # the screen it gates is refused to a member who just logged in.

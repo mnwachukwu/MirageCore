@@ -110,6 +110,7 @@ public sealed class MirageServerService : IHostedService
         // And which of those keys are drawn over a head. Read-only on the client's side: the values
         // arrive as ordinary syncs, so a bar cannot show a number the attribute does not hold.
         _world.OverheadBars = _registry.OverheadBars;
+        _world.NameTints = _registry.NameTints;
 
         // And what the surfaces show. Read-only on the client's side for the same reason: the values
         // arrive as ordinary syncs, so a row cannot show a number the attribute does not hold.
@@ -385,13 +386,12 @@ public sealed class MirageServerService : IHostedService
         _tod.Init(env.TodPositionMs);
         _weather.Init(env.Weather, env.WeatherRemainingMs);
 
-        // And whatever the game kept about the world. A file written before it kept anything carries
-        // none, which is the same starting point a world that has never run from.
+        // And whatever the game kept about the world. A server with no game loaded wrote none, and a
+        // world starting fresh has none either.
         if (env.Values is { } values) _world.Values = values;
         if (env.Kept is { } stores) _world.Kept = stores;
 
-        // What the world actually holds, rather than what its ceilings allow. The second line this used
-        // to print counted the blank files it had just written, and there are none.
+        // What the world actually holds, rather than what its ceilings allow.
         LocalizedLog.Info(_logger, ServerStrings.Server_LoadedSummary,
             ("Items", itemsLoaded), ("Npcs", npcsLoaded), ("Shops", shopsLoaded),
             ("Conversations", conversationsLoaded),

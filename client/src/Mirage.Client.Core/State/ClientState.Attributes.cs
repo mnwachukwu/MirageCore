@@ -21,6 +21,10 @@ public sealed partial class ClientState
     /// server says otherwise, and empty for good in a world whose game declared none.</summary>
     public OverheadBarSet OverheadBars { get; set; } = OverheadBarSet.Empty;
 
+    /// <summary>Which of those keys color a creature's name, in the order they are asked. Plain white
+    /// until the server says otherwise, and plain for good in a world whose game declared none.</summary>
+    public NameTintSet NameTints { get; set; } = NameTintSet.Plain;
+
     /// <summary>What each surface shows about a body, in draw order. Empty until the server says
     /// otherwise, and empty for good in a world whose game declared none.</summary>
     public DisplayFieldSet DisplayFields { get; set; } = DisplayFieldSet.Empty;

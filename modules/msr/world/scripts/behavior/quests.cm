@@ -178,7 +178,10 @@ shared model Quests
         offer.Field(Quests.OfferText, "", 200, 200, 160);
         offer.Field(Quests.OfferWants, "Wants", 220, 190, 140);
         offer.Field(Quests.OfferPays, "Pays", 240, 210, 120);
-        offer.Button("What it involves", Quests.ReadVerb);
+
+        # Picking a line fills the four fields above, so the board describes whatever is highlighted
+        # without a button asking it to. Reading is free; only taking one costs a press.
+        offer.OnPicked(Quests.ReadVerb);
         offer.Button("Take it on", Quests.TakeVerb);
 
         Verb log = game.Action(Quests.LogVerb, "Journal", "Quests");
@@ -400,12 +403,18 @@ shared model Quests
         string first = "";
 
         loop for row = 1 to rows
-            if World.RecordNumber(Quests.Goals, row, "quest") == number
+            if World.RecordNumber(Quests.Goals, row, "forQuest") == number
                 found = found + 1;
 
                 if found == 1
+                    # ⚠ The goal holds the creature's NUMBER, so naming it takes a second read against
+                    # the creature records. RecordName is the one engine property a record can be
+                    # asked for; Record reaches only the fields this game hung on it, and asking that
+                    # for a name yields blank rather than an error.
+                    integer quarry = World.RecordNumber(Quests.Goals, row, "quarry");
+
                     first = World.RecordNumber(Quests.Goals, row, "many")
-                            + " " + World.Record(Quests.Goals, row, "quarry");
+                            + " " + World.RecordName("NPCs", quarry);
                 end if
             end if
         end loop

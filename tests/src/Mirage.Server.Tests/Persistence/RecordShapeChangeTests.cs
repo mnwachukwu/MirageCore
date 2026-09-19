@@ -7,12 +7,14 @@ using System.Text.Json;
 namespace Mirage.Server.Tests.Persistence;
 
 /// <summary>
-/// What a record file written by an OLDER build does when this build reads it.
+/// What a record file carrying a shape this build does not itself produce does when this build reads it.
+/// A world folder is hand-editable JSON that gets handed from one person to another, so this is a file
+/// somebody wrote, not one the engine did.
 ///
-/// <para>Two rules govern every field a record loses or gains, and they point opposite ways. REMOVING a
-/// property is safe: the reader ignores a member it has no home for, so a file carrying it still loads and
-/// every declared field arrives intact. Changing a persisted property's TYPE is not, and neither is RENAMING
-/// an enum member — enums are written as names, and a name the type does not define throws.</para>
+/// <para>Two rules govern it, and they point opposite ways. A property the record does not declare is
+/// safe: the reader ignores a member it has no home for, so the file still loads and every declared field
+/// arrives intact. A property whose TYPE does not match is not, and neither is an enum member the type
+/// does not define — enums are written as names, and an unknown name throws.</para>
 ///
 /// <para>🔴 The type-change failure is invisible where it matters most. An account file that does not
 /// deserialize is caught and returns null; the existence check still answers yes; the password check loads,
@@ -95,7 +97,7 @@ public class RecordShapeChangeTests
             Assert.That(g.VaultGold, Is.EqualTo(12500));
             Assert.That(g.Members, Has.Count.EqualTo(1));
             Assert.That(g.Members[0].Rank, Is.EqualTo(GuildRank.Leader), "the roster's own enum still reads");
-            Assert.That(g.Attributes, Is.Not.Null, "an older file simply has no attribute bag; it must not be null");
+            Assert.That(g.Attributes, Is.Not.Null, "a file naming no attribute bag reads as empty, never null");
         });
     }
 

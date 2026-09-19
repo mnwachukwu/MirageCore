@@ -1,0 +1,19 @@
+{
+  "name": "The Standing Levy",
+  "description": "The Tollman\u0027s people come back. They always come back - it is a levy, and a levy is a thing you pay forever.\n\nSo this one has no end either. 6 of them, whenever the day turns, and I will find the coin from somewhere each time.",
+  "giver": 126,
+  "turnIn": 0,
+  "reqLevel": 4,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 1705,
+  "rewardItem": 1,
+  "rewardMany": 35,
+  "cadence": 1,
+  "repeatExp": 909,
+  "repeatItem": 1,
+  "repeatMany": 19
+}

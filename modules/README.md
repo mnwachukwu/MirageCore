@@ -7,7 +7,7 @@ Everything a game is — its records, its values, its rules, what the player see
 for one.
 
 [Building a game on Core](../docs/building-on-core.md) is the playbook: what the engine already does,
-the twenty-two seams, and the features that fail silently when only half of one is declared. This file
+the twenty-four seams, and the features that fail silently when only half of one is declared. This file
 covers how a module is laid out and shipped.
 
 ## Two ways to extend the engine
@@ -39,7 +39,7 @@ field by field. "The script says the same thing the C# said" is therefore a test
 | Module | What it is | Seams it uses |
 |---|---|---|
 | [`foraging/`](foraging/) | Picking things. About fifty lines, written twice. | six seams |
-| [`survey/`](survey/) | Cataloging plants. Deliberately not an RPG. | all twenty-two seams |
+| [`survey/`](survey/) | Cataloging plants. Deliberately not an RPG. | all twenty-four seams |
 | [`msr/`](msr/) | Mirage Source Remastered, ported. An RPG, in Compass, in progress. | the combat surface |
 
 ## Turning a game off

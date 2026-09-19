@@ -126,6 +126,19 @@ public sealed record GamePanel
     /// nothing.</para></summary>
     [JsonPropertyName("hotkeyAction")] public string HotkeyAction { get; init; } = string.Empty;
 
+    /// <summary>The verb fired as soon as a row of this panel's list is highlighted, carrying that
+    /// row's id as the subject. Blank for a list nothing needs to know about until a button is pressed.
+    ///
+    /// <para><b>Without this a list cannot say anything until a button is pressed.</b> A highlight is
+    /// client-side, so a screen that wants to describe what you just clicked on has to grow a button
+    /// whose only job is to carry the pick over — and the player has to press it to find out what they
+    /// selected, which is one press more than the screen appears to need.</para>
+    ///
+    /// <para>⚠ It fires on the CHANGE, including the first row a freshly opened list settles on, and
+    /// not again until the highlight moves. So the verb behind it describes rather than acts: it is
+    /// raised by looking, and a game that spends something here spends it on a mouse movement.</para></summary>
+    [JsonPropertyName("pickedAction")] public string PickedAction { get; init; } = string.Empty;
+
     /// <summary>
     /// The message this panel composes, or blank for one that only shows things.
     ///

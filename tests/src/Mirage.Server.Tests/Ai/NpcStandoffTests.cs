@@ -116,8 +116,7 @@ public class NpcStandoffTests
     // ── What the record says ──────────────────────────────────────────────────
 
     /// <summary>A standoff the record names is the standoff, as long as it is a gap it can see across.
-    /// Nothing named falls back to half its reach, as a world authored before the field existed
-    /// carries.</summary>
+    /// A record naming none falls back to half its reach.</summary>
     [TestCase(8, 4, ExpectedResult = 4)]
     [TestCase(8, 0, ExpectedResult = 4, Description = "half of what it can see")]
     [TestCase(8, 1, ExpectedResult = Constants.MinStandoffTiles, Description = "one tile is melee reach")]

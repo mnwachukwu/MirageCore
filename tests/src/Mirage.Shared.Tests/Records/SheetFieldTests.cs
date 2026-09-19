@@ -53,9 +53,8 @@ public class SheetFieldTests
         });
     }
 
-    /// <summary>🔴 A world authored before sheets existed still loads, and reads as sheet 0 — the sheet every
-    /// one of those files meant. So the field is safe to add with no migration step, and this is the
-    /// half that would break silently: art would simply come from the wrong sheet.</summary>
+    /// <summary>🔴 A file that names no sheet reads as sheet 0. This is the half that would break silently:
+    /// art would simply come from the wrong sheet, with nothing anywhere reporting it.</summary>
     [Test]
     public void AFileThatNamesNoSheetReadsAsZero()
     {

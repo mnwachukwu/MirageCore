@@ -1,11 +1,11 @@
 {
   "name": "Bellowswoman Ost",
-  "says": "Bed's cheap, stew's free with it. Don't ask what's in the stew.",
+  "says": "Bed\u0027s cheap, stew\u0027s free with it. Don\u0027t ask what\u0027s in the stew.",
   "sprite": 32,
   "spriteSheet": 0,
   "size": 1,
   "spawnSecs": 60,
-  "behavior": "Wander",
+  "behavior": "Stationary",
   "group": 0,
   "range": 4,
   "emitsLight": true,

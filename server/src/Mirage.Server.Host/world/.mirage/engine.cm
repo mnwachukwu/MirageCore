@@ -349,6 +349,22 @@ abstract model Builder
     public abstract function Bar(string key, string outOf, integer red, integer green, integer blue);
 
     ##
+        @summary: The color a creature carrying this attribute is named in, given as red, green, and
+        blue, each 0 to 255. What a creature IS - a shopkeeper, a guard, something that will kill
+        you - is this game's idea and not the engine's, so the name reads off the creature's own
+        values rather than off how it moves. Declare one per kind that is worth telling apart at a
+        glance; the FIRST one a creature carries names it, so a guard that also fights is named as
+        whichever was declared first.
+    ##
+    public abstract function NameTint(string key, integer red, integer green, integer blue);
+
+    ##
+        @summary: The color a creature carrying none of them is named in. Said once for the whole
+        world, and left unsaid every such creature is named in white.
+    ##
+    public abstract function NameTint(integer red, integer green, integer blue);
+
+    ##
         @summary: A verb this game offers, under a heading of its own. Picking it calls OnAction.
         Offered in a square's menu until the verb says otherwise, and handed back so where it is
         offered, what key reaches it, and what it needs are each their own line.
@@ -597,6 +613,16 @@ abstract model Panel
         Hotkeyable, and the rows' ids have to be numbers - a slot carries a number, not a caption.
     ##
     public abstract function Hotkeys(string verb);
+
+    ##
+        @summary: Calls that verb the moment a row of this panel's list is highlighted, with the
+        row's id as the picked subject. Without it a highlight says nothing until a button is
+        pressed, so a screen that wants to describe what was just clicked needs a button whose only
+        job is to carry the pick across - and the player presses it to find out what they already
+        selected. It fires on the CHANGE, the first row included, so the verb behind it describes
+        rather than acts: looking raises it.
+    ##
+    public abstract function OnPicked(string verb);
 
     ##
         @summary: How small the player may drag it. Every panel resizes; this is the floor, and it

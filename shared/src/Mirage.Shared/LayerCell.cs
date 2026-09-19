@@ -25,8 +25,7 @@ public enum AnimStyle { Cycle = 0, Pendulum = 1 }
 /// </code>
 ///
 /// <para>0 means "empty, sheet 0, not animated", so a freshly zeroed <c>int[]</c> is already all-empty.
-/// Every call site goes through the named helpers below; nothing touches the raw bits. Legacy
-/// single-sheet maps are widened into this shape on load by <c>TileRecordConverter</c>.</para>
+/// Every call site goes through the named helpers below; nothing touches the raw bits.</para>
 /// </summary>
 public static class LayerCell
 {

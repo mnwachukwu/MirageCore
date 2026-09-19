@@ -1,0 +1,19 @@
+{
+  "name": "Thin the Poachers",
+  "description": "Someone with a strong arm, ideally. 3 poachers off the low ground and the snares stop appearing. It is not glory. It is Tuesday.",
+  "giver": 126,
+  "turnIn": 0,
+  "reqLevel": 6,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 1070,
+  "rewardItem": 1,
+  "rewardMany": 29,
+  "cadence": 1,
+  "repeatExp": 571,
+  "repeatItem": 1,
+  "repeatMany": 15
+}

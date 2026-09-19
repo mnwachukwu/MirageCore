@@ -52,8 +52,7 @@ internal sealed class TileRecordConverter : JsonConverter<TileRecord>
                 case "warpy": tile = tile with { WarpY = reader.GetUInt16() }; break;
                 case "warplayer": tile = tile with { WarpLayer = ReadLayer(ref reader) }; break;
                 case "itemnum": tile = tile with { ItemNum = reader.GetInt16() }; break;
-                // "itemvalue" is the older spelling, still accepted so an existing map loads.
-                case "itemquantity" or "itemvalue": tile = tile with { ItemQuantity = reader.GetInt16() }; break;
+                case "itemquantity": tile = tile with { ItemQuantity = reader.GetInt16() }; break;
                 case "itemrespawnsecs": tile = tile with { ItemRespawnSecs = reader.GetInt16() }; break;
                 case "keyitemnum": tile = tile with { KeyItemNum = reader.GetInt16() }; break;
                 case "keyisconsumed": tile = tile with { KeyIsConsumed = reader.GetBoolean() }; break;
@@ -90,8 +89,8 @@ internal sealed class TileRecordConverter : JsonConverter<TileRecord>
     }
 
     // Reads a JSON array of packed layer ints (reader positioned at StartArray) into the caller's scratch
-    // buffer, and returns how many were written. A file carrying more layers than this build has is read to
-    // the end and the surplus dropped, so a map authored against a deeper stack still loads.
+    // buffer, and returns how many were written. An array longer than the stack is read to the end and the
+    // surplus dropped rather than overrunning the buffer.
     private static int ReadPackedArray(ref Utf8JsonReader reader, scoped Span<int> scratch, int depth)
     {
         int i = 0;
@@ -148,7 +147,7 @@ internal sealed class TileRecordConverter : JsonConverter<TileRecord>
                 case "warpy": fa = fa with { WarpY = reader.GetUInt16() }; break;
                 case "warplayer": fa = fa with { WarpLayer = ReadLayer(ref reader) }; break;
                 case "itemnum": fa = fa with { ItemNum = reader.GetInt16() }; break;
-                case "itemquantity" or "itemvalue": fa = fa with { ItemQuantity = reader.GetInt16() }; break;
+                case "itemquantity": fa = fa with { ItemQuantity = reader.GetInt16() }; break;
                 case "itemrespawnsecs": fa = fa with { ItemRespawnSecs = reader.GetInt16() }; break;
                 case "keyitemnum": fa = fa with { KeyItemNum = reader.GetInt16() }; break;
                 case "keyisconsumed": fa = fa with { KeyIsConsumed = reader.GetBoolean() }; break;
@@ -188,8 +187,7 @@ internal sealed class TileRecordConverter : JsonConverter<TileRecord>
     //
     // Gated on TYPE rather than on "is it non-zero", which keeps a tile file readable: a Warp
     // writes its destination even when that destination is (0,0) — a real coordinate — while a Blocked
-    // tile writes nothing at all no matter what happens to be sitting in its unused fields. The old
-    // format could not tell those apart, because a zero and an absent slot looked the same.
+    // tile writes nothing at all no matter what happens to be sitting in its unused fields.
     //
     // Enums go out as NAMES: "warpLayer": "Fringe" still means something to a reader that has never seen
     // the enum, where a bare number does not.
@@ -212,8 +210,6 @@ internal sealed class TileRecordConverter : JsonConverter<TileRecord>
         if (TileAttrRules.UsesItem(type))
         {
             writer.WriteNumber("itemNum", itemNum);
-            // Always written as "itemQuantity"; the readers above still accept the older "itemValue"
-            // spelling, so a map authored before the rename loads untouched.
             writer.WriteNumber("itemQuantity", itemQuantity);
             if (itemRespawnSecs != 0) writer.WriteNumber("itemRespawnSecs", itemRespawnSecs);
         }

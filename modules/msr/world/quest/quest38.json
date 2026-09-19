@@ -1,0 +1,19 @@
+{
+  "name": "The Pyre Vanguard",
+  "description": "5 of the vanguard, weekly. They come in a line and they expect you to be in one too.",
+  "giver": 142,
+  "turnIn": 0,
+  "reqLevel": 249,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 175391,
+  "rewardItem": 1,
+  "rewardMany": 58148,
+  "cadence": 2,
+  "repeatExp": 175391,
+  "repeatItem": 1,
+  "repeatMany": 58148
+}

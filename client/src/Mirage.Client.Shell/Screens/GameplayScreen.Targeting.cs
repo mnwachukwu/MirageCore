@@ -128,8 +128,8 @@ public sealed partial class GameplayScreen : IGameScreen
     // world pixel.  An entity at tile (tx,ty) with interp offset (XOff,YOff) occupies the
     // world-pixel rect [tx*PicX + XOff, +PicX) × [ty*PicY + YOff, +PicY) — so a moving entity
     // mid-step occupies pixels on both its source and destination tiles, and a click on either
-    // tile (or anywhere along its slide path) lands it.  Priority order matches the server's
-    // legacy click scan: self, then other players, then native NPCs, then traversal guests.
+    // tile (or anywhere along its slide path) lands it.  Priority order matches the server's own
+    // click scan: self, then other players, then native NPCs, then traversal guests.
     // Pixel-in-footprint hit test (world pixels vs an entity's top-left tile + its sub-tile slide offset). Shared by
     // the single-target finder and the stacked-NPC finder so both agree on what a click covers.
     private static bool HitFootprint(float wx, float wy, int worldTileX, int worldTileY, float xOff, float yOff, int sizeTiles = 1)

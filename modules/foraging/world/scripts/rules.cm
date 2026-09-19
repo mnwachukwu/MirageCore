@@ -72,15 +72,16 @@ shared model Rules
     #
     # ⚠ Count the parameters. A handler is matched by name AND arity, so one that is a parameter off
     # still compiles and still loads, and the engine never calls it.
-    public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+    public function OnAction(Player who, string action, string on, integer map, integer x, integer y,
+                             string picked)
         if action != Rules.Pick
             yield;
         end if
 
-        integer picked = who.Number(Rules.Baskets) + 1;
+        integer baskets = who.Number(Rules.Baskets) + 1;
 
-        who.SetNumber(Rules.Baskets, picked);
-        who.Message("You pick what is here. That is " + picked + " so far.");
+        who.SetNumber(Rules.Baskets, baskets);
+        who.Message("You pick what is here. That is " + baskets + " so far.");
     end function
 
 end model

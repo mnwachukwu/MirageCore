@@ -258,8 +258,9 @@ public static class HotkeyBarPanel
 
     /// <summary>Slot to face button: 1→X, 2→Y, 3→B, 4→A, and nothing past the fourth.
     ///
-    /// <para>Not arbitrary — X/Y/B are the legacy HP/MP/SP potion buttons, so existing muscle memory
-    /// carries over, and the fourth slot takes A (still plain pickup without the trigger held). A pad has
+    /// <para>Not arbitrary — X/Y/B are the three face buttons a thumb reaches without leaving the stick,
+    /// and they take the first three slots, which is where a game puts what is pressed most. The fourth
+    /// slot takes A (still plain pickup without the trigger held). A pad has
     /// four face buttons and a game may declare more slots than that; the rest are reached with the
     /// digits or the mouse, and their badges stay numbered.</para></summary>
     public static string GamepadFace(int slot) =>

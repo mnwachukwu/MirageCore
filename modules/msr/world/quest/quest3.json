@@ -1,0 +1,19 @@
+{
+  "name": "The Raider Camp",
+  "description": "Orc raiders have put a camp on the high ground, which means they can see us and we cannot see them.\n\n16, and they will move. That is the whole of the plan. I would rather send forty people and I have you.",
+  "giver": 126,
+  "turnIn": 0,
+  "reqLevel": 10,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 2,
+  "rewardExp": 10000,
+  "rewardItem": 1,
+  "rewardMany": 379,
+  "cadence": 0,
+  "repeatExp": 0,
+  "repeatItem": 0,
+  "repeatMany": 0
+}

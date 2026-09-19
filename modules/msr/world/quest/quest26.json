@@ -1,0 +1,19 @@
+{
+  "name": "Sellswords on the Causeway",
+  "description": "5 sellswords, once a week, before they organize into something with a name.\n\nYou will want to be able to take a hit for this one.",
+  "giver": 126,
+  "turnIn": 0,
+  "reqLevel": 12,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 3534,
+  "rewardItem": 1,
+  "rewardMany": 151,
+  "cadence": 2,
+  "repeatExp": 3534,
+  "repeatItem": 1,
+  "repeatMany": 151
+}

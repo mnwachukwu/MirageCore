@@ -81,6 +81,15 @@ public interface ICoreBuilder
     /// nothing is drawn over anyone. At most <see cref="OverheadBarSet.Max"/>.</summary>
     void AddOverheadBar(OverheadBar bar);
 
+    /// <summary>A color for the name over a creature carrying one of that creature's attributes, asked
+    /// in declaration order until one matches. Declare none and every creature is named in the plain
+    /// color. At most <see cref="NameTintSet.Max"/>.</summary>
+    void AddNameTint(NameTint tint);
+
+    /// <summary>The color for a creature matching no tint, packed <c>0xRRGGBB</c>. One module at most
+    /// sets it, and left unset it is <see cref="NameTintSet.PlainRgb"/>.</summary>
+    void SetOtherwiseNameRgb(int rgb);
+
     /// <summary>A screen this game paints: a title, the display surface that fills it, the verbs under
     /// it, and optionally a key that opens it. Declare none and the client shows only Core's own
     /// windows.</summary>

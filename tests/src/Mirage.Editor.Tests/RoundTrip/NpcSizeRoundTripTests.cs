@@ -48,10 +48,10 @@ public class NpcSizeRoundTripTests
     }
 
     [Test]
-    public void EffectiveSize_NormalizesLegacyZeroToOne()
+    public void EffectiveSize_NormalizesAnUnsetZeroToOne()
     {
         Assert.That(new NpcRecord { Size = 0 }.EffectiveSize, Is.EqualTo(1),
-            "a legacy/blank record (Size 0 = 'not defined') behaves as the 1x1 default");
+            "a blank record (Size 0 = 'not defined') behaves as the 1x1 default");
     }
 
     [Test]

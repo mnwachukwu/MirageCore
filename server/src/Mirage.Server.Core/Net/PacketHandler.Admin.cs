@@ -382,8 +382,8 @@ public sealed partial class PacketHandler
         string banLogin = _pm[n].Login;
         string machineKey = _pm[n].MachineKey;
 
-        // No key means their client never sent one — an older build, or a machine that would not identify
-        // itself. The ACCOUNT ban still lands; the operator is told the machine half did not, because a
+        // No key means their client never sent one — a machine that would not identify itself.
+        // The ACCOUNT ban still lands; the operator is told the machine half did not, because a
         // silent downgrade here is how somebody believes a machine is blocked when it is not.
         if (machineKey.Length == 0)
         {

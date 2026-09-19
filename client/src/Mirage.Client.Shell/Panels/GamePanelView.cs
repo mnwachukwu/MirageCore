@@ -78,6 +78,10 @@ public sealed class GamePanelView : IGamePanel
     // verb acting on the pick is the wrong thing, done quietly.
     private string _picked = string.Empty;
 
+    /// <summary>The pick the server has already been told about, so a highlight sitting still does not
+    /// resend it sixty times a second.</summary>
+    private string _told = string.Empty;
+
     private GamePanel? _declared;
     private InputState _input = new();
     private int _focused = -1;
@@ -111,6 +115,10 @@ public sealed class GamePanelView : IGamePanel
 
         _panel.SetBounds(new Rectangle(_panel.Bounds.X, _panel.Bounds.Y, w, h));
         Build(panel);
+
+        // Forgotten on open, so reopening a board describes its first row again rather than staying
+        // blank because the same row happens to be picked as last time.
+        _told = string.Empty;
         IsOpen = true;
     }
 
@@ -223,6 +231,16 @@ public sealed class GamePanelView : IGamePanel
             _picked = _list.SelectedIndex >= 0 && _list.SelectedIndex < _ids.Count
                 ? _ids[_list.SelectedIndex]
                 : string.Empty;
+
+            // A highlight the game asked to hear about, sent once per change rather than per frame.
+            // The first row a freshly opened list settles on is a change too, so a board describes
+            // what it is already showing without the player clicking the row they can see is picked.
+            if (panel.PickedAction.Length > 0 && _picked.Length > 0 && _picked != _told)
+            {
+                _told = _picked;
+                sender.SendInvokeAction(panel.PickedAction, state.Map is null ? 0 : state.CenterMapNum,
+                                        state.Me.X, state.Me.Y, picked: _picked);
+            }
 
             AskAssign(input, state, panel, ListBounds(content, panel, _listTop));
         }

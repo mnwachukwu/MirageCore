@@ -19,7 +19,7 @@ public sealed class MovementInputStack
     private readonly List<Direction> _held = new(4);
 
     // Tie-break for directions that first appear on the SAME tick, where no real press-order
-    // exists: pushing in this order leaves the last one (Up) on top, matching the legacy fixed
+    // exists: pushing in this order leaves the last one (Up) on top, matching the original's fixed
     // precedence Up > Down > Left > Right.
     private static readonly Direction[] SameTickPushOrder =
         { Direction.Right, Direction.Left, Direction.Down, Direction.Up };

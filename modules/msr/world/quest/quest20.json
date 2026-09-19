@@ -1,0 +1,19 @@
+{
+  "name": "Keeping the Cut Clear",
+  "description": "Cinder Saints come down the cut. 6 at a time, every day, for as long as you are willing.\n\nOst will tell you there are eight of us left. There are eight of us left because somebody walks the cut every day. It is not a story anyone will tell. It is why there is anyone to tell one.",
+  "giver": 142,
+  "turnIn": 0,
+  "reqLevel": 235,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 1918605,
+  "rewardItem": 1,
+  "rewardMany": 611711,
+  "cadence": 1,
+  "repeatExp": 1023256,
+  "repeatItem": 1,
+  "repeatMany": 326246
+}

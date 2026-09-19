@@ -34,16 +34,15 @@ public sealed class NpcRecord
     /// <summary>Which sprite sheet <see cref="Sprite"/> is a row of.
     ///
     /// <para>Always written, including when it is 0: a record states which sheet it draws from rather than
-    /// leaving a reader to infer it. Absent from an older file it still reads as 0, which is the sheet
-    /// every such file meant.</para></summary>
+    /// leaving a reader to infer it.</para></summary>
     public int SpriteSheet { get; set; }
     /// <summary>Sprite/footprint size class: 1 = 32x32 (one tile, the default), 2 = 64x64 (a 2x2 tile
     /// footprint), 3 = 96x96 (a 3x3 footprint).  A larger NPC occupies its whole SxS block, anchored at
-    /// its top-left tile, and obeys the same blocking/attribute rules as a one-tile NPC.  A 0 in a legacy
-    /// or blank record is treated as 1 (see <see cref="EffectiveSize"/>; normalized once at load).</summary>
+    /// its top-left tile, and obeys the same blocking/attribute rules as a one-tile NPC.  A 0, which is what
+    /// a blank record holds, is treated as 1 (see <see cref="EffectiveSize"/>; normalized once at load).</summary>
     public int Size { get; set; }
     /// <summary><see cref="Size"/> clamped to a valid footprint class [1, <see cref="Constants.MaxNpcSize"/>].
-    /// Read this at runtime so a 0 ("not defined") legacy value behaves as the 1x1 default.</summary>
+    /// Read this at runtime so an unset 0 behaves as the 1x1 default.</summary>
     [JsonIgnore]
     public int EffectiveSize => Math.Clamp(Size, 1, Constants.MaxNpcSize);
     public int SpawnSecs { get; set; }
@@ -64,8 +63,8 @@ public sealed class NpcRecord
     /// noticed. Read by nothing else — every other behavior either closes all the way in, runs, or never
     /// notices anybody.
     ///
-    /// <para>0 means "work it out from <see cref="Range"/>" — what an unset record says, and what a
-    /// world authored before this field existed carries. See <see cref="EffectiveStandoff"/>.</para></summary>
+    /// <para>0 means "work it out from <see cref="Range"/>", which is what an unset record says. See
+    /// <see cref="EffectiveStandoff"/>.</para></summary>
     public int Standoff { get; set; }
 
     /// <summary><see cref="Standoff"/> as the AI reads it: at least

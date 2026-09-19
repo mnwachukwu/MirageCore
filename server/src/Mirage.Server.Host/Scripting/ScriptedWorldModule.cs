@@ -87,7 +87,7 @@ public sealed class ScriptedWorldModule
             + "string picked)",
             "the player picked one of this module's own verbs; 'on' names the body it was used on, and "
             + "is blank for a verb offered on a square or on the HUD; 'picked' is the line of a panel's "
-            + "list that was selected, and is blank everywhere else", Was: 6),
+            + "list that was selected, and is blank everywhere else"),
         new("OnTick", 0, "function OnTick()",
             "the module's tick came round, however often game.TickEvery asked for"),
         new("OnPlayerTick", 1, "function OnPlayerTick(Player who)",
@@ -260,18 +260,13 @@ public sealed class ScriptedWorldModule
 
         foreach (ScriptHandler handler in Handlers)
         {
-            // The signature as it stands, then the one it used to be. A handler only ever GAINS
-            // arguments here, and Compass matches on name AND count - so a world written before the
-            // gain is offered the shorter call rather than silently never being called at all, which
-            // presents as a game's verbs quietly doing nothing.
-            foreach (int arity in handler.Arities)
-            {
-                if (!_loaded.Offers(Rules, handler.Name, arity)) continue;
+            // ⚠ Compass matches a function by name AND count, so a handler written one argument off
+            // still compiles, still loads, and is never called - which presents as a game's verbs
+            // quietly doing nothing rather than as an error.
+            if (!_loaded.Offers(Rules, handler.Name, handler.Arity)) continue;
 
-                _offered.Add(handler.Name);
-                _takes[handler.Name] = arity;
-                break;
-            }
+            _offered.Add(handler.Name);
+            _takes[handler.Name] = handler.Arity;
         }
 
         Remember();
@@ -1943,6 +1938,14 @@ public sealed class ScriptedWorldModule
                 + "and knows nothing about your spellbook, so the screen showing it is the one place that "
                 + "can say what its rows are for. The verb needs Hotkeyable, and the rows' ids have to be "
                 + "numbers - a slot carries a number, not a caption.")
+            .Action("OnPicked", [ScriptType.Text.Named("verb")],
+                (p, a) => Screen(p).OnPicked(a.AsText(0)),
+                "Calls that verb the moment a row of this panel's list is highlighted, with the row's "
+                + "id as the picked subject. Without it a highlight says nothing until a button is "
+                + "pressed, so a screen that wants to describe what was just clicked needs a button "
+                + "whose only job is to carry the pick across - and the player presses it to find out "
+                + "what they already selected. It fires on the CHANGE, the first row included, so the "
+                + "verb behind it describes rather than acts: looking raises it.")
             .Action("Smallest", [ScriptType.Integer.Named("wide"), ScriptType.Integer.Named("tall")],
                 (p, a) => Screen(p).Smallest(a.AsInteger(0), a.AsInteger(1)),
                 "How small the player may drag it. Every panel resizes; this is the floor, and it "
@@ -2307,6 +2310,21 @@ public sealed class ScriptedWorldModule
                 (b, a) => Build(b).Bar(a.AsText(0), a.AsText(1),
                     (int)a.AsInteger(2), (int)a.AsInteger(3), (int)a.AsInteger(4)),
                 "A bar over every body's head, in a color given as red, green, and blue, each 0 to 255.")
+            .Action("NameTint",
+                [ScriptType.Text.Named("key"), ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
+                (b, a) => Build(b).NameTint(a.AsText(0),
+                    (int)a.AsInteger(1), (int)a.AsInteger(2), (int)a.AsInteger(3)),
+                "The color a creature carrying this attribute is named in, given as red, green, and "
+                + "blue, each 0 to 255. What a creature IS - a shopkeeper, a guard, something that will "
+                + "kill you - is this game's idea and not the engine's, so the name reads off the "
+                + "creature's own values rather than off how it moves. Declare one per kind that is "
+                + "worth telling apart at a glance; the FIRST one a creature carries names it, so a "
+                + "guard that also fights is named as whichever was declared first.")
+            .Action("NameTint",
+                [ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
+                (b, a) => Build(b).NameTint((int)a.AsInteger(0), (int)a.AsInteger(1), (int)a.AsInteger(2)),
+                "The color a creature carrying none of them is named in. Said once for the whole world, "
+                + "and left unsaid every such creature is named in white.")
             .Function("Action", verb.AsType, [ScriptType.Text.Named("id"), ScriptType.Text.Named("caption"), ScriptType.Text.Named("heading")],
                 (b, a) => Build(b).Action(a.AsText(0), a.AsText(1), a.AsText(2)),
                 "A verb this game offers, under a heading of its own. Picking it calls OnAction. Offered "
@@ -2685,6 +2703,12 @@ public sealed class ScriptedWorldModule
             return null;
         }
 
+        public object? OnPicked(string verb)
+        {
+            panel.PickedAction = verb;
+            return null;
+        }
+
         public object? Icon(string icon)
         {
             if (declaring.Glyph($"the panel '{panel.Id}'", icon)) panel.Icon = icon;
@@ -2858,7 +2882,7 @@ public sealed class ScriptedWorldModule
         private const int After = 1000;
 
         private readonly List<string> _refused = [];
-        private int _fields, _bars, _slots, _order;
+        private int _fields, _bars, _slots, _order, _tints;
         private bool _closed;
 
         // What has been described so far, and the choice sets the enumerations produced. Held
@@ -2978,6 +3002,7 @@ public sealed class ScriptedWorldModule
                     Asks = panel.Asks,
                     SendLabelKey = panel.SendLabel,
                     HotkeyAction = panel.HotkeyAction,
+                    PickedAction = panel.PickedAction,
                     Inputs = [.. panel.Inputs],
                 }));
             }
@@ -3511,6 +3536,20 @@ public sealed class ScriptedWorldModule
                 Ordinal = After + _bars++,
             }));
 
+        /// <summary>The color a creature carrying <paramref name="key"/> is named in. Asked in the order
+        /// they are declared, and the first one a creature carries names it.</summary>
+        public object? NameTint(string key, int red, int green, int blue) =>
+            Guard($"the name tint on '{key}'", () => builder.AddNameTint(new NameTint
+            {
+                Key = key,
+                Rgb = Rgb(red, green, blue),
+                Ordinal = After + _tints++,
+            }));
+
+        /// <summary>The color for a creature carrying none of them.</summary>
+        public object? NameTint(int red, int green, int blue) =>
+            Guard("the plain name color", () => builder.SetOtherwiseNameRgb(Rgb(red, green, blue)));
+
         internal static int Rgb(int red, int green, int blue)
             => (Channel(red) << 16) | (Channel(green) << 8) | Channel(blue);
 
@@ -3692,6 +3731,7 @@ public sealed class ScriptedWorldModule
             public string Asks { get; set; } = string.Empty;
             public string SendLabel { get; set; } = string.Empty;
             public string HotkeyAction { get; set; } = string.Empty;
+            public string PickedAction { get; set; } = string.Empty;
             public List<PanelInput> Inputs { get; } = [];
         }
     }
@@ -3703,14 +3743,4 @@ public sealed class ScriptedWorldModule
 /// <param name="Signature">How it is written, without the <c>public</c> in front. A handler that
 /// yields something carries its type there, because that is where Compass writes one.</param>
 /// <param name="When">What has just happened when it is called.</param>
-/// <param name="Was">What it used to take, for a handler that has since gained an argument. Compass
-/// matches a function by name AND count, so without this a world written against the older signature
-/// stops being called with no error anywhere — its verbs simply do nothing.
-///
-/// <para>🔴 A handler may only ever GAIN arguments on the END. The older call is the newer one
-/// cut short, so anything else here would hand a world its arguments in the wrong order.</para></param>
-public sealed record ScriptHandler(string Name, int Arity, string Signature, string When, int Was = 0)
-{
-    /// <summary>The counts to try, newest first.</summary>
-    public IEnumerable<int> Arities => Was > 0 ? [Arity, Was] : [Arity];
-}
+public sealed record ScriptHandler(string Name, int Arity, string Signature, string When);

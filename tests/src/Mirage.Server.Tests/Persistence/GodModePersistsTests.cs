@@ -34,7 +34,7 @@ public class GodModePersistsTests
         Assert.That(saved.GodMode, Is.False, "a character not in observer mode must not come back in it");
     }
 
-    /// <summary>A save written before observer mode persisted has no key for it, and must read as off rather
+    /// <summary>A save with no observer-mode key — a hand-written or partial file — must read as off rather
     /// than throwing or defaulting to on.</summary>
     [Test]
     public void ASaveWithNoGodModeKey_ReadsAsOff()

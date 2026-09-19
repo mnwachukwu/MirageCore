@@ -1,10 +1,10 @@
 {
-  "name": "wold",
-  "displayName": "The Wold",
+  "name": "reedmarsh",
+  "displayName": "The Reedmarsh",
   "music": 0,
   "playersPassThrough": true,
   "alwaysLit": true,
-  "exitMap": 5,
+  "exitMap": 2,
   "exitX": 8,
   "exitY": 6,
   "greetingSpeaker": "",

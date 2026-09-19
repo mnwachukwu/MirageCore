@@ -1,0 +1,13 @@
+{
+  "name": "drownedreach",
+  "displayName": "The Drowned Reach",
+  "music": 0,
+  "playersPassThrough": true,
+  "alwaysLit": true,
+  "exitMap": 8,
+  "exitX": 8,
+  "exitY": 6,
+  "greetingSpeaker": "",
+  "joinSay": "",
+  "leaveSay": ""
+}

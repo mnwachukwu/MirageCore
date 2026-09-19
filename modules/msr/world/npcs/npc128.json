@@ -1,11 +1,11 @@
 {
   "name": "Maud Greave",
-  "says": "Hold still. No, I'm guessing your size. Force of habit.",
+  "says": "Hold still. No, I\u0027m guessing your size. Force of habit.",
   "sprite": 26,
   "spriteSheet": 0,
   "size": 1,
   "spawnSecs": 60,
-  "behavior": "Wander",
+  "behavior": "Stationary",
   "group": 0,
   "range": 4,
   "emitsLight": true,

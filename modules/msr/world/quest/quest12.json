@@ -1,0 +1,19 @@
+{
+  "name": "The Sunken Crown",
+  "description": "At the bottom of the trench there is a court, and at the center of the court there is a crown that has been assembling one since the day it drowned.\n\nEnd it. I have had two hundred years of reports about that court and not one of them ends with anybody coming back up.",
+  "giver": 134,
+  "turnIn": 0,
+  "reqLevel": 120,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 11,
+  "rewardExp": 2880000,
+  "rewardItem": 1,
+  "rewardMany": 583351,
+  "cadence": 0,
+  "repeatExp": 0,
+  "repeatItem": 0,
+  "repeatMany": 0
+}

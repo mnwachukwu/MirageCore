@@ -22,6 +22,13 @@ public static class Survey
     /// <summary>How many distinct species they have cataloged.</summary>
     public const string Specimens = "specimens";
 
+    /// <summary>Carried by a creature that will not be approached. Authored on the creature, because it
+    /// is true of the whole species and not of one animal having a bad morning.
+    ///
+    /// <para>Declared Viewport so it can color the creature's name: whether you can walk up to
+    /// something is worth knowing from across the meadow rather than after you have tried.</para></summary>
+    public const string Skittish = "skittish";
+
     /// <summary>What that count has earned them. A word rather than a number, so the display field that
     /// shows it needs no table to read it against.</summary>
     public const string Rank = "rank";

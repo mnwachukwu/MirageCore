@@ -24,6 +24,7 @@ public sealed class CoreRegistry
 
     internal CoreRegistry(RecordSchema schema, AttributeSchema attributes, PacketRegistry packets,
                          TickSchedule tick, EquipSlotSet equipSlots, OverheadBarSet overheadBars,
+                         NameTintSet nameTints,
                          DisplayFieldSet displayFields, PacketRoutes packetRoutes,
                          GameActions actions, IReadOnlyList<IActionHandler> actionHandlers,
                          GamePanels panels, ChatChannelSet chatChannels, int hotkeyBarSlots,
@@ -41,6 +42,7 @@ public sealed class CoreRegistry
         Tick = tick;
         EquipSlots = equipSlots;
         OverheadBars = overheadBars;
+        NameTints = nameTints;
         DisplayFields = displayFields;
         PacketRoutes = packetRoutes;
         Actions = actions;
@@ -79,6 +81,9 @@ public sealed class CoreRegistry
     /// <summary>What is drawn over a body's head, in draw order. Empty until a game says otherwise,
     /// and then nothing is drawn over anyone.</summary>
     public OverheadBarSet OverheadBars { get; }
+
+    /// <summary>What colors the name over a creature's head. Plain white until a game says otherwise.</summary>
+    public NameTintSet NameTints { get; }
 
     /// <summary>What each surface shows about a body. Empty until a game says otherwise, and then every
     /// surface draws only what Core itself puts there.</summary>
@@ -238,6 +243,9 @@ internal sealed class CoreBuilder : ICoreBuilder
     private readonly TickSchedule.Builder _tick = new();
     private readonly List<EquipSlot> _equipSlots = [];
     private readonly List<OverheadBar> _overheadBars = [];
+    private readonly List<NameTint> _nameTints = [];
+    private int _otherwiseNameRgb = NameTintSet.PlainRgb;
+    private string? _otherwiseNameSetBy;
     private readonly List<DisplayField> _displayFields = [];
     private readonly List<IPacketRoute> _packetRoutes = [];
     private readonly List<GameAction> _actions = [];
@@ -428,6 +436,50 @@ internal sealed class CoreBuilder : ICoreBuilder
         }
 
         _overheadBars.Add(bar);
+    }
+
+    public void AddNameTint(NameTint tint)
+    {
+        ArgumentNullException.ThrowIfNull(tint);
+        Refuse();
+
+        if (string.IsNullOrWhiteSpace(tint.Key))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared a name tint naming no attribute.", _module);
+        }
+
+        if (_nameTints.Any(t => string.Equals(t.Key, tint.Key, StringComparison.Ordinal)))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared a name tint on '{tint.Key}', which already has one.", _module);
+        }
+
+        if (_nameTints.Count == NameTintSet.Max)
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared name tint '{tint.Key}', which is one more than the "
+                + $"{NameTintSet.Max} a world may have.", _module);
+        }
+
+        _nameTints.Add(tint);
+    }
+
+    /// <summary>The color for a creature carrying none of the declared tints. Said once for the world:
+    /// a second module overruling the first would leave which one wins depending on load order.</summary>
+    public void SetOtherwiseNameRgb(int rgb)
+    {
+        Refuse();
+
+        if (_otherwiseNameSetBy is not null)
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' set the plain name color, which module '{_otherwiseNameSetBy}' "
+                + "has already set.", _module);
+        }
+
+        _otherwiseNameSetBy = _module;
+        _otherwiseNameRgb = rgb;
     }
 
     public void AddPanel(GamePanel panel)
@@ -710,9 +762,25 @@ internal sealed class CoreBuilder : ICoreBuilder
         Refuse();
         _frozen = true;
 
+        var attributes = Attributes.Build();
+
+        // ⚠ Both halves or neither. A tint the client never receives the attribute for colors nothing,
+        // and nothing reports it: every creature simply comes out the plain color, which is a world
+        // that looks finished. Checked here rather than in AddNameTint because a module may declare
+        // the tint before the attribute it reads.
+        foreach (var tint in _nameTints)
+        {
+            if (attributes.IsVisibleTo(tint.Key, AttributeVisibility.Viewport)) continue;
+
+            throw new CoreModuleException(
+                $"A name tint reads '{tint.Key}', which no module declared as an attribute onlookers "
+                + "can see. Declare it to the viewport, or the tint colors nothing.", _module);
+        }
+
         var schema = new RecordSchema { Families = [.. _families], ChoiceSets = [.. _choices] };
-        return new CoreRegistry(schema, Attributes.Build(), Packets.Build(), _tick.Build(),
+        return new CoreRegistry(schema, attributes, Packets.Build(), _tick.Build(),
                                 new EquipSlotSet(_equipSlots), new OverheadBarSet(_overheadBars),
+                                new NameTintSet(_nameTints, _otherwiseNameRgb),
                                 new DisplayFieldSet(_displayFields), new PacketRoutes([.. _packetRoutes]),
                                 new GameActions(_actions), [.. _actionHandlers], new GamePanels([.. _panels]),
                                 new ChatChannelSet([.. _chatChannels]), _hotkeyBarSlots,

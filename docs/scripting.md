@@ -197,7 +197,8 @@ shared model Rules
         game.Action("harvest.gather", "Gather here", "Harvest");
     end function
 
-    public function OnAction(Player who, string action, integer map, integer x, integer y)
+    public function OnAction(Player who, string action, string on, integer map, integer x, integer y,
+                             string picked)
         who.SetNumber("harvest.baskets", who.Number("harvest.baskets") + 1);
         who.Message("Gathered. That is " + who.Number("harvest.baskets") + " baskets.");
     end function

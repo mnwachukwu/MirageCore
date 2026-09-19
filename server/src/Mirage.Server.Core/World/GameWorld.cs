@@ -43,6 +43,10 @@ public sealed class GameWorld
     /// is loaded, and then nothing is drawn over anyone.</summary>
     public OverheadBarSet OverheadBars { get; set; } = OverheadBarSet.Empty;
 
+    /// <summary>What colors a creature's name, from the compiled modules. Plain when no game module is
+    /// loaded, and then every creature is named in white.</summary>
+    public NameTintSet NameTints { get; set; } = NameTintSet.Plain;
+
     /// <summary>What each surface shows about a body, from the compiled modules. Empty when no game
     /// module is loaded, and then every surface draws only what Core itself puts there.</summary>
     public DisplayFieldSet DisplayFields { get; set; } = DisplayFieldSet.Empty;
@@ -597,7 +601,8 @@ public sealed class GameWorld
     {
         // A non-null layer restricts the match to NPCs on that logical layer (two-layer world), so a
         // fringe-layer body doesn't block a ground-layer mover at the same (x,y) and vice versa.  null =
-        // any layer (legacy callers / spawn on the ground where every NPC is Ground anyway).
+        // any layer, which is what a caller with no layer in hand wants (spawning on the ground, where
+        // every NPC is Ground anyway).
         // Within-map: any NPC anchored on this map whose footprint covers (x,y).
         if (AnyNpcFootprintCoversLocal(mapNum, x, y, exclude, layer)) return true;
 

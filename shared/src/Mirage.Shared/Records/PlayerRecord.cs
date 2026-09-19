@@ -198,12 +198,10 @@ public sealed class PlayerRecord
     [JsonIgnore] public bool GuildOpen { get; set; }
     /// <summary>Overhead guild-name color, packed 0xRRGGBB (0 = unset → a neutral default).</summary>
     [JsonIgnore] public int GuildColor { get; set; }
-    /// <summary>Client-only: the member's guild toggles showing the guild's SEASONAL STANDING as "(N)" in the
-    /// overhead cluster (the rank word itself now shows unconditionally). Field name predates the
-    /// repurpose. Wire-fed by the nullable guild fields on SendPlayerData; never persisted.</summary>
+    /// <summary>Client-only: the guild's leader has turned on showing a member's rank word (Officer and up)
+    /// beside the name in the overhead cluster. Wire-fed by the nullable guild fields on SendPlayerData;
+    /// never persisted.</summary>
     [JsonIgnore] public bool GuildShowRank { get; set; }
-    /// <summary>Client-only: the guild's 1-based seasonal standing (leaderboard position; 0 = unranked), shown
-    /// Wire-fed; never persisted.</summary>
 
     // Chat bubble (client-side render state). Head is anchored above the speaker at full alpha
     // until ChatBubbleEndMs; the tick pass then demotes it to a drifter, which rises and fades.

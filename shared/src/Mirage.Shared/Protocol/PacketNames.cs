@@ -232,6 +232,8 @@ public static class PacketNames
     public const string AttributeSync = "attrsync";
     // Which attributes this game draws over a head, sent once before anything that could fill one.
     public const string OverheadBars = "overheadbars";
+    // Which attributes color a creature's name, sent once before any creature can be drawn.
+    public const string NameTints = "nametints";
     // Which attributes each surface shows, sent once before anything that could fill a row.
     public const string DisplayFields = "displayfields";
     // What a game lets the player do, sent once so a stock client can offer it.

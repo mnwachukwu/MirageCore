@@ -13,8 +13,8 @@ public sealed record SearchPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.Search;
 
-    // Map of the clicked tile (a center or neighbor map).  0 = the player's own map
-    // (back-compat); the server validates it's one the player can currently observe.
+    // Map of the clicked tile (a center or neighbor map).  0 = the player's own map; the server
+    // validates it's one the player can currently observe.
     [JsonPropertyName("mapNum")] public int MapNum { get; init; }
     [JsonPropertyName("x")] public int X { get; init; }
     [JsonPropertyName("y")] public int Y { get; init; }

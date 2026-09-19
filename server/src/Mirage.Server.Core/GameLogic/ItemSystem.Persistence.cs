@@ -88,9 +88,9 @@ public sealed partial class ItemSystem : GameSystem
                 X = drop.X,
                 Y = drop.Y,
                 Source = drop.Source,
-                // Restore stack order from save. Older saves predate DropSeq (=0) — assign a fresh
-                // counter so they still have a defined pickup order. Either way, keep the global
-                // counter ahead of every loaded seq so new drops always land on top.
+                // Restore stack order from save. A drop naming no order — which only a hand-edited file
+                // holds — is given a fresh one, so the pickup order is always defined. Either way, keep
+                // the global counter ahead of every loaded seq so new drops always land on top.
                 DropSeq = drop.DropSeq > 0 ? drop.DropSeq : ++_dropSeqCounter,
             };
             if (mi.DropSeq > _dropSeqCounter) _dropSeqCounter = mi.DropSeq;

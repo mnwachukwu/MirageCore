@@ -1,0 +1,19 @@
+{
+  "name": "The First Flame",
+  "description": "It relights. Every week, in the same place, and every week it is a little harder to put out.\n\nI do not think it can be killed - I think it can only be delayed, and I have made my peace with being a man whose life\u0027s work is a delay. Go and buy us another week.",
+  "giver": 142,
+  "turnIn": 0,
+  "reqLevel": 254,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 2898704,
+  "rewardItem": 1,
+  "rewardMany": 973995,
+  "cadence": 2,
+  "repeatExp": 2898704,
+  "repeatItem": 1,
+  "repeatMany": 973995
+}

@@ -1,0 +1,19 @@
+{
+  "name": "Silence the Heralds",
+  "description": "Plague heralds carry it on them and they will not let you near. 5, from as far off as you can manage. Do not be clever about the distance.",
+  "giver": 126,
+  "turnIn": 0,
+  "reqLevel": 13,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 7707,
+  "rewardItem": 1,
+  "rewardMany": 348,
+  "cadence": 2,
+  "repeatExp": 7707,
+  "repeatItem": 1,
+  "repeatMany": 348
+}

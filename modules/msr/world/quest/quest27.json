@@ -1,0 +1,19 @@
+{
+  "name": "Cut the Snare Lines",
+  "description": "Snare-setters work at distance and run when you close. 3 of them - bring something you can throw, or something you can say.",
+  "giver": 126,
+  "turnIn": 0,
+  "reqLevel": 5,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 673,
+  "rewardItem": 1,
+  "rewardMany": 16,
+  "cadence": 1,
+  "repeatExp": 359,
+  "repeatItem": 1,
+  "repeatMany": 8
+}

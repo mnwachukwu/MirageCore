@@ -1,0 +1,19 @@
+{
+  "name": "Slagborn on the Path",
+  "description": "3 slagborn. Slow, dull, and they will kill anyone who treats them as slow and dull.",
+  "giver": 142,
+  "turnIn": 0,
+  "reqLevel": 237,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 5937,
+  "rewardItem": 1,
+  "rewardMany": 1904,
+  "cadence": 1,
+  "repeatExp": 3166,
+  "repeatItem": 1,
+  "repeatMany": 1015
+}

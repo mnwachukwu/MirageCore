@@ -22,8 +22,8 @@ public partial class LayerVisibilityWindow : Window
         Title = EditorStrings.TitleFor(EditorStrings.LayerVisibility_Title);
         _intro.Text = EditorStrings.Get(EditorStrings.LayerVisibility_Intro);
 
-        // A remembered size is only honored above the minimum. The title bar carries the app name and the
-        // window's name, so a size saved before the minimum was raised would come back too narrow to read.
+        // A remembered size is only honored above the minimum, because the title bar carries the app name
+        // and the window's name and a narrower window cuts both off.
         var settings = AppSettings.Current;
         if (settings.LayerVisibilityWidth is { } w && w > MinWidth) Width = w;
         if (settings.LayerVisibilityHeight is { } h && h > MinHeight) Height = h;

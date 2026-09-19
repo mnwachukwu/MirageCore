@@ -18,10 +18,10 @@ namespace Mirage.Client.Shell.Panels;
 public sealed class ShopPanel : IGamePanel
 {
     // The list view fits in very little, but the acquisition confirm is the tallest thing this panel
-    // draws and it grew: a spell scroll stacks level, what it teaches, MP cost, reagent cost, how often
-    // the reagent depletes, an effectiveness preview, then the quantity and total rows. That is ten
-    // 18px lines under the name-and-icon header and above the buttons, and a minimum that predates them
-    // lets the panel be dragged down to where the confirm is cut off mid-sentence.
+    // draws: a spell scroll stacks level, what it teaches, MP cost, reagent cost, how often the reagent
+    // depletes, an effectiveness preview, then the quantity and total rows. That is ten 18px lines under
+    // the name-and-icon header and above the buttons, and the minimum has to cover all of them or the
+    // panel can be dragged down to where the confirm is cut off mid-sentence.
     private const int ConfirmLines = 10;
     private const int ConfirmChrome = 118;   // title bar, the icon/name header, the button row, padding
     private const int PanelMinH = ConfirmLines * 18 + ConfirmChrome;   // 298

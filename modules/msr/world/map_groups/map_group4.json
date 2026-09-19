@@ -1,0 +1,13 @@
+{
+  "name": "cinderwaste",
+  "displayName": "The Cinderwaste",
+  "music": 0,
+  "playersPassThrough": true,
+  "alwaysLit": true,
+  "exitMap": 14,
+  "exitX": 8,
+  "exitY": 6,
+  "greetingSpeaker": "",
+  "joinSay": "",
+  "leaveSay": ""
+}

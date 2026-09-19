@@ -1,0 +1,19 @@
+{
+  "name": "Counting the Chorus",
+  "description": "Chanters. 6 at a time, every day, and come back and tell me the number held.\n\nI said I send people to count rather than to fight, and I meant it - the killing is only how you get close enough to hear whether the note slipped. It has not slipped yet.",
+  "giver": 134,
+  "turnIn": 0,
+  "reqLevel": 104,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 402098,
+  "rewardItem": 1,
+  "rewardMany": 73947,
+  "cadence": 1,
+  "repeatExp": 214452,
+  "repeatItem": 1,
+  "repeatMany": 39438
+}

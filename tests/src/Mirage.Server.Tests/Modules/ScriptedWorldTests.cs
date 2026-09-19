@@ -835,42 +835,6 @@ public class ScriptedWorldTests
         });
     }
 
-    /// <summary>🔴 A world written before OnAction grew its last argument keeps working.
-    ///
-    /// <para>Compass matches a function by name AND count, so a handler the engine asks for with seven
-    /// arguments and a world that wrote six is a handler that is never called. Nothing errors: the verbs
-    /// are declared, the menu draws them, the player presses one, and the game does nothing. That is the
-    /// worst shape a break can take, and this stops it.</para></summary>
-    [Test]
-    public void AHandlerWrittenToTheOlderSignatureIsStillCalled()
-    {
-        var world = new RecordingWorld();
-        var (module, _) = Built("""
-            shared model Rules
-                public function Configure(Builder game)
-                    Verb g = game.Action("old.go", "Go", "Old");
-                    g.OnHud();
-                end function
-
-                public function OnAction(Player who, string action, string on, integer map,
-                                         integer x, integer y)
-                    who.Message("went to " + map + ":" + x + "," + y);
-                end function
-            end model
-            """, world);
-
-        using ScriptedWorldModule scripts = module;
-
-        ((IActionHandler)scripts).Invoke(Someone, "old.go", EntityHandle.None,
-                                         new WorldPlace(4, 5, 6), picked: "");
-
-        Assert.Multiple(() =>
-        {
-            Assert.That(module.Problems.Where(p => p.Severity == ScriptSeverity.Error), Is.Empty);
-            Assert.That(world.Said, Is.EqualTo(new[] { "went to 4:5,6" }).AsCollection);
-        });
-    }
-
 
     /// <summary>🔴 A panel the game holds up, and the refusal that stops one nothing can take down.
     ///
@@ -1188,10 +1152,10 @@ public class ScriptedWorldTests
     /// with it: <c>OnAction</c> hands over the target's NAME, and the only lookup was over players. So
     /// "Attack" could sit on a wolf's menu and no rule could touch the wolf.</para>
     ///
-    /// <para>⚠ <c>OnAction</c> is not the thing that changed, and must not be. A handler is matched by
-    /// name AND arity, so retyping its third parameter would leave every script already written
-    /// matching, loading, and being handed a value of a type its body does not expect. The square it
-    /// already carries is turned back into a body instead.</para></summary>
+    /// <para>⚠ <c>OnAction</c>'s signature is not where this is solved. A handler is matched by name AND
+    /// arity, so retyping its third parameter leaves a script matching, loading, and being handed a value
+    /// of a type its body does not expect. The square it already carries is turned back into a body
+    /// instead.</para></summary>
     [Test]
     public void AVerbUsedOnACreature_ReachesTheCreature()
     {
@@ -1208,7 +1172,8 @@ public class ScriptedWorldTests
                     bite.OnNpc();
                 end function
 
-                public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+                public function OnAction(Player who, string action, string on, integer map,
+                                         integer x, integer y, string picked)
                     Npc? it = World.NpcAt(map, x, y);
 
                     if not it.HasValue()
@@ -1254,7 +1219,8 @@ public class ScriptedWorldTests
                     look.OnTile();
                 end function
 
-                public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+                public function OnAction(Player who, string action, string on, integer map,
+                                         integer x, integer y, string picked)
                     Npc? it = World.NpcAt(map, x, y);
                     Player? them = World.PlayerAt(map, x, y);
 
@@ -1388,7 +1354,8 @@ public class ScriptedWorldTests
                     hit.OnNpc();
                 end function
 
-                public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+                public function OnAction(Player who, string action, string on, integer map,
+                                         integer x, integer y, string picked)
                     Npc? it = World.NpcAt(map, x, y);
 
                     if not it.HasValue()
@@ -1461,7 +1428,8 @@ public class ScriptedWorldTests
                     hit.OnNpc();
                 end function
 
-                public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+                public function OnAction(Player who, string action, string on, integer map,
+                                         integer x, integer y, string picked)
                     Npc? it = World.NpcAt(map, x, y);
 
                     if not it.HasValue()
@@ -1518,7 +1486,8 @@ public class ScriptedWorldTests
                     hit.OnNpc();
                 end function
 
-                public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+                public function OnAction(Player who, string action, string on, integer map,
+                                         integer x, integer y, string picked)
                     Npc? it = World.NpcAt(map, x, y);
 
                     if not it.HasValue()
@@ -2005,7 +1974,8 @@ public class ScriptedWorldTests
                     game.Action("harvest.gather", "Gather here", "Harvest");
                 end function
 
-                public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+                public function OnAction(Player who, string action, string on, integer map,
+                                         integer x, integer y, string picked)
                     who.Message(action + " at " + map + ":" + x + "," + y);
                 end function
             end model
@@ -2033,7 +2003,8 @@ public class ScriptedWorldTests
                     game.Action("harvest.greet", "Greet", "Harvest");
                 end function
 
-                public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+                public function OnAction(Player who, string action, string on, integer map,
+                                         integer x, integer y, string picked)
                     if on == ""
                         who.Message("nobody");
                         yield;
@@ -2061,7 +2032,8 @@ public class ScriptedWorldTests
                     game.Action("harvest.gather", "Gather here", "Harvest");
                 end function
 
-                public function OnAction(Player who, string action, integer map, integer x, integer y)
+                public function OnAction(Player who, string action, string on, integer map,
+                                         integer x, integer y, string picked)
                     who.Message("did " + action);
                 end function
             end model
@@ -2238,7 +2210,7 @@ public class ScriptedWorldTests
 
             // \U0001F534 The half compiling does not cover. A handler is matched by NAME AND ARITY, so a
             // signature that drifts from the table never gets called: it compiles, it loads, and the
-            // verb it served quietly stops working, as changing OnAction's arity did.
+            // verb it served quietly stops working.
             Assert.That(module.Offered, Is.SupersetOf(written),
                 "the shipped rules declare a handler the engine did not take \u2014 check its arity "
                 + "against ScriptedWorldModule.Handlers");
@@ -2280,8 +2252,7 @@ public class ScriptedWorldTests
         public bool IsInWorld(EntityHandle who) =>
             who.IsSet && (Here.Count == 0 || Here.Contains(who));
         /// <summary>Where a test put this body, or <see cref="Place"/> for one it said nothing
-        /// about — which is most of them, and what every test written before Standing existed
-        /// relies on.</summary>
+        /// about, which is most of them.</summary>
         public WorldPlace PlaceOf(EntityHandle who)
         {
             foreach (var (at, body) in Standing)

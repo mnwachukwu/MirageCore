@@ -24,12 +24,37 @@ shared model Beasts
     # Carried by a creature that answers a crime. Any number above zero means yes.
     public string Guard = "guard";
 
+    # Carried by a creature that fights at all, and by one worth sending a guild after.
+    public string Hostile = "hostile";
+    public string Boss = "boss";
+
     # How far a shout carries, in tiles. The original asked each guard for its own noticing range;
     # one number is the same rule with the authoring taken out of it.
     public integer GuardRange = 10;
 
     # How many answer. A whole map converging on one body reads as a bug rather than as law.
     public integer GuardsWhoAnswer = 3;
+
+    # ── What a creature looks like it is ──────────────────────────────────────
+    #
+    # The other half of the table at the top of this file. Core's behaviors say how a body MOVES, so a
+    # caster holding its distance and a deer holding its distance are the same Behavior and would be
+    # named the same. The original told them apart by color before a player was close enough to be hit,
+    # and these three lines are that rule: green for somebody you can talk to, yellow for the town's
+    # own, white for everything that fights.
+    #
+    # ⚠ The first one a creature carries names it, so guards come first. A boss is authored on 19
+    # creatures and is not colored here, because the original did not: add it ABOVE Hostile, since
+    # every boss is hostile too and the second line would never be reached.
+    public function Declare(Builder game)
+        # Onlookers, not owners: the color is drawn over a creature standing in front of somebody else.
+        game.Attribute(Beasts.Guard, "viewport");
+        game.Attribute(Beasts.Hostile, "viewport");
+
+        game.NameTint(Beasts.Guard, 255, 255, 0);
+        game.NameTint(Beasts.Hostile, 255, 255, 255);
+        game.NameTint(0, 255, 0);
+    end function
 
     # ── What a fresh body is made of ──────────────────────────────────────────
     #

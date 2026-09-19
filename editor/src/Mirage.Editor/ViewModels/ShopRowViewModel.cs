@@ -310,8 +310,8 @@ public sealed partial class ShopRowViewModel : ObservableObject, ILockableRow
         NotifySalesDerived();   // prices may have moved under us — the summary and warnings follow
     }
 
-    // Build barter rows from a record, skipping empties and the legacy null-at-index-0, so the table shows
-    // only real barters (dense). Callers set _loading around this so the rebuild doesn't dirty the row.
+    // Build barter rows from a record, skipping anything empty, so the table shows only real barters
+    // (dense). Callers set _loading around this so the rebuild doesn't dirty the row.
     private void LoadBarters(ShopRecord r)
     {
         Barters.Clear();

@@ -1,0 +1,19 @@
+{
+  "name": "Silt Runners",
+  "description": "5 a week. Bring patience rather than force; they scatter and reform and scatter again.",
+  "giver": 134,
+  "turnIn": 0,
+  "reqLevel": 118,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 6370,
+  "rewardItem": 1,
+  "rewardMany": 1276,
+  "cadence": 2,
+  "repeatExp": 6370,
+  "repeatItem": 1,
+  "repeatMany": 1276
+}

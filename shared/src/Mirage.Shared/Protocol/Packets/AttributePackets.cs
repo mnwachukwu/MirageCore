@@ -81,6 +81,33 @@ public sealed record OverheadBarsPacket : IPacket
 }
 
 /// <summary>
+/// S→C, once per session before any creature can be drawn: which of this game's attributes decide the
+/// color of a creature's name, and what a creature carrying none of them is named in.
+///
+/// <para><b>What a creature IS is the loaded game's decision.</b> Core's creature record says how a
+/// body moves, not whether meeting it is good news, so a client compiled against a fixed rule could
+/// only ever color one game's world.</para>
+///
+/// <para>The values themselves travel as ordinary attribute syncs, so a body that turns hostile is
+/// renamed by the sync that turned it, and a name cannot disagree with what the body carries.</para>
+/// </summary>
+public sealed record NameTintsPacket : IPacket
+{
+    [JsonPropertyName("cmd")] public string Cmd => PacketNames.NameTints;
+
+    /// <summary>One row per declared tint, already in the order they are asked. The first whose
+    /// attribute reads true on a body names it.</summary>
+    [JsonPropertyName("tints")] public IReadOnlyList<Row> Tints { get; init; } = [];
+
+    /// <summary>The color for a creature matching no row, packed <c>0xRRGGBB</c>.</summary>
+    [JsonPropertyName("otherwise")] public int OtherwiseRgb { get; init; } = NameTintSet.PlainRgb;
+
+    public readonly record struct Row(
+        [property: JsonPropertyName("k")] string Key,
+        [property: JsonPropertyName("rgb")] int Rgb);
+}
+
+/// <summary>
 /// S→C, once per session before any attribute can arrive: what each surface shows about a body, and how.
 ///
 /// <para><b>The rows are declared, not computed.</b> A client resolves these against the values it

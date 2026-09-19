@@ -308,8 +308,8 @@ public sealed class JsonPersistenceService : IPersistenceService
         try
         {
             // Canonical (case- and underscore-insensitive) collision check: compare identity keys, so "B_o_b"
-            // can't be created alongside "Bob". The stored set keeps its lowercased form; keying both sides here
-            // also matches any pre-existing underscore entries without a data migration.
+            // can't be created alongside "Bob". The stored set keeps its lowercased form, so both sides are
+            // keyed here rather than trusting the stored spelling.
             var names = await LoadCharNamesAsync();
             string key = NameRules.Key(name);
             foreach (var n in names)
@@ -412,8 +412,8 @@ public sealed class JsonPersistenceService : IPersistenceService
         var result = new NpcRecord[_limits.Npcs + 1];
         for (int i = 0; i <= _limits.Npcs; i++) result[i] = new NpcRecord();
         int loaded = await CheckAndLoadRecordsAsync(result, _limits.Npcs, NpcFile);
-        // Size 0 ("not defined" in a legacy or blank record) normalizes to the 1x1 default so the whole
-        // server and the editor see a valid footprint class. Sentinel handling, not a data migration.
+        // Size 0 — what a blank record holds, and what a hand-authored file that omits the field reads as —
+        // normalizes to the 1x1 default so the whole server and the editor see a valid footprint class.
         for (int i = 1; i <= _limits.Npcs; i++)
         {
             if (result[i].Size < 1) result[i].Size = 1;
@@ -430,16 +430,15 @@ public sealed class JsonPersistenceService : IPersistenceService
         var result = new ShopRecord[_limits.Shops + 1];
         for (int i = 0; i <= _limits.Shops; i++) result[i] = new ShopRecord();
         int loaded = await CheckAndLoadRecordsAsync(result, _limits.Shops, ShopFile);
-        // Compact each shop's trades: drop the legacy null-at-index-0 and any empty slots so the in-memory
-        // list is dense (matching how the editor authors + saves them). Legacy shop JSON stored a fixed
-        // 1-based array ([null, slot1..slot8]); this normalizes it on load — no file rewrite required.
+        // Compact each shop's trades so the in-memory list is dense, matching how the editor authors and
+        // saves them. A hand-authored file reaches the server without the editor ever seeing it, so a row
+        // naming nothing on either side — or a literal null — is dropped here rather than trusted.
         foreach (var shop in result)
         {
             shop.BarterItem = shop.BarterItem
                 .Where(t => t is not null && (t.GiveItem > 0 || t.GetItem > 0))
                 .ToList();
-            // Sales list: drop dead item numbers and duplicates. A shop authored before the sales table
-            // simply has none, which needs no migration — an absent list deserializes to an empty one.
+            // Sales list: drop dead item numbers and duplicates.
             shop.Normalize(_limits.Items);
         }
 
@@ -458,13 +457,12 @@ public sealed class JsonPersistenceService : IPersistenceService
     /// <paramref name="result"/> wherever there is no file. Returns how many were actually read.
     ///
     /// <para><b>A slot with no file is not written.</b> The array arrives here already filled with blank
-    /// records, so writing one out buys the server nothing and costs a file per empty slot — a world
-    /// holding twenty authored records became some five thousand files the first time a server opened
-    /// it. A world folder gets handed from one person to another, and it should be the handful of
-    /// files it actually is.</para>
+    /// records, so writing one out buys the server nothing and costs a file per empty slot — a world of
+    /// twenty authored records would be some five thousand files. A world folder gets handed from one
+    /// person to another, and it should be the handful of files it actually is.</para>
     ///
-    /// <para>The editor reads the same folders and has always skipped what is not there, so a world that
-    /// was materialized by an older build opens exactly the same way as one that was not.</para></summary>
+    /// <para>The editor reads the same folders and skips what is not there, so both sides see the same
+    /// world.</para></summary>
     private async Task<int> CheckAndLoadRecordsAsync<T>(T[] result, int max, Func<int, string> filePath)
     {
         int loaded = 0;

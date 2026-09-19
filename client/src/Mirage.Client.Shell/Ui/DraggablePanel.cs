@@ -37,15 +37,14 @@ public sealed class DraggablePanel
 
     public Rectangle Bounds => _bounds;
 
-    // Clamps up to the minima so a stale persisted size (saved before the panel's content grew, or
-    // from an older min) can never load smaller than its content needs. The live drag/resize path
-    // clamps separately in HandleDragResize.
+    // Clamps up to the minima so a persisted size can never load smaller than the panel's content
+    // needs. The live drag/resize path clamps separately in HandleDragResize.
     public void SetBounds(Rectangle bounds) =>
         _bounds = new Rectangle(bounds.X, bounds.Y, Math.Max(bounds.Width, _minW), Math.Max(bounds.Height, _minH));
 
     /// <summary>Drop the panel back to the position and size it was declared with, discarding whatever
-    /// the player dragged or resized it to. Goes through SetBounds so a default that predates a later
-    /// minimum still clamps up rather than loading too small.</summary>
+    /// the player dragged or resized it to. Goes through SetBounds so a declared default smaller than the
+    /// panel's minimum clamps up rather than loading too small.</summary>
     public void ResetBounds() => SetBounds(_defaultBounds);
     public void SetMinH(int minH) => _minH = Math.Max(minH, 40);
     // Area below the title bar where panel content is drawn.

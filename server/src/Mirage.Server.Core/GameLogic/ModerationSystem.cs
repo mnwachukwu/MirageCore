@@ -32,7 +32,7 @@ public sealed class ModerationSystem
         _pm = pm;
         _saver = saver;
         // Optional and defaulted, like the clock and the RNG: only the machine-ban MODE is read from it,
-        // and every harness that builds this system predates the setting.
+        // and a test harness has no reason to supply a whole server config for one setting.
         _config = config ?? Configuration.ServerConfig.Default;
     }
 

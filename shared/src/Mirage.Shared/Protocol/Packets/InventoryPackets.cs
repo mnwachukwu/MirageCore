@@ -144,8 +144,8 @@ public sealed record MapItemsPacket : IPacket
         [property: JsonPropertyName("y")] int Y,
         // Lets the client count PlayerDropped items so the inventory Drop button can disable when
         // the voluntary clutter cap is reached without also locking out drops just because NPC loot
-        // happens to be on the ground. Default 0 = TileDefined for backward-compatible removals
-        // (Num=0 sentinel packets don't carry meaningful Source).
+        // happens to be on the ground. Defaults to TileDefined because a removal sentinel (Num=0)
+        // carries no meaningful Source.
         [property: JsonPropertyName("src")] ItemSource Source = ItemSource.TileDefined,
         // Two-layer world: the logical layer the drop sits on (Ground omitted on the wire). Removal sentinels
         // (Num=0) leave it default — the client removes by slot, so the layer is irrelevant there.

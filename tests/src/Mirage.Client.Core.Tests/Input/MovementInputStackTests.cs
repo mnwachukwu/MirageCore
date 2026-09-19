@@ -6,7 +6,7 @@ namespace Mirage.Client.Core.Tests.Input;
 
 /// <summary>Press-order movement resolution ("input stack"): the most-recently-pressed still-held
 /// direction wins, releasing it falls back to whatever is still held, and same-tick ties resolve to
-/// the legacy fixed precedence Up > Down > Left > Right.</summary>
+/// the original's fixed precedence Up > Down > Left > Right.</summary>
 [TestFixture]
 public class MovementInputStackTests
 {
@@ -81,9 +81,9 @@ public class MovementInputStackTests
     }
 
     // Keys that first appear together on one tick have no real order, so they fall back to the
-    // legacy fixed precedence: Up beats Down beats Left beats Right.
+    // original's fixed precedence: Up beats Down beats Left beats Right.
     [Test]
-    public void SameTickMultiPress_UsesLegacyPrecedence()
+    public void SameTickMultiPress_UsesTheOriginalsPrecedence()
     {
         Assert.Multiple(() =>
         {
@@ -98,7 +98,7 @@ public class MovementInputStackTests
     public void ReleaseAll_ThenPress_StartsFresh()
     {
         var s = new MovementInputStack();
-        s.Resolve(up: true, down: false, left: false, right: true);               // Up (legacy tie-break)
+        s.Resolve(up: true, down: false, left: false, right: true);               // Up (the tie-break)
         Assert.That(s.Resolve(false, false, false, false), Is.Null);              // all released
         Assert.That(s.Resolve(up: false, down: false, left: false, right: true), Is.EqualTo(Direction.Right)); // D alone
     }

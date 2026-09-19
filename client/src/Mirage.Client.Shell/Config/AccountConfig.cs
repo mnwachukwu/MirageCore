@@ -17,8 +17,8 @@ public sealed class AccountConfig
     [JsonPropertyName("characters")]
     public Dictionary<string, CharacterConfig> Characters { get; set; } = new();
     // Tabbed-chat preferences live at the account level (not per-character) because chat is an
-    // account-wide comms choice. Empty list on load = first launch / migrated old config; the
-    // ChatPanel then constructs one default tab with all channels enabled.
+    // account-wide comms choice. An empty list on load is a first launch; the ChatPanel then
+    // constructs one default tab with all channels enabled.
     [JsonPropertyName("chatTabs")]
     public List<ChatTabConfig> ChatTabs { get; set; } = new();
 

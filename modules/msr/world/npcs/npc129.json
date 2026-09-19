@@ -1,11 +1,11 @@
 {
   "name": "Bittern",
-  "says": "Mind the shelf. The green one's finally settled and I'd like it kept that way.",
+  "says": "Mind the shelf. The green one\u0027s finally settled and I\u0027d like it kept that way.",
   "sprite": 41,
   "spriteSheet": 0,
   "size": 1,
   "spawnSecs": 60,
-  "behavior": "Wander",
+  "behavior": "Stationary",
   "group": 0,
   "range": 4,
   "emitsLight": true,

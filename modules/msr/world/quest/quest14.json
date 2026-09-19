@@ -1,0 +1,19 @@
+{
+  "name": "Leviathan",
+  "description": "Once a week the deep water goes quiet, and a week later it is quiet a little closer in.\n\nThat is Leviathan Prime surfacing to feed. I cannot stop it surfacing. I can send someone down to meet it every time it does, and so far that has been enough.",
+  "giver": 134,
+  "turnIn": 0,
+  "reqLevel": 120,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 751861,
+  "rewardItem": 1,
+  "rewardMany": 152291,
+  "cadence": 2,
+  "repeatExp": 751861,
+  "repeatItem": 1,
+  "repeatMany": 152291
+}

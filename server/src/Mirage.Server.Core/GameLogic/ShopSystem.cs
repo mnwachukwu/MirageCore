@@ -59,7 +59,7 @@ public sealed class ShopSystem : GameSystem
         // Not a real barter unless both sides carry an item AND a positive quantity. A zero give quantity
         // slips past the HasItem check below (HasItem(...) >= 0 is always true) and a zero get quantity
         // still mints the item, so a misconfigured slot would hand out free items. Reject outright. The
-        // editor and the shop-save handler both keep quantities >= 1, so this only guards legacy/bad data.
+        // editor and the shop-save handler both keep quantities >= 1, so this only guards a hand-edited file.
         if (row.GiveItem <= 0 || row.GetItem <= 0 || row.GiveQuantity <= 0 || row.GetQuantity <= 0) return;
 
         // The row is a RATE, and this is how many times to apply it. Five teeth against a two-teeth row

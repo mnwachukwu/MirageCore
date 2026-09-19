@@ -9,11 +9,9 @@ namespace Mirage.Shared.Records;
 /// engine: <c>ShopSystem</c> exposes only <c>Trade</c> and <c>FixItem</c>, so a shop can buy an item back
 /// only if someone authored a row for that exact item.</para>
 ///
-/// <para>This was documented backwards (as the shop's side, with GetValue called "the price") until
-/// 2026-08-13. Both the server and the client read it the way described above — <c>ShopSystem.Trade</c>
-/// does <c>TakeItem(GiveItem)</c> then <c>GiveItem(GetItem)</c>, and the shop panel lists each row as
-/// "give → get" — so the code was always consistent with itself and only the comment was wrong.
-/// THE PRICE IS <see cref="GiveQuantity"/>.</para></summary>
+/// <para>⚠ Read from the player's side throughout, so THE PRICE IS <see cref="GiveQuantity"/> —
+/// <c>ShopSystem.Trade</c> does <c>TakeItem(GiveItem)</c> then <c>GiveItem(GetItem)</c>, and the shop
+/// panel lists each row as "give → get".</para></summary>
 public sealed class BarterItemRecord
 {
     /// <summary>Item slot the player hands over — the currency item on a normal purchase.</summary>

@@ -28,6 +28,14 @@ public sealed partial class ClientPacketHandler
             [.. p.Bars.Select(b => new OverheadBar { ValueKey = b.ValueKey, MaxKey = b.MaxKey, Rgb = b.Rgb })]);
     }
 
+    /// <summary>Which attributes color a creature's name. Arrives before any creature can be drawn, so
+    /// the first frame a body appears on already names it correctly.</summary>
+    private void HandleNameTints(NameTintsPacket p)
+    {
+        _state.NameTints = new NameTintSet(
+            [.. p.Tints.Select(t => new NameTint { Key = t.Key, Rgb = t.Rgb })], p.OtherwiseRgb);
+    }
+
     /// <summary>What each surface shows. Arrives with the numbering for the same reason the bars do:
     /// a field naming a key this client has no declaration for could never fill.</summary>
     private void HandleDisplayFields(DisplayFieldsPacket p)

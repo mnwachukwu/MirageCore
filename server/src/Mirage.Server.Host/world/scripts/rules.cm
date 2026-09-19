@@ -40,7 +40,9 @@ shared model Rules
     end function
 
     # `on` names whoever the verb was used on, and is blank for one offered on a square or on the HUD.
-    public function OnAction(Player who, string action, string on, integer map, integer x, integer y)
+    # `picked` is the line of a panel's list that was selected, which this game never asks for.
+    public function OnAction(Player who, string action, string on, integer map, integer x, integer y,
+                             string picked)
         Notes.Did(who, action, on);
     end function
 

@@ -143,7 +143,7 @@ public sealed class MapRecord
     public List<MapNpcEntry> Npcs { get; set; } = new();
 
     // Placed light sources: sparse list, at most one per tile. Emitted client-side at night / in
-    // AlwaysDark maps. Empty by default, so old maps deserialize with no lights (no migration).
+    // AlwaysDark maps. Empty by default: a map with no lights writes no list.
     public List<PlacedLight> Lights { get; set; } = new();
 
     /// <summary>Everything a game hangs on this map that the engine has no name for — whether you can be

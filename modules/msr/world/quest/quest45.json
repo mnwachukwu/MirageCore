@@ -1,0 +1,19 @@
+{
+  "name": "Catch a Storm Roc",
+  "description": "You will not corner one. You will only outpace one.\n\n10, and I will believe it when I see you back before dusk.",
+  "giver": 126,
+  "turnIn": 0,
+  "reqLevel": 17,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 24,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 17340,
+  "rewardItem": 1,
+  "rewardMany": 939,
+  "cadence": 0,
+  "repeatExp": 0,
+  "repeatItem": 0,
+  "repeatMany": 0
+}

@@ -9,7 +9,7 @@ namespace Mirage.Editor.Tests.ViewModels;
 /// <summary>The shop-editor row: the Store/Inn radio facade over ShopType is mutually exclusive; the shop's
 /// dirty flag AGGREGATES its nested trade rows (a dirty trade dirties the shop) and its structure (adding or
 /// removing a row dirties the shop, ClearDirty clears both). The trade table is dynamic — blank by default,
-/// grown via AddBarter up to the MaxTrades ceiling; load skips empty/legacy-null slots, and ToRecord persists a
+/// grown via AddBarter up to the MaxTrades ceiling; load skips anything empty, and ToRecord persists a
 /// dense list (empty rows dropped, no gaps).</summary>
 [TestFixture]
 public class ShopRowViewModelTests
@@ -62,11 +62,11 @@ public class ShopRowViewModelTests
     }
 
     [Test]
-    public void Load_SkipsEmptyAndLegacyNullTradeSlots()
+    public void Load_SkipsEmptyAndNullTradeSlots()
     {
-        // Legacy shop JSON deserializes to a list with a leading null + empty padding; keep only real trades.
+        // A hand-edited shop file can deserialize to a list holding a null or a blank row; keep only real trades.
         var r = new ShopRecord();
-        r.BarterItem.Add(null!);                 // legacy index-0 null
+        r.BarterItem.Add(null!);                 // a literal null in the file
         r.BarterItem.Add(Trade(getItem: 5));     // real
         r.BarterItem.Add(new BarterItemRecord());  // empty
         r.BarterItem.Add(Trade(getItem: 9));     // real

@@ -55,9 +55,9 @@ public sealed record LoginPacket : IPacket
     /// <see cref="MachineKey"/>. It rides here rather than in a packet of its own because it must be
     /// known before the login is decided, and this one is already the first thing a client sends.
     ///
-    /// <para>Empty is normal and always allowed: a client that could not compute one, or an older build
-    /// that does not send one, logs in as though no machine ban existed. Treating a blank as a match
-    /// would group every such machine into one identity and ban them together.</para></summary>
+    /// <para>Empty is normal and always allowed: a client that could not compute one logs in as though no
+    /// machine ban existed. Treating a blank as a match would group every such machine into one identity
+    /// and ban them together.</para></summary>
     [JsonPropertyName("mkey")] public string MachineKey { get; init; } = "";
 }
 

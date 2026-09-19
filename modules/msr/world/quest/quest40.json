@@ -1,0 +1,19 @@
+{
+  "name": "Flarewings at Altitude",
+  "description": "5 a week, off the ridge line. Nobody with a sword has ever completed this one.",
+  "giver": 142,
+  "turnIn": 0,
+  "reqLevel": 245,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 9857,
+  "rewardItem": 1,
+  "rewardMany": 3232,
+  "cadence": 2,
+  "repeatExp": 9857,
+  "repeatItem": 1,
+  "repeatMany": 3232
+}

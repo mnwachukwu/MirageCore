@@ -263,8 +263,8 @@ public sealed partial class ChatPanel
         _accountName = accountName;
         if (config.ChatTabs.Count == 0)
         {
-            // Fresh account or migration from a pre-tabs config — persist the install defaults so
-            // the file gains a `chatTabs` key. The in-memory default tabs (from the ctor) stay, and
+            // Fresh account — persist the install defaults so the file gains a `chatTabs` key.
+            // The in-memory default tabs (from the ctor) stay, and
             // SyncChannels rebuilds them once this game says what channels it has.
             _installDefaults = true;
             SaveTabs();

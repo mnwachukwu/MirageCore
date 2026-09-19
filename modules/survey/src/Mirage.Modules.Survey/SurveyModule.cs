@@ -171,7 +171,8 @@ public sealed class SurveyModule : ICoreModule, IConsoleHandler
             .Declare(Survey.Stamina, AttributeVisibility.Viewport)
             .Declare(Survey.StaminaMax, AttributeVisibility.Viewport)
             .Declare(Survey.Rank, AttributeVisibility.Viewport)
-            .Declare(Survey.Specimens, AttributeVisibility.Owner);
+            .Declare(Survey.Specimens, AttributeVisibility.Owner)
+            .Declare(Survey.Skittish, AttributeVisibility.Viewport);
 
         builder.AddEquipSlot(new EquipSlot { Key = Survey.Satchel, LabelKey = "Satchel", Ordinal = 0 });
     }
@@ -233,6 +234,14 @@ public sealed class SurveyModule : ICoreModule, IConsoleHandler
             MaxKey = Survey.StaminaMax,
             Rgb = GameColor.Pack(120, 190, 90),
         });
+
+        // A creature that will not be approached, named in amber so the surveyor knows before they set
+        // off toward it. Everything else is named in the plain green of a thing you can walk up to.
+        //
+        // Core's behaviors are about locomotion, so a creature keeping its distance and one ambling
+        // past look identical to the engine. Which of them is skittish is this module's to say.
+        builder.AddNameTint(new NameTint { Key = Survey.Skittish, Rgb = GameColor.Pack(225, 175, 80) });
+        builder.SetOtherwiseNameRgb(GameColor.Pack(120, 190, 90));
 
         // What this module finds and notes down, kept off the main tab. A surveyor walking a meadow
         // fills the log with specimens, and somebody who wanted to talk to them would never see it.

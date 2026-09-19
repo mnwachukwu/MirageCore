@@ -469,8 +469,8 @@ public sealed partial class EditorPacketHandler
         npc.Standoff = p.Standoff;
         // Drop table. Value only matters for a CURRENCY line; the runtime ignores it for every other item
         // type. Normalized per line on save so a bad state never persists: currency → at least 1,
-        // anything else → 0. Lines naming no item are dropped by npc.Normalize() below, along with the
-        // legacy single-drop fields, so what lands on disk is exactly what the roller reads.
+        // anything else → 0. Lines naming no item are dropped by npc.Normalize() below, so what lands on
+        // disk is exactly what the roller reads.
         npc.Drops = p.Drops is null ? null : [.. p.Drops.Select(d =>
         {
             bool isCurrency = d.ItemNum > 0 && d.ItemNum <= _world.Limits.Items

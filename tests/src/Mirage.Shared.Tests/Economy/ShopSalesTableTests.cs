@@ -32,8 +32,8 @@ public class ShopSalesTableTests
     [Test]
     public void Normalize_OnAShopWithNoSales_IsANoOp()
     {
-        // A shop authored before the sales table simply has none — an absent list deserializes to an empty
-        // one, so this needs no migration path.
+        // A shop with no sales at all: an absent list deserializes to an empty one, and normalizing it
+        // has to leave it alone rather than inventing a row.
         var shop = new ShopRecord();
         shop.Normalize(MaxItems);
         Assert.That(shop.SalesItem, Is.Empty);

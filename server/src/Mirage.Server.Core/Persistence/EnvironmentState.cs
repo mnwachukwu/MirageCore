@@ -10,8 +10,8 @@ namespace Mirage.Server.Core.Persistence;
 /// server is offline — positions/durations are stored, never wall-clock, so elapsed downtime never
 /// advances either one.
 /// </summary>
-/// <param name="Values">A game's own world-scoped values. Null in a file written before games could
-/// keep any, and in one written by a server with no game loaded.</param>
+/// <param name="Values">A game's own world-scoped values. Null in a file written by a server with no
+/// game loaded.</param>
 /// <param name="Kept">A game's own stores, each a set of named bags. Null on the same terms as
 /// <paramref name="Values"/>.</param>
 public sealed record EnvironmentState(long TodPositionMs, WeatherType Weather, long WeatherRemainingMs,

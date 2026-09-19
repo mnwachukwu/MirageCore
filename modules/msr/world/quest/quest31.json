@@ -1,0 +1,19 @@
+{
+  "name": "Hold the Pikes",
+  "description": "3 sunken pikemen at the stair. Close work, and they do not give ground.",
+  "giver": 134,
+  "turnIn": 0,
+  "reqLevel": 107,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 3902,
+  "rewardItem": 1,
+  "rewardMany": 731,
+  "cadence": 1,
+  "repeatExp": 2081,
+  "repeatItem": 1,
+  "repeatMany": 390
+}

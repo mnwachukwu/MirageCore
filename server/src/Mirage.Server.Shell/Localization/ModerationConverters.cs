@@ -13,7 +13,8 @@ public sealed class UnixDateConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        // 0 means the entry predates the field being recorded, not 1970.
+        // A missing or non-positive stamp reads as unknown rather than as 1970, which is what a
+        // hand-edited banlist would otherwise put in front of an operator.
         if (value is not long seconds || seconds <= 0) return ShellStrings.Get(ShellStrings.Mod_Unknown);
         return DateTimeOffset.FromUnixTimeSeconds(seconds).ToLocalTime().ToString("g", culture);
     }

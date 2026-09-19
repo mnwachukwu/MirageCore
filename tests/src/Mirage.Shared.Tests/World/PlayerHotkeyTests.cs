@@ -38,8 +38,8 @@ public class PlayerHotkeyTests
     public void NewBar_OfNoSlots_IsStillIndexable()
         => Assert.That(PlayerHotkey.NewBar(0), Has.Length.EqualTo(1));
 
-    // A save written before the bar existed deserializes the property as null. Without this the very first
-    // login on an existing character would throw on the join-time send.
+    // A save that names no bar deserializes the property as null. Without this the join-time send would
+    // throw on a character whose file has no bar in it.
     [Test]
     public void Normalize_Null_GivesAFullEmptyBar()
     {

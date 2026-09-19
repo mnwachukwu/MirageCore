@@ -1,0 +1,19 @@
+{
+  "name": "Darters off the Shelf",
+  "description": "Reef darters are quick and they do not close. 3, at range, before they nest.",
+  "giver": 134,
+  "turnIn": 0,
+  "reqLevel": 103,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 3136,
+  "rewardItem": 1,
+  "rewardMany": 573,
+  "cadence": 1,
+  "repeatExp": 1673,
+  "repeatItem": 1,
+  "repeatMany": 306
+}

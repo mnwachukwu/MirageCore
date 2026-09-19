@@ -38,9 +38,9 @@ public static class WorldFamilies
     /// is a family a module declared, which the editor can list but not yet author.</summary>
     public static bool HasCompiledEditor(string id) => CoreRecordFamilies.Find(id) is not null;
 
-    /// <summary>Takes the schema a server reported. A null or empty one leaves Core's in place — a
-    /// server that said nothing is likelier to be an older build than a world with no families at
-    /// all, and an empty rail would be the worse guess.</summary>
+    /// <summary>Takes the schema a server reported. A null or empty one leaves Core's in place, because
+    /// an empty rail is the worse guess: a server that said nothing has told the editor nothing, not that
+    /// its world has no families.</summary>
     public static void Adopt(RecordSchema? schema)
     {
         if (schema is null || schema.Families.Count == 0) return;

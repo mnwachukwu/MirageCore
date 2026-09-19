@@ -174,10 +174,10 @@ public class WorldClockAndValuesTests
         });
     }
 
-    /// <summary>⚠ A file written before a game kept anything carries none, and must still load. That is
-    /// every environment.json that exists today.</summary>
+    /// <summary>⚠ An environment.json carrying no game values at all — which is what a server with no
+    /// game loaded writes — must still load.</summary>
     [Test]
-    public void AFileFromBeforeThisExisted_StillLoads()
+    public void AFileCarryingNoGameValues_StillLoads()
     {
         var after = JsonSerializer.Deserialize<EnvironmentState>(
             """{"TodPositionMs":10,"Weather":0,"WeatherRemainingMs":20}""", RecordJson.Options);

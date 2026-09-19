@@ -1,0 +1,19 @@
+{
+  "name": "The King in the Reeds",
+  "description": "Something wearing a crown walks up out of the deep water at the marsh\u0027s edge, and it is walking further inland each week.\n\nPut it down. It will be back - it has been back every week I have kept this list - but each week you put it down is a week it does not reach the Landing.",
+  "giver": 126,
+  "turnIn": 0,
+  "reqLevel": 20,
+  "reqStr": 0,
+  "reqDef": 0,
+  "reqSpd": 0,
+  "reqInt": 0,
+  "prereq": 0,
+  "rewardExp": 37785,
+  "rewardItem": 1,
+  "rewardMany": 2284,
+  "cadence": 2,
+  "repeatExp": 37785,
+  "repeatItem": 1,
+  "repeatMany": 2284
+}
