@@ -161,8 +161,11 @@ public sealed class MailSystem : GameSystem
     /// verified affordability + inventory room and CHARGED the CoD price. Releases the message's locked attachments
     /// into the receiver's bag (all fit — pre-checked via <see cref="ItemSystem.CanReceiveAll"/>), mails the
     /// tax-adjusted NET gold to the original sender as normal delayed mail, and converts the message into an ordinary
-    /// claimed mail (unlocked, deletable, 30-day expiry). No-op if <paramref name="mailId"/> isn't a live CoD.</summary>
-    public void CompleteCod(int index, int mailId)
+    /// claimed mail (unlocked, deletable, 30-day expiry). No-op if <paramref name="mailId"/> isn't a live CoD.
+    ///
+    /// <para>The price goes back to the sender less this game's sale rate, passed in because the rate
+    /// is a declaration the caller holds and mail has no world of its own.</para></summary>
+    public void CompleteCod(int index, int mailId, int codTaxPercent = 0)
     {
         var sp = _pm[index];
         if (!sp.IsPlaying) return;
@@ -176,7 +179,7 @@ public sealed class MailSystem : GameSystem
         }
 
         // The taxed net goes to the original sender (m.Sender) as a regular delayed P2P-style mail.
-        int net = CodNet(m.CodPrice, CodItemCount(m.Attachments));
+        int net = CodNet(m.CodPrice, CodItemCount(m.Attachments), codTaxPercent);
         if (net > 0)
         {
             long deliverAt = NowUtc
@@ -204,13 +207,15 @@ public sealed class MailSystem : GameSystem
         return n;
     }
 
-    /// <summary>The CoD tax withheld from the price: the marketplace rate applied PER ITEM attached (floor), mirroring
-    /// <see cref="MarketSystem.SaleTax"/>. Public so the compose UI's net preview agrees with the server.</summary>
-    public static int CodTax(int price, int itemCount) =>
-        (int)((long)price * Constants.MarketSaleTaxPercent * itemCount / 100);
+    /// <summary>The CoD tax withheld from the price: the game's sale rate applied PER ITEM attached
+    /// (floor), mirroring <see cref="MarketSystem.SaleTax"/>. Public so the compose UI's net preview
+    /// agrees with the server.</summary>
+    public static int CodTax(int price, int itemCount, int taxPercent) =>
+        (int)((long)price * Math.Max(taxPercent, 0) * itemCount / 100);
 
     /// <summary>Gold the sender nets from a paid CoD after the per-item tax.</summary>
-    public static int CodNet(int price, int itemCount) => price - CodTax(price, itemCount);
+    public static int CodNet(int price, int itemCount, int taxPercent) =>
+        price - CodTax(price, itemCount, taxPercent);
 
     /// <summary>Push a player's mailbox — inbox + outbox + the server clock (for in-transit rendering) — to
     /// their client (call on entering the world and after a change).</summary>

@@ -4,6 +4,7 @@ using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Server.Tests.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Records;
 using NUnit.Framework;
@@ -33,7 +34,7 @@ public class BulkTradeTests
 
     static (GameWorld World, ShopSystem Shop, ItemSystem Items, PlayerRecord P) Setup()
     {
-        var world = new GameWorld();
+        var world = new GameWorld { Prices = new GamePrices { SellBackPercent = 25 } };
         var pm = new PlayerManager();
         var dispatcher = new NoOpDispatcher();
         var items = new ItemSystem(world, pm, dispatcher, persistence: null!, bg: null!);
@@ -389,7 +390,7 @@ public class BulkTradeTests
     static void MakeSellable(GameWorld world)
     {
         world.Items[Blade].Type = ItemType.Equipment;
-        world.Items[Blade].Power = 10;
+        world.Items[Blade].Price = 100;
         world.Items[Blade].Durability = 40;
     }
 

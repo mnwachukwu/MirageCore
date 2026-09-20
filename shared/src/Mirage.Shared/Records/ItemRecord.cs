@@ -29,47 +29,21 @@ public sealed class ItemRecord
     public short ItemSheet { get; set; }
     public ItemType Type { get; set; }
 
-    // ── Type-specific fields ──────────────────────────────────────────────────
-    // Each applies to some item types and is meaningless on the rest; the editor shows only the ones
-    // that apply. (These replaced the VB6-era Data1/Data2/Data3 positional slots, where the same
-    // number meant durability on a sword and healing on a potion.)
+    // ── What the engine itself reads ────────────────────────────────────
+    // One number, and the engine has a use for it: it wears a worn piece down and charges to mend it.
+    // Everything ELSE a game keeps about an item — how hard it hits, who may hold it, what drinking one
+    // does, where it sits on a progression — is the game's, authored onto the same record through
+    // ExtendFamily and read back by name.
     //
-    // All five are WhenWritingDefault, so a zero is left out of the file entirely and an item row
-    // lists exactly the properties it has — a consumable shows VitalAmount and nothing else. That is the
-    // whole point of the expansion: the JSON has to read as a domain object, not as five slots of
-    // which three happen to be blank. It is set per-property rather than on the serializer because
-    // the global option is shared with map, player and guild persistence, where an explicit 0 is
-    // worth keeping. Round-trips cleanly either way: absent deserializes back to 0.
+    // WhenWritingDefault, so a zero is left out of the file entirely and an item row lists exactly the
+    // properties it has. Set per-property rather than on the serializer because the global option is
+    // shared with map, player and guild persistence, where an explicit 0 is worth keeping. Round-trips
+    // cleanly either way: absent deserializes back to 0.
 
-    /// <summary>Weapon/Armor/Helmet/Shield: maximum durability. A worn piece breaks at 0 and stays in
-    /// the bag, unequipped, until repaired. 0 = carries no durability budget, so it never breaks.</summary>
+    /// <summary>Maximum durability, for something worn. A worn piece breaks at 0 and stays in the bag,
+    /// unequipped, until repaired. 0 = carries no durability budget, so it never breaks.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public short Durability { get; set; }
-
-    /// <summary>How much of whatever it moves, for an item that moves something. The engine carries the
-    /// number and has no opinion about what it counts — a game reads it and decides.</summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public short VitalAmount { get; set; }
-
-
-    /// <summary>How good the piece is, as one number.
-    ///
-    /// <para>The engine reads it for exactly one thing: what repairing it costs, through
-    /// <see cref="EconomyFormulas.RepairCost"/>. What it means BESIDES that is a game's — damage, a
-    /// requirement to wear it, a tier, or nothing at all — so it is one number rather than a
-    /// field per purpose.</para></summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public short Power { get; set; }
-
-    /// <summary>Where this item sits on the progression a game defines. 0 = ungated.
-    ///
-    /// <para>Core reads it for ONE thing: pricing. <c>EconomyFormulas</c> quotes an item's worth against the
-    /// income expected at its tier, so without a tier a derived price means nothing. A game decides
-    /// what a tier IS — a level, a badge, a chapter, an hour played — and what, if anything, it gates.</para>
-    ///
-    /// <para>Applies to anything equipped or consumed; currency and keys carry none.</para></summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public short Tier { get; set; }
 
     /// <summary>Which equipment slot this is worn in, by the key a game declared.
     ///
@@ -100,24 +74,20 @@ public sealed class ItemRecord
     public bool DestroyOnDrop { get; set; }  // dropping it (voluntary or on death) destroys it
     public bool NonJunkable { get; set; }    // can't be dumped on a shop through the generic sell path
 
-    /// <summary>What the item is worth in gold: what a shop's SALES list charges for it, and the basis for
-    /// what one pays when buying it back (<see cref="EconomyFormulas.ItemSellValue"/>, a deliberately poor
-    /// fraction so player-to-player trade still wins).
+    /// <summary>What the item is worth in the money item: what a shop's SALES list charges for it, and
+    /// what a shop pays to buy one back, at the share of it the game declared.
     ///
     /// <para><b>int, not short.</b> Every other type-specific field here is a <c>short</c>, which makes
     /// <c>short</c> the reflex — and a top-tier weapon prices at 1,369,194, which wraps silently at 32,767.
     /// Most of the ladder would be corrupt and nothing would report it.</para>
     ///
-    /// <para>SEEDED, NOT AUTHORED. A generator pass writes <see cref="EconomyFormulas.ItemValue"/> into
-    /// every item, so 471 prices stay consistent with each other and with measured income without anyone
-    /// typing them. The field exists so a price CAN be overridden — which is the only way to express a
-    /// treasure item, whose worth is authored rather than derived from its power and tier.
-    /// <see cref="Normalize"/> leaves it standing on every type and never recomputes one: an authored price
-    /// is data, and re-seeding must not silently overwrite a deliberate override. Gold needs no type rule
-    /// to stay unsellable — <see cref="EconomyFormulas.ItemValue"/> derives nothing for it, so a re-seed
-    /// leaves it at zero and the shop's purchase path refuses any zero-price row.</para>
+    /// <para>AUTHORED. Core derives no price and never writes one: a world that wants its catalogue
+    /// priced consistently prices it with a generator of its own, and an item nobody priced is worth
+    /// nothing. <see cref="Normalize"/> leaves it standing on every type, so the money item stays at
+    /// zero by simply never being given a price, and a shop's purchase path refuses any zero-price
+    /// row.</para>
     ///
-    /// <para>0 means "no derived worth". Combined with <see cref="NonJunkable"/> that is unambiguous:
+    /// <para>0 means "worth nothing". Combined with <see cref="NonJunkable"/> that is unambiguous:
     /// a 0-price junkable item can still be dumped for nothing, purely to clear a bag, so not every
     /// item has to be priced for the sell path to work on it.</para></summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
@@ -127,24 +97,17 @@ public sealed class ItemRecord
     // The single statement of that rule. The editor asks it what to show, and <see cref="Normalize"/>
     // asks it what to clear, so the form and the file can't drift apart.
     //
-    // This is the half of the expansion that actually removes the old format's hazard. Naming the
-    // fields makes a row readable; only clearing the inapplicable ones makes it TRUE. Without it,
-    // retyping a Weapon as a Consumable leaves Power sitting on the record at its old
-    // values — invisible in the editor (which hides them) but live in the file and in every packet.
+    // Naming a field makes a row readable; only clearing the inapplicable ones makes it TRUE. Without
+    // that, retyping equipment as a consumable leaves durability sitting on the record at its old value
+    // — invisible in the editor, which hides it, but live in the file and in every packet.
 
-    /// <summary>The four wearable types, which alone carry durability, power and a class requirement.</summary>
+    /// <summary>What is worn, which alone carries durability.</summary>
     public static bool IsEquipment(ItemType type) => type is ItemType.Equipment;
 
     /// <summary>Whether this type is used up rather than worn or carried.</summary>
     public static bool IsConsumable(ItemType type) => type is ItemType.Consumable;
 
     public static bool UsesDurability(ItemType type) => IsEquipment(type);
-    public static bool UsesPower(ItemType type) => IsEquipment(type);
-    public static bool UsesVitalAmount(ItemType type) => IsConsumable(type);
-
-    /// <summary>What a character wears or consumes carries a tier; currency and keys carry none. Gold is
-    /// not something you qualify for, and a key should not refuse its own door.</summary>
-    public static bool UsesTier(ItemType type) => IsEquipment(type) || IsConsumable(type);
 
     /// <summary>Everything a game hangs on this item that the engine has no name for — a class gate, a
     /// spell written on a scroll, an element, a rarity.
@@ -167,9 +130,6 @@ public sealed class ItemRecord
     public void Normalize()
     {
         if (!UsesDurability(Type)) Durability = 0;
-        if (!UsesVitalAmount(Type)) VitalAmount = 0;
         if (!IsEquipment(Type)) EquipSlot = string.Empty;
-        if (!UsesPower(Type)) Power = 0;
-        if (!UsesTier(Type)) Tier = 0;
     }
 }

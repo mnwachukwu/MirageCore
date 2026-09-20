@@ -6,6 +6,7 @@ using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Server.Tests.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -28,7 +29,7 @@ public class MarketSystemTests
 
     static (GameWorld world, PlayerManager pm, MarketSystem market) Setup()
     {
-        var world = new GameWorld();
+        var world = new GameWorld { Prices = new GamePrices { MarketTaxPercent = 5 } };
         var pm = new PlayerManager();
         var dispatcher = new NoOpDispatcher();
         var items = new ItemSystem(world, pm, dispatcher, persistence: null!, bg: null!);
@@ -186,7 +187,7 @@ public class MarketSystemTests
 
         market.Buy(2, listingId, 0);
 
-        int tax = MarketSystem.SaleTax(500);
+        int tax = market.SaleTax(500);
         Assert.Multiple(() =>
         {
             Assert.That(world.MarketListings, Is.Empty, "the listing is removed once sold");
@@ -261,11 +262,13 @@ public class MarketSystemTests
     [Test]
     public void SaleTax_FloorsThePercent()
     {
+        var (_, _, market) = Setup();
+
         Assert.Multiple(() =>
         {
-            Assert.That(MarketSystem.SaleTax(500), Is.EqualTo(25), "5% of 500");
-            Assert.That(MarketSystem.SaleTax(99), Is.EqualTo(4), "5% of 99 = 4.95, floored");
-            Assert.That(MarketSystem.SaleTax(0), Is.EqualTo(0), "no tax on a zero price");
+            Assert.That(market.SaleTax(500), Is.EqualTo(25), "5% of 500");
+            Assert.That(market.SaleTax(99), Is.EqualTo(4), "5% of 99 = 4.95, floored");
+            Assert.That(market.SaleTax(0), Is.EqualTo(0), "no tax on a zero price");
         });
     }
 
@@ -346,7 +349,7 @@ public class MarketSystemTests
             Assert.That(sale.Buyer, Is.EqualTo("buyer"));
             Assert.That(sale.ItemNum, Is.EqualTo(Sword));
             Assert.That(sale.Price, Is.EqualTo(500), "gross price the buyer paid");
-            Assert.That(sale.Tax, Is.EqualTo(MarketSystem.SaleTax(500)), "with the withheld tax recorded");
+            Assert.That(sale.Tax, Is.EqualTo(market.SaleTax(500)), "with the withheld tax recorded");
         });
     }
 
@@ -380,7 +383,7 @@ public class MarketSystemTests
     [Test]
     public void ListingChange_BroadcastsToOtherViewers()
     {
-        var world = new GameWorld();
+        var world = new GameWorld { Prices = new GamePrices { MarketTaxPercent = 5 } };
         var pm = new PlayerManager();
         var dispatcher = new NoOpDispatcher();
         var items = new ItemSystem(world, pm, dispatcher, persistence: null!, bg: null!);

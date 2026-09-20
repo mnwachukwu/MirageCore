@@ -864,11 +864,11 @@ public class MsrStatsTests
     public string OneCastTakesAWholeNumberOfReagents(string exact) =>
         Answered($"Spells.PerCast({exact})");
 
-    /// <summary>🔴 <b>The bill is the engine's repair rate, not a number of this game's own.</b> A
-    /// warrior at this tier burns that much gold a durability point; a caster burns the same, at a
-    /// reagent to the gold, times what a swing costs a weapon.</summary>
+    /// <summary>🔴 <b>A caster's upkeep is measured against a warrior's.</b> A warrior at this level
+    /// burns so much gold a durability point; a caster burns the same, at a reagent to the gold, times
+    /// what a swing costs a weapon. The engine prices neither — both figures are this game's.</summary>
     [Test]
-    public void TheReagentBillIsPricedOffTheEnginesRepairRate()
+    public void TheReagentBillIsMeasuredAgainstAWarriorsWear()
     {
         var (module, world) = Asking("""
                     who.Message("" + Math.Round(Spells.BaseReagentCost(20) * 100));
@@ -879,13 +879,11 @@ public class MsrStatsTests
 
         world.Here.Add(EntityHandle.ForPlayer(1));
 
-        // Ten gold a durability point at tier twenty.
-        world.RepairRatePerTier = 0.5;
-
         ((ITickWork)scripts).Tick(1);
 
-        Assert.That(world.Said, Is.EqualTo(new[] { "480", "5" }),
-            "ten gold a point at 0.48 points a swing is 4.8 reagents a cast, so a cast that charges charges five");
+        // Spells.WearPerLevel is a tenth, so level twenty is two gold a point.
+        Assert.That(world.Said, Is.EqualTo(new[] { "96", "1" }),
+            "two gold a point at 0.48 points a swing is 0.96 reagents a cast, so a cast that charges charges one");
     }
 
     /// <summary>🔴 <b>A bill that is already whole is charged every time.</b> The roll carries the

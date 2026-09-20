@@ -1378,13 +1378,6 @@ public sealed class ScriptedWorldModule
                 "The same, held for one player for that many seconds: nobody else may pick it up until "
                 + "the time runs out, and the client shows them whose it is. What stops the person who "
                 + "did the work watching somebody else walk off with it.")
-            .Function("RepairRate", ScriptType.Real, [ScriptType.Integer.Named("tier")],
-                (_, a) => ScriptValue.Real(World.RepairRateAt((int)a.AsInteger(0))),
-                "What one point of durability costs in gold at that tier, priced off a reference "
-                + "piece rather than off any particular item. Fractional on purpose: near the bottom of "
-                + "the ladder a point is worth less than a coin. Price other kinds of upkeep - a "
-                + "reagent, a charge, a ration - against this, and they will track the repair shop "
-                + "instead of drifting away from it.")
             .Function("RegionOf", ScriptType.Integer, [ScriptType.Integer.Named("map")],
                 (_, a) => (long)World.MapGroupOf((int)a.AsInteger(0)),
                 "Which map group that map belongs to, or zero. A group is the engine's idea of a "
@@ -2345,6 +2338,42 @@ public sealed class ScriptedWorldModule
                 + "deposit, and the Create button shows the figure before anybody presses it. Say "
                 + "nothing and founding one is free: how much a guild is worth is a question about "
                 + "your economy, and the engine cannot see it.")
+            .Action("GuildLabel",
+                [ScriptType.Text.Named("key"), ScriptType.Text.Named("caption")],
+                (b, a) => Build(b).GuildLabel(a.AsText(0), a.AsText(1)),
+                "A tag a guild leader may put on their guild - what a guild advertises about itself, "
+                + "which is a question about your world rather than about guilds. The key is saved on "
+                + "the guild, so renaming one loses whichever guilds were wearing it; the caption is "
+                + "what a player reads. Say none and the picker is not offered at all.")
+            .Action("InnCost", [ScriptType.Integer.Named("cost")],
+                (b, a) => Build(b).InnCost(a.AsInteger(0)),
+                "What moving your respawn point to an inn costs, in item 1. Say nothing and an inn "
+                + "will anchor anybody for free.")
+            .Action("PostageCost", [ScriptType.Integer.Named("cost")],
+                (b, a) => Build(b).PostageCost(a.AsInteger(0)),
+                "What a letter costs to send before anything is attached to it.")
+            .Action("PostagePerAttachment", [ScriptType.Integer.Named("cost")],
+                (b, a) => Build(b).PostagePerAttachment(a.AsInteger(0)),
+                "What each attachment adds to the postage.")
+            .Action("PostageShare", [ScriptType.Integer.Named("percent")],
+                (b, a) => Build(b).PostageShare(a.AsInteger(0)),
+                "A percentage of what is IN the parcel, added to the postage. Keyed on the shipment "
+                + "rather than the sender, so handing the job to an alt saves nothing.")
+            .Action("SaleTax", [ScriptType.Integer.Named("percent")],
+                (b, a) => Build(b).SaleTax(a.AsInteger(0)),
+                "A percentage of a marketplace sale, taken from the seller when it completes.")
+            .Action("SellBackShare", [ScriptType.Integer.Named("percent")],
+                (b, a) => Build(b).SellBackShare(a.AsInteger(0)),
+                "A percentage of an item's authored price, which is what a shop pays for one a "
+                + "player brings in, scaled by its condition. Say nothing and a shop buys nothing back.")
+            .Action("RepairShare", [ScriptType.Integer.Named("percent")],
+                (b, a) => Build(b).RepairShare(a.AsInteger(0)),
+                "A percentage of an item's authored price, which is what mending it from broken to "
+                + "whole costs; part of a repair costs that share. Say nothing and mending is free.")
+            .Action("HomeWait", [ScriptType.Integer.Named("seconds")],
+                (b, a) => Build(b).HomeWait(a.AsInteger(0)),
+                "How long somebody waits between one trip home and the next. Say nothing and there "
+                + "is no wait.")
             .Function("Action", verb.AsType, [ScriptType.Text.Named("id"), ScriptType.Text.Named("caption"), ScriptType.Text.Named("heading")],
                 (b, a) => Build(b).Action(a.AsText(0), a.AsText(1), a.AsText(2)),
                 "A verb this game offers, under a heading of its own. Picking it calls OnAction. Offered "
@@ -3598,6 +3627,47 @@ public sealed class ScriptedWorldModule
         /// <summary>What founding a guild costs, in the money item.</summary>
         public object? GuildCost(long cost) =>
             Guard("the guild cost", () => builder.SetGuildCost((int)Math.Clamp(cost, 0, int.MaxValue)));
+
+        /// <summary>A tag a guild may wear.</summary>
+        public object? GuildLabel(string key, string caption) =>
+            Guard("a guild label", () => builder.AddGuildLabel(
+                new Shared.Extensibility.GuildLabel { Key = key, LabelKey = caption, Ordinal = _guildLabels++ }));
+
+        private int _guildLabels;
+
+        /// <summary>What moving a respawn point to an inn costs.</summary>
+        public object? InnCost(long cost) =>
+            Guard("the inn spawn cost", () => builder.SetInnSpawnCost(Whole(cost)));
+
+        /// <summary>What a letter costs before anything is attached.</summary>
+        public object? PostageCost(long cost) =>
+            Guard("the base postage", () => builder.SetMailBaseCost(Whole(cost)));
+
+        /// <summary>What each attachment adds to the postage.</summary>
+        public object? PostagePerAttachment(long cost) =>
+            Guard("the postage per attachment", () => builder.SetMailAttachmentCost(Whole(cost)));
+
+        /// <summary>A share of the parcel, added to the postage.</summary>
+        public object? PostageShare(long percent) =>
+            Guard("the postage share of a parcel", () => builder.SetMailValuePercent(Whole(percent)));
+
+        /// <summary>What the marketplace takes from a seller.</summary>
+        public object? SaleTax(long percent) =>
+            Guard("the sale tax", () => builder.SetMarketTaxPercent(Whole(percent)));
+
+        /// <summary>What a shop pays for something brought in, as a share of its price.</summary>
+        public object? SellBackShare(long percent) =>
+            Guard("the sell-back share", () => builder.SetSellBackPercent(Whole(percent)));
+
+        /// <summary>What mending something costs, as a share of its price.</summary>
+        public object? RepairShare(long percent) =>
+            Guard("the repair share", () => builder.SetRepairPercent(Whole(percent)));
+
+        /// <summary>How long between one trip home and the next.</summary>
+        public object? HomeWait(long seconds) =>
+            Guard("the trip-home wait", () => builder.SetHomeCooldown(Whole(seconds)));
+
+        private static int Whole(long value) => (int)Math.Clamp(value, 0, int.MaxValue);
 
         internal static int Rgb(int red, int green, int blue)
             => (Channel(red) << 16) | (Channel(green) << 8) | Channel(blue);

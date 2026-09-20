@@ -234,6 +234,11 @@ public static class PacketNames
     public const string OverheadBars = "overheadbars";
     // Which attributes color a creature's name, sent once before any creature can be drawn.
     public const string NameTints = "nametints";
+    // What this game charges for the engine's own conveniences, sent once so a client can show a
+    // price before somebody agrees to it.
+    public const string GamePrices = "gameprices";
+    // The tags a guild may wear here, sent once so the picker can offer them.
+    public const string GuildLabels = "guildlabels";
     // Which attributes each surface shows, sent once before anything that could fill a row.
     public const string DisplayFields = "displayfields";
     // What a game lets the player do, sent once so a stock client can offer it.

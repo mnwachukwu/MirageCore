@@ -46,10 +46,14 @@ public sealed partial class ClientState
     /// not a row of empty boxes.</summary>
     public int HotkeySlots { get; set; }
 
-    /// <summary>What founding a guild costs, so the Create button can say so before it is pressed. Zero
-    /// until the server says otherwise, and zero for good in a world whose game named no price — which
-    /// means free rather than unknown.</summary>
-    public int GuildCost { get; set; }
+    /// <summary>The tags a guild may wear here, in display order. Empty until the server says
+    /// otherwise, and empty for good in a world that declared none — which offers no picker at all.</summary>
+    public GuildLabelSet GuildLabels { get; set; } = GuildLabelSet.None;
+
+    /// <summary>What this game charges for what the engine offers, so a screen can show a price before
+    /// anybody agrees to it. All zeroes until the server says otherwise, and all zeroes for good in a
+    /// world whose game named no price — which means free rather than unknown.</summary>
+    public GamePrices Prices { get; set; } = GamePrices.Free;
 
     /// <summary>The action bar as the server described it, 1-based to match the keys; index 0 unused.
     ///

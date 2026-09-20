@@ -7,6 +7,7 @@ using Mirage.Client.Shell.Input;
 using Mirage.Client.Shell.Localization;
 using Mirage.Client.Shell.Ui;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
 using System.Globalization;
@@ -476,7 +477,7 @@ public sealed class MailPanel : IGamePanel
         int codPrice = ParseCod();
         if (codPrice > 0)
         {
-            UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.MailPanel_CodNet, ("Net", CodNet(codPrice, StagedItemCount(state)))),
+            UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.MailPanel_CodNet, ("Net", CodNet(state, codPrice, StagedItemCount(state)))),
                 new Vector2(_codRect.Right + 8, _codRect.Y + 3), Color.LightGreen, Math.Max(0, c.Right - _codRect.Right - 12));
         }
 
@@ -511,8 +512,8 @@ public sealed class MailPanel : IGamePanel
     {
         int recipients = RecipientCount();
         long cost = recipients > 1
-            ? EconomyFormulas.MailSendCost(0) * recipients
-            : EconomyFormulas.MailSendCost(_staged.Count, StagedValue(state));
+            ? state.Prices.MailSendCost(0) * recipients
+            : state.Prices.MailSendCost(_staged.Count, StagedValue(state));
         return cost * BodyCostMultiplier();
     }
 
@@ -528,7 +529,7 @@ public sealed class MailPanel : IGamePanel
             var inv = state.Me.Inv[slot];
             if (inv is null || inv.Num <= 0 || inv.Num > state.Limits.Items) continue;
             int qty = quantity > 0 ? quantity : inv.Quantity;
-            total += EconomyFormulas.MailAttachmentValue(inv.Num, qty, state.Items[inv.Num].Price);
+            total += GamePrices.AttachmentValue(qty, state.Items[inv.Num].Price);
         }
         return total;
     }
@@ -612,8 +613,8 @@ public sealed class MailPanel : IGamePanel
     }
 
     // Gold the sender nets from a paid CoD after the per-item tax (mirrors MailSystem.CodNet server-side).
-    private static int CodNet(int price, int itemCount) =>
-        price - (int)((long)price * Constants.MarketSaleTaxPercent * itemCount / 100);
+    private static int CodNet(ClientState state, int price, int itemCount) =>
+        price - (int)((long)price * state.Prices.MarketTaxPercent * itemCount / 100);
 
     private static void DrawFieldLabel(SpriteBatch sb, SpriteFont font, string label, Rectangle fieldRect)
         => UiHelper.DrawLabel(sb, font, label, new Vector2(fieldRect.X, fieldRect.Y - 14), Color.LightGray, fieldRect.Width);
@@ -683,7 +684,8 @@ public sealed class MailPanel : IGamePanel
         else if (_showOutbox && msg.CodPrice > 0)
         {
             // The sender's CoD receipt: the price charged and the net they'll receive after the per-item tax.
-            int net = CodNet(msg.CodPrice, msg.Attachments.Count(a => a.ItemNum > 0 && a.ItemNum != Constants.GoldItemIndex));
+            int net = CodNet(state, msg.CodPrice,
+                             msg.Attachments.Count(a => a.ItemNum > 0 && a.ItemNum != Constants.GoldItemIndex));
             UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.MailPanel_CodOutbox, ("Price", msg.CodPrice), ("Net", net)),
                 new Vector2(r.X + 6, y), Color.Gold, maxW);
             y += lineH;

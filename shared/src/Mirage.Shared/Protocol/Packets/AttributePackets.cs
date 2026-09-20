@@ -91,6 +91,66 @@ public sealed record OverheadBarsPacket : IPacket
 /// <para>The values themselves travel as ordinary attribute syncs, so a body that turns hostile is
 /// renamed by the sync that turned it, and a name cannot disagree with what the body carries.</para>
 /// </summary>
+/// <summary>
+/// S→C, once per session: what this game charges for the things the engine itself offers — founding a
+/// guild, anchoring at an inn, posting a letter, selling something back, mending it, going home.
+///
+/// <para>Sent because the client PREVIEWS every one of them: the Create button shows what a guild
+/// costs, the inn shows its fee, the compose screen totals the postage, and the shop shows what it
+/// will pay before anybody agrees. A client that had to guess would show a figure the server then
+/// disagreed with, which reads as the server cheating.</para>
+///
+/// <para>All zeroes in an engine with no game loaded, and then nothing charges anybody.</para>
+/// </summary>
+public sealed record GamePricesPacket : IPacket
+{
+    [JsonPropertyName("cmd")] public string Cmd => PacketNames.GamePrices;
+
+    [JsonPropertyName("guild")] public int GuildCost { get; init; }
+    [JsonPropertyName("inn")] public int InnSpawnCost { get; init; }
+    [JsonPropertyName("mailBase")] public int MailBaseCost { get; init; }
+    [JsonPropertyName("mailAttach")] public int MailAttachmentCost { get; init; }
+    [JsonPropertyName("mailPct")] public int MailValuePercent { get; init; }
+    [JsonPropertyName("taxPct")] public int MarketTaxPercent { get; init; }
+    [JsonPropertyName("sellPct")] public int SellBackPercent { get; init; }
+    [JsonPropertyName("repairPct")] public int RepairPercent { get; init; }
+    [JsonPropertyName("homeWait")] public int HomeCooldownSeconds { get; init; }
+
+    /// <summary>The same figures as the record the rest of the engine reads them from.</summary>
+    public GamePrices ToPrices() => new()
+    {
+        GuildCost = GuildCost,
+        InnSpawnCost = InnSpawnCost,
+        MailBaseCost = MailBaseCost,
+        MailAttachmentCost = MailAttachmentCost,
+        MailValuePercent = MailValuePercent,
+        MarketTaxPercent = MarketTaxPercent,
+        SellBackPercent = SellBackPercent,
+        RepairPercent = RepairPercent,
+        HomeCooldownSeconds = HomeCooldownSeconds,
+    };
+}
+
+/// <summary>
+/// S→C, once per session: the tags a guild may wear in this world.
+///
+/// <para>Sent because the leader's picker offers them and the browser reads them back: a client with
+/// no list could only show a guildless player the raw keys a guild happens to carry.</para>
+///
+/// <para>Empty in a world that declared none, and then the picker is not offered at all.</para>
+/// </summary>
+public sealed record GuildLabelsPacket : IPacket
+{
+    [JsonPropertyName("cmd")] public string Cmd => PacketNames.GuildLabels;
+
+    /// <summary>One row per declared tag, already in the order they are shown.</summary>
+    [JsonPropertyName("labels")] public IReadOnlyList<Row> Labels { get; init; } = [];
+
+    public readonly record struct Row(
+        [property: JsonPropertyName("k")] string Key,
+        [property: JsonPropertyName("l")] string LabelKey);
+}
+
 public sealed record NameTintsPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.NameTints;

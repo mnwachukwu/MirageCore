@@ -137,10 +137,15 @@ shared model Spells
     # Rain doubles the bill, as it doubles what a swing costs a weapon.
     public integer RainCost = 2;
 
+    # Gold a point of a weapon's wear is worth at one level, which is what a caster's upkeep is
+    # measured against: a warrior pays for the swing in durability and a caster pays for the cast in
+    # reagents, and the two should cost about the same to play.
+    public real WearPerLevel = 0.1;
+
     # What a tier is billed with nothing else going on. The figure a death is priced off, because a
     # death is not a cast and the sky it happened under is not part of what it cost.
     public real function BaseReagentCost(integer level)
-        yield World.RepairRate(level) * Gear.AverageChip();
+        yield level * Spells.WearPerLevel * Gear.AverageChip();
     end function
 
     # And what one cast is billed here and now.

@@ -9,7 +9,6 @@
   "nonJunkable": false,
   "price": 20777,
   "type": "Consumable",
-  "vitalAmount": 3050,
   "attributes": {
     "levelReq": 250,
     "restoresHealth": 3050

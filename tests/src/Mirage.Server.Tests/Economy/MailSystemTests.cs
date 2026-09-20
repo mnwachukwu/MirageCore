@@ -414,17 +414,19 @@ public class MailSystemTests
 
     // ── Collect-on-Delivery ───────────────────────────────────────────────────────
 
-    // The per-item marketplace-rate tax, floored: a 100-gold CoD nets 95 with one item, 85 with three.
+    // The game's sale rate, applied PER ITEM attached and floored: at 5%, a 100-gold CoD nets 95 with
+    // one item and 85 with three.
     [Test]
-    public void CodTax_IsMarketRatePerItem_Floored()
+    public void CodTax_IsTheDeclaredRatePerItem_Floored()
     {
         Assert.Multiple(() =>
         {
-            Assert.That(MailSystem.CodTax(100, 1), Is.EqualTo(5));
-            Assert.That(MailSystem.CodNet(100, 1), Is.EqualTo(95));
-            Assert.That(MailSystem.CodTax(100, 3), Is.EqualTo(15));
-            Assert.That(MailSystem.CodNet(100, 3), Is.EqualTo(85));
-            Assert.That(MailSystem.CodTax(99, 1), Is.EqualTo(4), "the tax floors (99 * 5% = 4.95 -> 4)");
+            Assert.That(MailSystem.CodTax(100, 1, 5), Is.EqualTo(5));
+            Assert.That(MailSystem.CodNet(100, 1, 5), Is.EqualTo(95));
+            Assert.That(MailSystem.CodTax(100, 3, 5), Is.EqualTo(15));
+            Assert.That(MailSystem.CodNet(100, 3, 5), Is.EqualTo(85));
+            Assert.That(MailSystem.CodTax(99, 1, 5), Is.EqualTo(4), "the tax floors (99 * 5% = 4.95 -> 4)");
+            Assert.That(MailSystem.CodTax(100, 3, 0), Is.Zero, "a world that declared no tax takes none");
         });
     }
 
@@ -486,7 +488,7 @@ public class MailSystemTests
             CodPrice = 100, Attachments = { new MailAttachment { ItemNum = Sword, Quantity = 1, Dur = 40 } },
         });
 
-        mail.CompleteCod(2, 1);
+        mail.CompleteCod(2, 1, codTaxPercent: 5);
 
         Assert.Multiple(() =>
         {

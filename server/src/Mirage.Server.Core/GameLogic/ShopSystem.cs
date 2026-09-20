@@ -210,14 +210,14 @@ public sealed class ShopSystem : GameSystem
         return int.MaxValue;
     }
 
-    /// <summary>Sell one inventory slot to the open shop for
-    /// <see cref="EconomyFormulas.ItemSellValue"/> — a quarter of the item's value, scaled by condition.
+    /// <summary>Sell one inventory slot to the open shop at the share of its price this game declared,
+    /// scaled by condition.
     ///
-    /// <para><b>A zero-gold sale still goes through.</b> A broken piece, or anything the pricing model
-    /// values at nothing, is bought for nothing rather than refused: the vendor doubles as the way to
-    /// empty a bag, and a slot you cannot clear is worse than a slot that clears for free. What is
-    /// refused is <see cref="ItemRecord.NonJunkable"/> — gold, valor and treasure — because those either
-    /// are the currency or are meant to reach a specific buyer through the barter table.</para></summary>
+    /// <para><b>A zero-gold sale still goes through.</b> An unpriced item, a broken piece, or a world
+    /// that declared no sell-back share, is bought for nothing rather than refused: the vendor doubles
+    /// as the way to empty a bag, and a slot you cannot clear is worse than a slot that clears for
+    /// free. What is refused is <see cref="ItemRecord.NonJunkable"/> — the money item and anything meant
+    /// to reach a specific buyer through the barter table.</para></summary>
     public void Sell(int index, int invSlot, int quantity)
     {
         if (!_pm[index].IsPlaying) return;
@@ -264,7 +264,7 @@ public sealed class ShopSystem : GameSystem
         int have = stacks ? Math.Max(p.Inv[invSlot].Quantity, 1) : group.Count;
         int amount = quantity <= 0 || quantity > have ? have : quantity;
 
-        long gold = (long)EconomyFormulas.ItemSellValue(item, p.Inv[invSlot].Dur) * amount;
+        long gold = (long)_world.Prices.SellValue(item, p.Inv[invSlot].Dur) * amount;
 
         if (stacks) _items.TakeItem(index, itemNum, amount);
         else for (int i = 0; i < amount; i++) _items.RemoveFromSlot(index, group[i], 0);
@@ -334,16 +334,15 @@ public sealed class ShopSystem : GameSystem
             return;
         }
 
-        // Cost per durability point + total for a full repair — the shared repair formula (also used by the
-        // guild-war vault-repair sink, so both price durability the same way).
-        int goldNeeded = EconomyFormulas.RepairCost(durNeeded, item);
+        // What a whole repair costs, through the same declared share the client quoted from.
+        int goldNeeded = _world.Prices.RepairCost(durNeeded, item);
 
         long playerGold = ItemSystem.CountItem(p, _world.Items, Constants.GoldItemIndex);
 
         // How many points the purse actually covers. Asked exactly rather than as gold/ratePerPoint —
         // the rate is a floored display figure, and dividing by it can name a point count that costs a
         // gold more than the player has.
-        int affordable = Math.Min(EconomyFormulas.RepairPointsAffordable(playerGold, item), durNeeded);
+        int affordable = Math.Min(_world.Prices.RepairPointsAffordable(playerGold, item), durNeeded);
         if (affordable <= 0)
         {
             SendMsg(index, ServerStrings.ShopSystem_InsufficientGold, GameColor.BrightRed);
@@ -367,7 +366,7 @@ public sealed class ShopSystem : GameSystem
         {
             // Partial repair: restore as many durability points as the player can afford
             int durPartial = affordable;
-            int goldActual = EconomyFormulas.RepairCost(durPartial, item);
+            int goldActual = _world.Prices.RepairCost(durPartial, item);
             _items.TakeItem(index, Constants.GoldItemIndex, goldActual);
             p.Inv[invSlot].Dur += durPartial;
             _dispatcher.SendTo(index, new InventoryUpdatePacket

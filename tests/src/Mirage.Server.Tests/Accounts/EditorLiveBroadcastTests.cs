@@ -36,7 +36,7 @@ public class EditorLiveBroadcastTests
         h.Save(new EditorSaveItemPacket
         {
             ItemNum = 3, Name = "Short Sword", Pic = 4, Type = ItemType.Equipment,
-            Durability = 100, Power = 10,
+            Durability = 100,
         });
 
         var u = h.Dispatcher.OneBroadcast<UpdateItemPacket>();
@@ -47,7 +47,6 @@ public class EditorLiveBroadcastTests
             Assert.That(u.Pic, Is.EqualTo(4));
             Assert.That(u.Type, Is.EqualTo(ItemType.Equipment));
             Assert.That(u.Durability, Is.EqualTo(100));
-            Assert.That(u.Power, Is.EqualTo(10));
         });
     }
 

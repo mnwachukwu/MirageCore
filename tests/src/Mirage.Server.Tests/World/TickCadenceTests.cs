@@ -74,12 +74,12 @@ public class TickCadenceTests
         Assert.That(beats, Is.All.EqualTo(2 * Tick));
     }
 
-    /// <summary>Heavy Wind doubles the cooldown, which is still a whole number of ticks and so still lands
-    /// on a boundary — the scaled deadline needs the same tolerance as the plain one.</summary>
+    /// <summary>A game that asks for a longer cooldown — a gale, a curse, a heavy weapon — still gets a
+    /// whole number of ticks, so the stretched deadline needs the same tolerance as the plain one.</summary>
     [Test]
-    public void ADoubledCooldown_LandsOnItsOwnBoundaryToo()
+    public void ALongerCooldown_LandsOnItsOwnBoundaryToo()
     {
-        long doubled = Cooldown * Constants.WeatherHeavyWindCooldownMultiplier;
+        long doubled = Cooldown * 2;
         Assert.Multiple(() =>
         {
             Assert.That(TickCadence.Elapsed(now: doubled, since: 0, doubled), Is.True);

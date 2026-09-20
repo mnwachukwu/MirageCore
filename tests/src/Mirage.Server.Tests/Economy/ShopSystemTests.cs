@@ -4,6 +4,7 @@ using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Server.Tests.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Records;
 using NUnit.Framework;
@@ -25,7 +26,10 @@ public class ShopSystemTests
 
     static (GameWorld world, ShopSystem shop, PlayerRecord p) Setup(ShopType type = ShopType.Store)
     {
-        var world = new GameWorld();
+        var world = new GameWorld
+        {
+            Prices = new GamePrices { SellBackPercent = 25, RepairPercent = 20 },
+        };
         var pm = new PlayerManager();
         var dispatcher = new NoOpDispatcher();
         var items = new ItemSystem(world, pm, dispatcher, persistence: null!, bg: null!);
@@ -263,13 +267,12 @@ public class ShopSystemTests
         var (world, shop, p) = Setup();
         var sword = world.Items[Sword];
         sword.Type = ItemType.Equipment;
-        sword.Power = 40;
-        sword.Tier = 10;
+        sword.Price = 400;
         sword.Durability = 100;
         p.Inv[1].Num = Sword;
         p.Inv[1].Dur = 100;   // pristine
 
-        int expected = EconomyFormulas.ItemSellValue(sword, 100);
+        int expected = world.Prices.SellValue(sword, 100);
         shop.Sell(Idx, invSlot: 1, quantity: 0);
 
         Assert.Multiple(() =>
@@ -289,12 +292,11 @@ public class ShopSystemTests
         var (world, shop, p) = Setup();
         var sword = world.Items[Sword];
         sword.Type = ItemType.Equipment;
-        sword.Power = 40;
-        sword.Tier = 10;
+        sword.Price = 400;
         sword.Durability = 100;
 
-        int pristine = EconomyFormulas.ItemSellValue(sword, 100);
-        int worn = EconomyFormulas.ItemSellValue(sword, 50);
+        int pristine = world.Prices.SellValue(sword, 100);
+        int worn = world.Prices.SellValue(sword, 50);
         Assert.That(worn, Is.LessThan(pristine), "condition must move the offer");
 
         p.Inv[1].Num = Sword;
@@ -312,7 +314,7 @@ public class ShopSystemTests
         var (world, shop, p) = Setup();
         var sword = world.Items[Sword];
         sword.Type = ItemType.Equipment;
-        sword.Power = 40;
+        sword.Price = 400;
         sword.Durability = 100;
         p.Inv[1].Num = Sword;
         p.Inv[1].Dur = 0;   // broken: the shop buys scrap for nothing
@@ -356,7 +358,7 @@ public class ShopSystemTests
         var (world, shop, p) = Setup();
         var sword = world.Items[Sword];
         sword.Type = ItemType.Equipment;
-        sword.Power = 40;
+        sword.Price = 400;
         sword.Durability = 100;
         p.Inv[1].Num = Sword;
         p.Inv[1].Dur = 100;
@@ -373,7 +375,7 @@ public class ShopSystemTests
         var (world, shop, p) = Setup(ShopType.Inn);
         var sword = world.Items[Sword];
         sword.Type = ItemType.Equipment;
-        sword.Power = 40;
+        sword.Price = 400;
         sword.Durability = 100;
         p.Inv[1].Num = Sword;
         p.Inv[1].Dur = 100;
@@ -460,14 +462,12 @@ public class ShopSystemTests
 
     // ── FixItem ──────────────────────────────────────────────────────────────────
 
-    // A mid-band sword: max durability 100 at its tier's medium Power. Repair is now a share of the item's
-    // VALUE (EconomyFormulas.RepairCost), so these tests take their expected gold FROM the formula rather
-    // than restating its arithmetic — what is under test here is the shop's behavior (does it charge
-    // exactly the quoted cost, restore exactly what was bought, refuse when a single point is unaffordable),
-    // not the price curve, which EconomyFormulasTests pins separately. A tier-100 piece is used so the
-    // numbers are large enough that the partial-repair division is actually exercised.
-    const short RepairTier = 100;
-
+    // A sword worth 1,000 with 100 points of durability, in a world that mends for a fifth of an item's
+    // price. These take their expected gold FROM the declared price rather than restating the
+    // arithmetic: what is under test is the shop's behavior — does it charge exactly what it quoted,
+    // restore exactly what was bought, refuse when a single point is unaffordable — and the arithmetic
+    // itself is pinned by GamePricesTests. The figures are large enough that the partial-repair
+    // division is actually exercised.
     static ItemRecord SwordDef(GameWorld world) => world.Items[Sword];
 
     static void PlaceRepairableSword(GameWorld world, PlayerRecord p, int currentDur, int gold)
@@ -475,8 +475,7 @@ public class ShopSystemTests
         world.Shops[ShopNum].FixesItems = true;
         world.Items[Sword].Type = ItemType.Equipment;
         world.Items[Sword].Durability = 100;
-        world.Items[Sword].Tier = RepairTier;
-        world.Items[Sword].Power = (short)EconomyFormulas.ReferencePower(RepairTier);
+        world.Items[Sword].Price = 1_000;
         p.Inv[2].Num = Sword;
         p.Inv[2].Dur = currentDur;
         p.Inv[1].Num = Gold;
@@ -488,7 +487,7 @@ public class ShopSystemTests
     {
         var (world, shop, p) = Setup();
         PlaceRepairableSword(world, p, currentDur: 40, gold: 0);
-        int cost = EconomyFormulas.RepairCost(60, SwordDef(world));
+        int cost = world.Prices.RepairCost(60, SwordDef(world));
         int purse = cost * 2;
         p.Inv[1].Quantity = purse;
 
@@ -509,11 +508,11 @@ public class ShopSystemTests
         var (world, shop, p) = Setup();
         PlaceRepairableSword(world, p, currentDur: 40, gold: 0);
         var def = SwordDef(world);
-        int purse = EconomyFormulas.RepairCost(60, def) / 2;   // half of what a full repair costs
+        int purse = world.Prices.RepairCost(60, def) / 2;   // half of what a full repair costs
         p.Inv[1].Quantity = purse;
 
-        int expectedPoints = EconomyFormulas.RepairPointsAffordable(purse, def);
-        int expectedCost = EconomyFormulas.RepairCost(expectedPoints, def);
+        int expectedPoints = world.Prices.RepairPointsAffordable(purse, def);
+        int expectedCost = world.Prices.RepairCost(expectedPoints, def);
 
         shop.FixItem(Idx, invSlot: 2);
 
@@ -533,8 +532,8 @@ public class ShopSystemTests
     {
         var (world, shop, p) = Setup();
         PlaceRepairableSword(world, p, currentDur: 40, gold: 0);
-        int broke = EconomyFormulas.RepairRatePerPoint(SwordDef(world)) - 1;
-        Assume.That(broke, Is.GreaterThan(0), "the per-point rate must exceed 1 for this case to exist");
+        int broke = world.Prices.RepairCost(1, SwordDef(world)) - 1;
+        Assume.That(broke, Is.GreaterThan(0), "one point must cost more than a coin for this case to exist");
         p.Inv[1].Quantity = broke;
 
         shop.FixItem(Idx, invSlot: 2);

@@ -320,10 +320,10 @@ public sealed partial class SocialPanel : IGamePanel
     {
         LayoutLabelEditor(body);
 
-        for (int i = 0; i < _labelBtns.Length; i++)
+        for (int i = 0; i < _labelBtns.Count; i++)
         {
             if (!_labelBtns[i].IsClicked(input)) continue;
-            var label = AllLabels[i];
+            string label = _declaredLabels.Labels[i].Key;
             if (_pendingLabels.Contains(label)) _pendingLabels.Remove(label);
             else if (_pendingLabels.Count < Constants.MaxGuildLabels) _pendingLabels.Add(label);
         }

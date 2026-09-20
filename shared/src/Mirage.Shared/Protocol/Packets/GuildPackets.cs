@@ -92,11 +92,12 @@ public sealed record GuildSetMotdPacket : IPacket
     [JsonPropertyName("motd")] public string Motd { get; init; } = "";
 }
 
-/// <summary>C→S: leader sets the guild's descriptive labels (up to Constants.MaxGuildLabels).</summary>
+/// <summary>C→S: leader sets the guild's descriptive tags, by the keys this game declared (up to
+/// Constants.MaxGuildLabels). A key the game did not declare is dropped by the server.</summary>
 public sealed record GuildSetLabelsPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.GuildSetLabels;
-    [JsonPropertyName("labels")] public List<GuildLabel> Labels { get; init; } = new();
+    [JsonPropertyName("labels")] public List<string> Labels { get; init; } = new();
 }
 
 /// <summary>C→S (leader): set the guild's overhead color. <see cref="Rgb"/> is packed 0xRRGGBB; the
@@ -137,7 +138,7 @@ public sealed record GuildBrowseEntry
     [JsonPropertyName("index")] public int Index { get; init; }
     [JsonPropertyName("name")] public string Name { get; init; } = "";
     [JsonPropertyName("members")] public int Members { get; init; }
-    [JsonPropertyName("labels")] public List<GuildLabel> Labels { get; init; } = new();
+    [JsonPropertyName("labels")] public List<string> Labels { get; init; } = new();
 }
 
 /// <summary>S→C: the open-for-membership guilds a guildless player can apply to.</summary>
@@ -194,7 +195,7 @@ public sealed record GuildInfoPacket : IPacket
     [JsonPropertyName("index")] public int Index { get; init; }
     [JsonPropertyName("name")] public string Name { get; init; } = "";
     [JsonPropertyName("motd")] public string Motd { get; init; } = "";
-    [JsonPropertyName("labels")] public List<GuildLabel> Labels { get; init; } = new();
+    [JsonPropertyName("labels")] public List<string> Labels { get; init; } = new();
     [JsonPropertyName("open")] public bool OpenForMembership { get; init; }
     [JsonPropertyName("showRankOverhead")] public bool ShowRankOverhead { get; init; }
     [JsonPropertyName("color")] public int Color { get; init; }

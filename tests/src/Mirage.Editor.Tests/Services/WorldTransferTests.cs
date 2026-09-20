@@ -62,7 +62,7 @@ public class WorldTransferTests
     private static WorldSnapshot Authored()
     {
         var w = Blank();
-        w.Items[1] = new ItemRecord { Name = "Bronze Sword", Type = ItemType.Equipment, Power = 12, Pic = 3 };
+        w.Items[1] = new ItemRecord { Name = "Bronze Sword", Type = ItemType.Equipment, Pic = 3 };
         w.Items[2] = new ItemRecord { Name = "Gold", Type = ItemType.Currency, Pic = 9 };
         w.Npcs[1] = new NpcRecord { Name = "Cave Troll", Sprite = 42, Behavior = NpcBehavior.Pursue };
         w.Shops[1] = new ShopRecord { Name = "Smithy", Keeper = 1 };
@@ -161,7 +161,7 @@ public class WorldTransferTests
     {
         var server = Authored();
         var folder = Authored();
-        folder.Items[1].Power = 99;
+        folder.Items[1].Price = 99;
 
         var diff = WorldTransfer.Compare(folder, server);
 

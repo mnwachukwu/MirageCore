@@ -16,9 +16,6 @@ public sealed record SendItemsPacket : IPacket
         [property: JsonPropertyName("type")] ItemType Type,
         // Type-specific fields; see ItemRecord for which apply to which ItemType.
         [property: JsonPropertyName("durability")] short Durability,
-        [property: JsonPropertyName("vitalAmount")] short VitalAmount,
-        [property: JsonPropertyName("power")] short Power,
-        [property: JsonPropertyName("tier")] short Tier,
         // Item restriction flags — drive the client's list/mail/drop-warning gates.
         [property: JsonPropertyName("nonTradeable")] bool NonTradeable,
         [property: JsonPropertyName("nonListable")] bool NonListable,
@@ -47,9 +44,6 @@ public sealed record UpdateItemPacket : IPacket
     [JsonPropertyName("type")] public ItemType Type { get; init; }
     // Type-specific fields; see ItemRecord for which apply to which ItemType.
     [JsonPropertyName("durability")] public short Durability { get; init; }
-    [JsonPropertyName("vitalAmount")] public short VitalAmount { get; init; }
-    [JsonPropertyName("power")] public short Power { get; init; }
-    [JsonPropertyName("tier")] public short Tier { get; init; }
     /// <summary>Which equipment slot this is worn in; blank on anything not worn. A key, not a label:
     /// what it is called is the game's, and the editor is told the list separately.</summary>
     [JsonPropertyName("equipSlot")] public string EquipSlot { get; init; } = "";

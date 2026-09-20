@@ -95,6 +95,22 @@ shared model Guilds
         # gold leaves the world and the new guild's vault starts empty.
         game.GuildCost(35000);
 
+        # What a guild advertises about itself. The original's nine, in its own order — a leader wears
+        # up to three of them and a guildless player reads them in the browser.
+        #
+        # ⚠ The KEY is saved on the guild. Renaming one leaves every guild that wore it wearing a tag
+        # nothing declares, which stops being shown rather than erroring; the caption beside it is free
+        # to change whenever.
+        game.GuildLabel("msr.pvp", "PvP");
+        game.GuildLabel("msr.pve", "PvE");
+        game.GuildLabel("msr.leveling", "Leveling");
+        game.GuildLabel("msr.casual", "Casual / Social");
+        game.GuildLabel("msr.hardcore", "Hardcore");
+        game.GuildLabel("msr.wars", "Organized Wars");
+        game.GuildLabel("msr.farming", "Item Farming");
+        game.GuildLabel("msr.newbie", "Newbie Friendly");
+        game.GuildLabel("msr.veteran", "Veterans");
+
         # Acts on the war picked out of the list, the way the original's did. It needs no box to type a
         # name into: the name is on the line they clicked.
         Verb peace = game.Action(Guilds.PeaceVerb, "Retract declaration", "Guild");

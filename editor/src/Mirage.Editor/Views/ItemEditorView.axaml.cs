@@ -38,20 +38,13 @@ public partial class ItemEditorView : LocalizedUserControl
         _priceLabel.Text = EditorStrings.Get(EditorStrings.ItemEditor_PriceLabel);
         _notesExpander.Header = EditorStrings.Get(EditorStrings.Common_Notes);
 
-        // Captions for the fields that mean one thing wherever they apply; Power and VitalAmount bind
-        // their captions instead, since those two vary by item type.
         _durabilityLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_Durability);
-        _tierLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_Tier);
         _equipSlotLabel.Text = EditorStrings.Get(EditorStrings.DataLabel_EquipSlot);
 
 
         _notesEquipmentHeader.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentHeader);
         _notesEquipmentDurability.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentDurability);
-        _notesEquipmentPower.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentPower);
         _notesEquipmentSlot.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_EquipmentSlot);
-
-        _notesConsumableHeader.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_ConsumableHeader);
-        _notesConsumableAmount.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_ConsumableAmount);
 
 
         _notesKeyHeader.Text = EditorStrings.Get(EditorStrings.ItemEditor_Notes_KeyHeader);

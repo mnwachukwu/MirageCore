@@ -34,10 +34,7 @@ public static partial class EditorStrings
 
     public const string ItemEditor_Notes_EquipmentHeader = nameof(ItemEditor_Notes_EquipmentHeader);
     public const string ItemEditor_Notes_EquipmentDurability = nameof(ItemEditor_Notes_EquipmentDurability);
-    public const string ItemEditor_Notes_EquipmentPower = nameof(ItemEditor_Notes_EquipmentPower);
     public const string ItemEditor_Notes_EquipmentSlot = nameof(ItemEditor_Notes_EquipmentSlot);
-    public const string ItemEditor_Notes_ConsumableHeader = nameof(ItemEditor_Notes_ConsumableHeader);
-    public const string ItemEditor_Notes_ConsumableAmount = nameof(ItemEditor_Notes_ConsumableAmount);
     public const string ItemEditor_Notes_KeyHeader = nameof(ItemEditor_Notes_KeyHeader);
     public const string ItemEditor_Notes_KeyId = nameof(ItemEditor_Notes_KeyId);
     public const string ItemEditor_Notes_CurrencyHeader = nameof(ItemEditor_Notes_CurrencyHeader);

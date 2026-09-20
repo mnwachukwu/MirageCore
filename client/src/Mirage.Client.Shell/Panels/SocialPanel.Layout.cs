@@ -167,12 +167,12 @@ public sealed partial class SocialPanel : IGamePanel
     private void LayoutLabelEditor(Rectangle body)
     {
         const int cols = 3;
-        int rows = (AllLabels.Length + cols - 1) / cols;
+        int rows = Math.Max(1, (_labelBtns.Count + cols - 1) / cols);
         int gridTop = body.Y + 24;
         int cancelY = body.Bottom - ButtonH - Pad;
         int cellW = (body.Width - Pad * (cols + 1)) / cols;
         int cellH = Math.Max(ButtonH, (cancelY - Pad - gridTop) / rows - Pad);
-        for (int i = 0; i < _labelBtns.Length; i++)
+        for (int i = 0; i < _labelBtns.Count; i++)
         {
             int col = i % cols, row = i / cols;
             _labelBtns[i].Bounds = new Rectangle(body.X + Pad + col * (cellW + Pad), gridTop + row * (cellH + Pad), cellW, cellH);

@@ -389,6 +389,59 @@ abstract model Builder
     public abstract function GuildCost(integer cost);
 
     ##
+        @summary: A tag a guild leader may put on their guild - what a guild advertises about
+        itself, which is a question about your world rather than about guilds. The key is saved on
+        the guild, so renaming one loses whichever guilds were wearing it; the caption is what a
+        player reads. Say none and the picker is not offered at all.
+    ##
+    public abstract function GuildLabel(string key, string caption);
+
+    ##
+        @summary: What moving your respawn point to an inn costs, in item 1. Say nothing and an inn
+        will anchor anybody for free.
+    ##
+    public abstract function InnCost(integer cost);
+
+    ##
+        @summary: What a letter costs to send before anything is attached to it.
+    ##
+    public abstract function PostageCost(integer cost);
+
+    ##
+        @summary: What each attachment adds to the postage.
+    ##
+    public abstract function PostagePerAttachment(integer cost);
+
+    ##
+        @summary: A percentage of what is IN the parcel, added to the postage. Keyed on the shipment
+        rather than the sender, so handing the job to an alt saves nothing.
+    ##
+    public abstract function PostageShare(integer percent);
+
+    ##
+        @summary: A percentage of a marketplace sale, taken from the seller when it completes.
+    ##
+    public abstract function SaleTax(integer percent);
+
+    ##
+        @summary: A percentage of an item's authored price, which is what a shop pays for one a
+        player brings in, scaled by its condition. Say nothing and a shop buys nothing back.
+    ##
+    public abstract function SellBackShare(integer percent);
+
+    ##
+        @summary: A percentage of an item's authored price, which is what mending it from broken to
+        whole costs; part of a repair costs that share. Say nothing and mending is free.
+    ##
+    public abstract function RepairShare(integer percent);
+
+    ##
+        @summary: How long somebody waits between one trip home and the next. Say nothing and there
+        is no wait.
+    ##
+    public abstract function HomeWait(integer seconds);
+
+    ##
         @summary: A verb this game offers, under a heading of its own. Picking it calls OnAction.
         Offered in a square's menu until the verb says otherwise, and handed back so where it is
         offered, what key reaches it, and what it needs are each their own line.
@@ -1343,15 +1396,6 @@ shared abstract model World
         did the work watching somebody else walk off with it.
     ##
     public abstract boolean function DropClaimed(Spot where, integer item, integer many, Player who, integer seconds);
-
-    ##
-        @summary: What one point of durability costs in gold at that tier, priced off a reference
-        piece rather than off any particular item. Fractional on purpose: near the bottom of the
-        ladder a point is worth less than a coin. Price other kinds of upkeep - a reagent, a charge,
-        a ration - against this, and they will track the repair shop instead of drifting away from
-        it.
-    ##
-    public abstract real function RepairRate(integer tier);
 
     ##
         @summary: Which map group that map belongs to, or zero. A group is the engine's idea of a

@@ -2708,7 +2708,6 @@ public class ScriptedWorldTests
         /// <summary>What the repair rate is, per point, for a test that charges for wear.</summary>
         public int RepairPerPoint { get; set; } = 2;
 
-        public double RepairRatePerTier { get; set; } = 0.5;
 
         public IReadOnlyList<int> WornBy(EntityHandle who) =>
             HasOn.TryGetValue(who, out var on) ? on : [];
@@ -2732,7 +2731,6 @@ public class ScriptedWorldTests
 
         public int RepairCost(int itemNum, int points) => Math.Max(0, points) * RepairPerPoint;
 
-        public double RepairRateAt(int tier) => Math.Max(tier, 0) * RepairRatePerTier;
 
         /// <summary>How far a test has put the server's civil day from UTC. Zero unless it cares.</summary>
         public int Offset { get; set; }

@@ -44,7 +44,7 @@ public sealed class PlayerSpawnSystem : GameSystem
             return;
         }
 
-        long cost = EconomyFormulas.InnSpawnCost();
+        long cost = _world.Prices.InnSpawnCost;
         long gold = ItemSystem.CountItem(vp, _world.Items, Constants.GoldItemIndex);
         if (gold < cost)
         {

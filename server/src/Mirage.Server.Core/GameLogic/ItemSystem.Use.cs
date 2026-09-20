@@ -82,10 +82,8 @@ public sealed partial class ItemSystem : GameSystem
         // must not be paced. Placed after every guard that rejects a use outright, so a refused use never
         // burns the cooldown.
         bool isConsumable = ItemRecord.IsConsumable(item.Type);
-        long useWindMult = _world.WeatherOn(p.Map) == WeatherType.HeavyWind
-            ? Constants.WeatherHeavyWindCooldownMultiplier : 1L;
         long useNow = Environment.TickCount64;
-        if (isConsumable && useNow < sp.ConsumableTimer + Constants.ConsumableCooldownMs * useWindMult) return;
+        if (isConsumable && useNow < sp.ConsumableTimer + Constants.ConsumableCooldownMs) return;
 
         // How much of it they were carrying before the game had its say. Whether a use SPENT one
         // paces the clock, and Core cannot decide that for itself: what using a consumable does is a game's

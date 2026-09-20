@@ -72,9 +72,13 @@ public sealed class GameWorld
     /// and then there is no bar.</summary>
     public int HotkeyBarSlots { get; set; }
 
-    /// <summary>What founding a guild costs in the money item. Zero when no game module is loaded, and
-    /// then founding one is free.</summary>
-    public int GuildCost { get; set; }
+    /// <summary>The tags a guild leader may apply here, in display order. Empty when no game module
+    /// is loaded, and then a guild is known by its name.</summary>
+    public GuildLabelSet GuildLabels { get; set; } = GuildLabelSet.None;
+
+    /// <summary>What this game charges for the engine's own conveniences. All zeroes when no game
+    /// module is loaded, and then none of them charges anybody.</summary>
+    public GamePrices Prices { get; set; } = GamePrices.Free;
 
     /// <summary>The records of every family a module declared. Empty when no game module is loaded, which
     /// is a world made of Core's own families and nothing else.</summary>

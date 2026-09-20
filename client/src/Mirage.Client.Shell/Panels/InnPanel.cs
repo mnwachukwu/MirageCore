@@ -96,7 +96,7 @@ public sealed class InnPanel : IGamePanel
 
             if (_setSpawnBtn.IsClicked(input))
             {
-                _spawnCost = (int)EconomyFormulas.InnSpawnCost();
+                _spawnCost = state.Prices.InnSpawnCost;
                 _confirmingSetSpawn = true;
             }
 

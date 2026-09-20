@@ -10,7 +10,6 @@
   "price": 122,
   "type": "Equipment",
   "equipSlot": "armor",
-  "power": 16,
   "durability": 280,
   "attributes": {
     "levelReq": 5,

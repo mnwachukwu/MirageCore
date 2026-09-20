@@ -39,13 +39,9 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
     /// said where to put yet.</summary>
     [ObservableProperty] private string _equipSlot = "";
 
-    // Type-specific fields — see ItemRecord for which apply to which type.
+    // What the engine itself reads — see ItemRecord. Everything else a game keeps about an item is
+    // authored on the record's own attributes.
     [ObservableProperty] private short _durability;
-    [ObservableProperty] private short _vitalAmount;
-    [ObservableProperty] private short _power;
-    /// <summary>Where this item sits on the progression the game defines; 0 = ungated. The engine reads it
-    /// only to price the item, so what a tier means is the game's to decide.</summary>
-    [ObservableProperty] private short _tier;
     // Item restriction flags; each blocks exactly one action, enforced server-side.
     [ObservableProperty] private bool _nonTradeable;
     [ObservableProperty] private bool _nonListable;
@@ -78,9 +74,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
         _itemSheet = r.ItemSheet;
         _type = r.Type;
         _durability = r.Durability;
-        _vitalAmount = r.VitalAmount;
-        _power = r.Power;
-        _tier = r.Tier;
         _equipSlot = r.EquipSlot;
         _nonTradeable = r.NonTradeable;
         _nonListable = r.NonListable;
@@ -103,9 +96,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
         OnPropertyChanged(nameof(PicAsInt));
     }
     partial void OnDurabilityChanged(short value) => MarkDirty();
-    partial void OnVitalAmountChanged(short value) => MarkDirty();
-    partial void OnPowerChanged(short value) => MarkDirty();
-    partial void OnTierChanged(short value) => MarkDirty();
     partial void OnNonTradeableChanged(bool value) => MarkDirty();
     partial void OnNonListableChanged(bool value) => MarkDirty();
     partial void OnNonMailableChanged(bool value) => MarkDirty();
@@ -118,12 +108,7 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
     partial void OnTypeChanged(ItemType value)
     {
         MarkDirty();
-        OnPropertyChanged(nameof(VitalAmountLabel));
-        OnPropertyChanged(nameof(PowerLabel));
         OnPropertyChanged(nameof(DurabilityVisible));
-        OnPropertyChanged(nameof(VitalAmountVisible));
-        OnPropertyChanged(nameof(PowerVisible));
-        OnPropertyChanged(nameof(TierVisible));
         OnPropertyChanged(nameof(EquipSlotVisible));
         OnPropertyChanged(nameof(SelectedEquipSlot));
     }
@@ -173,9 +158,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             ItemSheet = r.ItemSheet;
             Type = r.Type;
             Durability = r.Durability;
-            VitalAmount = r.VitalAmount;
-            Power = r.Power;
-            Tier = r.Tier;
             EquipSlot = r.EquipSlot;
             NonTradeable = r.NonTradeable;
             NonListable = r.NonListable;
@@ -205,9 +187,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             ItemSheet = pkt.ItemSheet;
             Type = pkt.Type;
             Durability = pkt.Durability;
-            VitalAmount = pkt.VitalAmount;
-            Power = pkt.Power;
-            Tier = pkt.Tier;
             EquipSlot = pkt.EquipSlot;
             NonTradeable = pkt.NonTradeable;
             NonListable = pkt.NonListable;
@@ -239,9 +218,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             ItemSheet = ItemSheet,
             Type = Type,
             Durability = Durability,
-            VitalAmount = VitalAmount,
-            Power = Power,
-            Tier = Tier,
             EquipSlot = EquipSlot,
             NonTradeable = NonTradeable,
             NonListable = NonListable,
@@ -268,9 +244,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             ItemSheet = r.ItemSheet,
             Type = r.Type,
             Durability = r.Durability,
-            VitalAmount = r.VitalAmount,
-            Power = r.Power,
-            Tier = r.Tier,
             EquipSlot = r.EquipSlot,
             NonTradeable = r.NonTradeable,
             NonListable = r.NonListable,
@@ -280,18 +253,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
             Price = r.Price,
         };
     }
-
-    // ── Captions ──────────────────────────────────────────────────────────────
-    // set from the view's code-behind. Only these two vary by type.
-
-    /// <summary>Form caption for the amount a consumable carries. What that amount MEANS is a game's
-    /// rule, so the caption says no more than the record does.</summary>
-    public string VitalAmountLabel => EditorStrings.Get(EditorStrings.DataLabel_VitalAmount);
-
-    /// <summary>Form caption for <see cref="Power"/> — the one field whose name understates it. It is
-    /// damage on a weapon and defense on the three defensive pieces, so the form says which, even though
-    /// the same number also gates equipping and prices repairs in every case.</summary>
-    public string PowerLabel => EditorStrings.Get(EditorStrings.DataLabel_Power);
 
     /// <summary>The slots this world offers, as the picker shows them. Read from the world rather than a
     /// compile-time list, so an editor opened against another game offers that game's slots. The blank
@@ -330,8 +291,5 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
     // numbers are unused.
 
     public bool DurabilityVisible => ItemRecord.UsesDurability(Type);
-    public bool VitalAmountVisible => ItemRecord.UsesVitalAmount(Type);
-    public bool PowerVisible => ItemRecord.UsesPower(Type);
-    public bool TierVisible => ItemRecord.UsesTier(Type);
     public bool EquipSlotVisible => ItemRecord.IsEquipment(Type);
 }

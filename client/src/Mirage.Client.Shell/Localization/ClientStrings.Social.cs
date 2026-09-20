@@ -84,17 +84,6 @@ public static partial class ClientStrings
     public const string DeathPanel_Title = nameof(DeathPanel_Title);
     public const string DeathPanel_Respawn = nameof(DeathPanel_Respawn);
 
-    // ── Guild labels (the leader-picked descriptive tags) ─────────────────────
-    public const string GuildLabel_Pvp = nameof(GuildLabel_Pvp);
-    public const string GuildLabel_Pve = nameof(GuildLabel_Pve);
-    public const string GuildLabel_Leveling = nameof(GuildLabel_Leveling);
-    public const string GuildLabel_CasualSocial = nameof(GuildLabel_CasualSocial);
-    public const string GuildLabel_Hardcore = nameof(GuildLabel_Hardcore);
-    public const string GuildLabel_OrganizedWars = nameof(GuildLabel_OrganizedWars);
-    public const string GuildLabel_ItemFarming = nameof(GuildLabel_ItemFarming);
-    public const string GuildLabel_NewbieFocused = nameof(GuildLabel_NewbieFocused);
-    public const string GuildLabel_VeteranFocused = nameof(GuildLabel_VeteranFocused);
-
     // ── MailPanel ─────────────────────────────────────────────────────────────
     public const string MailPanel_Title = nameof(MailPanel_Title);
     public const string MailPanel_Empty = nameof(MailPanel_Empty);

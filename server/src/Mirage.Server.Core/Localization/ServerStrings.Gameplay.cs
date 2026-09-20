@@ -85,9 +85,6 @@ public static partial class ServerStrings
     public const string Weather_HeatWaveBegins = nameof(Weather_HeatWaveBegins);
     public const string Weather_HeavyWindBegins = nameof(Weather_HeavyWindBegins);
     public const string Weather_Clears = nameof(Weather_Clears);
-    public const string Weather_RainEffect = nameof(Weather_RainEffect);
-    public const string Weather_SnowEffect = nameof(Weather_SnowEffect);
-    public const string Weather_HeatWaveEffect = nameof(Weather_HeatWaveEffect);
     public const string Weather_HeavyWindEffect = nameof(Weather_HeavyWindEffect);
     public const string Weather_WelcomeClear = nameof(Weather_WelcomeClear);
     public const string Weather_WelcomeRain = nameof(Weather_WelcomeRain);

@@ -11,9 +11,6 @@ public sealed record WelcomePacket : IPacket
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.Welcome;
     [JsonPropertyName("index")] public int Index { get; init; }
 
-    /// <summary>What founding a guild costs, so the Create button can show the figure rather than the
-    /// player pressing it to find out. Zero means free.</summary>
-    [JsonPropertyName("guildCost")] public int GuildCost { get; init; }
 }
 
 public sealed record PlayerInGamePacket : IPacket

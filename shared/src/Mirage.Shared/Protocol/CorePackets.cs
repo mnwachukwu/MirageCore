@@ -223,6 +223,8 @@ public static class CorePackets
         builder.Register(PacketNames.EquipSlots, Read<EquipSlotsPacket>);
         builder.Register(PacketNames.OverheadBars, Read<OverheadBarsPacket>);
         builder.Register(PacketNames.NameTints, Read<NameTintsPacket>);
+        builder.Register(PacketNames.GamePrices, Read<GamePricesPacket>);
+        builder.Register(PacketNames.GuildLabels, Read<GuildLabelsPacket>);
         builder.Register(PacketNames.DisplayFields, Read<DisplayFieldsPacket>);
         builder.Register(PacketNames.GameActions, Read<GameActionsPacket>);
         builder.Register(PacketNames.GamePanels, Read<GamePanelsPacket>);

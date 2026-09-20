@@ -361,8 +361,8 @@ public sealed class ClientPacketSender
     public void SendGuildSetMotd(string motd)
         => _transport.Send(new GuildSetMotdPacket { Motd = motd });
 
-    public void SendGuildSetLabels(IReadOnlyList<GuildLabel> labels)
-        => _transport.Send(new GuildSetLabelsPacket { Labels = new List<GuildLabel>(labels) });
+    public void SendGuildSetLabels(IReadOnlyList<string> labels)
+        => _transport.Send(new GuildSetLabelsPacket { Labels = new List<string>(labels) });
 
     /// <summary>Set the guild's overhead color (packed 0xRRGGBB). The server re-validates against
     /// <c>GuildColorPolicy</c> and rejects a reserved palette color.</summary>

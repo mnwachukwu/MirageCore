@@ -157,22 +157,6 @@ public enum GuildOfferKind : byte
     Transfer = 2,
 }
 
-/// <summary>Fixed descriptive tags a leader applies to a guild (up to
-/// <see cref="Constants.MaxGuildLabels"/>); surfaced in the guild info panel and the open-guild
-/// browser. 0 = unset.</summary>
-public enum GuildLabel : byte
-{
-    Pvp = 1,
-    Pve = 2,
-    Leveling = 3,
-    CasualSocial = 4,
-    Hardcore = 5,
-    OrganizedWars = 6,
-    ItemFarming = 7,
-    NewbieFocused = 8,
-    VeteranFocused = 9,
-}
-
 /// <summary>What a dialogue choice does when picked (NPC conversations). None = pure text navigation (follow
 /// the choice's NextNodeId; 0 = end). OpenShop is a terminal HAND-OFF into the NPC's other role — it closes
 /// the conversation and re-issues an NpcInteract so the server opens the keeper shop (re-validating r=5).

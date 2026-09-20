@@ -107,7 +107,12 @@ public sealed class JoinLeaveSystem : GameSystem
         // → join broadcast → shop greeting. Other players just see the join broadcast.
         int joinColor = p.Access <= AdminLevel.Monitor ? GameColor.JoinLeft : GameColor.White;
 
-        _dispatcher.SendTo(index, PacketBuilder.Welcome(index, _world.GuildCost));
+        _dispatcher.SendTo(index, PacketBuilder.Welcome(index));
+
+        // What this game charges, before any screen that quotes a price can open, and the tags a
+        // guild may wear, before the guild panel can offer them.
+        _dispatcher.SendTo(index, PacketBuilder.Prices(_world.Prices));
+        _dispatcher.SendTo(index, PacketBuilder.GuildLabels(_world.GuildLabels));
 
         // The attribute numbering, before anything that could carry an attribute. A sync naming an
         // ordinal the client has no declaration for is dropped, so ordering this after any of the

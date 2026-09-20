@@ -9,7 +9,6 @@
   "nonJunkable": false,
   "price": 2917,
   "type": "Consumable",
-  "vitalAmount": 107,
   "attributes": {
     "levelReq": 120,
     "restoresStamina": -107

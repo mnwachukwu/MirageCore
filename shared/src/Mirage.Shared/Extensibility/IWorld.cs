@@ -870,18 +870,9 @@ public interface IWorld
     /// repaired. That is the engine's rule, not a game's.</para></summary>
     int Wear(EntityHandle who, int itemNum, int points);
 
-    /// <summary>What repairing that many points of that item costs in gold, by the engine's own repair
-    /// rate. 0 for an item that is not there.</summary>
+    /// <summary>What repairing that many points of that item costs, at the share of its price this
+    /// game declared. 0 for an item that is not there, and 0 in a world that declared no share.</summary>
     int RepairCost(int itemNum, int points);
-
-    /// <summary>Gold a point of durability costs to repair on ON-TIER gear at that tier, priced against
-    /// a reference piece rather than against anything anybody is holding.
-    ///
-    /// <para>Fractional, and deliberately so — at the bottom of the ladder a point is worth a fraction of
-    /// a coin. A game charging a per-use upkeep in something other than durability asks this so its
-    /// number tracks the engine's repair economy instead of being pinned beside it, where the two drift
-    /// apart the first time repair is retuned and nothing reports it.</para></summary>
-    double RepairRateAt(int tier);
 
     /// <summary>
     /// Up to so many spots spread across a region, every one reachable on foot from every other.

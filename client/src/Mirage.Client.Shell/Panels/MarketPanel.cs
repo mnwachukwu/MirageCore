@@ -415,9 +415,9 @@ public sealed class MarketPanel : IGamePanel
         int price = ParsePrice(_priceField.Text);
         if (price > 0)
         {
-            int tax = SaleTax(price);
+            int tax = state.Prices.MarketTax(price);
             string preview = ClientStrings.Format(sellingCurrency ? ClientStrings.MarketPanel_TaxPreviewPerUnit : ClientStrings.MarketPanel_TaxPreview,
-                ("Percent", Constants.MarketSaleTaxPercent), ("Tax", tax.ToString("N0")), ("Net", (price - tax).ToString("N0")));
+                ("Percent", state.Prices.MarketTaxPercent), ("Tax", tax.ToString("N0")), ("Net", (price - tax).ToString("N0")));
             UiHelper.DrawLabel(sb, font, preview, new Vector2(_priceRect.X, _priceRect.Bottom + 6), Color.Gold, c.Width - 8);
         }
 
@@ -427,9 +427,6 @@ public sealed class MarketPanel : IGamePanel
     }
 
     // ── Internals ─────────────────────────────────────────────────────────────────
-
-    // The sale tax withheld from a price (gold sink) — must match MarketSystem.SaleTax on the server.
-    private static int SaleTax(int price) => (int)((long)price * Constants.MarketSaleTaxPercent / 100);
 
     private static int ParsePrice(string s) => int.TryParse(s, out int p) && p > 0 ? Math.Min(p, Constants.MarketMaxPrice) : 0;
 

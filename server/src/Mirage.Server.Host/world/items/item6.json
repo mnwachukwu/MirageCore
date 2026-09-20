@@ -8,7 +8,5 @@
   "nonMailable": false,
   "destroyOnDrop": false,
   "nonJunkable": false,
-  "vitalAmount": 10,
-  "tier": 1,
   "price": 1
 }

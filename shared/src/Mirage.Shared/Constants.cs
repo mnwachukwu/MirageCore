@@ -89,24 +89,11 @@ public static class Constants
     // from DeliverAt like the normal retention) - far shorter than the 30-day normal retention, so locked items
     // don't sit forever. The sender may set a CoD price up to MarketMaxPrice (the marketplace price ceiling).
     public const int CodLifetimeSeconds = 3 * 24 * 60 * 60;   // 3 days
-    // Cost to send mail (a gold sink): a base fee, a per-attachment surcharge, and a percent of the
-    // parcel's gold value (EconomyFormulas.MailSendCost). A multi-recipient send (attachments
-    // disallowed) costs the base fee per recipient. Client previews the total; server charges it.
-    //
-    // FLAT ON PURPOSE. A fee scaled to the sender's level is unenforceable: hand the parcel to a level-1
-    // mule and it drops to the floor. Anything payable on someone else's behalf cannot be priced by who
-    // pays it. The flat parts stay SMALL because mail is available from level 1 and any flat fee big
-    // enough to matter at 255 would be unaffordable at 5; scale comes from the percent below.
-    public const int MailBaseSendCost = 10;
-    public const int MailAttachmentSendCost = 50;
-    // Keyed on the SHIPMENT rather than the sender, so the mule that defeats a level-scaled fee is
-    // irrelevant. Deliberately under the 5% MarketSaleTaxPercent the marketplace and CoD charge: those
-    // buy escrow, plain mail does not, and the difference covers the escrow.
-    public const int MailAttachedValuePercent = 2;
+    // What postage costs, what a sale is taxed, and every other price the engine charges are the GAME'S,
+    // through ICoreBuilder - see Extensibility.GamePrices. Nothing here.
 
-    // Player marketplace: sale tax (a gold sink, shown to the seller up front), per-seller listing cap, and
-    // the maximum gold price a single listing can be set to.
-    public const int MarketSaleTaxPercent = 5;
+    // Player marketplace: per-seller listing cap, and the maximum gold price a single listing can be
+    // set to.
     public const int MaxMarketListingsPerSeller = 10;
     public const int MarketMaxPrice = 1_000_000_000;
     // A listing lives 30 days, then the sweep returns it to the seller. Completed sales are logged to a
@@ -192,17 +179,6 @@ public static class Constants
     public const int MaxEditorSessions = 5;
 
     public const int DefaultItemRespawnSeconds = 120;
-
-    /// <summary>The highest tier the pricing curve is defined over.
-    ///
-    /// <para>NOT a character ceiling — Core has no levels. It is where <c>EconomyFormulas</c>' gold curve
-    /// stops being extrapolated, so a rung at the top prices flat instead of running off the fit.</para></summary>
-    public const int MaxItemTier = 255;
-
-    // Tiers one gear rung covers. Equipment is authored a rung at a time, so a piece bought on tier is worn
-    // across this many before the next is reachable, and EconomyFormulas prices it against the gold earned
-    // over exactly that span — buy once, wear it the whole rung.
-    public const int GearTierSpan = 5;
 
     // HOW MANY action-bar slots a world has is the GAME'S, through ICoreBuilder.SetHotkeyBar - see
     // Extensibility.HotkeyBar for the ceiling and the keys. Nothing here.
@@ -322,26 +298,9 @@ public static class Constants
     // Every system that charges or rewards money references this constant; do not hardcode 1.
     public const int GoldItemIndex = 1;
 
-    // ── Inn: set-spawn cost ──────────────────────────────────────────────────
-    // What EconomyFormulas.InnSpawnCost charges, flat.
-    public const int SpawnCostMinimum = 5;
-
-    // ── Guild ────────────────────────────────────────────────────────────────
-    // EVERY GOLD FIGURE IN THE GUILD FAMILY IS ONE SET — these, and the ones in guild quests, wars and
-    // territory. The ratios between them are deliberate, so they move together by a single factor or not
-    // at all; retuning one on its own silently changes a relationship somebody chose.
-    //
-    // The anchor is 35,000 to found a guild: one level's income at level 30, around 30 hours of at-level
-    // play by simulation. NOT a level gate — nothing requires a level to found a guild. It is the level
-    // the number was SIZED against, so that a flat cost has a defensible player behind it.
-    //
-    // FLAT, all of it: a guild is funded collectively from a vault, so pricing anything here by whichever
-    // member clicks the button is both arbitrary and trivially minimized by using the lowest-level one.
-    // See EconomyFormulas for why that rules out scaling these by the actor's level.
-
-    // How long /home waits between uses, per character. Measured in WALL-CLOCK time from a stamp on the
-    // character, so it runs down while the player is logged out and a relog neither clears nor pauses it.
-    public const int HomeCooldownSeconds = 30 * 60;
+    // ── Guild ──────────────────────────────────────────────────────
+    // What founding one COSTS is the game's, through ICoreBuilder.SetGuildCost. What follows is the
+    // engine's: how much a guild can hold and say, not what any of it is worth.
 
     // Max descriptive labels (GuildLabel) a leader may apply to a guild.
     public const int MaxGuildLabels = 3;
@@ -406,7 +365,6 @@ public static class Constants
     // anybody recovers — is a GAME's rule and lives in its scripts. What survives here is the one facet
     // Core acts on itself: the cooldown a client draws and the server enforces.
     // Set it to 1 to disable that facet.
-    public const long WeatherHeavyWindCooldownMultiplier = 2;    // Heavy Wind: attack + cast cooldown doubled
 
     // ── Stains on the ground (server-authoritative, event-sourced) ────────────
     // A deposit puts a colored rectangle on the ground; the server dries every stain on a shared linear

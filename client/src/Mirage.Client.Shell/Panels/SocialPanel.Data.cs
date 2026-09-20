@@ -42,8 +42,8 @@ public sealed partial class SocialPanel : IGamePanel
         _donateBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_DonateButton);
         _vaultDonationsBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_DonationsTab);
         _vaultSpendingBtn.Label = ClientStrings.Get(ClientStrings.SocialPanel_SpendingTab);
-        for (int i = 0; i < _labelBtns.Length; i++)
-            _labelBtns[i].Label = LabelName(AllLabels[i]);
+        for (int i = 0; i < _labelBtns.Count; i++)
+            _labelBtns[i].Label = LabelName(_declaredLabels.Labels[i].Key);
         // Roster column headers re-localize automatically (declared as Func<string>, synced by the Table).
     }
 
@@ -103,19 +103,6 @@ public sealed partial class SocialPanel : IGamePanel
         GuildRank.Leader => ClientStrings.SocialPanel_RankLeader,
         GuildRank.Officer => ClientStrings.SocialPanel_RankOfficer,
         _ => ClientStrings.SocialPanel_RankMember,
-    });
-
-    private static string LabelName(GuildLabel label) => ClientStrings.Get(label switch
-    {
-        GuildLabel.Pvp => ClientStrings.GuildLabel_Pvp,
-        GuildLabel.Pve => ClientStrings.GuildLabel_Pve,
-        GuildLabel.Leveling => ClientStrings.GuildLabel_Leveling,
-        GuildLabel.CasualSocial => ClientStrings.GuildLabel_CasualSocial,
-        GuildLabel.Hardcore => ClientStrings.GuildLabel_Hardcore,
-        GuildLabel.OrganizedWars => ClientStrings.GuildLabel_OrganizedWars,
-        GuildLabel.ItemFarming => ClientStrings.GuildLabel_ItemFarming,
-        GuildLabel.NewbieFocused => ClientStrings.GuildLabel_NewbieFocused,
-        _ => ClientStrings.GuildLabel_VeteranFocused,
     });
 
     private string SelectedLogin()

@@ -10,7 +10,5 @@
   "destroyOnDrop": false,
   "nonJunkable": false,
   "durability": 40,
-  "power": 8,
-  "tier": 1,
   "price": 14
 }

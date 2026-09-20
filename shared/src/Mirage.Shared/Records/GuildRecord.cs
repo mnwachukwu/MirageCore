@@ -38,9 +38,10 @@ public sealed class GuildRecord
     /// <summary>Leader-set message shown only in the guild panel (deliberately never on login).</summary>
     public string Motd { get; set; } = "";
 
-    /// <summary>Up to <see cref="Constants.MaxGuildLabels"/> descriptive tags; shown in the info panel
-    /// and the open-guild browser.</summary>
-    public List<GuildLabel> Labels { get; set; } = new();
+    /// <summary>Up to <see cref="Constants.MaxGuildLabels"/> descriptive tags, by the keys this game
+    /// declared; shown in the info panel and the open-guild browser. A key the loaded game no longer
+    /// declares is simply not shown.</summary>
+    public List<string> Labels { get; set; } = new();
 
     /// <summary>When true the guild appears in the open-guild browser and accepts applications.</summary>
     public bool OpenForMembership { get; set; }
@@ -85,7 +86,7 @@ public sealed class GuildRecord
     public GuildRecord Clone()
     {
         var c = (GuildRecord)MemberwiseClone();
-        c.Labels = new List<GuildLabel>(Labels);
+        c.Labels = new List<string>(Labels);
         c.Applications = new List<string>(Applications);
         c.Members = new List<GuildMember>(Members.Count);
         foreach (var m in Members) c.Members.Add(m.Clone());

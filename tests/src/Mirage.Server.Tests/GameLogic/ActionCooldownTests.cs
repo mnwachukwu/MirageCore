@@ -104,22 +104,43 @@ public class ActionCooldownTests
         Assert.That(seam.IsWaiting(TheCreature), Is.False);
     }
 
-    /// <summary>A gale stretches every beat, as the client has always drawn it.</summary>
+    /// <summary>🔴 <b>Only the game lengthens a beat.</b> The engine holds the clock and reads it;
+    /// what should make somebody slower — a gale, a curse, a heavy weapon — is the game's, and it says
+    /// so by asking for a longer cooldown. Core applying one of its own would be a rule nobody
+    /// declared, silently doubling every beat in every world that has weather.</summary>
     [Test]
-    public void AGaleStretchesTheBeat()
+    public void AGameAsksForALongerBeatAndGetsOne()
+    {
+        var (brief, _) = Build();
+        var (long_, _) = Build();
+
+        // Stamp both, then wind the clock past the short one but not past the long one.
+        brief.SetActionCooldown(TheCreature, 1);
+        long_.SetActionCooldown(TheCreature, 3);
+        Thread.Sleep((int)Constants.NpcAttackCooldownMs + 120);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(brief.IsWaiting(TheCreature), Is.False, "the second it asked for has passed");
+            Assert.That(long_.IsWaiting(TheCreature), Is.True, "and the three it asked for have not");
+        });
+    }
+
+    /// <summary>And the weather does not, however hard it blows.</summary>
+    [Test]
+    public void TheWeatherDoesNotLengthenIt()
     {
         var (calm, _) = Build();
         var (gale, _) = Build(WeatherType.HeavyWind);
 
-        // Stamp both, then wind the clock past the plain beat but not past a doubled one.
         calm.SetActionCooldown(TheCreature, 1);
         gale.SetActionCooldown(TheCreature, 1);
         Thread.Sleep((int)Constants.NpcAttackCooldownMs + 120);
 
         Assert.Multiple(() =>
         {
-            Assert.That(calm.IsWaiting(TheCreature), Is.False, "the plain beat has passed");
-            Assert.That(gale.IsWaiting(TheCreature), Is.True, "and the gale's has not");
+            Assert.That(calm.IsWaiting(TheCreature), Is.False);
+            Assert.That(gale.IsWaiting(TheCreature), Is.False, "a gale is weather, not a rule");
         });
     }
 

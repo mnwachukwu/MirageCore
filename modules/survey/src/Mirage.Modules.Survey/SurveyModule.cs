@@ -60,10 +60,41 @@ public sealed class SurveyModule : ICoreModule, IConsoleHandler
         // here is worth a shortcut - a wider bar would be boxes they never fill.
         builder.SetHotkeyBar(2);
 
-        // A survey party is a handful of people who know each other, not something anybody buys their
-        // way into. Zero rather than unset, because a price left unsaid reads as one nobody thought
-        // about — and this one was thought about.
+        // What a survey party says about itself. Three, because a leader may wear three, and a
+        // botanist choosing between "PvP" and "Hardcore" would be choosing from another game's list.
+        builder.AddGuildLabel(new GuildLabel { Key = "survey.thorough", LabelKey = "Thorough", Ordinal = 0 });
+        builder.AddGuildLabel(new GuildLabel { Key = "survey.weekends", LabelKey = "Weekends", Ordinal = 1 });
+        builder.AddGuildLabel(new GuildLabel { Key = "survey.teaching", LabelKey = "Teaching", Ordinal = 2 });
+
+        // ── What this survey charges ──────────────────────────────────────────
+        //
+        // Almost nothing, and said out loud anyway. A price left unsaid reads as one nobody thought
+        // about; every one of these was thought about, and the answer for a field survey is that a
+        // botanist's expenses are not the game.
+
+        // A survey party is a handful of people who know each other, not something anybody buys
+        // their way into.
         builder.SetGuildCost(0);
+
+        // A bunk at the field station is part of the work, not a service.
+        builder.SetInnSpawnCost(0);
+
+        // Post costs something, because a specimen mailed to the herbarium should be worth mailing.
+        // A share of the parcel rather than a flat fee for the same reason: the interesting question
+        // is what you are sending, not that you sent it.
+        builder.SetMailBaseCost(2);
+        builder.SetMailAttachmentCost(1);
+        builder.SetMailValuePercent(1);
+
+        // The exchange board takes a tenth, which is what keeps it from being a free warehouse.
+        builder.SetMarketTaxPercent(10);
+
+        // A depot buys a specimen back for half, and mends a worn satchel for a tenth of a new one.
+        builder.SetSellBackPercent(50);
+        builder.SetRepairPercent(10);
+
+        // Walking back to camp is the cost of walking out of it. Nobody waits to do it again.
+        builder.SetHomeCooldown(0);
 
         // A screen of this game's own, opened from the same menu. It costs a declaration: the body is
         // display fields on its own surface, the button is an action that already exists.

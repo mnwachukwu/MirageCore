@@ -9,7 +9,6 @@
   "nonJunkable": false,
   "price": 1,
   "type": "Consumable",
-  "vitalAmount": 8,
   "attributes": {
     "levelReq": 1,
     "restoresMana": 8

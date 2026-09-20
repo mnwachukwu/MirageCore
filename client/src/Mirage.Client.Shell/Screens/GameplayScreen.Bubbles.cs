@@ -248,15 +248,12 @@ public sealed partial class GameplayScreen : IGameScreen
     /// <para>Returns whether anything was actually sent, which starts the shared cooldown: a press
     /// on an empty or unusable slot should not eat the beat.</para></summary>
     // ── The two clocks ────────────────────────────────────────────────────────
-    // Attacking and casting share one beat; drinking runs on its own, slower one. Heavy Wind doubles
-    // both, exactly as the server doubles them. AttackTimer is the same field the head cooldown bar
-    // reads, so the bar over the character and a spell slot's sweep always agree.
+    // Acting and drinking are two beats: one for whatever the player does to something, a slower one for
+    // reaching into a bag. AttackTimer is the same field the head cooldown bar reads, so the bar over the
+    // character and an action slot's sweep always agree.
 
-    private long WindMult =>
-        _ctx.State.Weather == WeatherType.HeavyWind ? Constants.WeatherHeavyWindCooldownMultiplier : 1L;
-
-    internal long ActionCooldownMs => Constants.PlayerAttackCooldownMs * WindMult;
-    private long ConsumableCooldownMs => Constants.ConsumableCooldownMs * WindMult;
+    internal static long ActionCooldownMs => Constants.PlayerAttackCooldownMs;
+    private static long ConsumableCooldownMs => Constants.ConsumableCooldownMs;
 
     /// <summary>Whether a potion may be drunk. Only potions wait on the drinking clock — the action
     /// beat has nothing to do with reaching into a bag.</summary>

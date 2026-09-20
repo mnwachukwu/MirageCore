@@ -10,7 +10,6 @@
   "price": 118076,
   "type": "Equipment",
   "equipSlot": "helmet",
-  "power": 127,
   "durability": 1000,
   "attributes": {
     "levelReq": 100,

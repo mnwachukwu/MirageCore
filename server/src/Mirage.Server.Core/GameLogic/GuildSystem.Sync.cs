@@ -63,7 +63,7 @@ public sealed partial class GuildSystem : GameSystem
             Index = guild.Index,
             Name = guild.Name,
             Motd = guild.Motd,
-            Labels = new List<GuildLabel>(guild.Labels),
+            Labels = new List<string>(guild.Labels),
             OpenForMembership = guild.OpenForMembership,
             ShowRankOverhead = guild.ShowRankOverhead,
             Color = guild.Color,

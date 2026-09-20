@@ -54,6 +54,34 @@ public static partial class PacketBuilder
 
     /// <summary>Which attributes color a creature's name, in the order they are asked, and what a
     /// creature matching none of them is named in. Sent once, beside the numbering.</summary>
+    /// <summary>The tags a guild may wear in this world.</summary>
+    public static GuildLabelsPacket GuildLabels(GuildLabelSet labels)
+    {
+        ArgumentNullException.ThrowIfNull(labels);
+        return new GuildLabelsPacket
+        {
+            Labels = [.. labels.Labels.Select(l => new GuildLabelsPacket.Row(l.Key, l.LabelKey))],
+        };
+    }
+
+    /// <summary>What this game charges for what the engine offers.</summary>
+    public static GamePricesPacket Prices(GamePrices prices)
+    {
+        ArgumentNullException.ThrowIfNull(prices);
+        return new GamePricesPacket
+        {
+            GuildCost = prices.GuildCost,
+            InnSpawnCost = prices.InnSpawnCost,
+            MailBaseCost = prices.MailBaseCost,
+            MailAttachmentCost = prices.MailAttachmentCost,
+            MailValuePercent = prices.MailValuePercent,
+            MarketTaxPercent = prices.MarketTaxPercent,
+            SellBackPercent = prices.SellBackPercent,
+            RepairPercent = prices.RepairPercent,
+            HomeCooldownSeconds = prices.HomeCooldownSeconds,
+        };
+    }
+
     public static NameTintsPacket NameTints(NameTintSet tints) =>
         new()
         {

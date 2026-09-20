@@ -43,6 +43,7 @@
 #   behavior/contest.cm    war night, and the fight over a territory
 #   behavior/levels.cm     experience, and what it buys
 #   behavior/chat.cm       the channels this world’s own lines read on
+#   behavior/prices.cm     what the engine's own conveniences cost here
 #
 # The original is a .NET solution of some hundreds of files. What is reproduced here is the game —
 # its stats, its pools, its fights, its classes — on an engine that has never heard of any of it.
@@ -60,6 +61,7 @@ shared model Rules
         Book.Declare(game);
         Quests.Declare(game);
         Guilds.Declare(game);
+        Prices.Declare(game);
         GuildQuest.Declare(game);
         Contest.Declare(game);
         Staff.Declare(game);

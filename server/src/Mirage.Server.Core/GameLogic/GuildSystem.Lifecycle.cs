@@ -76,7 +76,7 @@ public sealed partial class GuildSystem : GameSystem
             return;
         }
         // What a guild is worth is the loaded game's answer, and a game that gave none charges nothing.
-        int cost = _world.GuildCost;
+        int cost = _world.Prices.GuildCost;
         if (cost > 0 && ItemSystem.CountItem(sp.Char, _world.Items, Constants.GoldItemIndex) < cost)
         {
             Notify(index, ServerStrings.Guild_NeedGold, ("Cost", cost));
@@ -199,9 +199,10 @@ public sealed partial class GuildSystem : GameSystem
         NotifyOk(index, ServerStrings.Guild_MotdSet);
     }
 
-    /// <summary>Leader sets the guild's descriptive labels — deduplicated, defined-only, and capped
-    /// at <see cref="Constants.MaxGuildLabels"/>.</summary>
-    public void SetLabels(int index, IReadOnlyList<GuildLabel> labels)
+    /// <summary>Leader sets the guild's descriptive tags — deduplicated, capped at
+    /// <see cref="Constants.MaxGuildLabels"/>, and held to the keys this game declared. A client
+    /// naming a tag nobody declared has it dropped rather than stored.</summary>
+    public void SetLabels(int index, IReadOnlyList<string> labels)
     {
         var sp = _pm[index];
         if (!sp.IsPlaying) return;
@@ -216,7 +217,9 @@ public sealed partial class GuildSystem : GameSystem
             Notify(index, ServerStrings.Guild_NeedLeader);
             return;
         }
-        guild.Labels = labels.Where(l => Enum.IsDefined(l)).Distinct().Take(Constants.MaxGuildLabels).ToList();
+        guild.Labels = [.. labels.Where(_world.GuildLabels.Knows)
+                              .Distinct(StringComparer.Ordinal)
+                              .Take(Constants.MaxGuildLabels)];
         SaveGuild(guild);
         NotifyOk(index, ServerStrings.Guild_LabelsSet);
     }

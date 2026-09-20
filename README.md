@@ -75,7 +75,7 @@ of the tree is not source: `tests/` holds the suites in `src/` and their drivers
 the packaging drivers, `modules/` holds the games built on the engine, and `assets/`, `docs/`, `tools/`,
 and `.github/checks/` hold what is neither.
 
-The root `Mirage.slnx` ties all 28 projects together, and the split is lopsided on purpose: **eleven of the twenty-seven are the engine and the game on it. The other sixteen exist to test and publish those eleven.**
+The root `Mirage.slnx` ties all twenty-eight projects together, and the split is lopsided on purpose: **twelve of them are the engine and the games on it. The other sixteen exist to test and publish those twelve.**
 
 | | Count | What |
 |---|---|---|
@@ -83,13 +83,13 @@ The root `Mirage.slnx` ties all 28 projects together, and the split is lopsided 
 | | 3 | server — `Mirage.Server.Core`, `.Host`, `.Shell` |
 | | 2 | client — `Mirage.Client.Core`, `.Shell` |
 | | 1 | editor — `Mirage.Editor` |
-| | 1 | the loaded game — `Mirage.Modules.Survey`, in `modules/` |
+| | 2 | the games built on it — `Mirage.Modules.Survey` and `.Foraging`, in `modules/` |
 | | 1 | the scripting host — `Mirage.Scripting`, in `scripting/` |
 | **Scaffolding** | 7 | test suites, one per source portion, in `tests/src/` |
 | | 5 | test drivers in `tests/` — one per area, plus a root that runs all seven suites |
 | | 4 | publish drivers in `publish/` — one per deliverable, plus a root that runs all three |
 
-Only the first eleven compile into anything a player or a developer runs; a fork that never publishes and never runs the seven test suites needs none of the other sixteen.
+Only the first twelve compile into anything a player or a developer runs; a fork that never publishes and never runs the seven test suites needs none of the other sixteen.
 
 The last two are the odd ones out and are meant to be. `modules/` holds games built ON the engine rather than part of it. A module references `Mirage.Shared` and nothing else, and the server loads it in one line — see [modules/README.md](modules/README.md). `scripting/` holds the Compass host, which is the only project here that needs a checkout beside this one — see [docs/scripting.md](docs/scripting.md).
 
@@ -245,7 +245,7 @@ This file covers what the project is and how to get it running. Everything else 
 
 | Document | What it answers |
 |---|---|
-| [Building a game on Core](docs/building-on-core.md) | What the engine already does, the twenty-five seams a game declares through, and the half-built features that fail silently |
+| [Building a game on Core](docs/building-on-core.md) | What the engine already does, the thirty-four seams a game declares through, and the half-built features that fail silently |
 | [Building, publishing, and releasing](docs/building.md) | How a working tree becomes installers, what the version number is bound to, how a tag cuts a release, and which platforms the output runs on |
 | [Icons and shipping your own client](docs/branding.md) | Rebranding a fork: the four icon locations, the MonoGame window-icon trap, and repackaging a client without a compiler |
 | [Scripting](docs/scripting.md) | Writing a game in Compass: the sibling checkout it needs, what the host does, what a script may declare, and what it may not reach |

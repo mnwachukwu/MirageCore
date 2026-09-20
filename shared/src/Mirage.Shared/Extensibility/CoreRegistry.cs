@@ -28,7 +28,7 @@ public sealed class CoreRegistry
                          DisplayFieldSet displayFields, PacketRoutes packetRoutes,
                          GameActions actions, IReadOnlyList<IActionHandler> actionHandlers,
                          GamePanels panels, ChatChannelSet chatChannels, int hotkeyBarSlots,
-                         int guildCost,
+                         GuildLabelSet guildLabels, GamePrices prices,
                          IReadOnlyList<IWorldObserver> observers,
                          IReadOnlyList<IConsoleHandler> consoleHandlers,
                          IReadOnlyList<IDeathPolicy> deathPolicies, IReadOnlyList<ILingerPolicy> lingerPolicies,
@@ -51,7 +51,8 @@ public sealed class CoreRegistry
         Panels = panels;
         ChatChannels = chatChannels;
         HotkeyBarSlots = hotkeyBarSlots;
-        GuildCost = guildCost;
+        GuildLabels = guildLabels;
+        Prices = prices;
         Observers = observers;
         ConsoleHandlers = consoleHandlers;
         DeathPolicies = deathPolicies;
@@ -114,9 +115,13 @@ public sealed class CoreRegistry
     /// engine with no game loaded, and then the client draws no bar.</summary>
     public int HotkeyBarSlots { get; }
 
-    /// <summary>What founding a guild costs in the money item. Nothing in an engine with no game
-    /// loaded, and then founding one is free.</summary>
-    public int GuildCost { get; }
+    /// <summary>The tags a guild leader may apply, in display order. Empty in an engine with no game
+    /// loaded, and then a guild is known by its name.</summary>
+    public GuildLabelSet GuildLabels { get; }
+
+    /// <summary>What the engine's own conveniences cost, as this game declared them. Every figure is
+    /// nothing in an engine with no game loaded, and then none of them charges anybody.</summary>
+    public GamePrices Prices { get; }
 
     /// <summary>What is told when something happens in the world, in the order their modules were
     /// configured. Empty in an engine with no game loaded, which then tells nobody anything.</summary>
@@ -250,12 +255,24 @@ internal sealed class CoreBuilder : ICoreBuilder
     private readonly List<EquipSlot> _equipSlots = [];
     private readonly List<OverheadBar> _overheadBars = [];
     private readonly List<NameTint> _nameTints = [];
+    private readonly List<GuildLabel> _guildLabels = [];
     private int _otherwiseNameRgb = NameTintSet.PlainRgb;
     private int _markedRgb = NameTintSet.MarkedDefaultRgb;
     private int _aggressorRgb = NameTintSet.AggressorDefaultRgb;
     private string? _nameColorsSetBy;
     private int _guildCost;
-    private string? _guildCostSetBy;
+    private int _innSpawnCost;
+    private int _mailBaseCost;
+    private int _mailAttachmentCost;
+    private int _mailValuePercent;
+    private int _marketTaxPercent;
+    private int _sellBackPercent;
+    private int _repairPercent;
+    private int _homeCooldownSeconds;
+    // Which module named each price, by the name this refuses in. One game sets a price; a second
+    // one setting the same price is two games disagreeing about an economy, which is a startup error
+    // rather than a last-writer-wins.
+    private readonly Dictionary<string, string> _priceSetBy = new(StringComparer.Ordinal);
     private readonly List<DisplayField> _displayFields = [];
     private readonly List<IPacketRoute> _packetRoutes = [];
     private readonly List<GameAction> _actions = [];
@@ -497,21 +514,61 @@ internal sealed class CoreBuilder : ICoreBuilder
         _aggressorRgb = aggressorRgb;
     }
 
-    /// <summary>What founding a guild costs. Said once, on the same terms as the name colors.</summary>
-    public void SetGuildCost(int cost)
+    /// <summary>One declared price, on the same terms as the name colors: a game may restate its own
+    /// answer, and a second game naming the same price is refused by name.</summary>
+    private int Price(string what, int amount)
     {
         Refuse();
 
-        if (_guildCostSetBy is not null && _guildCostSetBy != _module)
+        if (_priceSetBy.TryGetValue(what, out string? owner) && owner != _module)
         {
             throw new CoreModuleException(
-                $"Module '{_module}' set the guild cost, which module '{_guildCostSetBy}' "
-                + "has already set.", _module);
+                $"Module '{_module}' set {what}, which module '{owner}' has already set.", _module);
         }
 
-        _guildCostSetBy = _module;
-        _guildCost = Math.Max(0, cost);
+        _priceSetBy[what] = _module;
+        return Math.Max(0, amount);
     }
+
+    /// <summary>A tag a guild may wear. Two games claiming one key would be two meanings for the same
+    /// saved string, so the second is refused.</summary>
+    public void AddGuildLabel(GuildLabel label)
+    {
+        ArgumentNullException.ThrowIfNull(label);
+        Refuse();
+
+        if (string.IsNullOrWhiteSpace(label.Key))
+            throw new CoreModuleException($"Module '{_module}' declared a guild label with no key.", _module);
+
+        if (_guildLabels.Any(l => string.Equals(l.Key, label.Key, StringComparison.Ordinal)))
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' declared the guild label '{label.Key}', which is already declared.",
+                _module);
+        }
+
+        _guildLabels.Add(label);
+    }
+
+    public void SetGuildCost(int cost) => _guildCost = Price("the guild cost", cost);
+
+    public void SetInnSpawnCost(int cost) => _innSpawnCost = Price("the inn spawn cost", cost);
+
+    public void SetMailBaseCost(int cost) => _mailBaseCost = Price("the base postage", cost);
+
+    public void SetMailAttachmentCost(int cost)
+        => _mailAttachmentCost = Price("the postage per attachment", cost);
+
+    public void SetMailValuePercent(int percent)
+        => _mailValuePercent = Price("the postage share of a parcel", percent);
+
+    public void SetMarketTaxPercent(int percent) => _marketTaxPercent = Price("the sale tax", percent);
+
+    public void SetSellBackPercent(int percent) => _sellBackPercent = Price("the sell-back share", percent);
+
+    public void SetRepairPercent(int percent) => _repairPercent = Price("the repair share", percent);
+
+    public void SetHomeCooldown(int seconds) => _homeCooldownSeconds = Price("the trip-home wait", seconds);
 
     public void AddPanel(GamePanel panel)
     {
@@ -814,7 +871,20 @@ internal sealed class CoreBuilder : ICoreBuilder
                                 new NameTintSet(_nameTints, _otherwiseNameRgb, _markedRgb, _aggressorRgb),
                                 new DisplayFieldSet(_displayFields), new PacketRoutes([.. _packetRoutes]),
                                 new GameActions(_actions), [.. _actionHandlers], new GamePanels([.. _panels]),
-                                new ChatChannelSet([.. _chatChannels]), _hotkeyBarSlots, _guildCost,
+                                new ChatChannelSet([.. _chatChannels]), _hotkeyBarSlots,
+                                new GuildLabelSet([.. _guildLabels]),
+                                new GamePrices
+                                {
+                                    GuildCost = _guildCost,
+                                    InnSpawnCost = _innSpawnCost,
+                                    MailBaseCost = _mailBaseCost,
+                                    MailAttachmentCost = _mailAttachmentCost,
+                                    MailValuePercent = _mailValuePercent,
+                                    MarketTaxPercent = _marketTaxPercent,
+                                    SellBackPercent = _sellBackPercent,
+                                    RepairPercent = _repairPercent,
+                                    HomeCooldownSeconds = _homeCooldownSeconds,
+                                },
                                 [.. _observers], [.. _consoleHandlers], [.. _deathPolicies],
                                 [.. _lingerPolicies], [.. _movePolicies],
                                 [.. _usePolicies], [.. _lootPolicies],

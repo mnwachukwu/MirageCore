@@ -99,6 +99,12 @@ public interface ICoreBuilder
     /// same in every world, so a game cannot repaint it and cannot disguise one.</para></summary>
     void SetNameColors(int plainRgb, int markedRgb, int aggressorRgb);
 
+    /// <summary>A descriptive tag a guild leader may apply to their guild — what a guild advertises
+    /// about itself, which is a question about this game rather than about guilds.
+    ///
+    /// <para>Declare none and the picker is not offered, and a guild is known by its name.</para></summary>
+    void AddGuildLabel(GuildLabel label);
+
     /// <summary>What founding a guild costs, in the money item. Consumed on success — the new guild's
     /// vault starts empty — and the client shows the figure on the Create button before anybody presses
     /// it, so a game changing it changes both halves at once.
@@ -106,6 +112,44 @@ public interface ICoreBuilder
     /// <para>Declare nothing and founding one is free, which is the only answer Core can give: how much
     /// a guild ought to be worth is a question about an economy the engine cannot see.</para></summary>
     void SetGuildCost(int cost);
+
+    // ── What the engine's own conveniences cost ───────────────────────────────
+    //
+    // Core charges nothing it was not told to charge, and derives no price of its own. A shop sells for
+    // the figure its author wrote on the item; everything below is a flat amount or a percentage of one,
+    // and every one defaults to nothing.
+
+    /// <summary>What moving your respawn point to an inn costs, in the money item. Declare nothing and
+    /// an inn will anchor anybody for free.</summary>
+    void SetInnSpawnCost(int cost);
+
+    /// <summary>What a letter costs to send before anything is attached to it.</summary>
+    void SetMailBaseCost(int cost);
+
+    /// <summary>What each attachment adds to the postage.</summary>
+    void SetMailAttachmentCost(int cost);
+
+    /// <summary>A percentage of what is IN the parcel, added to the postage.
+    ///
+    /// <para>Keyed on the shipment rather than on the sender, deliberately: every flat fee is paid by
+    /// whoever clicks, so a cost scaled to the payer is avoided by handing the job to an alt. What is in
+    /// the parcel cannot be.</para></summary>
+    void SetMailValuePercent(int percent);
+
+    /// <summary>A percentage of a marketplace sale, taken from the seller when it completes.</summary>
+    void SetMarketTaxPercent(int percent);
+
+    /// <summary>A percentage of an item's authored price, which is what a shop pays for one a player
+    /// brings in, scaled by its condition. Declare nothing and a shop buys nothing back.</summary>
+    void SetSellBackPercent(int percent);
+
+    /// <summary>A percentage of an item's authored price, which is what restoring it from broken to whole
+    /// costs; part of a repair costs that share of it. Declare nothing and mending is free.</summary>
+    void SetRepairPercent(int percent);
+
+    /// <summary>How long a player waits between one trip home and the next, in seconds. Declare nothing
+    /// and there is no wait.</summary>
+    void SetHomeCooldown(int seconds);
 
     /// <summary>A screen this game paints: a title, the display surface that fills it, the verbs under
     /// it, and optionally a key that opens it. Declare none and the client shows only Core's own

@@ -245,12 +245,8 @@ public static partial class EditorStrings
 
     // ── Data field labels (shared by Item/Spell row editors) ──────────────────
     public const string DataLabel_Durability = nameof(DataLabel_Durability);
-    // The class multi-select shared by the item, spell and quest editors.
-    public const string DataLabel_VitalAmount = nameof(DataLabel_VitalAmount);
-    public const string DataLabel_Power = nameof(DataLabel_Power);
     public const string DataLabel_EquipSlot = nameof(DataLabel_EquipSlot);
     public const string DataLabel_EquipSlotNone = nameof(DataLabel_EquipSlotNone);
-    public const string DataLabel_Tier = nameof(DataLabel_Tier);
 
     // ── EditorConnection (service-layer errors shown to the user) ─────────────
     public const string EditorConnection_ClosedUnexpectedly = nameof(EditorConnection_ClosedUnexpectedly);

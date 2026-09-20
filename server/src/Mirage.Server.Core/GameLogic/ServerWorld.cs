@@ -402,10 +402,8 @@ public sealed class ServerWorld : IWorld
     {
         if (itemNum < 1 || itemNum > _world.Limits.Items || points <= 0) return 0;
 
-        return EconomyFormulas.RepairCost(points, _world.Items[itemNum]);
+        return _world.Prices.RepairCost(points, _world.Items[itemNum]);
     }
-
-    public double RepairRateAt(int tier) => EconomyFormulas.RepairGoldPerDurabilityPoint(tier);
 
     /// <summary>The bag slot holding the copy of that item they are WEARING, or null. Wearing is
     /// what makes one copy findable at all: two copies in the bag are two different amounts of wear, and a rule about what
@@ -706,7 +704,7 @@ public sealed class ServerWorld : IWorld
         {
             var sp = _pm[who.PlayerIndex];
             return sp.AttackTimer > 0
-                && now - sp.AttackTimer < Holding(sp.AttackHoldMs, Constants.PlayerAttackCooldownMs, PlaceOf(who).Map);
+                && now - sp.AttackTimer < Holding(sp.AttackHoldMs, Constants.PlayerAttackCooldownMs);
         }
 
         // ⚠ A creature is asked on the AI beat, so its deadline is rounded to the nearest one.
@@ -717,14 +715,13 @@ public sealed class ServerWorld : IWorld
         // have no boundary to round to, so the branch above does not.
         return Npc(who) is { } npc && npc.AttackTimer > 0
             && !AiCadence.Elapsed(now, npc.AttackTimer,
-                                  Holding(npc.AttackHoldMs, Constants.NpcAttackCooldownMs, PlaceOf(who).Map));
+                                  Holding(npc.AttackHoldMs, Constants.NpcAttackCooldownMs));
     }
 
     /// <summary>How long a cooldown runs: what the game asked for, or the engine's own beat when it
-    /// asked for nothing, stretched by a gale either way.</summary>
-    private long Holding(long asked, long beat, int mapNum) =>
-        (asked > 0 ? asked : beat)
-        * (WeatherOn(mapNum) == "heavywind" ? Constants.WeatherHeavyWindCooldownMultiplier : 1L);
+    /// asked for nothing. A game that wants weather, a spell or a curse to stretch it asks for a
+    /// longer one — the engine holds the clock and has no opinion about what should move it.</summary>
+    private static long Holding(long asked, long beat) => asked > 0 ? asked : beat;
 
     /// <summary>The cooldown is a START stamp the bar measures forward from, not an expiry, so clearing
     /// it is zeroing the stamp rather than setting one in the past.</summary>

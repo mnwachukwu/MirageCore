@@ -193,6 +193,13 @@ public sealed partial class ClientPacketHandler : IClientEvents
             case NameTintsPacket p:
                 HandleNameTints(p);
                 break;
+            case GamePricesPacket p:
+                _state.Prices = p.ToPrices();
+                break;
+            case GuildLabelsPacket p:
+                _state.GuildLabels = new GuildLabelSet(
+                    [.. p.Labels.Select(l => new GuildLabel { Key = l.Key, LabelKey = l.LabelKey })]);
+                break;
             case DisplayFieldsPacket p:
                 HandleDisplayFields(p);
                 break;
@@ -405,11 +412,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
 
     // ── Entering the game ─────────────────────────────────────────────────────
 
-    private void HandleWelcome(WelcomePacket p)
-    {
-        _state.MyIndex = p.Index;
-        _state.GuildCost = p.GuildCost;
-    }
+    private void HandleWelcome(WelcomePacket p) => _state.MyIndex = p.Index;
 
     private void HandlePlayerInGame()
     {

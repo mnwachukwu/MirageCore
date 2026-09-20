@@ -158,7 +158,7 @@ public class ItemLockRoundTripTests
 
     private static EditorSaveItemPacket Rename(string name, int num = ItemNum) => new()
     {
-        ItemNum = num, Name = name, Pic = 4, Type = ItemType.Equipment, Durability = 100, Power = 10,
+        ItemNum = num, Name = name, Pic = 4, Type = ItemType.Equipment, Durability = 100,
     };
 
     sealed class Harness

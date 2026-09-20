@@ -20,6 +20,7 @@ public sealed partial class SocialPanel : IGamePanel
     public void Draw(SpriteBatch sb, SpriteFont font, ClientState state, bool isActive = false)
     {
         if (!IsOpen) return;
+        SyncLabelButtons(state);
         long nowMs = Environment.TickCount64;
 
         if (_lastSocialVersion != state.SocialVersion || _builtTab != _activeTab)
@@ -39,7 +40,7 @@ public sealed partial class SocialPanel : IGamePanel
             var info = state.GuildInfo;
             if (info is null || !info.InGuild)
             {
-                DrawGuildlessView(sb, font, body, state.GuildCost);
+                DrawGuildlessView(sb, font, body, state.Prices.GuildCost);
             }
             else
             {
@@ -288,9 +289,9 @@ public sealed partial class SocialPanel : IGamePanel
             new Vector2(body.X + 8, body.Y + 6), Color.Yellow, body.Width - 16);
 
         LayoutLabelEditor(body);
-        for (int i = 0; i < _labelBtns.Length; i++)
+        for (int i = 0; i < _labelBtns.Count; i++)
         {
-            bool active = _pendingLabels.Contains(AllLabels[i]);
+            bool active = _pendingLabels.Contains(_declaredLabels.Labels[i].Key);
             _labelBtns[i].Draw(sb, font, _input,
                 normalColor: active ? UiHelper.PrimaryButtonNormal : UiHelper.ButtonNormalBg,
                 hoverColor: active ? UiHelper.PrimaryButtonHover : UiHelper.ButtonHoverBg);

@@ -82,7 +82,7 @@ public sealed partial class PacketHandler
         }
 
         long now = NowUtc;
-        long readyAt = vp.HomeUsedAtUtc + Constants.HomeCooldownSeconds;
+        long readyAt = vp.HomeUsedAtUtc + _world.Prices.HomeCooldownSeconds;
         if (vp.HomeUsedAtUtc > 0 && now < readyAt)
         {
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.Command_HomeCooldown,
@@ -116,7 +116,7 @@ public sealed partial class PacketHandler
         if (!sp.IsPlaying) return;
 
         long now = NowUtc;
-        long readyAt = sp.Char.HomeUsedAtUtc + Constants.HomeCooldownSeconds;
+        long readyAt = sp.Char.HomeUsedAtUtc + _world.Prices.HomeCooldownSeconds;
         if (sp.Char.HomeUsedAtUtc > 0 && now < readyAt)
             _dispatcher.SendLocalizedChatTo(index, ServerStrings.Command_HomeCooldownLeft,
                 new ChatMetadata(GameColor.Yellow, ChatChannel.System),

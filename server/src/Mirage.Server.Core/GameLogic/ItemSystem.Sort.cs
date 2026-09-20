@@ -91,9 +91,9 @@ public sealed partial class ItemSystem : GameSystem
         return item.Type switch
         {
             ItemType.Currency => (1, 0, 0),
-            ItemType.Equipment => (3, SlotOrder(item, equipSlots), item.Power),
+            ItemType.Equipment => (3, SlotOrder(item, equipSlots), item.Price),
             ItemType.Key => (4, 0, 0),
-            ItemType.Consumable => (5, 0, item.VitalAmount),
+            ItemType.Consumable => (5, 0, item.Price),
             _ => (6, 0, 0),
         };
     }

@@ -61,12 +61,10 @@ public sealed partial class SocialPanel : IGamePanel
     private const int RowH = 18;
     private const int HeaderH = RowH * 3; // Main page: name / labels / MOTD, so the level bar start is stable
 
-    // The nine guild labels, in enum order — the editor grid and the roster display both iterate this.
-    private static readonly GuildLabel[] AllLabels =
-    {
-        GuildLabel.Pvp, GuildLabel.Pve, GuildLabel.Leveling, GuildLabel.CasualSocial, GuildLabel.Hardcore,
-        GuildLabel.OrganizedWars, GuildLabel.ItemFarming, GuildLabel.NewbieFocused, GuildLabel.VeteranFocused,
-    };
+    // The tags this world declared, and one button each. Rebuilt when the declaration arrives rather
+    // than fixed here: how many there are is the game's answer, and a client compiled against a
+    // number could only ever draw one world's grid.
+    private GuildLabelSet _declaredLabels = GuildLabelSet.None;
 
     private readonly ListBox _list = new();               // Friends / Ignore rows
     private readonly Button _removeBtn = new();
@@ -93,7 +91,7 @@ public sealed partial class SocialPanel : IGamePanel
     // Label editor.
     private readonly Button _labelSaveBtn = new();
     private readonly Button _labelCancelBtn = new();
-    private readonly Button[] _labelBtns = InitLabelButtons();
+    private readonly List<Button> _labelBtns = [];
     // Applications review overlay (officer+).
     private readonly ListBox _appList = new();
     private readonly List<string> _appLogins = new(); // app row → applicant login
@@ -115,7 +113,7 @@ public sealed partial class SocialPanel : IGamePanel
     private readonly ColorPickerDialog _colorPicker = new();
     private readonly ConfirmDialog _confirm = new();
     private bool _labelEditing;
-    private readonly List<GuildLabel> _pendingLabels = new();
+    private readonly List<string> _pendingLabels = new();
 
     private readonly List<string> _rowLogins = new();   // Friends/Ignore row index → account login, parallel to _list.Items
 
@@ -130,11 +128,25 @@ public sealed partial class SocialPanel : IGamePanel
     private InputState _input = new();
     private Point _lastMousePos;
 
-    private static Button[] InitLabelButtons()
+    /// <summary>One button per declared tag, remade only when the declaration itself changes.</summary>
+    private void SyncLabelButtons(ClientState state)
     {
-        var arr = new Button[AllLabels.Length];
-        for (int i = 0; i < arr.Length; i++) arr[i] = new Button();
-        return arr;
+        if (ReferenceEquals(_declaredLabels, state.GuildLabels)) return;
+        _declaredLabels = state.GuildLabels;
+        _labelBtns.Clear();
+        for (int i = 0; i < _declaredLabels.Count; i++) _labelBtns.Add(new Button());
+        for (int i = 0; i < _labelBtns.Count; i++)
+            _labelBtns[i].Label = LabelName(_declaredLabels.Labels[i].Key);
+    }
+
+    /// <summary>What a tag reads as: the words its declaration named, falling back to the key so an
+    /// unlocalized tag still reads as something.</summary>
+    private string LabelName(string key)
+    {
+        var declared = _declaredLabels.Find(key);
+        if (declared is null) return key;
+        string named = declared.LabelKey.Length > 0 ? declared.LabelKey : declared.Key;
+        return ClientStrings.GetOrFallback(named, named);
     }
 
     public SocialPanel()

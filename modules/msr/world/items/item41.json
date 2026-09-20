@@ -10,7 +10,6 @@
   "price": 993,
   "type": "Equipment",
   "equipSlot": "weapon",
-  "power": 25,
   "durability": 390,
   "attributes": {
     "levelReq": 15,

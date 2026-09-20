@@ -1,0 +1,59 @@
+# What this world charges for the things the engine itself offers.
+#
+# The original's figures, carried over: a letter costs ten and a parcel more, the auction house takes a
+# twentieth, a vendor pays a quarter, and going home is a half-hour affair. The engine charges none of
+# them until it is told to, so a number left out here is a service this world gives away.
+#
+# ⚠ These are the ENGINE'S conveniences, not this game's. What a spell costs, what a guild quest pays
+# and what a death takes are priced in the files that own those rules.
+
+shared model Prices
+
+    # ── The figures ───────────────────────────────────────────────────────────
+
+    # A bed at an inn moves where you wake up. Cheap on purpose: it is a convenience rather than a
+    # sink, and a player who cannot afford to move their spawn is a player walking a long way.
+    public integer InnSpawn = 5;
+
+    # Postage. The flat parts stay small because mail is available from the first hour and a fee big
+    # enough to matter at the top would be unaffordable at the bottom; the scale comes from the share.
+    public integer Postage = 10;
+    public integer PostagePerItem = 50;
+
+    # ⚠ Keyed on the PARCEL rather than on the sender. Every flat fee is paid by whoever clicks, so a
+    # fee scaled to the payer is avoided by handing the job to an alt; what is in the parcel cannot be.
+    # Deliberately under the sale tax: the market buys escrow with its cut and plain post does not.
+    public integer PostageShare = 2;
+
+    # The auction house's cut, and the collect-on-delivery cut with it.
+    public integer SaleTax = 5;
+
+    # What a vendor pays for what you bring in. Well under half, so selling drops supplements income
+    # without becoming the way to earn — the drop tables already do that.
+    public integer SellBack = 25;
+
+    # What mending a piece from broken to whole costs, against what a new one costs. A quarter: upkeep
+    # a player notices on a hard night and never one that beats replacing the piece.
+    public integer Repair = 25;
+
+    # Half an hour between one trip home and the next, measured on the wall clock — it runs down while
+    # the player is logged out, so a relog neither clears it nor pauses it.
+    public integer HomeWait = 1800;
+
+    # ── What the engine is told ───────────────────────────────────────────────
+
+    public function Declare(Builder game)
+        game.InnCost(Prices.InnSpawn);
+
+        game.PostageCost(Prices.Postage);
+        game.PostagePerAttachment(Prices.PostagePerItem);
+        game.PostageShare(Prices.PostageShare);
+
+        game.SaleTax(Prices.SaleTax);
+        game.SellBackShare(Prices.SellBack);
+        game.RepairShare(Prices.Repair);
+
+        game.HomeWait(Prices.HomeWait);
+    end function
+
+end model

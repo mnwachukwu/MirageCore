@@ -167,55 +167,15 @@ public class SeedIntegrityTests
         RequireSeed();
         // THE TRAP THIS EXISTS FOR: gen-items --apply rewrites every item file and does NOT write price;
         // that is seed-prices' stage. Regenerating the armory without re-running it leaves 558 items at
-        // price 0 — a world of free gear, with nothing raising a hand.
+        // price 0 — a world of free gear, with nothing raising a hand. Core derives no price, so an
+        // unpriced piece of gear is worth nothing to buy, sell or mend and nothing else will notice.
         Assert.Multiple(() =>
         {
             foreach (var (num, item) in _items)
             {
-                int derived = EconomyFormulas.ItemValue(item);
-                if (derived <= 0) continue;   // currency, keys, treasure — authored or genuinely worthless
-                Assert.That(item.Price, Is.EqualTo(derived),
-                    $"item{num} ({item.Name}) is priced {item.Price} but the formula says {derived} — "
-                    + "run seed-prices.cs after any gen-items --apply");
-            }
-        });
-    }
-
-    [Test]
-    public void Durability_RisesWithTier_AndWithBulk()
-    {
-        RequireSeed();
-        var gear = _items.Values.Where(i => ItemRecord.IsEquipment(i.Type)).ToArray();
-        Assert.That(gear, Is.Not.Empty, "the seed authors no equipment — nothing left to hold to the tier curve");
-
-        // The curve lives in gen-items (sqrt of level x bulk) and is unreachable from here, so what is
-        // pinned is its SHAPE: a higher tier is sturdier, and within a tier a heavier piece is sturdier
-        // than a lighter one. Bulk is not stored, but Power carries it — both come off the same
-        // multiplier — so within a slot and tier, more Power must mean more durability.
-        var tiers = gear.Select(i => (int)i.Tier).Distinct().OrderBy(l => l).ToArray();
-        Assert.Multiple(() =>
-        {
-            // Compared BAND TO BAND — floor against floor and ceiling against ceiling — not every piece
-            // against every piece. A tier-5 Tower Shield genuinely outlasts a tier-10 Buckler, because
-            // bulk spans 0.75-1.25 while one rung is a smaller step than that. What must hold is that the
-            // whole range shifts up, and comparing the max of one tier to the min of the next would
-            // forbid the bulk spread rather than test the curve.
-            for (int i = 1; i < tiers.Length; i++)
-            {
-                var lower = gear.Where(g => g.Tier == tiers[i - 1]).ToArray();
-                var higher = gear.Where(g => g.Tier == tiers[i]).ToArray();
-                Assert.That(higher.Min(g => g.Durability), Is.GreaterThan(lower.Min(g => g.Durability)),
-                    $"tier {tiers[i]}'s lightest piece is no sturdier than tier {tiers[i - 1]}'s");
-                Assert.That(higher.Max(g => g.Durability), Is.GreaterThan(lower.Max(g => g.Durability)),
-                    $"tier {tiers[i]}'s heaviest piece is no sturdier than tier {tiers[i - 1]}'s");
-            }
-
-            foreach (var slot in gear.GroupBy(g => (g.Type, g.Tier)))
-            {
-                var byPower = slot.OrderBy(g => g.Power).ToArray();
-                for (int i = 1; i < byPower.Length; i++)
-                    Assert.That(byPower[i].Durability, Is.GreaterThanOrEqualTo(byPower[i - 1].Durability),
-                        $"{byPower[i].Name} carries more Power than {byPower[i - 1].Name} but less durability");
+                if (!ItemRecord.IsEquipment(item.Type) && !ItemRecord.IsConsumable(item.Type)) continue;
+                Assert.That(item.Price, Is.GreaterThan(0),
+                    $"item{num} ({item.Name}) is unpriced — run seed-prices.cs after any gen-items --apply");
             }
         });
     }
@@ -224,8 +184,8 @@ public class SeedIntegrityTests
     public void Treasure_IsPricedAndProtected()
     {
         RequireSeed();
-        // Treasure is typed None and priced by hand — the one item family whose worth is authored rather
-        // than derived, and therefore the one nothing else can check.
+        // Treasure is typed None and sold through a fence rather than a vendor, so what protects it is
+        // the NonJunkable flag rather than its type.
         var treasure = _items.Where(kv => kv.Value.Type == ItemType.None && kv.Value.Price > 0).ToArray();
         Assert.That(treasure, Is.Not.Empty, "the seed authors no treasure");
 
@@ -237,8 +197,6 @@ public class SeedIntegrityTests
                     $"item{num} ({t.Name}) is treasure but junkable — the generic vendor would buy it and "
                     + "the fence would be pointless");
                 Assert.That(t.Name, Is.Not.Empty, $"item{num} is priced treasure with no name");
-                Assert.That(EconomyFormulas.ItemValue(t), Is.Zero,
-                    $"item{num} ({t.Name}) must not be derivable, or seed-prices would overwrite it");
             }
             Assert.That(_items.Values.Any(i => i.Type == ItemType.Currency && i.NonJunkable), Is.True,
                 "gold must be NonJunkable — dumping currency for a fraction of itself is nonsense");

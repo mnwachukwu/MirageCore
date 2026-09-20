@@ -39,10 +39,10 @@ and their absence is the product rather than a gap in it.
 
 ---
 
-## The twenty-five seams
+## The thirty-four seams
 
 A game is an [`ICoreModule`](../shared/src/Mirage.Shared/Extensibility/ICoreModule.cs). It is asked to
-describe itself once, and everything it can say is one of twenty-five calls on the builder it is handed.
+describe itself once, and everything it can say is one of thirty-four calls on the builder it is handed.
 
 **What the game is made of**
 
@@ -63,6 +63,7 @@ describe itself once, and everything it can say is one of twenty-five calls on t
 | `AddEquipSlot` | a place on a character where something can be worn |
 | `AddPanel` | a screen this game paints: a title, a surface, a list to pick from, the verbs under it, and the key that opens it |
 | `AddChatChannel` | a kind of line this game's own rules produce, that a player can read apart from everything else and hide when they want to |
+| `AddGuildLabel` | a tag a guild leader may put on their guild — what a guild advertises about itself |
 | `SetHotkeyBar` | how many action-bar slots the player gets, and whether there is a bar at all |
 
 **What the player does**
@@ -86,8 +87,26 @@ describe itself once, and everything it can say is one of twenty-five calls on t
 | `AddCreationChoice` | what to ask before a character exists |
 | `AddLingerPolicy` | how long a dropped connection leaves a body standing |
 | `AddMovePolicy` | whether a body can still manage a run, and what a run costs it |
-| `SetGuildCost` | what founding a guild costs, in the currency item every world carries in slot 1 |
 | `AddConsoleHandler` | a command the server's own console can answer, for forcing work that runs on a schedule nobody can sit and watch |
+
+**What the engine's own conveniences cost**
+
+Core charges nothing it was not told to charge and derives no price of its own: a shop sells for the
+figure its author wrote on the item, and every seam below is a flat amount or a percentage of one.
+Declare none of them and the engine gives all of it away — free postage, no tax, a shop that buys
+nothing back, free repairs, and no wait on the way home.
+
+| Seam | Answers |
+|---|---|
+| `SetGuildCost` | what founding a guild costs, in the money item every world carries in slot 1 |
+| `SetInnSpawnCost` | what moving your respawn point to an inn costs |
+| `SetMailBaseCost` | what a letter costs before anything is attached to it |
+| `SetMailAttachmentCost` | what each attachment adds to the postage |
+| `SetMailValuePercent` | a share of what is IN the parcel, added to the postage |
+| `SetMarketTaxPercent` | what the marketplace takes from a seller |
+| `SetSellBackPercent` | what a shop pays for something brought in, as a share of its authored price |
+| `SetRepairPercent` | what mending something costs, as a share of its authored price |
+| `SetHomeCooldown` | how long a player waits between one trip home and the next |
 
 Declare none of them and you have the engine by itself. Every seam's "declare nothing" case is a
 coherent game, not a broken one.

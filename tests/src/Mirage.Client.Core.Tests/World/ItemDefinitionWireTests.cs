@@ -14,8 +14,8 @@ namespace Mirage.Client.Core.Tests.World;
 /// <para>Both handlers rebuild an <c>ItemRecord</c> field by field from the packet. A field the server sends
 /// and the handler forgets to assign is invisible: the record is still valid, the client still runs, and the
 /// only symptom is a number quietly reading zero somewhere far away — a tooltip line that never renders, a
-/// requirement never shown before a purchase. The gate fields below are the ones whose absence is silent, so
-/// the reflection sweep at the end holds the whole shape rather than only the ones remembered today.</para>
+/// price never shown before a purchase. So the reflection sweep at the end holds the whole shape rather
+/// than only the fields somebody remembered to assert.</para>
 /// </summary>
 [TestFixture]
 public class ItemDefinitionWireTests
@@ -33,36 +33,15 @@ public class ItemDefinitionWireTests
         return state;
     }
 
-    private static SendItemsPacket.ItemData Sword(short tier = 40) => new(
-        Num: 7, Name: "Iron Sword", Pic: 3, Type: ItemType.Equipment, Durability: 50, VitalAmount: 0,
-        Power: 12, Tier: tier, NonTradeable: false,
-        NonListable: false, NonMailable: false, DestroyOnDrop: false, NonJunkable: false, Price: 250);
+    private static SendItemsPacket.ItemData Sword(int price = 250) => new(
+        Num: 7, Name: "Iron Sword", Pic: 3, Type: ItemType.Equipment, Durability: 50,
+        NonTradeable: false, NonListable: false, NonMailable: false, DestroyOnDrop: false,
+        NonJunkable: false, Price: price);
 
-    /// <summary>The reported bug: gear is level-gated server-side, but the client dropped the number on
-    /// receive, so every item read as level 0 and no requirement could be shown before you tried to wear it.</summary>
+    /// <summary>The shape that fails silently: an item arrives, the record is valid, and a number the
+    /// handler forgot reads zero wherever it is shown.</summary>
     [Test]
-    public void TheJoinTimeBulk_CarriesTheLevelGate()
-    {
-        var state = Apply(HandleSendItems, new SendItemsPacket { Items = [Sword()] });
-
-        Assert.That(state.Items[7]!.Tier, Is.EqualTo(40));
-    }
-
-    [Test]
-    public void ALiveEditorSave_CarriesTheLevelGateToo()
-    {
-        var state = Apply(HandleUpdateItem, new UpdateItemPacket
-        {
-            ItemNum = 7, Name = "Iron Sword", Pic = 3, Type = ItemType.Equipment,
-            Durability = 50, Power = 12, Tier = 40, Price = 250,
-        });
-
-        Assert.That(state.Items[7]!.Tier, Is.EqualTo(40));
-    }
-
-    /// <summary>The other gate fields, which fail the same silent way.</summary>
-    [Test]
-    public void TheGateFieldsAllSurvive()
+    public void TheJoinTimeBulk_CarriesWhatTheEngineCharges()
     {
         var state = Apply(HandleSendItems, new SendItemsPacket { Items = [Sword()] });
         var it = state.Items[7]!;
@@ -70,16 +49,29 @@ public class ItemDefinitionWireTests
         Assert.Multiple(() =>
         {
             Assert.That(it.Type, Is.EqualTo(ItemType.Equipment));
-            Assert.That(it.Power, Is.EqualTo(12), "drives the STR requirement line");
-            Assert.That(it.Tier, Is.EqualTo(40));
             Assert.That(it.Durability, Is.EqualTo(50));
             Assert.That(it.Price, Is.EqualTo(250));
         });
     }
 
+    [Test]
+    public void ALiveEditorSave_CarriesThemToo()
+    {
+        var state = Apply(HandleUpdateItem, new UpdateItemPacket
+        {
+            ItemNum = 7, Name = "Iron Sword", Pic = 3, Type = ItemType.Equipment,
+            Durability = 50, Price = 250,
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(state.Items[7]!.Durability, Is.EqualTo(50));
+            Assert.That(state.Items[7]!.Price, Is.EqualTo(250));
+        });
+    }
+
     /// <summary>Every property the wire and the record share by name must actually be copied. Written as a
-    /// sweep so a field added to both later cannot be left unassigned in the handler and go unnoticed —
-    /// which is exactly how the level gate went missing.</summary>
+    /// sweep so a field added to both later cannot be left unassigned in the handler and go unnoticed.</summary>
     [Test]
     public void EveryFieldTheWireAndTheRecordShare_IsCopied()
     {

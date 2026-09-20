@@ -53,8 +53,7 @@ public static partial class PacketBuilder
 
     // ── Game state ───────────────────────────────────────────────────────────
 
-    public static WelcomePacket Welcome(int index, int guildCost = 0) =>
-        new() { Index = index, GuildCost = guildCost };
+    public static WelcomePacket Welcome(int index) => new() { Index = index };
     public static PlayerInGamePacket PlayerInGame() => new();
     public static LeftGamePacket LeftGame(int index) => new() { Index = index };
 
@@ -217,8 +216,7 @@ public static partial class PacketBuilder
         new()
         {
             Items = items.Select(x => new SendItemsPacket.ItemData(
-                x.num, x.item.Name, x.item.Pic, x.item.Type,
-                x.item.Durability, x.item.VitalAmount, x.item.Power, x.item.Tier,
+                x.num, x.item.Name, x.item.Pic, x.item.Type, x.item.Durability,
                 x.item.NonTradeable, x.item.NonListable, x.item.NonMailable, x.item.DestroyOnDrop,
                 x.item.NonJunkable, x.item.Price, x.item.ItemSheet, x.item.EquipSlot)).ToArray()
         };
@@ -232,9 +230,6 @@ public static partial class PacketBuilder
             ItemSheet = item.ItemSheet,
             Type = item.Type,
             Durability = item.Durability,
-            VitalAmount = item.VitalAmount,
-            Power = item.Power,
-            Tier = item.Tier,
             EquipSlot = item.EquipSlot,
             NonTradeable = item.NonTradeable,
             NonListable = item.NonListable,

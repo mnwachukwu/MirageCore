@@ -417,7 +417,7 @@ public sealed class ShopPanel : IGamePanel
             if (item is null || item.NonJunkable) continue;
             if (me?.IsEquipped(i) == true) continue;
 
-            int offer = EconomyFormulas.ItemSellValue(item, slot.Dur);
+            int offer = state.Prices.SellValue(item, slot.Dur);
             if (item.Type == ItemType.Currency) offer *= Math.Max(slot.Quantity, 1);
 
             string name = item.Name?.Trim() ?? "?";
@@ -688,7 +688,7 @@ public sealed class ShopPanel : IGamePanel
         // No spell to price against: a scroll is its own item type, never one of these groups.
         _prompt.Open(
             ClientStrings.Get(ClientStrings.ShopPanel_SellHowMany),
-            EachLine(item.Name, EconomyFormulas.ItemSellValue(item, inv!.Dur)),
+            EachLine(item.Name, state.Prices.SellValue(item, inv!.Dur)),
             held,
             amount => { sender.SendShopSell(slot, amount); _sellDirty = true; });
         return true;
@@ -771,10 +771,11 @@ public sealed class ShopPanel : IGamePanel
 
         int maxDur = item?.Durability ?? 0;
         int durNeeded = maxDur - inv.Dur;
-        // Quote through the SHIPPED formula, never a local approximation: a copy goes stale the next
-        // time repair is retuned, and the symptom is a panel quoting one price while the counter charges
-        // another. EconomyFormulas is in Mirage.Shared precisely so both ends agree without a round-trip.
-        int goldNeeded = item is not null ? EconomyFormulas.RepairCost(durNeeded, item) : 0;
+        // Quote through the declared price, never a local approximation: a copy goes stale the next
+        // time the game retunes it, and the symptom is a panel quoting one figure while the counter
+        // charges another. GamePrices is in Mirage.Shared precisely so both ends agree without a
+        // round-trip.
+        int goldNeeded = item is not null ? state.Prices.RepairCost(durNeeded, item) : 0;
         long playerGold = state.PlayerGold();
 
         UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_DurabilityLabel, ("Current", inv.Dur), ("Max", maxDur)), new Vector2(c.X + 8, textY), UiHelper.DurabilityColor(inv.Dur, maxDur), c.Width - 16);
@@ -790,13 +791,13 @@ public sealed class ShopPanel : IGamePanel
         {
             UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_FullRepairCost, ("Gold", goldNeeded)), new Vector2(c.X + 8, textY), Color.Cyan, c.Width - 16);
         }
-        else if (item is not null && EconomyFormulas.RepairPointsAffordable(playerGold, item) > 0)
+        else if (item is not null && state.Prices.RepairPointsAffordable(playerGold, item) > 0)
         {
-            // Ask the formula how many points the purse covers rather than dividing by a display
-            // rate — the server does exactly this, and dividing can name a point count that costs
-            // a gold more than the player actually has.
-            int durPartial = Math.Min(EconomyFormulas.RepairPointsAffordable(playerGold, item), durNeeded);
-            int goldActual = EconomyFormulas.RepairCost(durPartial, item);
+            // Ask how many points the purse covers rather than dividing by a display rate — the server
+            // does exactly this, and dividing can name a point count that costs a gold more than the
+            // player actually has.
+            int durPartial = Math.Min(state.Prices.RepairPointsAffordable(playerGold, item), durNeeded);
+            int goldActual = state.Prices.RepairCost(durPartial, item);
             UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_PartialRepairCost, ("Gold", goldActual)), new Vector2(c.X + 8, textY), Color.Yellow, c.Width - 16);
             textY += 18;
             UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_DurabilityGain, ("Amount", durPartial)), new Vector2(c.X + 8, textY), Color.LightGray, c.Width - 16);
@@ -899,7 +900,7 @@ public sealed class ShopPanel : IGamePanel
             textY += 18;
         }
 
-        int offer = item is not null ? EconomyFormulas.ItemSellValue(item, inv!.Dur) * quantity : 0;
+        int offer = item is not null ? state.Prices.SellValue(item, inv!.Dur) * quantity : 0;
 
         UiHelper.DrawLabel(sb, font, ClientStrings.Format(ClientStrings.ShopPanel_SellOffer, ("Gold", offer)),
             new Vector2(c.X + 8, textY), offer > 0 ? Color.Gold : Color.OrangeRed, c.Width - 16);

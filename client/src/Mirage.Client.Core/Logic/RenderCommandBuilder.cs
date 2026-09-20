@@ -862,7 +862,7 @@ public static class RenderCommandBuilder
 
         // Cooldown bar, folded into the group as its bottom row (shares the group outline): NPCs get the
         // same swing/cast cooldown bar as players. npcCdFrac < 0 omits the row.
-        long npcCdMs = Constants.NpcAttackCooldownMs * (state.Weather == WeatherType.HeavyWind ? Constants.WeatherHeavyWindCooldownMultiplier : 1L);
+        long npcCdMs = Constants.NpcAttackCooldownMs;
         long npcActionElapsed = tickNow - n.AttackTimer;
         // NPC cooldown rows honor the ShowOtherCooldownBars option.
         bool npcCdShown = _showOtherCooldownBars && n.AttackTimer > 0 && npcActionElapsed < npcCdMs;
@@ -1115,7 +1115,7 @@ public static class RenderCommandBuilder
         // Cooldown bar, folded into the group as its bottom row (shares the group's one outline): spans the
         // swing/cast cooldown (doubled by Heavy Wind) so the downtime cadence is readable.
         // plrCdFrac < 0 omits the row. `elapsed` = tickNow - AttackTimer.
-        long cdMs = Constants.PlayerAttackCooldownMs * (state.Weather == WeatherType.HeavyWind ? Constants.WeatherHeavyWindCooldownMultiplier : 1L);
+        long cdMs = Constants.PlayerAttackCooldownMs;
         // Show the cooldown row only if this entity's option is on: the local player's own bar (i == myIndex)
         // honors ShowCooldownBar; every other player honors ShowOtherCooldownBars.
         bool cdShown = p.AttackTimer > 0 && elapsed < cdMs

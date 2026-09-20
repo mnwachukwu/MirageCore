@@ -41,7 +41,6 @@ public class RecordCopyTests
     {
         Name = "Rusty Sword",
         Type = ItemType.Equipment,
-        Power = 12,
         Durability = 40,
         Price = 250
     };
@@ -104,7 +103,6 @@ public class RecordCopyTests
         Assert.Multiple(() =>
         {
             Assert.That(copy.Type, Is.EqualTo(ItemType.Equipment));
-            Assert.That(copy.Power, Is.EqualTo(12));
             Assert.That(copy.Durability, Is.EqualTo(40));
             Assert.That(copy.Price, Is.EqualTo(250));
         });

@@ -283,7 +283,7 @@ public sealed class MarketSystem : GameSystem
 
     /// <summary>The sale tax (a gold sink) withheld from a listing price — floor of the configured percent.
     /// Public so the compose UI's "you receive" preview and the server agree on the number.</summary>
-    public static int SaleTax(int price) => (int)((long)price * Constants.MarketSaleTaxPercent / 100);
+    public int SaleTax(int price) => _world.Prices.MarketTax(price);
 
     private bool IsAtInn(int index)
     {

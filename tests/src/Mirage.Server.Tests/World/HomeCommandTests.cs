@@ -15,8 +15,11 @@ public class HomeCommandTests
 {
     private static readonly SpawnConfig Default = new() { Map = 7, X = 8, Y = 6 };
 
+    // What a game declared through ICoreBuilder.SetHomeCooldown; half an hour here.
+    private const int Wait = 30 * 60;
+
     private static bool OnCooldown(PlayerRecord p, long now) =>
-        p.HomeUsedAtUtc > 0 && now < p.HomeUsedAtUtc + Constants.HomeCooldownSeconds;
+        p.HomeUsedAtUtc > 0 && now < p.HomeUsedAtUtc + Wait;
 
     // ── Destination ───────────────────────────────────────────────────────────
 
@@ -68,7 +71,7 @@ public class HomeCommandTests
         var p = new PlayerRecord { HomeUsedAtUtc = 1_000_000 };
 
         Assert.That(OnCooldown(p, 1_000_000), Is.True, "immediately after");
-        Assert.That(OnCooldown(p, 1_000_000 + Constants.HomeCooldownSeconds - 1), Is.True, "one second short");
+        Assert.That(OnCooldown(p, 1_000_000 + Wait - 1), Is.True, "one second short");
     }
 
     [Test]
@@ -76,13 +79,7 @@ public class HomeCommandTests
     {
         var p = new PlayerRecord { HomeUsedAtUtc = 1_000_000 };
 
-        Assert.That(OnCooldown(p, 1_000_000 + Constants.HomeCooldownSeconds), Is.False);
-    }
-
-    [Test]
-    public void TheCooldownIsThirtyMinutes()
-    {
-        Assert.That(Constants.HomeCooldownSeconds, Is.EqualTo(30 * 60));
+        Assert.That(OnCooldown(p, 1_000_000 + Wait), Is.False);
     }
 
     [Test]

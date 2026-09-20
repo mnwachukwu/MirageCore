@@ -15,7 +15,7 @@ public class ItemRowViewModelTests
 {
     static ItemRecord Sword() => new()
     {
-        Name = "Rusty Sword", Pic = 12, Type = ItemType.Equipment, Durability = 100, Power = 8,
+        Name = "Rusty Sword", Pic = 12, Type = ItemType.Equipment, Durability = 100,
     };
 
     static ItemRowViewModel Row(ItemType type) => new(1, new ItemRecord { Type = type });
@@ -31,7 +31,6 @@ public class ItemRowViewModelTests
             Assert.That(r.Pic, Is.EqualTo((short)12));
             Assert.That(r.Type, Is.EqualTo(ItemType.Equipment));
             Assert.That(r.Durability, Is.EqualTo((short)100));
-            Assert.That(r.Power, Is.EqualTo((short)8));
             Assert.That(vm.IsDirty, Is.False, "a freshly loaded row is not dirty");
             Assert.That(vm.IsLoaded, Is.True);
         });
@@ -78,7 +77,7 @@ public class ItemRowViewModelTests
     {
         var vm = new ItemRowViewModel(1, new ItemRecord { Name = "" }, isLoaded: false);
 
-        vm.ApplyPacket(new UpdateItemPacket { Name = "Potion", Type = ItemType.Consumable, VitalAmount = 25 });
+        vm.ApplyPacket(new UpdateItemPacket { Name = "Potion", Type = ItemType.Consumable});
 
         Assert.Multiple(() =>
         {
@@ -86,54 +85,38 @@ public class ItemRowViewModelTests
             Assert.That(vm.IsLoaded, Is.True, "the row is now loaded");
             Assert.That(vm.ToRecord().Name, Is.EqualTo("Potion"));
             Assert.That(vm.ToRecord().Type, Is.EqualTo(ItemType.Consumable));
-            Assert.That(vm.ToRecord().VitalAmount, Is.EqualTo((short)25));
         });
     }
 
-    // Visibility follows the item type: only equipment exposes durability, power and a class requirement;
-    // only potions expose an amount; only a scroll picks a spell; keys and currency expose nothing.
+    // Visibility follows the item type: only what is worn carries durability, and nothing else the
+    // engine reads is type-specific. Everything a game keeps about an item lives on the record's own
+    // attributes, which the game-fields panel authors.
     [Test]
     public void FieldVisibility_FollowsItemType()
     {
         Assert.Multiple(() =>
         {
-            var weapon = Row(ItemType.Equipment);
-            Assert.That(weapon.DurabilityVisible, Is.True);
-            Assert.That(weapon.PowerVisible, Is.True);
-            Assert.That(weapon.VitalAmountVisible, Is.False);
-
-            var potion = Row(ItemType.Consumable);
-            Assert.That(potion.VitalAmountVisible, Is.True, "potion amount is editable");
-            Assert.That(potion.DurabilityVisible, Is.False, "potions do not wear");
-            Assert.That(potion.PowerVisible, Is.False);
+            Assert.That(Row(ItemType.Equipment).DurabilityVisible, Is.True);
+            Assert.That(Row(ItemType.Consumable).DurabilityVisible, Is.False, "potions do not wear");
 
             foreach (var bare in new[] { ItemType.Key, ItemType.Currency, ItemType.None })
             {
-                var row = Row(bare);
-                Assert.That(row.DurabilityVisible, Is.False, $"{bare} carries no editable fields");
-                Assert.That(row.VitalAmountVisible, Is.False, $"{bare} carries no editable fields");
-                Assert.That(row.PowerVisible, Is.False, $"{bare} carries no editable fields");
+                Assert.That(Row(bare).DurabilityVisible, Is.False, $"{bare} carries no editable fields");
             }
         });
     }
 
-    // The hazard the named fields alone don't fix: retype a weapon as a potion and its Power is hidden
-    // but still set. Saving has to drop it, or the file keeps numbers the item no longer has.
+    // The hazard the named fields alone don't fix: retype a weapon as a potion and its durability is
+    // hidden but still set. Saving has to drop it, or the file keeps numbers the item no longer has.
     [Test]
     public void ToRecord_ZeroesFieldsTheTypeDoesNotUse()
     {
         var vm = new ItemRowViewModel(3, Sword());
         vm.Type = ItemType.Consumable;
-        vm.VitalAmount = 25;
 
         var r = vm.ToRecord();
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(r.VitalAmount, Is.EqualTo((short)25));
-            Assert.That(r.Durability, Is.EqualTo((short)0), "a potion does not wear");
-            Assert.That(r.Power, Is.EqualTo((short)0), "the weapon's power must not survive the retype");
-        });
+        Assert.That(r.Durability, Is.EqualTo((short)0), "a potion does not wear");
     }
 
     // The row itself keeps the values, so flipping type by accident and back does not destroy authoring
@@ -149,8 +132,8 @@ public class ItemRowViewModelTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(vm.Power, Is.EqualTo((short)8));
-            Assert.That(vm.ToRecord().Power, Is.EqualTo((short)8));
+            Assert.That(vm.Durability, Is.EqualTo((short)100));
+            Assert.That(vm.ToRecord().Durability, Is.EqualTo((short)100));
         });
     }
 
@@ -161,16 +144,13 @@ public class ItemRowViewModelTests
     {
         var vm = new ItemRowViewModel(3, Sword());
         vm.Type = ItemType.Consumable;
-        vm.VitalAmount = 7;
 
         var pkt = vm.BuildSavePacket();
 
         Assert.Multiple(() =>
         {
             Assert.That(pkt.ItemNum, Is.EqualTo(3));
-            Assert.That(pkt.VitalAmount, Is.EqualTo((short)7));
             Assert.That(pkt.Durability, Is.EqualTo((short)0));
-            Assert.That(pkt.Power, Is.EqualTo((short)0));
         });
     }
 }

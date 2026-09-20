@@ -10,7 +10,6 @@
   "price": 128106,
   "type": "Equipment",
   "equipSlot": "shield",
-  "power": 109,
   "durability": 800,
   "attributes": {
     "levelReq": 115,

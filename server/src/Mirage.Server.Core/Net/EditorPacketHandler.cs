@@ -423,9 +423,6 @@ public sealed partial class EditorPacketHandler
         item.ItemSheet = p.ItemSheet;
         item.Type = p.Type;
         item.Durability = p.Durability;
-        item.VitalAmount = p.VitalAmount;
-        item.Power = p.Power;
-        item.Tier = p.Tier;
         item.EquipSlot = p.EquipSlot;
         item.NonTradeable = p.NonTradeable;
         item.NonListable = p.NonListable;

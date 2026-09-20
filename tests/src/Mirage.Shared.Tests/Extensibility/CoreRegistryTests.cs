@@ -278,7 +278,7 @@ public class CoreRegistryTests
     [Test]
     public void WithNoModule_FoundingAGuildCostsNothing()
     {
-        Assert.That(CoreRegistry.Build().GuildCost, Is.Zero);
+        Assert.That(CoreRegistry.Build().Prices.GuildCost, Is.Zero);
     }
 
     [Test]
@@ -286,7 +286,7 @@ public class CoreRegistryTests
     {
         var registry = CoreRegistry.Build(new Module("Pocket", b => b.SetGuildCost(35_000)));
 
-        Assert.That(registry.GuildCost, Is.EqualTo(35_000));
+        Assert.That(registry.Prices.GuildCost, Is.EqualTo(35_000));
     }
 
     [Test]
@@ -294,7 +294,7 @@ public class CoreRegistryTests
     {
         var registry = CoreRegistry.Build(new Module("Pocket", b => b.SetGuildCost(-5)));
 
-        Assert.That(registry.GuildCost, Is.Zero);
+        Assert.That(registry.Prices.GuildCost, Is.Zero);
     }
 
     [Test]
@@ -316,7 +316,53 @@ public class CoreRegistryTests
             b.SetGuildCost(200);
         }));
 
-        Assert.That(registry.GuildCost, Is.EqualTo(200));
+        Assert.That(registry.Prices.GuildCost, Is.EqualTo(200));
+    }
+
+    [Test]
+    public void WithNoModule_AGuildHasNoTags()
+    {
+        Assert.That(CoreRegistry.Build().GuildLabels.Count, Is.Zero);
+    }
+
+    [Test]
+    public void TheGameNamesTheTagsAGuildMayWear()
+    {
+        var registry = CoreRegistry.Build(new Module("Pocket", b =>
+        {
+            b.AddGuildLabel(new GuildLabel { Key = "pocket.casual", LabelKey = "Casual", Ordinal = 1 });
+            b.AddGuildLabel(new GuildLabel { Key = "pocket.ranked", LabelKey = "Ranked", Ordinal = 0 });
+        }));
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(registry.GuildLabels.Labels.Select(l => l.Key),
+                        Is.EqualTo(new[] { "pocket.ranked", "pocket.casual" }), "shown in the order asked");
+            Assert.That(registry.GuildLabels.Knows("pocket.casual"), Is.True);
+            Assert.That(registry.GuildLabels.Knows("msr.hardcore"), Is.False, "another game's tag is not ours");
+        });
+    }
+
+    /// <summary>A key is saved on a guild, so two games claiming one would be two meanings for the same
+    /// stored string.</summary>
+    [Test]
+    public void TwoModulesClaimingOneTag_IsRefused()
+    {
+        var ex = Assert.Throws<CoreModuleException>(() => CoreRegistry.Build(
+            new Module("First", b => b.AddGuildLabel(new GuildLabel { Key = "hardcore" })),
+            new Module("Second", b => b.AddGuildLabel(new GuildLabel { Key = "hardcore" }))));
+
+        Assert.That(ex!.ModuleName, Is.EqualTo("Second"));
+        Assert.That(ex.Message, Does.Contain("hardcore"));
+    }
+
+    [Test]
+    public void ATagWithNoKey_IsRefused()
+    {
+        var ex = Assert.Throws<CoreModuleException>(() => CoreRegistry.Build(
+            new Module("Pocket", b => b.AddGuildLabel(new GuildLabel { LabelKey = "Casual" }))));
+
+        Assert.That(ex!.ModuleName, Is.EqualTo("Pocket"));
     }
 
     private sealed class Ordered(string name, int order, List<string> log) : ITickWork

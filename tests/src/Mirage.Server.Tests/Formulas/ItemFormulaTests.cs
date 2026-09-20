@@ -179,16 +179,16 @@ public class ItemFormulaTests
         });
     }
 
-    // Unworn equipment is category 3; magnitude carries the item's Power so the OrderByDescending
-    // in the sort surfaces the strongest piece first.
+    // Unworn equipment is category 3; magnitude carries the item's price so the OrderByDescending
+    // in the sort surfaces the dearest piece first.
     [Test]
-    public void SortKey_UnwornEquipment_Category3_CarriesPowerMagnitude()
+    public void SortKey_UnwornEquipment_Category3_CarriesPriceMagnitude()
     {
         var items = BuildItems();
-        items[Wep].Power =50;
-        items[Arm].Power =30;
-        items[Hlm].Power =20;
-        items[Shd].Power =10;
+        items[Wep].Price = 50;
+        items[Arm].Price = 30;
+        items[Hlm].Price = 20;
+        items[Shd].Price = 10;
         Assert.Multiple(() =>
         {
             Assert.That(SortKey(Wep, items[Wep], equipped: false), Is.EqualTo((3, 0, 50)));
@@ -219,14 +219,14 @@ public class ItemFormulaTests
         });
     }
 
-    // Consumables share one category and order by the amount they carry, so a bigger one rises within
-    // the group. What the amount MEANS is a game's rule; the sort only needs it to be comparable.
+    // Consumables share one category and order by what they are worth, so a dearer one rises within
+    // the group.
     [Test]
-    public void SortKey_Consumables_OrderByTheAmountTheyCarry()
+    public void SortKey_Consumables_OrderByWhatTheyAreWorth()
     {
         var items = BuildItems();
-        items[PAdHp].VitalAmount = 100;
-        items[PAdMp].VitalAmount = 80;
+        items[PAdHp].Price = 100;
+        items[PAdMp].Price = 80;
 
         Assert.Multiple(() =>
         {

@@ -5,24 +5,28 @@ using Mirage.Server.Core.Persistence;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Records;
 using NUnit.Framework;
 
 namespace Mirage.Server.Tests.World;
 
-/// <summary>Setting a personal spawn point at an Inn (ConfirmSetSpawn): only works standing in an Inn, costs
-/// a level-scaled amount of gold (floored at SpawnCostMinimum), and on success charges the gold and records
-/// the CURRENT tile as the spawn. Refusals (no Inn, too poor) leave both gold and the spawn untouched.</summary>
+/// <summary>Setting a personal spawn point at an Inn (ConfirmSetSpawn): only works standing in an Inn,
+/// costs what the loaded game declared, and on success charges it and records the CURRENT tile as the
+/// spawn. Refusals (no Inn, too poor) leave both gold and the spawn untouched.</summary>
 [TestFixture]
 public class PlayerSpawnSystemTests
 {
     const int Map = 1, ShopNum = 1, Idx = 1;
     const int Gold = Constants.GoldItemIndex;
 
+    // What this fixture's game charges for a bed.
+    const int InnCost = 5;
+
     static (GameWorld world, PlayerSpawnSystem spawn, PlayerRecord p) Setup(int level, int gold, ShopType shopType)
     {
-        var world = new GameWorld();
+        var world = new GameWorld { Prices = new GamePrices { InnSpawnCost = InnCost } };
         var pm = new PlayerManager();
         var dispatcher = new NoOpDispatcher();
         var items = new ItemSystem(world, pm, dispatcher, persistence: null!, bg: null!);
@@ -88,9 +92,9 @@ public class PlayerSpawnSystemTests
         });
     }
 
-    // Level 1's cost is exactly the floor (SpawnCostMinimum = 5); the current tile becomes the spawn.
+    // The inn charges what this game declared, and the current tile becomes the spawn.
     [Test]
-    public void ConfirmSetSpawn_Success_ChargesFloorCost_AndRecordsCurrentTile()
+    public void ConfirmSetSpawn_Success_ChargesTheDeclaredCost_AndRecordsCurrentTile()
     {
         var (world, spawn, p) = Setup(level: 1, gold: 100, ShopType.Inn);
         spawn.ConfirmSetSpawn(Idx);
@@ -99,8 +103,8 @@ public class PlayerSpawnSystemTests
             Assert.That(p.SpawnMap, Is.EqualTo(Map));
             Assert.That(p.SpawnX, Is.EqualTo(7));
             Assert.That(p.SpawnY, Is.EqualTo(8));
-            Assert.That(ItemSystem.CountItem(p, world.Items, Gold), Is.EqualTo(100 - Constants.SpawnCostMinimum),
-                "charged the level-1 floor cost");
+            Assert.That(ItemSystem.CountItem(p, world.Items, Gold), Is.EqualTo(100 - InnCost),
+                "charged what the game declared");
         });
     }
 

@@ -5,6 +5,7 @@ using Mirage.Server.Core.Persistence;
 using Mirage.Server.Core.Players;
 using Mirage.Server.Core.World;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -148,11 +149,11 @@ public sealed partial class PacketHandler
                 int quantity = def.Type == ItemType.Currency
                     ? (spec.Quantity <= 0 || spec.Quantity > slot.Quantity ? slot.Quantity : spec.Quantity)
                     : slot.Quantity;
-                attachedValue += EconomyFormulas.MailAttachmentValue(slot.Num, quantity, def.Price);
+                attachedValue += GamePrices.AttachmentValue(quantity, def.Price);
             }
         }
-        long cost = (multi ? EconomyFormulas.MailSendCost(0) * recipients.Count
-                           : EconomyFormulas.MailSendCost(attachCount, attachedValue)) * bodyMult;
+        long cost = (multi ? _world.Prices.MailSendCost(0) * recipients.Count
+                           : _world.Prices.MailSendCost(attachCount, attachedValue)) * bodyMult;
         if (ItemSystem.CountItem(sp.Char, _world.Items, Constants.GoldItemIndex) < cost)
         {
             MailMsg(index, ServerStrings.Mail_CannotAfford, GameColor.BrightRed, ("Cost", cost));
@@ -224,7 +225,7 @@ public sealed partial class PacketHandler
         }
 
         _items.TakeItem(index, Constants.GoldItemIndex, m.CodPrice);
-        _mail.CompleteCod(index, m.Id);
+        _mail.CompleteCod(index, m.Id, _world.Prices.MarketTaxPercent);
         MailMsg(index, ServerStrings.Mail_CodPaid, GameColor.BrightGreen);
     }
 

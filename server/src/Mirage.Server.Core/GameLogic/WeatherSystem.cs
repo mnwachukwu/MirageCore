@@ -125,17 +125,15 @@ public sealed class WeatherSystem : GameSystem
             _ => ServerStrings.Weather_Clears,
         };
         _dispatcher.SendLocalizedChatToAll(key, new ChatMetadata(GameColor.Yellow, ChatChannel.System));
-        // Follow-up effect line — mirrors the Night "NPCs grow stronger" warning so players know what changed.
-        string? effectKey = type switch
+
+        // A follow-up line only where the engine itself does something. A gale doubles every action's
+        // cooldown; rain, snow and heat are weather a game may price however it likes, and Core
+        // announcing a cost it does not charge is the engine lying to a player.
+        if (type == WeatherType.HeavyWind)
         {
-            WeatherType.Rain => ServerStrings.Weather_RainEffect,
-            WeatherType.Snow => ServerStrings.Weather_SnowEffect,
-            WeatherType.HeatWave => ServerStrings.Weather_HeatWaveEffect,
-            WeatherType.HeavyWind => ServerStrings.Weather_HeavyWindEffect,
-            _ => null,
-        };
-        if (effectKey is not null)
-            _dispatcher.SendLocalizedChatToAll(effectKey, new ChatMetadata(GameColor.Warning, ChatChannel.System));
+            _dispatcher.SendLocalizedChatToAll(ServerStrings.Weather_HeavyWindEffect,
+                new ChatMetadata(GameColor.Warning, ChatChannel.System));
+        }
     }
 
     /// <summary>Returns the welcome-line key for the current weather (for the login batch, mirroring

@@ -155,38 +155,6 @@
                        HorizontalAlignment="Stretch" />
           </mui:FormRow>
 
-          <!-- Power: equipment only -->
-          <mui:FormRow LabelWidth="120"
-                IsVisible="{Binding SelectedItem.PowerVisible}">
-            <TextBlock Grid.Column="0"
-                       Text="{Binding SelectedItem.PowerLabel}"
-                       VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Column="1"
-                           Value="{Binding SelectedItem.Power}"
-                           Minimum="0" Maximum="9999" FormatString="0"/>
-          </mui:FormRow>
-
-          <!-- Level requirement: anything equipped or consumed. What actually paces the tier ladder —
-               Power's stat requirement gates WHO may wear a piece, this gates WHEN. -->
-          <mui:FormRow LabelWidth="120"
-                IsVisible="{Binding SelectedItem.TierVisible}">
-            <TextBlock x:Name="_tierLabel" Grid.Column="0" VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Column="1"
-                           Value="{Binding SelectedItem.Tier}"
-                           Minimum="0" Maximum="255" FormatString="0"/>
-          </mui:FormRow>
-
-          <!-- Vital amount: potions only -->
-          <mui:FormRow LabelWidth="120"
-                IsVisible="{Binding SelectedItem.VitalAmountVisible}">
-            <TextBlock Grid.Column="0"
-                       Text="{Binding SelectedItem.VitalAmountLabel}"
-                       VerticalAlignment="Center"/>
-            <NumericUpDown Grid.Column="1"
-                           Value="{Binding SelectedItem.VitalAmount}"
-                           Minimum="0" Maximum="9999" FormatString="0"/>
-          </mui:FormRow>
-
 
           <!-- Item restriction flags (S10 authoring surface; enforcement of the new flags lands in S10) -->
           <TextBlock x:Name="_restrictionsLabel" FontWeight="SemiBold" Margin="0,6,0,0"/>
@@ -218,15 +186,7 @@
                          FontWeight="SemiBold" Foreground="#99BBDD" FontSize="11" Margin="0,6,0,0"/>
               <StackPanel Margin="8,0,0,0" Spacing="3">
                 <TextBlock x:Name="_notesEquipmentDurability" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
-                <TextBlock x:Name="_notesEquipmentPower"  TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
                 <TextBlock x:Name="_notesEquipmentSlot" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
-              </StackPanel>
-
-              <!-- Consumable -->
-              <TextBlock x:Name="_notesConsumableHeader"
-                         FontWeight="SemiBold" Foreground="#99BBDD" FontSize="11" Margin="0,6,0,0"/>
-              <StackPanel Margin="8,0,0,0" Spacing="3">
-                <TextBlock x:Name="_notesConsumableAmount" TextWrapping="Wrap" Foreground="#8B84AE" FontSize="11"/>
               </StackPanel>
 
               <!-- Key -->

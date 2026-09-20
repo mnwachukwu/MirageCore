@@ -256,12 +256,13 @@ public class WorldQuestionTests
         var (world, game, _) = Build();
 
         game.Items[3].Durability = 100;
-        game.Items[3].Power = 40;
+        game.Items[3].Price = 400;
+        game.Prices = new GamePrices { RepairPercent = 20 };
 
         Assert.Multiple(() =>
         {
             Assert.That(world.RepairCost(3, 20),
-                Is.EqualTo(EconomyFormulas.RepairCost(20, game.Items[3])));
+                Is.EqualTo(game.Prices.RepairCost(20, game.Items[3])));
             Assert.That(world.RepairCost(3, 0), Is.Zero, "nothing to repair costs nothing");
             Assert.That(world.RepairCost(game.Limits.Items + 1, 20), Is.Zero,
                 "and this world has no such item");
