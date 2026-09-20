@@ -12,6 +12,7 @@
   "equipSlot": "helmet",
   "durability": 1170,
   "attributes": {
-    "levelReq": 245
+    "levelReq": 245,
+    "power": 226
   }
 }

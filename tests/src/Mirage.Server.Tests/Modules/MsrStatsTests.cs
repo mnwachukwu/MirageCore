@@ -1179,7 +1179,7 @@ public class MsrStatsTests
             Assert.That(items.Fields.Select(f => f.Key),
                 Is.EquivalentTo(new[]
                 {
-                    "levelReq", "teaches", "valor", "coin", "reagent",
+                    "power", "levelReq", "teaches", "valor", "coin", "reagent",
                     "restoresHealth", "restoresMana", "restoresStamina",
                 }));
             Assert.That(_declared.Schema.Families.Any(f => f.Id == "ItemRules"), Is.False,

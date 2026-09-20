@@ -12,6 +12,7 @@
   "equipSlot": "armor",
   "durability": 1200,
   "attributes": {
-    "levelReq": 255
+    "levelReq": 255,
+    "power": 235
   }
 }

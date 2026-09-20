@@ -1,17 +1,25 @@
 # What this game hangs on an item the ENGINE owns.
 #
 # An item's own properties are a closed set, because Core cannot act on a property it has never heard
-# of; it knows a weapon has power and durability because it spends both. What a game knows about that
-# sword is open, and it belongs on the sword rather than in a table beside it: a level requirement is
-# a fact about the item, and a second family keyed by item number stores that fact where it can be
-# forgotten.
+# of: it wears a piece down and charges to mend it, and that is the whole of what it knows. How good
+# the piece IS, who may hold it, what drinking it does — all of that is this game's, and it belongs on
+# the sword rather than in a table beside it: a second family keyed by item number stores a fact about
+# the sword where it can be forgotten.
 #
 # Extend adds these rows to the editor's own Items form. There is no new folder, no new file, and no
 # new packet — an extended family is the same family with more rows on it.
 
 model ItemRules
-    # The level MSR needed to wield a piece. Core spends an item's power and durability and has no
-    # opinion about who may hold it, so a game that wants one records it here.
+    # How good a piece is, as one number: damage on a weapon and defence on the three that defend.
+    # One number rather than a field per purpose, because a piece is only ever one or the other and a
+    # ladder is easier to read when every rung is the same shape.
+    #
+    # ⚠ The engine has no opinion about it. Core wears a piece down and charges to mend it; what the
+    # number MEANS in a fight is decided in behavior/combat.cm and nowhere else.
+    public integer power;
+
+    # The level MSR needed to wield a piece. Core has no opinion about who may hold what, so a game
+    # that wants one records it here.
     public integer levelReq;
 
     # ⚠ The spell a scroll carries, on the scroll rather than on the spell. One value about one item,
@@ -42,6 +50,7 @@ model ItemRules
     public shared function Describe(Records these)
         these.Extend("Items");
 
+        these.Caption("power", "Damage or defence");
         these.Caption("levelReq", "Level needed");
         these.Caption("teaches", "Spell written on it");
         these.Caption("valor", "This is valor");
@@ -51,6 +60,7 @@ model ItemRules
         these.Caption("restoresMana", "Mana it restores");
         these.Caption("restoresStamina", "Stamina it restores");
 
+        these.Range("power", 0, 9999);
         these.Range("levelReq", 0, 255);
     end function
 end model
