@@ -5,11 +5,6 @@
     "port": 0,
     "token": ""
   },
-  "deathPenalty": {
-    "durabilityLoss": true,
-    "itemDrop": true,
-    "expLoss": true
-  },
   "hardwareBans": {
     "mode": "Block"
   }

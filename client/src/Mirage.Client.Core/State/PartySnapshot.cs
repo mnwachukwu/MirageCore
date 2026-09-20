@@ -12,7 +12,7 @@ public sealed class PartySnapshot
     public int Index;
     public string Name = "";
     public int MapNum, X, Y;
-    public bool ShowAsPk;
+    public bool ShowAsMarked;
     public AdminLevel Access;
     // Server's CombatExpiresAt converted to the local client's TickCount64 clock at receive
     // time; the existing IsInCombat(stamp, now) < 10s test in RenderCommandBuilder works as-is.
@@ -35,7 +35,7 @@ public sealed class PartySnapshot
         Index = 0;
         Name = "";
         MapNum = X = Y = 0;
-        ShowAsPk = false;
+        ShowAsMarked = false;
         Access = AdminLevel.Player;
         Bars = [];
         LastCombatTickMs = 0;

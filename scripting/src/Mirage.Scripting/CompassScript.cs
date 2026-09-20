@@ -239,7 +239,7 @@ public static class ScriptCompiler
     /// <summary>
     /// Checks a program — something with an entry point, to be run once and discarded.
     ///
-    /// <para>A tool's shape rather than a game's. <see cref="CompileModule"/> is what a world's rules
+    /// <para>A tool's shape rather than a game's. <c>CompileModule</c> is what a world's rules
     /// are.</para>
     /// </summary>
     public static (CompassScript? Script, IReadOnlyList<ScriptProblem> Problems) CompileProgram(

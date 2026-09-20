@@ -373,8 +373,7 @@ public sealed class InventoryPanel : IGamePanel
         var item = state.Items[slot.Num];
         if (item is null) return;
         var key = (TooltipScope, slotIdx, slot.Num);
-        Tooltip.NotifyHoverItem(TooltipScope, key, item, slot, state.Me, itemsTex, _input.MousePosition,
-            state.Items, state.Weather);
+        Tooltip.NotifyHoverItem(TooltipScope, key, item, slot, state.Me, itemsTex, _input.MousePosition);
     }
 
     // Equipment-view counterpart to NotifyHover: shows the item tooltip for the equipped piece under
@@ -386,8 +385,7 @@ public sealed class InventoryPanel : IGamePanel
         var slot = state.Me?.Inv?[hit.InvSlot];
         int num = slot?.Num ?? 0;
         var key = (TooltipScope, hit.InvSlot, num);
-        Tooltip.NotifyHoverItem(TooltipScope, key, hit.Item, slot, state.Me, itemsTex, _input.MousePosition,
-            state.Items, state.Weather);
+        Tooltip.NotifyHoverItem(TooltipScope, key, hit.Item, slot, state.Me, itemsTex, _input.MousePosition);
     }
 
     // Keeps the [Sort]/[Equipment] links right-justified in the top strip and the equipment-view Back

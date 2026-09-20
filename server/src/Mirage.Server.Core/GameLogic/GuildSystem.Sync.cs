@@ -27,7 +27,7 @@ public sealed partial class GuildSystem : GameSystem
         if (!sp.IsPlaying) return;
         var guild = GuildOf(sp);
         var pkt = PacketBuilder.PlayerData(index, sp.Char, sp.Char.Map,
-            sp.PkGraceUntilUtc, sp.AggressorUntilUtcNow,
+            sp.MarkGraceUntilUtc, sp.AggressorUntilUtcNow,
             sp.Guild, sp.GuildRank, guild?.Name ?? "", guild?.OpenForMembership ?? false, guild?.Color ?? 0,
             guild?.ShowRankOverhead ?? false);
         SendToMap(_world, sp.Char.Map, pkt);
@@ -162,7 +162,7 @@ public sealed partial class GuildSystem : GameSystem
             var osp = _pm[i];
             var guild = GuildOf(osp);
             _dispatcher.SendTo(index, PacketBuilder.PlayerData(i, osp.Char, osp.Char.Map,
-                osp.PkGraceUntilUtc, osp.AggressorUntilUtcNow,
+                osp.MarkGraceUntilUtc, osp.AggressorUntilUtcNow,
                 osp.Guild, osp.GuildRank, guild?.Name ?? "", guild?.OpenForMembership ?? false, guild?.Color ?? 0,
                 guild?.ShowRankOverhead ?? false));
         }
@@ -370,7 +370,7 @@ public sealed partial class GuildSystem : GameSystem
         }  // officer channel = leader/officers only
 
         long nowUtc = NowUtc;
-        bool showAsPk = sp.Char.IsPk(nowUtc) && sp.PkGraceUntilUtc <= nowUtc;
+        bool showAsMarked = sp.Char.IsMarked(nowUtc) && sp.MarkGraceUntilUtc <= nowUtc;
         string name = sp.Char.TrimmedName;
         bool ranked = sp.GuildRank > GuildRank.Member;           // only a Leader/Officer gets a rank preface
         string rankWord = sp.GuildRank switch
@@ -381,7 +381,7 @@ public sealed partial class GuildSystem : GameSystem
         };
         int color = officer ? GameColor.GuildOfficer : GameColor.Guild;
         var channel = officer ? ChatChannel.Guild : ChatChannel.Guild;
-        var meta = new ChatMetadata(color, channel, name, sp.Char.Access, showAsPk, sp.Login);
+        var meta = new ChatMetadata(color, channel, name, sp.Char.Access, showAsMarked, sp.Login);
         string key = officer
             ? (ranked ? ServerStrings.GuildOfficer_ChatSayRanked : ServerStrings.GuildOfficer_ChatSay)
             : (ranked ? ServerStrings.Guild_ChatSayRanked : ServerStrings.Guild_ChatSay);

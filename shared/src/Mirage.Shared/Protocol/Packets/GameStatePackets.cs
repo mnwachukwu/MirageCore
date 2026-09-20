@@ -4,10 +4,16 @@ using System.Text.Json.Serialization;
 namespace Mirage.Shared.Protocol.Packets;
 
 // Sent to client when they first enter the game world
+/// <summary>S→C, first thing on joining: which player slot this client is, and the single numbers the
+/// loaded game declared that the client needs before anything is drawn.</summary>
 public sealed record WelcomePacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.Welcome;
     [JsonPropertyName("index")] public int Index { get; init; }
+
+    /// <summary>What founding a guild costs, so the Create button can show the figure rather than the
+    /// player pressing it to find out. Zero means free.</summary>
+    [JsonPropertyName("guildCost")] public int GuildCost { get; init; }
 }
 
 public sealed record PlayerInGamePacket : IPacket
@@ -46,7 +52,7 @@ public sealed record SendPlayerDataPacket : IPacket
     public int MoveSpeed { get; init; }
     [JsonPropertyName("level")] public int Level { get; init; }
     [JsonPropertyName("access")] public AdminLevel Access { get; init; }
-    [JsonPropertyName("pkExpiryUtc")] public long PkExpiryUtc { get; init; }
+    [JsonPropertyName("markedUntilUtc")] public long MarkedUntilUtc { get; init; }
     [JsonPropertyName("graceUntilUtc")] public long GraceUntilUtc { get; init; }
     // 0 = not an aggressor. Otherwise UTC seconds when the aggressor flag lapses.
     [JsonPropertyName("aggressorUntilUtc")] public long AggressorUntilUtc { get; init; }

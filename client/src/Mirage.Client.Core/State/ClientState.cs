@@ -139,7 +139,7 @@ public sealed partial class ClientState
     /// <summary>What this game asks at creation beyond a name and a face, with every list already
     /// resolved to that world's own records.
     ///
-    /// <para>🔴 A client has never seen a game's classes and cannot look one up, so the SERVER resolves
+    /// <para>🔴 A client has never seen a game's records and cannot look one up, so the SERVER resolves
     /// the lists and sends what to show. Empty in a world that asks nothing, and then the creation
     /// screen draws a name box and an appearance list, as it always has.</para></summary>
     public IReadOnlyList<Mirage.Shared.Extensibility.CreationChoice> Asked { get; set; } = [];

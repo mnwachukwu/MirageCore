@@ -40,7 +40,7 @@ public sealed class PartySystem : GameSystem
         if (partner == 0 || !_pm[partner].IsPlaying) return;
         var sp = _pm[playerIndex];
         _dispatcher.SendTo(partner, PacketBuilder.PartyPartner(
-            playerIndex, sp.Char, _bars, sp.CombatExpiresAt, sp.PkGraceUntilUtc,
+            playerIndex, sp.Char, _bars, sp.CombatExpiresAt, sp.MarkGraceUntilUtc,
             Environment.TickCount64, 0));
     }
 

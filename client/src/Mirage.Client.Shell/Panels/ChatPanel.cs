@@ -314,7 +314,7 @@ public sealed partial class ChatPanel
         foreach (var tab in _tabs) tab.Log.AddLine(text, colorIndex);
     }
 
-    /// <summary>Focuses the chat input and prefills it with `/w <name> ` so the user can immediately
+    /// <summary>Focuses the chat input and prefills it with <c>/w &lt;name&gt;</c> so the user can immediately
     /// type a whisper. Mirrors the `/r` reply UX. Used by the right-click "Whisper" menu item.</summary>
     public void StartWhisper(string targetName)
     {
@@ -385,7 +385,7 @@ public sealed partial class ChatPanel
                 names = new List<TextArea.NameSpan>
                 {
                     new(idx, pkt.SpeakerName.Length, pkt.SpeakerName,
-                        pkt.SpeakerAccess.Value, pkt.SpeakerShowAsPk ?? false),
+                        pkt.SpeakerAccess.Value, pkt.SpeakerShowAsMarked ?? false),
                 };
             }
             // Refresh `/r` partner on tell-colored messages (covers both inbound tells from a

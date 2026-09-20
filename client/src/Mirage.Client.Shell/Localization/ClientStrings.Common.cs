@@ -2,7 +2,7 @@ using Mirage.Shared.Localization;
 
 namespace Mirage.Client.Shell.Localization;
 
-/// <summary>Words shared across the whole UI: common verbs, stat labels, and tooltip fields.</summary>
+/// <summary>Words shared across the whole UI: common verbs and tooltip fields.</summary>
 public static partial class ClientStrings
 {
     // ── Common ────────────────────────────────────────────────────────────────
@@ -40,17 +40,11 @@ public static partial class ClientStrings
     public const string Common_PasswordTooShort = nameof(Common_PasswordTooShort);
     public const string Common_PasswordsDoNotMatch = nameof(Common_PasswordsDoNotMatch);
 
-    // ── Shared stat labels ────────────────────────────────────────────────────
-    public const string Stats_Hp = nameof(Stats_Hp);
-    public const string Stats_Mp = nameof(Stats_Mp);
-    public const string Stats_Sp = nameof(Stats_Sp);
-    public const string Stats_Exp = nameof(Stats_Exp);
-
-    // Floating combat text (Block/Dodge over an entity; vital labels reuse Stats_*).
+    // Floating text over an entity as a fight starts and ends.
     public const string Combat_EnterCombat = nameof(Combat_EnterCombat);
     public const string Combat_EndCombat = nameof(Combat_EndCombat);
 
-    // ── Tooltip (item/spell hover labels) ───────────────────────────────────────
+    // ── Tooltip (item hover labels) ────────────────────────────────────────────
     public const string Tooltip_Durability = nameof(Tooltip_Durability);
     public const string Tooltip_Quantity = nameof(Tooltip_Quantity);
     public const string NumberPrompt_OverMax = nameof(NumberPrompt_OverMax);

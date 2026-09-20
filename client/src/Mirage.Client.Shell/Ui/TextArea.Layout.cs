@@ -142,7 +142,7 @@ public sealed partial class TextArea
     {
         if (source.Count == 0) return source;
         var result = new List<NameSpan>(source.Count);
-        foreach (var n in source) result.Add(new NameSpan(n.StartCol + shift, n.Length, n.Name, n.Access, n.ShowAsPk));
+        foreach (var n in source) result.Add(new NameSpan(n.StartCol + shift, n.Length, n.Name, n.Access, n.ShowAsMarked));
         return result;
     }
 
@@ -304,7 +304,7 @@ public sealed partial class TextArea
             int end = n.StartCol + n.Length;
             int s = Math.Max(n.StartCol, srcStart);
             int e = Math.Min(end, srcEnd);
-            if (s < e) result.Add(new NameSpan(s - srcStart, e - s, n.Name, n.Access, n.ShowAsPk));
+            if (s < e) result.Add(new NameSpan(s - srcStart, e - s, n.Name, n.Access, n.ShowAsMarked));
         }
         return result;
     }

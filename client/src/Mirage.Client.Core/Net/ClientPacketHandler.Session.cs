@@ -2,6 +2,7 @@ using Mirage.Client.Core.Cache;
 using Mirage.Client.Core.Logic;
 using Mirage.Client.Core.State;
 using Mirage.Shared;
+using Mirage.Shared.Extensibility;
 using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
@@ -55,6 +56,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
         // through (SpawnMap, SpawnSlot) into the TraversalNpcs dict.  ClientTraversalNpc inherits
         // from ClientMapNpc so the bubble-state fields below work on either kind.
         ClientMapNpc? npc = null;
+        EntityHandle who = default;
         if (p.NpcSlot >= 1)
         {
             var mapNpcs = _state.NpcsForMap(p.MapNum);
@@ -62,11 +64,13 @@ public sealed partial class ClientPacketHandler : IClientEvents
             var candidate = mapNpcs[p.NpcSlot];
             if (candidate.Num <= 0) return;
             npc = candidate;
+            who = EntityHandle.ForNpc(p.MapNum, p.NpcSlot);
         }
         else if (p.SpawnSlot >= 1
                  && _state.TraversalNpcs.TryGetValue((p.SpawnMap, p.SpawnSlot), out var guest))
         {
             npc = guest;
+            who = EntityHandle.ForNpc(p.SpawnMap, p.SpawnSlot);
         }
         if (npc is null) return;
 
@@ -80,7 +84,9 @@ public sealed partial class ClientPacketHandler : IClientEvents
         long visibleMs = Math.Clamp(ChatBubbleStyle.BaseMs + ChatBubbleStyle.PerWordMs * wordCount,
             ChatBubbleStyle.MinMs, ChatBubbleStyle.MaxMs);
         npc.ChatBubbleText = raw;
-        npc.ChatBubbleColor = p.Kind == 1 ? GameColor.BrightGreen : GameColor.BrightRed;
+        // A creature speaks in the color it is named in, so whether a line reads as friendly or as a
+        // threat is the same question the name already answers — and the game declared the answer.
+        npc.ChatBubbleRgb = _state.NameTints.RgbFor(_state.AttributesOf(who));
         npc.ChatBubbleEndMs = now + visibleMs;
     }
 
@@ -182,7 +188,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
         party.MapNum = p.MapNum;
         party.X = p.X;
         party.Y = p.Y;
-        party.ShowAsPk = p.ShowAsPk;
+        party.ShowAsMarked = p.ShowAsMarked;
         party.Access = p.Access;
         party.Bars = p.Bars;
         party.LastCombatTickMs = p.MsSinceCombat == int.MaxValue

@@ -72,7 +72,6 @@ public sealed class SpawnSystem : GameSystem
         mn.LastReachedTargetMs = 0;
         mn.ChaseTargetKey = 0;       // fresh slot — drop any stale chase-stall tracking from the prior occupant
         mn.ResetChaseStall();
-        mn.ClearDamageCredit();
         mn.Dir = (Direction)Rng.Next(Constants.NumDirections);
         // Two-layer world: a PINNED entry spawns on its own authored plane (entry.PinLayer) — see the pin
         // branch below. A random one starts on the ground and may be moved up by the search. A guest
@@ -293,12 +292,9 @@ public sealed class SpawnSystem : GameSystem
         body.NpcTargetSpawnMap = 0;
         body.NpcTargetSpawnSlot = 0;
         body.Roused = false;
-        body.ClearDamageCredit();
-        body.DamageByNpc = null;
         body.SpawnWait = Environment.TickCount64;
 
-        SendToMap(_world, mapNum,
-            new NpcDeadPacket { MapNum = mapNum, NpcSlot = slot, Damage = 0, IsCrit = false });
+        SendToMap(_world, mapNum, new NpcDeadPacket { MapNum = mapNum, NpcSlot = slot });
 
         // Anybody locked onto it is locked onto a slot that is about to hold a different creature.
         _selection.ClearSelectionsOfNpcSlot(mapNum, slot);
@@ -315,8 +311,6 @@ public sealed class SpawnSystem : GameSystem
 
         guest.Num = 0;
         guest.Target = 0;
-        guest.ClearDamageCredit();
-        guest.DamageByNpc = null;
 
         _selection.ClearSelectionsOfVisitor(guest.SpawnMapNum, guest.SpawnSlot);
 
@@ -392,8 +386,7 @@ public sealed class SpawnSystem : GameSystem
             if (mn.Num <= 0) continue;   // already dead/empty (or a reserved guest home)
             mn.Num = 0;
             mn.SpawnWait = Environment.TickCount64;
-            SendToMap(_world, mapNum,
-                new NpcDeadPacket { MapNum = mapNum, NpcSlot = i, Damage = 0, IsCrit = false });
+            SendToMap(_world, mapNum, new NpcDeadPacket { MapNum = mapNum, NpcSlot = i });
         }
     }
 

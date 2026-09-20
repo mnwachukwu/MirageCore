@@ -7,7 +7,7 @@ namespace Mirage.Client.Core.State;
 /// overhead "..." glyph those resolve to on each NPC.</summary>
 public sealed partial class ClientState
 {
-    // ConvDefs: dialogue-tree definitions cached at join (SendConversationsPacket), like items/npcs/quests — the
+    // ConvDefs: dialogue-tree definitions cached at join (SendConversationsPacket), like items and npcs — the
     // client walks a tree locally when a conversation opens. _spokenConversations: this character's visited-set
     // (ConversationLogPacket). NpcConvGlyph: the DERIVED overhead "..." marker per NPC, recomputed from the above
     // whenever the defs or the spoken-set change.

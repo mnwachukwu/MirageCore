@@ -2,8 +2,8 @@ using Mirage.Shared.Localization;
 
 namespace Mirage.Client.Shell.Localization;
 
-/// <summary>The social panel (friends, guild roster, vault, wars, territory), the death overlay,
-/// guild labels, and mail.</summary>
+/// <summary>The social panel (friends, guild roster, vault), the death overlay, guild labels,
+/// and mail.</summary>
 public static partial class ClientStrings
 {
     // ── SocialPanel ───────────────────────────────────────────────────────────
@@ -19,7 +19,7 @@ public static partial class ClientStrings
     public const string SocialPanel_PromoteButton = nameof(SocialPanel_PromoteButton);
     public const string SocialPanel_DemoteButton = nameof(SocialPanel_DemoteButton);
     public const string SocialPanel_DisbandButton = nameof(SocialPanel_DisbandButton);
-    // A row's character columns, shown only while that account is online; {Char} + {Level}.
+    // A row's character column, shown only while that account is online.
     public const string SocialPanel_OnlineFormat = nameof(SocialPanel_OnlineFormat);
     public const string SocialPanel_Offline = nameof(SocialPanel_Offline);
     public const string SocialPanel_Online = nameof(SocialPanel_Online);
@@ -27,18 +27,13 @@ public static partial class ClientStrings
     public const string SocialPanel_SubTabMain = nameof(SocialPanel_SubTabMain);
     public const string SocialPanel_SubTabRoster = nameof(SocialPanel_SubTabRoster);
     public const string SocialPanel_SubTabVault = nameof(SocialPanel_SubTabVault);
-    // Seasonal leaderboard (Standings sub-tab).
     // Roster table column headers.
     public const string SocialPanel_ColRank = nameof(SocialPanel_ColRank);
     public const string SocialPanel_ColAccount = nameof(SocialPanel_ColAccount);
     public const string SocialPanel_ColCharacter = nameof(SocialPanel_ColCharacter);
     public const string SocialPanel_ColLastSeen = nameof(SocialPanel_ColLastSeen);
-    // Territories table column headers + the unclaimed-owner placeholder.
-    // Territory war-night challenge actions.
-    // Main page level-progress bar; {Cur} + {Max} + {Next}. Max shows a plain "Max Level".
-    // Vault page header (the vault and quests are separate pages).
+    // Vault page header.
     public const string SocialPanel_VaultHeader = nameof(SocialPanel_VaultHeader);
-    // Guild tab header; {Name} + {Level}.
     public const string SocialPanel_RankLeader = nameof(SocialPanel_RankLeader);
     public const string SocialPanel_RankOfficer = nameof(SocialPanel_RankOfficer);
     public const string SocialPanel_RankMember = nameof(SocialPanel_RankMember);
@@ -57,7 +52,7 @@ public static partial class ClientStrings
     // Discovery — open toggle, browser, applications.
     public const string SocialPanel_OpenOn = nameof(SocialPanel_OpenOn);
     public const string SocialPanel_OpenOff = nameof(SocialPanel_OpenOff);
-    // Leader toggle for showing the guild's seasonal standing "(N)" in the overhead cluster.
+    // Leader toggle for showing a member's rank in the overhead cluster.
     public const string SocialPanel_StandingOn = nameof(SocialPanel_StandingOn);
     public const string SocialPanel_StandingOff = nameof(SocialPanel_StandingOff);
     public const string SocialPanel_AppsFormat = nameof(SocialPanel_AppsFormat);
@@ -69,13 +64,13 @@ public static partial class ClientStrings
     public const string SocialPanel_NoOpenGuilds = nameof(SocialPanel_NoOpenGuilds);
     public const string SocialPanel_NoApplications = nameof(SocialPanel_NoApplications);
     public const string SocialPanel_BrowseRowFormat = nameof(SocialPanel_BrowseRowFormat);
-    // Vault & quests sub-view.
+    // Vault sub-view.
     public const string SocialPanel_VaultFormat = nameof(SocialPanel_VaultFormat);
-    // Weekly financial-health dashboard on the vault page (discrete per-type running totals) + war-tab daily cost.
+    // Weekly financial-health dashboard on the vault page (discrete per-type running totals).
     public const string SocialPanel_WeeklyHeader = nameof(SocialPanel_WeeklyHeader);
     public const string SocialPanel_WeeklyIncomeFormat = nameof(SocialPanel_WeeklyIncomeFormat);
     public const string SocialPanel_WeeklyDonationsFormat = nameof(SocialPanel_WeeklyDonationsFormat);
-    // Vault donor log (recent gold/valor donations + the donor account).
+    // Vault donor log (recent donations + the donor account).
     public const string SocialPanel_DonorLogEmpty = nameof(SocialPanel_DonorLogEmpty);
     public const string SocialPanel_DonorRowGold = nameof(SocialPanel_DonorRowGold);
     public const string SocialPanel_DonationsTab = nameof(SocialPanel_DonationsTab);
@@ -84,13 +79,6 @@ public static partial class ClientStrings
     public const string SocialPanel_SpendingRow = nameof(SocialPanel_SpendingRow);
     public const string SocialPanel_DonateButton = nameof(SocialPanel_DonateButton);
     public const string SocialPanel_DonatePrompt = nameof(SocialPanel_DonatePrompt);
-    // Quest confirmations: acquire shows the cost ({Cost}); abandon warns progress + gold are lost.
-    // War sub-view.
-    // War list row; {Name} + {Status}.
-    // Selected-war status area.
-    // War action buttons + prompts.
-    // Wager row: buttons, the ante prompt, and the status lines.
-    // War-requests review overlay.
 
     // ── Death & respawn panel ─────────────────────────────────────────────────
     public const string DeathPanel_Title = nameof(DeathPanel_Title);

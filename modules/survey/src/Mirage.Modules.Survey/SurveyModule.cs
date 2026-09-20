@@ -60,6 +60,11 @@ public sealed class SurveyModule : ICoreModule, IConsoleHandler
         // here is worth a shortcut - a wider bar would be boxes they never fill.
         builder.SetHotkeyBar(2);
 
+        // A survey party is a handful of people who know each other, not something anybody buys their
+        // way into. Zero rather than unset, because a price left unsaid reads as one nobody thought
+        // about — and this one was thought about.
+        builder.SetGuildCost(0);
+
         // A screen of this game's own, opened from the same menu. It costs a declaration: the body is
         // display fields on its own surface, the button is an action that already exists.
         builder.AddPanel(new GamePanel
@@ -241,7 +246,10 @@ public sealed class SurveyModule : ICoreModule, IConsoleHandler
         // Core's behaviors are about locomotion, so a creature keeping its distance and one ambling
         // past look identical to the engine. Which of them is skittish is this module's to say.
         builder.AddNameTint(new NameTint { Key = Survey.Skittish, Rgb = GameColor.Pack(225, 175, 80) });
-        builder.SetOtherwiseNameRgb(GameColor.Pack(120, 190, 90));
+        // Nothing here fights, so the marked and aggressor colors are Core's own — named anyway, because
+        // the engine still tracks both states and something has to draw them.
+        builder.SetNameColors(GameColor.Pack(120, 190, 90),
+                              NameTintSet.MarkedDefaultRgb, NameTintSet.AggressorDefaultRgb);
 
         // What this module finds and notes down, kept off the main tab. A surveyor walking a meadow
         // fills the log with specimens, and somebody who wanted to talk to them would never see it.

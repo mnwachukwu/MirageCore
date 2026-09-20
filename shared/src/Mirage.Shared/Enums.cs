@@ -230,7 +230,7 @@ public enum ShopType : byte
     Inn = 1,
 }
 
-/// <summary>How a client wants an NpcInteract resolved. Auto (the melee-key default) lets the server pick
+/// <summary>How a client wants an NpcInteract resolved. Auto (what the interact key sends) lets the server pick
 /// the NPC's best role — TALK-FIRST: a conversation if the NPC has one, else its keeper shop. Shop and Talk
 /// each FORCE one role — the context-menu items, and the conversation's terminal hand-off choice — so a
 /// forced open can't loop back into a different menu.

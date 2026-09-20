@@ -47,7 +47,7 @@ public readonly record struct TileAttr
     /// <summary>Whether light stops here. A solid wall does; a railing, a window or a shallow ledge
     /// does not, and the lamp behind it still lights the ground in front.</summary>
     public bool BlocksLight { get; init; }
-    /// <summary>Whether sight stops here — spell line-of-sight, and everything that mirrors it. Separate
+    /// <summary>Whether sight stops here — line-of-sight, and everything that mirrors it. Separate
     /// from <see cref="BlocksLight"/>: a stained window stops neither, a curtain stops sight alone.</summary>
     public bool BlocksSight { get; init; }
 

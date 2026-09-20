@@ -109,14 +109,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     public string GenerateLabel => ShellStrings.Get(ShellStrings.Action_Generate);
     public string CommandHint => ShellStrings.Get(ShellStrings.Console_CommandHint);
 
-    public string DeathPenaltyHeading => ShellStrings.Get(ShellStrings.Config_DeathPenaltyHeading);
-    public string DeathPenaltyBlurb => ShellStrings.Get(ShellStrings.Config_DeathPenaltyBlurb);
-    public string DurabilityLossLabel => ShellStrings.Get(ShellStrings.Config_DurabilityLoss);
-    public string DurabilityLossHint => ShellStrings.Get(ShellStrings.Config_DurabilityLossHint);
-    public string ItemDropLabel => ShellStrings.Get(ShellStrings.Config_ItemDrop);
-    public string ItemDropHint => ShellStrings.Get(ShellStrings.Config_ItemDropHint);
-    public string ExpLossLabel => ShellStrings.Get(ShellStrings.Config_ExpLoss);
-    public string ExpLossHint => ShellStrings.Get(ShellStrings.Config_ExpLossHint);
     public string RestartRequiredNotice => ShellStrings.Get(ShellStrings.Config_RestartRequired);
 
     /// <summary>What the pinned buttons cover. Says the SCOPE as well as the timing, because a pinned
@@ -1013,15 +1005,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
     // ── Configuration ─────────────────────────────────────────────────────────
 
-    [ObservableProperty]
-    public partial bool DurabilityLoss { get; set; } = true;
-
-    [ObservableProperty]
-    public partial bool ItemDrop { get; set; } = true;
-
-    [ObservableProperty]
-    public partial bool ExpLoss { get; set; } = true;
-
     /// <summary>The last thing that happened to the config file — saved, or why not. Empty until
     /// something has.</summary>
     [ObservableProperty]
@@ -1211,60 +1194,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [ObservableProperty] public partial decimal SpawnX { get; set; }
     [ObservableProperty] public partial decimal SpawnY { get; set; }
 
-    // ── War night ─────────────────────────────────────────────────────────────
-
-    public string ScheduleHeading => ShellStrings.Get(ShellStrings.Schedule_Heading);
-    public string ScheduleBlurb => ShellStrings.Get(ShellStrings.Schedule_Blurb);
-    public string WarNightDayLabel => ShellStrings.Get(ShellStrings.Schedule_WarNightDay);
-    public string WarNightHourLabel => ShellStrings.Get(ShellStrings.Schedule_WarNightHour);
-
-    /// <summary>Spelled out rather than left implicit: the weekly boundary is DERIVED from the chosen day,
-    /// and an operator moving war night is also moving territory income, season weeks and weekly quests.</summary>
-    public string WeekResetNote => ShellStrings.Format(ShellStrings.Schedule_WeekResetNote,
-        ("Day", DayName((DayOfWeek)(((int)WarNightDay + 1) % 7))));
-
-    /// <summary>Day names come from the SHELL's chosen locale, not the machine's — the two are separate
-    /// settings, and a French operator on an English box picked French for a reason.</summary>
-    public IReadOnlyList<DayChoice> AvailableDays { get; private set; } = BuildDays("en");
-
-    private static DayChoice[] BuildDays(string locale) =>
-        [.. Enum.GetValues<DayOfWeek>().Select(d => new DayChoice(d, DayName(d, locale)))];
-
-    private static string DayName(DayOfWeek day, string? locale = null)
-    {
-        try
-        {
-            return System.Globalization.CultureInfo.GetCultureInfo(locale ?? ShellStrings.CurrentLocale)
-                .DateTimeFormat.GetDayName(day);
-        }
-        catch (System.Globalization.CultureNotFoundException)
-        {
-            return day.ToString();
-        }
-    }
-
-    [ObservableProperty] public partial DayOfWeek WarNightDay { get; set; } = DayOfWeek.Saturday;
-    [ObservableProperty] public partial decimal WarNightHour { get; set; } = 20;
-
-    partial void OnWarNightDayChanged(DayOfWeek value)
-    {
-        OnPropertyChanged(nameof(SelectedDay));
-        OnPropertyChanged(nameof(WeekResetNote));
-    }
-
-    /// <summary>The picker binds here rather than to <see cref="WarNightDay"/> so the stored value stays a
-    /// plain <see cref="DayOfWeek"/> — rebuilding the list on a language change then cannot orphan the
-    /// selection against a stale instance.</summary>
-    public DayChoice? SelectedDay
-    {
-        get => AvailableDays.FirstOrDefault(d => d.Value == WarNightDay);
-        set { if (value is not null) WarNightDay = value.Value; }
-    }
-
-    /// <summary>One row in the day picker. A named type, for the same reason as
-    /// <see cref="LanguageChoice"/>: compiled bindings cannot bind a tuple.</summary>
-    public sealed record DayChoice(DayOfWeek Value, string DisplayName);
-
     // ── Remote management, as the server's own setting ────────────────────────
 
     public string ManagementHeading => ShellStrings.Get(ShellStrings.Management_Heading);
@@ -1331,13 +1260,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             },
             Queue = new QueueConfig { MaxDepth = (int)QueueDepth, GraceSeconds = (int)QueueGraceSeconds },
             Spawn = new SpawnConfig { Map = (int)SpawnMap, X = (int)SpawnX, Y = (int)SpawnY },
-            Schedule = new ScheduleConfig { WarNightDay = WarNightDay, WarNightHour = (int)WarNightHour },
-            DeathPenalty = new DeathPenaltyConfig
-            {
-                DurabilityLoss = DurabilityLoss,
-                ItemDrop = ItemDrop,
-                ExpLoss = ExpLoss,
-            },
             // Unticking writes port 0 rather than clearing the token, so turning remote access back on
             // does not mean redistributing a new secret to everyone who had the old one.
             Management = new ManagementConfig
@@ -1407,9 +1329,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         }
         ShellStrings.Load(ShellLangDir, locale);
         BuildCommands();
-        // Rebuilt, not re-sorted: the day names come from the new locale. SelectedDay resolves off
-        // WarNightDay rather than holding an instance, so the selection survives the swap.
-        AvailableDays = BuildDays(locale);
         // Null name = everything changed, which a language swap is. Listing the properties instead would
         // go stale the next time a string is added.
         OnPropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(null));
@@ -1443,11 +1362,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         SpawnMap = config.Spawn.Map;
         SpawnX = config.Spawn.X;
         SpawnY = config.Spawn.Y;
-        WarNightDay = config.Schedule.WarNightDay;
-        WarNightHour = config.Schedule.WarNightHour;
-        DurabilityLoss = config.DeathPenalty.DurabilityLoss;
-        ItemDrop = config.DeathPenalty.ItemDrop;
-        ExpLoss = config.DeathPenalty.ExpLoss;
         ManagementEnabled = config.Management.IsEnabled;
         ManagementPort = config.Management.Port > 0 ? config.Management.Port : DefaultManagementPort;
         ManagementToken = config.Management.Token;

@@ -128,7 +128,6 @@ public sealed partial class SocialPanel : IGamePanel
     private int _lastSocialVersion = -1;
     private int _builtTab = -1;
     private InputState _input = new();
-    private ClientState? _state;   // captured each frame so the roster's Class column can read state.Classes
     private Point _lastMousePos;
 
     private static Button[] InitLabelButtons()

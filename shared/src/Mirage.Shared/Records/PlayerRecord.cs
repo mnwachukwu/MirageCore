@@ -41,17 +41,22 @@ public sealed class PlayerRecord
     /// login and carried on the wire for name coloring/prefaces. NOT persisted per-character (access is
     /// per-account now); [JsonIgnore] so old per-char "access" fields in save data are simply ignored.</summary>
     [JsonIgnore] public AdminLevel Access { get; set; }
-    public long PkExpiryUtc { get; set; }
+    public long MarkedUntilUtc { get; set; }
 
-    /// <summary>PK status is derived purely from the expiry timer — no separate bool flag.</summary>
-    public bool IsPk(long nowUtc) => PkExpiryUtc > nowUtc;
+    /// <summary>Whether a game has this body marked right now. Derived from the timer alone — there is
+    /// no separate flag, so the two cannot disagree.
+    ///
+    /// <para>⚠ Core sets this only when a game asks, through <c>IWorld.SetMarked</c>, and reads it only
+    /// to color the name. <b>What being marked MEANS is the game's</b> — the engine refuses no attack
+    /// on its account.</para></summary>
+    public bool IsMarked(long nowUtc) => MarkedUntilUtc > nowUtc;
 
     // ── Death & respawn ──────────────────────────────────────────────────────
     // Persisted: a relogin while dead re-opens the death panel.
     /// <summary>True while in the timed dead state (a corpse awaiting a Respawn click).</summary>
     public bool Downed { get; set; }
     /// <summary>UTC-seconds the Respawn button unlocks (server-owned countdown). Meaningful only while
-    /// <see cref="Dead"/>.</summary>
+    /// <see cref="Downed"/>.</summary>
     public long RespawnReadyUtc { get; set; }
 
     /// <summary>Everything a game hangs on this character: its stats, its currencies, its flags, its
@@ -170,7 +175,7 @@ public sealed class PlayerRecord
     /// runs apart from <see cref="AttackTimer"/> so drinking and swinging never spend each other.</summary>
     [JsonIgnore] public long ConsumableTimer { get; set; }
     [JsonIgnore] public long LastCombatMs { get; set; }
-    [JsonIgnore] public long PkGraceUntilUtc { get; set; }
+    [JsonIgnore] public long MarkGraceUntilUtc { get; set; }
     // Aggressor expiry in UTC seconds. Carried on the wire (PlayerData + AggressorRefresh);
     // server-side authority lives on ServerPlayer.PvpAttackerUntil (TickCount64 ms). Client uses
     // this to drive the flashing-red name during the 30 s window.

@@ -53,8 +53,8 @@ public sealed class FrameMetrics
     public int Gen1 { get; private set; }
     public int Gen2 { get; private set; }
 
-    /// <summary>One frame, whole. <paramref name="Collections"/> is how many collections ran during it, by
-    /// generation — a spike that coincides with a gen-2 has named itself.</summary>
+    /// <summary>One frame, whole. <c>Gen0</c>, <c>Gen1</c> and <c>Gen2</c> are how many collections ran
+    /// during it, by generation — a spike that coincides with a gen-2 has named itself.</summary>
     public readonly record struct Frame(
         double TotalMs, double UpdateMs, double DrawMs, int Updates, bool Slow,
         int Gen0, int Gen1, int Gen2);

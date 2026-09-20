@@ -294,7 +294,7 @@ private readonly WorldEvents _events;
     }
 
     /// <summary>Escrow a stack out of a SPECIFIC inventory slot (mail send, marketplace listing). Currency
-    /// takes <paramref name="amount"/> (<= 0 or over the pile = the whole pile); a non-currency slot is
+    /// takes <paramref name="amount"/> (&lt;= 0 or over the pile = the whole pile); a non-currency slot is
     /// taken whole but REFUSED while equipped. Returns the removed stack (ItemNum 0 = nothing removed; the
     /// equipped case already messaged the player). The caller owns the removed stack — deliver or refund it.</summary>
     public (int ItemNum, int Value, int Dur) RemoveFromSlot(int index, int invSlot, int amount)

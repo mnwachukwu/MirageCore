@@ -64,13 +64,13 @@ public static partial class ServerStrings
     public static bool IsLoaded(string locale) => _byLocale.ContainsKey(locale);
 
     /// <summary>
-    /// Wires the per-player locale lookup that <see cref="ForPlayer"/> calls. Typically called once
+    /// Wires the per-player locale lookup that <see cref="ForPlayer(int, string)"/> calls. Typically called once
     /// at startup with <c>index => playerManager[index].Language</c>.
     /// </summary>
     public static void SetPlayerLocaleResolver(Func<int, string> resolver) => _resolver = resolver;
 
     /// <summary>Operator-language lookup — for console output, logs, and broadcasts without a
-    /// target player. Player-facing sends should use <see cref="ForPlayer"/> instead so each
+    /// target player. Player-facing sends should use <see cref="ForPlayer(int, string)"/> instead so each
     /// recipient sees the string in their own session locale.</summary>
     public static string Get(string key) => Lookup(_operatorLocale, key);
 

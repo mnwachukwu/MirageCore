@@ -140,9 +140,8 @@ public sealed partial class ItemSystem : GameSystem
         if (!_pm[index].IsPlaying || !SlotValidation.IsValidInvSlot(invSlot)) return;
         var p = _pm[index].Char;
         if (p.Inv[invSlot].Num == 0) return;
-        // DestroyOnDrop items (e.g. valor) are DESTROYED on death, never dropped to the map — so they can't be
-        // wash-farmed by dying near a friend. The caller's drop roll still decides IF/how much is lost; currency
-        // is destroyed by the passed amount (partial on a normal death, the whole stack for a PK victim).
+        // A DestroyOnDrop item is DESTROYED on death, never dropped to the map — so it can't be wash-farmed by
+        // dying near a friend. The caller decides IF and how much is lost; this destroys the amount it passed.
         if (_world.Items[p.Inv[invSlot].Num].DestroyOnDrop)
         {
             DestroyInventorySlot(index, invSlot, amount, ServerStrings.ItemSystem_CurrencyLostOnDeath, ServerStrings.ItemSystem_ItemLostOnDeath);

@@ -30,8 +30,8 @@ public sealed partial class ClientPacketHandler : IClientEvents
         player.Map = p.Map;
         player.MoveSpeed = p.MoveSpeed;
         player.Access = p.Access;
-        player.PkExpiryUtc = p.PkExpiryUtc;
-        player.PkGraceUntilUtc = p.GraceUntilUtc;
+        player.MarkedUntilUtc = p.MarkedUntilUtc;
+        player.MarkGraceUntilUtc = p.GraceUntilUtc;
         player.AggressorUntilUtc = p.AggressorUntilUtc;
         // Nullable on the wire for the same reason the guild fields below are: absent means unchanged.
         if (p.GodMode.HasValue) player.GodMode = p.GodMode.Value;
@@ -251,7 +251,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
         // sprite vanishes, but the tick keeps cleaning drifters and the renderer emits them at the
         // last-known tile position until the float window elapses.
         string? bubbleText = n.ChatBubbleText;
-        int bubbleColor = n.ChatBubbleColor;
+        int bubbleRgb = n.ChatBubbleRgb;
         var bubbleDrifters = n.ChatBubbleDrifters;
         bool hasBubble = bubbleText != null || (bubbleDrifters is { Count: > 0 });
         int lastX = n.X, lastY = n.Y;
@@ -263,7 +263,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
             if (bubbleText != null)
             {
                 bubbleDrifters ??= new List<NpcChatBubbleDrifter>(4);
-                bubbleDrifters.Add(new NpcChatBubbleDrifter(bubbleText, bubbleColor, Environment.TickCount64));
+                bubbleDrifters.Add(new NpcChatBubbleDrifter(bubbleText, bubbleRgb, Environment.TickCount64));
             }
             newN.X = lastX;
             newN.Y = lastY;
@@ -310,7 +310,7 @@ public sealed partial class ClientPacketHandler : IClientEvents
                 // instead of vanishing the instant the NPC steps over the border.
                 t.ChatBubbleText = native.ChatBubbleText;
                 t.ChatBubbleEndMs = native.ChatBubbleEndMs;
-                t.ChatBubbleColor = native.ChatBubbleColor;
+                t.ChatBubbleRgb = native.ChatBubbleRgb;
                 t.ChatBubbleDrifters = native.ChatBubbleDrifters;
                 fromMap = p.SpawnMapNum;
                 fromX = native.X;

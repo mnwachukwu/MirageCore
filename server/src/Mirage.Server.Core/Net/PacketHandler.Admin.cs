@@ -72,7 +72,7 @@ public sealed partial class PacketHandler
         // toggle reaches nobody: the mover's own prediction keeps refusing blocked steps and every client
         // keeps drawing the name in its normal color.
         SendToMap(sp.Char.Map, PacketBuilder.PlayerData(index, sp.Char, sp.Char.Map,
-            sp.PkGraceUntilUtc, sp.AggressorUntilUtcNow, godMode: sp.Char.GodMode));
+            sp.MarkGraceUntilUtc, sp.AggressorUntilUtcNow, godMode: sp.Char.GodMode));
 
         _dispatcher.SendLocalizedChatTo(index,
             sp.Char.GodMode ? ServerStrings.AdminCommand_GodModeOn : ServerStrings.AdminCommand_GodModeOff,
@@ -190,7 +190,7 @@ public sealed partial class PacketHandler
         }
 
         _pm[index].Char.Sprite = p.Sprite;
-        SendToMap(_pm[index].Char.Map, PacketBuilder.PlayerData(index, _pm[index].Char, _pm[index].Char.Map, _pm[index].PkGraceUntilUtc, _pm[index].AggressorUntilUtcNow));
+        SendToMap(_pm[index].Char.Map, PacketBuilder.PlayerData(index, _pm[index].Char, _pm[index].Char.Map, _pm[index].MarkGraceUntilUtc, _pm[index].AggressorUntilUtcNow));
     }
 
     private void HandleMapRespawn(int index)
@@ -618,21 +618,21 @@ public sealed partial class PacketHandler
     }
 
     /// <summary>Who is speaking, for player-originated chat: the trimmed character name, their access, and
-    /// their PK status frozen at send time (mirroring the renderer's
-    /// <c>IsPk(now) && PkGraceUntil <= now</c> rule), plus the ACCOUNT login behind them.
+    /// whether they were marked at send time (mirroring the renderer's
+    /// <c>IsMarked(now) &amp;&amp; MarkGraceUntilUtc &lt;= now</c> rule), plus the ACCOUNT login behind them.
     ///
     /// <para><see cref="Login"/> never reaches the wire: passing it as <c>ChatMetadata.SpeakerLogin</c> is
     /// what lets the dispatch drop the message for recipients who ignore this account. Named rather than a
     /// tuple because it and <see cref="Name"/> are both strings and mean very different things — one is
     /// public, one must not be.</para></summary>
-    private readonly record struct Speaker(string Name, AdminLevel Access, bool ShowAsPk, string Login);
+    private readonly record struct Speaker(string Name, AdminLevel Access, bool ShowAsMarked, string Login);
 
     private Speaker SpeakerOf(int index)
     {
         var sp = _pm[index];
         long nowUtc = NowUtc;
-        bool showAsPk = sp.Char.IsPk(nowUtc) && sp.PkGraceUntilUtc <= nowUtc;
-        return new Speaker(sp.Char.Name.Trim(), sp.Char.Access, showAsPk, sp.Login);
+        bool showAsMarked = sp.Char.IsMarked(nowUtc) && sp.MarkGraceUntilUtc <= nowUtc;
+        return new Speaker(sp.Char.Name.Trim(), sp.Char.Access, showAsMarked, sp.Login);
     }
 
     /// <summary>The speaker's name with their admin rank prefaced ("Monitor Bob") for non-guild channels —
@@ -689,7 +689,7 @@ public sealed partial class PacketHandler
             if (!_pm[i].IsPlaying || !string.Equals(_pm[i].Login, login, StringComparison.OrdinalIgnoreCase)) continue;
             _pm[i].Char.Access = p.Level;
             SendToMap(_pm[i].Char.Map,
-                PacketBuilder.PlayerData(i, _pm[i].Char, _pm[i].Char.Map, _pm[i].PkGraceUntilUtc, _pm[i].AggressorUntilUtcNow));
+                PacketBuilder.PlayerData(i, _pm[i].Char, _pm[i].Char.Map, _pm[i].MarkGraceUntilUtc, _pm[i].AggressorUntilUtcNow));
         }
         _logger.LogInformation("{Admin} set {Target}'s account access to {Level}.", _pm[index].Char.Name.Trim(), login, p.Level);
     }

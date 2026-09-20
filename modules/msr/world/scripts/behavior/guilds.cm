@@ -91,6 +91,10 @@ shared model Guilds
     # ── What the engine is told ───────────────────────────────────────────────
 
     public function Declare(Builder game)
+        # The original's price to found one, carried over unchanged. A sink rather than a deposit: the
+        # gold leaves the world and the new guild's vault starts empty.
+        game.GuildCost(35000);
+
         # Acts on the war picked out of the list, the way the original's did. It needs no box to type a
         # name into: the name is on the line they clicked.
         Verb peace = game.Action(Guilds.PeaceVerb, "Retract declaration", "Guild");

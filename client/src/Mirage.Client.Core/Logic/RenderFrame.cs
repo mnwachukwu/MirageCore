@@ -66,29 +66,30 @@ public readonly record struct CorpseDrawCmd(float ScreenX, float ScreenY, WorldL
 /// tints the white halo textures). <see cref="Radius"/> is the outer reach in px (inner core derived from it).
 /// <see cref="Flicker"/> picks the core animation, seeded by the STABLE <see cref="Id"/> (per entity/effect) so
 /// a light's flicker phase never jumps when the Lights list reorders.</summary>
+/// <param name="TileScreenX">Screen position of the top-left of the tile <paramref name="Reach"/> was traced
+/// from, NOT wherever the halo itself is being drawn. The two differ for anything mid-step or wider than a
+/// tile, and the mask has to follow the trace.</param>
+/// <param name="TileScreenY">The other half of that tile's position.</param>
+/// <param name="ReachRadius">How far the reach masks extend from their tile, in tiles.</param>
+/// <param name="Reach">Where this light reaches over its own square, row-major at
+/// <c>LightOcclusion.MaskTexels(ReachRadius)</c> a side — finer than a tile, so the falloff at a wall
+/// can stop clear of it. Null means everything in range: a light with nothing to hide behind, or a
+/// frame built without occlusion.</param>
+/// <param name="ReachInto">The same, traced from the tile a mid-step emitter is moving INTO, with
+/// <paramref name="ReachBlend"/> saying how far between the two it is. Reach is answered per tile, so without
+/// this the whole shadow pattern changes in one jump each time an emitter crosses a border; blending the
+/// two makes it continuous. Null whenever the emitter is standing still, which keeps the second
+/// trace something only moving things pay for.</param>
+/// <param name="ReachBlend">0 on the tile just left, 1 on the tile being entered.</param>
 public readonly record struct LightSourceCmd(
     float ScreenX, float ScreenY, float Intensity,
     uint Rgb, float Radius, FlickerStyle Flicker, int Id, float EffectiveDarkness = 0f,
     WorldLayer Layer = WorldLayer.Ground,
-    /// <summary>Screen position of the top-left of the tile <see cref="Reach"/> was traced from, NOT wherever
-    /// the halo itself is being drawn. The two differ for anything mid-step or wider than a tile, and the
-    /// mask has to follow the trace.</summary>
     float TileScreenX = 0f, float TileScreenY = 0f,
-    /// <summary>How far the reach masks extend from their tile, in tiles.</summary>
     int ReachRadius = 0,
-    /// <summary>Where this light reaches over its own square, row-major at
-    /// <c>LightOcclusion.MaskTexels(ReachRadius)</c> a side — finer than a tile, so the falloff at a wall
-    /// can stop clear of it. Null means everything in range: a light with nothing to hide behind, or a
-    /// frame built without occlusion.</summary>
     byte[]? Reach = null,
-    /// <summary>The same, traced from the tile a mid-step emitter is moving INTO, with
-    /// <see cref="ReachBlend"/> saying how far between the two it is. Reach is answered per tile, so without
-    /// this the whole shadow pattern changes in one jump each time an emitter crosses a border; blending the
-    /// two makes it continuous. Null whenever the emitter is standing still, which keeps the second
-    /// trace something only moving things pay for.</summary>
     byte[]? ReachInto = null,
     float IntoScreenX = 0f, float IntoScreenY = 0f,
-    /// <summary>0 on the tile just left, 1 on the tile being entered.</summary>
     float ReachBlend = 0f);
 
 /// <summary>A map-wide area light for an always-lit map cell. <see cref="ScreenX"/>/<see cref="ScreenY"/>
@@ -155,7 +156,7 @@ public readonly record struct BarRow(float Frac, int Rgb)
 /// <para>Rows come in the game's declared order, and a row the body has no value for is
 /// <see cref="BarRow.None"/> — the rows below it move up, so a group is always as tall as what it
 /// actually draws.</para>
-/// <see cref="CdFrac"/> is the remaining fraction of the action cooldown (1 = just acted, 0 = ready); < 0
+/// <see cref="CdFrac"/> is the remaining fraction of the action cooldown (1 = just acted, 0 = ready); &lt; 0
 /// omits the row entirely. It is the engine's own row, not a declared one, so it keeps its own field and
 /// its own color.
 /// </summary>
@@ -182,13 +183,16 @@ public readonly record struct BarDrawCmd(
 /// Draw a chat bubble: rounded rect with shadow + colored border + white text, centered horizontally
 /// on CenterX. <see cref="AnchorY"/> pins the bottom edge of the panel (default) or the top edge when
 /// <see cref="AnchorBelow"/> is true — used when the entity's name has been flipped below the sprite,
-/// so the bubble drops underneath instead of stacking above. BorderColorIndex is a GameColor index.
-/// Alpha multiplies every layer for fade-out.
+/// so the bubble drops underneath instead of stacking above. Alpha multiplies every layer for fade-out.
+///
+/// <para>The border is a GameColor index, or a packed <c>0xRRGGBB</c> in <see cref="BorderRgb"/> where
+/// the color is not one of the palette's: a creature speaks in the color its name is drawn in, and that
+/// comes from the tints a game declared.</para>
 /// </summary>
 public readonly record struct ChatBubbleDrawCmd(
     float CenterX, float AnchorY,
     string Text, int BorderColorIndex, float Alpha,
-    bool AnchorBelow = false);
+    bool AnchorBelow = false, int BorderRgb = -1);
 
 // ── Render frame ──────────────────────────────────────────────────────────────
 

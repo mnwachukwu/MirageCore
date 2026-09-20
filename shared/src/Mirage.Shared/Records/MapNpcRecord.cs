@@ -35,7 +35,7 @@ public class MapNpcRecord
     // stamp from how long ago rather than from a wall clock it does not share.
     public long CombatExpiresAt { get; set; }
 
-    // Seconds since the epoch, matching PlayerRecord.PkExpiryUtc: a mark is the kind of thing a game
+    // Seconds since the epoch, matching PlayerRecord.MarkedUntilUtc: a mark is the kind of thing a game
     // shows on a name, and the player side of it already reads a UTC stamp.
     public long MarkedUntilUtc { get; set; }
 
@@ -100,95 +100,6 @@ public class MapNpcRecord
     /// <para>Cleared the moment the body has no target left, so a roused body does not outlive what
     /// roused it.</para></summary>
     public bool Roused { get; set; }
-
-    /// <summary>Sized by the CREATOR, not by <see cref="Constants.MaxPlayers"/>.
-    ///
-    /// <para>One of these records exists per map NPC slot, and the world allocates every slot on every map
-    /// up front — 21,000 of them. Two arrays each at the protocol ceiling would be ~84 MB of mostly-zero
-    /// ints for a server that will never see more than a handful of players. <c>GameWorld</c> passes its
-    /// configured player limit instead, which is the largest index any of these can ever take.</para>
-    ///
-    /// <para>Defaults to the ceiling so a test or a one-off construction still gets a correct record
-    /// without knowing about configuration.</para></summary>
-    public MapNpcRecord(int playerSlots = Constants.MaxPlayers)
-    {
-        DamageByPlayer = new int[playerSlots + 1];
-        WarnHitsByPlayer = new int[playerSlots + 1];
-    }
-
-    // Damage contribution tracking — 1-based by player index; cleared when NPC leaves combat or respawns
-    public int[] DamageByPlayer { get; }
-
-    // Guard grace-warning tally — 1-based by player index; counts "Watch it!" warnings already
-    // issued to that attacker in the current combat window.  Cleared alongside DamageByPlayer via
-    // ClearDamageCredit so the existing combat-exit / respawn cleanup grants a fresh grace window.
-    public int[] WarnHitsByPlayer { get; }
-
-    // Parallel NPC contributor ledger — lazy-allocated, null in the common no-NPC-source case.
-    // At most a handful of entries per fight (one or two guards, maybe a different-kind AoS mob),
-    // so list+linear scan beats Dictionary overhead and keeps the zero-allocation hot path.
-    public List<NpcDamageEntry>? DamageByNpc { get; set; }
-
-    /// <summary>Zero every entry in <see cref="DamageByPlayer"/> and clear <see cref="DamageByNpc"/>.
-    /// Called when combat ends, the NPC respawns, or is converted to a traversal guest — anywhere
-    /// the kill-credit ledger should restart.  Clears the list contents but keeps the list object
-    /// so capacity is reused across kills of the same NPC slot.</summary>
-    public void ClearDamageCredit()
-    {
-        Array.Clear(DamageByPlayer, 0, DamageByPlayer.Length);
-        Array.Clear(WarnHitsByPlayer, 0, WarnHitsByPlayer.Length);
-        DamageByNpc?.Clear();
-    }
-
-    /// <summary>Hand the ENTIRE combat/aggro ledger to <paramref name="dest"/> in one shot — kill-credit
-    /// (<see cref="DamageByPlayer"/>), the guard grace tally (<see cref="WarnHitsByPlayer"/>), AND the NPC
-    /// contributor list (<see cref="DamageByNpc"/>).  These MUST travel together across a map seam: the guard
-    /// grace-skip in target selection weighs a player's DamageByPlayer against their WarnHitsByPlayer, so
-    /// carrying one without the other silently breaks grace — a guard that chased a mob across a border then
-    /// aggroed a player who had only spent "Watch it!" warnings on it.  DamageByNpc is reference-transferred
-    /// (heap list); a hand-off caller nulls its own afterward so the two records don't share it.</summary>
-    public void CopyCombatLedgerTo(MapNpcRecord dest)
-    {
-        // Bounded by the SHORTER of the two. Every record in one world is sized alike, so this is the same
-        // length in practice — it is here so a record built with the default ceiling (a test, a one-off)
-        // cannot overrun a world-sized one.
-        int n = Math.Min(DamageByPlayer.Length, dest.DamageByPlayer.Length);
-        Array.Copy(DamageByPlayer, dest.DamageByPlayer, n);
-        Array.Copy(WarnHitsByPlayer, dest.WarnHitsByPlayer, n);
-        dest.DamageByNpc = DamageByNpc;
-    }
-
-    /// <summary>Record damage from an NPC source onto this victim's ledger.  Lazy-allocates the list
-    /// on the first NPC hit (cap 2 — typical fight has 1–2 NPC contributors).  Increments the existing
-    /// entry on repeat hits from the same source so each (spawnMap, spawnSlot) appears at most once.</summary>
-    public void AddNpcDamage(int spawnMap, int spawnSlot, int dmg)
-    {
-        DamageByNpc ??= new List<NpcDamageEntry>(2);
-        for (int i = 0; i < DamageByNpc.Count; i++)
-        {
-            var e = DamageByNpc[i];
-            if (e.SpawnMap == spawnMap && e.SpawnSlot == spawnSlot)
-            {
-                DamageByNpc[i] = e with { Damage = e.Damage + dmg };
-                return;
-            }
-        }
-        DamageByNpc.Add(new NpcDamageEntry(spawnMap, spawnSlot, dmg));
-    }
-
-    /// <summary>Remove any NPC-damage credit this ledger holds for the given source identity.  Called
-    /// from the death sweep (and the guest-returns-home sweep) so combat credit a now-dead NPC earned
-    /// against other NPCs is voided — a future respawn into the same (spawnMap, spawnSlot) can't inherit
-    /// it and steal aggro.  At most one entry matches (AddNpcDamage dedups per source).</summary>
-    public void RemoveNpcDamageBySource(int spawnMap, int spawnSlot)
-    {
-        if (DamageByNpc is null) return;
-        for (int i = DamageByNpc.Count - 1; i >= 0; i--)
-        {
-            if (DamageByNpc[i].SpawnMap == spawnMap && DamageByNpc[i].SpawnSlot == spawnSlot)
-                DamageByNpc.RemoveAt(i);
-        }
-    }
 
     /// <summary>Universal NPC identity — (SpawnMap, SpawnSlot) so a native at home and a guest abroad
     /// resolve to the same key.  Native default uses its current (mapNum, slot); TraversalNpcRecord
@@ -298,7 +209,3 @@ public class MapNpcRecord
     public static int EncodeNpcId(int spawnMap, int spawnSlot)
         => spawnSlot > 0 ? spawnMap * NpcIdStride + spawnSlot : 0;
 }
-
-/// <summary>One NPC contributor's damage on a victim NPC.  Keyed by stable (SpawnMap, SpawnSlot)
-/// identity so a native that became a guest mid-fight still matches its earlier hits.</summary>
-public readonly record struct NpcDamageEntry(int SpawnMap, int SpawnSlot, int Damage);

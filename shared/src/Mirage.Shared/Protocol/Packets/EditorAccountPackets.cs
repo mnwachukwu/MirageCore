@@ -82,26 +82,14 @@ public sealed record EditorCharRow
 {
     [JsonPropertyName("slot")] public int Slot { get; init; }
     [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("level")] public int Level { get; init; }
-    /// <summary>long, matching <c>PlayerRecord.Exp</c> — an int would silently clip a high-level total.</summary>
-    [JsonPropertyName("exp")] public long Exp { get; init; }
     [JsonPropertyName("map")] public int Map { get; init; }
     [JsonPropertyName("x")] public int X { get; init; }
     [JsonPropertyName("y")] public int Y { get; init; }
-    [JsonPropertyName("str")] public int Str { get; init; }
-    [JsonPropertyName("def")] public int Def { get; init; }
-    [JsonPropertyName("spd")] public int Spd { get; init; }
-    [JsonPropertyName("int")] public int Int { get; init; }
-    [JsonPropertyName("points")] public int Points { get; init; }
     /// <summary>The character's bag, occupied slots only. <b>Sent S→C and never read back</b> — the save
     /// copies named fields onto the record, and a bag arriving on a form filled minutes ago would carry a
     /// stale copy of everything a live player has picked up since. Adding and removing go through
     /// <see cref="EditorGiveItemPacket"/> and <see cref="EditorTakeItemPacket"/>, which name one slot each.</summary>
     [JsonPropertyName("inv")] public List<EditorInvSlot> Inv { get; init; } = new();
-    /// <summary>The character's spell book, occupied slots only. Sent S→C and never read back, for the same
-    /// reason as <see cref="Inv"/>.</summary>
-    /// <summary>The character's quest log. Sent S→C and never read back, for the same reason as
-    /// <see cref="Inv"/>.</summary>
 }
 
 

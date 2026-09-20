@@ -62,8 +62,6 @@ public static class Tooltip
     private static string? _text;   // Kind.Text: the full string a truncated label shows on hover
     private static PlayerRecord? _me;
     private static IReadOnlyList<Texture2D?> _itemsTex = [];
-    private static ItemRecord?[] _itemDefs = Array.Empty<ItemRecord?>();   // item definitions (for the SubHp reagent name)
-    private static WeatherType _weather;                                    // current weather (for the rain "(x2)" reagent hint)
 
     private static readonly List<Line> _lines = new();
 
@@ -73,15 +71,9 @@ public static class Tooltip
     /// user moves to a different slot or the slot's item changes. <paramref name="scope"/> tags this
     /// tooltip with the spawning panel id so <see cref="CloseScope"/> can dismiss it when that panel
     /// closes.
-    ///
-    /// <para>The last three are only needed for a SPELL SCROLL, whose tooltip continues into the spell
-    /// it teaches — everything that decides whether a scroll is worth buying lives on the spell, not on
-    /// the scroll. A caller with no spell table simply omits them and the scroll shows its item half
-    /// alone, as it did everywhere before.</para>
     /// </summary>
     public static void NotifyHoverItem(string scope, object key, ItemRecord item, PlayerInvSlot? slot,
-        PlayerRecord? me, IReadOnlyList<Texture2D?> itemsTex, Point mousePos,
- ItemRecord?[]? itemDefs = null, WeatherType weather = default)
+        PlayerRecord? me, IReadOnlyList<Texture2D?> itemsTex, Point mousePos)
     {
         if (_kind != Kind.Item || !Equals(_key, key))
         {
@@ -94,10 +86,6 @@ public static class Tooltip
         _slot = slot;
         _me = me;
         _itemsTex = itemsTex;
-        // Assigned even when null: these are shared with the spell path, and leaving them behind would
-        // price a scroll's reagent line off whatever spell was hovered last.
-        _itemDefs = itemDefs ?? [];
-        _weather = weather;
         _hoverPersists = true;
     }
 
@@ -199,7 +187,7 @@ public static class Tooltip
         {
             case Kind.Item when _item is not null:
                 header = _item.Name?.TrimEnd() ?? "Unknown";
-                BuildItemLines(_item, _slot, _me, _itemDefs, _weather);
+                BuildItemLines(_item, _slot, _me);
                 hasIcon = _item.Pic >= 0 && _itemsTex.Sheet(_item.ItemSheet) is not null;
                 pic = _item.Pic;
                 itemSheet = _item.ItemSheet;
@@ -277,8 +265,7 @@ public static class Tooltip
         }
     }
 
-    private static void BuildItemLines(ItemRecord item, PlayerInvSlot? slot, PlayerRecord? me,
-        ItemRecord?[] itemDefs, WeatherType weather)
+    private static void BuildItemLines(ItemRecord item, PlayerInvSlot? slot, PlayerRecord? me)
     {
         if (ItemRecord.IsEquipment(item.Type) && item.Durability > 0)
         {
@@ -292,10 +279,5 @@ public static class Tooltip
 
         if (item.Type == ItemType.Currency && slot is not null)
             _lines.Add(new Line(ClientStrings.Get(ClientStrings.Tooltip_Quantity), slot.Quantity.ToString("N0"), ValueColor));
-
-        // ── The spell half of a scroll ───────────────────────────────────
-        // A scroll is a delivery mechanism: what it teaches lives on the spell, not on the paper.
-        // Appended below rather than replacing the item lines — a scroll is still a thing with a price
-        // that occupies a bag slot, and the buy confirm shows both halves the same way.
     }
 }

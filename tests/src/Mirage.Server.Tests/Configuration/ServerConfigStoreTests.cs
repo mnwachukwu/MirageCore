@@ -28,30 +28,6 @@ public class ServerConfigStoreTests
 
     string Path_(string name) => Path.Combine(_dir, name);
 
-    /// <summary>The weekly boundary is DERIVED, never stored — it was a second constant documented as "the
-    /// day after war night", and two settings could drift apart. Wrapping Saturday to Sunday is the case
-    /// the modulo exists for, and it is also the shipped default.</summary>
-    [TestCase(DayOfWeek.Saturday, DayOfWeek.Sunday)]
-    [TestCase(DayOfWeek.Sunday, DayOfWeek.Monday)]
-    [TestCase(DayOfWeek.Wednesday, DayOfWeek.Thursday)]
-    public void WeekResetDay_IsAlwaysTheDayAfterWarNight(DayOfWeek warNight, DayOfWeek expected)
-    {
-        var schedule = new ScheduleConfig { WarNightDay = warNight };
-
-        Assert.That(schedule.WeekResetDay, Is.EqualTo(expected));
-    }
-
-    [Test]
-    public void TheStockScheduleIsSaturdayEightPm()
-    {
-        Assert.Multiple(() =>
-        {
-            Assert.That(ServerConfig.Default.Schedule.WarNightDay, Is.EqualTo(DayOfWeek.Saturday));
-            Assert.That(ServerConfig.Default.Schedule.WarNightHour, Is.EqualTo(20));
-            Assert.That(ServerConfig.Default.Schedule.WeekResetDay, Is.EqualTo(DayOfWeek.Sunday));
-        });
-    }
-
     /// <summary>The spawn defaults have to equal what the old computed constants produced, or an existing
     /// world silently moves its front door the first time it boots on this build.</summary>
     [Test]
@@ -75,9 +51,8 @@ public class ServerConfigStoreTests
         Assert.Multiple(() =>
         {
             Assert.That(error, Is.Null);
-            Assert.That(config.DeathPenalty.DurabilityLoss, Is.True);
-            Assert.That(config.DeathPenalty.ItemDrop, Is.True);
-            Assert.That(config.DeathPenalty.ExpLoss, Is.True);
+            Assert.That(config.Queue.MaxDepth, Is.EqualTo(100));
+            Assert.That(config.Queue.GraceSeconds, Is.EqualTo(90));
             Assert.That(config.Port, Is.EqualTo(Mirage.Shared.Constants.GamePort));
             Assert.That(config.Language, Is.EqualTo("en"));
         });
@@ -98,30 +73,30 @@ public class ServerConfigStoreTests
             Assert.That(error, Is.Null);
             Assert.That(config.Port, Is.EqualTo(7777));
             Assert.That(config.Language, Is.EqualTo("fr"));
-            Assert.That(config.DeathPenalty.ItemDrop, Is.True, "and the rules still default");
+            Assert.That(config.Queue.MaxDepth, Is.EqualTo(100), "and the rest still defaults");
         });
     }
 
     [Test]
     public void EditingOneSetting_LeavesTheOthersAlone()
     {
-        // The shell's two forms own different parts of this file — the rules tab owns three switches,
-        // the language picker owns one string — and each amends the loaded config with `with` rather
-        // than building a fresh one. Building fresh would silently reset the port every time somebody
-        // pressed Save, which is the kind of thing nobody notices until a server comes up on 4000.
+        // The shell's forms own different parts of this file, and each amends the loaded config with
+        // `with` rather than building a fresh one. Building fresh would silently reset the port every
+        // time somebody pressed Save, which is the kind of thing nobody notices until a server comes
+        // up on 4000.
         string path = Path_("partial-edit.json");
         ServerConfigStore.Save(path, new ServerConfig { Port = 7777, Language = "pt" });
 
         var (loaded, _) = ServerConfigStore.Load(path);
         ServerConfigStore.Save(path, loaded with
         {
-            DeathPenalty = new DeathPenaltyConfig { ExpLoss = false },
+            Queue = new QueueConfig { MaxDepth = 25 },
         });
         var (after, _) = ServerConfigStore.Load(path);
 
         Assert.Multiple(() =>
         {
-            Assert.That(after.DeathPenalty.ExpLoss, Is.False, "the edit landed");
+            Assert.That(after.Queue.MaxDepth, Is.EqualTo(25), "the edit landed");
             Assert.That(after.Port, Is.EqualTo(7777), "and the port survived it");
             Assert.That(after.Language, Is.EqualTo("pt"), "as did the language");
         });
@@ -131,13 +106,13 @@ public class ServerConfigStoreTests
     public void MalformedFile_FallsBackToStockRules_ButSaysSo()
     {
         string path = Path_("broken.json");
-        File.WriteAllText(path, "{ \"deathPenalty\": { \"itemDrop\": ");
+        File.WriteAllText(path, "{ \"queue\": { \"maxDepth\": ");
 
         var (config, error) = ServerConfigStore.Load(path);
 
         Assert.Multiple(() =>
         {
-            Assert.That(config.DeathPenalty.ItemDrop, Is.True, "a server still boots");
+            Assert.That(config.Queue.MaxDepth, Is.EqualTo(100), "a server still boots");
             Assert.That(error, Is.Not.Null, "but never in silence");
             Assert.That(error, Does.Contain("broken.json"), "and the message names the file");
         });
@@ -149,16 +124,16 @@ public class ServerConfigStoreTests
         // The forward-compatibility case: today's file read by a build that has since grown a field.
         // Absent means default, so an old config never silently switches a new rule off.
         string path = Path_("partial.json");
-        File.WriteAllText(path, "{ \"deathPenalty\": { \"expLoss\": false } }");
+        File.WriteAllText(path, "{ \"queue\": { \"maxDepth\": 25 } }");
 
         var (config, error) = ServerConfigStore.Load(path);
 
         Assert.Multiple(() =>
         {
             Assert.That(error, Is.Null);
-            Assert.That(config.DeathPenalty.ExpLoss, Is.False, "what it said");
-            Assert.That(config.DeathPenalty.ItemDrop, Is.True, "and defaults for what it did not");
-            Assert.That(config.DeathPenalty.DurabilityLoss, Is.True);
+            Assert.That(config.Queue.MaxDepth, Is.EqualTo(25), "what it said");
+            Assert.That(config.Queue.GraceSeconds, Is.EqualTo(90), "and defaults for what it did not");
+            Assert.That(config.Port, Is.EqualTo(Mirage.Shared.Constants.GamePort));
         });
     }
 
@@ -171,9 +146,9 @@ public class ServerConfigStoreTests
         string path = Path_("annotated.json");
         File.WriteAllText(path, """
             {
-              // no gear damage on this server
-              "deathPenalty": {
-                "durabilityLoss": false,
+              // no queue on this server
+              "queue": {
+                "maxDepth": 0,
               },
             }
             """);
@@ -183,7 +158,7 @@ public class ServerConfigStoreTests
         Assert.Multiple(() =>
         {
             Assert.That(error, Is.Null);
-            Assert.That(config.DeathPenalty.DurabilityLoss, Is.False);
+            Assert.That(config.Queue.MaxDepth, Is.Zero);
         });
     }
 
@@ -193,7 +168,8 @@ public class ServerConfigStoreTests
         string path = Path_("round-trip.json");
         var written = new ServerConfig
         {
-            DeathPenalty = new DeathPenaltyConfig { DurabilityLoss = false, ItemDrop = true, ExpLoss = false },
+            Queue = new QueueConfig { MaxDepth = 25, GraceSeconds = 30 },
+            Spawn = new SpawnConfig { Map = 3, X = 4, Y = 5 },
         };
 
         string? saveError = ServerConfigStore.Save(path, written);
@@ -232,14 +208,14 @@ public class ServerConfigStoreTests
 
         string? error = ServerConfigStore.Save(path, new ServerConfig
         {
-            DeathPenalty = new DeathPenaltyConfig { ItemDrop = false },
+            Queue = new QueueConfig { MaxDepth = 0 },
         });
         var (read, _) = ServerConfigStore.Load(path);
 
         Assert.Multiple(() =>
         {
             Assert.That(error, Is.Null);
-            Assert.That(read.DeathPenalty.ItemDrop, Is.False);
+            Assert.That(read.Queue.MaxDepth, Is.Zero);
         });
     }
 

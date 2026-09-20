@@ -9,7 +9,7 @@ namespace Mirage.Editor.Tests.ViewModels;
 /// <summary>
 /// The other end of an item lock: the table the server broadcasts, arriving at a real item editor.
 ///
-/// <para>Only the padlock is per-row. What deadens the form is <see cref="ItemEditorViewModel.IsSelectedLocked"/>,
+/// <para>Only the padlock is per-row. What deadens the form is <see cref="Mirage.Editor.ViewModels.EditorViewModelBase{TRow}.IsSelectedLocked"/>,
 /// which follows the SELECTED row — so both have to move, and they move on different signals: the table
 /// arriving, and the selection changing while the table stands still.</para>
 ///

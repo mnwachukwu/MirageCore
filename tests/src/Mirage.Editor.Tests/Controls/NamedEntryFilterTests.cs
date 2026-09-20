@@ -12,7 +12,7 @@ namespace Mirage.Editor.Tests.Controls;
 /// of the one already chosen — and if it answers honestly, the list collapses to that single entry and
 /// reads as "there is nothing else to pick".</para>
 ///
-/// <para><see cref="DropdownAutoCompleteBox"/> stops that happening, by dropping the filter
+/// <para><see cref="Mirage.Editor.Controls.DropdownAutoCompleteBox"/> stops that happening, by dropping the filter
 /// entirely while the list is being browsed. These pin what the filter does once somebody actually types,
 /// including the caption case it cannot solve on its own.</para>
 /// </summary>

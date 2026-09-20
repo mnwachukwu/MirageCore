@@ -120,7 +120,10 @@ public sealed partial class GameplayScreen : IGameScreen
             var shadow = new Rectangle(rect.X + ChatBubbleStyle.ShadowOffset, rect.Y + ChatBubbleStyle.ShadowOffset, rect.Width, rect.Height);
             UiHelper.DrawRoundedFilledRect(sb, shadow, ChatBubbleStyle.CornerRadius, shadowBase * b.Alpha);
             UiHelper.DrawRoundedFilledRect(sb, rect, ChatBubbleStyle.CornerRadius, bgBase * b.Alpha);
-            UiHelper.DrawRoundedBorder(sb, rect, ChatBubbleStyle.CornerRadius, ChatPanel.GetColor(b.BorderColorIndex) * b.Alpha);
+            Color border = b.BorderRgb >= 0
+                ? new Color(GameColor.RedOf(b.BorderRgb), GameColor.GreenOf(b.BorderRgb), GameColor.BlueOf(b.BorderRgb))
+                : ChatPanel.GetColor(b.BorderColorIndex);
+            UiHelper.DrawRoundedBorder(sb, rect, ChatBubbleStyle.CornerRadius, border * b.Alpha);
 
             // Lines centered horizontally inside the panel.
             float ty = rect.Y + ChatBubbleStyle.PadY;

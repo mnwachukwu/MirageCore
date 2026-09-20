@@ -17,8 +17,8 @@ namespace Mirage.Editor.ViewModels;
 /// </summary>
 public sealed partial class MainWindowViewModel
 {
-    /// <summary>Set by the View: shows a folder picker starting at <paramref name="startAt"/>, or null if
-    /// the person cancelled.</summary>
+    /// <summary>Set by the View: shows a folder picker starting at the folder it is given, and answers
+    /// null if the person cancelled.</summary>
     public Func<string, Task<string?>>? PickWorldFolderAsync { get; set; }
 
     /// <summary>Whether a world is open. Everything that lists or edits records hangs off this.

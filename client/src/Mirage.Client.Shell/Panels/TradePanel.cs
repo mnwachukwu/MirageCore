@@ -196,8 +196,7 @@ public sealed class TradePanel : IGamePanel
         if (it.Num <= 0 || it.Num >= state.Items.Length) return;
         var def = state.Items[it.Num];
         if (def is not null)
-            Tooltip.NotifyHoverItem(TooltipScope, key, def, it, state.Me, itemsTex, _input.MousePosition,
-            state.Items, state.Weather);
+            Tooltip.NotifyHoverItem(TooltipScope, key, def, it, state.Me, itemsTex, _input.MousePosition);
     }
 
     // ── Internals ─────────────────────────────────────────────────────────────────

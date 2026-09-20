@@ -107,7 +107,7 @@ public sealed record NpcSpawnChoice(int RowIndex, string Display);
 ///    enum so it can never leak into tile serialization. NpcSpawn is the only one today.
 ///
 /// <para>That second case is why this is a hand-authored enum rather than
-/// <c>Enum.GetValues<TileType>()</c>.</para>
+/// <c>Enum.GetValues&lt;TileType&gt;()</c>.</para>
 ///
 /// <para>LayerRamp is the sole connector between the two planes. Stored on
 /// <c>FringeAttr.Type = LayerRamp</c>, but it LOGICALLY OCCUPIES BOTH: no other attribute may share its

@@ -578,10 +578,6 @@ public sealed partial class PacketHandler
         // Remove ghost slot's visual presence from the map.
         SendToMapBut(ghostMap, ghostSlot, PacketBuilder.LeaveMap(ghostSlot));
 
-        // Clear NPC damage contributions that were accrued under the ghost slot index.
-        for (int i = 1; i <= Constants.MaxMapNpcs; i++)
-            _world.MapNpcs[ghostMap, i].DamageByPlayer[ghostSlot] = 0;
-
         // Reset ghost slot to empty without running LeftGame cleanup.
         ghost.IsGhost = false;
         ghost.InGame = false;

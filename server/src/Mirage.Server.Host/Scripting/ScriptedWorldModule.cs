@@ -2325,6 +2325,26 @@ public sealed class ScriptedWorldModule
                 (b, a) => Build(b).NameTint((int)a.AsInteger(0), (int)a.AsInteger(1), (int)a.AsInteger(2)),
                 "The color a creature carrying none of them is named in. Said once for the whole world, "
                 + "and left unsaid every such creature is named in white.")
+            .Action("MarkedTint",
+                [ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
+                (b, a) => Build(b).MarkedTint((int)a.AsInteger(0), (int)a.AsInteger(1), (int)a.AsInteger(2)),
+                "What a MARKED player's name is drawn in. Marking somebody is Marked on a player, and "
+                + "what carrying one costs them is entirely yours - the engine refuses no attack on "
+                + "account of it. This is only what it looks like. Left unsaid, a mark is red. An "
+                + "operator's rank color is NOT this and cannot be repainted, so nobody can disguise one.")
+            .Action("AggressorTint",
+                [ScriptType.Integer.Named("red"), ScriptType.Integer.Named("green"), ScriptType.Integer.Named("blue")],
+                (b, a) => Build(b).AggressorTint((int)a.AsInteger(0), (int)a.AsInteger(1), (int)a.AsInteger(2)),
+                "What the name of somebody who just started a fight pulses TO, alternating with the "
+                + "marked color - so a fresh aggressor reads as the mark they are about to earn rather "
+                + "than as a second unrelated warning. Left unsaid it is amber.")
+            .Action("GuildCost", [ScriptType.Integer.Named("cost")],
+                (b, a) => Build(b).GuildCost(a.AsInteger(0)),
+                "What founding a guild costs, in item 1 - the money item every world reserves. Taken "
+                + "on success and not paid into the new guild's vault, so it is a sink rather than a "
+                + "deposit, and the Create button shows the figure before anybody presses it. Say "
+                + "nothing and founding one is free: how much a guild is worth is a question about "
+                + "your economy, and the engine cannot see it.")
             .Function("Action", verb.AsType, [ScriptType.Text.Named("id"), ScriptType.Text.Named("caption"), ScriptType.Text.Named("heading")],
                 (b, a) => Build(b).Action(a.AsText(0), a.AsText(1), a.AsText(2)),
                 "A verb this game offers, under a heading of its own. Picking it calls OnAction. Offered "
@@ -3546,9 +3566,38 @@ public sealed class ScriptedWorldModule
                 Ordinal = After + _tints++,
             }));
 
+        // The three the engine takes as one decision, offered to a script as three calls. Held here so
+        // each call restates the whole answer rather than clearing the two it did not mention.
+        private int _plainName = NameTintSet.PlainRgb;
+        private int _markedName = NameTintSet.MarkedDefaultRgb;
+        private int _aggressorName = NameTintSet.AggressorDefaultRgb;
+
         /// <summary>The color for a creature carrying none of them.</summary>
-        public object? NameTint(int red, int green, int blue) =>
-            Guard("the plain name color", () => builder.SetOtherwiseNameRgb(Rgb(red, green, blue)));
+        public object? NameTint(int red, int green, int blue)
+        {
+            _plainName = Rgb(red, green, blue);
+            return Guard("the plain name color", NameColors);
+        }
+
+        /// <summary>What a marked player is named in.</summary>
+        public object? MarkedTint(int red, int green, int blue)
+        {
+            _markedName = Rgb(red, green, blue);
+            return Guard("the marked name color", NameColors);
+        }
+
+        /// <summary>And what an aggressor's name pulses to.</summary>
+        public object? AggressorTint(int red, int green, int blue)
+        {
+            _aggressorName = Rgb(red, green, blue);
+            return Guard("the aggressor name color", NameColors);
+        }
+
+        private void NameColors() => builder.SetNameColors(_plainName, _markedName, _aggressorName);
+
+        /// <summary>What founding a guild costs, in the money item.</summary>
+        public object? GuildCost(long cost) =>
+            Guard("the guild cost", () => builder.SetGuildCost((int)Math.Clamp(cost, 0, int.MaxValue)));
 
         internal static int Rgb(int red, int green, int blue)
             => (Channel(red) << 16) | (Channel(green) << 8) | Channel(blue);

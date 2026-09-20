@@ -94,6 +94,12 @@ public sealed partial class TextArea
     // and leaving every editable path below dormant. The two modes are exclusive per instance and share only
     // low-level render/scroll helpers — the read-only Update/Draw are untouched, just guarded at the top.
     public bool ReadOnly { get; set; }
+
+    /// <summary>What a marked speaker's name reads in, pushed from the loaded game's declaration. Held
+    /// here rather than looked up, because a log line keeps the color its speaker had when they said it
+    /// and this widget has no world to ask.</summary>
+    public int MarkedRgb { get; set; } = Mirage.Shared.Extensibility.NameTintSet.MarkedDefaultRgb;
+
     public int MaxLength { get; init; } = int.MaxValue;
     private string _editText = "";
     private int _caretIndex;
@@ -198,23 +204,22 @@ public sealed partial class TextArea
         }
     }
 
-    /// <summary>Player-name span inside a chat line. Carries the access tier and PK status
-    /// frozen at send time so chat history keeps the speaker's color even after their PK
-    /// timer expires. Right-click → context menu uses <see cref="NameAt(Point)"/> to resolve.</summary>
+    /// <summary>Player-name span inside a chat line. Carries the access tier and the mark
+    /// frozen at send time, so chat history keeps the speaker's color after the mark expires. Right-click → context menu uses <see cref="NameAt(Point)"/> to resolve.</summary>
     public readonly struct NameSpan
     {
         public readonly int StartCol;
         public readonly int Length;
         public readonly string Name;
         public readonly AdminLevel Access;
-        public readonly bool ShowAsPk;
-        public NameSpan(int startCol, int length, string name, AdminLevel access, bool showAsPk)
+        public readonly bool ShowAsMarked;
+        public NameSpan(int startCol, int length, string name, AdminLevel access, bool showAsMarked)
         {
             StartCol = startCol;
             Length = length;
             Name = name;
             Access = access;
-            ShowAsPk = showAsPk;
+            ShowAsMarked = showAsMarked;
         }
     }
 
@@ -577,7 +582,7 @@ public sealed partial class TextArea
             // color spans cover the command prefix only.
             var spans = new List<DrawSpan>();
             if (links != null) foreach (var l in links) spans.Add(DrawSpan.Link(l.StartCol, l.Length, l.Url));
-            if (names != null) foreach (var n in names) spans.Add(DrawSpan.Name(n.StartCol, n.Length, n.Name, n.Access, n.ShowAsPk));
+            if (names != null) foreach (var n in names) spans.Add(DrawSpan.Name(n.StartCol, n.Length, n.Name, n.Access, n.ShowAsMarked));
             if (colors != null) foreach (var c in colors) spans.Add(DrawSpan.Color(c.StartCol, c.Length, c.ColorIndex));
             spans.Sort((a, b) => a.Start.CompareTo(b.Start));
 
@@ -608,7 +613,9 @@ public sealed partial class TextArea
                         _linkHitRects.Add((rect, span.Payload));
                         break;
                     case DrawSpan.SpanKind.Name:
-                        segColor = GetColor(PlayerNameColor.For(span.ShowAsPk, span.Access));
+                        segColor = span.ShowAsMarked
+                            ? new Color((MarkedRgb >> 16) & 0xFF, (MarkedRgb >> 8) & 0xFF, MarkedRgb & 0xFF)
+                            : GetColor(PlayerNameColor.For(span.Access));
                         if (hover)
                         {
                             UiHelper.DrawFilledRect(sb,

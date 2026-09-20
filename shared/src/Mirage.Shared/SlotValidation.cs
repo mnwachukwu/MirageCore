@@ -2,7 +2,7 @@ namespace Mirage.Shared;
 
 /// <summary>
 /// Bound-check helpers for the 1-based indices used throughout the game. Every helper implements the same
-/// `value >= 1 && value <= max` shape, so the guards across server, client and editor read
+/// <c>value &gt;= 1 &amp;&amp; value &lt;= max</c> shape, so the guards across server, client and editor read
 /// uniformly. Pure functions; no allocations.
 ///
 /// <para><b>The record-family checks take their ceiling as an argument, deliberately.</b> Those ceilings

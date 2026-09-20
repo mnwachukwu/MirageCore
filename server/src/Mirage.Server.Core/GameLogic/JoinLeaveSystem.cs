@@ -92,14 +92,14 @@ public sealed class JoinLeaveSystem : GameSystem
         // sent below, so the player logs in with the returned items already in the bag.
         _trade.RecoverEscrowOnLogin(index);
 
-        // Clear an expired PK timer on login. The broadcast — like every other chat message
+        // Clear a mark that lapsed while they were away. The broadcast — like every other chat message
         // emitted during JoinGame — is deferred until after SendWelcome so the joining player
         // reads the welcome/MOTD/who's-online block first, then sees the world chatter.
-        bool pkExpiredOnLogin = false;
-        if (p.PkExpiryUtc > 0 && p.PkExpiryUtc <= NowUtc)
+        bool markLapsedOnLogin = false;
+        if (p.MarkedUntilUtc > 0 && p.MarkedUntilUtc <= NowUtc)
         {
-            p.PkExpiryUtc = 0;
-            pkExpiredOnLogin = true;
+            p.MarkedUntilUtc = 0;
+            markLapsedOnLogin = true;
         }
 
         // Compose the join broadcast color up front but defer the actual SendToAll until after
@@ -107,7 +107,7 @@ public sealed class JoinLeaveSystem : GameSystem
         // → join broadcast → shop greeting. Other players just see the join broadcast.
         int joinColor = p.Access <= AdminLevel.Monitor ? GameColor.JoinLeft : GameColor.White;
 
-        _dispatcher.SendTo(index, PacketBuilder.Welcome(index));
+        _dispatcher.SendTo(index, PacketBuilder.Welcome(index, _world.GuildCost));
 
         // The attribute numbering, before anything that could carry an attribute. A sync naming an
         // ordinal the client has no declaration for is dropped, so ordering this after any of the
@@ -135,7 +135,7 @@ public sealed class JoinLeaveSystem : GameSystem
 
         // ── Send all game data ────────────────────────────────────────────────
 
-        // Items. Skips unauthored slots, exactly as the NPC and spell builders below do — the client
+        // Items. Skips unauthored slots, as the NPC builder below does — the client
         // assigns by num into a MaxItems-sized array, so a sparse list lands in the same places a dense
         // one would. Without the filter the join payload carries every empty slot up to MaxItems, which
         // is the one place raising that ceiling would cost real bandwidth per login.
@@ -151,7 +151,7 @@ public sealed class JoinLeaveSystem : GameSystem
         _dispatcher.SendTo(index, BuildSendShops());
 
 
-        // Conversations (definitions — like quests; the per-character spoken-log follows via _conversations.OnPlayerJoin)
+        // Conversations (definitions; the per-character spoken-log follows via _conversations.OnPlayerJoin)
         _dispatcher.SendTo(index, BuildSendConversations());
 
         // Map groups: shipped before any map so the client can resolve a map's effective inheritable
@@ -208,10 +208,10 @@ public sealed class JoinLeaveSystem : GameSystem
             ServerStrings.JoinLeave_JoinBroadcast,
             new ChatMetadata(joinColor, ChatChannel.System),
             ("Name", p.TrimmedName), ("GameName", _config.GameName));
-        if (pkExpiredOnLogin)
+        if (markLapsedOnLogin)
         {
             _dispatcher.SendLocalizedChatToAll(
-                ServerStrings.PkExpirySystem_CrimesFaded,
+                ServerStrings.MarkSystem_MarkLapsed,
                 new ChatMetadata(GameColor.BrightGreen, ChatChannel.System),
                 ("PlayerName", p.TrimmedName));
         }
@@ -237,7 +237,7 @@ public sealed class JoinLeaveSystem : GameSystem
         // Own data — only on the join/warp handshake (sets the client's initial position/sprite).
         // A seamless crossing already knows its own position client-side, so its re-sync omits this
         // to avoid overwriting the client's predicted move (which would rubber-band under latency).
-        _dispatcher.SendTo(index, PacketBuilder.PlayerData(index, p, p.Map, _pm[index].PkGraceUntilUtc, _pm[index].AggressorUntilUtcNow, godMode: _pm[index].Char.GodMode));
+        _dispatcher.SendTo(index, PacketBuilder.PlayerData(index, p, p.Map, _pm[index].MarkGraceUntilUtc, _pm[index].AggressorUntilUtcNow, godMode: _pm[index].Char.GodMode));
         SendAttributes(index, EntityHandle.ForPlayer(index), p.Attributes, AttributeVisibility.Owner);
         SendRegionSync(index);
     }
@@ -306,7 +306,7 @@ public sealed class JoinLeaveSystem : GameSystem
             if (_world.IsObserving(i, p.Map))
             {
                 _dispatcher.SendTo(i, PacketBuilder.JoinMap(index));
-                _dispatcher.SendTo(i, PacketBuilder.PlayerData(index, p, p.Map, _pm[index].PkGraceUntilUtc, _pm[index].AggressorUntilUtcNow, godMode: _pm[index].Char.GodMode));
+                _dispatcher.SendTo(i, PacketBuilder.PlayerData(index, p, p.Map, _pm[index].MarkGraceUntilUtc, _pm[index].AggressorUntilUtcNow, godMode: _pm[index].Char.GodMode));
                 SendAttributes(i, EntityHandle.ForPlayer(index), p.Attributes, AttributeVisibility.Viewport);
             }
 
@@ -314,7 +314,7 @@ public sealed class JoinLeaveSystem : GameSystem
             if (_world.IsObserving(index, ep.Map))
             {
                 _dispatcher.SendTo(index, PacketBuilder.JoinMap(i));
-                _dispatcher.SendTo(index, PacketBuilder.PlayerData(i, ep, ep.Map, _pm[i].PkGraceUntilUtc, _pm[i].AggressorUntilUtcNow, godMode: _pm[i].Char.GodMode));
+                _dispatcher.SendTo(index, PacketBuilder.PlayerData(i, ep, ep.Map, _pm[i].MarkGraceUntilUtc, _pm[i].AggressorUntilUtcNow, godMode: _pm[i].Char.GodMode));
                 SendAttributes(index, EntityHandle.ForPlayer(i), ep.Attributes, AttributeVisibility.Viewport);
             }
         }
@@ -543,10 +543,6 @@ public sealed class JoinLeaveSystem : GameSystem
         SendToMapBut(_world, p.Map, index, PacketBuilder.LeaveMap(index));
         _dispatcher.SendToAll(PacketBuilder.PlayersOnline(_pm.TotalOnline));
 
-        int leavingMap = p.Map;
-        for (int i = 1; i <= Constants.MaxMapNpcs; i++)
-            _world.MapNpcs[leavingMap, i].DamageByPlayer[index] = 0;
-
         _world.RemoveObserverFromAll(index);
         DropOthersTargetsOnPlayer(index);
         ClearPlayer(index);
@@ -653,10 +649,6 @@ public sealed class JoinLeaveSystem : GameSystem
         _world.RemoveObserverFromAll(index);
         DropOthersTargetsOnPlayer(index);
 
-        // Clear NPC damage contributions for this slot.
-        for (int i = 1; i <= Constants.MaxMapNpcs; i++)
-            _world.MapNpcs[mapNum, i].DamageByPlayer[index] = 0;
-
         // Only broadcast LeaveMap if the ghost was still on its original map (not mid-death-warp).
         if (!sp.GettingMap)
             SendToMapBut(_world, mapNum, index, PacketBuilder.LeaveMap(index));
@@ -682,7 +674,6 @@ public sealed class JoinLeaveSystem : GameSystem
         sp.TargetType = 0;
         sp.ClearActiveShop();
         sp.ClearActiveQuestNpc();
-        sp.ClearDamageCredit();
         for (int i = 1; i <= Constants.MaxChars; i++)
             sp.Chars[i] = new PlayerRecord();
         sp.Bank = AccountRecord.NewBank();

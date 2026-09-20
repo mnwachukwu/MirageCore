@@ -130,7 +130,7 @@ public sealed class ServerPlayer
     /// felt like recovery would refund a sprint as fast as it was paid for.</summary>
     public long LastRunAt { get; set; }
     public long PvpAttackerUntil { get; set; }
-    public long PkGraceUntilUtc { get; set; }
+    public long MarkGraceUntilUtc { get; set; }
     // UTC-seconds the current session's playtime was last banked into Char.PlayTimeSeconds — set at JoinGame,
     // advanced by the periodic save + on logout. 0 = not yet in-game. Transient; the persisted per-character
     // total lives on PlayerRecord.PlayTimeSeconds.
@@ -299,15 +299,6 @@ public sealed class ServerPlayer
     public int WarpToMap { get; set; }
     public int WarpToX { get; set; }
     public int WarpToY { get; set; }
-
-    // PvP damage contribution tracking — 1-based by player index; cleared when this player dies.
-    // Sized by PlayerManager from the server's configured limit, for the same reason MapNpcRecord's is:
-    // no index above that limit can ever exist, and the ceiling would be mostly empty.
-    public int[] DamageByPlayer { get; init; } = new int[Constants.MaxPlayers + 1];
-
-    /// <summary>Zero every entry in <see cref="DamageByPlayer"/>. Called on death/respawn/regen
-    /// timeout — anywhere the PvP kill-credit ledger should restart.</summary>
-    public void ClearDamageCredit() => Array.Clear(DamageByPlayer, 0, DamageByPlayer.Length);
 
     // ── Convenience ──────────────────────────────────────────────────────────
 

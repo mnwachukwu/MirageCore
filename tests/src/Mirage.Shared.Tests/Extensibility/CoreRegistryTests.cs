@@ -275,6 +275,50 @@ public class CoreRegistryTests
         Assert.That((a.Ran.Count, b.Ran.Count), Is.EqualTo((1, 1)));
     }
 
+    [Test]
+    public void WithNoModule_FoundingAGuildCostsNothing()
+    {
+        Assert.That(CoreRegistry.Build().GuildCost, Is.Zero);
+    }
+
+    [Test]
+    public void TheGameNamesWhatAGuildCosts()
+    {
+        var registry = CoreRegistry.Build(new Module("Pocket", b => b.SetGuildCost(35_000)));
+
+        Assert.That(registry.GuildCost, Is.EqualTo(35_000));
+    }
+
+    [Test]
+    public void APriceBelowNothing_IsNothing()
+    {
+        var registry = CoreRegistry.Build(new Module("Pocket", b => b.SetGuildCost(-5)));
+
+        Assert.That(registry.GuildCost, Is.Zero);
+    }
+
+    [Test]
+    public void TwoModulesPricingAGuild_AreRefused()
+    {
+        var ex = Assert.Throws<CoreModuleException>(() => CoreRegistry.Build(
+            new Module("First", b => b.SetGuildCost(100)),
+            new Module("Second", b => b.SetGuildCost(200))));
+
+        Assert.That(ex!.ModuleName, Is.EqualTo("Second"));
+    }
+
+    [Test]
+    public void OneModuleRestatingItsOwnPrice_IsFine()
+    {
+        var registry = CoreRegistry.Build(new Module("Pocket", b =>
+        {
+            b.SetGuildCost(100);
+            b.SetGuildCost(200);
+        }));
+
+        Assert.That(registry.GuildCost, Is.EqualTo(200));
+    }
+
     private sealed class Ordered(string name, int order, List<string> log) : ITickWork
     {
         public string Name { get; } = name;

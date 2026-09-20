@@ -1,14 +1,17 @@
 namespace Mirage.Shared;
 
 /// <summary>
-/// Shared rule that picks the overhead-name <see cref="GameColor"/> for a player.  Used by the
-/// client world renderer for the overhead name and by the party overlay so both reads of "this
-/// player's color" stay aligned.
+/// What a player's name is colored by RANK. Read by the world renderer, the chat log and the party
+/// overlay, so all three say the same thing about the same person.
+///
+/// <para>⚠ Access only. An operator's rank is a permission Core owns, and it reads the same in every
+/// world — a game cannot repaint it, and so cannot disguise one. Anything a GAME decides about a name,
+/// including what a marked player looks like, is declared instead and arrives as a free color.</para>
 /// </summary>
 public static class PlayerNameColor
 {
-    public static int For(bool showAsPk, AdminLevel access) =>
-        showAsPk ? GameColor.BrightRed : access switch
+    public static int For(AdminLevel access) =>
+        access switch
         {
             AdminLevel.Monitor => GameColor.Orange,
             AdminLevel.Mapper => GameColor.Turquoise,

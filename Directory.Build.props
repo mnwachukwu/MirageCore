@@ -77,6 +77,28 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <!--
+    A <see cref="..."/> that names nothing is a build error.
+
+    The doc comments here are the API description: somebody writing a game against Mirage.Shared reads
+    them in a tooltip, and a cref is how one member points at another. Generating the XML is what turns
+    the compiler loose on those links — without it, CS1574 is never raised and a cref goes on naming a
+    member that was renamed or deleted, in an IDE that silently shows nothing. Fourteen of them had
+    already gone stale that way, three naming members that no longer existed at all.
+
+    NoWarn covers the two "incomplete" diagnostics, which are a different question from "wrong":
+    1591 is a missing comment and 1573 is a documented method with an undocumented parameter. Requiring
+    either would mean writing a sentence for every public member to keep the build green, which is how a
+    codebase ends up with `/// <summary>Gets the name.</summary>`. What stays on is the family that
+    catches a LIE: 1574, 1580, 1584 — a cref that does not resolve.
+
+    The .xml files this generates are stripped from publish output by the sweep below, beside the .pdbs.
+  -->
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
+  </PropertyGroup>
+
   <!-- Strip .pdb files from publish output.
 
        DebugType covers the project BEING published and nothing else: PublishDir is set only for that
@@ -96,7 +118,8 @@
 
   <Target Name="_StripPdbsFromPublish" AfterTargets="ComputeResolvedFilesToPublishList">
     <ItemGroup>
-      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.pdb'" />
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+                             Condition="'%(Extension)' == '.pdb' Or '%(Extension)' == '.xml'" />
     </ItemGroup>
   </Target>
 

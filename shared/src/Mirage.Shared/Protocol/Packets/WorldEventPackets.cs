@@ -60,8 +60,6 @@ public sealed record NpcDeadPacket : IPacket
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.NpcDead;
     [JsonPropertyName("mapNum")] public int MapNum { get; init; }
     [JsonPropertyName("npcSlot")] public int NpcSlot { get; init; }
-    [JsonPropertyName("dmg")] public int Damage { get; init; }
-    [JsonPropertyName("crit")] public bool IsCrit { get; init; }
 }
 
 /// <summary>Server broadcasts that an NPC noticed somebody, or let them go.</summary>

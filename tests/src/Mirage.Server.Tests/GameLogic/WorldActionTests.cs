@@ -300,10 +300,10 @@ public class WorldActionTests
         var (world, _, pm) = Build();
 
         world.SetMarked(Me, 60);
-        Assert.That(pm[Idx].Char.IsPk(DateTimeOffset.UtcNow.ToUnixTimeSeconds()), Is.True);
+        Assert.That(pm[Idx].Char.IsMarked(DateTimeOffset.UtcNow.ToUnixTimeSeconds()), Is.True);
 
         world.SetMarked(Me, 0);
-        Assert.That(pm[Idx].Char.IsPk(DateTimeOffset.UtcNow.ToUnixTimeSeconds()), Is.False);
+        Assert.That(pm[Idx].Char.IsMarked(DateTimeOffset.UtcNow.ToUnixTimeSeconds()), Is.False);
     }
 
     [Test]

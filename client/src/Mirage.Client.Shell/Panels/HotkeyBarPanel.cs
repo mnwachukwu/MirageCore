@@ -335,8 +335,7 @@ public static class HotkeyBarPanel
             // The live inventory slot (when there is one) carries durability and stack size.
             int inv = FindInvSlot(state, hk.Num);
             Tooltip.NotifyHoverItem(TooltipScope, (TooltipScope, slot), item,
-                inv > 0 ? me.Inv[inv] : null, me, itemsTex, input.MousePosition,
-                state.Items, state.Weather);
+                inv > 0 ? me.Inv[inv] : null, me, itemsTex, input.MousePosition);
             return;
         }
 

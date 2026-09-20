@@ -191,7 +191,7 @@ public static class UiHelper
     /// <summary>Color for a "<paramref name="dur"/>/<paramref name="maxDur"/>" durability readout:
     /// white above <see cref="DurabilityGoodPct"/>% condition, yellow above <see cref="DurabilityWarnPct"/>%,
     /// red at/below it (0 durability / broken lands here). Returns white when <paramref name="maxDur"/>
-    /// <= 0 (item carries no durability) so a caller drawing it unconditionally still reads as "fine".</summary>
+    /// &lt;= 0 (item carries no durability) so a caller drawing it unconditionally still reads as "fine".</summary>
     public static Color DurabilityColor(int dur, int maxDur)
     {
         if (maxDur <= 0) return DurabilityGoodColor;

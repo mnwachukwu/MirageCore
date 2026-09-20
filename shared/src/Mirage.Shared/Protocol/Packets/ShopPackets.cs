@@ -89,7 +89,7 @@ public sealed record ShopContentsPacket : IPacket
     );
 }
 
-// ── Spell ────────────────────────────────────────────────────────────────────
+// ── The action bar ───────────────────────────────────────────────────────────
 
 /// <summary>
 /// S→C: how wide this game's action bar is, and what the character has on it. Sent at join and echoed
@@ -111,12 +111,12 @@ public sealed record PlayerHotkeysPacket : IPacket
     /// <summary>How many slots this game declared. Zero draws no bar at all.</summary>
     [JsonPropertyName("slots")] public int Slots { get; init; }
 
-    /// <summary>The bar, 1-based slots flattened to a 0-based wire array (as PlayerSpells does with the
-    /// spell book). An empty slot is <see cref="Records.HotkeyKind.None"/>.</summary>
+    /// <summary>The bar, 1-based slots flattened to a 0-based wire array. An empty slot is
+    /// <see cref="HotkeyKind.None"/>.</summary>
     [JsonPropertyName("bound")] public IReadOnlyList<Slot> Bound { get; init; } = [];
 
     /// <summary>One slot as the client needs it: what it points at, and everything needed to draw it.</summary>
-    /// <param name="Kind">The <see cref="Records.HotkeyKind"/> as a byte.</param>
+    /// <param name="Kind">The <see cref="HotkeyKind"/> as a byte.</param>
     /// <param name="Id">The action id, or the record family id.</param>
     /// <param name="Num">The record number, or a verb's subject number, or zero.</param>
     /// <param name="Caption">What to call it, already in the words the player reads.</param>
@@ -132,7 +132,7 @@ public sealed record PlayerHotkeysPacket : IPacket
         [property: JsonPropertyName("s")] int Sprite);
 }
 
-/// <summary>C→S: bind or clear one action-bar slot. Kind <see cref="Records.HotkeyKind.None"/> clears it.
+/// <summary>C→S: bind or clear one action-bar slot. Kind <see cref="HotkeyKind.None"/> clears it.
 /// The server validates and echoes <see cref="PlayerHotkeysPacket"/>; it never trusts this to be
 /// in-range or to name something the game declared as bindable.</summary>
 public sealed record SetHotkeyPacket : IPacket

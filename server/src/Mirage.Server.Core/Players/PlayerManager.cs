@@ -28,7 +28,6 @@ public sealed class PlayerManager
         {
             _players[i] = new ServerPlayer
             {
-                DamageByPlayer = new int[Slots + 1],
                 Slot = i,
                 ConnectionChanged = OnConnectionChanged,
             };

@@ -33,7 +33,8 @@ public sealed partial class ClientPacketHandler
     private void HandleNameTints(NameTintsPacket p)
     {
         _state.NameTints = new NameTintSet(
-            [.. p.Tints.Select(t => new NameTint { Key = t.Key, Rgb = t.Rgb })], p.OtherwiseRgb);
+            [.. p.Tints.Select(t => new NameTint { Key = t.Key, Rgb = t.Rgb })],
+            p.OtherwiseRgb, p.MarkedRgb, p.AggressorRgb);
     }
 
     /// <summary>What each surface shows. Arrives with the numbering for the same reason the bars do:

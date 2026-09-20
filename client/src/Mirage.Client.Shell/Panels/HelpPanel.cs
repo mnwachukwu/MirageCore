@@ -39,7 +39,7 @@ public sealed class HelpPanel : IGamePanel
     /// <summary>Per-command help entry. <see cref="Syntax"/> is the literal slash-command form
     /// (not localized — slash commands don't translate); <see cref="DescKey"/> looks up the
     /// translated description text; <see cref="Min"/> is the tier at which the entry first appears.
-    /// Each tier inherits all rows from lower tiers — see the plan's "Action set & access mapping".</summary>
+    /// Each tier inherits all rows from lower tiers — see the plan's "Action set &amp; access mapping".</summary>
     private readonly record struct CmdEntry(string Syntax, string DescKey, AdminLevel Min);
 
     private static readonly CmdEntry[] Commands =
@@ -167,7 +167,7 @@ public sealed class HelpPanel : IGamePanel
         }
     }
 
-    /// <summary>Emits one social-section line ("<syntax> = <description>") with the syntax
+    /// <summary>Emits one social-section line (<c>&lt;syntax&gt; = &lt;description&gt;</c>) with the syntax
     /// (everything before the " = " separator) painted in the command-syntax yellow, matching the command
     /// tables. A line without the separator renders plain (shouldn't happen for social entries).</summary>
     private void AddSocialLine(string key)

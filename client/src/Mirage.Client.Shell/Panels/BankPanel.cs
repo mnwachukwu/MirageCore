@@ -473,8 +473,7 @@ public sealed class BankPanel : IGamePanel
         if (slot is null || slot.Num <= 0 || slot.Num > state.Limits.Items) return;
         var item = state.Items[slot.Num];
         if (item is null) return;
-        Tooltip.NotifyHoverItem(TooltipScopeInv, (TooltipScopeInv, slotIdx, slot.Num), item, slot, state.Me, itemsTex, _input.MousePosition,
-            state.Items, state.Weather);
+        Tooltip.NotifyHoverItem(TooltipScopeInv, (TooltipScopeInv, slotIdx, slot.Num), item, slot, state.Me, itemsTex, _input.MousePosition);
     }
 
     private void NotifyBankHover(ClientState state, IReadOnlyList<Texture2D?> itemsTex)
@@ -486,8 +485,7 @@ public sealed class BankPanel : IGamePanel
         if (slot.Num <= 0 || slot.Num > state.Limits.Items) return;
         var item = state.Items[slot.Num];
         if (item is null) return;
-        Tooltip.NotifyHoverItem(TooltipScopeBank, (TooltipScopeBank, bankSlot, slot.Num), item, slot, state.Me, itemsTex, _input.MousePosition,
-            state.Items, state.Weather);
+        Tooltip.NotifyHoverItem(TooltipScopeBank, (TooltipScopeBank, bankSlot, slot.Num), item, slot, state.Me, itemsTex, _input.MousePosition);
     }
 
     private bool TryGetSelectedInvItemNum(ClientState state, out int itemNum)

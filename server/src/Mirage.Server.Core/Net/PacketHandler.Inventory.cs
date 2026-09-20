@@ -223,7 +223,7 @@ public sealed partial class PacketHandler
         => _world.IsNpcInInteractRange(index, _pm[index].Char, mapNum, npcSlot, out npcNum);
 
     // NPC-interaction spine: a player interacted with a map NPC
-    // — via the melee attack key (Choice.Auto), or a right-click context-menu item within r=5. Choice.Shop /
+    // — via the interact key (Choice.Auto), or a right-click context-menu item within r=5. Choice.Shop /
     // .Talk / .Quest each FORCE one role (the context-menu items, and a conversation's terminal hand-off choices),
     // so a forced open can't loop into a different menu. Choice.Auto is TALK-FIRST: a conversation if the NPC has
     // one, else the client quest/context menu if it has an actionable quest for this player, else its keeper shop.

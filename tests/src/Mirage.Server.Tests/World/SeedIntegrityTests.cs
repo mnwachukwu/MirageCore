@@ -545,7 +545,7 @@ public class SeedIntegrityTests
     {
         RequireShops();
         var treasures = _items.Where(kv => kv.Value.NonJunkable && kv.Value.Price > 0
-                                        && kv.Key != Constants.GoldItemIndex && kv.Key != Constants.ValorItemIndex)
+                                        && kv.Key != Constants.GoldItemIndex)
                               .Select(kv => kv.Key).ToArray();
         Assert.That(treasures, Is.Not.Empty, "the seed authors no treasure");
 

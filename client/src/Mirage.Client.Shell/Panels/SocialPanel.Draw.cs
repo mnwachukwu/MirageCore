@@ -20,7 +20,6 @@ public sealed partial class SocialPanel : IGamePanel
     public void Draw(SpriteBatch sb, SpriteFont font, ClientState state, bool isActive = false)
     {
         if (!IsOpen) return;
-        _state = state;
         long nowMs = Environment.TickCount64;
 
         if (_lastSocialVersion != state.SocialVersion || _builtTab != _activeTab)
@@ -40,7 +39,7 @@ public sealed partial class SocialPanel : IGamePanel
             var info = state.GuildInfo;
             if (info is null || !info.InGuild)
             {
-                DrawGuildlessView(sb, font, body);
+                DrawGuildlessView(sb, font, body, state.GuildCost);
             }
             else
             {
@@ -232,11 +231,11 @@ public sealed partial class SocialPanel : IGamePanel
     }
 
     // Guildless: create-a-guild on-ramp + the open-guild browser with Apply.
-    private void DrawGuildlessView(SpriteBatch sb, SpriteFont font, Rectangle body)
+    private void DrawGuildlessView(SpriteBatch sb, SpriteFont font, Rectangle body, int guildCost)
     {
         LayoutGuildlessView(body, out var browseRect);
         UiHelper.DrawLabelCentered(sb, font,
-            ClientStrings.Format(ClientStrings.SocialPanel_CreateCostFormat, ("Cost", Constants.GuildCreationCost)),
+            ClientStrings.Format(ClientStrings.SocialPanel_CreateCostFormat, ("Cost", guildCost)),
             body.X, body.Y + Pad, body.Width, Color.LightGray);
         _createBtn.Draw(sb, font, _input, normalColor: UiHelper.PrimaryButtonNormal, hoverColor: UiHelper.PrimaryButtonHover);
 

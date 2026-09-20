@@ -53,7 +53,8 @@ public static partial class PacketBuilder
 
     // ── Game state ───────────────────────────────────────────────────────────
 
-    public static WelcomePacket Welcome(int index) => new() { Index = index };
+    public static WelcomePacket Welcome(int index, int guildCost = 0) =>
+        new() { Index = index, GuildCost = guildCost };
     public static PlayerInGamePacket PlayerInGame() => new();
     public static LeftGamePacket LeftGame(int index) => new() { Index = index };
 
@@ -75,7 +76,7 @@ public static partial class PacketBuilder
             Map = mapNum,
             MoveSpeed = p.MoveSpeed,
             Access = p.Access,
-            PkExpiryUtc = p.PkExpiryUtc,
+            MarkedUntilUtc = p.MarkedUntilUtc,
             GraceUntilUtc = graceUntilUtc,
             AggressorUntilUtc = aggressorUntilUtc,
             GodMode = godMode,
@@ -186,7 +187,7 @@ public static partial class PacketBuilder
         ArgumentNullException.ThrowIfNull(bars);
 
         long nowUtc = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        bool showAsPk = p.IsPk(nowUtc) && pkGraceUntilUtc <= nowUtc;
+        bool showAsMarked = p.IsMarked(nowUtc) && pkGraceUntilUtc <= nowUtc;
         int msSince = MsSinceCombat(combatExpiresAt, nowMs, combatDurationMs);
 
         // Read here rather than on the client: the recipient is somebody who usually cannot SEE this
@@ -200,7 +201,7 @@ public static partial class PacketBuilder
             Index = index,
             Name = p.TrimmedName,
             MapNum = p.Map, X = p.X, Y = p.Y,
-            ShowAsPk = showAsPk,
+            ShowAsMarked = showAsMarked,
             Access = p.Access,
             MsSinceCombat = msSince,
             Bars = rows,
@@ -297,8 +298,8 @@ public static partial class PacketBuilder
         ChatMsg(msg, color, Mirage.Shared.Protocol.ChatChannels.Name(channel));
 
     /// <summary>Player-originated chat overload. Carries speaker identity so the client can color
-    /// the name and attach a right-click span. ShowAsPk is frozen at send time.</summary>
-    public static ChatMsgPacket ChatMsg(string msg, int color, string channel, string speakerName, AdminLevel speakerAccess, bool speakerShowAsPk) =>
+    /// the name and attach a right-click span. ShowAsMarked is frozen at send time.</summary>
+    public static ChatMsgPacket ChatMsg(string msg, int color, string channel, string speakerName, AdminLevel speakerAccess, bool speakerShowAsMarked) =>
         new()
         {
             Msg = msg,
@@ -306,11 +307,11 @@ public static partial class PacketBuilder
             Channel = channel,
             SpeakerName = speakerName,
             SpeakerAccess = speakerAccess,
-            SpeakerShowAsPk = speakerShowAsPk,
+            SpeakerShowAsMarked = speakerShowAsMarked,
         };
 
-    public static ChatMsgPacket ChatMsg(string msg, int color, ChatChannel channel, string speakerName, AdminLevel speakerAccess, bool speakerShowAsPk) =>
-        ChatMsg(msg, color, Mirage.Shared.Protocol.ChatChannels.Name(channel), speakerName, speakerAccess, speakerShowAsPk);
+    public static ChatMsgPacket ChatMsg(string msg, int color, ChatChannel channel, string speakerName, AdminLevel speakerAccess, bool speakerShowAsMarked) =>
+        ChatMsg(msg, color, Mirage.Shared.Protocol.ChatChannels.Name(channel), speakerName, speakerAccess, speakerShowAsMarked);
 
     /// <summary>S→C, once per session: the chat channels this game declared, beside Core's own.</summary>
     public static ChatChannelsPacket ChatChannels(ChatChannelSet channels) =>
@@ -319,11 +320,13 @@ public static partial class PacketBuilder
     public static ChatBubblePacket ChatBubble(int playerIndex, string msg, byte kind) =>
         new() { PlayerIndex = playerIndex, Msg = msg, Kind = kind };
 
-    public static NpcChatBubblePacket NpcChatBubble(int mapNum, int npcSlot, string msg, byte kind) =>
-        new() { MapNum = mapNum, NpcSlot = npcSlot, Msg = msg, Kind = kind };
+    public static NpcChatBubblePacket NpcChatBubble(int mapNum, int npcSlot, string msg) =>
+        new() { MapNum = mapNum, NpcSlot = npcSlot, Msg = msg };
 
-    public static NpcChatBubblePacket TraversalNpcChatBubble(int spawnMap, int spawnSlot, string msg, byte kind) =>
-        new() { NpcSlot = 0, SpawnMap = spawnMap, SpawnSlot = spawnSlot, Msg = msg, Kind = kind };
+    /// <summary>The same line from a creature that is away from home — addressed by the identity it
+    /// spawned with, since a guest holds no slot on the map it is standing on.</summary>
+    public static NpcChatBubblePacket TraversalNpcChatBubble(int spawnMap, int spawnSlot, string msg) =>
+        new() { NpcSlot = 0, SpawnMap = spawnMap, SpawnSlot = spawnSlot, Msg = msg };
 
     // ── Weather / time ───────────────────────────────────────────────────────
 

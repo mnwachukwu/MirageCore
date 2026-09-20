@@ -12,7 +12,7 @@ namespace Mirage.Editor.Tests.ViewModels;
 /// table's give→get rows.
 ///
 /// <para>The round-trip tests here are the load-bearing ones. Before the UI existed the view model carried
-/// the sales list through load and save as an untouched <c>List<int></c>, precisely so a shop stocked
+/// the sales list through load and save as an untouched <c>List&lt;int&gt;</c>, precisely so a shop stocked
 /// by the content generator could survive being opened in an editor that could not show it. Now that rows
 /// exist, that guarantee has to be re-earned through a collection that empties, rebuilds and renumbers —
 /// and a shopfront quietly lost on save looks exactly like a successful save.</para>

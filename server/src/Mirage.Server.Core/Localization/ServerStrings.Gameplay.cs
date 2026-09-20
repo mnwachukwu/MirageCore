@@ -2,8 +2,8 @@ using Mirage.Shared.Localization;
 
 namespace Mirage.Server.Core.Localization;
 
-/// <summary>The remaining per-system lines: spells, movement, parties, spawning, PK expiry,
-/// regeneration, packet validation, search, quests, time of day, and weather.</summary>
+/// <summary>The remaining per-system lines: movement, parties, spawning, mark expiry, packet
+/// validation, search, time of day, and weather.</summary>
 public static partial class ServerStrings
 {
     // ── Map greeting ──────────────────────────────────────────────────────────
@@ -41,8 +41,8 @@ public static partial class ServerStrings
     public const string PlayerSpawnSystem_InsufficientGold = nameof(PlayerSpawnSystem_InsufficientGold);
     public const string PlayerSpawnSystem_SpawnSet = nameof(PlayerSpawnSystem_SpawnSet);
 
-    // ── PkExpirySystem_* — a marked player's flag lapsing, raised by JoinLeaveSystem ──
-    public const string PkExpirySystem_CrimesFaded = nameof(PkExpirySystem_CrimesFaded);
+    // ── A mark lapsing while its bearer was away, raised by JoinLeaveSystem ──
+    public const string MarkSystem_MarkLapsed = nameof(MarkSystem_MarkLapsed);
 
     // ── PacketHandler ─────────────────────────────────────────────────────────
     public const string PacketHandler_NotNearShop = nameof(PacketHandler_NotNearShop);

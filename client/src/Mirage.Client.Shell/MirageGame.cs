@@ -175,15 +175,6 @@ public sealed partial class MirageGame : Game
     private SdlEventFilterDelegate? _sdlFilter; // field keeps delegate alive (prevents GC)
     private static MirageGame? _instance;
     private static volatile bool _pendingAltF4;
-    // Localized vital label for floating combat text. Resolved per use (not cached) so a runtime
-    // language switch is reflected immediately; values reuse the Stats_* panel labels.
-    private static string VitalLabel(VitalType type) => ClientStrings.Get(type switch
-    {
-        VitalType.Hp => ClientStrings.Stats_Hp,
-        VitalType.Mp => ClientStrings.Stats_Mp,
-        VitalType.Sp => ClientStrings.Stats_Sp,
-        _ => ClientStrings.Stats_Exp,
-    });
     private Point _quitConfirmLockedPos; // window position saved when quit confirm opens
     private bool _loginClearName = true;
     private bool _loginClearPassword = true;

@@ -34,7 +34,7 @@ public sealed partial class ShopEditorViewModel : EditorViewModelBase<ShopRowVie
     protected override int GetIndex(ShopRowViewModel vm) => vm.Index;
     /// <inheritdoc/>
     protected override bool GetIsDirty(ShopRowViewModel vm) => vm.IsDirty;
-    /// <inheritdoc/>
+
     // ── Copy ──────────────────────────────────────────────────────────────────
 
     /// <summary>An unused slot, by the same rule the list already labels one: it has no name.</summary>

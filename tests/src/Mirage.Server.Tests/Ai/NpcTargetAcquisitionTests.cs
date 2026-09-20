@@ -85,7 +85,7 @@ public class NpcTargetAcquisitionTests
         pc.Map = Map;
         pc.X = x;
         pc.Y = y;
-        if (pk) pc.PkExpiryUtc = long.MaxValue;
+        if (pk) pc.MarkedUntilUtc = long.MaxValue;
         world.MapObservers[Map].Add(index);   // acquisition scans MapObservers; unobserved players are invisible
     }
 

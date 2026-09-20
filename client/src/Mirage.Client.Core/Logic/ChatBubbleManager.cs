@@ -37,7 +37,7 @@ public static class ChatBubbleManager
     {
         if (npc.ChatBubbleText is null) return;
         npc.ChatBubbleDrifters ??= new List<NpcChatBubbleDrifter>(4);
-        npc.ChatBubbleDrifters.Add(new NpcChatBubbleDrifter(npc.ChatBubbleText, npc.ChatBubbleColor, now));
+        npc.ChatBubbleDrifters.Add(new NpcChatBubbleDrifter(npc.ChatBubbleText, npc.ChatBubbleRgb, now));
     }
 
     public static void NaturallyExpire(ClientMapNpc npc, long now)

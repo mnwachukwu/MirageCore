@@ -632,7 +632,7 @@ public sealed class ServerWorld : IWorld
         // and the way out of it from exactly these two values. Setting them and saying nothing is a
         // state the server is in and nobody else knows about.
         _dispatcher.SendToObservers(_world.MapObservers[p.Map], PacketBuilder.PlayerData(
-            who.PlayerIndex, p, p.Map, _pm[who.PlayerIndex].PkGraceUntilUtc,
+            who.PlayerIndex, p, p.Map, _pm[who.PlayerIndex].MarkGraceUntilUtc,
             _pm[who.PlayerIndex].AggressorUntilUtcNow, godMode: p.GodMode));
     }
 
@@ -640,7 +640,7 @@ public sealed class ServerWorld : IWorld
     {
         long until = seconds > 0 ? _clock.UtcNowUnix + seconds : 0;
 
-        if (who.IsPlayer && IsInWorld(who)) _pm[who.PlayerIndex].Char.PkExpiryUtc = until;
+        if (who.IsPlayer && IsInWorld(who)) _pm[who.PlayerIndex].Char.MarkedUntilUtc = until;
         else if (Npc(who) is { } npc) npc.MarkedUntilUtc = until;
     }
 
@@ -670,7 +670,7 @@ public sealed class ServerWorld : IWorld
 
     public bool IsMarked(EntityHandle who)
     {
-        if (who.IsPlayer && IsInWorld(who)) return _pm[who.PlayerIndex].Char.IsPk(_clock.UtcNowUnix);
+        if (who.IsPlayer && IsInWorld(who)) return _pm[who.PlayerIndex].Char.IsMarked(_clock.UtcNowUnix);
 
         return Npc(who) is { } npc && npc.MarkedUntilUtc > _clock.UtcNowUnix;
     }

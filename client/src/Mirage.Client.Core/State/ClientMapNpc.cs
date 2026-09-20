@@ -3,9 +3,8 @@ using Mirage.Shared;
 namespace Mirage.Client.Core.State;
 
 /// <summary>
-/// Client-side NPC slot on the current map.
-/// Mirrors MapNpcRecord but adds
-/// keeps all the client rendering state (offsets, animation flags).
+/// Client-side NPC slot on the current map: what the server says about the body, plus the client's
+/// own rendering state (offsets, animation flags).
 ///
 /// Not sealed: <see cref="ClientTraversalNpc"/> inherits it so a chasing NPC visiting a
 /// neighbor map reuses the same offset/animation/bar rendering as a native slot NPC.
@@ -30,15 +29,13 @@ public class ClientMapNpc
     public long LastCombatMs { get; set; }
     public bool HasTarget { get; set; }
 
-    // Animated display values for world-space bars (-1f = uninitialized → snap on first Tick)
-    // While Environment.TickCount64 < this, the HP bar holds instead of animating — used to keep the bar
-    // in sync with an in-flight spell bolt (hit-timing deferral). 0 = not holding.
-
     // Chat bubble — Says from this NPC, anchored above its head. Same head+drifter model as
-    // PlayerRecord; Color is GameColor.BrightRed (hostile) or .BrightGreen (friendly/shopkeeper).
+    // PlayerRecord. The color is the one this creature's NAME is drawn in, packed 0xRRGGBB, taken
+    // when the line arrives: a body that dies mid-sentence has forgotten its attributes by the time
+    // its last words finish drifting, so a color read at draw would change under them.
     public string? ChatBubbleText { get; set; }
     public long ChatBubbleEndMs { get; set; }
-    public int ChatBubbleColor { get; set; }
+    public int ChatBubbleRgb { get; set; }
     public List<NpcChatBubbleDrifter>? ChatBubbleDrifters { get; set; }
 
     /// <summary>Replace this slot's state with a server-authoritative snapshot. Returns true if
@@ -70,7 +67,7 @@ public class ClientMapNpc
     }
 }
 
-public readonly record struct NpcChatBubbleDrifter(string Text, int Color, long DemotedMs);
+public readonly record struct NpcChatBubbleDrifter(string Text, int Rgb, long DemotedMs);
 
 /// <summary>
 /// A hostile NPC chasing a player across a seamless border.  It lives outside the per-map slot

@@ -16,9 +16,9 @@ namespace Mirage.Shared;
 /// each family to its ceiling in the RUNTIME data folder on first launch, <c>GameWorld</c> allocates one
 /// array per family, and the editor's slot pickers list that many rows.</para>
 ///
-/// <para>Not every ceiling belongs here. The per-character shapes — inventory, bank, hotkeys, spellbook,
-/// character slots — are baked into the save format, so changing one is a data migration rather than a
-/// setting, and they stay <c>const</c>.</para>
+/// <para>Not every ceiling belongs here. The per-character shapes — inventory, bank, hotkeys, character
+/// slots — are baked into the save format, so changing one is a data migration rather than a setting,
+/// and they stay <c>const</c>.</para>
 /// </summary>
 public sealed record RecordLimits
 {
@@ -75,7 +75,7 @@ public sealed record RecordLimits
     /// MODULE declared: the id overload can only look one up in Core's own table, so a game's family
     /// would answer 0 there — "no room" — rather than its own ceiling.</para>
     ///
-    /// <para>Core's eight families are configurable per server and read their own property. Everything
+    /// <para>Core's six families are configurable per server and read their own property. Everything
     /// else answers with what it declared, and a module keeps that until somebody needs its ceiling
     /// to be an operator setting.</para></summary>
     public int For(Extensibility.RecordFamily family)

@@ -108,32 +108,18 @@ public sealed class EditorDataService
     public EditorDataPacket.NameEntry[]? OnlineConversations { get; private set; }
     // Server-sent set of currency-type item indices (for drop-quantity validation); null when offline.
     private HashSet<int>? _onlineCurrencyItems;
-    // Server-sent gate facts for the class editor's starting loadout; null when offline.
-    private Dictionary<int, EditorDataPacket.ItemGate>? _onlineItemGates;
-
-    /// <summary>Everything the starting-loadout gates need about an item, from the LIVE world when
-    /// connected and the offline records otherwise. Never mixes the two: an offline folder can be a
-    /// completely different world from the server, so falling back per-field would produce a gate answer
-    /// that is true of neither.</summary>
-    public (ItemType Type, int Power, short Tier)? ItemGate(int num)
-    {
-        if (num <= 0) return null;
-        if (IsOnline)
-            return _onlineItemGates is not null && _onlineItemGates.TryGetValue(num, out var g)
-                ? (g.Type, g.Power, g.Tier) : null;
-        if (num >= OfflineItems.Length || string.IsNullOrEmpty(OfflineItems[num].Name)) return null;
-        var r = OfflineItems[num];
-        return (r.Type, r.Power, r.Tier);
-    }
+    // Server-sent prices for the shop editor's sales table; null when offline.
+    private Dictionary<int, EditorDataPacket.ItemPrice>? _onlineItemPrices;
 
     /// <summary>What item <paramref name="num"/> sells for in a shop's sales table, from the LIVE world when
-    /// connected and the offline records otherwise. Null when the item does not exist; 0 is a real answer
+    /// connected and the offline records otherwise. Never mixes the two: an offline folder can be a
+    /// completely different world from the server. Null when the item does not exist; 0 is a real answer
     /// (an unpriced item, which the sales table flags rather than hides — listing one gives it away free).</summary>
     public int? ItemPrice(int num)
     {
         if (num <= 0) return null;
         if (IsOnline)
-            return _onlineItemGates is not null && _onlineItemGates.TryGetValue(num, out var g) ? g.Price : null;
+            return _onlineItemPrices is not null && _onlineItemPrices.TryGetValue(num, out var g) ? g.Price : null;
         if (num >= OfflineItems.Length || string.IsNullOrEmpty(OfflineItems[num].Name)) return null;
         return OfflineItems[num].Price;
     }
@@ -472,7 +458,7 @@ public sealed class EditorDataService
         OnlineMapGroups = pkt.MapGroups;
         OnlineConversations = pkt.Conversations;
         _onlineCurrencyItems = new HashSet<int>(pkt.CurrencyItems);
-        _onlineItemGates = pkt.ItemGates.ToDictionary(g => g.Num);
+        _onlineItemPrices = pkt.ItemPrices.ToDictionary(g => g.Num);
     }
 
     public void ClearOnline()
@@ -487,7 +473,7 @@ public sealed class EditorDataService
         OnlineMapGroups = null;
         OnlineConversations = null;
         _onlineCurrencyItems = null;
-        _onlineItemGates = null;
+        _onlineItemPrices = null;
     }
 
     // ── Online name patching (after online save, keeps type-ahead lists fresh) ─

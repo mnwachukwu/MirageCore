@@ -47,11 +47,13 @@ public class ChatBubbleManagerTests
     [Test]
     public void NpcOverload_DemotesAndClears()
     {
-        var n = new ClientMapNpc { ChatBubbleText = "grr", ChatBubbleColor = 1 };
+        var n = new ClientMapNpc { ChatBubbleText = "grr", ChatBubbleRgb = 0x00FF00 };
         ChatBubbleManager.NaturallyExpire(n, 10);
         Assert.Multiple(() =>
         {
             Assert.That(n.ChatBubbleDrifters, Has.Count.EqualTo(1));
+            Assert.That(n.ChatBubbleDrifters![0].Rgb, Is.EqualTo(0x00FF00),
+                "a drifting line keeps the color the creature spoke it in");
             Assert.That(n.ChatBubbleText, Is.Null);
         });
     }

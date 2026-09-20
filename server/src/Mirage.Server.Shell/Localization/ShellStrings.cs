@@ -260,11 +260,6 @@ public static class ShellStrings
     public const string World_SpawnMap = nameof(World_SpawnMap);
     public const string World_SpawnX = nameof(World_SpawnX);
     public const string World_SpawnY = nameof(World_SpawnY);
-    public const string Schedule_Heading = nameof(Schedule_Heading);
-    public const string Schedule_Blurb = nameof(Schedule_Blurb);
-    public const string Schedule_WarNightDay = nameof(Schedule_WarNightDay);
-    public const string Schedule_WarNightHour = nameof(Schedule_WarNightHour);
-    public const string Schedule_WeekResetNote = nameof(Schedule_WeekResetNote);   // "{Day}"
 
     // ── Logging ───────────────────────────────────────────────────────────────
     public const string Logging_Heading = nameof(Logging_Heading);
@@ -291,14 +286,6 @@ public static class ShellStrings
     public const string Management_TokenCopied = nameof(Management_TokenCopied);
     public const string Management_LocalOnly = nameof(Management_LocalOnly);
 
-    public const string Config_DeathPenaltyHeading = nameof(Config_DeathPenaltyHeading);
-    public const string Config_DeathPenaltyBlurb = nameof(Config_DeathPenaltyBlurb);
-    public const string Config_DurabilityLoss = nameof(Config_DurabilityLoss);
-    public const string Config_DurabilityLossHint = nameof(Config_DurabilityLossHint);
-    public const string Config_ItemDrop = nameof(Config_ItemDrop);
-    public const string Config_ItemDropHint = nameof(Config_ItemDropHint);
-    public const string Config_ExpLoss = nameof(Config_ExpLoss);
-    public const string Config_ExpLossHint = nameof(Config_ExpLossHint);
     public const string Config_LanguageHeading = nameof(Config_LanguageHeading);
     public const string Config_LanguageBlurb = nameof(Config_LanguageBlurb);
     public const string Config_LanguageServerNote = nameof(Config_LanguageServerNote);

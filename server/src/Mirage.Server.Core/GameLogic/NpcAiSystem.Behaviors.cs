@@ -230,7 +230,7 @@ public sealed partial class NpcAiSystem : GameSystem
         _dispatcher.SendLocalizedChatTo(target, ServerStrings.NpcAiSystem_NpcSays,
             new ChatMetadata(GameColor.Npc, ChatChannel.Global),
             ("NpcName", npc.TrimmedName), ("Say", npc.Says.TrimEnd()));
-        _dispatcher.SendTo(target, PacketBuilder.NpcChatBubble(mapNum, slot, npc.Says.TrimEnd(), kind: 0));
+        _dispatcher.SendTo(target, PacketBuilder.NpcChatBubble(mapNum, slot, npc.Says.TrimEnd()));
     }
 
     // Walk to player-dropped litter and clear it.  Claims one item at a time so two scavengers on the

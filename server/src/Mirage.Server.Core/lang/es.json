@@ -255,7 +255,7 @@
   "PlayerSpawnSystem_NotNearInn": "No estás lo bastante cerca para usar la posada.",
   "PlayerSpawnSystem_InsufficientGold": "Necesitas {Cost} de oro para fijar aquí tu punto de reaparición.",
   "PlayerSpawnSystem_SpawnSet": "Tu punto de reaparición ha sido fijado. Reaparecerás aquí cuando mueras.",
-  "PkExpirySystem_CrimesFaded": "Los crímenes de {PlayerName} como asesino de jugadores se han borrado de la memoria...",
+  "MarkSystem_MarkLapsed": "{PlayerName} ya no está marcado.",
   "PacketHandler_NotNearShop": "No estás lo bastante cerca para abrir la tienda.",
   "PacketHandler_CannotLogoutCombat": "No puedes cerrar sesión mientras estás en combate.",
   "PacketHandler_TellFrom": "{From} te dice: '{Message}'",

@@ -8,7 +8,7 @@ namespace Mirage.Server.Core.World;
 ///
 /// <para><b>Core knows a stain spreads, darkens and dries; it does not know what spilled.</b> Blood, oil,
 /// scorch, paint and snowmelt are one mechanism, and the world says which it is once through
-/// <see cref="Records.WorldManifest.DecalColor"/> rather than the engine deciding.</para>
+/// <see cref="Mirage.Shared.Records.WorldManifest.DecalColor"/> rather than the engine deciding.</para>
 ///
 /// <para><see cref="Amount"/> (capped at <see cref="Constants.DecalMaxAmount"/>) drives the decal's size;
 /// <see cref="Peak"/> is the amount at the last deposit, so freshness = Amount/Peak is the client's opacity —

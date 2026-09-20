@@ -102,6 +102,11 @@ public sealed record NameTintsPacket : IPacket
     /// <summary>The color for a creature matching no row, packed <c>0xRRGGBB</c>.</summary>
     [JsonPropertyName("otherwise")] public int OtherwiseRgb { get; init; } = NameTintSet.PlainRgb;
 
+    /// <summary>What a marked player's name is drawn in, and what an aggressor's pulses to. Players
+    /// rather than creatures: the state is the engine's to track and the game's to color.</summary>
+    [JsonPropertyName("marked")] public int MarkedRgb { get; init; } = NameTintSet.MarkedDefaultRgb;
+    [JsonPropertyName("aggressor")] public int AggressorRgb { get; init; } = NameTintSet.AggressorDefaultRgb;
+
     public readonly record struct Row(
         [property: JsonPropertyName("k")] string Key,
         [property: JsonPropertyName("rgb")] int Rgb);

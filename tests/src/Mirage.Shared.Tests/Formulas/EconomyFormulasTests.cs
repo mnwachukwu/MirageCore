@@ -271,13 +271,4 @@ public class EconomyFormulasTests
             "upkeep has to track the gear it maintains, or it decays into a rounding error");
     }
 
-    // ── Wear ─────────────────────────────────────────────────────────────────
-
-    [Test]
-    public void EquipmentDamageOnDeath_IsPercentOfMax_FlooredAt1()
-    {
-        Assert.That(EconomyFormulas.EquipmentDamageOnDeath(maxDur: 100, percentOfMax: 20), Is.EqualTo(20));
-        Assert.That(EconomyFormulas.EquipmentDamageOnDeath(100, 10), Is.EqualTo(10));
-        Assert.That(EconomyFormulas.EquipmentDamageOnDeath(1, 10), Is.EqualTo(1));   // 0.1 → floor 1
-    }
 }

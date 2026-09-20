@@ -123,6 +123,7 @@ public sealed class MirageServerService : IHostedService
         _world.ChatChannels = _registry.ChatChannels;
         _world.Families = _registry.Schema;
         _world.HotkeyBarSlots = _registry.HotkeyBarSlots;
+        _world.GuildCost = _registry.GuildCost;
 
         await LoadWorldDataAsync(ct);
 

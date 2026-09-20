@@ -14,8 +14,8 @@ namespace Mirage.Server.Tests.Ai;
 // breaks that. The strongest guarantee is STRUCTURAL: TraversalNpcRecord : MapNpcRecord, so a guest IS a native record
 // (every combat/AI field inherited, never shadowed) and every method that takes a MapNpcRecord operates
 // on both identically — data-level divergence is impossible. This fixture locks that inheritance, the
-// seam state-carry (CopyCombatLedgerTo), the shared chase decision (NpcWantsChaseRun), and the ONE
-// intentional specialization (GetSpawnIdentity → permanent home identity).
+// shared chase decision (NpcWantsChaseRun), and the ONE intentional specialization
+// (GetSpawnIdentity → permanent home identity).
 //
 // Scope note: running a full AI + movement TICK and diffing native vs guest outcomes would need the
 // whole movement and dispatcher graph wired up (a much heavier harness). The structural
@@ -46,8 +46,7 @@ public class GuestNativeNpcParityTests
     }
 
     // Every AI state field the player can perceive is declared on the BASE — inherited by the guest, never
-    // shadowed — so a guest and a native carry it identically (action timers, chase latches, vitals,
-    // and all three aggro-ledger arrays that must cross a seam together).
+    // shadowed — so a guest and a native carry it identically: action timers and chase latches.
     [TestCase("Target")]
     [TestCase("Dir")]
     [TestCase("AttackTimer")]
@@ -55,9 +54,6 @@ public class GuestNativeNpcParityTests
     [TestCase("ChaseSprinting")]
     [TestCase("RushCommitted")]
     [TestCase("LastReachedTargetMs")]
-    [TestCase("DamageByPlayer")]
-    [TestCase("WarnHitsByPlayer")]
-    [TestCase("DamageByNpc")]
     public void CombatState_DeclaredOnBase_NotShadowedByGuest(string member)
     {
         var prop = typeof(TraversalNpcRecord).GetProperty(member, BindingFlags.Public | BindingFlags.Instance);
@@ -66,29 +62,10 @@ public class GuestNativeNpcParityTests
             $"{member} must be declared on MapNpcRecord so a guest inherits (not shadows) it — else it could diverge");
     }
 
-    // ── B. SEAM STATE-CARRY — the whole aggro ledger is handed to the guest in one shot ──
-
-    [Test]
-    public void CopyCombatLedgerTo_TransfersEntireLedger()
-    {
-        var native = new MapNpcRecord { Num = 1 };
-        native.DamageByPlayer[3] = 42;                    // kill-credit
-        native.WarnHitsByPlayer[3] = 2;                   // guard grace tally (must cross WITH the damage)
-        native.AddNpcDamage(spawnMap: 2, spawnSlot: 5, dmg: 17);   // NPC contributor list
-
-        var guest = new TraversalNpcRecord { Num = 1 };
-        native.CopyCombatLedgerTo(guest);
-
-        Assert.That(guest.DamageByPlayer[3], Is.EqualTo(42), "kill-credit ledger must cross the seam");
-        Assert.That(guest.WarnHitsByPlayer[3], Is.EqualTo(2), "guard grace tally must cross alongside the damage");
-        Assert.That(guest.DamageByNpc, Is.SameAs(native.DamageByNpc), "NPC contributor list is reference-transferred");
-        Assert.That(guest.DamageByNpc!.Single().Damage, Is.EqualTo(17));
-    }
-
-    // ── C. SHARED CHASE DECISION — identical for a guest and a native at identical state ──
+    // ── B. SHARED CHASE DECISION — identical for a guest and a native at identical state ──
     // NpcWantsChaseRun takes the BASE MapNpcRecord, so a guest (subclass) runs the identical code. This sweep
-    // locks that contract across every axis (behavior, caster-vs-melee, contact, latch, gap): any future
-    // guest-specific branch that changed the run/walk decision — the ### 7 class of bug — would break it.
+    // locks that contract across every axis (behavior, contact, latch, gap): any future guest-specific
+    // branch that changed the run/walk decision would break it.
     [Test]
     public void ChaseRunDecision_IdenticalForGuestAndNative()
     {
@@ -97,33 +74,30 @@ public class GuestNativeNpcParityTests
 
         foreach (var beh in new[] { NpcBehavior.Pursue, NpcBehavior.Flee, NpcBehavior.Wander })
         {
-            foreach (var (str, intel) in new[] { (30, 0), (99, 1), (5, 30) })   // pure melee, STR bruiser + INT splash, caster
+            foreach (bool contact in new[] { false, true })
             {
-                foreach (bool contact in new[] { false, true })
+                foreach (bool sprinting in new[] { false, true })
                 {
-                    foreach (bool sprinting in new[] { false, true })
+                    foreach (int gap in new[] { 1, 3, 6, 9 })
                     {
-                        foreach (int gap in new[] { 1, 3, 6, 9 })
-                        {
-                            var npc = new NpcRecord { Behavior = beh};
-                            var native = new MapNpcRecord { HasMadeContact = contact, ChaseSprinting = sprinting};
-                            var guest = new TraversalNpcRecord { HasMadeContact = contact, ChaseSprinting = sprinting};
+                        var npc = new NpcRecord { Behavior = beh};
+                        var native = new MapNpcRecord { HasMadeContact = contact, ChaseSprinting = sprinting};
+                        var guest = new TraversalNpcRecord { HasMadeContact = contact, ChaseSprinting = sprinting};
 
-                            bool nativeRun = (bool)decide!.Invoke(null, new object[] { native, npc, gap })!;
-                            bool guestRun = (bool)decide.Invoke(null, new object[] { guest, npc, gap })!;
+                        bool nativeRun = (bool)decide!.Invoke(null, new object[] { native, npc, gap })!;
+                        bool guestRun = (bool)decide.Invoke(null, new object[] { guest, npc, gap })!;
 
-                            string ctx = $"beh={beh} str={str} int={intel} contact={contact} sprint={sprinting} gap={gap}";
-                            Assert.That(guestRun, Is.EqualTo(nativeRun), $"chase run/walk decision diverged: {ctx}");
-                            // The ChaseSprinting latch side-effect must land identically too.
-                            Assert.That(guest.ChaseSprinting, Is.EqualTo(native.ChaseSprinting), $"ChaseSprinting latch diverged: {ctx}");
-                        }
+                        string ctx = $"beh={beh} contact={contact} sprint={sprinting} gap={gap}";
+                        Assert.That(guestRun, Is.EqualTo(nativeRun), $"chase run/walk decision diverged: {ctx}");
+                        // The ChaseSprinting latch side-effect must land identically too.
+                        Assert.That(guest.ChaseSprinting, Is.EqualTo(native.ChaseSprinting), $"ChaseSprinting latch diverged: {ctx}");
                     }
                 }
             }
         }
     }
 
-    // ── D. THE ONE INTENTIONAL SPECIALIZATION — permanent home identity ──
+    // ── C. THE ONE INTENTIONAL SPECIALIZATION — permanent home identity ──
     // A guest reports its permanent HOME (SpawnMap, SpawnSlot) identity rather than its transient (map, slot),
     // so NPC-vs-NPC contributor/target references stay stable as it hops seams. This is the sole by-design
     // guest/native behavioral difference — and it is invisible to the player.

@@ -23,7 +23,6 @@ public sealed partial class SocialPanel : IGamePanel
         ColumnsChanged = false;
         if (!IsOpen) return;
         _input = input;
-        _state = state;
         _lastMousePos = input.MousePosition;
         TabChanged = false;
         long nowMs = Environment.TickCount64;

@@ -28,6 +28,7 @@ public sealed class CoreRegistry
                          DisplayFieldSet displayFields, PacketRoutes packetRoutes,
                          GameActions actions, IReadOnlyList<IActionHandler> actionHandlers,
                          GamePanels panels, ChatChannelSet chatChannels, int hotkeyBarSlots,
+                         int guildCost,
                          IReadOnlyList<IWorldObserver> observers,
                          IReadOnlyList<IConsoleHandler> consoleHandlers,
                          IReadOnlyList<IDeathPolicy> deathPolicies, IReadOnlyList<ILingerPolicy> lingerPolicies,
@@ -50,6 +51,7 @@ public sealed class CoreRegistry
         Panels = panels;
         ChatChannels = chatChannels;
         HotkeyBarSlots = hotkeyBarSlots;
+        GuildCost = guildCost;
         Observers = observers;
         ConsoleHandlers = consoleHandlers;
         DeathPolicies = deathPolicies;
@@ -111,6 +113,10 @@ public sealed class CoreRegistry
     /// <summary>How many action-bar slots this game gives the player. <see cref="HotkeyBar.None"/> in an
     /// engine with no game loaded, and then the client draws no bar.</summary>
     public int HotkeyBarSlots { get; }
+
+    /// <summary>What founding a guild costs in the money item. Nothing in an engine with no game
+    /// loaded, and then founding one is free.</summary>
+    public int GuildCost { get; }
 
     /// <summary>What is told when something happens in the world, in the order their modules were
     /// configured. Empty in an engine with no game loaded, which then tells nobody anything.</summary>
@@ -245,7 +251,11 @@ internal sealed class CoreBuilder : ICoreBuilder
     private readonly List<OverheadBar> _overheadBars = [];
     private readonly List<NameTint> _nameTints = [];
     private int _otherwiseNameRgb = NameTintSet.PlainRgb;
-    private string? _otherwiseNameSetBy;
+    private int _markedRgb = NameTintSet.MarkedDefaultRgb;
+    private int _aggressorRgb = NameTintSet.AggressorDefaultRgb;
+    private string? _nameColorsSetBy;
+    private int _guildCost;
+    private string? _guildCostSetBy;
     private readonly List<DisplayField> _displayFields = [];
     private readonly List<IPacketRoute> _packetRoutes = [];
     private readonly List<GameAction> _actions = [];
@@ -465,21 +475,42 @@ internal sealed class CoreBuilder : ICoreBuilder
         _nameTints.Add(tint);
     }
 
-    /// <summary>The color for a creature carrying none of the declared tints. Said once for the world:
-    /// a second module overruling the first would leave which one wins depending on load order.</summary>
-    public void SetOtherwiseNameRgb(int rgb)
+    /// <summary>How this world colors a name.
+    ///
+    /// <para>⚠ One MODULE owns the answer, and may restate it — a scripting layer offering the three as
+    /// separate calls arrives here once per call. A SECOND module is refused, because which of them won
+    /// would then depend on load order.</para></summary>
+    public void SetNameColors(int plainRgb, int markedRgb, int aggressorRgb)
     {
         Refuse();
 
-        if (_otherwiseNameSetBy is not null)
+        if (_nameColorsSetBy is not null && _nameColorsSetBy != _module)
         {
             throw new CoreModuleException(
-                $"Module '{_module}' set the plain name color, which module '{_otherwiseNameSetBy}' "
+                $"Module '{_module}' set the name colors, which module '{_nameColorsSetBy}' "
                 + "has already set.", _module);
         }
 
-        _otherwiseNameSetBy = _module;
-        _otherwiseNameRgb = rgb;
+        _nameColorsSetBy = _module;
+        _otherwiseNameRgb = plainRgb;
+        _markedRgb = markedRgb;
+        _aggressorRgb = aggressorRgb;
+    }
+
+    /// <summary>What founding a guild costs. Said once, on the same terms as the name colors.</summary>
+    public void SetGuildCost(int cost)
+    {
+        Refuse();
+
+        if (_guildCostSetBy is not null && _guildCostSetBy != _module)
+        {
+            throw new CoreModuleException(
+                $"Module '{_module}' set the guild cost, which module '{_guildCostSetBy}' "
+                + "has already set.", _module);
+        }
+
+        _guildCostSetBy = _module;
+        _guildCost = Math.Max(0, cost);
     }
 
     public void AddPanel(GamePanel panel)
@@ -780,10 +811,10 @@ internal sealed class CoreBuilder : ICoreBuilder
         var schema = new RecordSchema { Families = [.. _families], ChoiceSets = [.. _choices] };
         return new CoreRegistry(schema, attributes, Packets.Build(), _tick.Build(),
                                 new EquipSlotSet(_equipSlots), new OverheadBarSet(_overheadBars),
-                                new NameTintSet(_nameTints, _otherwiseNameRgb),
+                                new NameTintSet(_nameTints, _otherwiseNameRgb, _markedRgb, _aggressorRgb),
                                 new DisplayFieldSet(_displayFields), new PacketRoutes([.. _packetRoutes]),
                                 new GameActions(_actions), [.. _actionHandlers], new GamePanels([.. _panels]),
-                                new ChatChannelSet([.. _chatChannels]), _hotkeyBarSlots,
+                                new ChatChannelSet([.. _chatChannels]), _hotkeyBarSlots, _guildCost,
                                 [.. _observers], [.. _consoleHandlers], [.. _deathPolicies],
                                 [.. _lingerPolicies], [.. _movePolicies],
                                 [.. _usePolicies], [.. _lootPolicies],

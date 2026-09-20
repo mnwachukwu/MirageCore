@@ -101,7 +101,7 @@ public sealed partial class ConsoleCommands
             if (!_pm[i].IsPlaying || !string.Equals(_pm[i].Login, login, StringComparison.OrdinalIgnoreCase)) continue;
             _pm[i].Char.Access = level;
             _dispatcher.SendToAll(PacketBuilder.PlayerData(i, _pm[i].Char, _pm[i].Char.Map,
-                _pm[i].PkGraceUntilUtc, _pm[i].AggressorUntilUtcNow));
+                _pm[i].MarkGraceUntilUtc, _pm[i].AggressorUntilUtcNow));
         }
         Write(ServerStrings.Console_AccessSet, ("Name", charName), ("Level", level));
         _logger.LogInformation("Console set {Login}'s account access to {Level}.", login, level);

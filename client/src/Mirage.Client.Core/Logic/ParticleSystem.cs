@@ -544,12 +544,11 @@ public sealed class ParticleSystem
     public static float ProjectileFlightMs(float distancePx) =>
         MathF.Min(distancePx / ProjectileSpeed, ProjectileMaxLifeSec) * 1000f;
 
-    // ── Spell FX tuning ─────────────────────────────────────────────────────
+    // ── Projectile and burst tuning ─────────────────────────────────────────
     private const float ProjectileSpeed = 520f;      // px/s homing speed
     private const float ProjectileMaxLifeSec = 0.9f; // flight cap if the target slips out of reach
     private const float BallSize = 10f;
     private const float CubeSize = 12f;
-    private const uint CubeLightRgb = 0xFFFFFF;       // the cube's LIGHT is white; its body is drawn gray by the shell
     private const int SparkleCount = 8;              // motes per restore cast — enough to read as a glitter cluster
     private const float SparkleSpread = 11f;         // start/target jitter radius (px) so motes scatter, not converge
     private const float SparkleSizeMin = 3f, SparkleSizeMax = 8f; // wide range => mixed tiny/bright motes twinkle

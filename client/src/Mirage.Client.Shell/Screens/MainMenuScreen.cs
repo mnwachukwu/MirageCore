@@ -56,7 +56,7 @@ public sealed class MainMenuScreen : IGameScreen
 
     /// <summary>Back at the main menu we are in no world, so the client drops whatever name the last
     /// server gave it and wears the engine's again. Without this the menu would still be advertising a
-    /// server you have already left. Empty resets it — see <see cref="ClientState.GameName"/>.</summary>
+    /// server you have already left. Empty resets it — see <see cref="Mirage.Client.Core.State.ClientState.GameName"/>.</summary>
     public void OnEnter()
     {
         _ctx.State.GameName = "";

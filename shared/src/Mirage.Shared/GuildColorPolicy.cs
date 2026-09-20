@@ -3,7 +3,7 @@ namespace Mirage.Shared;
 /// <summary>
 /// A guild's overhead color is a free 24-bit RGB value (packed <c>0xRRGGBB</c>), with one restriction:
 /// it may not land on — or within a small tolerance of — any of the 16 named <see cref="GameColor"/>
-/// palette entries. Those carry game-semantic meaning (PK/combat red, system yellow, the access-rank
+/// palette entries. Those carry meaning of their own (the marked red, system yellow, the access-rank
 /// name colors, ...), so guild colors are kept visibly distinct from them rather than being near-
 /// duplicates. Freedom is bounded <i>by</i> the palette, not limited <i>to</i> it.
 ///

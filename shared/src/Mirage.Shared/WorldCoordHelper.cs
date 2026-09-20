@@ -150,9 +150,9 @@ public static class WorldCoordHelper
         => RectAxisGap(aX, aSize, bX, bSize) == 0 && RectAxisGap(aY, aSize, bY, bSize) == 0;
 
     /// <summary>True when two SxS footprints (top-left anchors A and B) touch orthogonally — one tile of gap on
-    /// one axis while the spans overlap on the other.  This is melee reach measured EDGE to EDGE: two size-3
+    /// one axis while the spans overlap on the other.  This is reach measured EDGE to EDGE: two size-3
     /// bodies standing face to face sit 3 tiles apart anchor to anchor, so an anchor-distance test reads them as
-    /// far apart and neither can ever swing.  Symmetric in A and B, so reach is the same read from either body.
+    /// far apart and neither can ever touch the other.  Symmetric in A and B, so reach is the same read from either body.
     /// Size 1 on both sides is exactly <see cref="IsWorldAdjacent"/> — diagonals excluded.</summary>
     public static bool AreFootprintsAdjacent(int aX, int aY, int aSize, int bX, int bY, int bSize)
     {
@@ -163,7 +163,7 @@ public static class WorldCoordHelper
 
     /// <summary>The run of <paramref name="size"/> world tiles immediately beyond a footprint's leading
     /// edge in <paramref name="dir"/> - the tiles a size-S body would step INTO (movement validation) or
-    /// STRIKE (melee) when facing/moving that way.  Anchor is the footprint's top-left tile.  For size 1
+    /// act on when facing/moving that way.  Anchor is the footprint's top-left tile.  For size 1
     /// this is the single tile in front.  The run steps along the edge (positive unit step), so both the
     /// indexer and <see cref="TileRun.Contains"/> are valid.</summary>
     public static TileRun LeadingEdgeTiles(int anchorWX, int anchorWY, int size, Direction dir) => dir switch
@@ -252,29 +252,28 @@ public static class WorldCoordHelper
     }
 
     /// <summary>
-    /// Spell-cast range: a pure Pythagorean circle of radius 5 around the caster, with the same reach
+    /// How far one body can reach another: a pure Pythagorean circle of radius 5, with the same reach
     /// cardinally and diagonally.
     ///
-    /// <para>A wider-than-tall rectangle would let mages hit farther on X than on Y, and the meta that
-    /// falls out of that is mages keeping prey on the long axis while melee closes on the short one. The
-    /// circle removes the directional advantage entirely. R=5 is the largest symmetric circle fitting the
-    /// 16×12 viewport, limited by the short half-extent of 5 in Y; larger means reach beyond what is
-    /// rendered, or asymmetry.</para>
+    /// <para>A wider-than-tall rectangle would reach farther on X than on Y, which is an advantage to
+    /// whoever keeps the other on the long axis. The circle removes the directional advantage entirely.
+    /// R=5 is the largest symmetric circle fitting the 16×12 viewport, limited by the short half-extent
+    /// of 5 in Y; larger means reach beyond what is rendered, or asymmetry.</para>
     ///
-    /// <para>The viewport's four corner wings stay visible: you can SEE entities out there and not cast on
+    /// <para>The viewport's four corner wings stay visible: you can SEE entities out there and not reach
     /// them. Visibility and earshot still use <see cref="IsWithinViewport"/>'s asymmetric rectangle.</para>
     ///
     /// Inherently two-way: if A is within B's circle, B is within A's circle (distance is
-    /// symmetric in (dx,dy)), so no separate "mutual range" check is needed for PvP fairness.
+    /// symmetric in (dx,dy)), so no separate "mutual range" check is needed.
     /// </summary>
     public static bool IsInInteractRange(int playerWorldX, int playerWorldY, int targetWorldX, int targetWorldY) =>
         IsInInteractRange(playerWorldX, playerWorldY, 1, targetWorldX, targetWorldY, 1);
 
-    /// <summary>Footprint-aware spell-circle test: true when the NEAREST tiles of two SxS footprints (top-left
-    /// anchors A and B, sizes in tiles) fall within the r=5 circle.  So an oversize NPC is targetable when ANY
-    /// tile of its body is inside the caster's circle (not just its anchor), and an oversize NPC caster reaches
-    /// from its body edge.  <see cref="RectAxisGap"/> is symmetric, so this stays inherently two-way (PvP-fair)
-    /// at any sizes; size 1 on both sides is exactly the plain point check above.</summary>
+    /// <summary>Footprint-aware circle test: true when the NEAREST tiles of two SxS footprints (top-left
+    /// anchors A and B, sizes in tiles) fall within the r=5 circle.  So an oversize NPC is reachable when ANY
+    /// tile of its body is inside the circle (not just its anchor), and an oversize body reaches from its own
+    /// edge.  <see cref="RectAxisGap"/> is symmetric, so this stays inherently two-way at any sizes; size 1 on
+    /// both sides is exactly the plain point check above.</summary>
     public static bool IsInInteractRange(int aWorldX, int aWorldY, int aSize, int bWorldX, int bWorldY, int bSize)
     {
         int dx = RectAxisGap(aWorldX, aSize, bWorldX, bSize);
@@ -295,8 +294,8 @@ public static class WorldCoordHelper
     /// <summary>
     /// Straight-line tile traversal from (from*) to (to*) in world-tile coords; false the moment
     /// the line crosses a tile the caller's <paramref name="isBlockedAt"/> reports as blocking.
-    /// Both endpoints are skipped — the caster sits on one, the target on the other; neither is
-    /// its own obstacle. Integer Bresenham, so the trace is symmetric (caster→target == target→caster).
+    /// Both endpoints are skipped — one body sits on each; neither is its own obstacle. Integer
+    /// Bresenham, so the trace is symmetric (either end to the other walks the same tiles).
     ///
     /// Movement is cardinal-only, so a diagonal step also fails when BOTH perpendicular corner
     /// tiles are blocked: that pair forms an impassable wall even though the diagonal line itself
@@ -313,7 +312,7 @@ public static class WorldCoordHelper
         // Direction-independence: standard Bresenham picks alternate minor-axis tiles based on
         // which endpoint the trace starts at, so without this normalization A→B could clear LoS
         // while B→A fails it on the same wall placement. Anchor the trace at the lexically smaller
-        // endpoint so caster→target and target→caster always walk the same tiles.
+        // endpoint so the trace walks the same tiles read from either end.
         if (fromWorldX > toWorldX || (fromWorldX == toWorldX && fromWorldY > toWorldY))
         {
             (fromWorldX, toWorldX) = (toWorldX, fromWorldX);

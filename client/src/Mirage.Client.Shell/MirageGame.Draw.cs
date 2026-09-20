@@ -392,7 +392,7 @@ public sealed partial class MirageGame : Game
     /// smoothly and the camera-centered player lands on an exact pixel (no wobble).  Scale = screen scale
     /// / supersample factor so the target lands exactly on the map area; native (_worldSS==1)
     /// point-samples for crispness, upscaled (>=2) linear-downscales for smooth + no shimmer.
-    /// Scissored against <1px float overhang.</summary>
+    /// Scissored against &lt;1px float overhang.</summary>
     private void CompositeWorld(Rectangle lb, float heatScrollY)
     {
         float scaleX = lb.Width / (float)RefW;

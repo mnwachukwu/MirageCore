@@ -255,7 +255,7 @@
   "PlayerSpawnSystem_NotNearInn": "Você não está perto o bastante para usar a estalagem.",
   "PlayerSpawnSystem_InsufficientGold": "Você precisa de {Cost} de ouro para definir o seu ponto de retorno aqui.",
   "PlayerSpawnSystem_SpawnSet": "Seu ponto de retorno foi definido. Você vai renascer aqui quando morrer.",
-  "PkExpirySystem_CrimesFaded": "Os crimes de {PlayerName} como assassino de jogadores se apagaram da memória...",
+  "MarkSystem_MarkLapsed": "{PlayerName} já não está marcado.",
   "PacketHandler_NotNearShop": "Você não está perto o bastante para abrir a loja.",
   "PacketHandler_CannotLogoutCombat": "Você não pode sair enquanto está em combate.",
   "PacketHandler_TellFrom": "{From} te diz: '{Message}'",

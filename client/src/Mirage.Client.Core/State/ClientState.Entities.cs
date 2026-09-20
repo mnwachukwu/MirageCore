@@ -211,7 +211,7 @@ public sealed partial class ClientState
         return arr;
     }
 
-    /// <summary>Set by <c>InputProcessor</c> when the melee key aimed at an interactable NPC on the OTHER plane —
+    /// <summary>Set by <c>InputProcessor</c> when the interact key aimed at an NPC on the OTHER plane —
     /// refused rather than sent. One-shot: the Shell drains it into a chat refusal and clears it (same hand-off as
     /// <see cref="BankOpen"/>), because Core owns the decision but has no chat of its own.</summary>
     public bool NpcInteractWrongLayer { get; set; }

@@ -12,7 +12,7 @@ namespace Mirage.Editor.Controls;
 ///  * <see cref="IsMixedBlock"/> → amber: the ramp sits in a multi-direction block (an intentional hump/
 ///    staircase, or a misplacement) — "make sure you meant this";
 ///  * <see cref="IsInvalidBlock"/> → red frame: the whole contiguous block has no ground mount point, so it can
-///    never be climbed onto and connects nothing (e.g. two ramps whose ground feet face each other, [<][>]).
+///    never be climbed onto and connects nothing (e.g. two ramps whose ground feet face each other, [&lt;][&gt;]).
 /// </summary>
 public static class RampOverlay
 {

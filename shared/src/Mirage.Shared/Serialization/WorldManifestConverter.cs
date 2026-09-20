@@ -13,7 +13,6 @@ namespace Mirage.Shared.Serialization;
 /// so a key repeating its default states nothing. A world that only has a name is a file with only a name
 /// in it, and what an operator has actually chosen is the whole content rather than three lines buried in
 /// forty.</para>
-
 ///
 /// <para>Reading is the mirror: an absent key is the default, which is the same answer an absent FILE
 /// gives.</para>

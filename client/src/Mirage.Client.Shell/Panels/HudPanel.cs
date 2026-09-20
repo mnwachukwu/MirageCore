@@ -352,8 +352,11 @@ public sealed class HudPanel
             // Same rule as the overhead name + party overlay (PlayerNameColor over the shared palette),
             // so your name reads identically everywhere instead of a HUD-only white/red special case.
             long nowUtc = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            bool showAsPk = me.IsPk(nowUtc) && me.PkGraceUntilUtc <= nowUtc;
-            var nameColor = TextArea.GetColor(PlayerNameColor.For(showAsPk, me.Access));
+            bool showAsMarked = me.IsMarked(nowUtc) && me.MarkGraceUntilUtc <= nowUtc;
+            int markedRgb = state.NameTints.MarkedRgb;
+            var nameColor = showAsMarked
+                ? new Color((markedRgb >> 16) & 0xFF, (markedRgb >> 8) & 0xFF, markedRgb & 0xFF)
+                : TextArea.GetColor(PlayerNameColor.For(me.Access));
             UiHelper.DrawLabelCentered(sb, font, _cachedPlayerName, SidebarLeft, y, SidebarWidth, nameColor);
         }
         y += NameRowH;

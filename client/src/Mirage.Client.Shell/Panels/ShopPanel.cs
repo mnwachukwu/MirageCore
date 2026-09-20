@@ -729,8 +729,7 @@ public sealed class ShopPanel : IGamePanel
         if (item is null) return;
         var slot = new PlayerInvSlot { Num = itemNum, Quantity = 1, Dur = item.Durability };
         Tooltip.NotifyHoverItem(TooltipScope, (TooltipScope, "buy", itemNum), item, slot,
-            state.Me, itemsTex, _input.MousePosition,
-            state.Items, state.Weather);
+            state.Me, itemsTex, _input.MousePosition);
     }
 
     private void NotifySellSlotHover(ClientState state, IReadOnlyList<Texture2D?> itemsTex)
@@ -750,8 +749,7 @@ public sealed class ShopPanel : IGamePanel
         var item = state.Items[slot.Num];
         if (item is null) return;
         Tooltip.NotifyHoverItem(TooltipScope, (TooltipScope, list, slotIdx, slot.Num), item, slot,
-            state.Me, itemsTex, _input.MousePosition,
-            state.Items, state.Weather);
+            state.Me, itemsTex, _input.MousePosition);
     }
 
     private void DrawRepairConfirm(SpriteBatch sb, SpriteFont font, ClientState state, Rectangle c, IReadOnlyList<Texture2D?> itemsTex)

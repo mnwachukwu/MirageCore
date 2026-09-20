@@ -27,7 +27,9 @@ public class NameTintTests
     /// declares its keys to the viewport the way a real one has to.</summary>
     private sealed class Tints(int otherwise, params NameTint[] tints) : ICoreModule
     {
-        public string Name => "Tints";
+        /// <summary>Settable, because the one-module rule keys on this: a game restating its own answer
+        /// is fine and two games disagreeing is not, and those are the same call from here.</summary>
+        public string Name { get; init; } = "Tints";
 
         public void Configure(ICoreBuilder builder)
         {
@@ -35,7 +37,8 @@ public class NameTintTests
                 builder.Attributes.Declare(tint.Key, AttributeVisibility.Viewport);
 
             foreach (var tint in tints) builder.AddNameTint(tint);
-            if (otherwise != NameTintSet.PlainRgb) builder.SetOtherwiseNameRgb(otherwise);
+            if (otherwise != NameTintSet.PlainRgb)
+                builder.SetNameColors(otherwise, NameTintSet.MarkedDefaultRgb, NameTintSet.AggressorDefaultRgb);
         }
     }
 
@@ -110,9 +113,35 @@ public class NameTintTests
 
     /// <summary>Which module won would otherwise depend on load order, and nothing would say so.</summary>
     [Test]
-    public void TwoModulesSettingThePlainColor_AreRefused()
-        => Assert.That(() => CoreRegistry.Build(new Tints(Green), new Tints(Yellow)),
+    public void TwoModulesSettingTheNameColors_AreRefused()
+        => Assert.That(() => CoreRegistry.Build(new Tints(Green) { Name = "First" },
+                                                new Tints(Yellow) { Name = "Second" }),
                        Throws.TypeOf<CoreModuleException>());
+
+    /// <summary>⚠ But ONE module may restate them. A scripting layer offers the three colors as three
+    /// separate calls, and each arrives here carrying the whole answer.</summary>
+    [Test]
+    public void OneModuleRestatingThem_IsFine()
+    {
+        var registry = CoreRegistry.Build(new Restater());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(registry.NameTints.OtherwiseRgb, Is.EqualTo(Green));
+            Assert.That(registry.NameTints.MarkedRgb, Is.EqualTo(Yellow), "the last word on each one wins");
+        });
+    }
+
+    private sealed class Restater : ICoreModule
+    {
+        public string Name => "Restater";
+
+        public void Configure(ICoreBuilder builder)
+        {
+            builder.SetNameColors(Green, NameTintSet.MarkedDefaultRgb, NameTintSet.AggressorDefaultRgb);
+            builder.SetNameColors(Green, Yellow, NameTintSet.AggressorDefaultRgb);
+        }
+    }
 
     // ── Reading ───────────────────────────────────────────────────────────────
 

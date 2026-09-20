@@ -2,8 +2,8 @@ using Mirage.Shared.Localization;
 
 namespace Mirage.Client.Shell.Localization;
 
-/// <summary>The trading and inventory panels — inn, market, direct trade, bank, shop, inventory,
-/// spells, stats, training — plus the HUD.</summary>
+/// <summary>The trading and inventory panels — inn, market, direct trade, bank, shop, inventory —
+/// plus the HUD.</summary>
 public static partial class ClientStrings
 {
     // ── InnPanel ──────────────────────────────────────────────────────────────
@@ -134,7 +134,7 @@ public static partial class ClientStrings
     public const string HudPanel_ConfigureLink = nameof(HudPanel_ConfigureLink);
     // Sidebar map-name fallback shown when a map has neither a DisplayName nor an internal Name.
     public const string HudPanel_MapNameFallbackFormat = nameof(HudPanel_MapNameFallbackFormat);
-    // Time-of-Day status line (between map name and HP bar)
+    // Time-of-day status line, under the map name.
     public const string HudPanel_TimeDay = nameof(HudPanel_TimeDay);
     public const string HudPanel_TimeDusk = nameof(HudPanel_TimeDusk);
     public const string HudPanel_TimeNight = nameof(HudPanel_TimeNight);

@@ -59,6 +59,8 @@ public static partial class PacketBuilder
         {
             Tints = [.. tints.Tints.Select(t => new NameTintsPacket.Row(t.Key, t.Rgb))],
             OtherwiseRgb = tints.OtherwiseRgb,
+            MarkedRgb = tints.MarkedRgb,
+            AggressorRgb = tints.AggressorRgb,
         };
 
     /// <summary>What <paramref name="viewer"/> is told about <paramref name="bag"/>, or null when that

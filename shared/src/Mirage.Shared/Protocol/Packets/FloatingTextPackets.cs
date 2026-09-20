@@ -41,7 +41,7 @@ public sealed record FloatingTextPacket : IPacket
     /// <summary>What it says, already in the words a player will read.</summary>
     [JsonPropertyName("text")] public string Text { get; init; } = string.Empty;
 
-    /// <summary>Packed 0xRRGGBB, from <see cref="Extensibility.GameColor"/> or a game's own.</summary>
+    /// <summary>Packed 0xRRGGBB, from <see cref="GameColor"/> or a game's own.</summary>
     [JsonPropertyName("rgb")] public uint Rgb { get; init; }
 
     /// <summary>How much of a burst comes with it, 0 for none. Drawn in the world's own decal color, so

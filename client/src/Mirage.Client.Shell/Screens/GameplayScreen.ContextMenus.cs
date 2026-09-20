@@ -611,7 +611,7 @@ public sealed partial class GameplayScreen : IGameScreen
         return null;
     }
 
-    /// <summary>Whisper menu item — focuses chat and prefills `/w <name> ` for the user to type.</summary>
+    /// <summary>Whisper menu item — focuses chat and prefills <c>/w &lt;name&gt;</c> for the user to type.</summary>
     private void StartWhisper(string targetName)
     {
         _chat.StartWhisper(targetName);

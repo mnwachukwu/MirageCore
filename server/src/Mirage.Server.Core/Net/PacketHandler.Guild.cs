@@ -12,7 +12,7 @@ using Mirage.Shared.Security;
 
 namespace Mirage.Server.Core.Net;
 
-/// <summary>Guild lifecycle and membership: founding and disbanding, offers and applications, ranks and transfers, the guild's own settings and chat, plus the war and territory commands an admin drives.</summary>
+/// <summary>Guild lifecycle and membership: founding and disbanding, offers and applications, ranks and transfers, and the guild's own settings and chat.</summary>
 public sealed partial class PacketHandler
 {
     //  Guild handlers

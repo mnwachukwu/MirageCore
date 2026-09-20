@@ -404,7 +404,7 @@ public sealed class TcpPacketDispatcher : IPacketDispatcher, IDisposable
         meta.SpeakerName is null
             ? PacketBuilder.ChatMsg(text, meta.Color, meta.Channel)
             : PacketBuilder.ChatMsg(text, meta.Color, meta.Channel,
-                meta.SpeakerName, meta.SpeakerAccess ?? AdminLevel.Player, meta.SpeakerShowAsPk ?? false);
+                meta.SpeakerName, meta.SpeakerAccess ?? AdminLevel.Player, meta.SpeakerShowAsMarked ?? false);
 
     public void SendToEditor(int editorIndex, IPacket packet)
     {

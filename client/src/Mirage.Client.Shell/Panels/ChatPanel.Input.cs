@@ -32,6 +32,9 @@ public sealed partial class ChatPanel
         // Channel dropdown (left of the input row). Updated before the log + input box so its clicks
         // (header, and the upward popup that overlaps the log) are consumed before those handlers run.
         SyncChannels(state.ChatChannels);
+        // The game's marked color, onto every tab. Pushed here beside the channels rather than at
+        // login, because both arrive as declarations and a tab added later has to get them too.
+        foreach (var tab in _tabs) tab.Log.MarkedRgb = state.NameTints.MarkedRgb;
         RebuildChannelDropdown(state);
         _channelDropDown.Update(input, ChannelDropRect());
         int dropIdx = _channelDropDown.SelectedIndex;

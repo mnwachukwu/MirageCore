@@ -14,13 +14,13 @@ namespace Mirage.Server.Core.Net;
 
 /// <summary>
 /// Deserializes and dispatches every C-to-S packet from a dedicated <c>Mirage.Editor</c> session:
-/// the request/save pairs for items, NPCs, shops, spells, classes, quests, conversations, maps and
-/// map groups, plus the live re-broadcast that pushes each save out to connected clients.
+/// the request/save pairs for items, NPCs, shops, conversations, maps and map groups, plus the live
+/// re-broadcast that pushes each save out to connected clients.
 ///
 /// <para>Split out of <see cref="PacketHandler"/>, which was doing two unrelated jobs behind one
 /// 30-dependency constructor. Editing content and playing the game share almost nothing: this half
-/// needs eleven collaborators, and none of combat, guilds, mail, market, trade, parties, spells,
-/// social, or the game loop. Separating them means an editor test can build a real handler instead
+/// needs eleven collaborators, and none of guilds, mail, market, trade, parties, social, or the
+/// game loop. Separating them means an editor test can build a real handler instead
 /// of passing <c>null!</c> for two thirds of a constructor it does not use.</para>
 ///
 /// <para>Every handler re-checks BOTH authentication and access through <see cref="RequireAccess"/>, so
@@ -274,12 +274,11 @@ public sealed partial class EditorPacketHandler
             .Where(i => _world.Items[i].Type == ItemType.Currency)
             .ToArray();
 
-        // Gate facts the editor's requirement columns read, from the LIVE world. Only authored
-        // slots are sent — a blank row has nothing to gate and would just pad the payload.
-        var itemGates = Enumerable.Range(1, _world.Limits.Items)
+        // Prices from the LIVE world. Only authored slots are sent — a blank row has nothing to
+        // charge for and would just pad the payload.
+        var itemPrices = Enumerable.Range(1, _world.Limits.Items)
             .Where(i => !string.IsNullOrEmpty(_world.Items[i].Name))
-            .Select(i => new EditorDataPacket.ItemGate(i, _world.Items[i].Type, _world.Items[i].Power,
-                _world.Items[i].Tier, _world.Items[i].Price))
+            .Select(i => new EditorDataPacket.ItemPrice(i, _world.Items[i].Price))
             .ToArray();
 
         var npcSizes = new int[_world.Limits.Npcs + 1];
@@ -294,7 +293,7 @@ public sealed partial class EditorPacketHandler
             MapGroups = mapGroups,
             Conversations = conversations,
             CurrencyItems = currencyItems,
-            ItemGates = itemGates,
+            ItemPrices = itemPrices,
             NpcSizes = npcSizes,
             WorldName = _world.WorldName,
         };
@@ -550,7 +549,7 @@ public sealed partial class EditorPacketHandler
         _dispatcher.SendToAllEditors(PacketBuilder.UpdateShop(n, shop));
 
         // A keeper reassignment (or a Store↔Inn flip on the same keeper) changes which NPC shows the $
-        // vendor glyph and what its melee/right-click interact opens (and the menu label). Re-broadcast the
+        // vendor glyph and what interacting with it opens (and the menu label). Re-broadcast the
         // affected NPC template(s) so already-connected clients refresh without a reconnect — KeeperShopKind
         // reads the just-saved shop.
         if (oldKeeper != shop.Keeper || oldShopType != shop.ShopType)
@@ -726,9 +725,7 @@ public sealed partial class EditorPacketHandler
         for (int i = 1; i <= Constants.MaxMapNpcs; i++)
         {
             if (_world.MapNpcs[mapNum, i].IsReservedSlot) continue;
-            // Sized like every other record in this world — a default-ceiling one here would be a lone
-            // oversized outlier, and CopyCombatLedgerTo would then be copying between mismatched widths.
-            _world.MapNpcs[mapNum, i] = new MapNpcRecord(_pm.Slots);
+            _world.MapNpcs[mapNum, i] = new MapNpcRecord();
             _spawn.SpawnNpc(i, mapNum);
         }
 

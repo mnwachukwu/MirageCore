@@ -20,7 +20,6 @@ namespace Mirage.Shared;
 public static class EconomyFormulas
 {
     private const double PercentDenominator = 100.0;
-    private const int EquipmentDamageFloor = 1;
 
     // ── The backbone ─────────────────────────────────────────────────────────
     // Gold a player is expected to earn crossing one tier, fitted to a set of AUTHORED drop tables rather
@@ -148,12 +147,6 @@ public static class EconomyFormulas
         (int)Math.Clamp(Math.Round(gold, MidpointRounding.AwayFromZero), 1, int.MaxValue);
 
     // ── Wear and repair ──────────────────────────────────────────────────────
-
-    /// <summary>Each equipped item loses <paramref name="percentOfMax"/>% of its max durability,
-    /// floor 1.  Used for the normal (10%) and PK (20%) death penalties.</summary>
-    public static int EquipmentDamageOnDeath(int maxDur, int percentOfMax) =>
-        Math.Max((int)Math.Round(maxDur * percentOfMax / PercentDenominator, MidpointRounding.AwayFromZero), EquipmentDamageFloor);
-
     // ── The repair rate, and why it is keyed on Power ────────────────────────
     // Gold per durability point is Power / RepairPowerDivisor. Keyed on POWER, not the item's value:
     // value grows as L^2.675 (it is a share of a rung's income) while the gold a fight earns grows as

@@ -140,8 +140,6 @@ public sealed partial class NpcAiSystem : GameSystem
             // rather than being copied: this is the same NPC, and a copy would let the two drift.
             Attributes = mn.Attributes,
         };
-        // The whole damage ledger crosses atomically — see MapNpcRecord.CopyCombatLedgerTo.
-        mn.CopyCombatLedgerTo(t);
         _world.MapTraversalNpcs[toMap].Add(t);
 
         // Vacate but reserve the home slot — blocks respawn until the traveler returns or dies.
@@ -156,8 +154,6 @@ public sealed partial class NpcAiSystem : GameSystem
         mn.LastReachedTargetMs = 0;
         mn.ChaseTargetKey = 0;   // chase-stall state handed to the guest; clear the vacated home slot
         mn.ResetChaseStall();
-        mn.DamageByNpc = null;  // ledger handed to the guest; nothing for the home slot to clear
-        mn.ClearDamageCredit();
 
         // Any player locked onto the native slot keeps tracking this same monster as a guest.
         _selection.FollowNpcAcrossSeam(fromMap, slot, toMap);

@@ -16,8 +16,9 @@ namespace Mirage.Shared.Extensibility;
 /// that becomes hostile is renamed by the same sync that made it hostile — there is no separate color
 /// to keep in step, and no way for the two to disagree.</para>
 ///
-/// <para>⚠ Player names are not tinted this way. What colors those is access level, observer mode, and
-/// the PK flag, which are permissions and engine state rather than anything a game declares.</para>
+/// <para>⚠ A player's name is not tinted from attributes. Access level and observer mode color it, and
+/// those are permissions Core owns — but what a MARKED player looks like is still the game's, through
+/// <see cref="NameTintSet.MarkedRgb"/>.</para>
 /// </summary>
 public sealed record NameTint
 {
@@ -38,14 +39,22 @@ public sealed record NameTint
 }
 
 /// <summary>
-/// How a world colors the names over its creatures: the rules, in the order they are asked, and the
-/// color for a body that matches none of them.
+/// How a world colors the names over its heads: for a creature, rules read against what it carries;
+/// for a player, what being marked or having started a fight looks like.
+///
+/// <para>⚠ A player's ACCESS color is not here and is not a game's to set. An operator's rank is a
+/// permission, and it reads the same in every world so that it cannot be disguised by one.</para>
 /// </summary>
 public sealed class NameTintSet
 {
     /// <summary>White. What a body is named in before a game says otherwise, and what every body is
     /// named in under a game that declares no rule at all.</summary>
     public const int PlainRgb = 0xFFFFFF;
+
+    /// <summary>Red for a marked player, amber for the pulse. A game that never mentions marking still
+    /// has both drawn, because the engine tracks the state whether or not anybody colors it.</summary>
+    public const int MarkedDefaultRgb = 0xFF0000;
+    public const int AggressorDefaultRgb = 0xFFFF00;
 
     /// <summary>A world that colors no name by what a body is. What Core describes on its own.</summary>
     public static readonly NameTintSet Plain = new([], PlainRgb);
@@ -54,11 +63,14 @@ public sealed class NameTintSet
     /// player tells apart at a glance.</summary>
     public const int Max = 8;
 
-    public NameTintSet(IReadOnlyList<NameTint> tints, int otherwiseRgb)
+    public NameTintSet(IReadOnlyList<NameTint> tints, int otherwiseRgb,
+                       int markedRgb = MarkedDefaultRgb, int aggressorRgb = AggressorDefaultRgb)
     {
         ArgumentNullException.ThrowIfNull(tints);
         Tints = [.. tints.OrderBy(t => t.Ordinal)];
         OtherwiseRgb = otherwiseRgb;
+        MarkedRgb = markedRgb;
+        AggressorRgb = aggressorRgb;
     }
 
     /// <summary>Every rule, in the order they are asked.</summary>
@@ -66,6 +78,12 @@ public sealed class NameTintSet
 
     /// <summary>The color for a body carrying none of the rules' attributes.</summary>
     public int OtherwiseRgb { get; }
+
+    /// <summary>What a marked player's name is drawn in.</summary>
+    public int MarkedRgb { get; }
+
+    /// <summary>What an aggressor's name pulses to, alternating with <see cref="MarkedRgb"/>.</summary>
+    public int AggressorRgb { get; }
 
     public int Count => Tints.Count;
 

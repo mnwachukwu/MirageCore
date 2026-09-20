@@ -104,7 +104,8 @@ public sealed partial class GameplayScreen : IGameScreen
                     new Vector2(sw.Width / 2f, sw.Height / 2f), p.Size / sw.Width, SpriteEffects.None, 0f);
                 break;
             case ParticleKind.Parcel:
-                // Gray box with a soft drop shadow; p.Rgb (white) drives the light/glow, not the body.
+                // Gray box with a soft drop shadow. The color the game threw it in drives the light and
+                // glow rather than the box, so a parcel reads as a parcel whatever it is carrying.
                 float half = p.Size / 2f;
                 sb.Draw(_particlePixelTex!,
                     new Rectangle((int)(sx - half + CubeShadowOffset), (int)(sy - half + CubeShadowOffset), (int)p.Size, (int)p.Size),

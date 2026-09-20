@@ -86,9 +86,26 @@ public interface ICoreBuilder
     /// color. At most <see cref="NameTintSet.Max"/>.</summary>
     void AddNameTint(NameTint tint);
 
-    /// <summary>The color for a creature matching no tint, packed <c>0xRRGGBB</c>. One module at most
-    /// sets it, and left unset it is <see cref="NameTintSet.PlainRgb"/>.</summary>
-    void SetOtherwiseNameRgb(int rgb);
+    /// <summary>The three name colors a game owns, each packed <c>0xRRGGBB</c>: what a creature matching
+    /// no tint is named in, what a MARKED player is named in, and what somebody who just started a fight
+    /// pulses to. One module at most sets them, and left unsaid they are
+    /// <see cref="NameTintSet.PlainRgb"/>, <see cref="NameTintSet.MarkedDefaultRgb"/> and
+    /// <see cref="NameTintSet.AggressorDefaultRgb"/>.
+    ///
+    /// <para>Said together because they are one decision — how this world colors a name — and three calls
+    /// would let a game set one and forget that the other two are still Core's.</para>
+    ///
+    /// <para>⚠ Access colors are NOT here. An operator's rank is a permission Core owns and it reads the
+    /// same in every world, so a game cannot repaint it and cannot disguise one.</para></summary>
+    void SetNameColors(int plainRgb, int markedRgb, int aggressorRgb);
+
+    /// <summary>What founding a guild costs, in the money item. Consumed on success — the new guild's
+    /// vault starts empty — and the client shows the figure on the Create button before anybody presses
+    /// it, so a game changing it changes both halves at once.
+    ///
+    /// <para>Declare nothing and founding one is free, which is the only answer Core can give: how much
+    /// a guild ought to be worth is a question about an economy the engine cannot see.</para></summary>
+    void SetGuildCost(int cost);
 
     /// <summary>A screen this game paints: a title, the display surface that fills it, the verbs under
     /// it, and optionally a key that opens it. Declare none and the client shows only Core's own

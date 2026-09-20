@@ -56,7 +56,7 @@ public sealed record PartyPartnerPacket : IPacket
     [JsonPropertyName("mapNum")] public int MapNum { get; init; }
     [JsonPropertyName("x")] public int X { get; init; }
     [JsonPropertyName("y")] public int Y { get; init; }
-    [JsonPropertyName("pk")] public bool ShowAsPk { get; init; }
+    [JsonPropertyName("marked")] public bool ShowAsMarked { get; init; }
     [JsonPropertyName("access")] public AdminLevel Access { get; init; }
     // int.MaxValue = not in combat.  Otherwise milliseconds elapsed since the partner's
     // LastCombatMs at send time — converted to the receiver's clock in the handler.

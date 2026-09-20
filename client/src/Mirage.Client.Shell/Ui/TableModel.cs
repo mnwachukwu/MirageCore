@@ -178,7 +178,7 @@ public sealed class TableModel
     /// <summary>Turn the active-sort-column's per-row keys into a display permutation: returns row indices
     /// [0..keys.Count) ordered by <paramref name="keys"/> in the current direction. The sort is STABLE —
     /// rows with equal keys keep their original relative order in BOTH directions — and nulls sort first
-    /// ascending. When unsorted (<see cref="SortColumn"/> < 0) returns the identity order unchanged.
+    /// ascending. When unsorted (<see cref="SortColumn"/> &lt; 0) returns the identity order unchanged.
     /// The caller supplies keys for whichever column <see cref="SortColumn"/> names.</summary>
     public int[] SortRowOrder(IReadOnlyList<IComparable?> keys)
     {

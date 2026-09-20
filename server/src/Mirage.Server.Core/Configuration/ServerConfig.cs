@@ -86,9 +86,6 @@ public sealed record ServerConfig
     /// is the folder the EDITOR opens.</para></summary>
     public string WorldDir { get; init; } = "";
 
-    /// <summary>What a player loses when they die.</summary>
-    public DeathPenaltyConfig DeathPenalty { get; init; } = new();
-
     /// <summary>How many players this server accepts at once, and the size of every per-player array it
     /// allocates. Deliberately SMALL by default: the right number depends on the machine, and the server
     /// window's load benchmark measures it rather than asking an operator to guess.
@@ -133,9 +130,6 @@ public sealed record ServerConfig
 
     /// <summary>Where a character starts, and where one respawns without a purchased spawn point.</summary>
     public SpawnConfig Spawn { get; init; } = new();
-
-    /// <summary>When the weekly territory contest runs.</summary>
-    public ScheduleConfig Schedule { get; init; } = new();
 
     /// <summary>Remote operator access. Off unless configured.
     ///
@@ -242,28 +236,6 @@ public sealed record QueueConfig
 }
 
 /// <summary>
-/// The weekly territory contest. Server-local, so a world keeps the evening its players actually play on
-/// rather than one derived from UTC.
-///
-/// <para>The DAILY guild settlement is deliberately not here: it runs at midnight on the host box and
-/// <c>GuildSystem</c> walks whole calendar days, so a slot missed during downtime replays
-/// correctly on the next boot.</para>
-/// </summary>
-public sealed record ScheduleConfig
-{
-    public DayOfWeek WarNightDay { get; init; } = DayOfWeek.Saturday;
-
-    /// <summary>0-23, server-local.</summary>
-    public int WarNightHour { get; init; } = 20;
-
-    /// <summary>The weekly boundary — territory income snapshots, season weeks and the weekly quest reset.
-    /// DERIVED as the day after war night, never configured separately: the two were a pair of constants
-    /// documented as "the day after", and two settings could be moved out of step with each other.</summary>
-    [System.Text.Json.Serialization.JsonIgnore]
-    public DayOfWeek WeekResetDay => (DayOfWeek)(((int)WarNightDay + 1) % 7);
-}
-
-/// <summary>
 /// The remote management channel: the same console the local shell drives, reachable over a socket.
 ///
 /// <para>Both fields must be set for the listener to start. Either one alone is a misconfiguration, not a
@@ -282,26 +254,4 @@ public sealed record ManagementConfig
     /// file — a serialized copy would be a second place the answer could be written down.</summary>
     [System.Text.Json.Serialization.JsonIgnore]
     public bool IsEnabled => Port > 0 && Token.Length > 0;
-}
-
-/// <summary>
-/// The three components of a death penalty, each switchable on its own.
-///
-/// <para>Two things survive whatever these say: the sub-level-10 spare, and the ORDER at each death site
-/// — drops run before durability damage so a piece that breaks still gets its equipped drop chance. The
-/// switches gate the penalty helpers from the inside so no call site moves.</para>
-/// </summary>
-public sealed record DeathPenaltyConfig
-{
-    /// <summary>Worn gear loses durability on death. Casting reagents ride this switch rather than the
-    /// item drop: they are the caster's durability, priced against the same repair curve.</summary>
-    public bool DurabilityLoss { get; init; } = true;
-
-    /// <summary>Items fall out of the bag on death.</summary>
-    public bool ItemDrop { get; init; } = true;
-
-    /// <summary>Death costs EXP, and enough of it costs levels. Off also means a PvP killer earns
-    /// nothing — that reward is transferred out of the victim's loss, so there is nothing to hand
-    /// over. PvE EXP is unaffected.</summary>
-    public bool ExpLoss { get; init; } = true;
 }

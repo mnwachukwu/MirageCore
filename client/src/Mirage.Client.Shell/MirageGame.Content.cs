@@ -25,10 +25,10 @@ namespace Mirage.Client.Shell;
 /// key, and the procedurally generated light-halo and box textures.</summary>
 public sealed partial class MirageGame : Game
 {
-    /// <summary>Loads the localized strings, applies window settings, installs the Alt+F4 filter, and
     /// <summary>Absolute path to a numbered music track.</summary>
     private static string MusicPath(int track) => AppPaths.Asset("assets", "music", $"music{track}.ogg");
 
+    /// <summary>Loads the localized strings, applies window settings, installs the Alt+F4 filter, and
     /// builds the screen stack and event wiring. Runs before <see cref="LoadContent"/>.</summary>
     protected override void Initialize()
     {

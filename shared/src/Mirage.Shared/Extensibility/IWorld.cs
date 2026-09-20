@@ -95,7 +95,6 @@ public interface IWorld
 
     /// <summary>
     /// Says something to a set of bodies, wherever they are.
-    /// </summary>
     ///
     /// <para>🔴 <b>The audience nothing else here can express.</b> The other three are all about
     /// PLACE — one body, a region, an earshot — and a guild is not a place. Anything a game gathers
@@ -144,12 +143,17 @@ public interface IWorld
     /// and its own client shows the wait.</summary>
     void SetDowned(EntityHandle who, int seconds);
 
-    /// <summary>Marks this body for the next <paramref name="seconds"/> — a flag other players can see
-    /// on its name, and that NPC target acquisition and the movement rules read.</summary>
+    /// <summary>Marks this body for the next <paramref name="seconds"/>, and other players see it on the
+    /// name in the color the game chose with <see cref="ICoreBuilder.SetNameColors"/>.
+    ///
+    /// <para>⚠ <b>A mark means nothing on its own.</b> Core refuses no attack on account of one, reads it
+    /// nowhere in the AI or the movement rules, and lets it lapse when the timer does. What it costs to
+    /// carry, and what earns one, is entirely the game's — this only makes the state visible.</para></summary>
     void SetMarked(EntityHandle who, int seconds);
 
     /// <summary>Flags this body as the one who started it, for the next <paramref name="seconds"/>. The
-    /// client draws the flashing name.</summary>
+    /// name pulses between the two colors the game chose, so the warning reads differently from a
+    /// settled mark.</summary>
     void SetAggressor(EntityHandle who, int seconds);
 
     /// <summary>
@@ -208,7 +212,7 @@ public interface IWorld
     /// <summary>What is in that bag slot: the item, how many of it, and whether it is the copy being
     /// worn. Zeroes for a slot that is empty or is not there.
     ///
-    /// <para><paramref name="quantity"/> is the stack size for something that stacks and 1
+    /// <para><c>Quantity</c> is the stack size for something that stacks and 1
     /// otherwise, so a rule can count what a slot is worth without knowing which kind it is.</para></summary>
     (int ItemNum, int Quantity, bool Worn) InSlot(EntityHandle who, int slot);
 
@@ -673,7 +677,7 @@ public interface IWorld
 
     /// <summary>Whether it is after somebody right now — one it noticed, or one a game sent it after.
     ///
-    /// <para>The counterpart to <see cref="Provoke"/> and <see cref="Forget"/>, which write and never
+    /// <para>The counterpart to <see cref="Provoke"/> and <see cref="Forget(EntityHandle)"/>, which write and never
     /// read: without this a rule cannot tell a creature already in a fight from one standing
     /// idle.</para></summary>
     bool IsChasing(EntityHandle npc);

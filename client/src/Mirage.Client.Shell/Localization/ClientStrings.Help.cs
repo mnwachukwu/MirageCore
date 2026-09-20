@@ -2,8 +2,8 @@ using Mirage.Shared.Localization;
 
 namespace Mirage.Client.Shell.Localization;
 
-/// <summary>The shared help text, the right-click context menu, quest dialogs, NPC conversation
-/// UI, and the party overlay.</summary>
+/// <summary>The shared help text, the right-click context menu, the NPC conversation UI, and the
+/// party overlay.</summary>
 public static partial class ClientStrings
 {
     // ── Help text (shared: HelpPanel.Populate and ChatPanel /help output) ─────
@@ -104,10 +104,6 @@ public static partial class ClientStrings
     public const string ContextMenu_DropAll = nameof(ContextMenu_DropAll);
     public const string ContextMenu_Unequip = nameof(ContextMenu_Unequip);
 
-    // ── Quests: accept/turn-in dialog + quest log ───────────────────────────────
-    // A repeatable quest already finished this period — one line per cadence, so each language words its own
-    // "already done this <period>" naturally rather than interpolating a period noun.
-
     // ── NPC conversations (dialogue panel) ─────────────────────────────────────
     public const string ConversationPanel_Title = nameof(ConversationPanel_Title);
     public const string ConversationPanel_Leave = nameof(ConversationPanel_Leave);
@@ -115,7 +111,6 @@ public static partial class ClientStrings
     // ── Party overlay confirmation ────────────────────────────────────────────
     public const string PartyOverlay_ConfirmTitle = nameof(PartyOverlay_ConfirmTitle);
     public const string PartyOverlay_ConfirmBody = nameof(PartyOverlay_ConfirmBody);
-    // Territory-contest in-world HUD.
     public const string Common_Yes = nameof(Common_Yes);
     public const string Common_No = nameof(Common_No);
     public const string GuildOffer_Invite = nameof(GuildOffer_Invite);

@@ -75,14 +75,16 @@ public sealed partial class GuildSystem : GameSystem
             Notify(index, ServerStrings.Guild_NameTaken);
             return;
         }
-        if (ItemSystem.CountItem(sp.Char, _world.Items, Constants.GoldItemIndex) < Constants.GuildCreationCost)
+        // What a guild is worth is the loaded game's answer, and a game that gave none charges nothing.
+        int cost = _world.GuildCost;
+        if (cost > 0 && ItemSystem.CountItem(sp.Char, _world.Items, Constants.GoldItemIndex) < cost)
         {
-            Notify(index, ServerStrings.Guild_NeedGold, ("Cost", Constants.GuildCreationCost));
+            Notify(index, ServerStrings.Guild_NeedGold, ("Cost", cost));
             return;
         }
 
-        // Charge the creation cost (consumed — a sink; the new guild's vault starts empty).
-        _items.TakeItem(index, Constants.GoldItemIndex, Constants.GuildCreationCost);
+        // Charge it (consumed — a sink; the new guild's vault starts empty).
+        if (cost > 0) _items.TakeItem(index, Constants.GoldItemIndex, cost);
 
         int id = AllocateGuildIndex();
         var guild = new GuildRecord { Index = id, Name = name };

@@ -9,7 +9,7 @@ namespace Mirage.Shared;
 ///
 /// <para>This is the half that makes named fields honest rather than merely readable. Repaint a Warp
 /// tile as a Door and its destination map would otherwise sit on the record forever: invisible in the
-/// editor, still in the file, and live again the moment anything set it back to Warp. Items and spells
+/// editor, still in the file, and live again the moment anything set it back to Warp. Items
 /// carry the same rule for the same reason.</para>
 /// </summary>
 public static class TileAttrRules

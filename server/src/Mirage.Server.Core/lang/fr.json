@@ -255,7 +255,7 @@
   "PlayerSpawnSystem_NotNearInn": "Vous n'êtes pas assez près pour utiliser l'auberge.",
   "PlayerSpawnSystem_InsufficientGold": "Il vous faut {Cost} or pour établir votre point de retour ici.",
   "PlayerSpawnSystem_SpawnSet": "Votre point de retour a été établi. Vous réapparaîtrez ici à votre mort.",
-  "PkExpirySystem_CrimesFaded": "Les crimes de {PlayerName} en tant que tueur de joueurs se sont effacés des mémoires...",
+  "MarkSystem_MarkLapsed": "{PlayerName} n'est plus marqué.",
   "PacketHandler_NotNearShop": "Vous n'êtes pas assez près pour ouvrir la boutique.",
   "PacketHandler_CannotLogoutCombat": "Vous ne pouvez pas vous déconnecter en plein combat.",
   "PacketHandler_TellFrom": "{From} vous dit : '{Message}'",

@@ -259,14 +259,13 @@ public sealed record EditorDataPacket : IPacket
     /// <summary>Indices of the currency-type items, so the editor can validate drop quantities
     /// (currency needs a quantity; other item types ignore it) without fetching every full record.</summary>
     [JsonPropertyName("currencyItems")] public int[] CurrencyItems { get; init; } = [];
-    /// <summary>Just enough of every item and spell to answer "could this class start with it?" — the
-    /// class editor's starting-loadout tables have to evaluate the same equip and learn gates character
-    /// creation will, and those need Power / VitalAmount, Tier and the class list.
+    /// <summary>What each authored item costs, so a shop's sales table can show what a listed item will
+    /// actually charge.
     ///
     /// <para>Sent from the LIVE world rather than read from the editor's offline folder, which may be a
     /// different world entirely. Same reasoning as <see cref="CurrencyItems"/> above: a narrow projection
     /// of the facts the editor needs, not every full record.</para></summary>
-    [JsonPropertyName("itemGates")] public ItemGate[] ItemGates { get; init; } = [];
+    [JsonPropertyName("itemPrices")] public ItemPrice[] ItemPrices { get; init; } = [];
 
     /// <summary>What the server calls the world an editor is now editing — its `world.json` name, blank
     /// when it has none.
@@ -276,14 +275,8 @@ public sealed record EditorDataPacket : IPacket
     /// mapper needs it, to know which of two servers they are connected to.</para></summary>
     [JsonPropertyName("worldName")] public string WorldName { get; init; } = "";
 
-    // Price rides along with the gate facts rather than getting a packet of its own: the shop editor's sales
-    // table shows what each listed item will actually cost, and that number lives on the item record. Both
-    // consumers want "tell me about item N from the LIVE world", so one lookup serves them.
-    public sealed record ItemGate(
+    public sealed record ItemPrice(
         [property: JsonPropertyName("num")] int Num,
-        [property: JsonPropertyName("type")] ItemType Type,
-        [property: JsonPropertyName("power")] int Power,
-        [property: JsonPropertyName("tier")] short Tier,
         [property: JsonPropertyName("price")] int Price = 0);
 
 

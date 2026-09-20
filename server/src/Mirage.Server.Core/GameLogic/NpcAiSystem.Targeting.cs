@@ -283,13 +283,11 @@ public sealed partial class NpcAiSystem : GameSystem
            && mn.LastReachedTargetMs > 0
            && now - mn.LastReachedTargetMs > NpcUnreachedGiveUpMs;
 
-    /// <summary>Full reset for a native NPC that just let go: clears the damage ledger and broadcasts a
-    /// spawn-packet refresh so observers re-read it. Position stays put — the native is already on its
-    /// home map. Guests use <see cref="ReturnTraversalHome"/> instead, which also relocates them back to
-    /// spawn.</summary>
+    /// <summary>Full reset for a native NPC that just let go: broadcasts a spawn-packet refresh so
+    /// observers re-read it. Position stays put — the native is already on its home map. Guests use
+    /// <see cref="ReturnTraversalHome"/> instead, which also relocates them back to spawn.</summary>
     private void ResetNativeNpc(MapNpcRecord mn, int mapNum, int slot, NpcRecord npc)
     {
-        mn.ClearDamageCredit();
         SendToMap(_world, mapNum, new NpcSpawnPacket
         {
             MapNum = mapNum,

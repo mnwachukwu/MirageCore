@@ -785,7 +785,8 @@ public static class RenderCommandBuilder
             float t = elapsed / (float)ChatBubbleStyle.FloatMs;
             float floatPx = t * ChatBubbleStyle.FloatPx;
             float alpha = 1f - t;
-            frame.ChatBubbles.Add(new ChatBubbleDrawCmd(centerX, baseY - floatPx, d.Text, d.Color, alpha, AnchorBelow: false));
+            frame.ChatBubbles.Add(new ChatBubbleDrawCmd(centerX, baseY - floatPx, d.Text, GameColor.White, alpha,
+                                                        AnchorBelow: false, BorderRgb: d.Rgb));
         }
     }
 
@@ -965,11 +966,13 @@ public static class RenderCommandBuilder
                 float t = elapsed / (float)ChatBubbleStyle.FloatMs;
                 float floatPx = t * ChatBubbleStyle.FloatPx;
                 float alpha = 1f - t;
-                frame.ChatBubbles.Add(new ChatBubbleDrawCmd(centerX, anchorY + driftSign * floatPx, d.Text, d.Color, alpha, anchorBelow));
+                frame.ChatBubbles.Add(new ChatBubbleDrawCmd(centerX, anchorY + driftSign * floatPx, d.Text, GameColor.White, alpha,
+                                                            anchorBelow, BorderRgb: d.Rgb));
             }
         }
         if (hasHead)
-            frame.ChatBubbles.Add(new ChatBubbleDrawCmd(centerX, anchorY, n.ChatBubbleText!, n.ChatBubbleColor, 1f, anchorBelow));
+            frame.ChatBubbles.Add(new ChatBubbleDrawCmd(centerX, anchorY, n.ChatBubbleText!, GameColor.White, 1f,
+                                                        anchorBelow, BorderRgb: n.ChatBubbleRgb));
     }
 
     // ── Players ───────────────────────────────────────────────────────────────
@@ -1086,16 +1089,22 @@ public static class RenderCommandBuilder
             Layer: SlideRenderLayer(p.Layer, p.PrevLayer, p.XOffset, p.YOffset), Sheet: p.SpriteSheet));
 
         long nowUtcForGrace = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        bool showAsPk = p.IsPk(nowUtcForGrace) && p.PkGraceUntilUtc <= nowUtcForGrace;
+        bool showAsMarked = p.IsMarked(nowUtcForGrace) && p.MarkGraceUntilUtc <= nowUtcForGrace;
+        bool aggressor = !showAsMarked && nowUtcForGrace < p.AggressorUntilUtc;
+
         // Observer mode reads as a bystander: gray overhead, whatever the access color would have been.
         // Only the world name — chat and the HUD keep PlayerNameColor so an admin stays identifiable there.
-        int nameColor = p.GodMode ? GameColor.Gray : PlayerNameColor.For(showAsPk, p.Access);
-        // Aggressor flash: when the player has thrown the first hit at a clean target inside
-        // the 30 s aggressor window (and isn't yet a solid-red PKer), alternate the name color
-        // between BrightRed and Yellow at ~1.25 Hz so observers see a clearly-flashing warning
-        // distinct from PK red.
-        if (!showAsPk && nowUtcForGrace < p.AggressorUntilUtc)
-            nameColor = (tickNow / 400) % 2 == 0 ? GameColor.BrightRed : GameColor.Yellow;
+        int nameColor = p.GodMode ? GameColor.Gray : PlayerNameColor.For(p.Access);
+
+        // ⚠ Access is a PERMISSION and reads the same in every world, so it stays a palette index the
+        // engine owns. A mark is a game's rule, so its color arrives declared and overrides.
+        //
+        // An aggressor pulses at ~1.25 Hz between the plain marked color and the game's second one, so
+        // somebody who just swung first reads as a warning rather than as an already-settled mark.
+        int nameRgb = -1;
+        if (!p.GodMode && showAsMarked) nameRgb = state.NameTints.MarkedRgb;
+        else if (!p.GodMode && aggressor)
+            nameRgb = (tickNow / 400) % 2 == 0 ? state.NameTints.MarkedRgb : state.NameTints.AggressorRgb;
 
         bool hoveredHere = hovered.Kind == TargetKind.Player && hovered.A == i;
         bool plrTargetHere = target.Kind == TargetKind.Player && target.A == i;
@@ -1138,7 +1147,8 @@ public static class RenderCommandBuilder
         bool showThisName = (i == myIndex) ? showSelfName : showOtherNames;
         if (showThisName)
         {
-            frame.Names.Add(new TextDrawCmd(screenX + Constants.PicX / 2, plrNameY, p.Name, nameColor, plrNameAlignBottom, Layer: p.Layer));
+            frame.Names.Add(new TextDrawCmd(screenX + Constants.PicX / 2, plrNameY, p.Name, nameColor,
+                                            plrNameAlignBottom, RgbOverride: nameRgb, Layer: p.Layer));
             // ONE overhead guild line directly above the player name, in the guild's chosen color (a neutral
             // default until the leader picks one): "Guild {Rank} ({Standing})". The guild's color (distinct from
             // the white player name) already sets it apart, so the name is plain — no angle brackets.

@@ -64,7 +64,7 @@ public sealed partial class SocialPanel : IGamePanel
             foreach (var g in state.GuildBrowse)
             {
                 _browseList.Items.Add(ClientStrings.Format(ClientStrings.SocialPanel_BrowseRowFormat,
-                    ("Name", g.Name), ("Level", g.Level), ("Members", g.Members)));
+                    ("Name", g.Name), ("Members", g.Members)));
                 _browseIndices.Add(g.Index);
             }
 

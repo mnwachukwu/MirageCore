@@ -283,12 +283,6 @@ public sealed class MovementSystem : GameSystem
         SendToMapBut(_world, p.Map, index, new SendPlayerDirPacket { Index = index, Dir = dir });
     }
 
-    /// <summary>
-    /// Moves a player to a new map.  <paramref name="edgeDir"/> non-null means the player simply walked
-    /// off a map edge into an already-loaded neighbor — a <b>seamless</b> crossing: the client shifts its
-    /// 3×3 grid (no reload, no input block) and asks for a region re-sync.  Null = a true warp/teleport,
-    /// which uses the blocking reload handshake.
-    /// </summary>
     // ── Map-enter/leave greeting ──────────────────────────────────────────────
     // The greeting belongs to the MAP (and its MapGroup): it speaks that map's own JoinSay/LeaveSay in
     // the voice of its GreetingSpeaker. Blank fields stay silent, and there is no generic "you walk into
@@ -448,8 +442,8 @@ public sealed class MovementSystem : GameSystem
     // ── NPC movement ──────────────────────────────────────────────────────────
 
     // Guards ignore the NpcAvoid ("npc block") map attribute — they path and step across those
-    // tiles as if walkable, so a guard can cut straight through an npc-block barrier when chasing a
-    // PK or sweeping litter.  Every other behavior still treats NpcAvoid as a wall (its normal use:
+    // tiles as if walkable, so a guard can cut straight through an npc-block barrier when chasing
+    // somebody or sweeping litter.  Every other behavior still treats NpcAvoid as a wall (its normal use:
     // shaping wander zones / fencing wild mobs out of an area).
 
     // Tile-type landing test for an NPC: Walkable, Item, and a LayerRamp surface are always legal; NpcAvoid

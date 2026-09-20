@@ -39,10 +39,10 @@ and their absence is the product rather than a gap in it.
 
 ---
 
-## The twenty-four seams
+## The twenty-five seams
 
 A game is an [`ICoreModule`](../shared/src/Mirage.Shared/Extensibility/ICoreModule.cs). It is asked to
-describe itself once, and everything it can say is one of twenty-four calls on the builder it is handed.
+describe itself once, and everything it can say is one of twenty-five calls on the builder it is handed.
 
 **What the game is made of**
 
@@ -59,7 +59,7 @@ describe itself once, and everything it can say is one of twenty-four calls on t
 | `AddDisplayField` | a value to show, on a named surface, read straight off a body's attributes |
 | `AddOverheadBar` | a row over a body's head, reading two of that body's attributes — and the same rows on the party overlay |
 | `AddNameTint` | the color a creature carrying one of its own attributes is named in — a shopkeeper, a guard, a thing that will kill you |
-| `SetOtherwiseNameRgb` | the color a creature carrying none of them is named in |
+| `SetNameColors` | the color a creature carrying none of them is named in, and the two a player in a fight is |
 | `AddEquipSlot` | a place on a character where something can be worn |
 | `AddPanel` | a screen this game paints: a title, a surface, a list to pick from, the verbs under it, and the key that opens it |
 | `AddChatChannel` | a kind of line this game's own rules produce, that a player can read apart from everything else and hide when they want to |
@@ -86,6 +86,7 @@ describe itself once, and everything it can say is one of twenty-four calls on t
 | `AddCreationChoice` | what to ask before a character exists |
 | `AddLingerPolicy` | how long a dropped connection leaves a body standing |
 | `AddMovePolicy` | whether a body can still manage a run, and what a run costs it |
+| `SetGuildCost` | what founding a guild costs, in the currency item every world carries in slot 1 |
 | `AddConsoleHandler` | a command the server's own console can answer, for forcing work that runs on a schedule nobody can sit and watch |
 
 Declare none of them and you have the engine by itself. Every seam's "declare nothing" case is a

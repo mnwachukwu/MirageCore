@@ -136,7 +136,6 @@ public sealed record GuildBrowseEntry
 {
     [JsonPropertyName("index")] public int Index { get; init; }
     [JsonPropertyName("name")] public string Name { get; init; } = "";
-    [JsonPropertyName("level")] public int Level { get; init; }
     [JsonPropertyName("members")] public int Members { get; init; }
     [JsonPropertyName("labels")] public List<GuildLabel> Labels { get; init; } = new();
 }

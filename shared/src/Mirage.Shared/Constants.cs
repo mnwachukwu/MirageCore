@@ -42,16 +42,15 @@ public static class Constants
     public const int MaxPlayers = 500;
 
     // ── Record-family ceilings live in RecordLimits, NOT here ─────────────────
-    // Items, NPCs, shops, spells, quests, conversations, maps and map groups are PER-SERVER settings that
+    // Items, NPCs, shops, conversations, maps and map groups are PER-SERVER settings that
     // travel in the pre-login hello. They were consts, and that was a bug rather than a simplification:
     // a const is inlined into every shipped client, so a client built against 1000 items rejected item
     // 1200 as out of range on a server that had authored it. `RecordLimits.Default` holds the stock
     // values; a server states its own, and both ends size their tables from what was stated.
     //
-    // The per-quest and per-conversation caps below are NOT that. They bound the shape of one record —
-    // how many objectives a quest carries, how many nodes a dialogue tree has — which is a content and
-    // UI concern rather than a catalog size, and they are the same everywhere.
-    public const int MaxQuestObjectives = 255;   // safety ceiling on objectives per quest (editor authors as many as needed; bounds the per-character progress list)
+    // The per-conversation caps below are NOT that. They bound the shape of one record — how many nodes
+    // a dialogue tree has — which is a content and UI concern rather than a catalog size, and they are
+    // the same everywhere.
     public const int MaxConversationNodes = 64;    // dialogue nodes per conversation (editor add-row cap)
     public const int MaxConversationChoices = 8;   // player choices per node (menu size; panel-render sane)
     // NO CAP ON DROP-TABLE LENGTH — deliberately. There was one (8), justified as a backstop against a
@@ -148,9 +147,9 @@ public static class Constants
     /// <inheritdoc cref="ViewportTilesX"/>
     public const int ViewportTilesY = 12;
 
-    /// <summary>Spell-cast radius in tiles: a symmetric circle around the caster. The largest circle that
-    /// fits the viewport, limited by its short half-extent in Y — larger would reach past what is drawn.
-    /// Pinned to the VIEWPORT, so a large map never grants extra reach.</summary>
+    /// <summary>How far a body can reach something else, in tiles: a symmetric circle around it. The
+    /// largest circle that fits the viewport, limited by its short half-extent in Y — larger would reach
+    /// past what is drawn. Pinned to the VIEWPORT, so a large map never grants extra reach.</summary>
     public const int InteractRangeTiles = (ViewportTilesY / 2) - 1;   // 5
 
     public const int PicX = 32; // Size, in pixels
@@ -248,12 +247,6 @@ public static class Constants
     // forbid walking during a second in which no recast was possible. The 1-second cast cadence above
     // paces spell damage.
 
-    // ── Loot rolling ─────────────────────────────────────────────────────────
-    // Players whose damage credit reaches this fraction of the top-damage contributor are eligible to roll
-    // for tagged loot on NPC death, and to share the currency. Read it as "within a quarter of the top
-    // dealer": someone who did the work alongside the leader shares the kill, someone who chipped does not.
-    public const double LootDamageContributionThreshold = 0.75;
-
     // ── RNG bounds ───────────────────────────────────────────────────────────
     public const int PercentRollSides = 100;  // Random.Shared.Next(100) for % rolls (durability, drops)
 
@@ -321,17 +314,16 @@ public static class Constants
     public const int NpcChaseSprintGapTiles = 3;
 
     // ── Item index reservations ──────────────────────────────────────────────
-    // Item slot 1 is the gold (Currency) item. Every system that charges or
-    // rewards gold references this constant; do not hardcode 1 at call sites.
+    // ⚠ Item slot 1 is MONEY, in every world. Core's own shops, inns, mail, marketplace and spawn
+    // points all charge in it, so the engine has to know which item it is before any game speaks —
+    // which makes it a convention rather than a declaration. A game with no economy authors nothing
+    // in slot 1 and never mentions it; nothing here then has anything to charge.
+    //
+    // Every system that charges or rewards money references this constant; do not hardcode 1.
     public const int GoldItemIndex = 1;
 
-    // Earned from war kills + guild quests, spent at the war shop, donated to the guild vault (tax relief),
-    // or banked. Per-character; the code references this index to grant/spend it, exactly like gold.
-    public const int ValorItemIndex = 3;
-
     // ── Inn: set-spawn cost ──────────────────────────────────────────────────
-    // The cost itself is EconomyFormulas.InnSpawnCost, a share of one level's earnings. This is only the
-    // floor, for the low levels where that share is still single digits.
+    // What EconomyFormulas.InnSpawnCost charges, flat.
     public const int SpawnCostMinimum = 5;
 
     // ── Guild ────────────────────────────────────────────────────────────────
@@ -351,9 +343,6 @@ public static class Constants
     // character, so it runs down while the player is logged out and a relog neither clears nor pauses it.
     public const int HomeCooldownSeconds = 30 * 60;
 
-    // Gold to found a new guild. Consumed on success (a creation sink; the new guild's vault starts
-    // empty). Charged via GoldItemIndex, client-blocked then server-revalidated.
-    public const int GuildCreationCost = 35_000;
     // Max descriptive labels (GuildLabel) a leader may apply to a guild.
     public const int MaxGuildLabels = 3;
     // Max length of a guild's message-of-the-day.
@@ -380,9 +369,6 @@ public static class Constants
     // plays a couple of evenings a week counts, high enough that a name nobody has used does not.
     public const long GuildActiveMemberMinSeconds = 3 * 3600;
 
-    /// <summary>The share of a mob's damage a player deals for the kill to count toward their quest
-    /// objectives — player and guild alike, and the valor rolled for advancing one.
-    ///
     // ── Time of Day cycle ────────────────────────────────────────────────────
     // Full cycle = 4 real hours. Dusk and Dawn are carved from Day's 3-hour gross allotment.
     // Game time only advances while the server is running (pauses on shutdown).

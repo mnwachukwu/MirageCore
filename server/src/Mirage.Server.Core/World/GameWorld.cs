@@ -72,6 +72,10 @@ public sealed class GameWorld
     /// and then there is no bar.</summary>
     public int HotkeyBarSlots { get; set; }
 
+    /// <summary>What founding a guild costs in the money item. Zero when no game module is loaded, and
+    /// then founding one is free.</summary>
+    public int GuildCost { get; set; }
+
     /// <summary>The records of every family a module declared. Empty when no game module is loaded, which
     /// is a world made of Core's own families and nothing else.</summary>
     public ModuleRecords ModuleRecords { get; } = new();
@@ -107,7 +111,7 @@ public sealed class GameWorld
 
     /// <summary>The largest guild number ever issued, retired ones included. Seeded from disk at boot and
     /// bumped on every creation, so a number is spoken for permanently. A disbanded guild keeps its file,
-    /// flagged <see cref="Records.GuildRecord.Disbanded"/> — see
+    /// flagged <see cref="Mirage.Shared.Records.GuildRecord.Disbanded"/> — see
     /// <see cref="Persistence.IPersistenceService.RetireGuildAsync"/>.</summary>
     public int HighestGuildNumber { get; set; }
 
@@ -474,15 +478,9 @@ public sealed class GameWorld
     /// accept this interaction), not to pick a broadcast audience.</summary>
     public bool IsObserving(int index, int mapNum) => MapObservers[mapNum].Contains(index);
 
-    /// <summary>The player-slot width every per-player array in this world is cut to. Held so the map-NPC
-    /// records allocated below size their damage ledgers to the server's real limit rather than the
-    /// protocol ceiling — 21,000 records × two arrays makes that difference tens of megabytes.</summary>
-    private readonly int _playerSlots;
-
     public GameWorld(Configuration.ServerConfig? config = null)
     {
         var settings = config ?? Configuration.ServerConfig.Default;
-        _playerSlots = settings.MaxPlayers;
         Limits = settings.Records;
 
         // Every array is cut from Limits, and every bounds check downstream reads the same object, so a
@@ -505,7 +503,7 @@ public sealed class GameWorld
         for (int m = 0; m <= Limits.Maps; m++)
         {
             for (int s = 1; s <= Constants.MaxMapNpcs; s++)
-                MapNpcs[m, s] = new MapNpcRecord(_playerSlots);
+                MapNpcs[m, s] = new MapNpcRecord();
         }
     }
 

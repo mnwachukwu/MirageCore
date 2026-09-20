@@ -24,7 +24,7 @@ public abstract class GameSystem
     // The channel SendMsg/ViewportMsg use when a call site does not name one.
     private readonly ChatChannel _defaultChannel;
 
-    /// <summary>Wall-clock time. Injected so time-dependent rules — PK expiry, grace windows, mail
+    /// <summary>Wall-clock time. Injected so time-dependent rules — mark expiry, grace windows, mail
     /// maturity, listing lifetime, tax due dates — can be asserted rather than sampled. Defaults to
     /// the machine clock, so a system constructed without one behaves exactly as before the seam
     /// existed. NOT the tick clock: see <see cref="IClock"/>.</summary>
@@ -95,7 +95,7 @@ public abstract class GameSystem
     /// <summary>Sends a packet to everyone observing <paramref name="mapNum"/>.
     /// <para>Replaces the <c>_dispatcher.SendToObservers(_world.MapObservers[mapNum], packet)</c>
     /// idiom that appeared 151 times across sixteen files, each site reaching through
-    /// <see cref="World.GameWorld"/> into a raw <c>HashSet<int>[]</c> just to name an
+    /// <see cref="World.GameWorld"/> into a raw <c>HashSet&lt;int&gt;[]</c> just to name an
     /// audience.</para></summary>
     protected void SendToMap(World.GameWorld world, int mapNum, IPacket packet) =>
         _dispatcher.SendToObservers(world.MapObservers[mapNum], packet);

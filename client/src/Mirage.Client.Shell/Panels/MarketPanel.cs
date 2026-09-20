@@ -462,8 +462,7 @@ public sealed class MarketPanel : IGamePanel
         if (def is not null)
         {
             Tooltip.NotifyHoverItem(TooltipScope, key, def, new PlayerInvSlot { Num = itemNum, Quantity = value, Dur = dur },
-                state.Me, itemsTex, _input.MousePosition,
-            state.Items, state.Weather);
+                state.Me, itemsTex, _input.MousePosition);
         }
     }
 

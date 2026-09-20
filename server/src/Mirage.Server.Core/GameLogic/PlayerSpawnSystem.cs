@@ -27,8 +27,8 @@ public sealed class PlayerSpawnSystem : GameSystem
 
     /// <summary>Charge for and set the player's respawn point to where they stand.
     /// <para>Re-validates everything the client already checked — that an Inn is genuinely open for this
-    /// player and that they can afford it — because the client's copy is only a preview. Cost scales with
-    /// level (<c>EconomyFormulas.InnSpawnCost</c>), so a high-level respawn anchor is a real sink.</para>
+    /// player and that they can afford it — because the client's copy is only a preview. The price is
+    /// <c>EconomyFormulas.InnSpawnCost</c>, flat.</para>
     /// <para>Persisted immediately rather than left to the autosave: a spawn point the player paid for
     /// must not be lost to a hard disconnect.</para></summary>
     public void ConfirmSetSpawn(int index)

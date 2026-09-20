@@ -8,8 +8,8 @@ namespace Mirage.Client.Shell.Logic;
 /// the server still re-validates every request, so these are UI affordance, not security. Extracted from
 /// <c>SocialPanel</c> so the gating is unit-testable and the client/server parity is explicit.
 ///
-/// <paramref name="hasTarget"/> means a roster member OTHER than yourself is selected (you can't act on
-/// your own row); <paramref name="targetRank"/> is that member's rank.
+/// Every predicate below takes the same two: <c>hasTarget</c> means a roster member OTHER than
+/// yourself is selected (you cannot act on your own row), and <c>targetRank</c> is that member's rank.
 /// </summary>
 public static class GuildActionGate
 {

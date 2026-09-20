@@ -25,18 +25,18 @@ public readonly record struct DrawSpan
     /// <summary>The URL for a link, the player name for a name, unused for a color run — the
     /// hit-rect carries it so a click knows what it hit.</summary>
     public string Payload { get; init; }
-    /// <summary>Name runs only: drives the name color alongside <see cref="ShowAsPk"/>.</summary>
+    /// <summary>Name runs only: drives the name color alongside <see cref="ShowAsMarked"/>.</summary>
     public AdminLevel Access { get; init; }
     /// <summary>Name runs only.</summary>
-    public bool ShowAsPk { get; init; }
+    public bool ShowAsMarked { get; init; }
     /// <summary>Color runs only: an index into the shared game palette.</summary>
     public int ColorIndex { get; init; }
 
     public static DrawSpan Link(int startCol, int length, string url) =>
         new() { Start = startCol, End = startCol + length, Kind = SpanKind.Link, Payload = url };
 
-    public static DrawSpan Name(int startCol, int length, string name, AdminLevel access, bool showAsPk) =>
-        new() { Start = startCol, End = startCol + length, Kind = SpanKind.Name, Payload = name, Access = access, ShowAsPk = showAsPk };
+    public static DrawSpan Name(int startCol, int length, string name, AdminLevel access, bool showAsMarked) =>
+        new() { Start = startCol, End = startCol + length, Kind = SpanKind.Name, Payload = name, Access = access, ShowAsMarked = showAsMarked };
 
     public static DrawSpan Color(int startCol, int length, int colorIndex) =>
         new() { Start = startCol, End = startCol + length, Kind = SpanKind.Color, Payload = "", ColorIndex = colorIndex };

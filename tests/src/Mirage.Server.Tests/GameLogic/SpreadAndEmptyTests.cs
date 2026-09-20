@@ -88,7 +88,7 @@ public class SpreadAndEmptyTests
             "the two maps of the region's largest walkable stretch, and nowhere else to put one");
     }
 
-    /// <summary>⚠ <paramref name="onlyWhere"/> names one of the GAME's own truth fields on Maps, and a
+    /// <summary>⚠ <c>onlyWhere</c> names one of the GAME's own truth fields on Maps, and a
     /// spot goes only on a map carrying it — which is how a game keeps them off its towns.</summary>
     [Test]
     public void AFieldOfTheGamesOwn_DecidesWhichMapsMayHoldOne()

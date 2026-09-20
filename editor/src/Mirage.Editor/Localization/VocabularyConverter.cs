@@ -7,7 +7,7 @@ namespace Mirage.Editor.Localization;
 /// <summary>
 /// Renders a vocabulary enum through <see cref="EditorVocabulary"/> instead of <c>ToString()</c>.
 ///
-/// <para>A <c>ComboBox</c> bound straight to <c>Enum.GetValues<T>()</c> displays the member
+/// <para>A <c>ComboBox</c> bound straight to <c>Enum.GetValues&lt;T&gt;()</c> displays the member
 /// identifier, which is how the attribute and layer pickers came to read "NpcAvoid" while the rest
 /// of the editor called the same thing "NPC Avoid". Applying this as the <c>ItemTemplate</c> fixes
 /// both the drop-down list and the closed selection box, which share that template.</para>

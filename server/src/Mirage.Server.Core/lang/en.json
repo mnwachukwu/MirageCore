@@ -255,7 +255,7 @@
   "PlayerSpawnSystem_NotNearInn": "Not close enough to use the inn.",
   "PlayerSpawnSystem_InsufficientGold": "You need {Cost} gold to set your spawn here.",
   "PlayerSpawnSystem_SpawnSet": "Your spawn point has been set. You will respawn here when you die.",
-  "PkExpirySystem_CrimesFaded": "{PlayerName}'s crimes as a Player Killer have faded from memory...",
+  "MarkSystem_MarkLapsed": "{PlayerName} is no longer marked.",
   "PacketHandler_NotNearShop": "Not close enough to open the shop.",
   "PacketHandler_CannotLogoutCombat": "You cannot logout while in combat.",
   "PacketHandler_TellFrom": "{From} tells you, '{Message}'",

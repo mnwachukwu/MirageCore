@@ -118,13 +118,6 @@ public sealed partial class ClientState
         MapStateCleared?.Invoke();
     }
 
-    /// <summary>
-    /// Seamless border crossing: re-frame the whole 3×3 grid so the cell the player crossed into
-    /// becomes the new center, preserving every already-loaded map and its entities (no flicker, no
-    /// reload).  The data slides one cell opposite <paramref name="crossDir"/>; the row/column that
-    /// scrolls off is dropped and the newly-revealed edge is left empty for the server to fill.
-    /// Traversal NPCs need no shifting — they're keyed by identity and placed by CurrentMapNum each frame.
-    /// </summary>
     /// <summary>The 3×3 cell a step in <paramref name="dir"/> crosses into; the center for anything else.
     /// One definition, because both the client's predicted cross and the server's confirmed one have to
     /// agree about which cell is about to become the center.</summary>

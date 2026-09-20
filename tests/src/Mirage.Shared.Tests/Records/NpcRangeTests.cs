@@ -17,7 +17,7 @@ public class NpcRangeTests
     private static readonly JsonSerializerOptions Json = Serialization.RecordJson.Options;
 
     /// <summary>The soft cap is how far a player can see up or down — the viewport's short half-extent, the
-    /// same figure <see cref="WorldCoordHelper.IsInInteractRange"/> works from. Past it a mob acquires from
+    /// same figure <see cref="WorldCoordHelper.IsInInteractRange(int, int, int, int)"/> works from. Past it a mob acquires from
     /// somewhere its target cannot see.</summary>
     [Test]
     public void TheSoftCap_IsHowFarAPlayerCanSee()

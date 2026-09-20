@@ -81,7 +81,7 @@ public sealed class AttributeSchema
     public bool TryGet(int ordinal, out AttributeDeclaration declaration)
         => _byOrdinal.TryGetValue(ordinal, out declaration);
 
-    /// <summary>Whether a key is shown to <paramref name="viewer"/>. An undeclared key is visible to
+    /// <summary>Whether a key is shown to <paramref name="asker"/>. An undeclared key is visible to
     /// nobody, which is the same answer as a key declared <see cref="AttributeVisibility.None"/>.</summary>
     /// <param name="key">The attribute being asked about.</param>
     /// <param name="asker">How close the person asking stands to the entity:

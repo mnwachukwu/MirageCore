@@ -30,7 +30,6 @@ public class AccountEditsSurviveTests
     private static EditorCharRow Tavin() => new()
     {
         Slot = 1, Name = "Tavin", Map = 3, X = 4, Y = 5,
-        Str = 20, Def = 15, Spd = 6, Int = 6, Points = 0,
         Inv = [new EditorInvSlot { Slot = 1, Num = 7, Quantity = 1 }],
     };
 
@@ -225,15 +224,15 @@ public class AccountEditsSurviveTests
     }
 
     /// <summary>Save's reply is the server's own re-read of what it just accepted, so it replaces the form
-    /// outright, which shows a clamped level instead of leaving the screen asserting a number that
-    /// did not land.</summary>
+    /// outright — the screen shows where the character actually landed rather than what was typed at
+    /// it.</summary>
     [Test]
     public void AFullApply_StillReplacesEverything()
     {
         var vm = Open();
         TypeSomeChanges(vm);
 
-        vm.Apply(Account(Tavin() with { Level = 11 }));
+        vm.Apply(Account(Tavin() with { Map = 11 }));
 
         Assert.Multiple(() =>
         {

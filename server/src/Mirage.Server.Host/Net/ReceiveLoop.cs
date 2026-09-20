@@ -9,7 +9,7 @@ namespace Mirage.Server.Host.Net;
 /// the single game thread (<see cref="GameLoop.Post"/>) for processing — it never touches game state
 /// itself, so multiple connections' reads can run concurrently while their effects stay serialized.
 ///
-/// A single optional <paramref name="firstLine"/> is processed before the read loop begins;
+/// A single optional <c>firstLine</c> is processed before the read loop begins;
 /// this is used when <see cref="TcpConnectionAcceptor"/> already consumed the first line to
 /// determine whether the connection is a game player or an editor.
 ///

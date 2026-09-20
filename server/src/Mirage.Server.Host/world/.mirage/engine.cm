@@ -365,6 +365,30 @@ abstract model Builder
     public abstract function NameTint(integer red, integer green, integer blue);
 
     ##
+        @summary: What a MARKED player's name is drawn in. Marking somebody is Marked on a player,
+        and what carrying one costs them is entirely yours - the engine refuses no attack on account
+        of it. This is only what it looks like. Left unsaid, a mark is red. An operator's rank color
+        is NOT this and cannot be repainted, so nobody can disguise one.
+    ##
+    public abstract function MarkedTint(integer red, integer green, integer blue);
+
+    ##
+        @summary: What the name of somebody who just started a fight pulses TO, alternating with the
+        marked color - so a fresh aggressor reads as the mark they are about to earn rather than as
+        a second unrelated warning. Left unsaid it is amber.
+    ##
+    public abstract function AggressorTint(integer red, integer green, integer blue);
+
+    ##
+        @summary: What founding a guild costs, in item 1 - the money item every world reserves.
+        Taken on success and not paid into the new guild's vault, so it is a sink rather than a
+        deposit, and the Create button shows the figure before anybody presses it. Say nothing and
+        founding one is free: how much a guild is worth is a question about your economy, and the
+        engine cannot see it.
+    ##
+    public abstract function GuildCost(integer cost);
+
+    ##
         @summary: A verb this game offers, under a heading of its own. Picking it calls OnAction.
         Offered in a square's menu until the verb says otherwise, and handed back so where it is
         offered, what key reaches it, and what it needs are each their own line.

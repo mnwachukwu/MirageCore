@@ -156,11 +156,14 @@ public sealed class PartyOverlayPanel
         UiHelper.DrawFilledRect(sb, panelRect, PanelBg * alpha);
         UiHelper.DrawBorder(sb, panelRect, PanelBorder * alpha);
 
-        // 2) Header row — the partner's name. White for contrast against the dark panel backing, but
-        //    the PK red still wins so the partner's status reads at a glance; access-level coloring is
-        //    intentionally dropped (rarely matters here). Grayed when not nearby.
+        // 2) Header row — the partner's name. White for contrast against the dark panel backing, but a
+        //    mark still wins so the partner's status reads at a glance, in whatever color the loaded
+        //    game gave it; access-level coloring is intentionally dropped (rarely matters here).
+        //    Grayed when not nearby.
+        int partyMarkedRgb = state.NameTints.MarkedRgb;
         Color headerColor = !nearby ? Color.DimGray
-            : party.ShowAsPk ? ChatPanel.GetColor(GameColor.BrightRed)
+            : party.ShowAsMarked
+                ? new Color((partyMarkedRgb >> 16) & 0xFF, (partyMarkedRgb >> 8) & 0xFF, partyMarkedRgb & 0xFF)
             : Color.White;
         // The name stops short of the close glyph so a long one cannot slide under it.
         _closeBtnRect = new Rectangle(X + PanelW - CloseSize - 2, Y + 2, CloseSize, CloseSize);
