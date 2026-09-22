@@ -393,11 +393,15 @@ public sealed class MirageServerService : IHostedService
         if (env.Values is { } values) _world.Values = values;
         if (env.Kept is { } stores) _world.Kept = stores;
 
-        // What the world actually holds, rather than what its ceilings allow.
+        // What the world holds against what it has room for. Both halves matter: the count is what
+        // loaded, and the ceiling is the highest slot this world can address — the number an author
+        // needs before referring to one, and the number an operator needs to raise.
         LocalizedLog.Info(_logger, ServerStrings.Server_LoadedSummary,
-            ("Items", itemsLoaded), ("Npcs", npcsLoaded), ("Shops", shopsLoaded),
-            ("Conversations", conversationsLoaded),
-            ("Maps", mapsLoaded));
+            ("Items", itemsLoaded), ("ItemsMax", _world.Limits.Items),
+            ("Npcs", npcsLoaded), ("NpcsMax", _world.Limits.Npcs),
+            ("Shops", shopsLoaded), ("ShopsMax", _world.Limits.Shops),
+            ("Conversations", conversationsLoaded), ("ConversationsMax", _world.Limits.Conversations),
+            ("Maps", mapsLoaded), ("MapsMax", _world.Limits.Maps));
     }
 
     /// <summary>

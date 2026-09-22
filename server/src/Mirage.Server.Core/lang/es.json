@@ -360,7 +360,7 @@
   "Server_WorldName": "Mundo: {WorldName}",
   "Server_LoadingMaps": "Cargando los mapas...",
   "Server_LoadingMotd": "Cargando el mensaje del día...",
-  "Server_LoadedSummary": "Cargados {Items} objetos, {Npcs} NPC, {Shops} tiendas, {Conversations} conversaciones, {Maps} mapas.",
+  "Server_LoadedSummary": "Cargados {Items}/{ItemsMax} objetos, {Npcs}/{NpcsMax} NPC, {Shops}/{ShopsMax} tiendas, {Conversations}/{ConversationsMax} conversaciones, {Maps}/{MapsMax} mapas.",
   "Server_RuntimeDataSummary": "Cargados {Guilds} clanes, {MapItems} objetos de mapa.",
   "Server_SpawningMapItems": "Generando los objetos de mapa...",
   "Server_LoadingDroppedItems": "Cargando los objetos tirados en el suelo...",

@@ -360,7 +360,7 @@
   "Server_WorldName": "Monde : {WorldName}",
   "Server_LoadingMaps": "Chargement des cartes...",
   "Server_LoadingMotd": "Chargement du message du jour...",
-  "Server_LoadedSummary": "{Items} objets, {Npcs} PNJ, {Shops} boutiques, {Conversations} conversations, {Maps} cartes chargés.",
+  "Server_LoadedSummary": "{Items}/{ItemsMax} objets, {Npcs}/{NpcsMax} PNJ, {Shops}/{ShopsMax} boutiques, {Conversations}/{ConversationsMax} conversations, {Maps}/{MapsMax} cartes chargés.",
   "Server_RuntimeDataSummary": "{Guilds} guildes, {MapItems} objets de carte chargés.",
   "Server_SpawningMapItems": "Apparition des objets de carte...",
   "Server_LoadingDroppedItems": "Chargement des objets tombés au sol...",

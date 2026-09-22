@@ -360,7 +360,7 @@
   "Server_WorldName": "World: {WorldName}",
   "Server_LoadingMaps": "Loading maps...",
   "Server_LoadingMotd": "Loading Message of the Day...",
-  "Server_LoadedSummary": "Loaded {Items} items, {Npcs} NPCs, {Shops} shops, {Conversations} conversations, {Maps} maps.",
+  "Server_LoadedSummary": "Loaded {Items}/{ItemsMax} items, {Npcs}/{NpcsMax} NPCs, {Shops}/{ShopsMax} shops, {Conversations}/{ConversationsMax} conversations, {Maps}/{MapsMax} maps.",
   "Server_RuntimeDataSummary": "Loaded {Guilds} guilds, {MapItems} map items.",
   "Server_SpawningMapItems": "Spawning map items...",
   "Server_LoadingDroppedItems": "Loading persisted dropped items...",
