@@ -24,7 +24,11 @@ public class StartupLogTemplateTests
 
     private static readonly (string Key, object? Value)[] WorldCounts =
     [
-        ("Items", 1), ("Npcs", 1), ("Shops", 1), ("Conversations", 1), ("Maps", 1),
+        ("Items", 1), ("ItemsMax", 1000),
+        ("Npcs", 1), ("NpcsMax", 1000),
+        ("Shops", 1), ("ShopsMax", 1000),
+        ("Conversations", 1), ("ConversationsMax", 1000),
+        ("Maps", 1), ("MapsMax", 1000),
     ];
 
     [Test]
