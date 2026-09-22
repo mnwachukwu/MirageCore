@@ -76,10 +76,10 @@ public sealed class HelpPanel : IGamePanel
         new("/setaccess level name",       ClientStrings.HelpText_Cmd_SetAccess,     AdminLevel.Creator),
         new("/hwban name",                 ClientStrings.HelpText_Cmd_HwBan,         AdminLevel.Creator),
         new("/hwunban login",              ClientStrings.HelpText_Cmd_HwUnban,       AdminLevel.Creator),
-        new("/startwar",                   ClientStrings.HelpText_Cmd_StartWar,      AdminLevel.Creator),
-        new("/advancewar",                 ClientStrings.HelpText_Cmd_AdvanceWar,    AdminLevel.Creator),
-        new("/endwar",                     ClientStrings.HelpText_Cmd_EndWar,        AdminLevel.Creator),
-        new("/guildreset day|week|season", ClientStrings.HelpText_Cmd_GuildReset,    AdminLevel.Creator),
+        new("/unban account",              ClientStrings.HelpText_Cmd_Unban,         AdminLevel.Creator),
+        new("/unkick account",             ClientStrings.HelpText_Cmd_Unkick,        AdminLevel.Creator),
+        new("/unmute account",             ClientStrings.HelpText_Cmd_Unmute,        AdminLevel.Creator),
+        new("/moderation",                 ClientStrings.HelpText_Cmd_Moderation,    AdminLevel.Creator),
     ];
 
     // Two-color row: command syntax (Yellow, label-color used elsewhere for items/repair)

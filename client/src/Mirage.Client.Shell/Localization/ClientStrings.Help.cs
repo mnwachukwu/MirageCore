@@ -45,6 +45,10 @@ public static partial class ClientStrings
     public const string HelpText_Cmd_Ban = nameof(HelpText_Cmd_Ban);
     public const string HelpText_Cmd_HwBan = nameof(HelpText_Cmd_HwBan);
     public const string HelpText_Cmd_HwUnban = nameof(HelpText_Cmd_HwUnban);
+    public const string HelpText_Cmd_Unban = nameof(HelpText_Cmd_Unban);
+    public const string HelpText_Cmd_Unkick = nameof(HelpText_Cmd_Unkick);
+    public const string HelpText_Cmd_Unmute = nameof(HelpText_Cmd_Unmute);
+    public const string HelpText_Cmd_Moderation = nameof(HelpText_Cmd_Moderation);
     public const string HelpText_Cmd_Mute = nameof(HelpText_Cmd_Mute);
     public const string HelpText_Cmd_Loc = nameof(HelpText_Cmd_Loc);
     public const string HelpText_Cmd_Debug = nameof(HelpText_Cmd_Debug);
@@ -60,10 +64,6 @@ public static partial class ClientStrings
     public const string HelpText_Cmd_Tod = nameof(HelpText_Cmd_Tod);
     public const string HelpText_Cmd_Weather = nameof(HelpText_Cmd_Weather);
     public const string HelpText_Cmd_SetAccess = nameof(HelpText_Cmd_SetAccess);
-    public const string HelpText_Cmd_StartWar = nameof(HelpText_Cmd_StartWar);
-    public const string HelpText_Cmd_AdvanceWar = nameof(HelpText_Cmd_AdvanceWar);
-    public const string HelpText_Cmd_EndWar = nameof(HelpText_Cmd_EndWar);
-    public const string HelpText_Cmd_GuildReset = nameof(HelpText_Cmd_GuildReset);
 
     // ── Context menu (right-click on player) ────────────────────────────────
     public const string ContextMenu_Info = nameof(ContextMenu_Info);

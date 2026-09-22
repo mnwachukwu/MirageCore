@@ -390,7 +390,7 @@
   "Management_RemoteCommand": "[{Ip}] {Command}",
   "Management_LinesDropped": "... {Count} line(s) dropped; this connection was not keeping up.",
   "Console_Prompt": "{GameName} server console - type /help for commands.",
-  "Console_Help": "Players: /who  /kick <name> [minutes]  /ban <name>  /mute <name> [minutes]  /refreshbanlist  /setaccess <level> <name>  /moderation  /unban <account>  /unkick <account>  /unmute <account>  /hwban <name>  /hwunban <account>\nWorld: /tod <phase>  /weather <type>  /motd <text>  /respawn <map>  /mapreport\nGuilds: /startwar  /advancewar  /endwar  /guildreset [day|week|season]\nEditors: /editors  /kickeditor <slot|account>\nRemote: /management [port <n> | token [value] | off]\nServer: /shutdown  /help  /credits  /update",
+  "Console_Help": "Players: /who  /kick <name> [minutes]  /ban <name>  /mute <name> [minutes]  /refreshbanlist  /setaccess <level> <name>  /moderation  /unban <account>  /unkick <account>  /unmute <account>  /hwban <name>  /hwunban <account>\nWorld: /tod <phase>  /weather <type>  /motd <text>  /respawn <map>  /mapreport\nEditors: /editors  /kickeditor <slot|account>\nRemote: /management [port <n> | token [value] | off]\nServer: /shutdown  /help  /credits  /update",
   "Credits_CreatorDeveloper": "Creator / Developer",
   "Console_UpdateChecking": "Checking for a newer build...",
   "Console_UpdateNone": "This is the latest release.",

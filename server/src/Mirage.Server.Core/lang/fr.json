@@ -390,7 +390,7 @@
   "Management_RemoteCommand": "[{Ip}] {Command}",
   "Management_LinesDropped": "... {Count} ligne(s) perdue(s) ; cette connexion ne suivait pas.",
   "Console_Prompt": "Console du serveur {GameName} - tapez /help pour les commandes.",
-  "Console_Help": "Joueurs : /who  /kick <nom> [minutes]  /ban <nom>  /mute <nom> [minutes]  /refreshbanlist  /setaccess <niveau> <nom>  /moderation  /unban <compte>  /unkick <compte>  /unmute <compte>  /hwban <nom>  /hwunban <compte>\nMonde : /tod <phase>  /weather <type>  /motd <texte>  /respawn <carte>  /mapreport\nGuildes : /startwar  /advancewar  /endwar  /guildreset [day|week|season]\nÉditeurs : /editors  /kickeditor <emplacement|compte>\nDistant : /management [port <n> | token [valeur] | off]\nServeur : /shutdown  /help  /credits  /update",
+  "Console_Help": "Joueurs : /who  /kick <nom> [minutes]  /ban <nom>  /mute <nom> [minutes]  /refreshbanlist  /setaccess <niveau> <nom>  /moderation  /unban <compte>  /unkick <compte>  /unmute <compte>  /hwban <nom>  /hwunban <compte>\nMonde : /tod <phase>  /weather <type>  /motd <texte>  /respawn <carte>  /mapreport\nÉditeurs : /editors  /kickeditor <emplacement|compte>\nDistant : /management [port <n> | token [valeur] | off]\nServeur : /shutdown  /help  /credits  /update",
   "Credits_CreatorDeveloper": "Créateur / Développeur",
   "Console_UpdateChecking": "Recherche d'une version plus recente...",
   "Console_UpdateNone": "Ceci est la derniere version.",
