@@ -14,6 +14,12 @@ public sealed class EditorDataService
     private static readonly JsonSerializerOptions JsonOpts = Mirage.Shared.Serialization.RecordJson.Options;
     private static readonly JsonSerializerOptions ReadOpts = Mirage.Shared.Serialization.RecordJson.Options;
 
+    // What every localized line calls the reserved items. Bound once, read live, so the labels follow
+    // an item's name as soon as a world is opened or that item is renamed here.
+    public EditorDataService() =>
+        Mirage.Shared.Localization.ItemNameTokens.Bind(i =>
+            OfflineItems.Length > i ? OfflineItems[i]?.Name : null);
+
     // ── Offline data loaded from disk ─────────────────────────────────────────
     public ItemRecord[] OfflineItems { get; private set; } = [];
     public NpcRecord[] OfflineNpcs { get; private set; } = [];

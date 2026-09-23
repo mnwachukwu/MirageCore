@@ -254,6 +254,10 @@ public sealed partial class MirageGame : Game
 
     public MirageGame()
     {
+        // What every localized line calls the reserved items, read live off the records the server sent
+        // — so a world that renames one renames every label without the client knowing the word.
+        Mirage.Shared.Localization.ItemNameTokens.Bind(i => _state.Items[i]?.Name);
+
         var cfg = ReadConfig();
         _serverHost = cfg.ServerHost;
         _serverPort = cfg.ServerPort;

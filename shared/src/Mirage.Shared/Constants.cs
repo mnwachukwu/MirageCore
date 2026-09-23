@@ -296,6 +296,11 @@ public static class Constants
     // in slot 1 and never mentions it; nothing here then has anything to charge.
     //
     // Every system that charges or rewards money references this constant; do not hardcode 1.
+    /// <summary>What to call the money when item <see cref="GoldItemIndex"/> has no name yet — a world
+    /// that has not loaded, or a test host that never loads one. The item's own name wins wherever
+    /// there is one.</summary>
+    public const string DefaultCurrencyName = "Gold";
+
     public const int GoldItemIndex = 1;
 
     // ── Guild ──────────────────────────────────────────────────────

@@ -108,9 +108,9 @@ public static partial class ServerStrings
 
     private static string Lookup(string locale, string key)
     {
-        if (_byLocale.TryGetValue(locale, out var d) && d.TryGetValue(key, out var v)) return v;
+        if (_byLocale.TryGetValue(locale, out var d) && d.TryGetValue(key, out var v)) return StringLoader.Resolve(v);
         // Fall back to the server operator's language — not hard-coded "en".
-        if (_byLocale.TryGetValue(_operatorLocale, out var op) && op.TryGetValue(key, out var v2)) return v2;
+        if (_byLocale.TryGetValue(_operatorLocale, out var op) && op.TryGetValue(key, out var v2)) return StringLoader.Resolve(v2);
 #if DEBUG
         throw new InvalidOperationException($"[ServerStrings] Missing key: \"{key}\"");
 #else

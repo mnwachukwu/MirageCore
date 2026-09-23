@@ -8,6 +8,52 @@ public static class StringLoader
 {
     private static readonly Regex _ph = new(@"\{(\w+)(?::([^}]+))?\}", RegexOptions.Compiled);
 
+    /// <summary>The ambient placeholders, each standing for a reserved item slot's name: the money,
+    /// and whatever else the engine charges or pays in. Their names belong to the world's item data
+    /// rather than to any line of prose, so a game binds them with <see cref="SetItemNameToken"/> —
+    /// <c>ItemNameTokens.Bind</c> is the one place that says which slots a game reserves.
+    ///
+    /// <para>AMBIENT rather than arguments, and that is the point: each appears in dozens of strings,
+    /// and passing one at every call site would be dozens of chances to forget it — which in DEBUG is
+    /// a crash, not a missing word.</para>
+    ///
+    /// <para>The fallback covers a token bound against a world that has not loaded, and a test host
+    /// that never loads one, so a noun's place never prints empty.</para></summary>
+    private static readonly Dictionary<string, (Func<string?> Source, string Fallback)> _itemNames = new(StringComparer.Ordinal);
+
+    /// <summary>Binds <c>{<paramref name="key"/>}</c> to a reserved item slot's name. Read live rather
+    /// than captured, so renaming that item renames it in every line of every language at once.</summary>
+    public static void SetItemNameToken(string key, string fallback, Func<string?> source)
+        => _itemNames[key] = (source, fallback);
+
+    /// <summary>Whether <c>{<paramref name="key"/>}</c> resolves on its own, with nothing supplied by the
+    /// caller — so a check that every placeholder has a value knows which ones need no call site.</summary>
+    public static bool IsAmbient(string key) => _itemNames.ContainsKey(key);
+
+    /// <summary>The name bound to an ambient token, or null when nothing is bound to it.</summary>
+    private static string? ItemName(string key)
+    {
+        if (!_itemNames.TryGetValue(key, out var e)) return null;
+        string? n = e.Source();
+        return string.IsNullOrWhiteSpace(n) ? e.Fallback : n;
+    }
+
+    /// <summary>Substitutes the ambient tokens in a template that takes no arguments of its own.
+    /// Cheap on the common path: a template with no placeholder at all is returned untouched, which
+    /// matters because <c>Get</c> is called from draw code every frame.</summary>
+    public static string Resolve(string template)
+    {
+        if (_itemNames.Count == 0 || template.IndexOf('{') < 0) return template;
+        foreach (var (key, e) in _itemNames)
+        {
+            string token = "{" + key + "}";
+            if (!template.Contains(token, StringComparison.Ordinal)) continue;
+            string? n = e.Source();
+            template = template.Replace(token, string.IsNullOrWhiteSpace(n) ? e.Fallback : n, StringComparison.Ordinal);
+        }
+        return template;
+    }
+
     public static Dictionary<string, string> Load(string path)
     {
         string json = File.ReadAllText(path);
@@ -26,6 +72,9 @@ public static class StringLoader
         {
             string key = m.Groups[1].Value;
             string? fmt = m.Groups[2].Success ? m.Groups[2].Value : null;
+            // Ambient, so it resolves whether or not the caller passed anything — but an explicit
+            // argument still wins, which is what lets a test state the name it expects.
+            if (!Array.Exists(args, a => a.Key == key) && ItemName(key) is { } ambient) return ambient;
             foreach (var (k, v) in args)
             {
                 if (k == key)

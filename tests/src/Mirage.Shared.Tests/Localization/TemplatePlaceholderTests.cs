@@ -115,7 +115,10 @@ public class TemplatePlaceholderTests
             // Nothing supplied anywhere means the key travels as a value and is formatted out of sight.
             if (supplied.Count == 0) continue;
 
-            foreach (string missing in wanted.Except(supplied).OrderBy(n => n))
+            // An ambient token is bound once at startup and resolves itself, so no call site passes one.
+            foreach (string missing in wanted.Except(supplied)
+                         .Where(n => !Mirage.Shared.Localization.StringLoader.IsAmbient(n))
+                         .OrderBy(n => n))
                 problems.Add($"  {key}: template wants {{{missing}}}, and no call site supplies it");
         }
 

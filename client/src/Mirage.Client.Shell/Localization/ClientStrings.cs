@@ -88,7 +88,7 @@ public static partial class ClientStrings
 
     public static string Get(string key)
     {
-        if (_current.TryGetValue(key, out var v)) return v;
+        if (_current.TryGetValue(key, out var v)) return StringLoader.Resolve(v);
 #if DEBUG
         throw new InvalidOperationException($"[ClientStrings] Missing key: \"{key}\"");
 #else

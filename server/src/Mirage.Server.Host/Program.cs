@@ -297,6 +297,11 @@ var host = Host.CreateDefaultBuilder(args)
 var playerManager = host.Services.GetRequiredService<PlayerManager>();
 ServerStrings.SetPlayerLocaleResolver(index => playerManager[index].Language);
 
+// What every localized line calls the reserved items. Read live off the item records rather than
+// captured, so renaming one in the editor renames it in the next message the server sends.
+var tokenWorld = host.Services.GetRequiredService<GameWorld>();
+Mirage.Shared.Localization.ItemNameTokens.Bind(i => tokenWorld.Items[i]?.Name);
+
 try
 {
     await host.RunAsync();

@@ -353,7 +353,7 @@ public static class ShellStrings
 
     public static string Get(string key)
     {
-        if (_current.TryGetValue(key, out var v)) return v;
+        if (_current.TryGetValue(key, out var v)) return StringLoader.Resolve(v);
 #if DEBUG
         throw new InvalidOperationException($"[ShellStrings] Missing key: \"{key}\"");
 #else
