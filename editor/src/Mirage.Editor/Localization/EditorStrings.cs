@@ -155,8 +155,6 @@ public static partial class EditorStrings
         LanguageChanged?.Invoke();
     }
 
-    /// <summary>Returns the localized string for <paramref name="key"/>.
-    /// In DEBUG, throws on missing key. In Release, returns a bracketed placeholder.</summary>
     /// <summary>Looks up <paramref name="key"/>, or returns <paramref name="fallback"/> when this build
     /// has never heard of it.
     ///
@@ -180,6 +178,8 @@ public static partial class EditorStrings
     public static string GameLabel(string labelKey, string id)
         => !string.IsNullOrEmpty(labelKey) ? GetOrFallback(labelKey, labelKey) : id;
 
+    /// <summary>Returns the localized string for <paramref name="key"/>.
+    /// In DEBUG, throws on missing key. In Release, returns a bracketed placeholder.</summary>
     public static string Get(string key)
     {
         if (_current.TryGetValue(key, out var v)) return StringLoader.Resolve(v);

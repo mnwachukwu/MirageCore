@@ -74,9 +74,6 @@ public static partial class ClientStrings
         _current = translation;
     }
 
-    /// <summary>Returns the localized string for <paramref name="key"/>.
-    /// In DEBUG, throws on missing key so gaps are caught immediately during testing.
-    /// In Release, returns a bracketed placeholder so gaps are visible in QA builds.</summary>
     /// <summary>Looks up <paramref name="key"/>, or returns <paramref name="fallback"/> when this build
     /// has never heard of it.
     ///
@@ -86,6 +83,9 @@ public static partial class ClientStrings
     public static string GetOrFallback(string key, string fallback)
         => !string.IsNullOrEmpty(key) && _current.TryGetValue(key, out var v) ? v : fallback;
 
+    /// <summary>Returns the localized string for <paramref name="key"/>.
+    /// In DEBUG, throws on missing key so gaps are caught immediately during testing.
+    /// In Release, returns a bracketed placeholder so gaps are visible in QA builds.</summary>
     public static string Get(string key)
     {
         if (_current.TryGetValue(key, out var v)) return StringLoader.Resolve(v);

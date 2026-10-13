@@ -663,9 +663,6 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(CommandGroups));
     }
 
-    /// <summary>The command forms themselves, independent of any window. Takes the send action rather
-    /// than reaching for one, so the list can be built and inspected without a settings file, a
-    /// connection, or a running server behind it.</summary>
     /// <summary>/management, whose value argument depends on the action chosen beside it. Built here
     /// rather than inline because the value has to be handed the action to watch.</summary>
     private static ShellCommand ManagementCommand(Action<string> send)
@@ -676,6 +673,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                                 send, action, value);
     }
 
+    /// <summary>The command forms themselves, independent of any window. Takes the send action rather
+    /// than reaching for one, so the list can be built and inspected without a settings file, a
+    /// connection, or a running server behind it.</summary>
     public static IReadOnlyList<CommandGroup> BuildCommandGroups(Action<string> Send)
     {
         static string[] Names<T>() where T : struct, Enum => Enum.GetNames<T>();

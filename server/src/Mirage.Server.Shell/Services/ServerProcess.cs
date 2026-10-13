@@ -88,8 +88,7 @@ public sealed class ServerProcess : IServerConnection
 
     /// <summary>Types a line at the server's console. Everything <c>ConsoleCommands</c> understands
     /// arrives this way, so the shell inherits the whole command set without reimplementing any of
-    /// it.</summary>
-    /// <summary>Hands a line to the outbox and returns at once.
+    /// it. Hands a line to the outbox and returns at once.
     ///
     /// <para>🔴 It never touches the pipe. This is called from a button, on the UI thread, and a write to
     /// stdin blocks once the pipe buffer is full — which is exactly what a server that has stopped reading
