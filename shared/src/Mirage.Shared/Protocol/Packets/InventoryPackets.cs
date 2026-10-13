@@ -94,10 +94,6 @@ public sealed record InventoryUpdatePacket : IPacket
     [JsonPropertyName("dur")] public int Dur { get; init; }
 }
 
-/// <summary>What a character is wearing: one entry per occupied slot.
-///
-/// <para>Sent whole rather than as a delta, and only the OCCUPIED slots travel — a slot with nothing in
-/// it is simply absent, so the wire says nothing about how many slots a game has.</para></summary>
 /// <summary>
 /// S→C, once per session before the first worn set: where a character may wear something in this game.
 ///
@@ -118,6 +114,10 @@ public sealed record EquipSlotsPacket : IPacket
         [property: JsonPropertyName("ord")] int Ordinal);
 }
 
+/// <summary>What a character is wearing: one entry per occupied slot.
+///
+/// <para>Sent whole rather than as a delta, and only the OCCUPIED slots travel — a slot with nothing in
+/// it is simply absent, so the wire says nothing about how many slots a game has.</para></summary>
 public sealed record EquippedGearPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.EquippedGear;

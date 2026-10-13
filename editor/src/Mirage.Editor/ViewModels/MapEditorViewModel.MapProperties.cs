@@ -332,16 +332,16 @@ public sealed partial class MapEditorViewModel : ObservableObject
         return all;
     }
 
+    /// <summary>Runs after every property above has been re-raised. The view uses it to settle controls that
+    /// hold their own edit state, which a property notification alone does not reach.</summary>
+    public Action? MapPropertiesRefreshed { get; set; }
+
     /// <summary>Re-raises every property the map Properties panel and the neighbor grid bind to.
     /// Called whenever the selected map changes wholesale — a different map selected, a record
     /// swapped in by a load, or an edit applied outside the bound setters — because those paths
     /// mutate the underlying <c>MapRecord</c> without going through the individual properties.
     /// <para>Also rebuilds the map's NPC-spawn rows, which are derived from the record rather than
     /// bound to it.</para></summary>
-    /// <summary>Runs after every property above has been re-raised. The view uses it to settle controls that
-    /// hold their own edit state, which a property notification alone does not reach.</summary>
-    public Action? MapPropertiesRefreshed { get; set; }
-
     private void NotifyMapProperties()
     {
         OnPropertyChanged(nameof(MapName));

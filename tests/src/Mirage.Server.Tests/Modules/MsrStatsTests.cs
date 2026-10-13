@@ -836,7 +836,6 @@ public class MsrStatsTests
             "the ungated spell is open, and the gated one only to the class its row names");
     }
 
-    /// <summary>A book fills in order, refuses what it already holds, and names the reason.</summary>
     /// <summary>🔴 <b>What a swing costs a weapon, on average, over a whole hundred-to-nothing cycle.</b>
     /// A caster's reagent bill is matched against a warrior's repair bill, and this ratio is the bridge
     /// between them — so it is READ OFF the wear bands rather than written down beside them.
@@ -933,6 +932,7 @@ public class MsrStatsTests
         });
     }
 
+    /// <summary>A book fills in order, refuses what it already holds, and names the reason.</summary>
     [Test]
     public void LearningWritesTheSpellIntoTheFirstFreePage()
     {

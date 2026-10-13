@@ -119,8 +119,7 @@ public sealed class ClientPacketSender
         => _transport.Send(new NpcInteractPacket { MapNum = map, NpcSlot = slot, Choice = choice });
 
     /// <summary>The player picked one of the game's own actions, on a square. The id came from the
-    /// server and goes straight back; this client never knows what it means.</summary>
-    /// <summary>Picked one of the game's own verbs. <paramref name="targetName"/> and
+    /// server and goes straight back; this client never knows what it means. <paramref name="targetName"/> and
     /// <paramref name="npcSlot"/> name what it was used ON, and only one of them is ever set: a verb
     /// offered on a square or on the HUD carries neither. <paramref name="picked"/> is the line of a
     /// panel's list that was selected, for a verb pressed on one of the game's own screens.</summary>

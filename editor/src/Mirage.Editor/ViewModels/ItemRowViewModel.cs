@@ -134,7 +134,6 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
         OnPropertyChanged(nameof(IsDirty));
     }
 
-    /// <summary>Refill from an on-disk record (offline load or discard). Leaves the row clean.</summary>
     /// <summary>Fill from a record and leave the row DIRTY and loaded — the copy path, where the new
     /// record exists only in memory until a save persists it.
     /// <para>Marking it LOADED matters online: an unloaded row lazy-fetches when selected, and that fetch
@@ -148,6 +147,7 @@ public sealed partial class ItemRowViewModel : ObservableObject, ILockableRow
         OnPropertyChanged(nameof(DisplayName));
     }
 
+    /// <summary>Refill from an on-disk record (offline load or discard). Leaves the row clean.</summary>
     public void LoadFromRecord(ItemRecord r)
     {
         _loading = true;

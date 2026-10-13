@@ -138,11 +138,11 @@ public abstract partial class EditorViewModelBase<TRow> : ObservableObject, IAut
         return true;
     }
 
-    /// <summary>Singular display name of the record type ("Item", "NPC"), used in status messages.</summary>
     /// <summary>Stable id for this section, matching the server's lock table and the nav rail. NOT
     /// <see cref="TypeName"/>, which is localized and would key the table differently per language.</summary>
     protected abstract string SectionId { get; }
 
+    /// <summary>Singular display name of the record type ("Item", "NPC"), used in status messages.</summary>
     protected abstract string TypeName { get; }
     /// <summary>Plural display name; defaults to <see cref="TypeName"/> + "s". Override for irregular plurals.</summary>
     protected virtual string TypeNamePlural => TypeName + "s";

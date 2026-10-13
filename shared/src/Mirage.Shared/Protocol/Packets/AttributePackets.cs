@@ -81,17 +81,6 @@ public sealed record OverheadBarsPacket : IPacket
 }
 
 /// <summary>
-/// S→C, once per session before any creature can be drawn: which of this game's attributes decide the
-/// color of a creature's name, and what a creature carrying none of them is named in.
-///
-/// <para><b>What a creature IS is the loaded game's decision.</b> Core's creature record says how a
-/// body moves, not whether meeting it is good news, so a client compiled against a fixed rule could
-/// only ever color one game's world.</para>
-///
-/// <para>The values themselves travel as ordinary attribute syncs, so a body that turns hostile is
-/// renamed by the sync that turned it, and a name cannot disagree with what the body carries.</para>
-/// </summary>
-/// <summary>
 /// S→C, once per session: what this game charges for the things the engine itself offers — founding a
 /// guild, anchoring at an inn, posting a letter, selling something back, mending it, going home.
 ///
@@ -151,6 +140,17 @@ public sealed record GuildLabelsPacket : IPacket
         [property: JsonPropertyName("l")] string LabelKey);
 }
 
+/// <summary>
+/// S→C, once per session before any creature can be drawn: which of this game's attributes decide the
+/// color of a creature's name, and what a creature carrying none of them is named in.
+///
+/// <para><b>What a creature IS is the loaded game's decision.</b> Core's creature record says how a
+/// body moves, not whether meeting it is good news, so a client compiled against a fixed rule could
+/// only ever color one game's world.</para>
+///
+/// <para>The values themselves travel as ordinary attribute syncs, so a body that turns hostile is
+/// renamed by the sync that turned it, and a name cannot disagree with what the body carries.</para>
+/// </summary>
 public sealed record NameTintsPacket : IPacket
 {
     [JsonPropertyName("cmd")] public string Cmd => PacketNames.NameTints;

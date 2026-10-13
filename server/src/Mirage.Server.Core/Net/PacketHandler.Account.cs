@@ -413,18 +413,6 @@ public sealed partial class PacketHandler
             Enumerable.Range(1, Constants.MaxChars).Select(i => (PlayerRecord?)sp.Chars[i]), _registry.DisplayFields));
     }
 
-    /// <summary>
-    /// Write what they picked at creation onto the new character.
-    ///
-    /// <para>🔴 <b>Onto the character's own attributes, before anything is told they exist.</b> So a
-    /// game reads a class the ordinary way and needs no handler of its own — by the time
-    /// <c>OnPlayerJoined</c> runs, the choice is already on the body.</para>
-    ///
-    /// <para>⚠ Checked against what the world OFFERS, not range-checked. A client naming a record that
-    /// is blank, or answering a question nobody asked, is asking for something this world never put on
-    /// the screen — and an unanswered question is left unwritten rather than defaulted, because a
-    /// default here would pick a class for them.</para>
-    /// </summary>
     /// <summary>What they answered, by each question's own key, for anything that has to ask.
     ///
     /// <para>Positional against the questions this world declared, which is how the answers arrive. A
@@ -443,6 +431,18 @@ public sealed partial class PacketHandler
         return answers;
     }
 
+    /// <summary>
+    /// Write what they picked at creation onto the new character.
+    ///
+    /// <para>🔴 <b>Onto the character's own attributes, before anything is told they exist.</b> So a
+    /// game reads a class the ordinary way and needs no handler of its own — by the time
+    /// <c>OnPlayerJoined</c> runs, the choice is already on the body.</para>
+    ///
+    /// <para>⚠ Checked against what the world OFFERS, not range-checked. A client naming a record that
+    /// is blank, or answering a question nobody asked, is asking for something this world never put on
+    /// the screen — and an unanswered question is left unwritten rather than defaulted, because a
+    /// default here would pick a class for them.</para>
+    /// </summary>
     private void WriteCreationChoices(PlayerRecord chr, IReadOnlyList<int> chose)
     {
         var asked = _registry.CreationChoices.Choices;

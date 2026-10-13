@@ -52,8 +52,6 @@ public static partial class PacketBuilder
             Bars = [.. bars.Bars.Select(b => new OverheadBarsPacket.Row(b.ValueKey, b.MaxKey, b.Rgb))],
         };
 
-    /// <summary>Which attributes color a creature's name, in the order they are asked, and what a
-    /// creature matching none of them is named in. Sent once, beside the numbering.</summary>
     /// <summary>The tags a guild may wear in this world.</summary>
     public static GuildLabelsPacket GuildLabels(GuildLabelSet labels)
     {
@@ -82,6 +80,8 @@ public static partial class PacketBuilder
         };
     }
 
+    /// <summary>Which attributes color a creature's name, in the order they are asked, and what a
+    /// creature matching none of them is named in. Sent once, beside the numbering.</summary>
     public static NameTintsPacket NameTints(NameTintSet tints) =>
         new()
         {

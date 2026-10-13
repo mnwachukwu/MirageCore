@@ -21,7 +21,6 @@ public static class StartingLoadout
     public readonly record struct GrantedItem(int Slot, int Num, short Value, ItemType Type, short Durability,
                                              string EquipSlot = "")
     {
-        /// <summary>Equipment is worn on arrival; everything else is carried.</summary>
         /// <summary>Whether this arrives worn. Equipment that names no slot is carried instead: a game
         /// that has not said where a piece goes has not said it can be worn.</summary>
         public bool Worn => ItemRecord.IsEquipment(Type) && EquipSlot.Length > 0;

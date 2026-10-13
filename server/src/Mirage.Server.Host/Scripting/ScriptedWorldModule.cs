@@ -728,8 +728,6 @@ public sealed class ScriptedWorldModule
         if (Repeats(outcome.Fault.Kind)) Disable(handler);
     }
 
-    /// <summary>The same, for a handler whose ANSWER matters. Null where it failed, which every
-    /// caller reads as "the engine's own default" rather than as a decision.</summary>
     /// <summary>Whether a list-valued field on a record permits a number, reading an ABSENT field as
     /// permitting everything.
     ///
@@ -770,6 +768,8 @@ public sealed class ScriptedWorldModule
     // empty until then, which is before any line can be sent.
     private ChatChannelSet _declared = ChatChannelSet.Empty;
 
+    /// <summary>The same, for a handler whose ANSWER matters. Null where it failed, which every
+    /// caller reads as "the engine's own default" rather than as a decision.</summary>
     private object? Ask(string handler, params object?[] arguments)
     {
         ScriptOutcome outcome = _loaded!.Call(Rules, handler, Fitting(handler, arguments));
@@ -3248,13 +3248,6 @@ public sealed class ScriptedWorldModule
 
         // ── Saying more about one field ───────────────────────────────────────
 
-        /// <summary>Where these records live on disk: the folder under the world, and what each file is
-        /// called before its number.
-        ///
-        /// <para>Only for records that ALREADY EXIST. Left unsaid, the folder is the model's name
-        /// lowercased and the file name is that without a trailing "s" — which is right for
-        /// <c>sites/site1.json</c> and wrong for <c>species/species1.json</c>, because English is not a
-        /// rule. A new game should say nothing here and let the default name the files.</para></summary>
         /// <summary>The glyph these records wear in the editor's rail.</summary>
         public void Icon(string model, string icon)
         {
@@ -3262,6 +3255,13 @@ public sealed class ScriptedWorldModule
             if (Glyph($"the records '{model}'", icon)) records.Icon = icon;
         }
 
+        /// <summary>Where these records live on disk: the folder under the world, and what each file is
+        /// called before its number.
+        ///
+        /// <para>Only for records that ALREADY EXIST. Left unsaid, the folder is the model's name
+        /// lowercased and the file name is that without a trailing "s" — which is right for
+        /// <c>sites/site1.json</c> and wrong for <c>species/species1.json</c>, because English is not a
+        /// rule. A new game should say nothing here and let the default name the files.</para></summary>
         public void Stored(string model, string folder, string prefix)
         {
             if (Described(model) is not { } records)

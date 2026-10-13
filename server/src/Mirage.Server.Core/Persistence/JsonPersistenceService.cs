@@ -25,9 +25,6 @@ public sealed class JsonPersistenceService : IPersistenceService
 
     private static readonly JsonSerializerOptions Options = Mirage.Shared.Serialization.RecordJson.Options;
 
-    /// <summary><paramref name="limits"/> decides how far each family is padded on load — the same object
-    /// <see cref="World.GameWorld"/> sizes its arrays from, so the folder and the world always agree on how
-    /// many slots exist.</summary>
     /// <summary>Two roots, split on one question: <b>does it change while the server runs?</b>
     ///
     /// <para><paramref name="worldPath"/> holds what an author wrote — maps, the record families, the

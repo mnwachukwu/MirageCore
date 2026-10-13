@@ -2231,8 +2231,8 @@ public class ScriptedWorldTests
     /// <summary>
     /// Stands in for the engine, recording what a script asked it to do. The module is under test
     /// here; what <c>ServerWorld</c> does with a <c>Tell</c> is pinned by its own tests.
+    /// Shared with the scripted-Survey fixture, which needs a world to hand a module.
     /// </summary>
-    /// <summary>Shared with the scripted-Survey fixture, which needs a world to hand a module.</summary>
     internal sealed class RecordingWorld : IWorld
     {
         public List<string> Said { get; } = [];

@@ -2,7 +2,6 @@ using System.Text.Json.Serialization;
 
 namespace Mirage.Shared.Extensibility;
 
-/// <summary>Where the client offers a declared action.</summary>
 /// <summary>What the client does with a verb whose <see cref="GameAction.When"/> does not hold.</summary>
 public enum ActionUnmet : byte
 {
@@ -15,6 +14,7 @@ public enum ActionUnmet : byte
     Hide = 1,
 }
 
+/// <summary>Where the client offers a declared action.</summary>
 public enum ActionSurface : byte
 {
     /// <summary>The right-click menu on a square, under the game's own heading. What a verb that acts on

@@ -126,8 +126,7 @@ public enum NeighborCell { Up, Down, Left, Right, UpLeft, UpRight, DownLeft, Dow
 /// press time: <see cref="Alt"/> paints with the retained attribute instead of opening its dialog, and
 /// <see cref="Retain"/> re-uses the last dialog's values. Named rather than an
 /// <c>(int, int, bool, bool)</c> tuple — the two trailing bools mean opposite things, and nothing about the
-/// tuple made transposing them visible at either the raise or the handle site.</summary>
-/// <summary>One tile touched by the left button.
+/// tuple made transposing them visible at either the raise or the handle site.
 ///
 /// <para><paramref name="Dragging"/> separates the press from the cells the pointer is then dragged across.
 /// They are otherwise the same event, and an authoring dialog must only ever open on the press: a drag that

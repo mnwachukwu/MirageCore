@@ -1241,12 +1241,9 @@ public static class RenderCommandBuilder
     private static bool TargetNoLineOfSightWorld(ClientState state, int targetWX, int targetWY, WorldLayer targetLayer)
         => !ClientLineOfSight.HasClearFromLocalPlayer(state, targetWX, targetWY, targetLayer);
 
-    /// <summary>
-    /// Frame 0 = neutral, 1 = stride, 2 = attack.
+    /// <summary>Which frame of a body's sprite to draw: 0 standing, 1 mid-stride, 2 swinging.
     /// While attacking: within the first 500ms → frame 2; 500–1000ms → frame 0 (idle, not walk).
     /// Walk stride frame switches at the tile midpoint (offset crosses ±PicY/2).
-    /// </summary>
-    /// <summary>Which frame of a body's sprite to draw: 0 standing, 1 mid-stride, 2 swinging.
     ///
     /// <para>🔴 <b>The stride is read off the way a body is TRAVELLING, never the way it faces.</b>
     /// A chasing creature turns to face its target and then steps sideways around an obstacle — and the

@@ -76,8 +76,6 @@ public sealed partial class GuildSystem : GameSystem
         return null;
     }
 
-    /// <summary>A fresh, unused guild id. Guilds are unbounded, so this is simply one past the
-    /// highest live id (ids are never reused, keeping them stable across a disband).</summary>
     /// <summary>The next guild number, taken from the high-water mark rather than from the live guilds:
     /// a disbanded guild's number is retired, and the highest one disbanding must not hand its number to
     /// the next guild founded. Accounts, territory controllers and wars all reference a guild by number.</summary>

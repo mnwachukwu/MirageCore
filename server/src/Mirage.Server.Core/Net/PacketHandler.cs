@@ -58,8 +58,6 @@ public sealed partial class PacketHandler
     private readonly IRandomSource _rng;
     private readonly ServerConfig _config;
 
-    /// <summary>Where a module's own commands go. Empty for an engine with no game loaded, and then
-    /// every command below belongs to Core.</summary>
     /// <summary>What the loaded game declared. Held whole rather than picked apart, because creating a
     /// character asks it a question no other packet does.</summary>
     private readonly CoreRegistry _registry;
@@ -70,6 +68,8 @@ public sealed partial class PacketHandler
     /// with no game loaded.</summary>
     private readonly IWorld? _actions;
 
+    /// <summary>Where a module's own commands go. Empty for an engine with no game loaded, and then
+    /// every command below belongs to Core.</summary>
     private readonly PacketRoutes _routes;
 
     /// <summary>What does the things a game lets the player do. Empty for an engine with no game

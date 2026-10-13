@@ -536,9 +536,6 @@ public sealed class ParticleSystem
         return (p.Vx - camVelX, vy);
     }
 
-    /// <summary>FX color for a spell type: action-color for HP (damage red / heal green), identity for MP
-    /// (blue) and SP (gold/amber), white for give-item. Green means heal only — see the SP recolor.</summary>
-
     /// <summary>Milliseconds a projectile takes to cross <paramref name="distancePx"/> at the homing speed,
     /// capped at the projectile lifetime — the client times deferred hit FX (number/death) to the bolt's arrival.</summary>
     public static float ProjectileFlightMs(float distancePx) =>

@@ -3,18 +3,6 @@ using System.Text.Json.Serialization;
 namespace Mirage.Shared.Records;
 
 /// <summary>
-/// One appearance a player may choose when making a character.
-///
-/// <para><b>Authored, not discovered.</b> A world offers the looks its author decided to offer — which
-/// is never simply every row of art the engine happens to have loaded. A game whose cast is four
-/// villagers offers four; one that wants a single fixed look offers one; one that assigns appearance
-/// some other way offers none and lets its own rules decide.</para>
-///
-/// <para>What an appearance MEANS is the game's business. A name here reads to a player as whatever the
-/// author intends — a species, a build, a uniform, a gender — and the engine attaches nothing to it
-/// beyond the art it selects.</para>
-/// </summary>
-/// <summary>
 /// One answer that has to have been given for a look to be offered.
 ///
 /// <para>🔴 <b>Core has no idea what the answer MEANS.</b> It holds a creation question's key and the
@@ -34,6 +22,18 @@ public sealed record AppearanceGate
     [JsonPropertyName("is")] public IReadOnlyList<int> Is { get; init; } = [];
 }
 
+/// <summary>
+/// One appearance a player may choose when making a character.
+///
+/// <para><b>Authored, not discovered.</b> A world offers the looks its author decided to offer — which
+/// is never simply every row of art the engine happens to have loaded. A game whose cast is four
+/// villagers offers four; one that wants a single fixed look offers one; one that assigns appearance
+/// some other way offers none and lets its own rules decide.</para>
+///
+/// <para>What an appearance MEANS is the game's business. A name here reads to a player as whatever the
+/// author intends — a species, a build, a uniform, a gender — and the engine attaches nothing to it
+/// beyond the art it selects.</para>
+/// </summary>
 public sealed record CharacterAppearance
 {
     /// <summary>What the picker shows. Blank is allowed and reads as an unnamed option, for a world

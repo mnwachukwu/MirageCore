@@ -134,12 +134,12 @@ public sealed class CoreRegistry
     /// <summary>What this game says about dying, asked in the order their modules were configured.</summary>
     public IReadOnlyList<IDeathPolicy> DeathPolicies { get; }
 
-    /// <summary>What a game lets somebody use out of their bag. Empty in an engine with no game
-    /// loaded, and then every use Core itself understands is allowed.</summary>
     /// <summary>What a game says about moving under your own power, asked in the order their modules
     /// were configured. Empty in an engine with no game loaded, and then a run costs nothing.</summary>
     public IReadOnlyList<IMovePolicy> MovePolicies { get; }
 
+    /// <summary>What a game lets somebody use out of their bag. Empty in an engine with no game
+    /// loaded, and then every use Core itself understands is allowed.</summary>
     public IReadOnlyList<IUsePolicy> UsePolicies { get; }
 
     /// <summary>What a game says a slain creature leaves behind. Empty in an engine with no game loaded,

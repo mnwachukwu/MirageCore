@@ -1064,9 +1064,6 @@ public sealed class ServerWorld : IWorld
     private AttributeBag? MapBag(int num) =>
         num >= 1 && num <= _world.Limits.Maps && num < _world.Maps.Length ? _world.Maps[num].Attributes : null;
 
-    /// <summary>A map group's own bag, or null for a group that is not there. A group is only there once
-    /// somebody authored it, unlike an item or a creature, which occupy every slot up to the world's
-    /// limit whether or not anything was written in them.</summary>
     /// <summary>Every group's bag, 1-based and dense up to the highest one authored. A gap reads as
     /// an empty bag, so a game counting regions gets the same shape every other family has.</summary>
     private IReadOnlyList<AttributeBag> GroupBags()
@@ -1080,6 +1077,9 @@ public sealed class ServerWorld : IWorld
         return all;
     }
 
+    /// <summary>A map group's own bag, or null for a group that is not there. A group is only there once
+    /// somebody authored it, unlike an item or a creature, which occupy every slot up to the world's
+    /// limit whether or not anything was written in them.</summary>
     private AttributeBag? GroupBag(int num) =>
         num >= 1 && _world.MapGroups.TryGetValue(num, out var group) ? group.Attributes : null;
 

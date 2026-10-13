@@ -519,14 +519,6 @@ public sealed partial class AccountCharRowViewModel : ObservableObject
 
     public NamedEntry[] ItemEntries => _itemEntriesProvider();
 
-
-
-    /// <summary>The character's quest log, as the server last described it.</summary>
-
-
-
-    /// <summary>Every state a quest can be put into, including NotStarted — which takes it out of the log.</summary>
-
     /// <summary>The item to hand over. Null until one is picked, which keeps Give grayed out.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanGiveItem))]

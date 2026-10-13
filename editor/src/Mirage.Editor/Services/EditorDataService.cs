@@ -132,9 +132,6 @@ public sealed class EditorDataService
 
     public bool IsOnline => OnlineItems != null;
 
-    /// <summary>How many of each record family exist. The connected server's, from its greeting; the
-    /// protocol defaults when offline or against a server too old to greet an editor. A ceiling this
-    /// editor was compiled with is a bug rather than a default — see <see cref="RecordLimits"/>.</summary>
     /// <summary>What the open world says about itself — its record ceilings, its name, and the size new
     /// maps are created at. Offline this is the folder's <c>world.json</c>; connected, the ceilings come from
     /// the server's hello and the rest stays local.</summary>
