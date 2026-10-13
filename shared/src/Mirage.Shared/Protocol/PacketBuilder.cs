@@ -102,57 +102,31 @@ public static partial class PacketBuilder
     // from live spawn packets and the server speaks the greeting, so both stay off the game-client wire).
     public static SendMapPacket SendMap(int mapNum, MapRecord map, int col = 1, int row = 1, bool forEditor = false)
     {
-        var tiles = new List<SendMapPacket.TileData>();
-        for (int x = 0; x < map.Width; x++)
+        // ⚠ The map goes on WHOLE, through the same converters that read and write a map file. Rebuilding it
+        // field by field into a parallel wire shape is how a field comes to exist on the record and not on
+        // the wire, and such a field arrives at its default with nothing to report it.
+        //
+        // Two things a game client is not given, blanked on a COPY rather than by a second format: the map
+        // greeting, which the server speaks from its own record, and the NPC authoring pins, since the client
+        // renders NPCs from live spawn packets.
+        var sent = map;
+
+        if (!forEditor)
         {
-            for (int y = 0; y < map.Height; y++)
-            {
-                var t = map.Tile[x, y];
-                // Sparse: omit fully-default tiles; the client rebuilds from a blank grid.
-                if (!SendMapPacket.TileData.IsDefault(t))
-                    tiles.Add(SendMapPacket.TileData.From(x, y, t));
-            }
+            sent = map.ShallowCopy();
+            sent.GreetingSpeaker = "";
+            sent.JoinSay = "";
+            sent.LeaveSay = "";
+            // ⚠ A NEW list. The copy shares this one with the real map, so stripping the pins in place would
+            // strip them from the map the server is running.
+            sent.Npcs = map.Npcs.Select(e => e with { PinX = null, PinY = null }).ToList();
         }
 
-        return new SendMapPacket
-        {
-            MapNum = mapNum,
-            Col = col,
-            Row = row,
-            Width = map.Width,
-            Height = map.Height,
-            Revision = map.Revision,
-            Name = map.Name,
-            DisplayName = map.DisplayName,
-            // Raw inheritable fields (0 / null = inherit); resolved client-side against the cached group.
-            PlayersPassThrough = map.PlayersPassThrough,
-            Music = map.Music,
-            ExitMap = map.ExitMap,
-            ExitX = map.ExitX,
-            ExitY = map.ExitY,
-            Indoors = map.Indoors,
-            AlwaysLit = map.AlwaysLit,
-            AlwaysDark = map.AlwaysDark,
-            MapGroup = map.MapGroup,
-            Up = map.Up,
-            Down = map.Down,
-            Left = map.Left,
-            Right = map.Right,
-            Tiles = tiles.ToArray(),
-            // Editor gets full entries (pins for the authoring round-trip); the game client gets the same NPC
-            // types with pins stripped — it renders NPCs from live spawn packets and never needs the pins.
-            Npcs = forEditor
-                ? map.Npcs.ToArray()
-                : map.Npcs.Select(e => e with { PinX = null, PinY = null }).ToArray(),
-            Lights = map.Lights.ToArray(),
-            // Editor-only authoring data — the SERVER speaks the map greeting from its own MapRecord (client never needs it).
-            GreetingSpeaker = forEditor ? map.GreetingSpeaker : "",
-            JoinSay = forEditor ? map.JoinSay : "",
-            LeaveSay = forEditor ? map.LeaveSay : "",
-        };
+        return new SendMapPacket { MapNum = mapNum, Col = col, Row = row, Map = sent };
     }
 
     public static JoinMapPacket JoinMap(int index) => new() { Index = index };
+
     public static LeaveMapPacket LeaveMap(int index) => new() { Index = index };
     public static PlayerXYPacket PlayerXY(int index, int x, int y) => new() { Index = index, X = x, Y = y };
 

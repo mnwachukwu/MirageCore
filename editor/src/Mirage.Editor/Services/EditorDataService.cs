@@ -642,88 +642,17 @@ public sealed class EditorDataService
 
     // ── Online save (sends packet via EditorConnection) ──────────────────────
 
-    public static EditorSaveMapPacket BuildSaveMapPacket(int mapNum, MapRecord map)
-    {
-        var tiles = new List<SendMapPacket.TileData>();
-        for (int x = 0; x < map.Width; x++)
-        {
-            for (int y = 0; y < map.Height; y++)
-            {
-                var t = map.Tile[x, y];
-                if (!SendMapPacket.TileData.IsDefault(t))
-                    tiles.Add(SendMapPacket.TileData.From(x, y, t));
-            }
-        }
-
-        return new EditorSaveMapPacket
+    public static EditorSaveMapPacket BuildSaveMapPacket(int mapNum, MapRecord map) =>
+        new()
         {
             MapNum = mapNum,
-            Map = new SendMapPacket
-            {
-                MapNum = mapNum,
-                Width = map.Width,
-                Height = map.Height,
-                // Send the current revision as-is. The server's HandleEditorSaveMap ignores this field
-                // and bumps its own `map.Revision++` authoritatively, so any value here is dead data on
-                // the wire. The caller is expected to have already called BumpRevision() before us, so
-                // this carries the post-bump value purely for logs/debug — it doesn't drive the server.
-                Revision = map.Revision,
-                Name = map.Name,
-                DisplayName = map.DisplayName,
-                PlayersPassThrough = map.PlayersPassThrough,
-                Up = map.Up,
-                Down = map.Down,
-                Left = map.Left,
-                Right = map.Right,
-                Music = map.Music,
-                ExitMap = map.ExitMap,
-                ExitX = map.ExitX,
-                ExitY = map.ExitY,
-                Indoors = map.Indoors,
-                AlwaysLit = map.AlwaysLit,
-                AlwaysDark = map.AlwaysDark,
-                GreetingSpeaker = map.GreetingSpeaker,
-                JoinSay = map.JoinSay,
-                LeaveSay = map.LeaveSay,
-                MapGroup = map.MapGroup,
-                Tiles = [.. tiles],
-                Npcs = map.Npcs.ToArray(),
-                Lights = map.Lights.ToArray(),
-            },
+            // ⚠ The map goes whole, through the converters that read and write a map file. The revision
+            // rides along but does not drive anything: the server's HandleEditorSaveMap bumps its own
+            // authoritatively and ignores this one.
+            Map = new SendMapPacket { MapNum = mapNum, Map = map },
         };
-    }
 
-    public static MapRecord MapRecordFromPacket(SendMapPacket pkt)
-    {
-        var map = new MapRecord(pkt.Width, pkt.Height)
-        {
-            Name = pkt.Name,
-            DisplayName = pkt.DisplayName,
-            Revision = pkt.Revision,
-            PlayersPassThrough = pkt.PlayersPassThrough,
-            Up = pkt.Up,
-            Down = pkt.Down,
-            Left = pkt.Left,
-            Right = pkt.Right,
-            Music = pkt.Music,
-            ExitMap = pkt.ExitMap,
-            ExitX = pkt.ExitX,
-            ExitY = pkt.ExitY,
-            Indoors = pkt.Indoors,
-            AlwaysLit = pkt.AlwaysLit,
-            AlwaysDark = pkt.AlwaysDark,
-            GreetingSpeaker = pkt.GreetingSpeaker,
-            JoinSay = pkt.JoinSay,
-            LeaveSay = pkt.LeaveSay,
-            MapGroup = pkt.MapGroup,
-        };
-        foreach (var t in pkt.Tiles)
-            if (map.Contains(t.X, t.Y)) map.Tile[t.X, t.Y] = t.ToTile();
-        for (int i = 0; i < pkt.Npcs.Length && i < Constants.MaxMapNpcs; i++)
-            map.Npcs.Add(pkt.Npcs[i]);
-        map.Lights.AddRange(pkt.Lights);
-        return map;
-    }
+    public static MapRecord MapRecordFromPacket(SendMapPacket pkt) => pkt.Map;
 
     private static async Task<T?> LoadJsonAsync<T>(string path)
     {

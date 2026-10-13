@@ -83,8 +83,15 @@ public static class WorldTransfer
 
     // The server stamps its own revision on save, so the one on the wire is dead data. Left in, every map
     // whose revision moved for any reason would read as a change.
-    private static EditorSaveMapPacket ZeroRevision(EditorSaveMapPacket p) =>
-        p with { Map = p.Map with { Revision = 0 } };
+    // ⚠ Zeroed on a COPY: the packet carries the live MapRecord, and setting the revision on that would
+    // move the editor's own map behind its back.
+    private static EditorSaveMapPacket ZeroRevision(EditorSaveMapPacket p)
+    {
+        var map = p.Map.Map.ShallowCopy();
+        map.Revision = 0;
+
+        return p with { Map = p.Map with { Map = map } };
+    }
 
     /// <summary>An empty record of the family's type. What a slot holds when nothing was authored in
     /// it.</summary>

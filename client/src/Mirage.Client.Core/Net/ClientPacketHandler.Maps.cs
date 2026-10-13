@@ -168,7 +168,9 @@ public sealed partial class ClientPacketHandler : IClientEvents
 
     private void HandleSendMap(SendMapPacket p)
     {
-        var map = BuildMapRecord(p);
+        // The map arrived whole. There is nothing to rebuild from parts, and so nothing that can be
+        // rebuilt from parts incorrectly — what is cached below is exactly what the server sent.
+        var map = p.Map;
 
         // Center map (col=row=1): drives the normal join handshake (cache + confirm,
         // which unblocks GettingMap).  Neighbor pre-loads just populate their grid
@@ -183,43 +185,6 @@ public sealed partial class ClientPacketHandler : IClientEvents
             _state.NeighborMaps[p.Col, p.Row] = map;
             _ = SaveNeighborAsync(p.MapNum, map);
         }
-    }
-
-    private static MapRecord BuildMapRecord(SendMapPacket p)
-    {
-        // Sized from the packet before the tiles land: they travel sparsely, so the grid's extent is
-        // stated rather than inferred.
-        var map = new MapRecord(p.Width, p.Height)
-        {
-            Name = p.Name,
-            DisplayName = p.DisplayName,
-            Revision = p.Revision,
-            PlayersPassThrough = p.PlayersPassThrough,
-            Up = p.Up,
-            Down = p.Down,
-            Left = p.Left,
-            Right = p.Right,
-            Music = p.Music,
-            ExitMap = p.ExitMap,
-            ExitX = p.ExitX,
-            ExitY = p.ExitY,
-            Indoors = p.Indoors,
-            AlwaysLit = p.AlwaysLit,
-            AlwaysDark = p.AlwaysDark,
-            MapGroup = p.MapGroup,
-        };
-
-        foreach (var t in p.Tiles)
-            if (map.Contains(t.X, t.Y)) map.Tile[t.X, t.Y] = t.ToTile();
-
-        // Dense NPC entry list: stored as-is — the game client renders NPCs from live spawn
-        // packets and never reads these. Capped defensively at MaxMapNpcs runtime posts.
-        for (int i = 0; i < p.Npcs.Length && i < Constants.MaxMapNpcs; i++)
-            map.Npcs.Add(p.Npcs[i]);
-
-        map.Lights.AddRange(p.Lights);
-
-        return map;
     }
 
     private async Task SaveAndConfirmAsync(int mapNum, MapRecord map)

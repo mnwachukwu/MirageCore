@@ -88,7 +88,7 @@ public class MapGroupRoundTripTests
 
         // Editor → wire (the editor authors RAW nullable fields via BuildSaveMapPacket).
         var wire = EditorDataService.BuildSaveMapPacket(7, map).Map;
-        Assert.That(wire.MapGroup, Is.EqualTo(5));
+        Assert.That(wire.Map.MapGroup, Is.EqualTo(5));
 
         // Wire → editor record.
         var back = EditorDataService.MapRecordFromPacket(wire);

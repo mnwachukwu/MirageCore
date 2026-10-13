@@ -158,4 +158,14 @@ public sealed class MapRecord
 
     /// <summary>A map of a given size, filled with empty tiles.</summary>
     public MapRecord(int width, int height) => Tile = TileGrid.Empty(width, height);
+
+    /// <summary>A copy carrying every field, sharing the tile grid and the lists rather than duplicating
+    /// them.
+    ///
+    /// <para>For handing something a map with a few scalars changed — the wire copy a game client gets,
+    /// which blanks the greeting and the NPC pins. ⚠ Shallow: REPLACE a list on the copy, never mutate one,
+    /// or the original changes with it. It exists so that copy can be made without a second description of a
+    /// map to fall out of step with this one.</para></summary>
+    public MapRecord ShallowCopy() => (MapRecord)MemberwiseClone();
+
 }

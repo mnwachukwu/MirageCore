@@ -1,3 +1,4 @@
+using Mirage.Shared.Protocol;
 using Mirage.Shared.Protocol.Packets;
 using Mirage.Shared.Records;
 using NUnit.Framework;
@@ -16,6 +17,20 @@ namespace Mirage.Shared.Tests.Records;
 [TestFixture]
 public class BlockedAttrTests
 {
+    /// <summary>One tile, through the wire the way a tile really travels: on its map.</summary>
+    private static TileRecord OverTheWire(TileRecord tile)
+    {
+        var map = new MapRecord(8, 8);
+        map.Tile[3, 4] = tile;
+
+        string json = PacketSerializer.Serialize(PacketBuilder.SendMap(1, map, forEditor: true));
+        var back = PacketSerializer.TryDeserialize(json) as SendMapPacket;
+
+        Assert.That(back, Is.Not.Null, "packet did not deserialize");
+
+        return back!.Map.Tile[3, 4];
+    }
+
     private static readonly JsonSerializerOptions Json = Serialization.RecordJson.Options;
 
     [Test]
@@ -81,7 +96,7 @@ public class BlockedAttrTests
     {
         var railing = new TileRecord { Type = TileType.Blocked, BlocksLight = false, BlocksSight = true };
 
-        var back = SendMapPacket.TileData.From(3, 4, railing).ToTile();
+        var back = OverTheWire(railing);
 
         Assert.Multiple(() =>
         {
@@ -98,12 +113,11 @@ public class BlockedAttrTests
     {
         var wall = new TileRecord { Type = TileType.Blocked };
 
-        var data = SendMapPacket.TileData.From(3, 4, wall);
-        var back = data.ToTile();
+        var back = OverTheWire(wall);
 
         Assert.Multiple(() =>
         {
-            Assert.That(data.Fields, Is.Null, "nothing to say about a wall that stops everything");
+            Assert.That(back.Type, Is.EqualTo(TileType.Blocked));
             Assert.That(back.BlocksLight, Is.True);
             Assert.That(back.BlocksSight, Is.True);
         });

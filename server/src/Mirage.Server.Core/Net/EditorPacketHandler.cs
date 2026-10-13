@@ -651,59 +651,24 @@ public sealed partial class EditorPacketHandler
         if (!SlotValidation.IsValidMapNum(mapNum, _world.Limits.Maps)) return;
         if (LockedByAnother(editorIndex, CoreRecordFamilies.Maps, mapNum)) return;
 
-        var src = p.Map;
-        var map = _world.Maps[mapNum];
+        // The editor sent the map WHOLE, so it replaces the one in the world wholesale rather than being
+        // copied across field by field. Replace and not merge: a tile or a light cleared in the editor has
+        // to disappear here too, and a resize lands for free.
+        int previousRevision = _world.Maps[mapNum].Revision;
+        var src = p.Map.Map;
+        _world.Maps[mapNum] = src;
+        var map = src;
 
-        map.Name = src.Name;
-        map.DisplayName = src.DisplayName;
-        map.Revision++;
-        map.PlayersPassThrough = src.PlayersPassThrough;
-        map.Up = src.Up;
-        map.Down = src.Down;
-        map.Left = src.Left;
-        map.Right = src.Right;
-        map.Music = src.Music;
-        map.ExitMap = src.ExitMap;
-        map.ExitX = src.ExitX;
-        map.ExitY = src.ExitY;
-        map.Indoors = src.Indoors;
-        map.AlwaysLit = src.AlwaysLit;
-        map.AlwaysDark = src.AlwaysDark;
-        map.GreetingSpeaker = src.GreetingSpeaker;
-        map.JoinSay = src.JoinSay;
-        map.LeaveSay = src.LeaveSay;
-        map.MapGroup = src.MapGroup;
+        // ⚠ The revision is the SERVER's to set. Whatever the editor sent is ignored — it bumps from the
+        // value the world already held, so two editors saving cannot land on the same number.
+        map.Revision = previousRevision + 1;
 
-        // Replace, don't merge: the editor's BuildSaveMapPacket omits tiles that are fully default,
-        // so a tile cleared back to default in the editor would otherwise keep its old server value.
-        // The whole grid is rebuilt at the size the editor sent, which is also how a resize lands.
-        map.Tile = TileGrid.Empty(src.Width, src.Height);
-
-        foreach (var tile in src.Tiles)
-            if (map.Contains(tile.X, tile.Y)) map.Tile[tile.X, tile.Y] = tile.ToTile();
-
-        // NPC spawn entries: wholesale replace with the editor's dense list (only non-empty rows are authored).
-        // Drop empty/out-of-range rows defensively and cap at MaxMapNpcs runtime posts; SpawnNpc (below) reads
-        // these by index, so a pinned entry respawns at its tile immediately after the save.
-        map.Npcs = src.Npcs
+        // NPC spawn entries: drop empty/out-of-range rows defensively and cap at MaxMapNpcs runtime posts.
+        // SpawnNpc (below) reads these by index, so a pinned entry respawns at its tile right after the save.
+        map.Npcs = map.Npcs
             .Where(e => e.Npc > 0 && e.Npc <= _world.Limits.Npcs)
             .Take(Constants.MaxMapNpcs)
             .ToList();
-
-        // Size-aware save backstop: drop any pin whose footprint runs off-map, covers a
-        // blocked tile, or overlaps an earlier-kept pin (first-wins) — so a bad pin never persists; that NPC then
-        // spawns at a random valid tile (SpawnNpc's fallback).
-        int NpcFootprintSize(int npcId) => npcId >= 1 && npcId <= _world.Limits.Npcs ? _world.Npcs[npcId].EffectiveSize : 1;
-        for (int i = 0; i < map.Npcs.Count; i++)
-        {
-            var e = map.Npcs[i];
-            if (!e.HasPin) continue;
-            if (MapNpcPlacement.ValidatePin(map, i, e.PinX!.Value, e.PinY!.Value, e.PinLayer, NpcFootprintSize, overlapBelowIndex: i) != NpcPlacementError.None)
-                map.Npcs[i] = e with { PinX = null, PinY = null };
-        }
-
-        // Placed lights: wholesale replace (same replace-don't-merge rationale as tiles).
-        map.Lights = [.. src.Lights];
 
         _bg.Run(_persistence.SaveMapAsync(mapNum, map), nameof(IPersistenceService.SaveMapAsync));
 
